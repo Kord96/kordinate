@@ -24,7 +24,8 @@ if ! git diff --cached --quiet; then
     git commit -m "$msg"
     echo "Committed."
 fi
-git push origin main --quiet 2>/dev/null && echo "Pushed claude-profile." || echo "claude-profile up to date."
+git pull origin main --rebase --quiet 2>/dev/null || true
+git push origin main --quiet && echo "Pushed claude-profile." || echo "claude-profile push failed — check for conflicts."
 
 # ═══ Step 2: Sync shared files from ~/.claude → ~/kordinate ═══
 echo ""
@@ -116,7 +117,8 @@ if ! git diff --cached --quiet; then
     git commit -m "${1:-sync from installation $(date +%Y-%m-%d)}"
     echo "Committed."
 fi
-git push origin main --quiet && echo "Pushed kordinate." || echo "kordinate up to date."
+git pull origin main --rebase --quiet 2>/dev/null || true
+git push origin main --quiet && echo "Pushed kordinate." || echo "kordinate push failed — check for conflicts."
 
 # Return to previous branch if we switched
 if [[ "$current_branch" != "main" ]]; then
