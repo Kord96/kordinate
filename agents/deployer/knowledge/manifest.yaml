@@ -1,0 +1,5 @@
+# Project knowledge files deployer requires.
+# On startup, /boot checks if these exist for the current project.
+# Missing files trigger consultation with scribe for templates.
+project_files:
+  - deploy.yaml
