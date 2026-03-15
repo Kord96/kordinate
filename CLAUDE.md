@@ -4,9 +4,9 @@
 
 ## Context
 
-Multi-cluster k8s infrastructure. Code lives in this repo, deploys to clusters via SSH.
+Kordinate repo at `~/.claude/`. Multi-cluster k8s infrastructure — agents, commands, config, and knowledge all live here. Deploys to clusters via SSH.
 
-For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/profile/conventions.md` · `~/.claude/cache/changelog.md`
+For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/config.yaml`
 
 ---
 
@@ -70,15 +70,6 @@ When the user says "consult <agent>", "ask <agent>", or "check with <agent>" fol
 
 For async inter-agent messaging, use `/scribe:text <agent> "<message>"` to append a timestamped message to the target agent's inbox (`~/.claude/agents/<name>/inbox.md`). Agents check their inbox on startup, periodically, and before returning results.
 
-## Changelog Protocol
-
-`~/.claude/cache/changelog.md` is a shared append-only operational log. Agents append entries after significant changes (deployments, infra updates, monitoring changes, architecture decisions). Other agents check it before consulting to avoid unnecessary subagent invocations.
-
-- **Format**: `## YYYY-MM-DD HH:MM [agent] topic` followed by a brief description
-- **Topics**: `infra`, `dashboards`, `monitoring`, `deployment`, `architecture`, `docs`, `migration`
-- **Read before consulting**: If no new entries from the target agent since your last check, use cached knowledge instead of spawning a consultation
-- Each agent tracks `last_changelog_line` in `.claude/agent-state/<name>.json` to know what's new
-
 ## Documentation Policy
 
 All `.md` files are protected. Only the **scribe agent** may edit them — enforced by a native PreToolUse hook with token-based auth.
@@ -98,7 +89,7 @@ Three-tier state:
 - Use for behavioral preferences and cross-project operational notes only
 
 **Local** — `.claude/agent-state/<name>.json` (gitignored):
-- session_id, last_line, last_commit, last_changelog_line, agent_id, context_summary
+- session_id, last_line, last_commit, agent_id, context_summary
 
 The repo contains agent definitions (CLAUDE.md, commands/, knowledge/) but no runtime state.
 
