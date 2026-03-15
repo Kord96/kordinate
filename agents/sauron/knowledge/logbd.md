@@ -181,4 +181,8 @@ Seven dashboards organized into three folders:
 
 ## Label Mapping
 
-Prometheus relabel config maps the k8s pod label `component` to `job`. Dashboard PromQL queries must use `job=` (not `component=`). Loki stream selectors use `component=` (Promtail preserves k8s pod labels natively).
+The local Prometheus relabel config (`deploy/graphdb/monitoring/prometheus-config.yaml`) maps the k8s pod label `component` to `job`. However, Grafana queries the **gateway Prometheus** via federation, which assigns `job=prometheus.scrape.pods` to all federated metrics and preserves `component` as a separate label.
+
+- **Dashboard PromQL**: use `component=` (e.g., `component="sentinel"`)
+- **Loki stream selectors**: use `component=` (Promtail preserves k8s pod labels)
+- **Do NOT use** `job=` to filter by component name — `job` is always `prometheus.scrape.pods` in the gateway
