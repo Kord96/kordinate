@@ -20,8 +20,4 @@ agent-state/
 
 # Secrets and credentials
 .credentials.json
-.deployer-secret
-.sauron-secret
-.scribe-secret
 .*-secret
-.mcp.json
