@@ -23,9 +23,11 @@ else
     echo "No local changes to commit."
 fi
 
-# Check if there's anything new to push by diffing local vs remote (excluding projects/)
+# Fetch latest remote state
 git fetch origin --quiet
-if git diff HEAD origin/main -- . ':(exclude)*/knowledge/projects' --quiet 2>/dev/null; then
+
+# Check if there's anything new to push (excluding projects/ from comparison)
+if git diff --quiet HEAD origin/main -- . ':(exclude)*/knowledge/projects'; then
     echo "Nothing to push — kordinate is up to date."
     exit 0
 fi
