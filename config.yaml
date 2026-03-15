@@ -1,0 +1,89 @@
+# Kord96 Centralized Configuration
+# All cluster IPs, ports, hostnames, and service endpoints in one place.
+# Referenced by deploy configs, MCP servers, monitoring, and documentation.
+
+clusters:
+  vandc:
+    name: vandc
+    description: Vancouver datacenter (4-node k3s)
+    tailscale_ip: 100.95.237.24
+    lan_network: 10.95.43.0/24
+    gateway_lan_ip: 10.95.43.66
+    nodes:
+      - 10.95.43.66  # ctrl (gateway)
+      - 10.95.43.67
+      - 10.95.43.61
+      - 10.95.43.60
+    namespaces: [dev, test, prod, monitor]
+    manifests:
+      gateway: agents/deployer/manifests/gateway
+      bootstrap: agents/deployer/manifests/bootstrap
+      platform: profile/additions
+    workloads: [logbd, kafka, postgres, redis, schema-registry]
+    services:
+      postgres:
+        port: 30632
+        user: kkord
+        database: postgres
+      redis:
+        port: 30379
+      metrics:
+        port: 30091
+      logs:
+        port: 30101
+      flightsql:
+        port: 30815
+      graphdb_api:
+        port: 30443
+      registry:
+        port: 5000
+        host: 10.95.43.66
+        url: 10.95.43.66:5000
+
+  home:
+    name: home
+    description: Home cluster (k3s)
+    tailscale_ip: 100.71.90.43
+    nodes:
+      - 192.168.2.17    # ottawa-server (control-plane)
+      - 192.168.2.20    # kkord-Latitude-5420 (agent)
+      - 100.93.138.73   # colima-mac (agent, Tailscale IP)
+    namespaces: [dev, test, prod, monitor]
+    manifests:
+      gateway: agents/deployer/manifests/gateway
+      master: agents/deployer/manifests/master
+      bootstrap: agents/deployer/manifests/bootstrap
+      platform: profile/additions
+    workloads: [barren, kafka, postgres, redis]
+    services:
+      postgres:
+        port: 30633
+        user: kkord
+        database: barren
+      redis:
+        port: 30380
+      metrics:
+        port: 30091
+      logs:
+        port: 30101
+      grafana:
+        port: 30300
+        namespace: master
+
+network:
+  tailnet: tailc85f0f.ts.net
+  grafana_public: grafana.khaledkord.com
+
+cloudflare:
+  account_id: d92e66c0bf1a9fa07546b4899aada451
+  tunnel_id: bacfb3d8-22ba-4949-bf80-27ba6fa11ae0
+  tunnel_name: grafana-master
+  domains:
+    - khaledkord.com
+    - antispam.work
+
+node_hostnames:
+  vandc-66: 10.95.43.66  # ctrl / gateway
+  vandc-67: 10.95.43.67
+  vandc-61: 10.95.43.61
+  vandc-60: 10.95.43.60

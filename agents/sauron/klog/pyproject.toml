@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "klog"
+version = "0.1.0"
+description = "Structured JSON logging with context binding and validation"
+requires-python = ">=3.9"
+dependencies = [
+    "structlog>=23.0",
+    "python-dotenv>=0.19",
+]
+
+[project.scripts]
+klog = "klog.cli:main"
+
+[project.optional-dependencies]
+api = []  # APIPushHandler uses only stdlib (urllib), no extra deps needed
+
+[tool.setuptools.packages.find]
+include = ["klog*"]

@@ -1,0 +1,170 @@
+project: logbd
+repo: https://github.com/Kord96/logbd
+cluster: vandc
+method: kubectl
+status: running
+last_deployed: 2026-03-15
+image: 10.95.43.66:5000/graphdb:latest
+
+branches:
+  dev: main
+  test: test
+  prod: prod
+
+dev:
+  status: scaled-down
+  last_deployed: 2026-03-08
+  image: 10.95.43.66:5000/graphdb:latest
+  namespace: dev
+  pods_running: 0
+  components:
+    - api
+    - cluster
+    - dashboard-stats
+    - derived-refresh
+    - domain
+    - domain-ct
+    - domain-uclt
+    - domain-whois
+    - edge-assoc
+    - edge-cluster
+    - edge-ew
+    - email-address
+    - entity-extraction
+    - flight-sql
+    - sentinel
+    - host
+    - image
+    - score
+    - spf-auth
+    - subnet
+    - template
+    - text
+    - uri
+    - uri-download
+  known_issues:
+    - js-render          # ErrImagePull: needs graphdb:jsrender-latest (separate image)
+    - message-producer   # Pending: unbound PVC
+    - metadata-archiver  # Pending: unbound PVC
+  notes: >
+    Scaled to 0 to free CPU for test promotion. Was healthy (27 Running).
+
+test:
+  status: scaled-down
+  last_deployed: 2026-03-08
+  image: 10.95.43.66:5000/graphdb:latest
+  namespace: test
+  pods_running: 0
+  components:
+    - api
+    - cluster
+    - dashboard-stats
+    - derived-refresh
+    - domain
+    - domain-ct
+    - domain-uclt
+    - domain-whois
+    - edge-assoc
+    - edge-cluster
+    - edge-ew
+    - email-address
+    - entity-extraction
+    - flight-sql
+    - sentinel
+    - host
+    - image
+    - score
+    - spf-auth
+    - subnet
+    - template
+    - text
+    - uri
+    - uri-download
+  known_issues:
+    - js-render          # ImagePullBackOff: needs graphdb:jsrender-latest (separate image)
+    - message-producer   # Pending: unbound PVC
+    - metadata-archiver  # Pending: unbound PVC
+  notes: >
+    Verified healthy (25 Running) before prod promotion. Scaled to 0 to free CPU for prod.
+
+prod:
+  status: running
+  last_deployed: 2026-03-15
+  image: 10.95.43.66:5000/graphdb:latest
+  namespace: prod
+  pods_running: 33
+  components:
+    - api
+    - cluster
+    - content-template
+    - dashboard-stats
+    - derived-refresh
+    - domain
+    - domain-ct
+    - domain-uclt
+    - domain-whois
+    - edge-assoc
+    - edge-cluster
+    - edge-ew
+    - email-address
+    - entity-extraction
+    - flight-sql
+    - sentinel
+    - host
+    - image
+    - logbd-scheduler
+    - message-producer
+    - metadata-archiver
+    - score
+    - spf-auth
+    - subnet
+    - template
+    - text
+    - uri
+    - uri-download
+  known_issues:
+    - js-render          # ImagePullBackOff: needs graphdb:jsrender-latest (separate image)
+  notes: >
+    2026-03-15: Merged session/w1-logbd to main. Relabeled all pods: app:graphdb ->
+    app:logbd (pipeline pods), app:graphdb -> app:app-infra (kafka, schema-registry).
+    Deleted and recreated all deployments (immutable matchLabels). 28 logbd pods +
+    2 app-infra pods (kafka, schema-registry) + postgres, redis, pgbouncer = 34 Running.
+    Kafka needed 4 restarts to load 72 topics before liveness probe passes.
+
+components:
+  - api
+  - cluster
+  - content-template
+  - dashboard-stats
+  - derived-refresh
+  - domain
+  - domain-ct
+  - domain-uclt
+  - domain-whois
+  - edge-assoc
+  - edge-cluster
+  - edge-ew
+  - email-address
+  - entity-extraction
+  - flight-sql
+  - sentinel
+  - host
+  - image
+  - js-render
+  - logbd-scheduler
+  - message-producer
+  - metadata-archiver
+  - score
+  - spf-auth
+  - subnet
+  - template
+  - text
+  - uri
+  - uri-download
+
+infra:
+  kafka: apache/kafka:3.7.0
+  postgres: postgres:16
+  redis: redis:6.2
+  pgbouncer: edoburu/pgbouncer:latest
+  schema-registry: confluentinc/cp-schema-registry:7.6.0

@@ -1,0 +1,13 @@
+# Repos the deployer agent tracks.
+# Each entry has a corresponding .md with this agent's perspective.
+
+repos:
+  stoik:
+    url: https://github.com/Kord96/stoik
+    perspective: Deployment config for stream consumers
+  orchestrator:
+    url: https://github.com/Kord96/orchestrator
+    perspective: Deployment config for service managers
+  klog:
+    url: https://github.com/Kord96/klog
+    perspective: Library dependency across all services

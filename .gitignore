@@ -1,0 +1,27 @@
+# Ephemeral / cache
+cache/
+sessions/
+history.jsonl
+telemetry/
+shell-snapshots/
+file-history/
+plans/
+backups/
+session-env/
+
+# Per-project tool results and memory (large, ephemeral)
+projects/
+
+# Plugins (can be reinstalled)
+plugins/
+
+# Agent state is session-ephemeral
+agent-state/
+
+# Secrets and credentials
+.credentials.json
+.deployer-secret
+.sauron-secret
+.scribe-secret
+.*-secret
+.mcp.json

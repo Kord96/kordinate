@@ -1,0 +1,22 @@
+project: barren
+repo: https://github.com/Kord96/barren
+cluster: home
+method: kubectl
+status: running
+last_deployed: 2026-03-07
+
+branches:
+  dev: main
+  test: test
+  prod: prod
+
+image: barren:latest
+components:
+  - barren
+
+infra:
+  kafka: apache/kafka:3.7.0
+  postgres: postgres:16
+  redis: redis:6.2
+  pgbouncer: edoburu/pgbouncer:latest
+  schema-registry: confluentinc/cp-schema-registry:7.6.0

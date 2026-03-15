@@ -1,0 +1,305 @@
+##
+## Gateway — single pod containing the cluster's observability stack.
+## Alloy collects metrics+logs, Prometheus and Loki buffer them,
+## Tailscale sidecar exposes Prom (:9090) and Loki (:3100) on the tailnet.
+##
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gateway
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gateway
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - nodes/metrics
+      - pods
+      - pods/log
+      - services
+      - endpoints
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics", "/metrics/cadvisor"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gateway
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gateway
+subjects:
+  - kind: ServiceAccount
+    name: gateway
+    namespace: gateway
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gateway-tailscale
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gateway-tailscale
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gateway-tailscale
+subjects:
+  - kind: ServiceAccount
+    name: gateway
+    namespace: gateway
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gateway-tailscale
+  labels:
+    app: infra
+    component: gateway
+stringData:
+  TS_AUTHKEY: "tskey-auth-kgMG3XZDU621CNTRL-irLAfGZC9HUchywWBAuXGU4ApLLMPAYp5"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-gateway-data
+  labels:
+    app: infra
+    component: gateway
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-prometheus-config
+  labels:
+    app: infra
+    component: gateway
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9090"]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-loki-config
+  labels:
+    app: infra
+    component: gateway
+data:
+  loki.yml: |
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+    common:
+      path_prefix: /data/loki
+      storage:
+        filesystem:
+          chunks_directory: /data/loki/chunks
+          rules_directory: /data/loki/rules
+      replication_factor: 1
+      ring:
+        instance_addr: 127.0.0.1
+        kvstore:
+          store: inmemory
+    schema_config:
+      configs:
+      - from: 2020-10-24
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+    limits_config:
+      retention_period: 720h
+    compactor:
+      working_directory: /data/loki/compactor
+      retention_enabled: true
+      delete_request_store: filesystem
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: infra
+    component: gateway
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: infra
+      component: gateway
+  template:
+    metadata:
+      labels:
+        app: infra
+        component: gateway
+    spec:
+      serviceAccountName: gateway
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: alloy
+          image: grafana/alloy:v1.5.1
+          args:
+            - run
+            - /etc/alloy/config.alloy
+            - --stability.level=generally-available
+          env:
+            - name: CLUSTER_NAME
+              value: MUST_BE_SET_BY_OVERLAY
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: alloy-config
+              mountPath: /etc/alloy
+        - name: prometheus
+          image: prom/prometheus:v2.51.0
+          args:
+            - --storage.tsdb.retention.time=3h
+            - --storage.tsdb.path=/prometheus
+            - --web.listen-address=:9090
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --web.enable-remote-write-receiver
+          ports:
+            - containerPort: 9090
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 500m
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus
+            - name: prometheus-data
+              mountPath: /prometheus
+        - name: loki
+          image: grafana/loki:3.0.0
+          args:
+            - -config.file=/etc/loki/loki.yml
+          ports:
+            - containerPort: 3100
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 500m
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: loki-config
+              mountPath: /etc/loki
+            - name: loki-data
+              mountPath: /data/loki
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:latest
+          env:
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-tailscale
+                  key: TS_AUTHKEY
+            - name: TS_HOSTNAME
+              value: MUST_BE_SET_BY_OVERLAY
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_STATE_DIR
+              value: /var/lib/tailscale
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "NET_RAW"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: tailscale-state
+              mountPath: /var/lib/tailscale
+            - name: dev-tun
+              mountPath: /dev/net/tun
+      volumes:
+        - name: alloy-config
+          configMap:
+            name: alloy-config
+        - name: prometheus-config
+          configMap:
+            name: gateway-prometheus-config
+        - name: prometheus-data
+          emptyDir: {}
+        - name: loki-config
+          configMap:
+            name: gateway-loki-config
+        - name: loki-data
+          persistentVolumeClaim:
+            claimName: loki-gateway-data
+        - name: tailscale-state
+          emptyDir: {}
+        - name: dev-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  labels:
+    app: infra
+    component: gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: infra
+    component: gateway
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+    - name: logs
+      port: 3100
+      targetPort: 3100
