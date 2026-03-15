@@ -1,0 +1,114 @@
+##
+## Workstation — Claude Code interactive agent CLI with tmux
+## Ephemeral: no PVC. setup.sh installs tools, clones repos on start.
+## Re-auth (claude login) required after restart.
+## Tailscale sidecar provides its own identity on the tailnet (SSH access).
+## SAFETY: Applying this manifest restarts the workstation and kills active sessions.
+## This is hard-blocked by guard-kubectl.sh from inside the pod.
+## Restarts must be done externally.
+##
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workstation-admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: workstation-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: workstation-admin
+    namespace: master
+##
+## Secret "workstation-tailscale" is created by the deployer from
+## pass store (kordinate/tailscale/auth_key_workstation).
+##
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workstation
+  labels:
+    app: kord-infra
+    component: workstation
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kord-infra
+      component: workstation
+  template:
+    metadata:
+      labels:
+        app: kord-infra
+        component: workstation
+    spec:
+      serviceAccountName: workstation-admin
+      hostname: claude-workstation
+      containers:
+        - name: workstation
+          image: ubuntu:24.04
+          command: ["/bin/bash", "/etc/claude/setup.sh"]
+          stdin: true
+          tty: true
+          env:
+            - name: HOME
+              value: /home/claude
+            - name: TERM
+              value: xterm-256color
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: claude-setup
+              mountPath: /etc/claude
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:latest
+          env:
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: workstation-tailscale
+                  key: TS_AUTHKEY
+            - name: TS_HOSTNAME
+              value: workstation
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_KUBE_SECRET
+              value: workstation-ts-state
+            - name: TS_STATE_DIR
+              value: /var/lib/tailscale
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "NET_RAW"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: tailscale-state
+              mountPath: /var/lib/tailscale
+            - name: dev-tun
+              mountPath: /dev/net/tun
+      volumes:
+        - name: claude-setup
+          configMap:
+            name: claude-setup
+        - name: tailscale-state
+          emptyDir: {}
+        - name: dev-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice

@@ -1,0 +1,361 @@
+##
+## Alloy ConfigMap — central per-cluster collector (Deployment, not DaemonSet)
+## Scrapes app metrics, kubelet/cAdvisor, KSM, Kafka JMX.
+## Tails pod logs via Kubernetes API.
+## CLUSTER_NAME env var must be set on the Deployment.
+##
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+  namespace: gateway
+  labels:
+    app: kord-infra
+    component: alloy
+data:
+  config.alloy: |
+    // ═══════════════════════════════════════════════
+    // METRICS — scrape apps, kubelet/cAdvisor, KSM, Kafka JMX
+    // ═══════════════════════════════════════════════
+
+    discovery.kubernetes "pods" {
+      role = "pod"
+    }
+
+    // ── App metrics: pods with prometheus.io/scrape=true ──
+    discovery.relabel "metrics" {
+      targets = discovery.kubernetes.pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_scrape"]
+        action        = "keep"
+        regex         = "true"
+      }
+
+      // Use annotated port
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip", "__meta_kubernetes_pod_annotation_prometheus_io_port"]
+        action        = "replace"
+        target_label  = "__address__"
+        regex         = "(.+);(.+)"
+        replacement   = "$1:$2"
+      }
+
+      // Use annotated metrics path
+      rule {
+        source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_path"]
+        action        = "replace"
+        target_label  = "__metrics_path__"
+        regex         = "(.+)"
+      }
+
+      // Standard labels
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        target_label  = "app"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_component"]
+        target_label  = "component"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+    }
+
+    prometheus.scrape "pods" {
+      targets    = discovery.relabel.metrics.output
+      forward_to = [prometheus.relabel.inject_cluster.receiver]
+    }
+
+    // ── cAdvisor: container CPU/memory from kubelet (all nodes) ──
+    discovery.kubernetes "nodes" {
+      role = "node"
+    }
+
+    discovery.relabel "cadvisor" {
+      targets = discovery.kubernetes.nodes.targets
+
+      rule {
+        action       = "replace"
+        target_label = "__metrics_path__"
+        replacement  = "/metrics/cadvisor"
+      }
+
+      rule {
+        action       = "replace"
+        target_label = "__scheme__"
+        replacement  = "https"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_node_name"]
+        target_label  = "node"
+      }
+    }
+
+    prometheus.scrape "cadvisor" {
+      targets         = discovery.relabel.cadvisor.output
+      scheme          = "https"
+      bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      tls_config {
+        insecure_skip_verify = true
+      }
+      forward_to      = [prometheus.relabel.inject_cluster.receiver]
+    }
+
+    // ── Kubelet: PVC volume stats (all nodes) ──
+    discovery.relabel "kubelet" {
+      targets = discovery.kubernetes.nodes.targets
+
+      rule {
+        action       = "replace"
+        target_label = "__metrics_path__"
+        replacement  = "/metrics"
+      }
+
+      rule {
+        action       = "replace"
+        target_label = "__scheme__"
+        replacement  = "https"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_node_name"]
+        target_label  = "node"
+      }
+    }
+
+    prometheus.scrape "kubelet" {
+      targets           = discovery.relabel.kubelet.output
+      scheme            = "https"
+      bearer_token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      tls_config {
+        insecure_skip_verify = true
+      }
+      forward_to = [prometheus.relabel.kubelet_filter.receiver]
+    }
+
+    // Only keep volume stats metrics to avoid scraping everything
+    prometheus.relabel "kubelet_filter" {
+      rule {
+        source_labels = ["__name__"]
+        action        = "keep"
+        regex         = "kubelet_volume_stats_.+"
+      }
+      forward_to = [prometheus.relabel.kubelet_normalize.receiver]
+    }
+
+    // Normalize kubelet PVC metrics → pipeline_pvc_* namespace
+    prometheus.relabel "kubelet_normalize" {
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kubelet_volume_stats_used_bytes"
+        target_label  = "__name__"
+        replacement   = "pipeline_pvc_used_bytes"
+      }
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kubelet_volume_stats_capacity_bytes"
+        target_label  = "__name__"
+        replacement   = "pipeline_pvc_capacity_bytes"
+      }
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kubelet_volume_stats_.+"
+        action        = "drop"
+      }
+      forward_to = [prometheus.relabel.inject_cluster.receiver]
+    }
+
+    // ── kube-state-metrics ──
+    discovery.relabel "ksm" {
+      targets = discovery.kubernetes.pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        action        = "keep"
+        regex         = "kube-state-metrics"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip"]
+        action        = "replace"
+        target_label  = "__address__"
+        regex         = "(.+)"
+        replacement   = "$1:8080"
+      }
+    }
+
+    prometheus.scrape "ksm" {
+      targets    = discovery.relabel.ksm.output
+      forward_to = [prometheus.relabel.ksm_normalize.receiver]
+    }
+
+    // Normalize KSM metrics → pipeline_* namespace
+    prometheus.relabel "ksm_normalize" {
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kube_pod_container_status_restarts_total"
+        target_label  = "__name__"
+        replacement   = "pipeline_container_restarts_total"
+      }
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kube_cronjob_spec_suspend"
+        target_label  = "__name__"
+        replacement   = "pipeline_cronjob_suspended"
+      }
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kube_cronjob_next_schedule_time"
+        target_label  = "__name__"
+        replacement   = "pipeline_cronjob_next_schedule_time"
+      }
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kube_pod_container_resource_limits"
+        target_label  = "__name__"
+        replacement   = "pipeline_container_resource_limits"
+      }
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kube_.*"
+        action        = "drop"
+      }
+      forward_to = [prometheus.relabel.inject_cluster.receiver]
+    }
+
+    // ── Kafka JMX exporter ──
+    discovery.relabel "kafka_jmx" {
+      targets = discovery.kubernetes.pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_component"]
+        action        = "keep"
+        regex         = "kafka"
+      }
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_ip"]
+        action        = "replace"
+        target_label  = "__address__"
+        regex         = "(.+)"
+        replacement   = "$1:9308"
+      }
+    }
+
+    prometheus.scrape "kafka_jmx" {
+      targets    = discovery.relabel.kafka_jmx.output
+      forward_to = [prometheus.relabel.kafka_jmx_normalize.receiver]
+    }
+
+    // Normalize Kafka JMX metrics → pipeline_kafka_* namespace
+    prometheus.relabel "kafka_jmx_normalize" {
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kafka_log_log_size"
+        target_label  = "__name__"
+        replacement   = "pipeline_kafka_topic_size_bytes"
+      }
+      rule {
+        source_labels = ["__name__"]
+        regex         = "kafka_.*"
+        action        = "drop"
+      }
+      forward_to = [prometheus.relabel.inject_cluster.receiver]
+    }
+
+    // Inject cluster label on all metrics
+    prometheus.relabel "inject_cluster" {
+      rule {
+        target_label = "cluster"
+        replacement  = env("CLUSTER_NAME")
+      }
+      forward_to = [prometheus.remote_write.local.receiver]
+    }
+
+    prometheus.remote_write "local" {
+      endpoint {
+        url = "http://localhost:9090/api/v1/write"
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // LOGS — tail all pod stdout/stderr via Kubernetes API
+    // ═══════════════════════════════════════════════
+
+    discovery.relabel "logs" {
+      targets = discovery.kubernetes.pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        target_label  = "app"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_component"]
+        target_label  = "component"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+    }
+
+    loki.source.kubernetes "pods" {
+      targets    = discovery.relabel.logs.output
+      forward_to = [loki.process.pipeline.receiver]
+    }
+
+    loki.process "pipeline" {
+      // Parse JSON structured logs
+      stage.json {
+        expressions = {
+          level    = "level",
+          consumer = "consumer",
+        }
+      }
+
+      stage.labels {
+        values = {
+          level    = "",
+          consumer = "",
+        }
+      }
+
+      // Inject cluster label on logs
+      stage.static_labels {
+        values = {
+          cluster = env("CLUSTER_NAME"),
+        }
+      }
+
+      forward_to = [loki.write.local.receiver]
+    }
+
+    loki.write "local" {
+      endpoint {
+        url = "http://localhost:3100/loki/api/v1/push"
+      }
+    }

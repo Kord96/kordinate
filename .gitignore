@@ -8,6 +8,7 @@ file-history/
 plans/
 backups/
 session-env/
+mcp-needs-auth-cache.json
 
 # Per-project tool results and memory (large, ephemeral)
 /projects/
@@ -21,3 +22,17 @@ agent-state/
 # Secrets and credentials
 .credentials.json
 .*-secret
+.mcp.json
+
+# Real config with IPs (generated from template)
+config.yaml
+
+# Agent runtime state
+agents/*/inbox.md
+agents/*/deploys/
+agents/*/knowledge/index.yaml
+agents/*/knowledge/projects/
+
+# Legacy
+__pycache__/
+.merge-lock/

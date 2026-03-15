@@ -1,0 +1,117 @@
+#!/bin/bash
+# Bootstrap agent RBAC on a k3s cluster.
+# Creates a readonly kubeconfig and sets it as default.
+# The existing k3s admin config is preserved for deployer use.
+#
+# Usage: ssh <cluster> "bash -s" < bin/cluster-bootstrap
+#    or: ssh <cluster> bash -s < bin/cluster-bootstrap
+
+set -euo pipefail
+
+ADMIN_KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
+READONLY_KUBECONFIG="/root/.kube/readonly"
+RBAC_APPLIED_MARKER="/root/.kube/.rbac-applied"
+
+echo "=== Agent RBAC Bootstrap ==="
+
+# Ensure admin kubeconfig exists
+if [ ! -f "$ADMIN_KUBECONFIG" ]; then
+  echo "ERROR: $ADMIN_KUBECONFIG not found — is k3s running?"
+  exit 1
+fi
+
+# Apply RBAC manifests (piped via stdin or from local file)
+RBAC_FILE="/tmp/agent-rbac.yaml"
+if [ -f "$RBAC_FILE" ]; then
+  echo "Applying RBAC from $RBAC_FILE..."
+  kubectl apply -f "$RBAC_FILE"
+else
+  echo "SKIP RBAC apply — pipe agent-rbac.yaml to the cluster first:"
+  echo "  scp agents/deployer/manifests/rbac/agent-rbac.yaml <cluster>:/tmp/agent-rbac.yaml"
+  echo "  ssh <cluster> bash -s < bin/cluster-bootstrap"
+  exit 1
+fi
+
+# Wait for ServiceAccount token
+echo "Waiting for agent-readonly ServiceAccount token..."
+SA_SECRET=""
+for i in $(seq 1 10); do
+  # k3s auto-creates a secret for each SA
+  SA_SECRET=$(kubectl get secret -n kube-system -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep "^agent-readonly" || true)
+  [ -n "$SA_SECRET" ] && break
+  sleep 1
+done
+
+# If no auto-created secret, create a long-lived token secret
+if [ -z "$SA_SECRET" ]; then
+  echo "Creating token secret for agent-readonly..."
+  kubectl apply -f - <<'TOKENYAML'
+apiVersion: v1
+kind: Secret
+metadata:
+  name: agent-readonly-token
+  namespace: kube-system
+  annotations:
+    kubernetes.io/service-account.name: agent-readonly
+type: kubernetes.io/service-account-token
+TOKENYAML
+  SA_SECRET="agent-readonly-token"
+  sleep 2
+fi
+
+# Extract token and CA
+TOKEN=$(kubectl get secret -n kube-system "$SA_SECRET" -o jsonpath='{.data.token}' | base64 -d)
+CA_DATA=$(kubectl get secret -n kube-system "$SA_SECRET" -o jsonpath='{.data.ca\.crt}')
+SERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+
+if [ -z "$TOKEN" ]; then
+  echo "ERROR: could not extract token from secret $SA_SECRET"
+  exit 1
+fi
+
+# Generate readonly kubeconfig
+mkdir -p "$(dirname "$READONLY_KUBECONFIG")"
+cat > "$READONLY_KUBECONFIG" <<KUBECONFIG
+apiVersion: v1
+kind: Config
+clusters:
+  - cluster:
+      certificate-authority-data: $CA_DATA
+      server: $SERVER
+    name: default
+contexts:
+  - context:
+      cluster: default
+      user: agent-readonly
+    name: readonly
+current-context: readonly
+users:
+  - name: agent-readonly
+    user:
+      token: $TOKEN
+KUBECONFIG
+
+chmod 600 "$READONLY_KUBECONFIG"
+echo "Wrote $READONLY_KUBECONFIG"
+
+# Set readonly as default KUBECONFIG in shell profile
+PROFILE="/root/.bashrc"
+MARKER="# kordinate agent RBAC"
+if ! grep -q "$MARKER" "$PROFILE" 2>/dev/null; then
+  cat >> "$PROFILE" <<PROFILE_EOF
+
+$MARKER
+export KUBECONFIG="$READONLY_KUBECONFIG"
+alias kubectl-admin="KUBECONFIG=$ADMIN_KUBECONFIG kubectl"
+PROFILE_EOF
+  echo "Set default KUBECONFIG=$READONLY_KUBECONFIG in $PROFILE"
+else
+  echo "SKIP shell profile (already configured)"
+fi
+
+touch "$RBAC_APPLIED_MARKER"
+echo ""
+echo "=== Done ==="
+echo "  Default kubectl → readonly (get/list/watch/exec/logs)"
+echo "  Deployer uses:  KUBECONFIG=$ADMIN_KUBECONFIG kubectl ..."
+echo "  Admin shortcut: kubectl-admin ..."

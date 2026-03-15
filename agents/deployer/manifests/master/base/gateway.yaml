@@ -1,0 +1,558 @@
+##
+## Master Gateway — single pod containing the centralized observability stack.
+## Alloy pulls metrics (federation) and logs (K8s API) from cluster gateways.
+## Prometheus and Loki store 30d of aggregated data.
+## Tailscale exposes Prom (:9191) and Loki (:3100) on the tailnet.
+## Cloudflared provides external access to Grafana via Cloudflare tunnel.
+##
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: gateway-tailscale
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gateway-tailscale
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: gateway-tailscale
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: master
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gateway-tailscale
+  labels:
+    app: kord-infra
+    component: gateway
+stringData:
+  TS_AUTHKEY: MUST_BE_SET
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflared-tunnel
+  labels:
+    app: kord-infra
+    component: gateway
+stringData:
+  TUNNEL_TOKEN: MUST_BE_SET
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  labels:
+    app: kord-infra
+    component: gateway
+data:
+  config.yaml: |
+    tunnel: bacfb3d8-22ba-4949-bf80-27ba6fa11ae0
+    ingress:
+      - hostname: grafana.khaledkord.com
+        service: http://grafana.master.svc.cluster.local:3000
+      - service: http_status:404
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-tailscale-serve
+  labels:
+    app: kord-infra
+    component: gateway
+data:
+  serve.json: |
+    {
+      "TCP": {
+        "8815": { "TCPForward": "gateway-vandc:8815" }
+      }
+    }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gateway-prometheus-data
+  labels:
+    app: kord-infra
+    component: gateway
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gateway-loki-data
+  labels:
+    app: kord-infra
+    component: gateway
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-prometheus-config
+  labels:
+    app: kord-infra
+    component: gateway
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9191"]
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-loki-config
+  labels:
+    app: kord-infra
+    component: gateway
+data:
+  loki.yml: |
+    auth_enabled: false
+    server:
+      http_listen_port: 3100
+    common:
+      path_prefix: /data/loki
+      storage:
+        filesystem:
+          chunks_directory: /data/loki/chunks
+          rules_directory: /data/loki/rules
+      replication_factor: 1
+      ring:
+        instance_addr: 127.0.0.1
+        kvstore:
+          store: inmemory
+    schema_config:
+      configs:
+      - from: 2020-10-24
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+    limits_config:
+      retention_period: 720h
+    compactor:
+      working_directory: /data/loki/compactor
+      retention_enabled: true
+      delete_request_store: filesystem
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-alloy-config
+  labels:
+    app: kord-infra
+    component: gateway
+data:
+  config.alloy: |
+    // ═══════════════════════════════════════════════
+    // METRICS — pull from both Gateway Proms via /federate
+    // ═══════════════════════════════════════════════
+
+    prometheus.scrape "federate_home" {
+      targets = [{
+        __address__ = "100.79.204.119:9090",
+      }]
+      metrics_path    = "/federate"
+      params          = { "match[]" = ["{__name__=~\".+\"}"] }
+      scrape_interval = "60s"
+      scrape_timeout  = "25s"
+      honor_labels    = true
+      forward_to      = [prometheus.remote_write.master.receiver]
+    }
+
+    prometheus.scrape "federate_vandc" {
+      targets = [{
+        __address__ = "100.93.174.24:9090",
+      }]
+      metrics_path    = "/federate"
+      params          = { "match[]" = ["{__name__=~\".+\"}"] }
+      scrape_interval = "60s"
+      scrape_timeout  = "25s"
+      honor_labels    = true
+      forward_to      = [prometheus.remote_write.master.receiver]
+    }
+
+    prometheus.remote_write "master" {
+      endpoint {
+        url = "http://localhost:9191/api/v1/write"
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // LOGS — tail pod stdout/stderr from both clusters via K8s API
+    // ═══════════════════════════════════════════════
+
+    // ── Home cluster (via kubeconfig over Tailscale) ──
+    discovery.kubernetes "home_pods" {
+      role            = "pod"
+      kubeconfig_file = "/etc/home-kubeconfig/kubeconfig"
+    }
+
+    discovery.relabel "home_logs" {
+      targets = discovery.kubernetes.home_pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        target_label  = "app"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_component"]
+        target_label  = "component"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_tier"]
+        target_label  = "tier"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+      rule {
+        target_label = "cluster"
+        replacement  = "home"
+      }
+    }
+
+    loki.source.kubernetes "home_pods" {
+      targets    = discovery.relabel.home_logs.output
+      forward_to = [loki.process.pipeline.receiver]
+      client {
+        kubeconfig_file = "/etc/home-kubeconfig/kubeconfig"
+      }
+    }
+
+    // ── Vandc cluster (via kubeconfig over Tailscale) ──
+    discovery.kubernetes "vandc_pods" {
+      role            = "pod"
+      kubeconfig_file = "/etc/vandc-kubeconfig/kubeconfig"
+    }
+
+    discovery.relabel "vandc_logs" {
+      targets = discovery.kubernetes.vandc_pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        target_label  = "app"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_component"]
+        target_label  = "component"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_tier"]
+        target_label  = "tier"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+      rule {
+        target_label = "cluster"
+        replacement  = "vandc"
+      }
+    }
+
+    loki.source.kubernetes "vandc_pods" {
+      targets    = discovery.relabel.vandc_logs.output
+      forward_to = [loki.process.pipeline.receiver]
+      client {
+        kubeconfig_file = "/etc/vandc-kubeconfig/kubeconfig"
+      }
+    }
+
+    // ── Shared log processing pipeline ──
+    loki.process "pipeline" {
+      // Parse JSON structured logs
+      stage.json {
+        expressions = {
+          level    = "level",
+          consumer = "consumer",
+        }
+      }
+
+      stage.labels {
+        values = {
+          level    = "",
+          consumer = "",
+        }
+      }
+
+      forward_to = [loki.write.master.receiver]
+    }
+
+    // Write to co-located Master Loki
+    loki.write "master" {
+      endpoint {
+        url = "http://localhost:3100/loki/api/v1/push"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  labels:
+    app: kord-infra
+    component: gateway
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kord-infra
+      component: gateway
+  template:
+    metadata:
+      labels:
+        app: kord-infra
+        component: gateway
+    spec:
+      securityContext:
+        runAsUser: 0
+      initContainers:
+        - name: fix-prometheus-perms
+          image: busybox:1.36
+          command: ["sh", "-c", "chown -R 65534:65534 /prometheus"]
+          volumeMounts:
+            - name: prometheus-data
+              mountPath: /prometheus
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: alloy
+          image: grafana/alloy:v1.5.1
+          args:
+            - run
+            - /etc/alloy/config.alloy
+            - --stability.level=generally-available
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: alloy-config
+              mountPath: /etc/alloy
+            - name: home-kubeconfig
+              mountPath: /etc/home-kubeconfig
+              readOnly: true
+            - name: vandc-kubeconfig
+              mountPath: /etc/vandc-kubeconfig
+              readOnly: true
+        - name: prometheus
+          image: prom/prometheus:v2.51.0
+          args:
+            - --storage.tsdb.retention.time=30d
+            - --storage.tsdb.path=/prometheus
+            - --web.listen-address=:9191
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --web.enable-remote-write-receiver
+          ports:
+            - containerPort: 9191
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: '1'
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus
+            - name: prometheus-data
+              mountPath: /prometheus
+        - name: loki
+          image: grafana/loki:3.0.0
+          args:
+            - -config.file=/etc/loki/loki.yml
+          ports:
+            - containerPort: 3100
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 500m
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: loki-config
+              mountPath: /etc/loki
+            - name: loki-data
+              mountPath: /data/loki
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:latest
+          env:
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: gateway-tailscale
+                  key: TS_AUTHKEY
+            - name: TS_HOSTNAME
+              value: gateway-master
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_KUBE_SECRET
+              value: gateway-ts-state
+            - name: TS_STATE_DIR
+              value: /var/lib/tailscale
+            - name: TS_SERVE_CONFIG
+              value: /etc/tailscale/serve.json
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "NET_RAW"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: tailscale-state
+              mountPath: /var/lib/tailscale
+            - name: tailscale-serve-config
+              mountPath: /etc/tailscale
+            - name: dev-tun
+              mountPath: /dev/net/tun
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - --config
+            - /etc/cloudflared/config.yaml
+            - run
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-tunnel
+                  key: TUNNEL_TOKEN
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: cloudflared-config
+              mountPath: /etc/cloudflared
+      volumes:
+        - name: alloy-config
+          configMap:
+            name: gateway-alloy-config
+        - name: prometheus-config
+          configMap:
+            name: gateway-prometheus-config
+        - name: prometheus-data
+          persistentVolumeClaim:
+            claimName: gateway-prometheus-data
+        - name: loki-config
+          configMap:
+            name: gateway-loki-config
+        - name: loki-data
+          persistentVolumeClaim:
+            claimName: gateway-loki-data
+        - name: cloudflared-config
+          configMap:
+            name: cloudflared-config
+        - name: home-kubeconfig
+          secret:
+            secretName: home-kubeconfig
+        - name: vandc-kubeconfig
+          secret:
+            secretName: vandc-kubeconfig
+        - name: tailscale-state
+          emptyDir: {}
+        - name: tailscale-serve-config
+          configMap:
+            name: gateway-tailscale-serve
+        - name: dev-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  labels:
+    app: kord-infra
+    component: gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: kord-infra
+    component: gateway
+  ports:
+    - name: metrics
+      port: 9191
+      targetPort: 9191
+    - name: logs
+      port: 3100
+      targetPort: 3100
+    - name: flightsql
+      port: 8815
+      targetPort: 8815

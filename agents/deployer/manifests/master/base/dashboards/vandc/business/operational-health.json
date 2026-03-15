@@ -1,0 +1,1012 @@
+{
+  "uid": "operational-health",
+  "title": "Operational Health",
+  "editable": true,
+  "schemaVersion": 39,
+  "tags": [
+    "pipeline",
+    "monitor"
+  ],
+  "links": [
+    {
+      "type": "link",
+      "title": "Overview",
+      "icon": "home",
+      "url": "/d/overview/",
+      "includeVars": true,
+      "keepTime": true
+    },
+    {
+      "type": "link",
+      "title": "Operational Detail",
+      "icon": "dashboard",
+      "url": "/d/operational-detail/",
+      "includeVars": true,
+      "keepTime": true
+    },
+    {
+      "type": "link",
+      "title": "Physical Resources",
+      "icon": "dashboard",
+      "url": "/d/physical-resources/",
+      "includeVars": true,
+      "keepTime": true
+    }
+  ],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "prod",
+          "value": "prod"
+        },
+        "definition": "label_values(up, namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(up, namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/^(dev|test|prod)$/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "Loki",
+          "value": "loki"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "prometheus",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "state-timeline",
+      "title": "Section Health",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "FAIL"
+                },
+                "1": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "WARNING"
+                },
+                "2": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-yellow",
+                "value": 1
+              },
+              {
+                "color": "dark-green",
+                "value": 2
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 20,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mergeValues": true,
+        "alignValue": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"ingestion\"})",
+          "legendFormat": "Ingestion",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"processing\"})",
+          "legendFormat": "Processing",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"enrichment\"})",
+          "legendFormat": "Enrichment",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"serving\"})",
+          "legendFormat": "Serving",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"dependencies\"})",
+          "legendFormat": "Dependencies",
+          "refId": "E"
+        }
+      ],
+      "maxDataPoints": 100,
+      "interval": "1m"
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Operational Health",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "FAIL"
+                },
+                "1": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "DEGRADED"
+                },
+                "2": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "HEALTHY"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-yellow",
+                "value": 1
+              },
+              {
+                "color": "dark-green",
+                "value": 2
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "min(pipeline_status{component=\"sentinel\", namespace=~\"$namespace\"})",
+          "legendFormat": "Operational Health",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "row",
+      "title": "Ingestion",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "panels": []
+    },
+    {
+      "id": 4,
+      "type": "state-timeline",
+      "title": "Ingestion",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "FAIL"
+                },
+                "1": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "WARNING"
+                },
+                "2": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-yellow",
+                "value": 1
+              },
+              {
+                "color": "dark-green",
+                "value": 2
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "options": {
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mergeValues": true,
+        "alignValue": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_ingestion_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"producer\"})",
+          "legendFormat": "Producer",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_ingestion_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"keeping_up\"})",
+          "legendFormat": "Keeping Up",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_ingestion_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"eta\"})",
+          "legendFormat": "ETA",
+          "refId": "C"
+        }
+      ],
+      "maxDataPoints": 100,
+      "interval": "1m"
+    },
+    {
+      "id": 5,
+      "type": "row",
+      "title": "Processing",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "panels": []
+    },
+    {
+      "id": 6,
+      "type": "state-timeline",
+      "title": "Processing",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "FAIL"
+                },
+                "1": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "WARNING"
+                },
+                "2": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-yellow",
+                "value": 1
+              },
+              {
+                "color": "dark-green",
+                "value": 2
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "options": {
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mergeValues": true,
+        "alignValue": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_buffers_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"flush_rate\"})",
+          "legendFormat": "Flush Rate",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_buffers_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"flush_latency\"})",
+          "legendFormat": "Flush Latency",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_derived_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"service\"})",
+          "legendFormat": "Derived Service",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_derived_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"staleness\"})",
+          "legendFormat": "Refresh Staleness",
+          "refId": "D"
+        }
+      ],
+      "maxDataPoints": 100,
+      "interval": "1m"
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "Enrichment",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "panels": []
+    },
+    {
+      "id": 8,
+      "type": "state-timeline",
+      "title": "Enrichment",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "FAIL"
+                },
+                "1": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "WARNING"
+                },
+                "2": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-yellow",
+                "value": 1
+              },
+              {
+                "color": "dark-green",
+                "value": 2
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "options": {
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mergeValues": true,
+        "alignValue": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_enrichment_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"dns\"})",
+          "legendFormat": "DNS",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_enrichment_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"whois\"})",
+          "legendFormat": "WHOIS",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_enrichment_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"backlog\"})",
+          "legendFormat": "Backlog",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_enrichment_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"spf\"})",
+          "legendFormat": "SPF",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_download_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"processes\"})",
+          "legendFormat": "Downloads",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_download_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"queue\"})",
+          "legendFormat": "URI Queue",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_download_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"enqueue\"})",
+          "legendFormat": "Enqueue",
+          "refId": "G"
+        }
+      ],
+      "maxDataPoints": 100,
+      "interval": "1m"
+    },
+    {
+      "id": 9,
+      "type": "row",
+      "title": "Serving",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "state-timeline",
+      "title": "Serving",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "FAIL"
+                },
+                "1": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "WARNING"
+                },
+                "2": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-yellow",
+                "value": 1
+              },
+              {
+                "color": "dark-green",
+                "value": 2
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "options": {
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mergeValues": true,
+        "alignValue": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (process) (pipeline_process_status{component=\"sentinel\", namespace=~\"$namespace\", process=\"flight-sql\"})",
+          "legendFormat": "FlightSQL",
+          "refId": "A"
+        }
+      ],
+      "maxDataPoints": 100,
+      "interval": "1m"
+    },
+    {
+      "id": 11,
+      "type": "row",
+      "title": "Dependencies",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "panels": []
+    },
+    {
+      "id": 12,
+      "type": "state-timeline",
+      "title": "Dependencies",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "FAIL"
+                },
+                "1": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "WARNING"
+                },
+                "2": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "OK"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "dark-yellow",
+                "value": 1
+              },
+              {
+                "color": "dark-green",
+                "value": 2
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "options": {
+        "showValue": "auto",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mergeValues": true,
+        "alignValue": "center"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_storage_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"pvc_usage\"})",
+          "legendFormat": "PVC",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_storage_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"retention\"})",
+          "legendFormat": "Retention",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_storage_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"db_growth\"})",
+          "legendFormat": "DB Growth",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_storage_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"kafka_usage\"})",
+          "legendFormat": "Kafka Usage",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_deps_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"redis\"})",
+          "legendFormat": "Redis",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_deps_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"kafka\"})",
+          "legendFormat": "Kafka",
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheus}"
+          },
+          "expr": "max by (check) (pipeline_deps_status{component=\"sentinel\", namespace=~\"$namespace\", check=\"loki\"})",
+          "legendFormat": "Loki",
+          "refId": "G"
+        }
+      ],
+      "maxDataPoints": 100,
+      "interval": "1m"
+    },
+    {
+      "id": 13,
+      "type": "text",
+      "title": "Legend",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
+      "transparent": true,
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "| Section | Covers | Warning | Fail |\n|---------|--------|---------|------|\n| **Ingestion** | Producer, extraction keeping up, backlog ETA | Lag growing or ETA rising | Producer down or consume rate=0 |\n| **Processing** | Consumer flush rates/latency, derived refresh | Flush latency high or consumer stuck | Consumer crashed, no flushes, or derived down |\n| **Enrichment** | DNS, WHOIS, SPF, URI downloads/queue | Backlog growing or error ratio >10% | Enrichment service down or error ratio >30% |\n| **Serving** | FlightSQL process status | - | FlightSQL unreachable |\n| **Dependencies** | PVC usage, retention cron, DB growth, Redis, Kafka, Loki | PVC >80%, metrics unavailable | PVC >90%, retention suspended, service down |"
+      }
+    }
+  ]
+}

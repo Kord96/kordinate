@@ -1,0 +1,227 @@
+##
+## Master Alloy — pulls metrics and logs from both cluster gateways.
+## Metrics: pulls /federate from each gateway's Prom via Tailscale (:9090).
+## Logs: tails pods via K8s API through each gateway's Tailscale.
+## Writes metrics to Master Prometheus, logs to Master Loki.
+##
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: master-alloy-config
+  labels:
+    app: kord-infra
+    component: master-alloy
+data:
+  config.alloy: |
+    // ═══════════════════════════════════════════════
+    // METRICS — pull from both Gateway Proms via /federate
+    // ═══════════════════════════════════════════════
+
+    prometheus.scrape "federate_home" {
+      targets = [{
+        __address__ = "100.79.204.119:9090",
+      }]
+      metrics_path    = "/federate"
+      params          = { "match[]" = ["{__name__=~\".+\"}"] }
+      scrape_interval = "60s"
+      scrape_timeout  = "25s"
+      honor_labels    = true
+      forward_to      = [prometheus.remote_write.master.receiver]
+    }
+
+    prometheus.scrape "federate_vandc" {
+      targets = [{
+        __address__ = "100.93.174.24:9090",
+      }]
+      metrics_path    = "/federate"
+      params          = { "match[]" = ["{__name__=~\".+\"}"] }
+      scrape_interval = "60s"
+      scrape_timeout  = "25s"
+      honor_labels    = true
+      forward_to      = [prometheus.remote_write.master.receiver]
+    }
+
+    prometheus.remote_write "master" {
+      endpoint {
+        url = "http://prometheus.master.svc.cluster.local:9191/api/v1/write"
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // LOGS — tail pod stdout/stderr from both clusters via K8s API
+    // ═══════════════════════════════════════════════
+
+    // ── Home cluster (via kubeconfig over Tailscale) ──
+    discovery.kubernetes "home_pods" {
+      role            = "pod"
+      kubeconfig_file = "/etc/home-kubeconfig/kubeconfig"
+    }
+
+    discovery.relabel "home_logs" {
+      targets = discovery.kubernetes.home_pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_component"]
+        target_label  = "component"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_tier"]
+        target_label  = "tier"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+      rule {
+        target_label = "cluster"
+        replacement  = "home"
+      }
+    }
+
+    loki.source.kubernetes "home_pods" {
+      targets    = discovery.relabel.home_logs.output
+      forward_to = [loki.process.pipeline.receiver]
+      client {
+        kubeconfig_file = "/etc/home-kubeconfig/kubeconfig"
+      }
+    }
+
+    // ── Vandc cluster (via kubeconfig over Tailscale) ──
+    discovery.kubernetes "vandc_pods" {
+      role            = "pod"
+      kubeconfig_file = "/etc/vandc-kubeconfig/kubeconfig"
+    }
+
+    discovery.relabel "vandc_logs" {
+      targets = discovery.kubernetes.vandc_pods.targets
+
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_component"]
+        target_label  = "component"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_tier"]
+        target_label  = "tier"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_namespace"]
+        target_label  = "namespace"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_node_name"]
+        target_label  = "node"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_name"]
+        target_label  = "pod"
+      }
+      rule {
+        source_labels = ["__meta_kubernetes_pod_container_name"]
+        target_label  = "container"
+      }
+      rule {
+        target_label = "cluster"
+        replacement  = "vandc"
+      }
+    }
+
+    loki.source.kubernetes "vandc_pods" {
+      targets    = discovery.relabel.vandc_logs.output
+      forward_to = [loki.process.pipeline.receiver]
+      client {
+        kubeconfig_file = "/etc/vandc-kubeconfig/kubeconfig"
+      }
+    }
+
+    // ── Shared log processing pipeline ──
+    loki.process "pipeline" {
+      // Parse JSON structured logs
+      stage.json {
+        expressions = {
+          level    = "level",
+          consumer = "consumer",
+        }
+      }
+
+      stage.labels {
+        values = {
+          level    = "",
+          consumer = "",
+        }
+      }
+
+      forward_to = [loki.write.master.receiver]
+    }
+
+    // Write to Master Loki in master namespace
+    loki.write "master" {
+      endpoint {
+        url = "http://loki.master.svc.cluster.local:3100/loki/api/v1/push"
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: master-alloy
+  labels:
+    app: kord-infra
+    component: master-alloy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kord-infra
+      component: master-alloy
+  template:
+    metadata:
+      labels:
+        app: kord-infra
+        component: master-alloy
+    spec:
+      containers:
+        - name: alloy
+          image: grafana/alloy:v1.5.1
+          args:
+            - run
+            - /etc/alloy/config.alloy
+            - --stability.level=generally-available
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/alloy
+            - name: home-kubeconfig
+              mountPath: /etc/home-kubeconfig
+              readOnly: true
+            - name: vandc-kubeconfig
+              mountPath: /etc/vandc-kubeconfig
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: master-alloy-config
+        - name: home-kubeconfig
+          secret:
+            secretName: home-kubeconfig
+        - name: vandc-kubeconfig
+          secret:
+            secretName: vandc-kubeconfig

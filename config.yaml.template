@@ -6,14 +6,14 @@ clusters:
   vandc:
     name: vandc
     description: Vancouver datacenter (4-node k3s)
-    tailscale_ip: 100.95.237.24
-    lan_network: 10.95.43.0/24
-    gateway_lan_ip: 10.95.43.66
+    tailscale_ip: 100.x.x.x
+    lan_network: 10.x.x.x/24
+    gateway_lan_ip: 10.x.x.x
     nodes:
-      - 10.95.43.66  # ctrl (gateway)
-      - 10.95.43.67
-      - 10.95.43.61
-      - 10.95.43.60
+      - 10.x.x.x  # ctrl (gateway)
+      - 10.x.x.x
+      - 10.x.x.x
+      - 10.x.x.x
     namespaces: [dev, test, prod, monitor]
     manifests:
       gateway: agents/deployer/manifests/gateway
@@ -37,17 +37,17 @@ clusters:
         port: 30443
       registry:
         port: 5000
-        host: 10.95.43.66
-        url: 10.95.43.66:5000
+        host: 10.x.x.x
+        url: 10.x.x.x:5000
 
   home:
     name: home
     description: Home cluster (k3s)
-    tailscale_ip: 100.71.90.43
+    tailscale_ip: 100.x.x.x
     nodes:
-      - 192.168.2.17    # ottawa-server (control-plane)
-      - 192.168.2.20    # kkord-Latitude-5420 (agent)
-      - 100.93.138.73   # colima-mac (agent, Tailscale IP)
+      - 192.168.x.x    # ottawa-server (control-plane)
+      - 192.168.x.x    # kkord-Latitude-5420 (agent)
+      - 100.x.x.x   # colima-mac (agent, Tailscale IP)
     namespaces: [dev, test, prod, monitor]
     manifests:
       gateway: agents/deployer/manifests/gateway
@@ -83,7 +83,7 @@ cloudflare:
     - antispam.work
 
 node_hostnames:
-  vandc-66: 10.95.43.66  # ctrl / gateway
-  vandc-67: 10.95.43.67
-  vandc-61: 10.95.43.61
-  vandc-60: 10.95.43.60
+  vandc-66: 10.x.x.x  # ctrl / gateway
+  vandc-67: 10.x.x.x
+  vandc-61: 10.x.x.x
+  vandc-60: 10.x.x.x

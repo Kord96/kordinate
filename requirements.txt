@@ -1,0 +1,16 @@
+# System dependencies for kordinate
+# Install with: sudo apt install <package>
+#
+# Tool          Package              Notes
+# ----          -------              -----
+git             # apt install git
+gh              # https://cli.github.com
+python3         # apt install python3
+python3-yaml    # apt install python3-yaml    (PyYAML for config parsing)
+gpg             # apt install gnupg
+pass            # apt install pass
+openssl         # apt install openssl
+tmux            # apt install tmux
+curl            # apt install curl
+ssh             # apt install openssh-client
+claude          # npm i -g @anthropic-ai/claude-code

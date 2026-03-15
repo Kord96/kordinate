@@ -1,0 +1,391 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "type": "dashboards",
+      "tags": [
+        "drill"
+      ],
+      "title": "Drill",
+      "icon": "apps",
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true
+    },
+    {
+      "type": "dashboards",
+      "tags": [
+        "overview"
+      ],
+      "title": "Overview",
+      "icon": "home",
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "Overview of the selected cluster",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traffic_spam_ratio"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.3
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.7
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traffic"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spam_traffic"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "centrality"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "sci"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 18,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT b.key, b.cluster_type, CASE b.cluster_type WHEN 1 THEN 'Content' WHEN 2 THEN 'Network' WHEN 3 THEN 'Link' WHEN 4 THEN 'Sender' WHEN 5 THEN 'Domain' END AS type_name, b.traffic, b.spam_traffic, b.frozen, ROUND(d.traffic_spam_ratio, 3) AS traffic_spam_ratio, d.cluster_member_count, d.centrality, ROUND(d.spam_propagation, 4) AS spam_propagation, ROUND((CAST(epoch(CURRENT_TIMESTAMP) AS UINTEGER) - b.first_seen_at) / 86400.0, 1) AS days_since_first_seen FROM base_cluster.base_cluster b LEFT JOIN derived_cluster.derived_cluster d ON b.key = d.key WHERE b.key = '${cluster_key}'",
+          "refId": "A"
+        }
+      ],
+      "title": "Cluster Summary",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "Total members in this cluster",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 200
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT COUNT(*) AS member_count FROM base_cluster_member.base_cluster_member WHERE cluster_key = '${cluster_key}'",
+          "refId": "A"
+        }
+      ],
+      "title": "Member Count",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "All cluster members ordered by traffic",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "element"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 600
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traffic_spam_ratio"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.3
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.7
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traffic"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spam_traffic"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT m.element, m.traffic, m.spam_traffic, CASE WHEN m.traffic > 0 THEN ROUND(m.spam_traffic::FLOAT / m.traffic, 3) ELSE 0 END AS traffic_spam_ratio, ROUND((CAST(epoch(CURRENT_TIMESTAMP) AS UINTEGER) - m.first_seen_at) / 86400.0, 1) AS days_since_first_seen FROM base_cluster_member.base_cluster_member m WHERE m.cluster_key = '${cluster_key}' ORDER BY m.traffic DESC LIMIT 200",
+          "refId": "A"
+        }
+      ],
+      "title": "Members",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "drill"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "prod",
+          "value": "prod"
+        },
+        "definition": "label_values(up, namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(up, namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/^(dev|test|prod)$/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "description": "Cluster key (MD5 hash) to inspect",
+        "hide": 0,
+        "label": "Cluster Key",
+        "name": "cluster_key",
+        "options": [],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Cluster Detail",
+  "uid": "cluster-detail",
+  "weekStart": ""
+}

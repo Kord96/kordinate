@@ -1,0 +1,480 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "type": "dashboards",
+      "tags": [
+        "drill"
+      ],
+      "title": "Drill",
+      "icon": "apps",
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true
+    },
+    {
+      "type": "dashboards",
+      "tags": [
+        "overview"
+      ],
+      "title": "Overview",
+      "icon": "home",
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "Overview of the selected URI template",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "uri_template"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 500
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traffic_spam_ratio"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.3
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.7
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "traffic"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "spam_traffic"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "centrality"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "sci"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT b.uri_template, b.scheme, b.host, b.host_fingerprint, b.format_type, b.traffic, b.spam_traffic, ROUND(d.traffic_spam_ratio, 3) AS traffic_spam_ratio, d.centrality, d.neighbor_count, ROUND(d.randomness, 3) AS randomness, ROUND(d.reuse_breadth, 1) AS reuse_breadth, d.is_shortlink, ROUND((CAST(epoch(CURRENT_TIMESTAMP) AS UINTEGER) - b.first_seen_at) / 86400.0, 1) AS days_since_first_seen FROM base_uri.base_uri_template b LEFT JOIN derived_uri_template.derived_uri_template d ON b.uri_template = d.uri_template WHERE b.uri_template = '${uri_template}'",
+          "refId": "A"
+        }
+      ],
+      "title": "Template Summary",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "Raw URLs captured for this template",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "uri"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 900
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT uri, first_seen_at, traffic, spam_traffic FROM base_uri.base_uri WHERE uri_template = '${uri_template}' ORDER BY traffic DESC LIMIT 10",
+          "refId": "A"
+        }
+      ],
+      "title": "Sample URLs",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "Successful page downloads for this template",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "landing_uri"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 600
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT text_hash, landing_uri, page_category, malformed_redirect, downloaded_at FROM base_uri.download_result WHERE uri_template = '${uri_template}' ORDER BY downloaded_at DESC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Download Results",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "Observed redirect landing URLs",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "landing_url"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 500
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT landing_url, landing_host, downloaded_at FROM base_uri.uri_redirect WHERE uri_template = '${uri_template}' ORDER BY downloaded_at DESC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Redirects",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdata-flightsql-datasource",
+        "uid": "flightsql"
+      },
+      "description": "Failed download attempts",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 400
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdata-flightsql-datasource",
+            "uid": "flightsql"
+          },
+          "format": "table",
+          "queryText": "SELECT uri_hash, error, attempted_at FROM base_uri.download_status WHERE uri_template = '${uri_template}' ORDER BY attempted_at DESC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Download Failures",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [
+    "drill"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "prod",
+          "value": "prod"
+        },
+        "definition": "label_values(up, namespace)",
+        "hide": 0,
+        "includeAll": true,
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(up, namespace)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/^(dev|test|prod)$/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "influxdata-flightsql-datasource",
+          "uid": "flightsql"
+        },
+        "definition": "SELECT uri_template FROM base_uri.base_uri_template ORDER BY traffic DESC LIMIT 50",
+        "description": "URI template to inspect",
+        "hide": 0,
+        "includeAll": false,
+        "label": "URI Template",
+        "multi": false,
+        "name": "uri_template",
+        "options": [],
+        "query": "SELECT uri_template FROM base_uri.base_uri_template ORDER BY traffic DESC LIMIT 50",
+        "refresh": 1,
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "URI Template Detail",
+  "uid": "uri-template-detail",
+  "weekStart": ""
+}

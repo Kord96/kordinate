@@ -1,0 +1,13 @@
+##
+## Cluster Identity — provides the cluster name to Alloy and other services.
+## The deployer MUST set data.name to the cluster name (e.g. "vandc", "home")
+## when deploying this manifest to each cluster.
+##
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-identity
+  labels:
+    app: kord-infra
+data:
+  name: REPLACE_ME

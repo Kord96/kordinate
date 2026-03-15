@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Create a new tmux window, routing to a repo-named session if inside a git repo.
+#
+# If the current pane is inside a git repo:
+#   - Find or create a session named after the repo
+#   - Create the new window there
+#   - Switch to that session
+# Otherwise: create a new window in the current session.
+#
+# Called by: tmux.conf bind-key for new-window
+
+set -euo pipefail
+
+pane_path="$1"
+
+repo_name=""
+if cd "$pane_path" 2>/dev/null; then
+  toplevel=$(git rev-parse --show-toplevel 2>/dev/null || true)
+  if [[ -n "$toplevel" ]]; then
+    repo_name=$(basename "$toplevel")
+  fi
+fi
+
+if [[ -z "$repo_name" ]]; then
+  # Not in a repo — plain new window in current session
+  tmux new-window
+  exit 0
+fi
+
+# Ensure session exists for this repo
+if ! tmux has-session -t "=$repo_name" 2>/dev/null; then
+  tmux new-session -d -s "$repo_name" -c "$toplevel"
+else
+  tmux new-window -t "=$repo_name" -c "$pane_path"
+fi
+
+tmux switch-client -t "=$repo_name"
