@@ -35,8 +35,9 @@ echo ""
 echo "=== kordinate ==="
 
 if [[ ! -d "$KORDINATE_HOME/.git" ]]; then
-    echo "ERROR: $KORDINATE_HOME is not a git repo" >&2
-    exit 1
+    echo "SKIP: $KORDINATE_HOME not found — kordinate sync skipped."
+    echo "Done."
+    exit 0
 fi
 
 # Global CLAUDE.md
