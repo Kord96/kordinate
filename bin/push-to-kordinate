@@ -23,15 +23,14 @@ else
     echo "No local changes to commit."
 fi
 
-# Check if there's anything to push
-local_head=$(git rev-parse HEAD)
-remote_head=$(git rev-parse origin/main 2>/dev/null || echo "none")
-if [[ "$local_head" == "$remote_head" ]]; then
+# Check if there's anything new to push by diffing local vs remote (excluding projects/)
+git fetch origin --quiet
+if git diff HEAD origin/main -- . ':(exclude)*/knowledge/projects' --quiet 2>/dev/null; then
     echo "Nothing to push — kordinate is up to date."
     exit 0
 fi
 
-# Create a filtered branch: replay local commits without projects/ files
+# Create filtered branch from current HEAD
 echo "Creating filtered push..."
 git branch -D _kordinate_push 2>/dev/null || true
 git checkout -b _kordinate_push
@@ -48,6 +47,6 @@ git push origin _kordinate_push:main --force-with-lease
 echo "Pushed to kordinate (projects/ excluded)."
 
 # Return to main and clean up
-git checkout main
+git checkout -f main
 git branch -D _kordinate_push
 echo "Done."
