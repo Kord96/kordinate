@@ -19,7 +19,7 @@ Native `memory: user` handles persistent memory automatically. This command catc
 
    b. **Code changes** (at the same time): If `last_commit` is set: `git diff <last_commit>..HEAD --stat` for an overview, then `git diff <last_commit>..HEAD` filtered for files relevant to your domain. If `last_commit` is empty: skip (first run)
 
-4. **Check changelog**: Read `agents/changelog.md` starting from line `last_changelog_line`. Note any new entries from other agents that affect your domain.
+4. **Check changelog**: Read `~/.claude/cache/changelog.md` starting from line `last_changelog_line`. Note any new entries from other agents that affect your domain.
 
 5. **Summarize through your lens**:
    - If the delta is **under 50 lines**: summarize it yourself directly based on your specialty and focus areas from your CLAUDE.md

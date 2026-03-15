@@ -1,5 +1,5 @@
 # Project knowledge files sauron requires.
-# On startup, subagent-catchup checks if these exist for the current project.
+# On startup, /boot checks if these exist for the current project.
 # Missing files trigger consultation with scribe for templates.
 project_files:
   - metrics.md

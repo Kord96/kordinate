@@ -14,7 +14,7 @@ Consult an agent — spawn it and ask a question.
 
 1. Parse the agent name and question from the arguments.
 2. Spawn the agent using the Agent tool:
-   - Read `~/.claude/agents/<name>/memory.md` — check `## Identity` for a stored `agent_id`. If one exists, pass it as the `resume` parameter; if not, omit `resume` to start fresh.
+   - Check `.claude/agent-state/<name>.json` for the agent's `agent_id`. If one exists, pass it as the `resume` parameter; if not, omit `resume` to start fresh.
    - Instruct the agent: "You are being consulted. Answer the following question using your Consultation guidelines from your CLAUDE.md: <question>"
 3. Return the agent's response to the user.
 4. Store the returned agent ID via `/scribe:update-subagent-memory`.

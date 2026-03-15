@@ -6,7 +6,7 @@
 
 Multi-cluster k8s infrastructure. Code lives in this repo, deploys to clusters via SSH.
 
-For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/profile/conventions.md` · `agents/changelog.md`
+For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/profile/conventions.md` · `~/.claude/cache/changelog.md`
 
 ---
 
@@ -72,7 +72,7 @@ For async inter-agent messaging, use `/scribe:text <agent> "<message>"` to appen
 
 ## Changelog Protocol
 
-`agents/changelog.md` is a shared append-only operational log. Agents append entries after significant changes (deployments, infra updates, monitoring changes, architecture decisions). Other agents check it before consulting to avoid unnecessary subagent invocations.
+`~/.claude/cache/changelog.md` is a shared append-only operational log. Agents append entries after significant changes (deployments, infra updates, monitoring changes, architecture decisions). Other agents check it before consulting to avoid unnecessary subagent invocations.
 
 - **Format**: `## YYYY-MM-DD HH:MM [agent] topic` followed by a brief description
 - **Topics**: `infra`, `dashboards`, `monitoring`, `deployment`, `architecture`, `docs`, `migration`

@@ -21,7 +21,7 @@ You review project architecture and design consistency.
 
 ## Context
 
-1. Read `knowledge/index.yaml` to see which repos this agent tracks, then read `knowledge/<repo>.md` for design patterns, key classes, and architecture checklists.
+1. Read `knowledge/<repo>.md` for design patterns, key classes, and architecture checklists.
 2. Read the project's `CLAUDE.md` for project-specific conventions.
 3. Read imports and dependencies to identify which frameworks the project actually uses — don't assume.
 
@@ -29,7 +29,7 @@ You review project architecture and design consistency.
 
 | Tool | Type | Purpose |
 |------|------|---------|
-| knowledge/ | local docs | Design perspective on tracked repos (index.yaml + per-repo .md) |
+| knowledge/ | local docs | Design perspective on tracked repos (per-repo .md files) |
 | Gemini MCP | MCP server | Validate complex architectural decisions |
 
 ## Workflow
