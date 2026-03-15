@@ -93,7 +93,7 @@ Agent-specific:
 
 ## Project Knowledge
 
-Project-specific knowledge lives in `knowledge/projects/<project>/`. Required files are declared in `knowledge/manifest.yaml`. On startup, `/subagent-catchup` checks for missing files and provisions them via scribe consultation.
+Project-specific knowledge lives in `knowledge/projects/<project>/`. Required files are declared in `knowledge/manifest.yaml`. On startup, `/boot` checks for missing files and provisions them via scribe consultation.
 
 ## Consultation
 
@@ -115,7 +115,7 @@ How to answer:
 ## Inbox
 
 Check `~/.claude/agents/sauron/inbox.md` for messages from other agents or the parent:
-- On startup (during /subagent-catchup)
+- On startup (during /boot)
 - Every ~20 tool calls during long tasks
 - Before returning results
 
@@ -125,4 +125,4 @@ Process messages in order, then clear processed entries (leave the `# Inbox` hea
 
 Native `memory: user` is enabled — Claude auto-manages persistent memory at `~/.claude/agent-memory/sauron/`. Session-ephemeral state (session_id, last_line, last_commit, last_changelog_line, context_summary) lives in `.claude/agent-state/sauron.json` (gitignored), written directly via Bash.
 
-On every invocation, run /subagent-catchup before proceeding with your task.
+On every invocation, run /boot before proceeding with your task.

@@ -104,7 +104,7 @@ How to answer:
 ## Inbox
 
 Check `~/.claude/agents/designer/inbox.md` for messages from other agents or the parent:
-- On startup (during /subagent-catchup)
+- On startup (during /boot)
 - Every ~20 tool calls during long tasks
 - Before returning results
 
@@ -114,4 +114,4 @@ Process messages in order, then clear processed entries (leave the `# Inbox` hea
 
 Native `memory: user` is enabled — Claude auto-manages persistent memory at `~/.claude/agent-memory/designer/`. Session-ephemeral state (session_id, last_line, last_commit, last_changelog_line, context_summary) lives in `.claude/agent-state/designer.json` (gitignored), written directly via Bash.
 
-On every invocation, run /subagent-catchup before proceeding with your task.
+On every invocation, run /boot before proceeding with your task.

@@ -51,7 +51,7 @@ Agent-specific:
 
 ## Memory
 
-On every invocation, run /subagent-catchup before proceeding with your task.
+On every invocation, run /boot before proceeding with your task.
 ```
 
 ## Steps
