@@ -35,8 +35,11 @@ if [[ ! -d "$KORDINATE_HOME/.git" ]]; then
     exit 1
 fi
 
+# Helper: copy file, chmod u+w destination first if it exists (scribe sets 444)
+safe_cp() { [ -f "$2" ] && chmod u+w "$2" 2>/dev/null; cp "$1" "$2"; }
+
 # Global CLAUDE.md
-cp "$CLAUDE_DIR/CLAUDE.md" "$KORDINATE_HOME/CLAUDE.md" 2>/dev/null || true
+safe_cp "$CLAUDE_DIR/CLAUDE.md" "$KORDINATE_HOME/CLAUDE.md"
 
 # Agents: CLAUDE.md, commands/, knowledge/*.md (NOT knowledge/projects/)
 for agent_dir in "$CLAUDE_DIR/agents"/*/; do
@@ -46,19 +49,20 @@ for agent_dir in "$CLAUDE_DIR/agents"/*/; do
     mkdir -p "$dest"
 
     # CLAUDE.md
-    [ -f "$agent_dir/CLAUDE.md" ] && cp "$agent_dir/CLAUDE.md" "$dest/CLAUDE.md" 2>/dev/null || true
+    [ -f "$agent_dir/CLAUDE.md" ] && safe_cp "$agent_dir/CLAUDE.md" "$dest/CLAUDE.md"
 
     # commands/
     if [ -d "$agent_dir/commands" ] && [ "$(ls -A "$agent_dir/commands" 2>/dev/null)" ]; then
         mkdir -p "$dest/commands"
-        cp -r "$agent_dir/commands/"* "$dest/commands/" 2>/dev/null || true
+        find "$dest/commands" -type f -exec chmod u+w {} + 2>/dev/null || true
+        cp -r "$agent_dir/commands/"* "$dest/commands/"
     fi
 
     # knowledge/*.md (top-level only, skip projects/)
     if [ -d "$agent_dir/knowledge" ]; then
         mkdir -p "$dest/knowledge"
         for f in "$agent_dir/knowledge"/*.md; do
-            [ -f "$f" ] && cp "$f" "$dest/knowledge/" 2>/dev/null || true
+            [ -f "$f" ] && safe_cp "$f" "$dest/knowledge/$(basename "$f")"
         done
     fi
 done
@@ -68,7 +72,13 @@ if [ -d "$CLAUDE_DIR/commands" ]; then
     for f in "$CLAUDE_DIR/commands"/*; do
         base="$(basename "$f")"
         [ "$base" = "scribe" ] && continue  # handled via agents/scribe/commands
-        cp -r "$f" "$KORDINATE_HOME/commands/$base" 2>/dev/null || true
+        if [ -d "$f" ]; then
+            mkdir -p "$KORDINATE_HOME/commands/$base"
+            find "$KORDINATE_HOME/commands/$base" -type f -exec chmod u+w {} + 2>/dev/null || true
+            cp -r "$f/"* "$KORDINATE_HOME/commands/$base/"
+        else
+            safe_cp "$f" "$KORDINATE_HOME/commands/$base"
+        fi
     done
 fi
 
@@ -76,7 +86,7 @@ fi
 if [ -d "$CLAUDE_DIR/hooks" ]; then
     mkdir -p "$KORDINATE_HOME/hooks"
     for f in "$CLAUDE_DIR/hooks"/*.sh; do
-        [ -f "$f" ] && { cp "$f" "$KORDINATE_HOME/hooks/" 2>/dev/null || true; }
+        [ -f "$f" ] && safe_cp "$f" "$KORDINATE_HOME/hooks/$(basename "$f")"
     done
 fi
 
@@ -87,7 +97,7 @@ if [ -d "$CLAUDE_DIR/bin" ]; then
         [ -f "$f" ] || continue
         base="$(basename "$f")"
         [ "$base" = "push-to-kordinate" ] && continue
-        cp "$f" "$KORDINATE_HOME/bin/$base"
+        safe_cp "$f" "$KORDINATE_HOME/bin/$base"
     done
 fi
 
