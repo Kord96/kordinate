@@ -1,54 +1,104 @@
 #!/usr/bin/env bash
-# push-to-kordinate — commit locally (with projects/), push filtered (without projects/) to kordinate
-# Projects/ contain user-specific knowledge and are excluded from the shared remote.
+# push-to-kordinate — sync shared framework files from ~/.claude back to ~/kordinate and push both repos
+#
+# Flow: ~/.claude (installation) → ~/kordinate (shared source) → GitHub
+# Projects/ files stay in claude-profile only (user-specific).
 set -euo pipefail
 
-PROFILE_DIR="$HOME/.claude"
-cd "$PROFILE_DIR"
+CLAUDE_DIR="$HOME/.claude"
+KORDINATE_HOME="$HOME/kordinate"
 
-# Safety: ensure we're in the right repo
+# ═══ Step 1: Commit and push claude-profile (everything) ═══
+echo "=== claude-profile ==="
+cd "$CLAUDE_DIR"
+
 remote=$(git remote get-url origin 2>/dev/null || true)
 if [[ "$remote" != *"claude-profile"* ]]; then
-    echo "ERROR: expected claude-profile remote, got: $remote" >&2
+    echo "ERROR: ~/.claude expected claude-profile remote, got: $remote" >&2
     exit 1
 fi
 
-# Stage and commit everything locally (including projects/)
 git add -A
 if ! git diff --cached --quiet; then
     msg="${1:-profile: sync $(date +%Y-%m-%d)}"
     git commit -m "$msg"
-    echo "Committed locally."
-else
-    echo "No local changes to commit."
+    echo "Committed."
+fi
+git push origin main --quiet 2>/dev/null && echo "Pushed claude-profile." || echo "claude-profile up to date."
+
+# ═══ Step 2: Sync shared files from ~/.claude → ~/kordinate ═══
+echo ""
+echo "=== kordinate ==="
+
+if [[ ! -d "$KORDINATE_HOME/.git" ]]; then
+    echo "ERROR: $KORDINATE_HOME is not a git repo" >&2
+    exit 1
 fi
 
-# Fetch latest remote state
-git fetch origin --quiet
+# Global CLAUDE.md
+cp "$CLAUDE_DIR/CLAUDE.md" "$KORDINATE_HOME/CLAUDE.md"
 
-# Check if there's anything new to push (excluding projects/ from comparison)
-if git diff --quiet HEAD origin/main -- . ':(exclude)*/knowledge/projects'; then
-    echo "Nothing to push — kordinate is up to date."
-    exit 0
+# Agents: CLAUDE.md, commands/, knowledge/*.md (NOT knowledge/projects/)
+for agent_dir in "$CLAUDE_DIR/agents"/*/; do
+    [ -d "$agent_dir" ] || continue
+    agent="$(basename "$agent_dir")"
+    dest="$KORDINATE_HOME/agents/$agent"
+    mkdir -p "$dest"
+
+    # CLAUDE.md
+    [ -f "$agent_dir/CLAUDE.md" ] && cp "$agent_dir/CLAUDE.md" "$dest/CLAUDE.md"
+
+    # commands/
+    if [ -d "$agent_dir/commands" ] && [ "$(ls -A "$agent_dir/commands" 2>/dev/null)" ]; then
+        mkdir -p "$dest/commands"
+        cp -r "$agent_dir/commands/"* "$dest/commands/"
+    fi
+
+    # knowledge/*.md (top-level only, skip projects/)
+    if [ -d "$agent_dir/knowledge" ]; then
+        mkdir -p "$dest/knowledge"
+        for f in "$agent_dir/knowledge"/*.md; do
+            [ -f "$f" ] && cp "$f" "$dest/knowledge/"
+        done
+    fi
+done
+
+# Standalone commands
+if [ -d "$CLAUDE_DIR/commands" ]; then
+    for f in "$CLAUDE_DIR/commands"/*; do
+        base="$(basename "$f")"
+        [ "$base" = "scribe" ] && continue  # handled via agents/scribe/commands
+        cp -r "$f" "$KORDINATE_HOME/commands/$base"
+    done
 fi
 
-# Create filtered branch from current HEAD
-echo "Creating filtered push..."
-git branch -D _kordinate_push 2>/dev/null || true
-git checkout -b _kordinate_push
-
-# Remove projects/ from index only (keeps files on disk)
-project_files=$(git ls-files -- '*/knowledge/projects/*' 2>/dev/null || true)
-if [[ -n "$project_files" ]]; then
-    echo "$project_files" | xargs git rm --cached -r --quiet
-    git commit -m "filtered: exclude user-specific projects/" --allow-empty
+# Hooks
+if [ -d "$CLAUDE_DIR/hooks" ]; then
+    mkdir -p "$KORDINATE_HOME/hooks"
+    for f in "$CLAUDE_DIR/hooks"/*.sh; do
+        [ -f "$f" ] && cp "$f" "$KORDINATE_HOME/hooks/"
+    done
 fi
 
-# Push filtered branch to kordinate main
-git push origin _kordinate_push:main --force-with-lease
-echo "Pushed to kordinate (projects/ excluded)."
+# Bin (shared scripts only — skip push-to-kordinate itself, it's local)
+if [ -d "$CLAUDE_DIR/bin" ]; then
+    mkdir -p "$KORDINATE_HOME/bin"
+    for f in "$CLAUDE_DIR/bin"/*; do
+        [ -f "$f" ] || continue
+        base="$(basename "$f")"
+        [ "$base" = "push-to-kordinate" ] && continue
+        cp "$f" "$KORDINATE_HOME/bin/$base"
+    done
+fi
 
-# Return to main and clean up
-git checkout -f main
-git branch -D _kordinate_push
+# ═══ Step 3: Commit and push kordinate ═══
+cd "$KORDINATE_HOME"
+git add -A
+if ! git diff --cached --quiet; then
+    git commit -m "${1:-sync from installation $(date +%Y-%m-%d)}"
+    echo "Committed."
+fi
+git push origin main --quiet 2>/dev/null && echo "Pushed kordinate." || echo "kordinate up to date."
+
+echo ""
 echo "Done."
