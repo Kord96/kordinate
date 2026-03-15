@@ -36,7 +36,7 @@ if [[ ! -d "$KORDINATE_HOME/.git" ]]; then
 fi
 
 # Global CLAUDE.md
-cp "$CLAUDE_DIR/CLAUDE.md" "$KORDINATE_HOME/CLAUDE.md"
+cp "$CLAUDE_DIR/CLAUDE.md" "$KORDINATE_HOME/CLAUDE.md" 2>/dev/null || true
 
 # Agents: CLAUDE.md, commands/, knowledge/*.md (NOT knowledge/projects/)
 for agent_dir in "$CLAUDE_DIR/agents"/*/; do
@@ -46,19 +46,19 @@ for agent_dir in "$CLAUDE_DIR/agents"/*/; do
     mkdir -p "$dest"
 
     # CLAUDE.md
-    [ -f "$agent_dir/CLAUDE.md" ] && cp "$agent_dir/CLAUDE.md" "$dest/CLAUDE.md"
+    [ -f "$agent_dir/CLAUDE.md" ] && cp "$agent_dir/CLAUDE.md" "$dest/CLAUDE.md" 2>/dev/null || true
 
     # commands/
     if [ -d "$agent_dir/commands" ] && [ "$(ls -A "$agent_dir/commands" 2>/dev/null)" ]; then
         mkdir -p "$dest/commands"
-        cp -r "$agent_dir/commands/"* "$dest/commands/"
+        cp -r "$agent_dir/commands/"* "$dest/commands/" 2>/dev/null || true
     fi
 
     # knowledge/*.md (top-level only, skip projects/)
     if [ -d "$agent_dir/knowledge" ]; then
         mkdir -p "$dest/knowledge"
         for f in "$agent_dir/knowledge"/*.md; do
-            [ -f "$f" ] && cp "$f" "$dest/knowledge/"
+            [ -f "$f" ] && cp "$f" "$dest/knowledge/" 2>/dev/null || true
         done
     fi
 done
@@ -68,7 +68,7 @@ if [ -d "$CLAUDE_DIR/commands" ]; then
     for f in "$CLAUDE_DIR/commands"/*; do
         base="$(basename "$f")"
         [ "$base" = "scribe" ] && continue  # handled via agents/scribe/commands
-        cp -r "$f" "$KORDINATE_HOME/commands/$base"
+        cp -r "$f" "$KORDINATE_HOME/commands/$base" 2>/dev/null || true
     done
 fi
 
@@ -76,7 +76,7 @@ fi
 if [ -d "$CLAUDE_DIR/hooks" ]; then
     mkdir -p "$KORDINATE_HOME/hooks"
     for f in "$CLAUDE_DIR/hooks"/*.sh; do
-        [ -f "$f" ] && cp "$f" "$KORDINATE_HOME/hooks/"
+        [ -f "$f" ] && { cp "$f" "$KORDINATE_HOME/hooks/" 2>/dev/null || true; }
     done
 fi
 
