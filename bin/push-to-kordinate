@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# push-profile — stage, commit, and push ~/.claude to kordinate (claude-profile)
-# Excludes projects/ directories (user-specific, gitignored)
+# push-to-kordinate — commit locally (with projects/), push filtered (without projects/) to kordinate
+# Projects/ contain user-specific knowledge and are excluded from the shared remote.
 set -euo pipefail
 
 PROFILE_DIR="$HOME/.claude"
@@ -13,31 +13,41 @@ if [[ "$remote" != *"claude-profile"* ]]; then
     exit 1
 fi
 
-# Ensure no projects/ files sneak in via force-add
-tracked_projects=$(git ls-files -- '*/projects/*' 'projects/*' 2>/dev/null || true)
-if [[ -n "$tracked_projects" ]]; then
-    echo "Untracking user-specific projects/ files..."
-    echo "$tracked_projects" | xargs git rm --cached -r --quiet
+# Stage and commit everything locally (including projects/)
+git add -A
+if ! git diff --cached --quiet; then
+    msg="${1:-profile: sync $(date +%Y-%m-%d)}"
+    git commit -m "$msg"
+    echo "Committed locally."
+else
+    echo "No local changes to commit."
 fi
 
-# Stage all changes (gitignore handles exclusions)
-git add -A
-
-# Check if there's anything to commit
-if git diff --cached --quiet; then
-    echo "Nothing to push — profile is up to date."
+# Check if there's anything to push
+local_head=$(git rev-parse HEAD)
+remote_head=$(git rev-parse origin/main 2>/dev/null || echo "none")
+if [[ "$local_head" == "$remote_head" ]]; then
+    echo "Nothing to push — kordinate is up to date."
     exit 0
 fi
 
-# Show what will be committed
-echo "Changes to push:"
-git diff --cached --stat
-echo
+# Create a filtered branch: replay local commits without projects/ files
+echo "Creating filtered push..."
+git branch -D _kordinate_push 2>/dev/null || true
+git checkout -b _kordinate_push
 
-# Commit
-msg="${1:-profile: sync $(date +%Y-%m-%d)}"
-git commit -m "$msg"
+# Remove projects/ from index only (keeps files on disk)
+project_files=$(git ls-files -- '*/knowledge/projects/*' 2>/dev/null || true)
+if [[ -n "$project_files" ]]; then
+    echo "$project_files" | xargs git rm --cached -r --quiet
+    git commit -m "filtered: exclude user-specific projects/" --allow-empty
+fi
 
-# Push
-git push origin main
-echo "Profile pushed to kordinate."
+# Push filtered branch to kordinate main
+git push origin _kordinate_push:main --force-with-lease
+echo "Pushed to kordinate (projects/ excluded)."
+
+# Return to main and clean up
+git checkout main
+git branch -D _kordinate_push
+echo "Done."
