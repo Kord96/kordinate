@@ -17,7 +17,7 @@ For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/prof
 - Never edit profile docs directly — delegate to the scribe agent (see Profile Doc Policy below)
 - Never let more than 3 user messages with code changes pass without committing and pushing
 - Sessions auto-create worktrees via `bin/claude-session` — do not create worktrees manually
-- After pushing to a session branch, the `auto-merge-to-dev.sh` PostToolUse hook fires and instructs you to spawn the deployer agent for merge-to-dev
+- After pushing to a session branch, the `auto-merge-to-dev.sh` PostToolUse hook tries a direct fast-forward push to main. If it fails, it instructs you to run `/merge` for conflict resolution.
 - Only the deployer agent may run kubectl write operations (apply, delete, scale, etc.) — enforced by `guard-kubectl.sh` hook
 - Only the sauron agent may use Grafana MCP tools — enforced by `guard-grafana.sh` hook. Other agents consult sauron for dashboard/metrics data.
 - Only the deployer agent may use Redis MCP tools — enforced by `guard-redis.sh` hook. Other agents consult deployer for Redis state.
@@ -28,9 +28,11 @@ For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/prof
 
 ## Agent Knowledge
 
-Each agent has a `knowledge/` directory with an `index.yaml` listing tracked repos and per-repo `.md` files documenting that agent's perspective. Agents read their own knowledge docs instead of fetching metadata at runtime.
+Each agent has a `knowledge/` directory with docs organized by scope:
+- **Cross-project** — `knowledge/<topic>.md` (e.g., `infra-monitoring.md`, `stoik.md`) — general expertise
+- **Project-specific** — `knowledge/projects/<project>/` — per-project reference docs (metrics catalogs, debug references, etc.)
 
-Tracked repos: stoik, orchestrator, nokrashi-tools, klog
+Agents read their own knowledge docs instead of fetching metadata at runtime.
 
 ## Agents
 
@@ -38,7 +40,7 @@ Tracked repos: stoik, orchestrator, nokrashi-tools, klog
 |-------|----------|---------|
 | sauron | "add monitoring", "add metrics", "health check", "dashboard", "set up logging", "run tests", "code validation" | Monitoring & validation: metrics, health, logging, dashboards, testing |
 | designer | "review architecture", "design review" | Architecture review + produces docs/architecture.md |
-| deployer | "roll", "merge-to-dev", "migrate", "stop", "clean", "diff" | GitOps: merge sessions → main, roll between environments, lifecycle management |
+| deployer | "roll", "migrate", "stop", "clean", "diff" | GitOps: roll between environments, lifecycle management |
 | scribe | "update docs", "add api key", "add project", "add mcp" | Sole editor of all documentation (.md files) |
 
 ## Branch Model
@@ -46,7 +48,7 @@ Tracked repos: stoik, orchestrator, nokrashi-tools, klog
 | Branch | Role | Updated by |
 |--------|------|------------|
 | `session/*` | Isolated Claude session work | `bin/claude-session` (auto-created) |
-| `main` | Active development (dev) | deployer (`merge-to-dev`) |
+| `main` | Active development (dev) | auto-merge hook / `/merge` skill |
 | `test` | Staging | deployer (`roll main test`) |
 | `prod` | Production | deployer (`roll test prod`) |
 
@@ -83,12 +85,17 @@ All `.md` files are protected. Only the **scribe agent** may edit them — enfor
 
 ## Agent Memory Model
 
-Two-tier state: **native memory** (persistent, auto-managed by Claude) and **local** (gitignored).
+Three-tier state:
+
+**Knowledge** — `~/.claude/agents/<name>/knowledge/` (profile repo):
+- Cross-project docs: `knowledge/<topic>.md`
+- Project-specific docs: `knowledge/projects/<project>/`
+- Authoritative reference material — agents read these instead of fetching at runtime
 
 **Native memory** — `~/.claude/agent-memory/<name>/` (enabled via `memory: user` in frontmatter):
 - Claude auto-manages persistent memory files across sessions
 - The `guard-md.sh` hook exempts `agent-memory/` paths so agents can write freely
-- For curated/important operational notes, agents use `/scribe:update-subagent-memory`
+- Use for behavioral preferences and cross-project operational notes only
 
 **Local** — `.claude/agent-state/<name>.json` (gitignored):
 - session_id, last_line, last_commit, last_changelog_line, agent_id, context_summary
@@ -97,4 +104,4 @@ The repo contains agent definitions (CLAUDE.md, commands/, knowledge/) but no ru
 
 ---
 
-*Last Updated*: 2026-03-14
+*Last Updated*: 2026-03-15
