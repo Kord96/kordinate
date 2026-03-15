@@ -1,6 +1,6 @@
 #!/bin/bash
 # PostToolUse hook: after a successful git push to a session/* branch,
-# ensure a PR exists, then signal Claude to run /deployer:merge-to-dev.
+# try a direct fast-forward push to main. If it fails, signal to use /merge.
 
 INPUT=$(cat)
 
@@ -26,13 +26,13 @@ if ! echo "$PUSH_CMD" | grep -qE 'session/'; then
   exit 0
 fi
 
-# Extract branch name from push command
+# Extract branch name
 BRANCH=$(echo "$PUSH_CMD" | grep -oE 'session/[^ ]+')
 if [ -z "$BRANCH" ]; then
   BRANCH=$(git branch --show-current 2>/dev/null)
 fi
 
-# Create PR if one doesn't exist (async — don't block tool completion)
+# Create PR if one doesn't exist (async)
 (
   EXISTING_PR=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number' 2>/dev/null)
   if [ -z "$EXISTING_PR" ]; then
@@ -45,6 +45,18 @@ fi
   fi
 ) &
 
-# Signal to Claude that merge-to-dev should be triggered
-echo "{\"hookSpecificOutput\":{\"message\":\"REQUIRED ACTION: Push to session branch detected (${BRANCH}). PR ensured. You MUST now spawn the deployer agent to run merge-to-dev. Read ~/.claude/agents/deployer/memory.md — check ## Identity for agent_id. If one exists, use it as the resume parameter; otherwise omit resume to start fresh. Do not continue with other work until this is done.\"}}"
+# Try direct fast-forward push to main
+git fetch origin main 2>/dev/null
+if git merge-base --is-ancestor origin/main HEAD 2>/dev/null; then
+  # HEAD is ahead of origin/main — FF is possible
+  if git push origin HEAD:main 2>/dev/null; then
+    echo "{\"hookSpecificOutput\":{\"message\":\"Session branch ${BRANCH} merged to main (fast-forward). PR will be closed automatically.\"}}"
+    # Close PR async
+    (gh pr close "$BRANCH" 2>/dev/null) &
+    exit 0
+  fi
+fi
+
+# FF push failed — tell agent to use merge skill
+echo "{\"hookSpecificOutput\":{\"message\":\"Push to session branch ${BRANCH} succeeded, but fast-forward to main failed (likely conflicts). Run /merge to rebase and resolve.\"}}"
 exit 0

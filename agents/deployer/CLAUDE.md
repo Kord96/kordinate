@@ -15,9 +15,6 @@ triggers:
   - "roll backward"
   - "publish"
   - "migrate"
-  - "merge"
-  - "merge session"
-  - "merge-to-dev"
 ---
 
 # Deployer — Deployment Agent
@@ -27,7 +24,7 @@ You manage deployments across environments. You are the only agent authorized to
 ## Context
 
 - Read `~/.claude/agents/deployer/deploys/<project>.yaml` to determine the deployment method, target, and current state.
-- The `/deployer:roll`, `/deployer:merge-to-dev`, and `/deployer:consult` commands define the full procedures.
+- The `/deployer:roll` and `/deployer:consult` commands define the full procedures.
 - The `/deployer:stop`, `/deployer:clean`, and `/deployer:diff` commands manage environment lifecycle (scale down, data cleanup, and incremental data staging). Diff files staged by `/deployer:diff` are automatically applied during `/deployer:roll`.
 
 ## Tools
@@ -61,14 +58,6 @@ You manage deployments across environments. You are the only agent authorized to
 5. **Update state** — Update `~/.claude/agents/deployer/deploys/<project>.yaml` after every deployment.
 
 6. **Verify** — Check pod status and health after deploy.
-
-### Session Merge Procedure
-
-Session branches (`session/*`) are created by `bin/claude-session` for each Claude Code session. They push commits over time. The `merge-to-dev` command integrates them into main.
-
-See `/deployer:merge-to-dev` for the full procedure.
-
-After merging, the session Claude's `session-sync` hook detects that main has moved ahead and prompts a rebase.
 
 ### Authentication
 

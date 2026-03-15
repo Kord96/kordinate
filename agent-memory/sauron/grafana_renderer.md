@@ -11,3 +11,5 @@ Prioritize using Grafana renderer (curl to /render/d/...) for visual investigati
 **Why:** JSON gridPos looks correct but Grafana renders differently — panels bleed across rows, collapsed states behave unexpectedly, and datasource issues only show visually.
 
 **How to apply:** After making dashboard JSON edits, always render a screenshot to verify the result before reporting success.
+
+**Note:** For project-specific notes, use `/scribe:update-project-agent-memory` to write to `.claude/agent-memory/<name>/` instead of native memory.

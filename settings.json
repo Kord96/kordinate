@@ -7,6 +7,10 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/guard-md.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/guard-grafana.sh"
           }
         ]
       },
@@ -20,6 +24,10 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/guard-git.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/guard-grafana.sh"
           }
         ]
       },
@@ -54,5 +62,6 @@
       }
     ]
   },
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "high"
 }

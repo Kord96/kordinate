@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# push-profile — stage, commit, and push ~/.claude to kordinate (claude-profile)
+# Excludes projects/ directories (user-specific, gitignored)
+set -euo pipefail
+
+PROFILE_DIR="$HOME/.claude"
+cd "$PROFILE_DIR"
+
+# Safety: ensure we're in the right repo
+remote=$(git remote get-url origin 2>/dev/null || true)
+if [[ "$remote" != *"claude-profile"* ]]; then
+    echo "ERROR: expected claude-profile remote, got: $remote" >&2
+    exit 1
+fi
+
+# Ensure no projects/ files sneak in via force-add
+tracked_projects=$(git ls-files -- '*/projects/*' 'projects/*' 2>/dev/null || true)
+if [[ -n "$tracked_projects" ]]; then
+    echo "Untracking user-specific projects/ files..."
+    echo "$tracked_projects" | xargs git rm --cached -r --quiet
+fi
+
+# Stage all changes (gitignore handles exclusions)
+git add -A
+
+# Check if there's anything to commit
+if git diff --cached --quiet; then
+    echo "Nothing to push — profile is up to date."
+    exit 0
+fi
+
+# Show what will be committed
+echo "Changes to push:"
+git diff --cached --stat
+echo
+
+# Commit
+msg="${1:-profile: sync $(date +%Y-%m-%d)}"
+git commit -m "$msg"
+
+# Push
+git push origin main
+echo "Profile pushed to kordinate."

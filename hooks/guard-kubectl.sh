@@ -31,7 +31,7 @@ if echo "$CMD" | grep -qE 'ssh\s+\S+.*kubectl\s+(apply|delete|scale|rollout|crea
     echo '{}'
     exit 0
   else
-    echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: kubectl write operations require the deployer agent. Use /deployer:roll <project> <source> <target> or /deployer:merge-to-dev instead."}}'
+    echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: kubectl write operations require the deployer agent. Use /deployer:roll <project> <source> <target> instead."}}'
     exit 0
   fi
 fi
