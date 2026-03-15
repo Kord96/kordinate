@@ -93,12 +93,26 @@ fi
 
 # ═══ Step 3: Commit and push kordinate ═══
 cd "$KORDINATE_HOME"
+
+# Always work on main for kordinate syncs
+current_branch=$(git branch --show-current)
+if [[ "$current_branch" != "main" ]]; then
+    git stash --quiet 2>/dev/null || true
+    git checkout main --quiet
+fi
+
 git add -A
 if ! git diff --cached --quiet; then
     git commit -m "${1:-sync from installation $(date +%Y-%m-%d)}"
     echo "Committed."
 fi
-git push origin main --quiet 2>/dev/null && echo "Pushed kordinate." || echo "kordinate up to date."
+git push origin main --quiet && echo "Pushed kordinate." || echo "kordinate up to date."
+
+# Return to previous branch if we switched
+if [[ "$current_branch" != "main" ]]; then
+    git checkout "$current_branch" --quiet
+    git stash pop --quiet 2>/dev/null || true
+fi
 
 echo ""
 echo "Done."
