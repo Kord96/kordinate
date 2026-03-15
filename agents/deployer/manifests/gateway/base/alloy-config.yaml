@@ -182,7 +182,7 @@ data:
       targets = discovery.kubernetes.pods.targets
 
       rule {
-        source_labels = ["__meta_kubernetes_pod_label_app"]
+        source_labels = ["__meta_kubernetes_pod_label_component"]
         action        = "keep"
         regex         = "kube-state-metrics"
       }
