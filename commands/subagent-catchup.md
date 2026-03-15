@@ -38,4 +38,13 @@ Native `memory: user` handles persistent memory automatically. This command catc
    }
    ```
 
-7. **Proceed with your assigned task.**
+7. **Project knowledge provisioning** — check if this agent has required project knowledge files:
+   - Read `~/.claude/agents/<your-name>/knowledge/manifest.yaml` (if it exists)
+   - If it has a `project_files` list, determine the current project name from the repo's directory name
+   - For each file in `project_files`, check if `~/.claude/agents/<your-name>/knowledge/projects/<project>/<file>` exists
+   - If any files are missing, consult scribe: `/consult scribe "I need project knowledge templates for <your-name>. Missing files: <list>. Please return the template content for each."`
+   - Use the returned templates as a checklist — scan the project codebase to gather the required data
+   - Tell scribe to write each file with the gathered content
+   - If manifest.yaml doesn't exist, skip this step
+
+8. **Proceed with your assigned task.**

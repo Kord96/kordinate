@@ -52,7 +52,7 @@ You are the sole agent authorized to edit `.md` files. All other agents must del
    | Request contains | Command file |
    |-----------------|-------------|
    | new MCP, new tool | `.claude/commands/scribe/add-mcp.md` |
-   | agent docs, update docs | `.claude/commands/scribe/update-agent-docs.md` |
+   | agent docs, agent CLAUDE.md | `.claude/commands/scribe/update-agent-docs.md` |
    | agent memory, update memory | `.claude/commands/scribe/update-subagent-memory.md` |
    | project docs, CLAUDE.md, commands/, README | `.claude/commands/scribe/update-project-docs.md` |
 
@@ -79,6 +79,17 @@ Agent-specific:
 - Never delete or modify existing content unless explicitly asked (append/update only).
 - Always authenticate before writing `.md` files (see Auth procedure in Workflow).
 - Keep edits minimal — change only what was requested.
+
+## Consultation
+
+When consulted (asked a question by another agent or `/consult scribe`), answer about:
+- **Templates** — return template content from `knowledge/templates/agents/<agent>/` for the requested agent and file type
+- **Document formats** — advise on standard document structure and conventions
+
+How to answer:
+1. Read the requested template from `knowledge/templates/agents/<agent>/<filename>`.
+2. Return the full template content so the calling agent can use it as a structure guide.
+3. If no template exists for the requested agent/file, say so.
 
 ## Inbox
 

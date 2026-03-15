@@ -91,9 +91,9 @@ Shared:
 Agent-specific:
 - Project-specific commands (debug skills, health checks) go in the project's `.claude/commands/`, not in the shared profile repo (kordinate).
 
-## Project Knowledge Format
+## Project Knowledge
 
-When onboarding a new project, create `knowledge/projects/<project>/` with `metrics.md` and `sentinel.md`. Use scribe templates at `~/.claude/agents/scribe/knowledge/templates/agents/sauron/` for the standard format.
+Project-specific knowledge lives in `knowledge/projects/<project>/`. Required files are declared in `knowledge/manifest.yaml`. On startup, `/subagent-catchup` checks for missing files and provisions them via scribe consultation.
 
 ## Consultation
 
