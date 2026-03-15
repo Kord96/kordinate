@@ -1,8 +1,44 @@
-## Debug Reference: Sentinel Health Flags → Loki Queries
+# logBD — Sentinel
 
-Each row maps a sentinel section + check to what triggers it and the Loki query to diagnose.
+> **Maintain this document when health checks are added or modified.**
 
-### Loki Label Schema
+## Architecture
+
+**Module:** `monitor/sentinel.py` (port 9131, checks every 30s)
+
+Bottom-up architecture: per-process flags feed into section flags,
+section flags feed into composite System Overview flags.
+
+```
+System Overview (composite)            <- min() of section flags
+  +-- Ingestion                        <- producer up, keeping_up, ETA trend
+  +-- Graph Consumers                  <- per-consumer: up + flushing + lag
+  +-- RAM Buffers                      <- flush rate + flush latency
+  +-- Domain Enrichment                <- DNS error ratio, WHOIS rate, backlog
+  +-- URI Download Pipeline            <- process health + queue depth
+  +-- Infrastructure                   <- Redis, Kafka, Loki, disk space
+```
+
+## Status Values
+
+### Per-Process Status
+
+`pipeline_process_status{process="X"}` -- tri-state gauge:
+
+| Value | Meaning | Condition |
+|-------|---------|-----------|
+| 0 | FAIL | Metrics port unreachable |
+| 1 | STUCK | Port up, but flush_rate=0 with lag > 0 |
+| 2 | OK | Port up AND (flushing OR lag=0) |
+
+### Slots Behind
+
+`pipeline_consumer_slots_behind{consumer="X"}` -- Kafka lag normalized to
+slot-equivalent units. Each consumer's raw message lag is divided by messages
+per slot for that consumer's input topics. Provides a universal comparison
+unit across consumers with different fan-out ratios.
+
+## Loki Label Schema
 
 All logBD pods use `app=logbd`. Per-process identity is on the `component` label,
 which Alloy relabels to `consumer` in Loki.
@@ -13,7 +49,7 @@ which Alloy relabels to `consumer` in Loki.
 
 Logs are structured JSON (structlog). Filter by event name: `| json | event="<name>"`.
 
-### Start Here
+## Start Here
 
 Sentinel logs every status transition:
 - `{consumer="sentinel"} |= "health_check_degraded"` — any check going WARN/FAIL (includes section, check, reason)
@@ -25,6 +61,16 @@ Always start here to see which checks degraded and why, then drill into the spec
 
 ### Ingestion
 
+**Thresholds**
+
+| Check | OK | WARN | FAIL |
+|-------|----|------|------|
+| producer | Port up | -- | Port down |
+| keeping_up | Lag derivative <= 0 (slots/sec) | Lag growing | Extraction down |
+| eta | ETA decreasing or lag=0 | ETA increasing | consume_rate=0 with lag |
+
+**Debug**
+
 | Check | Triggers | Loki Query | Key Events |
 |-------|----------|------------|------------|
 | `producer` | Port unreachable or slot processing >5m/10m | `{consumer="message-producer"} \|~ "slot_ingestion_error\|slot_ingestion_failed\|slot_zero_published\|nfs_mount_unreachable\|kafka_batch_publish_failed"` | `slot_zero_published` (WARN: parsed>0 but published=0, Kafka issue), `slot_ingestion_error` (ERROR: worker crash), `slow_slot_ingestion` (WARN: >300s), `nfs_mount_unreachable` (ERROR: rawLog NFS down) |
@@ -33,7 +79,9 @@ Always start here to see which checks degraded and why, then drill into the spec
 
 **Logging gaps**: Entity extraction silently swallows JSON deserialization errors and per-entity parse failures (IP, URI, email). Only aggregate flush metrics reveal problems.
 
-### Buffers (Graph Store)
+### Buffers
+
+**Debug**
 
 | Check | Triggers | Loki Query | Key Events |
 |-------|----------|------------|------------|
@@ -43,6 +91,16 @@ Always start here to see which checks degraded and why, then drill into the spec
 **Note**: Sentinel skips graph-domain and graph-host for latency checks because DNS enrichment legitimately makes flushes slow.
 
 ### Enrichment
+
+**Thresholds**
+
+| Check | OK | WARN | FAIL |
+|-------|----|------|------|
+| dns | Error ratio < 10% | 10-30% | > 30% or domain consumer down |
+| whois | Rate > 0 | Rate=0, backlog=0 | Rate=0, backlog > 0 |
+| backlog | Decreasing | Growing | Growing AND rate=0 |
+
+**Debug**
 
 | Check | Triggers | Loki Query | Key Events |
 |-------|----------|------------|------------|
@@ -55,6 +113,8 @@ Always start here to see which checks degraded and why, then drill into the spec
 
 ### Downloads
 
+**Debug**
+
 | Check | Triggers | Loki Query | Key Events |
 |-------|----------|------------|------------|
 | `processes` | uri-download or js-render port unreachable | `{app="logbd", consumer=~"uri-download\|js-render"} \| json \| level="error"` | `js_batch_timeout` (ERROR: entire batch >300s), `js_browser_error` (ERROR: browser crash). uri-download errors are WARNING level (`download_failed`). |
@@ -62,6 +122,8 @@ Always start here to see which checks degraded and why, then drill into the spec
 | `enqueue` | uri-download unreachable | `{consumer="uri-download"} \| json \| level=~"error\|warning"` | If no recent logs at all, process is down. |
 
 ### Derived
+
+**Debug**
 
 | Check | Triggers | Loki Query | Key Events |
 |-------|----------|------------|------------|
@@ -71,6 +133,8 @@ Always start here to see which checks degraded and why, then drill into the spec
 **Note**: Tier G logs use Python `logging` module (not structlog), so messages appear as `"Tier G: ..."` free text rather than structured events.
 
 ### Storage
+
+**Debug**
 
 | Check | Triggers | Loki Query | Key Events |
 |-------|----------|------------|------------|
@@ -83,13 +147,24 @@ Always start here to see which checks degraded and why, then drill into the spec
 
 ### Dependencies
 
+**Thresholds**
+
+| Check | OK | FAIL |
+|-------|----|------|
+| redis | `ping()` succeeds | Connection refused |
+| kafka | Broker count > 0 | kafka-exporter unreachable |
+| loki | `:3100/ready` returns 200 | Check fails |
+| disk | > 20% free | < 20% free |
+
+**Debug**
+
 | Check | Triggers | Loki Query | Key Events |
 |-------|----------|------------|------------|
 | `redis` | Redis ping failed | `{consumer="sentinel"} \|= "redis_unavailable"` | `redis_unavailable` (WARN: with redis_url, error, consecutive_failures fields). Also check consumer Redis errors: `{app="logbd"} \|~ "redis_connection_error\|redis_timeout\|redis_push_failed"`. |
 | `kafka` | Exporter unreachable or 0 brokers | `{consumer="sentinel"} \|~ "kafka_broker_unreachable\|kafka_broker_degraded"` | `kafka_broker_unreachable` (WARN: exporter probe failed), `kafka_broker_degraded` (WARN: exporter up but broker count unavailable). |
 | `loki` | /ready endpoint failed | `{consumer="sentinel"} \|= "health_check_degraded" \|= "loki"` | No explicit loki failure event — only visible via health_check_degraded transition log with check="loki". |
 
-### Process-level (cross-cutting)
+## Process-Level (Cross-Cutting)
 
 | Status | Triggers | How to Debug |
 |--------|----------|-------------|
@@ -97,7 +172,9 @@ Always start here to see which checks degraded and why, then drill into the spec
 | STUCK (1) | Flush rate=0 with lag>0, not consuming | **Loki**: `{consumer="<name>"} \|~ "duckdb_reconnect_failed\|staging_merge_failed\|db_locked"` for lock/DB issues. **Prometheus**: `rate(pipeline_flush_duration_seconds_count{consumer="<name>"}[30m])` to confirm zero flush rate. No deadlock detection exists. |
 | Crash loop | 3+ restarts in 1h | **Sentinel**: `{consumer="sentinel"} \|= "crash_loop_detected"` logs the process name. **Consumer**: check last ERROR before restart in `{consumer="<name>"}`. |
 
-**Logging gaps (cannot debug via Loki alone)**:
+## Logging Gaps
+
+Cannot debug via Loki alone:
 - OOM kills: no log event, only visible as `pipeline_container_restarts_total` spike in Prometheus
 - Deadlocks: no detection or logging, inferred from flush rate=0 + lag>0
 - k8s restart events: in kubelet, not Loki. Use `kubectl describe pod` or Prometheus restart metric.

@@ -91,6 +91,22 @@ Shared:
 Agent-specific:
 - Project-specific commands (debug skills, health checks) go in the project's `.claude/commands/`, not in the shared profile repo (kordinate).
 
+## Project Knowledge Format
+
+When onboarding a new project's monitoring, create `knowledge/projects/<project>/` with two standard files:
+
+**`metrics.md`** — what metrics exist:
+- Metric tables grouped by tier/domain (name, type, description)
+- Port assignments
+- Dashboards inventory
+- Label mapping (how k8s labels map to Prometheus/Loki labels)
+
+**`sentinel.md`** — what can go wrong and how to diagnose:
+- Health check architecture (how checks compose)
+- Status values and thresholds per section
+- Loki debug queries per check (query + key events)
+- Logging gaps (what can't be diagnosed via logs alone)
+
 ## Consultation
 
 When consulted (asked a question by another agent or `/consult sauron`), answer about:

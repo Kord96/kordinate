@@ -1,4 +1,4 @@
-# logBD Metrics Catalog
+# logBD — Metrics
 
 > **Maintain this document when metrics are added, removed, or renamed in the logBD codebase.**
 
@@ -92,65 +92,6 @@ Plus `process_*` metrics (RSS, CPU, FDs) from `prometheus_client` automatically.
 | domain-whois | 9135 |
 | derived-refresh | 9140 |
 | sentinel | 9131 |
-
-## Sentinel Exporter
-
-**Module:** `monitor/sentinel.py` (port 9131, checks every 30s)
-
-Bottom-up architecture: per-process flags feed into section flags,
-section flags feed into composite System Overview flags.
-
-```
-System Overview (composite)            <- min() of section flags
-  +-- Ingestion                        <- producer up, keeping_up, ETA trend
-  +-- Graph Consumers                  <- per-consumer: up + flushing + lag
-  +-- RAM Buffers                      <- flush rate + flush latency
-  +-- Domain Enrichment                <- DNS error ratio, WHOIS rate, backlog
-  +-- URI Download Pipeline            <- process health + queue depth
-  +-- Infrastructure                   <- Redis, Kafka, Loki, disk space
-```
-
-### Per-Process Status
-
-`pipeline_process_status{process="X"}` -- tri-state gauge:
-
-| Value | Meaning | Condition |
-|-------|---------|-----------|
-| 0 | FAIL | Metrics port unreachable |
-| 1 | STUCK | Port up, but flush_rate=0 with lag > 0 |
-| 2 | OK | Port up AND (flushing OR lag=0) |
-
-### Slots Behind
-
-`pipeline_consumer_slots_behind{consumer="X"}` -- Kafka lag normalized to
-slot-equivalent units. Each consumer's raw message lag is divided by messages
-per slot for that consumer's input topics. Provides a universal comparison
-unit across consumers with different fan-out ratios.
-
-### Ingestion Checks
-
-| Check | OK | WARN | FAIL |
-|-------|----|------|------|
-| producer | Port up | -- | Port down |
-| keeping_up | Lag derivative <= 0 (slots/sec) | Lag growing | Extraction down |
-| eta | ETA decreasing or lag=0 | ETA increasing | consume_rate=0 with lag |
-
-### Enrichment Checks
-
-| Check | OK | WARN | FAIL |
-|-------|----|------|------|
-| dns | Error ratio < 10% | 10-30% | > 30% or domain consumer down |
-| whois | Rate > 0 | Rate=0, backlog=0 | Rate=0, backlog > 0 |
-| backlog | Decreasing | Growing | Growing AND rate=0 |
-
-### Infrastructure Checks
-
-| Check | OK | FAIL |
-|-------|----|------|
-| redis | `ping()` succeeds | Connection refused |
-| kafka | Broker count > 0 | kafka-exporter unreachable |
-| loki | `:3100/ready` returns 200 | Check fails |
-| disk | > 20% free | < 20% free |
 
 ## Grafana Dashboards
 
