@@ -8,8 +8,14 @@ if ! grep -q 'CLAUDE_HOME' ~/.bashrc 2>/dev/null; then
 export CLAUDE_HOME="$HOME/.claude"
 export PATH="$CLAUDE_HOME/bin:$PATH"
 alias claude="claude-session --dangerously-skip-permissions"
+[ -f "$CLAUDE_HOME/bin/tmux-session.bash" ] && source "$CLAUDE_HOME/bin/tmux-session.bash"
 cd "$CLAUDE_HOME" 2>/dev/null
 BASHRC
+fi
+
+# ─── Tmux config ───
+if [ -f "$HOME/.claude/bin/tmux.conf" ]; then
+  cp "$HOME/.claude/bin/tmux.conf" "$HOME/.tmux.conf"
 fi
 
 export CLAUDE_HOME="$HOME/.claude"
