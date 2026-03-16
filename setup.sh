@@ -86,7 +86,7 @@ ws_exec() {
 
 # Get workstation pod name
 ws_pod() {
-  kc get pod -n master -l component=workstation -o jsonpath='{.items[0].metadata.name}'
+  kc get pod -n master -l app=workstation -o jsonpath='{.items[0].metadata.name}'
 }
 
 # ═══════════════════════════════════════════════════════════════
@@ -201,7 +201,7 @@ check_and_purge_workstation() {
 
   echo ""
   info "Existing workstation found:"
-  kc get pods -n master -l component=workstation --no-headers 2>/dev/null | while read -r line; do
+  kc get pods -n master -l app=workstation --no-headers 2>/dev/null | while read -r line; do
     echo "    $line"
   done
   echo ""
@@ -223,7 +223,7 @@ check_and_purge_workstation() {
     2)
       info "Deleting workstation deployment and PVC..."
       kc delete deploy/workstation -n master --wait=true
-      kc delete pvc -n master -l component=workstation 2>/dev/null || true
+      kc delete pvc -n master -l app=workstation 2>/dev/null || true
       log "Workstation purged (fresh)"
       ;;
     3)
@@ -388,7 +388,7 @@ cmd_setup() {
     echo -e "${BOLD}Step 6: Waiting for workstation pod${NC}"
 
     info "Waiting for pod to be ready..."
-    kc -n master wait --for=condition=Ready pod -l component=workstation --timeout=180s
+    kc -n master wait --for=condition=Ready pod -l app=workstation --timeout=180s
     log "Workstation pod running"
   fi
 
