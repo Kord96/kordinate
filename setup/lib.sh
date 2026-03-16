@@ -28,8 +28,27 @@ setup_kc() {
     _kc() { kubectl "$@"; }
   else
     local config="$CLAUDE_DIR/config.yaml"
+    # Prefer cluster with manifests.master, fall back to first with tailscale_ip
     local default_node
-    default_node=$(python3 -c "import yaml; c=yaml.safe_load(open('$config')); print(c['clusters']['home']['tailscale_ip'])" 2>/dev/null || true)
+    default_node=$(python3 -c "
+import yaml, sys
+c = yaml.safe_load(open('$config'))
+clusters = c.get('clusters', {})
+# First pass: find cluster with manifests.master
+for name, cl in clusters.items():
+    if 'master' in cl.get('manifests', {}):
+        ip = cl.get('tailscale_ip', '')
+        if ip and ip != '100.x.x.x':
+            print(ip)
+            sys.exit(0)
+# Second pass: first cluster with a valid tailscale_ip
+for name, cl in clusters.items():
+    ip = cl.get('tailscale_ip', '')
+    if ip and ip != '100.x.x.x':
+        print(ip)
+        sys.exit(0)
+sys.exit(1)
+" 2>/dev/null || true)
     local node="${GIT_CRYPT_NODE:-${default_node:-}}"
     if [ -z "$node" ]; then
       _kc() { return 1; }

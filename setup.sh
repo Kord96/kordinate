@@ -47,6 +47,56 @@ print(v)
 " "$1" 2>/dev/null
 }
 
+# Discover clusters dynamically from config.yaml
+# Queries: workstation        — cluster with manifests.master
+#          first_with_ip      — first cluster with a tailscale_ip
+#          first_with_service <svc> — first cluster with services.<svc>
+#          all                — all cluster names
+discover_clusters() {
+  local config="${1:-$SCRIPT_DIR/config.yaml}"
+  local query="$2"
+  shift 2
+  python3 -c "
+import yaml, sys
+c = yaml.safe_load(open('$config'))
+clusters = c.get('clusters', {})
+query = sys.argv[1]
+args = sys.argv[2:]
+
+if query == 'workstation':
+    for name, cl in clusters.items():
+        m = cl.get('manifests', {})
+        if 'master' in m:
+            print(name)
+            sys.exit(0)
+    sys.exit(1)
+
+elif query == 'first_with_ip':
+    for name, cl in clusters.items():
+        ip = cl.get('tailscale_ip', '')
+        if ip and ip != '100.x.x.x':
+            print(name)
+            sys.exit(0)
+    sys.exit(1)
+
+elif query == 'first_with_service':
+    svc = args[0] if args else ''
+    for name, cl in clusters.items():
+        svcs = cl.get('services', {})
+        if svc in svcs and (svcs[svc].get('url') or svcs[svc].get('port')):
+            print(name)
+            sys.exit(0)
+    sys.exit(1)
+
+elif query == 'all':
+    for name in clusters:
+        print(name)
+
+else:
+    sys.exit(1)
+" "$query" "$@" 2>/dev/null
+}
+
 # Run kubectl on a remote node via SSH
 remote_kc() {
   local node="$1"; shift
@@ -84,8 +134,20 @@ cmd_setup() {
     exit 1
   fi
 
-  local NODE
-  NODE=$(read_config clusters.home.tailscale_ip 2>/dev/null || true)
+  # Find workstation cluster (has manifests.master), fall back to first with tailscale_ip
+  local WS_CLUSTER NODE
+  WS_CLUSTER=$(discover_clusters "$SCRIPT_DIR/config.yaml" workstation 2>/dev/null || true)
+  if [ -n "$WS_CLUSTER" ]; then
+    NODE=$(read_config "clusters.$WS_CLUSTER.tailscale_ip" 2>/dev/null || true)
+  fi
+  if [ -z "$NODE" ] || [ "$NODE" = "100.x.x.x" ]; then
+    local FALLBACK_CLUSTER
+    FALLBACK_CLUSTER=$(discover_clusters "$SCRIPT_DIR/config.yaml" first_with_ip 2>/dev/null || true)
+    if [ -n "$FALLBACK_CLUSTER" ]; then
+      NODE=$(read_config "clusters.$FALLBACK_CLUSTER.tailscale_ip" 2>/dev/null || true)
+      WS_CLUSTER="$FALLBACK_CLUSTER"
+    fi
+  fi
   if [ -z "$NODE" ] || [ "$NODE" = "100.x.x.x" ]; then
     read -rp "Cluster node IP (Tailscale or LAN): " NODE
   fi
@@ -94,16 +156,17 @@ cmd_setup() {
     err "Cannot SSH to $NODE"
     exit 1
   fi
-  log "Cluster reachable at $NODE"
+  log "Cluster reachable at $NODE (cluster: ${WS_CLUSTER:-unknown})"
 
   # ─── Step 2: Build and push workstation image ───
   echo ""
   echo -e "${BOLD}Step 2: Build workstation image${NC}"
 
-  local REGISTRY
-  REGISTRY=$(read_config clusters.home.services.registry.url 2>/dev/null || true)
-  if [ -z "$REGISTRY" ]; then
-    REGISTRY=$(read_config clusters.datacenter.services.registry.url 2>/dev/null || true)
+  # Find registry from any cluster that has services.registry.url
+  local REGISTRY REG_CLUSTER
+  REG_CLUSTER=$(discover_clusters "$SCRIPT_DIR/config.yaml" first_with_service registry 2>/dev/null || true)
+  if [ -n "$REG_CLUSTER" ]; then
+    REGISTRY=$(read_config "clusters.$REG_CLUSTER.services.registry.url" 2>/dev/null || true)
   fi
   if [ -z "$REGISTRY" ]; then
     read -rp "Container registry (host:port): " REGISTRY
@@ -275,90 +338,60 @@ cmd_hydrate() {
     OUTPUT_DIR="$SCRIPT_DIR"
   fi
 
-  _read_config() {
-    python3 -c "
-import yaml, sys
-c = yaml.safe_load(open('$CONFIG'))
-path = sys.argv[1].split('.')
-v = c
-for p in path:
-    if isinstance(v, dict) and p in v:
-        v = v[p]
-    else:
-        sys.exit(0)
-print(v)
-" "$1" 2>/dev/null || true
-  }
-
-  local DC_IP HOME_IP
-  DC_IP=$(_read_config clusters.datacenter.tailscale_ip)
-  HOME_IP=$(_read_config clusters.home.tailscale_ip)
-
-  local DC_PG_PORT DC_PG_USER DC_PG_DB HOME_PG_PORT HOME_PG_USER HOME_PG_DB
-  DC_PG_PORT=$(_read_config clusters.datacenter.services.postgres.port)
-  DC_PG_USER=$(_read_config clusters.datacenter.services.postgres.user)
-  DC_PG_DB=$(_read_config clusters.datacenter.services.postgres.database)
-  HOME_PG_PORT=$(_read_config clusters.home.services.postgres.port)
-  HOME_PG_USER=$(_read_config clusters.home.services.postgres.user)
-  HOME_PG_DB=$(_read_config clusters.home.services.postgres.database)
-
-  local GRAFANA_PORT GRAFANA_TOKEN
-  GRAFANA_PORT=$(_read_config clusters.home.services.grafana.port)
+  local GRAFANA_TOKEN
   GRAFANA_TOKEN=$(pass show kordinate/grafana_admin/api_key 2>/dev/null || echo "")
-
-  local DC_REDIS_PORT
-  DC_REDIS_PORT=$(_read_config clusters.datacenter.services.redis.port)
 
   echo "Generating .mcp.json..."
 
   python3 -c "
-import json
+import yaml, json, sys
+
+c = yaml.safe_load(open('$CONFIG'))
+clusters = c.get('clusters', {})
+grafana_token = '''$GRAFANA_TOKEN'''
+grafana_added = False
 
 mcp = {'mcpServers': {}}
 
-dc_ip = '''$DC_IP'''
-home_ip = '''$HOME_IP'''
+for name, cl in clusters.items():
+    ip = cl.get('tailscale_ip', '')
+    if not ip or ip == '100.x.x.x':
+        continue
+    svcs = cl.get('services', {})
 
-# Postgres datacenter
-if dc_ip and '''$DC_PG_PORT''':
-    mcp['mcpServers']['postgres-datacenter'] = {
-        'command': 'npx',
-        'args': ['-y', '@modelcontextprotocol/server-postgres',
-                 f'postgresql://$DC_PG_USER@{dc_ip}:$DC_PG_PORT/$DC_PG_DB']
-    }
-
-# Postgres home
-if home_ip and '''$HOME_PG_PORT''':
-    mcp['mcpServers']['postgres-home'] = {
-        'command': 'npx',
-        'args': ['-y', '@modelcontextprotocol/server-postgres',
-                 f'postgresql://$HOME_PG_USER@{home_ip}:$HOME_PG_PORT/$HOME_PG_DB']
-    }
-
-# Grafana
-if home_ip and '''$GRAFANA_PORT''':
-    env = {
-        'GRAFANA_URL': f'http://{home_ip}:$GRAFANA_PORT'
-    }
-    token = '''$GRAFANA_TOKEN'''
-    if token:
-        env['GRAFANA_SERVICE_ACCOUNT_TOKEN'] = token
-    mcp['mcpServers']['grafana-admin'] = {
-        'command': 'uvx',
-        'args': ['mcp-grafana'],
-        'env': env
-    }
-
-# Redis datacenter
-if dc_ip and '''$DC_REDIS_PORT''':
-    mcp['mcpServers']['redis-datacenter'] = {
-        'command': 'npx',
-        'args': ['-y', '@modelcontextprotocol/server-redis'],
-        'env': {
-            'REDIS_HOST': dc_ip,
-            'REDIS_PORT': '$DC_REDIS_PORT'
+    # Postgres
+    pg = svcs.get('postgres', {})
+    if pg.get('port') and pg.get('user') and pg.get('database'):
+        mcp['mcpServers'][f'postgres-{name}'] = {
+            'command': 'npx',
+            'args': ['-y', '@modelcontextprotocol/server-postgres',
+                     f\"postgresql://{pg['user']}@{ip}:{pg['port']}/{pg['database']}\"]
         }
-    }
+
+    # Redis
+    redis = svcs.get('redis', {})
+    if redis.get('port'):
+        mcp['mcpServers'][f'redis-{name}'] = {
+            'command': 'npx',
+            'args': ['-y', '@modelcontextprotocol/server-redis'],
+            'env': {
+                'REDIS_HOST': ip,
+                'REDIS_PORT': str(redis['port'])
+            }
+        }
+
+    # Grafana (singleton — only add from the first cluster that has it)
+    grafana = svcs.get('grafana', {})
+    if grafana.get('port') and not grafana_added:
+        env = {'GRAFANA_URL': f\"http://{ip}:{grafana['port']}\"}
+        if grafana_token:
+            env['GRAFANA_SERVICE_ACCOUNT_TOKEN'] = grafana_token
+        mcp['mcpServers']['grafana-admin'] = {
+            'command': 'uvx',
+            'args': ['mcp-grafana'],
+            'env': env
+        }
+        grafana_added = True
 
 print(json.dumps(mcp, indent=2))
 " > "$OUTPUT_DIR/.mcp.json"

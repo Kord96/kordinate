@@ -1,89 +1,81 @@
-# Kord96 Centralized Configuration
+# Kordinate Centralized Configuration
 # All cluster IPs, ports, hostnames, and service endpoints in one place.
 # Referenced by deploy configs, MCP servers, monitoring, and documentation.
+#
+# Copy to config.yaml and fill in your values.
+# Clusters are discovered dynamically — add as many as you need.
 
 clusters:
-  vandc:
-    name: vandc
-    description: Vancouver datacenter (4-node k3s)
-    tailscale_ip: 100.x.x.x
-    lan_network: 10.x.x.x/24
-    gateway_lan_ip: 10.x.x.x
-    nodes:
-      - 10.x.x.x  # ctrl (gateway)
-      - 10.x.x.x
-      - 10.x.x.x
-      - 10.x.x.x
+  # Primary cluster — add manifests.master to mark as the workstation cluster.
+  mycluster:
+    name: mycluster
+    description: ""
+    tailscale_ip:               # Tailscale IP for remote access
+    lan_network:                # e.g. 10.0.0.0/24
+    gateway_lan_ip:             # LAN IP of the gateway node
+    nodes: []                   # List of node IPs
     namespaces: [dev, test, prod, monitor]
     manifests:
+      master: agents/deployer/manifests/master       # workstation cluster marker
       gateway: agents/deployer/manifests/gateway
       bootstrap: agents/deployer/manifests/bootstrap
       platform: profile/additions
-    workloads: [logbd, kafka, postgres, redis, schema-registry]
+    workloads: []               # Names of workloads deployed here
     services:
       postgres:
-        port: 30632
-        user: kkord
-        database: postgres
+        port:
+        user:
+        database:
       redis:
-        port: 30379
+        port:
       metrics:
-        port: 30091
+        port:
       logs:
-        port: 30101
-      flightsql:
-        port: 30815
-      graphdb_api:
-        port: 30443
-      registry:
-        port: 5000
-        host: 10.x.x.x
-        url: 10.x.x.x:5000
-
-  home:
-    name: home
-    description: Home cluster (k3s)
-    tailscale_ip: 100.x.x.x
-    nodes:
-      - 192.168.x.x    # ottawa-server (control-plane)
-      - 192.168.x.x    # kkord-Latitude-5420 (agent)
-      - 100.x.x.x   # colima-mac (agent, Tailscale IP)
-    namespaces: [dev, test, prod, monitor]
-    manifests:
-      gateway: agents/deployer/manifests/gateway
-      master: agents/deployer/manifests/master
-      bootstrap: agents/deployer/manifests/bootstrap
-      platform: profile/additions
-    workloads: [barren, kafka, postgres, redis]
-    services:
-      postgres:
-        port: 30633
-        user: kkord
-        database: barren
-      redis:
-        port: 30380
-      metrics:
-        port: 30091
-      logs:
-        port: 30101
+        port:
       grafana:
-        port: 30300
+        port:
         namespace: master
+      registry:
+        port:
+        host:                   # Registry node IP
+        url:                    # host:port for docker push/pull
+
+  # Optional second cluster — remove this block if you only have one.
+  # secondcluster:
+  #   name: secondcluster
+  #   description: ""
+  #   tailscale_ip:
+  #   lan_network:
+  #   gateway_lan_ip:
+  #   nodes: []
+  #   namespaces: [dev, test, prod, monitor]
+  #   manifests:
+  #     gateway: agents/deployer/manifests/gateway
+  #     bootstrap: agents/deployer/manifests/bootstrap
+  #     platform: profile/additions
+  #   workloads: []
+  #   services:
+  #     postgres:
+  #       port:
+  #       user:
+  #       database:
+  #     redis:
+  #       port:
+  #     metrics:
+  #       port:
+  #     logs:
+  #       port:
+  #     registry:
+  #       port:
+  #       host:
+  #       url:
 
 network:
-  tailnet: tailc85f0f.ts.net
-  grafana_public: grafana.khaledkord.com
+  tailnet:                      # e.g. tailXXXXXX.ts.net
+  grafana_public:               # Public domain for Grafana (if exposed)
 
 cloudflare:
-  account_id: d92e66c0bf1a9fa07546b4899aada451
-  tunnel_id: bacfb3d8-22ba-4949-bf80-27ba6fa11ae0
-  tunnel_name: grafana-master
-  domains:
-    - khaledkord.com
-    - antispam.work
-
-node_hostnames:
-  vandc-66: 10.x.x.x  # ctrl / gateway
-  vandc-67: 10.x.x.x
-  vandc-61: 10.x.x.x
-  vandc-60: 10.x.x.x
+  account_id:
+  tunnel_id:
+  tunnel_name:
+  domains: []
