@@ -13,11 +13,6 @@ cd "$CLAUDE_HOME" 2>/dev/null
 BASHRC
 fi
 
-# ─── Tmux config ───
-if [ -f "$HOME/.claude/bin/tmux.conf" ]; then
-  cp "$HOME/.claude/bin/tmux.conf" "$HOME/.tmux.conf"
-fi
-
 export CLAUDE_HOME="$HOME/.claude"
 export PATH="$CLAUDE_HOME/bin:$PATH"
 
