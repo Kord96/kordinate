@@ -20,17 +20,29 @@ else
   SHELL_RC="$HOME/.bashrc"
 fi
 
-# Kubectl resolver: in-cluster direct, external via SSH.
+# Kubectl resolver: local k3s kubeconfig, in-cluster SA, or external via SSH.
 # After calling setup_kc, use _kc in place of kubectl.
 # Returns 1 if no cluster access is available.
 setup_kc() {
+  # 1. Local k3s kubeconfig (running on the cluster node itself)
+  if [ -f /etc/rancher/k3s/k3s.yaml ]; then
+    export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+    if kubectl get nodes &>/dev/null 2>&1; then
+      _kc() { kubectl "$@"; }
+      return 0
+    fi
+  fi
+
+  # 2. In-cluster or existing kubeconfig
   if kubectl get nodes &>/dev/null 2>&1; then
     _kc() { kubectl "$@"; }
-  else
-    local config="$CLAUDE_DIR/config.yaml"
-    # Prefer cluster with manifests.master, fall back to first with tailscale_ip
-    local default_node
-    default_node=$(python3 -c "
+    return 0
+  fi
+
+  # 3. SSH fallback (used by deployer agent for remote clusters)
+  local config="$CLAUDE_DIR/config.yaml"
+  local default_node
+  default_node=$(python3 -c "
 import yaml, sys
 c = yaml.safe_load(open('$config'))
 clusters = c.get('clusters', {})
@@ -49,18 +61,17 @@ for name, cl in clusters.items():
         sys.exit(0)
 sys.exit(1)
 " 2>/dev/null || true)
-    local node="${GIT_CRYPT_NODE:-${default_node:-}}"
-    if [ -z "$node" ]; then
-      _kc() { return 1; }
-      return 1
-    fi
-    local kc="sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml"
-    _kc() {
-      if [ ! -t 0 ]; then
-        ssh "$node" "$kc $*" < /dev/stdin
-      else
-        ssh "$node" "$kc $*"
-      fi
-    }
+  local node="${GIT_CRYPT_NODE:-${default_node:-}}"
+  if [ -z "$node" ]; then
+    _kc() { return 1; }
+    return 1
   fi
+  local kc="sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml"
+  _kc() {
+    if [ ! -t 0 ]; then
+      ssh "$node" "$kc $*" < /dev/stdin
+    else
+      ssh "$node" "$kc $*"
+    fi
+  }
 }

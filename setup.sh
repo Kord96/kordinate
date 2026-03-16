@@ -1,14 +1,14 @@
 #!/bin/bash
-# Kordinate setup — deploy a workstation pod to an existing k8s cluster.
+# Kordinate setup — run on bare metal to bootstrap k3s and deploy the workstation pod.
 #
 # Usage:
-#   ./setup.sh              # interactive: deploy workstation, link repo, setup auth
-#   ./setup.sh bootstrap    # cluster infrastructure (k3s, gateway, RBAC)
-#   ./setup.sh export       # bundle pass store → encrypted archive
-#   ./setup.sh import       # restore pass store from encrypted archive
+#   sudo ./setup.sh          # install k3s (if needed), deploy workstation, setup auth
+#   ./setup.sh hydrate        # generate .mcp.json from config.yaml + pass
+#   ./setup.sh export         # bundle pass store → encrypted archive
+#   ./setup.sh import         # restore pass store from encrypted archive
 #
-# Prerequisites: git, gh (authenticated), ssh access to cluster node.
-# The workstation image has all other tools baked in.
+# Prerequisites: git, gh (authenticated), curl, python3.
+# Runs locally — no SSH required.
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/setup/lib.sh"
 
 WORKSTATION_DIR="$SCRIPT_DIR/agents/deployer/manifests/master/base/workstation"
-MASTER_MANIFESTS="$SCRIPT_DIR/agents/deployer/manifests/master"
+MANIFESTS="$SCRIPT_DIR/agents/deployer/manifests"
 
 CMD="${1:-}"
 
@@ -27,6 +27,13 @@ CMD="${1:-}"
 require_cmd() {
   if ! command -v "$1" &>/dev/null; then
     err "$1 is required. $2"
+    exit 1
+  fi
+}
+
+require_root() {
+  if [ "$(id -u)" -ne 0 ]; then
+    err "Setup must run as root. Run: sudo $0 $*"
     exit 1
   fi
 }
@@ -47,233 +54,193 @@ print(v)
 " "$1" 2>/dev/null
 }
 
-# Discover clusters dynamically from config.yaml
-# Queries: workstation        — cluster with manifests.master
-#          first_with_ip      — first cluster with a tailscale_ip
-#          first_with_service <svc> — first cluster with services.<svc>
-#          all                — all cluster names
-discover_clusters() {
-  local config="${1:-$SCRIPT_DIR/config.yaml}"
-  local query="$2"
-  shift 2
-  python3 -c "
-import yaml, sys
-c = yaml.safe_load(open('$config'))
-clusters = c.get('clusters', {})
-query = sys.argv[1]
-args = sys.argv[2:]
-
-if query == 'workstation':
-    for name, cl in clusters.items():
-        m = cl.get('manifests', {})
-        if 'master' in m:
-            print(name)
-            sys.exit(0)
-    sys.exit(1)
-
-elif query == 'first_with_ip':
-    for name, cl in clusters.items():
-        ip = cl.get('tailscale_ip', '')
-        if ip and ip != '100.x.x.x':
-            print(name)
-            sys.exit(0)
-    sys.exit(1)
-
-elif query == 'first_with_service':
-    svc = args[0] if args else ''
-    for name, cl in clusters.items():
-        svcs = cl.get('services', {})
-        if svc in svcs and (svcs[svc].get('url') or svcs[svc].get('port')):
-            print(name)
-            sys.exit(0)
-    sys.exit(1)
-
-elif query == 'all':
-    for name in clusters:
-        print(name)
-
-else:
-    sys.exit(1)
-" "$query" "$@" 2>/dev/null
+# Detect node IP (same logic as setup-cluster.sh)
+detect_node_ip() {
+  if [ -n "${NODE_IP:-}" ]; then
+    echo "$NODE_IP"
+    return
+  fi
+  local ip
+  ip=$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{print $7; exit}')
+  if [ -z "$ip" ]; then
+    ip=$(hostname -I 2>/dev/null | awk '{print $1}')
+  fi
+  if [ -z "$ip" ]; then
+    err "Could not detect node IP. Set NODE_IP env var."
+    exit 1
+  fi
+  echo "$ip"
 }
 
-# Run kubectl on a remote node via SSH
-remote_kc() {
-  local node="$1"; shift
-  ssh "$node" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml $*"
+# kubectl using the k3s admin kubeconfig
+kc() {
+  KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl "$@"
 }
 
-# Run a command inside the workstation pod via kubectl exec
+# kubectl exec into the workstation pod
 ws_exec() {
-  local node="$1"; shift
-  ssh "$node" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml exec -n master deploy/workstation -c workstation -- bash -c '$*'"
+  kc exec -n master deploy/workstation -c workstation -- bash -c "$*"
+}
+
+# Get workstation pod name
+ws_pod() {
+  kc get pod -n master -l component=workstation -o jsonpath='{.items[0].metadata.name}'
 }
 
 # ═══════════════════════════════════════════════════════════════
-# MAIN SETUP — deploy workstation, link repo, setup auth
+# MAIN SETUP — install k3s if needed, deploy workstation, auth
 # ═══════════════════════════════════════════════════════════════
 cmd_setup() {
   echo -e "${BOLD}kordinate setup${NC}"
   echo ""
 
   require_cmd git "apt install git"
-  require_cmd gh "https://cli.github.com"
-  require_cmd ssh "apt install openssh-client"
+  require_cmd curl "apt install curl"
   require_cmd python3 "apt install python3"
+  require_root
 
-  if ! gh auth status &>/dev/null 2>&1; then
-    err "GitHub CLI not authenticated. Run: gh auth login"
-    exit 1
+  # ─── Step 1: Ensure k3s is running ───
+  echo -e "${BOLD}Step 1: Kubernetes${NC}"
+
+  if systemctl is-active --quiet k3s 2>/dev/null; then
+    log "k3s already running"
+    kc get nodes
+  else
+    info "k3s not found — installing..."
+    local NODE_IP NODE_NAME
+    NODE_IP=$(detect_node_ip)
+    NODE_NAME=$(hostname -s)
+
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - \
+      --node-ip "$NODE_IP" \
+      --node-name "$NODE_NAME" \
+      --flannel-backend host-gw \
+      --disable traefik \
+      --disable servicelb \
+      --write-kubeconfig-mode 644 \
+      --kube-apiserver-arg service-node-port-range=8000-40000
+
+    info "Waiting for node to be ready..."
+    kc wait --for=condition=Ready node "$NODE_NAME" --timeout=120s
+    log "k3s installed (node: $NODE_NAME, ip: $NODE_IP)"
+
+    # Install Longhorn
+    echo ""
+    info "Installing Longhorn storage..."
+    kc apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.7.3/deploy/longhorn.yaml
+    info "Waiting for Longhorn (this takes a few minutes)..."
+    kc -n longhorn-system rollout status deploy/longhorn-driver-deployer --timeout=300s
+    kc -n longhorn-system rollout status deploy/longhorn-ui --timeout=300s
+    log "Longhorn installed"
   fi
 
-  # ─── Step 1: Find the cluster ───
-  echo -e "${BOLD}Step 1: Cluster${NC}"
-
-  if [ ! -f "$SCRIPT_DIR/config.yaml" ]; then
-    err "config.yaml not found. Copy config.yaml.template and fill in cluster IPs."
-    exit 1
-  fi
-
-  # Find workstation cluster (has manifests.master), fall back to first with tailscale_ip
-  local WS_CLUSTER NODE
-  WS_CLUSTER=$(discover_clusters "$SCRIPT_DIR/config.yaml" workstation 2>/dev/null || true)
-  if [ -n "$WS_CLUSTER" ]; then
-    NODE=$(read_config "clusters.$WS_CLUSTER.tailscale_ip" 2>/dev/null || true)
-  fi
-  if [ -z "$NODE" ] || [ "$NODE" = "100.x.x.x" ]; then
-    local FALLBACK_CLUSTER
-    FALLBACK_CLUSTER=$(discover_clusters "$SCRIPT_DIR/config.yaml" first_with_ip 2>/dev/null || true)
-    if [ -n "$FALLBACK_CLUSTER" ]; then
-      NODE=$(read_config "clusters.$FALLBACK_CLUSTER.tailscale_ip" 2>/dev/null || true)
-      WS_CLUSTER="$FALLBACK_CLUSTER"
-    fi
-  fi
-  if [ -z "$NODE" ] || [ "$NODE" = "100.x.x.x" ]; then
-    read -rp "Cluster node IP (Tailscale or LAN): " NODE
-  fi
-
-  if ! ssh -o ConnectTimeout=5 -o BatchMode=yes "$NODE" true &>/dev/null; then
-    err "Cannot SSH to $NODE"
-    exit 1
-  fi
-  log "Cluster reachable at $NODE (cluster: ${WS_CLUSTER:-unknown})"
-
-  # ─── Step 2: Build and push workstation image ───
+  # ─── Step 2: Namespaces + RBAC ───
   echo ""
-  echo -e "${BOLD}Step 2: Build workstation image${NC}"
+  echo -e "${BOLD}Step 2: Namespaces & RBAC${NC}"
 
-  # Find registry from any cluster that has services.registry.url
-  local REGISTRY REG_CLUSTER
-  REG_CLUSTER=$(discover_clusters "$SCRIPT_DIR/config.yaml" first_with_service registry 2>/dev/null || true)
-  if [ -n "$REG_CLUSTER" ]; then
-    REGISTRY=$(read_config "clusters.$REG_CLUSTER.services.registry.url" 2>/dev/null || true)
-  fi
-  if [ -z "$REGISTRY" ]; then
-    read -rp "Container registry (host:port): " REGISTRY
-  fi
+  kc apply -f "$MANIFESTS/bootstrap/namespaces.yaml"
+  log "Namespaces ready"
 
-  info "Building workstation image on $NODE..."
-  local BUILD_DIR="/tmp/kordinate-workstation-build"
-  ssh "$NODE" "rm -rf $BUILD_DIR && mkdir -p $BUILD_DIR"
-  scp -r "$WORKSTATION_DIR/Dockerfile" "$WORKSTATION_DIR/entrypoint.sh" "$NODE:$BUILD_DIR/"
-  ssh "$NODE" "cd $BUILD_DIR && docker build -t $REGISTRY/workstation:latest . && docker push $REGISTRY/workstation:latest"
-  log "Image pushed to $REGISTRY/workstation:latest"
+  kc apply -f "$MANIFESTS/rbac/agent-rbac.yaml"
+  log "RBAC applied"
 
-  # ─── Step 3: Deploy workstation pod ───
+  # ─── Step 3: Build workstation image ───
   echo ""
-  echo -e "${BOLD}Step 3: Deploy workstation${NC}"
+  echo -e "${BOLD}Step 3: Build workstation image${NC}"
 
-  local REPO_URL
+  if ! command -v docker &>/dev/null; then
+    info "Installing docker for image builds..."
+    apt-get update -qq && apt-get install -y -qq docker.io >/dev/null
+  fi
+
+  info "Building image..."
+  docker build -t local/workstation:latest "$WORKSTATION_DIR"
+  docker save local/workstation:latest | k3s ctr images import -
+  log "Image imported to k3s"
+
+  # ─── Step 4: Deploy workstation ───
+  echo ""
+  echo -e "${BOLD}Step 4: Deploy workstation${NC}"
+
+  local REPO_URL MANIFEST
   REPO_URL=$(git -C "$SCRIPT_DIR" remote get-url origin 2>/dev/null || true)
 
-  # Patch manifest with real values
-  local MANIFEST
   MANIFEST=$(mktemp)
   sed \
-    -e "s|REGISTRY/workstation:latest|$REGISTRY/workstation:latest|" \
-    -e "s|MUST_BE_SET|$REPO_URL|" \
-    "$SCRIPT_DIR/agents/deployer/manifests/master/base/workstation.yaml" > "$MANIFEST"
+    -e 's|image: REGISTRY/workstation:latest|image: local/workstation:latest|' \
+    -e '/image: local\/workstation:latest/a\          imagePullPolicy: Never' \
+    -e "s|MUST_BE_SET|${REPO_URL}|" \
+    "$MANIFESTS/master/base/workstation.yaml" > "$MANIFEST"
 
-  local TMP_MANIFEST="/tmp/kordinate-workstation.yaml"
-  scp "$MANIFEST" "$NODE:$TMP_MANIFEST"
+  kc apply -f "$MANIFEST"
   rm -f "$MANIFEST"
-
-  remote_kc "$NODE" "create namespace master --dry-run=client -o yaml | sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml apply -f -"
-  remote_kc "$NODE" "apply -f $TMP_MANIFEST"
   log "Workstation deployed"
 
-  info "Waiting for workstation pod to be ready..."
-  local attempts=0
-  while ! remote_kc "$NODE" "get pod -n master -l component=workstation --no-headers 2>/dev/null" | grep -q Running; do
-    ((attempts++))
-    if [ "$attempts" -gt 60 ]; then
-      err "Workstation pod not ready after 60s"
-      exit 1
-    fi
-    sleep 2
-  done
+  # ─── Step 5: Wait for pod ───
+  echo ""
+  echo -e "${BOLD}Step 5: Waiting for workstation pod${NC}"
+
+  info "Waiting for pod to be ready..."
+  kc -n master wait --for=condition=Ready pod -l component=workstation --timeout=180s
   log "Workstation pod running"
 
-  # ─── Step 4: Link repo on workstation ───
+  # ─── Step 6: Link repo ───
   echo ""
-  echo -e "${BOLD}Step 4: Link repo${NC}"
+  echo -e "${BOLD}Step 6: Link repo${NC}"
 
-  read -rp "Remote repo URL for workstation ~/.claude: " LINK_REPO
+  if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
+    read -rp "Remote repo URL for workstation ~/.claude (enter to auto-create): " LINK_REPO
 
-  # If no repo provided, auto-create one
-  if [ -z "$LINK_REPO" ]; then
-    info "No repo provided — creating private kordinate repo..."
-    local GH_USER
-    GH_USER=$(gh api user -q .login)
-    local REPO_NAME="kordinate"
+    if [ -z "$LINK_REPO" ]; then
+      info "No repo provided — creating private kordinate repo..."
+      local GH_USER
+      GH_USER=$(gh api user -q .login)
+      local REPO_NAME="kordinate"
 
-    if gh repo view "${GH_USER}/${REPO_NAME}" &>/dev/null 2>&1; then
-      info "Repo ${GH_USER}/${REPO_NAME} already exists"
-    else
-      gh repo create "$REPO_NAME" --private --confirm
-      log "Created private repo: ${GH_USER}/${REPO_NAME}"
+      if gh repo view "${GH_USER}/${REPO_NAME}" &>/dev/null 2>&1; then
+        info "Repo ${GH_USER}/${REPO_NAME} already exists"
+      else
+        gh repo create "$REPO_NAME" --private --confirm
+        log "Created private repo: ${GH_USER}/${REPO_NAME}"
 
-      # Push scaffolded data to it
-      local TMP_REPO
-      TMP_REPO=$(mktemp -d)
-      git init "$TMP_REPO"
-      cp -r "$SCRIPT_DIR/agents" "$SCRIPT_DIR/commands" "$SCRIPT_DIR/hooks" \
-            "$SCRIPT_DIR/CLAUDE.md" "$SCRIPT_DIR/config.yaml.template" \
-            "$SCRIPT_DIR/settings.json" "$SCRIPT_DIR/bin" "$SCRIPT_DIR/setup.sh" "$SCRIPT_DIR/setup" \
-            "$TMP_REPO/" 2>/dev/null || true
-      [ -f "$SCRIPT_DIR/config.yaml" ] && cp "$SCRIPT_DIR/config.yaml" "$TMP_REPO/"
-      git -C "$TMP_REPO" add -A
-      git -C "$TMP_REPO" commit -m "initial kordinate setup"
-      git -C "$TMP_REPO" remote add origin "https://github.com/${GH_USER}/${REPO_NAME}.git"
-      git -C "$TMP_REPO" push -u origin HEAD:main
-      rm -rf "$TMP_REPO"
-      log "Scaffolded data pushed to repo"
+        local TMP_REPO
+        TMP_REPO=$(mktemp -d)
+        git init "$TMP_REPO"
+        cp -r "$SCRIPT_DIR/agents" "$SCRIPT_DIR/commands" "$SCRIPT_DIR/hooks" \
+              "$SCRIPT_DIR/CLAUDE.md" "$SCRIPT_DIR/config.yaml.template" \
+              "$SCRIPT_DIR/settings.json" "$SCRIPT_DIR/bin" "$SCRIPT_DIR/setup.sh" "$SCRIPT_DIR/setup" \
+              "$TMP_REPO/" 2>/dev/null || true
+        [ -f "$SCRIPT_DIR/config.yaml" ] && cp "$SCRIPT_DIR/config.yaml" "$TMP_REPO/"
+        git -C "$TMP_REPO" add -A
+        git -C "$TMP_REPO" commit -m "initial kordinate setup"
+        git -C "$TMP_REPO" remote add origin "https://github.com/${GH_USER}/${REPO_NAME}.git"
+        git -C "$TMP_REPO" push -u origin HEAD:main
+        rm -rf "$TMP_REPO"
+        log "Scaffolded data pushed to repo"
+      fi
+
+      LINK_REPO="https://github.com/${GH_USER}/${REPO_NAME}.git"
     fi
 
-    LINK_REPO="https://github.com/${GH_USER}/${REPO_NAME}.git"
+    ws_exec "git clone $LINK_REPO ~/.claude 2>/dev/null || git -C ~/.claude pull --ff-only"
+    log "Linked workstation to $LINK_REPO"
+  else
+    warn "gh not authenticated — skipping repo link. Run gh auth login on the workstation later."
   fi
 
-  ws_exec "$NODE" "git clone $LINK_REPO ~/.claude 2>/dev/null || git -C ~/.claude pull --ff-only"
-  log "Linked workstation to $LINK_REPO"
-
-  # ─── Step 5: Copy GPG key + pass store (if available) ───
+  # ─── Step 7: Credentials (optional) ───
   echo ""
-  echo -e "${BOLD}Step 5: Credentials${NC}"
+  echo -e "${BOLD}Step 7: Credentials${NC}"
 
   read -rp "Path to GPG key export file (enter to skip): " GPG_KEY_PATH
   if [ -n "$GPG_KEY_PATH" ] && [ -f "$GPG_KEY_PATH" ]; then
-    local TMP_KEY="/tmp/kordinate-gpg-key.asc"
-    scp "$GPG_KEY_PATH" "$NODE:$TMP_KEY"
     local POD
-    POD=$(ssh "$NODE" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml get pod -n master -l component=workstation -o jsonpath='{.items[0].metadata.name}'")
-    ssh "$NODE" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml cp $TMP_KEY master/$POD:/tmp/gpg-key.asc -c workstation"
-    ws_exec "$NODE" "gpg --batch --import /tmp/gpg-key.asc && rm /tmp/gpg-key.asc"
-
-    # Trust the key
-    ws_exec "$NODE" "GPG_KEY_ID=\$(gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -m1 '^sec' | awk '{print \$2}' | cut -d/ -f2) && echo \"\${GPG_KEY_ID}:6:\" | gpg --import-ownertrust"
+    POD=$(ws_pod)
+    kc cp "$GPG_KEY_PATH" "master/$POD:/tmp/gpg-key.asc" -c workstation
+    ws_exec "gpg --batch --import /tmp/gpg-key.asc && rm /tmp/gpg-key.asc"
+    ws_exec 'GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -m1 "^sec" | awk "{print \$2}" | cut -d/ -f2) && echo "${GPG_KEY_ID}:6:" | gpg --import-ownertrust'
     log "GPG key imported on workstation"
 
-    # Copy pass store if available
     if [ -d "$HOME/.password-store/kordinate" ]; then
       read -rp "Copy local pass store to workstation? [Y/n] " answer
       case "${answer:-y}" in
@@ -281,43 +248,82 @@ cmd_setup() {
         *)
           local TMP_PASS="/tmp/kordinate-pass.tar.gz"
           tar czf "$TMP_PASS" -C "$HOME" .password-store
-          scp "$TMP_PASS" "$NODE:/tmp/kordinate-pass.tar.gz"
-          ssh "$NODE" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml cp /tmp/kordinate-pass.tar.gz master/$POD:/tmp/kordinate-pass.tar.gz -c workstation"
-          ws_exec "$NODE" "cd /home/claude && tar xzf /tmp/kordinate-pass.tar.gz && rm /tmp/kordinate-pass.tar.gz"
+          kc cp "$TMP_PASS" "master/$POD:/tmp/kordinate-pass.tar.gz" -c workstation
+          ws_exec "cd /home/claude && tar xzf /tmp/kordinate-pass.tar.gz && rm /tmp/kordinate-pass.tar.gz"
           rm -f "$TMP_PASS"
           log "Pass store copied to workstation"
           ;;
       esac
     fi
   else
-    info "No GPG key provided — will create fresh on workstation"
+    info "No GPG key provided — auth-check will create fresh credentials"
   fi
 
-  # ─── Step 6: Run auth check on workstation ───
+  # ─── Step 8: Auth check ───
   echo ""
-  echo -e "${BOLD}Step 6: Auth setup${NC}"
+  echo -e "${BOLD}Step 8: Auth setup${NC}"
 
-  # Copy the auth-check script and run it
   local AUTH_SCRIPT="$SCRIPT_DIR/setup/auth-check.sh"
   if [ -f "$AUTH_SCRIPT" ]; then
     local POD
-    POD=$(ssh "$NODE" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml get pod -n master -l component=workstation -o jsonpath='{.items[0].metadata.name}'")
-    scp "$AUTH_SCRIPT" "$NODE:/tmp/kordinate-auth-check.sh"
-    ssh "$NODE" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml cp /tmp/kordinate-auth-check.sh master/$POD:/tmp/auth-check.sh -c workstation"
-    # Run interactively via kubectl exec with TTY
-    ssh -t "$NODE" "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml exec -it -n master deploy/workstation -c workstation -- bash /tmp/auth-check.sh"
+    POD=$(ws_pod)
+    kc cp "$AUTH_SCRIPT" "master/$POD:/tmp/auth-check.sh" -c workstation
+    kc exec -it -n master deploy/workstation -c workstation -- bash /tmp/auth-check.sh
+  fi
+
+  # ─── Step 9: Generate config.yaml if missing ───
+  echo ""
+  echo -e "${BOLD}Step 9: Config${NC}"
+
+  if [ -f "$SCRIPT_DIR/config.yaml" ]; then
+    log "config.yaml already exists"
+  else
+    local NODE_IP CLUSTER_NAME TS_IP
+    NODE_IP=$(detect_node_ip)
+    CLUSTER_NAME=$(hostname -s | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-')
+    TS_IP=$(tailscale ip -4 2>/dev/null || echo "")
+
+    python3 -c "
+import yaml
+config = {
+    'clusters': {
+        '$CLUSTER_NAME': {
+            'name': '$CLUSTER_NAME',
+            'description': 'Single-node k3s cluster',
+            'tailscale_ip': '$TS_IP' or None,
+            'nodes': ['$NODE_IP'],
+            'namespaces': ['gateway', 'master', 'dev', 'test', 'prod'],
+            'manifests': {
+                'master': 'agents/deployer/manifests/master',
+                'gateway': 'agents/deployer/manifests/gateway',
+                'bootstrap': 'agents/deployer/manifests/bootstrap',
+            },
+            'workloads': [],
+            'services': {},
+        }
+    },
+    'network': {'tailnet': '', 'grafana_public': ''},
+    'cloudflare': {'account_id': '', 'tunnel_id': '', 'tunnel_name': '', 'domains': []},
+}
+with open('$SCRIPT_DIR/config.yaml', 'w') as f:
+    yaml.dump(config, f, default_flow_style=False, sort_keys=False)
+"
+    log "Generated config.yaml for cluster $CLUSTER_NAME"
   fi
 
   echo ""
   log "Setup complete!"
   echo ""
-  echo "  SSH in with: ssh workstation"
-  echo "  Then run:    claude login"
+  echo "  Access workstation:"
+  echo "    kubectl -n master exec -it deploy/workstation -c workstation -- bash"
+  echo "    ssh workstation  (after Tailscale is configured)"
+  echo ""
+  echo "  Then run:  claude login"
 }
 
 # ═══════════════════════════════════════════════════════════════
 # HYDRATE — generate .mcp.json from config.yaml + pass
-# (runs on the workstation, not the initial machine)
+# (runs on the workstation, not the host)
 # ═══════════════════════════════════════════════════════════════
 cmd_hydrate() {
   local CONFIG
@@ -470,102 +476,23 @@ cmd_import() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# BOOTSTRAP — cluster infrastructure (separate from workstation)
-# ═══════════════════════════════════════════════════════════════
-
-SETUP_CLUSTER="$SCRIPT_DIR/agents/deployer/manifests/bootstrap/setup-cluster.sh"
-CLUSTER_BOOTSTRAP="$SCRIPT_DIR/bin/cluster-bootstrap"
-RBAC_MANIFEST="$SCRIPT_DIR/agents/deployer/manifests/rbac/agent-rbac.yaml"
-GATEWAY_MANIFESTS="$SCRIPT_DIR/agents/deployer/manifests/gateway"
-
-prompt_node() {
-  local var_name="$1"
-  local prompt_msg="$2"
-  local default="${3:-}"
-  if [ -n "$default" ]; then
-    read -rp "$prompt_msg [$default]: " value
-    eval "$var_name=\"${value:-$default}\""
-  else
-    read -rp "$prompt_msg: " value
-    if [ -z "$value" ]; then
-      err "No value provided"
-      exit 1
-    fi
-    eval "$var_name=\"$value\""
-  fi
-}
-
-cmd_bootstrap() {
-  local SUBCMD="${1:-}"
-
-  case "$SUBCMD" in
-    cluster)
-      prompt_node NODE "SSH address of cluster node"
-      local subcmd="${2:-server}"
-      ssh "$NODE" "bash -s $subcmd" < "$SETUP_CLUSTER"
-      ;;
-    rbac)
-      prompt_node NODE "SSH address of cluster node"
-      scp "$RBAC_MANIFEST" "$NODE:/tmp/agent-rbac.yaml"
-      ssh "$NODE" "bash -s" < "$CLUSTER_BOOTSTRAP"
-      log "RBAC bootstrap complete"
-      ;;
-    gateway)
-      prompt_node NODE "SSH address of cluster node"
-      local overlays=()
-      for d in "$GATEWAY_MANIFESTS"/overlays/*/; do
-        [ -d "$d" ] || continue
-        overlays+=("$(basename "$d")")
-      done
-      local i=1
-      for o in "${overlays[@]}"; do echo "  $i) $o"; ((i++)); done
-      read -rp "Overlay [1]: " choice
-      local overlay="${overlays[${choice:-1}-1]:-${overlays[0]}}"
-      read -rp "Tailscale auth key: " TS_AUTH_KEY
-      [ -z "$TS_AUTH_KEY" ] && { err "Required"; exit 1; }
-
-      remote_kc "$NODE" "create namespace gateway --dry-run=client -o yaml | sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml apply -f -"
-      remote_kc "$NODE" "create secret generic tailscale-auth -n gateway --from-literal=AUTH_KEY=$TS_AUTH_KEY --dry-run=client -o yaml | sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml apply -f -"
-      local tmp_dir="/tmp/kordinate-gateway"
-      ssh "$NODE" "rm -rf $tmp_dir && mkdir -p $tmp_dir"
-      scp -r "$GATEWAY_MANIFESTS/base" "$NODE:$tmp_dir/base"
-      scp -r "$GATEWAY_MANIFESTS/overlays/$overlay" "$NODE:$tmp_dir/overlay"
-      ssh "$NODE" "cd $tmp_dir/overlay && sed -i 's|../../base|../base|' kustomization.yaml"
-      remote_kc "$NODE" "apply -k $tmp_dir/overlay"
-      log "Gateway deployed ($overlay)"
-      ;;
-    master)
-      prompt_node NODE "SSH address of cluster node"
-      local tmp_dir="/tmp/kordinate-master"
-      ssh "$NODE" "rm -rf $tmp_dir && mkdir -p $tmp_dir"
-      scp -r "$MASTER_MANIFESTS/base" "$NODE:$tmp_dir/base"
-      remote_kc "$NODE" "create namespace master --dry-run=client -o yaml | sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml apply -f -"
-      remote_kc "$NODE" "apply -k $tmp_dir/base"
-      log "Master manifests applied"
-      ;;
-    *)
-      echo "Usage: ./setup.sh bootstrap <cluster|rbac|gateway|master>"
-      ;;
-  esac
-}
-
-# ═══════════════════════════════════════════════════════════════
 # MAIN DISPATCHER
 # ═══════════════════════════════════════════════════════════════
 usage() {
-  echo "Usage: ./setup.sh [command]"
+  echo "Usage: sudo ./setup.sh [command]"
   echo ""
-  echo "  (no args)     Deploy workstation and set up auth"
-  echo "  bootstrap      Cluster infrastructure (k3s, RBAC, gateway)"
+  echo "  (no args)     Install k3s (if needed), deploy workstation, setup auth"
   echo "  hydrate        Generate .mcp.json from config.yaml + pass"
   echo "  export         Bundle GPG key + pass store → encrypted archive"
   echo "  import         Restore GPG key + pass store from archive"
+  echo ""
+  echo "Run on the bare metal machine that will host the cluster."
+  echo "Adding nodes/clusters is handled by the deployer agent."
 }
 
 case "${CMD:-setup}" in
   setup|"")  cmd_setup ;;
   hydrate)   cmd_hydrate ;;
-  bootstrap) cmd_bootstrap "${@:2}" ;;
   export)    cmd_export "${@:2}" ;;
   import)    cmd_import "${@:2}" ;;
   *) usage; exit 1 ;;
