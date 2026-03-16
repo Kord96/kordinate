@@ -38,8 +38,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: workstation-home
   labels:
-    app: kord-infra
-    component: workstation
+    app: workstation
 spec:
   accessModes:
     - ReadWriteOnce
@@ -53,21 +52,18 @@ kind: Deployment
 metadata:
   name: workstation
   labels:
-    app: kord-infra
-    component: workstation
+    app: workstation
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: kord-infra
-      component: workstation
+      app: workstation
   template:
     metadata:
       labels:
-        app: kord-infra
-        component: workstation
+        app: workstation
     spec:
       serviceAccountName: workstation
       hostname: claude-workstation
