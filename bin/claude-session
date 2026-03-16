@@ -7,15 +7,7 @@
 
 set -e
 
-# Use claude-chill proxy if available (tames terminal flickering)
-if [ -f "$HOME/.cargo/env" ]; then
-  . "$HOME/.cargo/env"
-fi
-if command -v claude-chill >/dev/null 2>&1; then
-  CLAUDE="claude-chill claude"
-else
-  CLAUDE="claude"
-fi
+CLAUDE="claude"
 
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
 if [ -z "$repo_root" ]; then
