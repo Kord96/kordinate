@@ -51,6 +51,8 @@ data:
           period: 24h
     limits_config:
       retention_period: 720h
+      ingestion_rate_mb: 16
+      ingestion_burst_size_mb: 32
     compactor:
       working_directory: /data/loki/compactor
       retention_enabled: true
@@ -92,6 +94,18 @@ spec:
             cpu: 500m
           limits:
             memory: 2Gi
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3100
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 3100
+          initialDelaySeconds: 30
+          periodSeconds: 30
         volumeMounts:
         - name: loki-config
           mountPath: /etc/loki
