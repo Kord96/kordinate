@@ -35,14 +35,9 @@ profile/dashboards/*/
 profile/additions/*/
 profile/projects/*/agent-memory/
 
-# Agent runtime memory
-agent-memory/
-
 # Agent runtime state
 agents/*/inbox.md
 agents/*/deploys/
-agents/*/knowledge/index.yaml
-agents/*/knowledge/projects/
 
 # Legacy
 __pycache__/
