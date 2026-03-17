@@ -62,10 +62,11 @@
       {
         "current": {
           "selected": false,
-          "text": "",
-          "value": ""
+          "text": "All",
+          "value": "$__all"
         },
-        "includeAll": false,
+        "includeAll": true,
+        "allValue": ".*",
         "label": "Cluster",
         "multi": false,
         "name": "cluster",
@@ -176,27 +177,27 @@
       },
       "targets": [
         {
-          "expr": "(max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.95) + (max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.8)",
+          "expr": "(max(pipeline_pvc_used_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"}) < bool 0.95) + (max(pipeline_pvc_used_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"}) < bool 0.8)",
           "legendFormat": "PVC Disk",
           "refId": "A"
         },
         {
-          "expr": "min(up{component=\"kafka\", namespace=~\"$namespace\"}) * 2",
+          "expr": "min(up{cluster=~\"$cluster\", component=\"kafka\", namespace=~\"$namespace\"}) * 2",
           "legendFormat": "Kafka",
           "refId": "B"
         },
         {
-          "expr": "(max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)",
+          "expr": "(max(1 - avg by(node)(rate(node_cpu_seconds_total{cluster=~\"$cluster\", component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{cluster=~\"$cluster\", component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)",
           "legendFormat": "Node CPU",
           "refId": "C"
         },
         {
-          "expr": "(max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.85)",
+          "expr": "(max(1 - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", component=\"node-exporter\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", component=\"node-exporter\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", component=\"node-exporter\"}) < bool 0.85)",
           "legendFormat": "Node Memory",
           "refId": "D"
         },
         {
-          "expr": "(max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)",
+          "expr": "(max(1 - node_filesystem_avail_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)",
           "legendFormat": "Node Disk",
           "refId": "E"
         }
@@ -273,7 +274,7 @@
       },
       "targets": [
         {
-          "expr": "min(((max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.95) + (max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.8)) or (min(up{component=\"kafka\", namespace=~\"$namespace\"}) * 2) or ((max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)) or ((max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.85)) or ((max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)))",
+          "expr": "min(((max(pipeline_pvc_used_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"}) < bool 0.95) + (max(pipeline_pvc_used_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"}) < bool 0.8)) or (min(up{cluster=~\"$cluster\", component=\"kafka\", namespace=~\"$namespace\"}) * 2) or ((max(1 - avg by(node)(rate(node_cpu_seconds_total{cluster=~\"$cluster\", component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{cluster=~\"$cluster\", component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)) or ((max(1 - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", component=\"node-exporter\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", component=\"node-exporter\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", component=\"node-exporter\"}) < bool 0.85)) or ((max(1 - node_filesystem_avail_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{cluster=~\"$cluster\", component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)))",
           "legendFormat": "",
           "refId": "A"
         }
@@ -440,18 +441,6 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "cluster"
-            },
-            "properties": [
-              {
-                "id": "custom.hidden",
-                "value": true
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
               "options": "component"
             },
             "properties": [
@@ -487,7 +476,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "count by (node) (count by (node, cpu) (node_cpu_seconds_total{component=\"node-exporter\", mode=\"idle\"}))",
+          "expr": "count by (node, cluster) (count by (node, cluster, cpu) (node_cpu_seconds_total{cluster=~\"$cluster\", component=\"node-exporter\", mode=\"idle\"}))",
           "legendFormat": "",
           "refId": "A",
           "format": "table",
@@ -498,7 +487,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "max by (node) (node_memory_MemTotal_bytes{component=\"node-exporter\"})",
+          "expr": "max by (node, cluster) (node_memory_MemTotal_bytes{cluster=~\"$cluster\", component=\"node-exporter\"})",
           "legendFormat": "",
           "refId": "B",
           "format": "table",
@@ -509,7 +498,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "max by (node) (node_filesystem_size_bytes{component=\"node-exporter\", mountpoint=\"/\"})",
+          "expr": "max by (node, cluster) (node_filesystem_size_bytes{cluster=~\"$cluster\", component=\"node-exporter\", mountpoint=\"/\"})",
           "legendFormat": "",
           "refId": "C",
           "format": "table",
@@ -531,7 +520,6 @@
               "__name__": true,
               "pod": true,
               "app": true,
-              "cluster": true,
               "component": true,
               "namespace": true,
               "boot_id": true,
@@ -549,12 +537,14 @@
               "mountpoint": true
             },
             "indexByName": {
-              "node": 0,
-              "Value #A": 1,
-              "Value #B": 2,
-              "Value #C": 3
+              "cluster": 0,
+              "node": 1,
+              "Value #A": 2,
+              "Value #B": 3,
+              "Value #C": 4
             },
             "renameByName": {
+              "cluster": "Cluster",
               "node": "Node",
               "Value #A": "CPU Cores",
               "Value #B": "RAM",
@@ -606,7 +596,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "100 - (avg by(node) (rate(node_cpu_seconds_total{component=\"node-exporter\", mode=\"idle\"}[5m])) * 100)",
+          "expr": "100 - (avg by(node) (rate(node_cpu_seconds_total{cluster=~\"$cluster\", component=\"node-exporter\", mode=\"idle\"}[5m])) * 100)",
           "legendFormat": "{{node}}",
           "refId": "A"
         }
@@ -654,7 +644,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) * 100",
+          "expr": "(1 - node_memory_MemAvailable_bytes{cluster=~\"$cluster\", component=\"node-exporter\"} / node_memory_MemTotal_bytes{cluster=~\"$cluster\", component=\"node-exporter\"}) * 100",
           "legendFormat": "{{node}}",
           "refId": "A"
         }
@@ -702,7 +692,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "(1 - node_filesystem_avail_bytes{component=\"node-exporter\", mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\", mountpoint=\"/\"}) * 100",
+          "expr": "(1 - node_filesystem_avail_bytes{cluster=~\"$cluster\", component=\"node-exporter\", mountpoint=\"/\"} / node_filesystem_size_bytes{cluster=~\"$cluster\", component=\"node-exporter\", mountpoint=\"/\"}) * 100",
           "legendFormat": "{{node}}",
           "refId": "A"
         }
@@ -760,7 +750,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "sum by (app) (rate(process_cpu_seconds_total{namespace=~\"$namespace\"}[5m]))",
+          "expr": "sum by (app) (rate(process_cpu_seconds_total{cluster=~\"$cluster\", namespace=~\"$namespace\"}[5m]))",
           "legendFormat": "{{app}}",
           "refId": "A"
         }
@@ -806,7 +796,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "sum by (app) (process_resident_memory_bytes{namespace=~\"$namespace\"})",
+          "expr": "sum by (app) (process_resident_memory_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"})",
           "legendFormat": "{{app}}",
           "refId": "A"
         }
@@ -846,7 +836,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "count by (app) (up{namespace=~\"$namespace\"} == 1)",
+          "expr": "count by (app) (up{cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1)",
           "legendFormat": "{{app}}",
           "refId": "A"
         }
@@ -888,7 +878,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "sum by (app) (process_resident_memory_bytes{namespace=~\"$namespace\"})",
+          "expr": "sum by (app) (process_resident_memory_bytes{cluster=~\"$cluster\", namespace=~\"$namespace\"})",
           "legendFormat": "{{app}}",
           "refId": "A"
         }
