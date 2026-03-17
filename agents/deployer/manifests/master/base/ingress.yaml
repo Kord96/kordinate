@@ -4,6 +4,9 @@
 ## cloudflared forwards tunnel traffic to Caddy on localhost:80,
 ## Caddy routes by hostname to backend services.
 ##
+## Tunnel ingress is configured remotely on the Cloudflare dashboard
+## (catch-all to http://localhost:80). Caddy handles host-based routing.
+##
 apiVersion: v1
 kind: Secret
 metadata:
@@ -17,33 +20,32 @@ stringData:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ingress-cloudflared-config
-  labels:
-    app: monitoring
-    component: ingress
-data:
-  config.yaml: |
-    tunnel: bacfb3d8-22ba-4949-bf80-27ba6fa11ae0
-    ingress:
-      - service: http://localhost:80
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
   name: ingress-caddyfile
   labels:
     app: monitoring
     component: ingress
 data:
   Caddyfile: |
-    grafana.khaledkord.com {
-      reverse_proxy grafana.master.svc.cluster.local:3000
+    {
+      auto_https off
     }
 
-    # Add future services here:
-    # service.khaledkord.com {
-    #   reverse_proxy service.master.svc.cluster.local:PORT
-    # }
+    :80 {
+      @grafana host grafana.khaledkord.com
+      handle @grafana {
+        reverse_proxy grafana.master.svc.cluster.local:3000
+      }
+
+      # Add future services here:
+      # @service host service.khaledkord.com
+      # handle @service {
+      #   reverse_proxy service.master.svc.cluster.local:PORT
+      # }
+
+      handle {
+        respond "Not Found" 404
+      }
+    }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -70,9 +72,9 @@ spec:
           args:
             - tunnel
             - --no-autoupdate
-            - --config
-            - /etc/cloudflared/config.yaml
             - run
+            - --token
+            - $(TUNNEL_TOKEN)
           env:
             - name: TUNNEL_TOKEN
               valueFrom:
@@ -85,9 +87,6 @@ spec:
               memory: 64Mi
             limits:
               memory: 256Mi
-          volumeMounts:
-            - name: cloudflared-config
-              mountPath: /etc/cloudflared
         - name: caddy
           image: caddy:2-alpine
           ports:
@@ -102,9 +101,6 @@ spec:
             - name: caddyfile
               mountPath: /etc/caddy
       volumes:
-        - name: cloudflared-config
-          configMap:
-            name: ingress-cloudflared-config
         - name: caddyfile
           configMap:
             name: ingress-caddyfile
