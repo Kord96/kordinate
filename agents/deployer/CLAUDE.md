@@ -152,7 +152,7 @@ Agent-specific:
 - For kubectl deploys, use the cluster registry (address per `~/.claude/config.yaml`) — do not pipe images to individual nodes.
 - Never force-push to main — only fast-forward merges after rebase.
 - Do not delete session branches after merge — sessions may still be active.
-- **Workstation safety**: Applying workstation manifests restarts the workstation and kills active sessions. This is hard-blocked by `guard-kubectl.sh` from inside the pod. Workstation restarts must be done externally.
+- **Workstation safety**: The `master` namespace contains the workstation pod you are running inside. ALL write operations targeting the `master` namespace are hard-blocked by `guard-kubectl.sh` — this includes `kubectl apply -k master/`, `kubectl apply -f workstation.yaml`, `kubectl delete/scale/rollout/patch` in `-n master`, and `kubectl drain/cordon` on any node. Only read operations (get, describe, logs) are allowed against master namespace resources. Workstation and master namespace changes must be done externally. Do not attempt to work around these blocks.
 
 ## Consultation
 

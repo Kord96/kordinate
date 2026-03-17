@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl wget openssh-client tmux gnupg pass \
     python3 python3-pip python3-yaml \
-    jq unzip ca-certificates sudo \
+    jq unzip ca-certificates sudo iptables \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js (LTS) — needed for claude-code and MCP servers
