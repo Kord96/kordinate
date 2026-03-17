@@ -74,6 +74,16 @@ detect_node_ip() {
   echo "$ip"
 }
 
+# Write registries.yaml for Spegel (k3s embedded p2p registry).
+# Must exist on all nodes before k3s install for Spegel to activate.
+write_registries_yaml() {
+  mkdir -p /etc/rancher/k3s
+  cat > /etc/rancher/k3s/registries.yaml <<'YAML'
+mirrors:
+  "*": {}
+YAML
+}
+
 # kubectl using the k3s admin kubeconfig
 kc() {
   KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl "$@"
@@ -169,7 +179,10 @@ install_k3s_agent() {
   info "Node IP:   $NODE_IP"
   info "Node name: $NODE_NAME"
 
+  write_registries_yaml
+
   curl -sfL https://get.k3s.io | K3S_URL="https://${server_ip}:6443" K3S_TOKEN="$TOKEN" \
+    K3S_P2P_ENABLE_LATEST=true \
     INSTALL_K3S_EXEC="agent" sh -s - \
     --node-ip "$NODE_IP" \
     --node-name "$NODE_NAME"
@@ -233,15 +246,12 @@ check_and_purge_workstation() {
   esac
 }
 
-# Import a docker image into k3s containerd, and optionally distribute to server.
+# Import a docker image into k3s containerd.
+# Spegel (embedded registry) distributes to other nodes automatically.
 # Args: $1=image_name
 distribute_image() {
   local image="$1"
   docker save "$image" | k3s ctr images import -
-  if [ -n "${JOIN_SERVER_IP:-}" ]; then
-    info "Distributing image to server ($JOIN_SERVER_IP)..."
-    docker save "$image" | ssh -o BatchMode=yes "$JOIN_SERVER_IP" "sudo k3s ctr images import -"
-  fi
 }
 
 # Add a node IP to an existing cluster in config.yaml.
@@ -308,14 +318,18 @@ cmd_setup() {
       NODE_IP=$(detect_node_ip)
       NODE_NAME=$(hostname -s)
 
-      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -s - \
+      write_registries_yaml
+
+      curl -sfL https://get.k3s.io | K3S_P2P_ENABLE_LATEST=true \
+        INSTALL_K3S_EXEC="server" sh -s - \
         --node-ip "$NODE_IP" \
         --node-name "$NODE_NAME" \
         --flannel-backend host-gw \
         --disable traefik \
         --disable servicelb \
         --write-kubeconfig-mode 644 \
-        --kube-apiserver-arg service-node-port-range=8000-40000
+        --kube-apiserver-arg service-node-port-range=8000-40000 \
+        --embedded-registry
 
       info "Waiting for node to be ready..."
       kc wait --for=condition=Ready node "$NODE_NAME" --timeout=120s
@@ -375,11 +389,11 @@ cmd_setup() {
     MANIFEST=$(mktemp)
     sed \
       -e 's|image: REGISTRY/workstation:latest|image: local/workstation:latest|' \
-      -e '/image: local\/workstation:latest/a\          imagePullPolicy: Never' \
+      -e '/image: local\/workstation:latest/a\          imagePullPolicy: IfNotPresent' \
       -e "s|MUST_BE_SET|${REPO_URL}|" \
       "$MANIFESTS/master/base/workstation.yaml" > "$MANIFEST"
 
-    kc apply -f "$MANIFEST"
+    kc apply -n master -f "$MANIFEST"
     rm -f "$MANIFEST"
     log "Workstation deployed"
 
