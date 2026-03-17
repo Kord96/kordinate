@@ -19,7 +19,7 @@ data:
 
     prometheus.scrape "federate_home" {
       targets = [{
-        __address__ = "100.79.204.119:9090",
+        __address__ = "100.113.48.89:9090",
       }]
       metrics_path    = "/federate"
       params          = { "match[]" = ["{__name__=~\".+\"}"] }
@@ -31,7 +31,7 @@ data:
 
     prometheus.scrape "federate_vandc" {
       targets = [{
-        __address__ = "100.93.174.24:9090",
+        __address__ = "100.107.8.117:9090",
       }]
       metrics_path    = "/federate"
       params          = { "match[]" = ["{__name__=~\".+\"}"] }
