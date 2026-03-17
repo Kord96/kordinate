@@ -29,7 +29,7 @@ chmod 700 ~/.ssh
 # ─── Tailscale (from pass if available, non-fatal) ───
 TS_KEY=$(pass show kordinate/tailscale/auth_key_workstation 2>/dev/null || true)
 if [ -n "$TS_KEY" ] && [ "$TS_KEY" != "PLACEHOLDER" ]; then
-  # Delete stale workstation nodes via API to avoid hostname collisions
+  # Delete stale workstation nodes via API and wait for propagation
   TS_API=$(pass show kordinate/tailscale/api_key 2>/dev/null || true)
   if [ -n "$TS_API" ]; then
     curl -sf -H "Authorization: Bearer $TS_API" "https://api.tailscale.com/api/v2/tailnet/-/devices" 2>/dev/null \
@@ -40,6 +40,17 @@ for d in json.load(sys.stdin).get('devices',[]):
         print(d['id'])
 " 2>/dev/null | while read id; do
       curl -sf -X DELETE -H "Authorization: Bearer $TS_API" "https://api.tailscale.com/api/v2/device/$id" 2>/dev/null
+    done
+
+    # Wait until control plane confirms no workstation devices remain
+    for i in $(seq 1 12); do
+      COUNT=$(curl -sf -H "Authorization: Bearer $TS_API" "https://api.tailscale.com/api/v2/tailnet/-/devices" 2>/dev/null \
+        | python3 -c "
+import json,sys
+print(sum(1 for d in json.load(sys.stdin).get('devices',[]) if 'workstation' in d.get('hostname','').lower()))
+" 2>/dev/null || echo "0")
+      [ "$COUNT" = "0" ] && break
+      sleep 5
     done
     echo "Cleaned stale workstation nodes"
   fi
