@@ -1,5 +1,7 @@
 # Monitoring Architecture
 
+> **For your specific cluster names and federation topology, see `profile/topology.yaml`.**
+
 ## Overview
 
 All observability is pull-based. Each cluster is a standalone unit with its own gateway

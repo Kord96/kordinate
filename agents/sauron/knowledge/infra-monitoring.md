@@ -1,24 +1,39 @@
 # Infrastructure Monitoring Data Flow
 
+> **For your specific cluster topology and federation jobs, see `profile/topology.yaml`.**
+
 ## Architecture
 
 Each k3s cluster is standalone with its own observability stack. The master namespace provides a unified cross-cluster view by pulling from all clusters via Tailscale — clusters are unaware of master.
 
-### Vandc Cluster (monitor namespace)
-- **Gateway Alloy**: Scrapes all pods (graphdb-pods via prometheus.io annotations), kubelet/cAdvisor (container metrics), kube-state-metrics, Kafka JMX, node-exporter. Injects `cluster=vandc` label. Writes to local Prometheus via remote_write. Tails pod logs and pushes to local Loki.
-- **Gateway Prometheus**: 3h retention, port 9090. Short-term buffer.
-- **Gateway Loki**: 30d retention, port 3100. Rate limits: 16MB/s ingestion.
-- **Gateway (Tailscale sidecar)**: Exposes Prom:9090, Loki:3100, K8s API:6443 over Tailscale at 100.107.8.117.
+### Per-Cluster Gateway (monitor namespace)
+- **Gateway Alloy**: Scrapes all pods (via prometheus.io annotations), kubelet/cAdvisor, kube-state-metrics, Kafka JMX, node-exporter. Injects `cluster` label. Writes to local Prometheus via remote_write. Tails pod logs and pushes to local Loki.
+- **Gateway Prometheus**: Short-term buffer (retention per `profile/topology.yaml`).
+- **Gateway Loki**: Log storage with rate limiting.
+- **Gateway (Tailscale sidecar)**: Exposes Prom, Loki, and K8s API over Tailscale.
 
-### Master Cluster (master namespace)
-- **Master Alloy**: Pulls /federate from all cluster Proms via Tailscale (vandc @ 100.107.8.117:9090, home @ 100.113.48.89:9090). Tails logs from both clusters via remote kubeconfig over Tailscale. Writes to Master Prom and Master Loki.
-- **Master Prometheus**: 30d retention, port 9191. Aggregated long-term storage.
-- **Master Loki**: 30d retention, port 3100. Aggregated logs.
-- **Grafana**: Reads from Master Prom and Loki. Dashboards provisioned via ConfigMaps.
+The `master` namespace (one cluster only) provides a unified cross-cluster view:
+
+- **Master Prometheus** — FEDERATES from all gateway Prometheus instances. It does NOT directly scrape pods. This is the single datasource for Grafana.
+- **Master Alloy** — handles ONLY logs (tails pods via K8s API, writes to Master Loki). No metrics scraping.
+- **Master Loki** — receives logs from Master Alloy.
+- **Grafana** — queries only master's local Prometheus and Loki.
+
+## Data Flow
+
+```
+Each remote cluster:
+  pods/nodes → Gateway Alloy (scrape) → Gateway Prometheus (buffer)
+                                              ↓ federate
+                                     Master Prometheus (unified view)
+
+Logs:
+  pods → Master Alloy (K8s API tail) → Master Loki
+```
 
 ## Cluster Label
 
-The `cluster` label is injected by each gateway Alloy via the `CLUSTER_NAME` environment variable, sourced from a `cluster-identity` ConfigMap that the deployer sets per cluster (e.g., `vandc`, `home`).
+The `cluster` label is injected by each gateway Alloy via the `CLUSTER_NAME` environment variable, sourced from a `cluster-identity` ConfigMap that the deployer sets per cluster (actual cluster names are defined in `profile/topology.yaml`).
 
 ## Metrics Flow
 
@@ -59,9 +74,9 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy ta
 ## Sentinel (Alert Evaluation)
 
 ### Overview
-- Runs in prod namespace on vandc cluster
-- Queries Prometheus at `gateway.gateway.svc.cluster.local:9090` (cross-namespace via gateway Tailscale sidecar)
-- Deployment manifest: `/home/claude/logbd/deploy/graphdb/monitoring/sentinel.yaml`
+- Runs in the prod namespace
+- Queries Prometheus via the gateway service
+- Deployment manifest located in the project's deploy directory
 
 ### 12 Evaluation Sections
 1. **Process status** — are all expected pods running?
@@ -79,20 +94,11 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy ta
 
 ## Known Monitoring Gaps
 
-### CRITICAL: MinIO Not Monitored
-- **What**: MinIO (prod namespace) is the snapshot backend (SNAPSHOT_BACKEND=minio), S3-compatible
-- **Problem**: NOT scraped by Prometheus despite being a critical dependency after snapshot migration
-- **Available but unused**: MinIO exposes metrics at `/minio/v2/metrics/cluster`
-- **Impact**: No alerting on MinIO health, storage capacity, or API errors
-- **Deployment**: `/home/claude/logbd/deploy/graphdb/storage/minio.yaml`
-
-### Sentinel Does Not Check MinIO
-- No MinIO evaluation section exists in Sentinel's 12 checks
-- If MinIO goes down, snapshots fail silently — no alert fires
+Check `profile/knowledge/projects/` for project-specific monitoring gaps.
 
 ## Rules
 
-- **Never remove federation jobs** (`federate-vandc`, `federate-home`) from Master Prometheus — this is the only path for metrics to reach the unified view.
+- **Never remove federation jobs** (listed in `profile/topology.yaml` under `monitoring.federation`) from Master Prometheus — this is the only path for metrics to reach the unified view.
 - **Never add direct pod/node scraping to Master Alloy** — gateways already collect everything. Adding direct scrapes creates duplicate ingestion with conflicting labels.
 - **Master Alloy is logs-only** — if you need to change metrics collection, modify the gateway Alloy config, not master.
 - When in doubt about data flow, consult deployer: `/consult deployer "explain the monitoring data flow for <component>"`.

@@ -1,5 +1,7 @@
 # Infrastructure Guide
 
+> **For your specific cluster topology, see `profile/topology.yaml`.**
+
 ## Overview
 
 Each k3s cluster is a standalone Kubernetes installation with its own control plane,
@@ -11,7 +13,7 @@ cluster but is logically separate — it pulls data from clusters, clusters don'
 push to it.
 
 ```
-┌─ vandc cluster ──────────────────────────────┐
+┌─ cluster-a ─────────────────────────────────┐
 │                                              │
 │  Apps ──▶ Gateway Alloy ──▶ Gateway Prom/Loki│
 │   │           ▲                              │
@@ -36,7 +38,7 @@ push to it.
                    │
                    ▼
 ┌──────────────────────────────────────────────┐
-│                               home cluster   │
+│                             cluster-b        │
 │                                              │
 │  Apps ──▶ Gateway Alloy ──▶ Gateway Prom/Loki│
 │   │           ▲                              │
@@ -119,14 +121,14 @@ All observability is **pull-based**. The gateway is the cluster's single externa
 | `pod` | Individual pod identity | Auto-injected by Alloy from K8s metadata |
 | `namespace` | Environment (dev/test/prod) or system namespace | Auto-injected by Alloy from K8s metadata |
 | `node` | Kubernetes node the pod runs on | Auto-injected by Alloy from K8s metadata |
-| `cluster` | Cluster name (home/vandc) | Injected by Alloy from CLUSTER_NAME env |
+| `cluster` | Cluster name (per topology) | Injected by Alloy from CLUSTER_NAME env |
 | `component` | Service name (optional) | Pod label, propagated by Alloy |
 | `tier` | Operational role (optional) | Pod label, propagated by Alloy |
 
-`app` values:
-- `logbd` — pipeline product pods
-- `app-infra` — user-managed shared services (kafka, postgres, redis)
-- `kord-infra` — system-critical infrastructure managed by deployer
+`app` values are defined in `profile/topology.yaml`. Example categories:
+- `<product-app>` — product workload pods
+- `<platform-app>` — user-managed shared services (message queues, databases, caches)
+- `<system-app>` — system-critical infrastructure managed by deployer
 
 ### Log shipping
 

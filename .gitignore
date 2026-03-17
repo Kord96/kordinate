@@ -27,6 +27,12 @@ agent-state/
 # Real config with IPs (generated from template)
 config.yaml
 
+# User-specific operational topology and overrides
+profile/
+
+# Agent runtime memory
+agent-memory/
+
 # Agent runtime state
 agents/*/inbox.md
 agents/*/deploys/

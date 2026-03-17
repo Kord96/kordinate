@@ -1,5 +1,7 @@
 # App Contract
 
+> **For your specific app labels and allowed values, see `profile/topology.yaml`.**
+
 Every deployed application must satisfy these requirements:
 
 ## Labels
@@ -7,10 +9,10 @@ Every deployed application must satisfy these requirements:
 Required pod label:
 - `app` — project name that owns this workload
 
-Allowed values:
-- `logbd` — pipeline product pods
-- `app-infra` — user-managed shared services that apps depend on (kafka, postgres, redis)
-- `kord-infra` — system-critical infrastructure (gateway, master, grafana, workstation, node-exporter, KSM). Without these the entire system breaks. Managed by the deployer, not subject to the app contract.
+Allowed values are defined in `profile/topology.yaml` under `apps`. Typical categories:
+- `<product-app>` — product workload pods
+- `<platform-app>` — user-managed shared services that apps depend on (message queues, databases, caches)
+- `<system-app>` — system-critical infrastructure (gateway, master, grafana, workstation, node-exporter, KSM). Without these the entire system breaks. Managed by the deployer, not subject to the app contract.
 
 Optional pod labels:
 - `component` — individual service name (e.g., `classifier`, `kafka`)
