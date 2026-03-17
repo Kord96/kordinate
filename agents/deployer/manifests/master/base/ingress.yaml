@@ -1,5 +1,8 @@
 ##
-## Cloudflared — Cloudflare tunnel for external Grafana access
+## Ingress — Cloudflare tunnel + Caddy reverse proxy (sidecar pattern)
+##
+## cloudflared forwards tunnel traffic to Caddy on localhost:80,
+## Caddy routes by hostname to backend services.
 ##
 apiVersion: v1
 kind: Secret
@@ -7,43 +10,59 @@ metadata:
   name: cloudflared-tunnel
   labels:
     app: monitoring
-    component: cloudflared
+    component: ingress
 stringData:
   TUNNEL_TOKEN: MUST_BE_SET
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: cloudflared-config
+  name: ingress-cloudflared-config
   labels:
     app: monitoring
-    component: cloudflared
+    component: ingress
 data:
   config.yaml: |
     tunnel: bacfb3d8-22ba-4949-bf80-27ba6fa11ae0
     ingress:
-      - hostname: grafana.khaledkord.com
-        service: http://grafana.master.svc.cluster.local:3000
-      - service: http_status:404
+      - service: http://localhost:80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-caddyfile
+  labels:
+    app: monitoring
+    component: ingress
+data:
+  Caddyfile: |
+    grafana.khaledkord.com {
+      reverse_proxy grafana.master.svc.cluster.local:3000
+    }
+
+    # Add future services here:
+    # service.khaledkord.com {
+    #   reverse_proxy service.master.svc.cluster.local:PORT
+    # }
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloudflared
+  name: ingress
   labels:
     app: monitoring
-    component: cloudflared
+    component: ingress
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: monitoring
-      component: cloudflared
+      component: ingress
   template:
     metadata:
       labels:
         app: monitoring
-        component: cloudflared
+        component: ingress
     spec:
       containers:
         - name: cloudflared
@@ -69,7 +88,23 @@ spec:
           volumeMounts:
             - name: cloudflared-config
               mountPath: /etc/cloudflared
+        - name: caddy
+          image: caddy:2-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: caddyfile
+              mountPath: /etc/caddy
       volumes:
         - name: cloudflared-config
           configMap:
-            name: cloudflared-config
+            name: ingress-cloudflared-config
+        - name: caddyfile
+          configMap:
+            name: ingress-caddyfile
