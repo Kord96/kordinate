@@ -25,7 +25,7 @@ TS_KEY=$(pass show kordinate/tailscale/auth_key_workstation 2>/dev/null || true)
 if [ -n "$TS_KEY" ] && [ "$TS_KEY" != "PLACEHOLDER" ]; then
   if ! sudo tailscale status &>/dev/null 2>&1; then
     echo "Starting tailscaled..."
-    sudo tailscaled --state=/var/lib/tailscale/tailscaled.state &
+    sudo tailscaled --state=/var/lib/tailscale/tailscaled.state --tun=userspace-networking &
     sleep 2
     sudo tailscale up --authkey="$TS_KEY" --hostname="${TS_HOSTNAME:-workstation}" --ssh
     echo "Tailscale up: $(sudo tailscale ip -4)"

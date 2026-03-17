@@ -69,7 +69,7 @@ spec:
       hostname: claude-workstation
       containers:
         - name: workstation
-          image: REGISTRY/workstation:latest
+          image: 100.95.237.24:5000/workstation:latest
           stdin: true
           tty: true
           env:
