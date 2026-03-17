@@ -28,11 +28,9 @@ For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/conf
 
 ## Agent Knowledge
 
-Each agent has a `knowledge/` directory with docs organized by scope:
-- **Cross-project** — `knowledge/<topic>.md` (e.g., `infra-monitoring.md`, `stoik.md`) — general expertise
-- **Project-specific** — `knowledge/projects/<project>/` — per-project reference docs (metrics catalogs, debug references, etc.)
-
-Agents read their own knowledge docs instead of fetching metadata at runtime.
+- **Shared pattern index** — `agents/patterns.md` — catalog of all recognized design patterns with categories and descriptions
+- **Per-agent knowledge** — `agent-memory/<agent>/` — curated docs and auto-managed memory, organized by topic and `patterns/` subdirectory
+- **Per-project context** — `profile/projects/<project>/context/` — project-specific operational docs (metrics, health checks)
 
 ## Agents
 
