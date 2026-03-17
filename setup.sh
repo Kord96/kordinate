@@ -372,10 +372,23 @@ cmd_setup() {
       apt-get update -qq && apt-get install -y -qq docker.io >/dev/null
     fi
 
-    info "Building image..."
-    docker build -t local/workstation:latest "$WORKSTATION_DIR"
-    distribute_image "local/workstation:latest"
-    log "Image imported to k3s"
+    info "Building multi-arch image..."
+    # Ensure buildx builder exists with qemu support for cross-compilation
+    if ! docker buildx inspect multiarch &>/dev/null; then
+      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 2>/dev/null || true
+      docker buildx create --name multiarch --use
+    else
+      docker buildx use multiarch
+    fi
+    # Build for both amd64 (vandc nodes) and arm64 (colima-mac) and load into docker
+    docker buildx build --platform linux/amd64,linux/arm64 \
+      -t local/workstation:latest \
+      --output type=oci,dest=/tmp/workstation-oci.tar \
+      "$WORKSTATION_DIR"
+    # Import OCI archive into k3s containerd (supports multi-arch manifests)
+    k3s ctr images import --all-platforms /tmp/workstation-oci.tar
+    rm -f /tmp/workstation-oci.tar
+    log "Multi-arch image imported to k3s"
   fi
 
   # ─── Step 5: Deploy workstation ───

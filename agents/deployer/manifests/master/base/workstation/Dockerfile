@@ -18,10 +18,12 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
 
 # GitHub CLI (pinned — apt latest builds with Go 1.26 which has runtime bugs)
 ARG GH_VERSION=2.67.0
-RUN curl -sL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+ARG TARGETARCH
+RUN GH_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "amd64") \
+    && curl -sL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${GH_ARCH}.tar.gz" \
       | tar xz -C /tmp \
-    && mv "/tmp/gh_${GH_VERSION}_linux_amd64/bin/gh" /usr/local/bin/gh \
-    && rm -rf "/tmp/gh_${GH_VERSION}_linux_amd64"
+    && mv "/tmp/gh_${GH_VERSION}_linux_${GH_ARCH}/bin/gh" /usr/local/bin/gh \
+    && rm -rf "/tmp/gh_${GH_VERSION}_linux_${GH_ARCH}"
 
 # Tailscale
 RUN curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg \
