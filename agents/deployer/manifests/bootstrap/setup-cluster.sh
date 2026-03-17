@@ -122,58 +122,9 @@ install_agent_tainted() {
     log "k3s tainted agent installed and joined cluster"
 }
 
-post_install() {
-    log "Running post-install configuration"
-
-    # Check kubectl access
-    if ! kubectl get nodes &>/dev/null; then
-        err "Cannot reach cluster. Is kubeconfig set?"
-        exit 1
-    fi
-
-    kubectl get nodes
-    echo
-
-    info "Current nodes:"
-    kubectl get nodes -o wide
-    echo
-
-    # Create namespaces
-    log "Creating namespaces"
-    local SCRIPT_DIR
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    if [[ -f "$SCRIPT_DIR/namespaces.yaml" ]]; then
-        kubectl apply -f "$SCRIPT_DIR/namespaces.yaml"
-    else
-        for ns in monitor test prod; do
-            kubectl create namespace "$ns" --dry-run=client -o yaml | kubectl apply -f -
-        done
-    fi
-
-    # Install Longhorn
-    log "Installing Longhorn v1.7.3"
-    kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.7.3/deploy/longhorn.yaml
-
-    info "Waiting for Longhorn to be ready..."
-    kubectl -n longhorn-system rollout status deploy/longhorn-driver-deployer --timeout=300s
-    kubectl -n longhorn-system rollout status deploy/longhorn-ui --timeout=300s
-
-    # Apply StorageClass from platform/base if available
-    local MANIFESTS_ROOT
-    MANIFESTS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-    if [[ -f "$MANIFESTS_ROOT/platform/base/storage.yaml" ]]; then
-        log "Applying StorageClass"
-        kubectl apply -f "$MANIFESTS_ROOT/platform/base/storage.yaml"
-    else
-        warn "No storage.yaml found at $MANIFESTS_ROOT/platform/base/storage.yaml -- apply manually"
-    fi
-
-    echo
-    log "Post-install complete"
-    info "Namespaces: monitor, test, prod"
-    info "Longhorn: v1.7.3 installed"
-    info "StorageClass: longhorn (reclaimPolicy=Retain)"
-}
+## post-install is handled by the deployer agent:
+##   /deployer:bootstrap setup-namespaces
+##   /deployer:bootstrap setup-storage
 
 usage() {
     echo "Usage: $0 <command> [args]"
@@ -182,7 +133,7 @@ usage() {
     echo "  server                Install k3s server node"
     echo "  agent <server-ip>     Install k3s agent and join cluster"
     echo "  agent-tainted <ip>    Install tainted agent (PreferNoSchedule)"
-    echo "  post-install          Label nodes, install Longhorn, create namespaces"
+    echo "  (post-install is handled by deployer: /deployer:bootstrap setup-namespaces + setup-storage)"
     echo
     echo "Environment variables:"
     echo "  NODE_IP   Override auto-detected node IP"
@@ -201,7 +152,10 @@ case "${1:-}" in
         install_agent_tainted "$2"
         ;;
     post-install)
-        post_install
+        echo "post-install is now handled by the deployer agent."
+        echo "Use: /deployer:bootstrap setup-namespaces"
+        echo "     /deployer:bootstrap setup-storage"
+        exit 1
         ;;
     *)
         usage

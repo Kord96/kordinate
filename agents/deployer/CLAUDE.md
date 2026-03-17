@@ -67,13 +67,20 @@ Project-specific deployment configs live in `knowledge/projects/<project>/`. Req
 
 Kubectl write operations and image builds are protected by a native PreToolUse hook (`guard-kubectl.sh`). Only the deployer can bypass it.
 
-Before running any kubectl write, docker build, or Redis MCP command:
+**Standard auth** — for writes to any namespace except master:
 
 1. `cp ~/.claude/.deployer-secret /tmp/.deployer-auth`
 2. Run your SSH + kubectl/docker commands or Redis MCP tools
 3. `rm /tmp/.deployer-auth`
 
-This mirrors the scribe's auth flow for `.md` files. Without the token, the hooks deny the command and tell the caller to consult the deployer.
+**Bootstrap auth** — for writes to master namespace (excluding workstation resources):
+
+1. `cp ~/.claude/.deployer-secret /tmp/.deployer-auth`
+2. `cp ~/.claude/.deployer-secret /tmp/.bootstrap-auth`
+3. Run your SSH + kubectl commands targeting master namespace
+4. `rm /tmp/.bootstrap-auth /tmp/.deployer-auth`
+
+Bootstrap auth is only used by `/deployer:bootstrap deploy-master`. Even with bootstrap auth, writes targeting workstation resources (workstation.yaml, `kubectl apply -k master/`, any command containing "workstation") are always blocked.
 
 On the clusters, the default `KUBECONFIG` points to a readonly ServiceAccount. The deployer uses the k3s admin kubeconfig explicitly:
 
@@ -152,7 +159,7 @@ Agent-specific:
 - For kubectl deploys, use the cluster registry (address per `~/.claude/config.yaml`) — do not pipe images to individual nodes.
 - Never force-push to main — only fast-forward merges after rebase.
 - Do not delete session branches after merge — sessions may still be active.
-- **Workstation safety**: The `master` namespace contains the workstation pod you are running inside. ALL write operations targeting the `master` namespace are hard-blocked by `guard-kubectl.sh` — this includes `kubectl apply -k master/`, `kubectl apply -f workstation.yaml`, `kubectl delete/scale/rollout/patch` in `-n master`, and `kubectl drain/cordon` on any node. Only read operations (get, describe, logs) are allowed against master namespace resources. Workstation and master namespace changes must be done externally. Do not attempt to work around these blocks.
+- **Workstation safety**: The `master` namespace contains the workstation pod you are running inside. The following are ALWAYS blocked regardless of auth level: `kubectl apply -k master/`, `kubectl apply -f workstation.yaml`, any write command containing "workstation", and `kubectl drain/cordon`. Other master namespace writes (grafana, prometheus, loki, alloy, ingress) are allowed only with bootstrap auth (`/tmp/.bootstrap-auth`). Only `/deployer:bootstrap deploy-master` should use bootstrap auth. Regular deployer operations must not touch master namespace.
 
 ## Consultation
 

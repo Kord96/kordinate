@@ -20,25 +20,27 @@ if echo "$CMD" | grep -qE 'ssh\s+\S+.*kubectl\s+(apply|delete|scale|rollout|crea
 
   if [[ -n "$SECRET" && "$AUTH" == "$SECRET" ]]; then
     # Valid deployer auth — hard-block anything that could kill the workstation or its node.
+    # Two tiers:
+    #   .deployer-auth only   → can write to any namespace EXCEPT master
+    #   .deployer-auth + .bootstrap-auth → can write to master, but NEVER workstation resources
+    BOOTSTRAP_AUTH=$(cat /tmp/.bootstrap-auth 2>/dev/null)
 
-    # Block kustomize apply on master/ namespace (contains workstation + all master infra)
+    # ── ALWAYS blocked (no exception) ──
+
+    # Block kustomize apply on master/ (includes workstation.yaml)
     if echo "$CMD" | grep -qE 'kubectl\s+apply\s+-k\s+\S*master'; then
-      echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Hard block: kubectl apply -k on master/ would restart the workstation pod you are running inside. This is never safe from inside the pod. Use `kubectl apply -f` for individual non-workstation manifests, or restart externally."}}'
+      echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Hard block: kubectl apply -k on master/ would restart the workstation pod. Apply individual manifests instead, or restart externally."}}'
       exit 0
     fi
 
     # Block applying workstation.yaml directly
     if echo "$CMD" | grep -qE 'kubectl\s+apply\s+-f\s+\S*workstation\.yaml'; then
-      echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Hard block: applying workstation.yaml would restart the workstation pod you are running inside. Workstation restarts must be done externally."}}'
+      echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Hard block: applying workstation.yaml would restart the workstation pod. Workstation changes must be done externally."}}'
       exit 0
     fi
 
-    # Block any write operation targeting the master namespace by name
-    if echo "$CMD" | grep -qE 'kubectl\s+(delete|scale|rollout|patch|replace|set)\s.*(-n|--namespace)[= ]?master\b'; then
-      echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Hard block: write operations in the master namespace can kill the workstation. Only read operations (get, describe, logs) are allowed from inside the pod."}}'
-      exit 0
-    fi
-    if echo "$CMD" | grep -qE 'kubectl\s+(delete|scale|rollout|patch|replace|set)\s.*\bworkstation\b'; then
+    # Block any write operation targeting workstation resources by name
+    if echo "$CMD" | grep -qE 'kubectl\s+(apply|delete|scale|rollout|patch|replace|set)\s.*\bworkstation\b'; then
       echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Hard block: write operations targeting workstation resources are not safe from inside the pod."}}'
       exit 0
     fi
@@ -47,6 +49,18 @@ if echo "$CMD" | grep -qE 'ssh\s+\S+.*kubectl\s+(apply|delete|scale|rollout|crea
     if echo "$CMD" | grep -qE 'kubectl\s+(drain|cordon|uncordon)\b'; then
       echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Hard block: drain/cordon can evict the workstation pod. Node operations must be done externally."}}'
       exit 0
+    fi
+
+    # ── Master namespace writes — require bootstrap auth ──
+
+    if echo "$CMD" | grep -qE 'kubectl\s+(apply|delete|scale|rollout|patch|replace|set|create)\s.*(-n|--namespace)[= ]?master\b'; then
+      if [[ "$BOOTSTRAP_AUTH" == "$SECRET" ]]; then
+        echo '{}'
+        exit 0
+      else
+        echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: master namespace writes require bootstrap authorization. Use /deployer:bootstrap deploy-master to deploy master namespace infrastructure."}}'
+        exit 0
+      fi
     fi
 
     echo '{}'

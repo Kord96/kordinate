@@ -4,7 +4,7 @@
 ## All credentials live in pass store on the PVC.
 ## Tailscale runs inside the container for SSH access.
 ##
-## Setup: ./setup.sh deploys this, links repo, copies credentials, runs auth-check.
+## Setup: ./kordinate init deploys this, links repo, copies credentials, runs auth-check.
 ## Only `claude login` is manual after setup.
 ##
 ## SAFETY: Applying this manifest restarts the workstation and kills active sessions.
