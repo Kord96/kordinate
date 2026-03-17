@@ -1,0 +1,42 @@
+# Operational context — read by agents for decision-making.
+# For infrastructure (IPs, ports, nodes), see config.yaml.
+#
+# Copy to topology.yaml and fill in your values.
+
+apps:
+  # your-app:
+  #   label: your-app            # k8s pod label value
+  #   description: ""
+  #   namespaces: [dev, test, prod]
+  #   consumers:
+  #     component-a: { port: 9100 }
+  #     component-b: { port: 9101 }
+  # platform:
+  #   label: app-infra
+  #   description: User-managed shared services
+  #   services: [kafka, postgres, redis]
+  # system:
+  #   label: system-infra
+  #   description: System infrastructure managed by deployer
+
+monitoring:
+  retention:
+    gateway: 3h               # Short-term buffer per cluster
+    master: 30d               # Long-term unified storage
+  federation: []
+    # - name: federate-cluster-a
+    #   source_gateway: cluster-a  # references cluster name in config.yaml
+
+health:
+  sentinel:
+    port: 9131
+    interval: 30s
+  thresholds:
+    # dns_error_ratio: { ok: 0.1, warn: 0.3 }
+    # flush_latency_s: { ok: 900, fail: 1800 }
+    # pvc_usage_pct: { warn: 0.8, critical: 0.9 }
+
+logging:
+  suppress: [kafka, urllib3]
+  format: json                # prod
+  dev_format: console

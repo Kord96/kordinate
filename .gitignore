@@ -27,8 +27,13 @@ agent-state/
 # Real config with IPs (generated from template)
 config.yaml
 
-# User-specific operational topology and overrides
-profile/
+# Profile — user content ignored, scaffolding tracked
+profile/topology.yaml
+profile/config.yaml
+profile/overlays/*/
+profile/dashboards/*/
+profile/additions/*/
+profile/projects/*/agent-memory/
 
 # Agent runtime memory
 agent-memory/
