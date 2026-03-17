@@ -1,5 +1,17 @@
 # Shared Patterns Index
 
+## Categories
+
+| Category | Scope | Key Question |
+|----------|-------|--------------|
+| structural | How code is organized within a service | Is business logic decoupled from infrastructure? |
+| data | How data flows and is stored | Is data moving correctly through the system? |
+| integration | How services communicate with each other | Are cross-service interactions safe and traceable? |
+| resilience | How the system handles failure | What happens when a dependency goes down? |
+| lifecycle | How a single service starts, runs, and stops | Does the service boot and shut down cleanly? |
+
+## Patterns
+
 | Pattern | Category | Description |
 |---------|----------|-------------|
 | Hexagonal (ports & adapters) | structural | Decouples business logic from infrastructure via ports (interfaces) and adapters (implementations). Makes services testable and swappable. |
