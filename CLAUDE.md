@@ -30,7 +30,7 @@ For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/conf
 
 - **Shared pattern index** — `agents/patterns.md` — catalog of all recognized design patterns with categories and descriptions
 - **Per-agent knowledge** — `agent-memory/<agent>/` — curated docs and auto-managed memory, organized by topic and `patterns/` subdirectory
-- **Per-project context** — `profile/projects/<project>/context/` — project-specific operational docs (metrics, health checks)
+- **Per-project knowledge** — `profile/projects/<project>/agent-memory/` — project-specific operational docs (metrics, health checks)
 
 ## Agents
 
