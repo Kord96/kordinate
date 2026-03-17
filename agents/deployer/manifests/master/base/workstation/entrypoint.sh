@@ -9,7 +9,6 @@ export CLAUDE_HOME="$HOME/.claude"
 export PATH="$CLAUDE_HOME/bin:$PATH"
 alias claude="claude-session --dangerously-skip-permissions"
 [ -f "$CLAUDE_HOME/bin/tmux-session.bash" ] && source "$CLAUDE_HOME/bin/tmux-session.bash"
-cd "$CLAUDE_HOME" 2>/dev/null
 BASHRC
 fi
 
