@@ -13,6 +13,13 @@ cd "$CLAUDE_HOME" 2>/dev/null
 BASHRC
 fi
 
+# .bash_profile so login shells (SSH) source .bashrc
+if [ ! -f ~/.bash_profile ]; then
+  cat > ~/.bash_profile <<'PROF'
+[ -f ~/.bashrc ] && source ~/.bashrc
+PROF
+fi
+
 export CLAUDE_HOME="$HOME/.claude"
 export PATH="$CLAUDE_HOME/bin:$PATH"
 
