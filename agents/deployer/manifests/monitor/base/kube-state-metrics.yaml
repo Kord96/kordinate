@@ -56,25 +56,25 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kube-state-metrics
-    namespace: gateway
+    namespace: monitor
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kube-state-metrics
   labels:
-    app: kord-infra
+    app: monitoring
     component: kube-state-metrics
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kord-infra
+      app: monitoring
       component: kube-state-metrics
   template:
     metadata:
       labels:
-        app: kord-infra
+        app: monitoring
         component: kube-state-metrics
     spec:
       serviceAccountName: kube-state-metrics

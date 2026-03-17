@@ -7,10 +7,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: master-alloy-config
+  name: alloy-config
   labels:
-    app: kord-infra
-    component: master-alloy
+    app: monitoring
+    component: alloy
 data:
   config.alloy: |
     // ═══════════════════════════════════════════════
@@ -61,6 +61,10 @@ data:
       targets = discovery.kubernetes.home_pods.targets
 
       rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        target_label  = "app"
+      }
+      rule {
         source_labels = ["__meta_kubernetes_pod_label_component"]
         target_label  = "component"
       }
@@ -107,6 +111,10 @@ data:
     discovery.relabel "vandc_logs" {
       targets = discovery.kubernetes.vandc_pods.targets
 
+      rule {
+        source_labels = ["__meta_kubernetes_pod_label_app"]
+        target_label  = "app"
+      }
       rule {
         source_labels = ["__meta_kubernetes_pod_label_component"]
         target_label  = "component"
@@ -175,23 +183,23 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: master-alloy
+  name: alloy
   labels:
-    app: kord-infra
-    component: master-alloy
+    app: monitoring
+    component: alloy
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: kord-infra
-      component: master-alloy
+      app: monitoring
+      component: alloy
   template:
     metadata:
       labels:
-        app: kord-infra
-        component: master-alloy
+        app: monitoring
+        component: alloy
     spec:
       containers:
         - name: alloy
@@ -218,7 +226,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: master-alloy-config
+            name: alloy-config
         - name: home-kubeconfig
           secret:
             secretName: home-kubeconfig

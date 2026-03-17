@@ -7,7 +7,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: prometheus-admin-data
   labels:
-    app: kord-infra
+    app: monitoring
     component: prometheus
 spec:
   accessModes:
@@ -22,7 +22,7 @@ kind: ConfigMap
 metadata:
   name: prometheus-admin-config
   labels:
-    app: kord-infra
+    app: monitoring
     component: prometheus
 data:
   prometheus.yml: |
@@ -40,7 +40,7 @@ kind: Deployment
 metadata:
   name: prometheus
   labels:
-    app: kord-infra
+    app: monitoring
     component: prometheus
 spec:
   replicas: 1
@@ -48,12 +48,12 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: kord-infra
+      app: monitoring
       component: prometheus
   template:
     metadata:
       labels:
-        app: kord-infra
+        app: monitoring
         component: prometheus
     spec:
       initContainers:
@@ -100,12 +100,12 @@ kind: Service
 metadata:
   name: prometheus
   labels:
-    app: kord-infra
+    app: monitoring
     component: prometheus
 spec:
   type: ClusterIP
   selector:
-    app: kord-infra
+    app: monitoring
     component: prometheus
   ports:
     - port: 9191

@@ -7,16 +7,17 @@ kind: DaemonSet
 metadata:
   name: node-exporter
   labels:
-    app: kord-infra
+    app: monitoring
     component: node-exporter
 spec:
   selector:
     matchLabels:
-      app: kord-infra
+      app: monitoring
+      component: node-exporter
   template:
     metadata:
       labels:
-        app: kord-infra
+        app: monitoring
         component: node-exporter
       annotations:
         prometheus.io/scrape: "true"

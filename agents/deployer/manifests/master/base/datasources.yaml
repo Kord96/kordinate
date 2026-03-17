@@ -1,13 +1,13 @@
 ##
 ## Grafana datasources — provisioned via ConfigMap
-## URLs point to master namespace services (gateway once deployed).
+## URLs point to standalone services in the master namespace.
 ##
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-datasources
   labels:
-    app: kord-infra
+    app: monitoring
     component: grafana
 data:
   datasources.yaml: |
@@ -16,22 +16,13 @@ data:
       - name: Prometheus
         type: prometheus
         uid: prometheus
-        url: http://gateway.master.svc.cluster.local:9191
+        url: http://prometheus.master.svc.cluster.local:9191
         access: proxy
         isDefault: true
         editable: false
       - name: Loki
         type: loki
         uid: loki
-        url: http://gateway.master.svc.cluster.local:3100
-        access: proxy
-        editable: false
-      - name: FlightSQL (VanDC)
-        type: influxdata-flightsql-datasource
-        uid: flightsql
-        # Tailscale IP: MagicDNS doesn't resolve from Grafana container (k8s DNS only).
-        # Tailscale serve binds to TS interface only, so k8s Service can't proxy this.
-        # Direct Tailscale IP via Grafana's own TS sidecar is the working path.
-        url: http://100.93.174.24:8815
+        url: http://loki.master.svc.cluster.local:3100
         access: proxy
         editable: false

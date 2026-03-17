@@ -1,26 +1,49 @@
 ##
-## Gateway Tailscale — provides Tailscale identity for the gateway namespace
-## Same pattern as workstation's Tailscale sidecar but standalone.
-## Enables master to reach gateway services over Tailscale.
+## Gateway — Tailscale identity for the cluster
+## Exposes Prometheus, Loki, and K8s API on the tailnet for master.
 ##
-## Secret "gateway-tailscale" is created by the deployer from
-## pass store (kordinate/tailscale/auth_key).
-##
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gateway-tailscale
+  labels:
+    app: monitoring
+    component: gateway
+stringData:
+  TS_AUTHKEY: MUST_BE_SET
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-serve-config
+  labels:
+    app: monitoring
+    component: gateway
+data:
+  serve.json: |
+    {
+      "TCP": {
+        "6443": { "TCPForward": "kubernetes.default.svc.cluster.local:443" },
+        "9090": { "TCPForward": "prometheus.monitor.svc.cluster.local:9090" },
+        "3100": { "TCPForward": "loki.monitor.svc.cluster.local:3100" }
+      }
+    }
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: tailscale
+  name: gateway
   labels:
-    app: kord-infra
-    component: tailscale
+    app: monitoring
+    component: gateway
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: tailscale
+  name: gateway
   labels:
-    app: kord-infra
-    component: tailscale
+    app: monitoring
+    component: gateway
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
@@ -32,41 +55,41 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: tailscale
+  name: gateway
   labels:
-    app: kord-infra
-    component: tailscale
+    app: monitoring
+    component: gateway
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: tailscale
+  name: gateway
 subjects:
   - kind: ServiceAccount
-    name: tailscale
-    namespace: gateway
+    name: gateway
+    namespace: monitor
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tailscale
+  name: gateway
   labels:
-    app: kord-infra
-    component: tailscale
+    app: monitoring
+    component: gateway
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: kord-infra
-      component: tailscale
+      app: monitoring
+      component: gateway
   template:
     metadata:
       labels:
-        app: kord-infra
-        component: tailscale
+        app: monitoring
+        component: gateway
     spec:
-      serviceAccountName: tailscale
+      serviceAccountName: gateway
       containers:
         - name: tailscale
           image: ghcr.io/tailscale/tailscale:latest
@@ -77,9 +100,11 @@ spec:
                   name: gateway-tailscale
                   key: TS_AUTHKEY
             - name: TS_HOSTNAME
-              value: gateway-home
+              value: MUST_BE_SET_BY_OVERLAY
             - name: TS_USERSPACE
               value: "false"
+            - name: TS_SERVE_CONFIG
+              value: /etc/tailscale/serve.json
             - name: TS_STATE_DIR
               value: /var/lib/tailscale
             - name: POD_NAME
@@ -102,11 +127,16 @@ spec:
           volumeMounts:
             - name: tailscale-state
               mountPath: /var/lib/tailscale
+            - name: serve-config
+              mountPath: /etc/tailscale
             - name: dev-tun
               mountPath: /dev/net/tun
       volumes:
         - name: tailscale-state
           emptyDir: {}
+        - name: serve-config
+          configMap:
+            name: gateway-serve-config
         - name: dev-tun
           hostPath:
             path: /dev/net/tun

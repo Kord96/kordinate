@@ -6,7 +6,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: grafana-data
   labels:
-    app: kord-infra
+    app: monitoring
     component: grafana
 spec:
   accessModes:
@@ -21,7 +21,7 @@ kind: Deployment
 metadata:
   name: grafana
   labels:
-    app: kord-infra
+    app: monitoring
     component: grafana
 spec:
   replicas: 1
@@ -29,12 +29,12 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: kord-infra
+      app: monitoring
       component: grafana
   template:
     metadata:
       labels:
-        app: kord-infra
+        app: monitoring
         component: grafana
     spec:
       serviceAccountName: default
@@ -138,12 +138,12 @@ kind: Service
 metadata:
   name: grafana
   labels:
-    app: kord-infra
+    app: monitoring
     component: grafana
 spec:
   type: ClusterIP
   selector:
-    app: kord-infra
+    app: monitoring
     component: grafana
   ports:
     - port: 3000

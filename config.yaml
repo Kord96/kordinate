@@ -16,7 +16,7 @@ clusters:
       - 10.95.43.60
     namespaces: [dev, test, prod, monitor]
     manifests:
-      gateway: agents/deployer/manifests/gateway
+      monitor: agents/deployer/manifests/monitor
       bootstrap: agents/deployer/manifests/bootstrap
       platform: profile/additions
     workloads: [logbd, kafka, postgres, redis, schema-registry]
@@ -50,7 +50,7 @@ clusters:
       - 100.93.138.73   # colima-mac (agent, Tailscale IP)
     namespaces: [dev, test, prod, monitor]
     manifests:
-      gateway: agents/deployer/manifests/gateway
+      monitor: agents/deployer/manifests/monitor
       master: agents/deployer/manifests/master
       bootstrap: agents/deployer/manifests/bootstrap
       platform: profile/additions

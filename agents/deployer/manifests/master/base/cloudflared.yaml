@@ -1,0 +1,75 @@
+##
+## Cloudflared — Cloudflare tunnel for external Grafana access
+##
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflared-tunnel
+  labels:
+    app: monitoring
+    component: cloudflared
+stringData:
+  TUNNEL_TOKEN: MUST_BE_SET
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  labels:
+    app: monitoring
+    component: cloudflared
+data:
+  config.yaml: |
+    tunnel: bacfb3d8-22ba-4949-bf80-27ba6fa11ae0
+    ingress:
+      - hostname: grafana.khaledkord.com
+        service: http://grafana.master.svc.cluster.local:3000
+      - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  labels:
+    app: monitoring
+    component: cloudflared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring
+      component: cloudflared
+  template:
+    metadata:
+      labels:
+        app: monitoring
+        component: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - --config
+            - /etc/cloudflared/config.yaml
+            - run
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-tunnel
+                  key: TUNNEL_TOKEN
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: cloudflared-config
+              mountPath: /etc/cloudflared
+      volumes:
+        - name: cloudflared-config
+          configMap:
+            name: cloudflared-config
