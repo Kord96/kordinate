@@ -14,41 +14,41 @@
 
 ### Structural
 
-| Pattern | Description |
-|---------|-------------|
-| Hexagonal (ports & adapters) | Decouples business logic from infrastructure via ports (interfaces) and adapters (implementations). Makes services testable and swappable. |
-| Domain-driven design (DDD) | Organizes code around bounded contexts and domain aggregates. Events flow between contexts, not direct calls. |
-| Plugin architecture | Extensible core with pluggable components registered at startup. New capabilities without modifying core code. |
+| Pattern | Repo | Description |
+|---------|------|-------------|
+| Hexagonal (ports & adapters) | — | Decouples business logic from infrastructure via ports (interfaces) and adapters (implementations). Makes services testable and swappable. |
+| Domain-driven design (DDD) | — | Organizes code around bounded contexts and domain aggregates. Events flow between contexts, not direct calls. |
+| Plugin architecture | — | Extensible core with pluggable components registered at startup. New capabilities without modifying core code. |
 
 ### Data
 
-| Pattern | Description |
-|---------|-------------|
-| Stoik (stream-to-store) | Kafka consumer that writes to a local DuckDB store via buffered flushes. Core pattern for pipeline services. |
-| ETL/ELT | Batch extract-transform-load for periodic data processing. Scheduled via cron or orchestrator. |
-| Event sourcing | Append-only event log as the source of truth. Current state derived by replaying events. |
-| CQRS | Separate models for reading and writing data. Write model optimized for consistency, read model for query performance. |
+| Pattern | Repo | Description |
+|---------|------|-------------|
+| Stoik (stream-to-store) | [stoik](https://pypi.org/project/stoik/) | Kafka consumer that writes to a local DuckDB store via buffered flushes. Core pattern for pipeline services. |
+| ETL/ELT | — | Batch extract-transform-load for periodic data processing. Scheduled via cron or orchestrator. |
+| Event sourcing | — | Append-only event log as the source of truth. Current state derived by replaying events. |
+| CQRS | — | Separate models for reading and writing data. Write model optimized for consistency, read model for query performance. |
 
 ### Integration
 
-| Pattern | Description |
-|---------|-------------|
-| Saga | Distributed transactions across services via a sequence of local transactions with compensating actions on failure. |
-| Choreography | Services react to events independently with no central coordinator. Loose coupling but harder to trace. |
-| API gateway | Centralized entry point for routing, auth, and rate limiting across multiple backend services. |
+| Pattern | Repo | Description |
+|---------|------|-------------|
+| Saga | — | Distributed transactions across services via a sequence of local transactions with compensating actions on failure. |
+| Choreography | — | Services react to events independently with no central coordinator. Loose coupling but harder to trace. |
+| API gateway | — | Centralized entry point for routing, auth, and rate limiting across multiple backend services. |
 
 ### Resilience
 
-| Pattern | Description |
-|---------|-------------|
-| Circuit breaker | Stops calling a failing dependency after a threshold, allows recovery time, then retries. Prevents cascade failures. |
-| Bulkhead | Isolates components so one failure doesn't exhaust shared resources (threads, connections, memory). |
-| Retry with backoff | Retries failed operations with exponential delay and jitter. Dead-letter queue for permanent failures. |
-| Backpressure | Flow control when a producer is faster than its consumer. Prevents memory exhaustion and queue overflow. |
+| Pattern | Repo | Description |
+|---------|------|-------------|
+| Circuit breaker | — | Stops calling a failing dependency after a threshold, allows recovery time, then retries. Prevents cascade failures. |
+| Bulkhead | — | Isolates components so one failure doesn't exhaust shared resources (threads, connections, memory). |
+| Retry with backoff | — | Retries failed operations with exponential delay and jitter. Dead-letter queue for permanent failures. |
+| Backpressure | — | Flow control when a producer is faster than its consumer. Prevents memory exhaustion and queue overflow. |
 
 ### Lifecycle
 
-| Pattern | Description |
-|---------|-------------|
-| Orchestrator (service manager) | Manages service startup, shutdown, health reporting, and graceful degradation within a single process. |
-| Sidecar | Auxiliary container running alongside the main workload, handling cross-cutting concerns (networking, logging, auth). |
+| Pattern | Repo | Description |
+|---------|------|-------------|
+| Orchestrator (service manager) | [orchestrator](https://pypi.org/project/orchestrator-lib/) | Manages service startup, shutdown, health reporting, and graceful degradation within a single process. |
+| Sidecar | — | Auxiliary container running alongside the main workload, handling cross-cutting concerns (networking, logging, auth). |
