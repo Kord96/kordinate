@@ -50,22 +50,21 @@ Remote Access: Tailscale SSH --> Workstation Pod
 ```bash
 git clone <repo-url> kordinate
 cd kordinate
-cp profile/config.yaml.template profile/config.yaml
 # Edit profile/config.yaml with your cluster IPs, registry, namespaces
-sudo ./setup.sh
+sudo ./kordinate init
 ```
 
 ### Additional Setup Commands
 
 ```bash
 # Hydrate profile/mcp.json from profile/config.yaml (re-run after config changes)
-sudo ./setup.sh hydrate
+./kordinate hydrate
 
 # Export current profile for backup
-sudo ./setup.sh export
+./kordinate export
 
 # Import a previously exported profile
-sudo ./setup.sh import
+./kordinate import <file>
 ```
 
 ## Configuration
@@ -74,7 +73,7 @@ Kordinate uses two configuration files with distinct purposes.
 
 ### config.yaml — Infrastructure
 
-Machine-consumed configuration for cluster infrastructure. Used by `setup.sh`, manifest templates, and the deployer agent.
+Machine-consumed configuration for cluster infrastructure. Lives at `profile/config.yaml`. Used by the bootstrap CLI, manifest templates, and the deployer agent.
 
 ```yaml
 clusters:
@@ -89,7 +88,7 @@ clusters:
       - monitoring
 ```
 
-Start from `profile/config.yaml.template` and fill in your values.
+See `profile/README.md` for config structure.
 
 ### profile/topology.yaml — Operational Context
 
@@ -114,63 +113,7 @@ monitoring:
 
 Credentials are stored in a GPG-encrypted `pass` store under the `kordinate/` prefix. Agents retrieve secrets at runtime; nothing is stored in plaintext in the repository.
 
-## Agents
-
-Kordinate ships four specialized agents, each scoped to a specific operational domain.
-
-| Agent    | Triggers                                           | Purpose                    |
-|----------|---------------------------------------------------|----------------------------|
-| deployer | `roll`, `migrate`, `stop`, `clean`, `diff`        | GitOps deployments         |
-| sauron   | `add monitoring`, `health check`, `dashboard`, `run tests` | Observability & validation |
-| designer | `review architecture`, `design review`            | Architecture review        |
-| scribe   | `update docs`, `add api key`, `add mcp`, `write readme`   | Documentation (sole `.md` editor) |
-
-### Consultation Protocol
-
-Ask an agent a question without transferring full control:
-
-```
-/consult deployer "Is your-app healthy on cluster-a?"
-```
-
-### Async Messaging
-
-Send a message to an agent via scribe relay:
-
-```
-/scribe:text sauron "Add a dashboard for your-app memory usage"
-```
-
-## Hooks (Safety Guardrails)
-
-Hooks intercept tool calls and enforce authorization before execution.
-
-| Hook                 | What It Guards                                                                 |
-|----------------------|-------------------------------------------------------------------------------|
-| `guard-kubectl.sh`   | Blocks kubectl write operations unless deployer is authorized. Hard-blocks ALL operations in the `master` namespace. |
-| `guard-md.sh`        | Blocks `.md` file edits unless scribe is authorized.                          |
-| `guard-grafana.sh`   | Blocks Grafana MCP calls unless sauron is authorized.                         |
-| `guard-redis.sh`     | Blocks Redis MCP calls unless deployer is authorized.                         |
-| `guard-git.sh`       | Guards destructive git operations (force push, reset, etc.).                  |
-| `auto-merge-to-dev.sh` | Post-push hook that auto-merges session branches to main.                  |
-
-### Token-Based Authorization
-
-Agents authorize themselves by placing a lock token file before operating:
-
-1. Agent copies lock to `/tmp/.<agent>-auth`
-2. Hook checks for the token file and permits the operation
-3. Agent removes the token file after completing work
-
-## Commands
-
-| Command           | Description                                          |
-|-------------------|------------------------------------------------------|
-| `/boot`           | Initialize the workstation environment               |
-| `/consult`        | Query an agent without full handoff                  |
-| `/merge`          | Merge current session branch                         |
-| `/deployer:roll`  | Trigger a rolling deployment via the deployer agent  |
-| `/scribe:text`    | Send an async message to an agent via scribe         |
+See [agents/README.md](agents/README.md) for agent documentation, hooks, and commands.
 
 ## Branch Model
 
@@ -189,30 +132,27 @@ kordinate/
 ├── agents/
 │   ├── deployer/          # Deployment agent (manifests, commands)
 │   ├── sauron/            # Monitoring & validation agent
-│   ├── designer/          # Architecture review agent
+│   ├── designer/          # Architecture review + pattern authority
 │   └── scribe/            # Documentation agent
-├── bin/                   # Shell scripts (claude-session, tmux management)
+├── agent-memory/          # Per-agent knowledge
+│   ├── deployer/
+│   ├── sauron/
+│   ├── designer/          # Includes patterns/ and patterns.md
+│   └── scribe/
+├── bin/                   # claude-session, tmux management
 ├── commands/              # Shared slash commands (boot, consult, merge)
 ├── hooks/                 # Safety guardrail hooks
-├── setup/                 # Bootstrap helpers
-├── agent-memory/          # Per-agent knowledge + patterns (tracked)
-│   ├── patterns.md        # Shared pattern index
-│   ├── deployer/          # Deployer agent knowledge
-│   ├── sauron/            # Sauron agent knowledge + libraries/
-│   ├── designer/          # Designer agent knowledge
-│   └── scribe/            # Scribe agent knowledge + templates/
-├── profile/               # User-specific (gitignored)
+├── setup/                 # Bootstrap helpers (lib.sh, auth-check.sh)
+├── profile/               # Site-specific config (git-crypt encrypted)
 │   ├── config.yaml        # Cluster infrastructure
-│   ├── config.yaml.template # Config template (tracked)
-│   ├── topology.yaml      # Operational context for agents
-│   ├── mcp.json           # MCP server config (generated by hydrate)
+│   ├── topology.yaml      # App topology, health thresholds
 │   ├── locks/             # Agent auth locks
-│   ├── keystore            # Symlink → ~/.password-store/kordinate/
-│   ├── overlays/          # Per-cluster kustomize patches
-│   └── additions/         # User platform manifests
-├── .mcp.json              # Symlink → profile/mcp.json
+│   ├── keystore           # Symlink → pass store
+│   ├── overlays/          # Per-stack kustomize overlays
+│   └── additions/         # Extra k8s manifests
+├── .mcp.json              # MCP server config (git-crypt encrypted)
+├── kordinate              # Bootstrap CLI
 ├── settings.json          # Claude Code settings
-├── setup.sh               # Bootstrap script
 └── CLAUDE.md              # Global agent guidelines
 ```
 
@@ -227,13 +167,13 @@ The workstation is a containerized Claude Code environment running as a Kubernet
 
 ## Framework vs User Content
 
-Kordinate separates framework code (tracked in git) from user-specific configuration (gitignored under `profile/`).
+Kordinate separates framework code (tracked in git) from user-specific configuration (git-crypt encrypted under `profile/`).
 
 ### Framework (tracked)
 
 Everything outside `profile/`: agents, commands, hooks, `bin/`, base manifests with template placeholders, and `agent-memory/` files. This is the shared, portable layer that defines how the system operates.
 
-### User content (profile/, gitignored)
+### User content (profile/, git-crypt encrypted)
 
 `config.yaml`, `topology.yaml`, kustomize overlays, agent auth locks, `mcp.json`, and the `keystore` symlink to the pass store. This is the site-specific layer that tells the framework what to operate on.
 
