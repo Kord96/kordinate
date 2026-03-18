@@ -179,6 +179,22 @@ cmd_deploy() {
   done
 
   echo ""
+  echo "=== Paths map ==="
+  # Generate paths.json — agents read this instead of hardcoding paths
+  cat > "$TARGET/paths.json" <<PATHS
+{
+  "curated": "$TARGET/agents/{agent}/memory/",
+  "operational": "$TARGET/agent-memory/{agent}/",
+  "project": "{repo}/.claude/agent-memory/{agent}/",
+  "shared": "$TARGET/agents/shared/",
+  "profile": "$TARGET/profile/",
+  "manifests": "{repo}/manifests/",
+  "monitoring": "{repo}/monitoring/"
+}
+PATHS
+  echo "  +   paths.json"
+
+  echo ""
   echo "=== PATH ==="
   SHELL_RC="$HOME/.bashrc"
   [ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"

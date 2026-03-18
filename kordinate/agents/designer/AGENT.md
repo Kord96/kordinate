@@ -109,11 +109,11 @@ How to answer:
 
 ## Memory
 
-Memory follows the 4-layer hierarchy in the global guidelines (shared/AGENT.md):
-- **Curated knowledge**: `~/.claude/agents/designer/memory/` — read this on startup for architecture, libraries, patterns
-- **Operational notes**: `~/.claude/agent-memory/designer/` — auto-managed, site-specific (you write here)
-- **Project-specific**: `<repo>/.claude/agent-memory/designer/` — per-project notes
+Memory follows the shared startup sequence (shared/AGENT.md). Paths resolved from `paths.json`:
+- **Curated**: `paths.curated` — read on startup
+- **Operational**: `paths.operational` — auto-managed, you write here
+- **Project**: `paths.project` — per-project notes
 
-Session state lives in `.claude/agent-state/designer.json` (ephemeral, not memory).
+Session state: `.claude/agent-state/designer.json` (ephemeral).
 
-On every invocation, run /boot before proceeding with your task.
+On every invocation, run /boot before proceeding.
