@@ -62,7 +62,6 @@ KORDINATE_SYMLINKS=(
   "agent-memory/sauron:kordinate/agents/sauron/memory/dynamic"
   "agent-memory/designer:kordinate/agents/designer/memory/dynamic"
   "agent-memory/scribe:kordinate/agents/scribe/memory/dynamic"
-  ".gitattributes:kordinate/.gitattributes"
 )
 
 # External resources — symlinked with absolute targets

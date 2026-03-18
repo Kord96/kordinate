@@ -30,7 +30,6 @@ agent-state/
 /settings.json
 /keybindings.json
 /.mcp.json
-/.gitattributes
 /agents
 /agent-memory
 /commands
