@@ -6,7 +6,7 @@
 
 Kordinate repo at `~/kordinate/`. Multi-cluster k8s infrastructure — agents, commands, config, and knowledge all live here. Deploys to clusters via SSH.
 
-For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/profile/config.yaml`
+For reference: `~/.claude/agents/deployer/memory/infra.md` · `~/.claude/profile/config.yaml`
 
 ---
 
@@ -49,10 +49,36 @@ When the user says "consult", "ask", or "check with" an agent, run `/consult <ag
 | sauron | Metrics, health checks, log events, dashboards |
 | deployer | Cluster state, pod status, deployment status, versions, networking |
 
-## Agent Memory
+## Memory
 
-- `~/.claude/agent-memory/<agent>/` — auto-managed operational memory (site-specific, encrypted)
-- `~/.claude/agents/<agent>/memory/` — curated knowledge (generic, parent of auto-memory)
-- `<project-repo>/.claude/agent-memory/<agent>/` — project-specific notes
-- `<project-repo>/manifests/` — k8s manifests (deployer convention)
-- `<project-repo>/monitoring/` — dashboards, health checks (sauron convention)
+```
+┌─────────────────────────────────────────────────────┐
+│  Shared                                             │
+│  agents/shared/AGENT.md  (this file)                │
+│  Rules, routing, conventions — all agents read this │
+├─────────────────────────────────────────────────────┤
+│  Per-agent curated          (generic, any install)  │
+│  ~/.claude/agents/<agent>/memory/                   │
+│  Architecture, libraries, patterns                  │
+├─────────────────────────────────────────────────────┤
+│  Per-agent operational   (site-specific, encrypted) │
+│  ~/.claude/agent-memory/<agent>/                    │
+│  Auto-managed notes, cluster IPs, debug history     │
+├─────────────────────────────────────────────────────┤
+│  Per-project              (lives in project repo)   │
+│  <repo>/.claude/agent-memory/<agent>/               │
+│  Metrics catalogs, health checks, deploy config     │
+└─────────────────────────────────────────────────────┘
+```
+
+When looking for context, check all layers top to bottom. When writing:
+
+| What to write | Where |
+|---------------|-------|
+| Generic knowledge (any install) | `~/.claude/agents/<agent>/memory/` |
+| Site-specific notes (IPs, clusters) | `~/.claude/agent-memory/<agent>/` |
+| Project-specific notes | `<repo>/.claude/agent-memory/<agent>/` |
+
+Project conventions discovered at repo root:
+- `manifests/` — k8s manifests (deployer)
+- `monitoring/` — dashboards, health checks (sauron)
