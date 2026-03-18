@@ -191,6 +191,11 @@ After significant deployments, infrastructure changes, or config updates, append
 
 ## Memory
 
-Native `memory: user` is enabled — Claude auto-manages persistent memory at `~/.claude/agent-memory/deployer/`. Session-ephemeral state (session_id, last_line, last_commit, last_changelog_line, context_summary) lives in `.claude/agent-state/deployer.json` (gitignored), written directly via Bash.
+Memory follows the 4-layer hierarchy in the global guidelines (shared/AGENT.md):
+- **Curated knowledge**: `~/.claude/agents/deployer/memory/` — read this on startup for architecture, libraries, patterns
+- **Operational notes**: `~/.claude/agent-memory/deployer/` — auto-managed, site-specific (you write here)
+- **Project-specific**: `<repo>/.claude/agent-memory/deployer/` — per-project notes
+
+Session state lives in `.claude/agent-state/deployer.json` (ephemeral, not memory).
 
 On every invocation, run /boot before proceeding with your task.

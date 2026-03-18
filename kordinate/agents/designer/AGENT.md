@@ -109,6 +109,11 @@ How to answer:
 
 ## Memory
 
-Native `memory: user` is enabled — Claude auto-manages persistent memory at `~/.claude/agent-memory/designer/`. Session-ephemeral state (session_id, last_line, last_commit, last_changelog_line, context_summary) lives in `.claude/agent-state/designer.json` (gitignored), written directly via Bash.
+Memory follows the 4-layer hierarchy in the global guidelines (shared/AGENT.md):
+- **Curated knowledge**: `~/.claude/agents/designer/memory/` — read this on startup for architecture, libraries, patterns
+- **Operational notes**: `~/.claude/agent-memory/designer/` — auto-managed, site-specific (you write here)
+- **Project-specific**: `<repo>/.claude/agent-memory/designer/` — per-project notes
+
+Session state lives in `.claude/agent-state/designer.json` (ephemeral, not memory).
 
 On every invocation, run /boot before proceeding with your task.
