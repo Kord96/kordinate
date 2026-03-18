@@ -1,42 +1,49 @@
 # Link Mapping
 
-Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its files at `~/.claude/`. The linking layer bridges them — `installer/link.sh` creates symlinks and copies so Claude Code finds everything where it expects, while the repo stays agent-agnostic.
+Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its files at `~/.claude/`. The linking layer (`installer/link.sh`) bridges them.
 
 ## Claude Code native
 
-Paths that Claude Code discovers by convention:
+### Direct (same structure)
 
-### Symlinked
+These map 1:1 — Claude's convention matches kordinate's layout:
 
-| At `~/.claude/` | Points to | Purpose |
-|------------------|-----------|---------|
-| `agents/` | `kordinate/agents/` | Agent definitions + commands |
-| `commands/` | `kordinate/commands/` | Shared slash commands |
-| `settings.json` | `kordinate/settings.json` | Hook registrations, permissions |
-| `keybindings.json` | `kordinate/profile/keybindings.json` | Keyboard shortcuts |
-| `.mcp.json` | `kordinate/profile/mcp.json` | MCP server config |
-| `agent-memory/<agent>/` | `kordinate/agents/<agent>/memory/dynamic/` | Auto-managed memory |
+| Claude Code | Kordinate |
+|-------------|-----------|
+| `agents/` | `agents/` |
+| `commands/` | `commands/` |
 
-### Copied (renamed)
+### Remapped (different location)
 
-| At `~/.claude/` | Source in repo |
-|------------------|----------------|
-| `CLAUDE.md` | `kordinate/agents/AGENT.md` |
-| `agents/<agent>/CLAUDE.md` | `kordinate/agents/<agent>/AGENT.md` |
+Claude expects these at `~/.claude/` root, but kordinate stores them elsewhere:
 
-Copied on `link.sh deploy`, synced back on `link.sh sync`.
+| Claude Code | Kordinate | Why different |
+|-------------|-----------|---------------|
+| `settings.json` | `settings.json` (framework root) | Framework config, not inside agents/ |
+| `keybindings.json` | `profile/keybindings.json` | Site-specific |
+| `.mcp.json` | `profile/mcp.json` | Site-specific, encrypted |
+| `agent-memory/<agent>/` | `agents/<agent>/memory/dynamic/` | Memory colocated with agent, not separate tree |
+
+### Renamed (different filename)
+
+Kordinate uses `AGENT.md`, Claude Code expects `CLAUDE.md`. Copied on `link.sh deploy`, synced back on `link.sh sync`:
+
+| Claude Code | Kordinate |
+|-------------|-----------|
+| `CLAUDE.md` | `agents/AGENT.md` |
+| `agents/<agent>/CLAUDE.md` | `agents/<agent>/AGENT.md` |
 
 ## Kordinate-specific
 
-Paths that Claude Code doesn't know about — linked so kordinate's hooks and scripts resolve at stable `~/.claude/` paths:
+Not Claude Code conventions — linked so hooks and scripts resolve at stable paths:
 
-| At `~/.claude/` | Points to | Used by |
+| At `~/.claude/` | Kordinate | Used by |
 |------------------|-----------|---------|
-| `hooks/` | `kordinate/hooks/` | `settings.json` references `$HOME/.claude/hooks/` |
-| `profile/` | `kordinate/profile/` | Hooks read locks at `profile/locks/` |
+| `hooks/` | `hooks/` | `settings.json` references `$HOME/.claude/hooks/` |
+| `profile/` | `profile/` | Hooks read locks at `profile/locks/` |
 
 ## External
 
 | Link | Target | Purpose |
 |------|--------|---------|
-| `kordinate/profile/keystore/` | `~/.password-store/kordinate/` | GPG credential store (`pass`) |
+| `profile/keystore/` | `~/.password-store/kordinate/` | GPG credential store (`pass`) |
