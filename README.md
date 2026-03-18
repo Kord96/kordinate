@@ -7,35 +7,35 @@ Kordinate provides specialized agents, safety guardrails, and a GitOps pipeline 
 ## How It Works
 
 ```
-                         Tailscale SSH
+              ┌────────┐
+              │  You   │
+              └───┬────┘
+                  │ Tailscale SSH
+    ┌─────────────▼──────────────────┐
+    │        Workstation Pod         │
+    │                                │
+    │  tmux ─► Claude Code           │
+    │               │                │
+    │        ┌──────┴──────┐         │
+    │        │   Agents    │         │
+    │        │  deployer   │────┐    │
+    │        │  sauron     │    │    │
+    │        │  designer   │  hooks  │
+    │        │  scribe     │  check  │
+    │        └─────────────┘  every  │
+    │                         tool   │
+    │                         call   │
+    └─────────────────────────┼──────┘
                               │
-                ┌─────────────▼──────────────┐
-                │      Workstation Pod        │
-                │                             │
-                │  You ─► tmux ─► Claude Code │
-                │                     │       │
-                │              ┌──────┴─────┐ │
-                │              │   Agents    │ │
-                │              │             │ │
-                │              │  deployer   │ │
-                │              │  sauron     │ │
-                │              │  designer   │ │
-                │              │  scribe     │ │
-                │              └──────┬─────┘ │
-                │                     │       │
-                │  hooks ─────────── guard    │
-                └─────────────────────┼───────┘
-                                      │
-                              SSH + kubectl
-                       ┌──────────┼──────────┐
-                       │          │          │
-                 ┌─────▼─────┐ ┌─▼────────┐ │
-                 │ cluster-a │ │ cluster-b │ ...
-                 │           │ │           │
-                 │ dev       │ │ dev       │
-                 │ test      │ │ test      │
-                 │ prod      │ │ prod      │
-                 └───────────┘ └───────────┘
+                      SSH + kubectl
+                 ┌────────┼────────┐
+                 │        │        │
+           ┌─────▼──┐ ┌──▼─────┐  │
+           │cluster-a│ │cluster-b│ ...
+           │ dev     │ │ dev     │
+           │ test    │ │ test    │
+           │ prod    │ │ prod    │
+           └─────────┘ └────────┘
 ```
 
 The framework is **agent-agnostic** — a linking layer maps kordinate's internal structure to whatever AI agent runtime you use:
