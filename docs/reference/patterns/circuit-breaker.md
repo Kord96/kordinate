@@ -1,5 +1,18 @@
 # Circuit Breaker
 
+```
+        success           threshold            timeout
+          │                exceeded               │
+          ▼                   │                    ▼
+      ┌────────┐         ┌───┴───┐         ┌───────────┐
+      │ CLOSED │──fail──►│ OPEN  │──wait───►│ HALF-OPEN │
+      │        │         │       │         │           │
+      │ normal │         │reject │         │  1 probe  │
+      │  flow  │         │  all  │         │  request  │
+      └────────┘         └───────┘         └─────┬─────┘
+          ▲                                      │
+          └──────── probe succeeds ──────────────┘
+```
 
 ## Architecture
 

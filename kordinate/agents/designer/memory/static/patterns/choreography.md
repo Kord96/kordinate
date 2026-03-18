@@ -1,23 +1,5 @@
 # Choreography
 
-```
-                       ┌───────────────────┐
-                       │    Event Bus      │
-                       │  (Kafka / SNS)    │
-                       └─┬──────┬──────┬───┘
-                         │      │      │
-              subscribe  │      │      │  subscribe
-                 ┌───────┘      │      └───────┐
-                 ▼              ▼              ▼
-           ┌──────────┐  ┌──────────┐  ┌──────────┐
-           │Service A │  │Service B │  │Service C │
-           │          │  │          │  │          │
-           │ react &  │  │ react &  │  │ react &  │
-           │  publish │  │  publish │  │  publish │
-           └──────────┘  └──────────┘  └──────────┘
-
-  No central coordinator — each service decides what to do with events.
-```
 
 ## Architecture
 

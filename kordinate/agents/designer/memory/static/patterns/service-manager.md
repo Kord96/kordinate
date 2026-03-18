@@ -1,20 +1,5 @@
 # Service Manager
 
-```
-  ┌─────────┐     ┌─────────────────────────┐     ┌──────────┐
-  │ Startup │────►│        Running          │────►│ Shutdown │
-  │         │     │                         │     │          │
-  │ • config│     │  ┌───────────────────┐  │     │ • signal │
-  │ • deps  │     │  │  Health Loop      │  │     │ • drain  │
-  │ • init  │     │  │  ┌─────┐         │  │     │ • flush  │
-  │ • ready │     │  │  │check│──► report│  │     │ • close  │
-  └─────────┘     │  │  └─────┘         │  │     └──────────┘
-                  │  └───────────────────┘  │
-                  │                         │
-                  │  Serves traffic only    │
-                  │  after ready signal     │
-                  └─────────────────────────┘
-```
 
 ## Architecture
 

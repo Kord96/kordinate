@@ -1,5 +1,23 @@
 # Saga
 
+```
+  Step 1          Step 2          Step 3
+  ┌─────┐        ┌─────┐        ┌─────┐
+  │ Do  │──ok───►│ Do  │──ok───►│ Do  │──► Success
+  └──┬──┘        └──┬──┘        └──┬──┘
+     │              │              │ fail
+     │              │              ▼
+     │              │         Compensate 3
+     │              │              │
+     │              ▼              │
+     │         Compensate 2 ◄──────┘
+     │              │
+     ▼              │
+  Compensate 1 ◄────┘
+     │
+     ▼
+  Rolled back
+```
 
 ## Architecture
 

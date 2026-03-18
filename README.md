@@ -122,4 +122,6 @@ git-crypt unlock                 # decrypt profile/
 | [docs/memory.md](docs/memory.md) | Mid-level | Memory model: static, dynamic, project |
 | [docs/profile.md](docs/profile.md) | Reference | Site-specific config and YAML structure |
 | [docs/infrastructure.md](docs/infrastructure.md) | Reference | Observability stack and data flow |
+| [docs/reference/patterns/](docs/reference/patterns/index.md) | Reference | Design patterns (with diagrams) |
+| [docs/reference/libraries/](docs/reference/libraries/index.md) | Reference | Library docs (all agent perspectives) |
 | [docs/claude-links.md](docs/claude-links.md) | Reference | Link mapping (kordinate → Claude Code) |

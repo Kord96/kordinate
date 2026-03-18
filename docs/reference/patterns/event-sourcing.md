@@ -1,5 +1,16 @@
 # Event Sourcing
 
+```
+  Command ──► Aggregate ──► Event(s) ──► Event Store
+                                              │
+                 ┌────────────────────────────┘
+                 │ replay
+                 ▼
+            Current State ◄── Snapshot (optional, for long histories)
+                 │
+                 ▼
+            Read Model (projection for queries)
+```
 
 ## Architecture
 

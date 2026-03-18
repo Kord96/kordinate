@@ -1,20 +1,5 @@
 # CQRS
 
-```
-               Commands                          Queries
-                  │                                 ▲
-                  ▼                                 │
-           ┌────────────┐                    ┌────────────┐
-           │   Write    │     events /       │    Read    │
-           │   Model    │────projections────►│   Model    │
-           │            │                    │            │
-           │(normalized,│                    │(denormalized│
-           │ consistent)│                    │  fast reads)│
-           └────────────┘                    └────────────┘
-                  │               ▲                 │
-                  ▼               │                 ▼
-            Write Store     Event Bridge       Read Store
-```
 
 ## Architecture
 

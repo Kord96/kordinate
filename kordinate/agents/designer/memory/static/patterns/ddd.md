@@ -1,19 +1,5 @@
 # Domain-Driven Design (DDD)
 
-```
-  ┌─────────────────┐         events         ┌─────────────────┐
-  │  Bounded Context│  ──────────────────►   │  Bounded Context│
-  │    "Orders"     │                        │   "Inventory"   │
-  │                 │  ◄──────────────────   │                 │
-  │  ┌───────────┐  │    anti-corruption     │  ┌───────────┐  │
-  │  │ Aggregate │  │        layer           │  │ Aggregate │  │
-  │  │  (Order)  │  │                        │  │  (Stock)  │  │
-  │  └───────────┘  │                        │  └───────────┘  │
-  └─────────────────┘                        └─────────────────┘
-        │                                          │
-        ▼                                          ▼
-   Domain Events                             Domain Events
-```
 
 ## Architecture
 

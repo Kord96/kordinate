@@ -1,5 +1,16 @@
 # Hexagonal (Ports & Adapters)
 
+```
+                  ┌───────────────────┐
+HTTP ──► Adapter ─┤                   ├─ Adapter ──► Postgres
+                  │   Domain Logic    │
+ CLI ──► Adapter ─┤                   ├─ Adapter ──► Redis
+                  │ (no infra imports)│
+Test ──► Adapter ─┤                   ├─ Adapter ──► S3
+                  └───────────────────┘
+                   Ports (interfaces)    Ports (interfaces)
+                   ◄── driving side      driven side ──►
+```
 
 ## Architecture
 

@@ -1,27 +1,5 @@
 # Retry with Backoff
 
-```
-                    ┌─────────┐
-         ┌────────►│  Call    │
-         │         └────┬────┘
-         │              │
-         │         success / fail?
-         │              │
-         │     ┌────────┴────────┐
-         │     │                 │
-         │  success           fail
-         │     │                 │
-         │     ▼            retries left?
-         │   Done                │
-         │              ┌───────┴───────┐
-         │              │               │
-         │             yes              no
-         │              │               │
-         │          wait (exp           ▼
-         │          backoff        ┌──────────┐
-         └──── + jitter)          │Dead Letter│
-                                  └──────────┘
-```
 
 ## Architecture
 

@@ -1,14 +1,5 @@
 # Stream-to-Store
 
-```
-  ┌────────┐     ┌──────────┐     ┌────────┐     ┌───────┐     ┌───────┐
-  │ Broker │────►│ Consumer │────►│ Buffer │────►│ Flush │────►│ Store │
-  │(Kafka) │     │  group   │     │(batch) │     │       │     │(DB/S3)│
-  └────────┘     └──────────┘     └───┬────┘     └───┬───┘     └───────┘
-                                      │              │
-                                  size/time       commit
-                                  trigger         offset
-```
 
 ## Architecture
 

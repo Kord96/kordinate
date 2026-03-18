@@ -1,16 +1,5 @@
 # ETL/ELT
 
-```
-  ┌────────┐     ┌─────────┐     ┌───────────┐     ┌──────┐     ┌────────┐
-  │ Source │────►│ Extract │────►│ Transform │────►│ Load │────►│ Target │
-  │(API/DB)│     │         │     │ (clean,   │     │      │     │(DW/Lake│
-  └────────┘     └─────────┘     │  enrich)  │     └──┬───┘     └────────┘
-                                  └───────────┘        │
-                                                   checkpoint
-                                                   (bookmark)
-
-  ELT variant: Load raw first, then Transform inside the target.
-```
 
 ## Architecture
 
