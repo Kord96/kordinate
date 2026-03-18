@@ -17,21 +17,21 @@ Which agents have perspective docs for each pattern. Links point to `agent-memor
 | Pattern | Designer | Deployer | Sauron |
 |---------|----------|----------|--------|
 | Hexagonal | [view](designer/patterns/hexagonal.md) | — | — |
-| DDD | — | — | — |
-| Plugin | — | — | — |
-| Stream-to-store | — | — | — |
-| ETL/ELT | — | — | — |
+| DDD | [view](designer/patterns/ddd.md) | — | — |
+| Plugin | [view](designer/patterns/plugin.md) | — | — |
+| Stream-to-store | [view](designer/patterns/stream-to-store.md) | — | — |
+| ETL/ELT | [view](designer/patterns/etl.md) | — | — |
 | Event sourcing | [view](designer/patterns/event-sourcing.md) | [view](deployer/patterns/event-sourcing.md) | — |
-| CQRS | — | — | — |
+| CQRS | [view](designer/patterns/cqrs.md) | — | — |
 | Saga | [view](designer/patterns/saga.md) | — | [view](sauron/patterns/saga.md) |
-| Choreography | — | — | — |
-| API gateway | — | — | — |
+| Choreography | [view](designer/patterns/choreography.md) | — | — |
+| API gateway | [view](designer/patterns/api-gateway.md) | — | — |
 | Circuit breaker | [view](designer/patterns/circuit-breaker.md) | [view](deployer/patterns/circuit-breaker.md) | [view](sauron/patterns/circuit-breaker.md) |
-| Bulkhead | — | — | — |
-| Retry with backoff | — | — | — |
+| Bulkhead | [view](designer/patterns/bulkhead.md) | — | — |
+| Retry with backoff | [view](designer/patterns/retry.md) | — | — |
 | Backpressure | — | — | [view](sauron/patterns/backpressure.md) |
-| Service manager | — | — | — |
-| Sidecar | — | — | — |
+| Service manager | [view](designer/patterns/service-manager.md) | — | — |
+| Sidecar | [view](designer/patterns/sidecar.md) | — | — |
 
 ## Patterns
 
