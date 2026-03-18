@@ -25,14 +25,9 @@ agent-state/
 # Secrets and credentials
 .credentials.json
 
-# Profile — user content ignored, scaffolding tracked
-profile/config.yaml
-profile/topology.yaml
-profile/mcp.json
-profile/secrets/
-profile/keystore
-profile/overlays/*/
-profile/additions/*/
+# Profile — all user content, only README.md tracked
+profile/*
+!profile/README.md
 
 # Agent runtime state
 agents/*/inbox.md
