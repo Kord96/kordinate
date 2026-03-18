@@ -33,6 +33,12 @@ Master: Master Alloy pulls Gateway Prom via /federate and tails pod logs via K8s
 | `node` | Auto-injected by Alloy | auto |
 | `cluster` | Injected by Alloy from CLUSTER_NAME env | auto |
 | `component` | Pod label (optional) | no |
+| `tier` | Pod label (optional) | no |
+
+`app` values defined in `profile/topology.yaml`:
+- `<product-app>` — product workload pods
+- `<platform-app>` — user-managed shared services (message queues, databases, caches)
+- `<system-app>` — system-critical infrastructure managed by deployer
 
 ## Observability Signals
 
@@ -46,10 +52,19 @@ Master: Master Alloy pulls Gateway Prom via /federate and tails pod logs via K8s
 | Kafka storage | JMX :9309 | Pull, normalized as pipeline_kafka_* |
 | Host metrics | node-exporter :9100 | Pull, DaemonSet |
 
+## Log Shipping
+
+Prometheus: /federate for metrics pull. Loki: no pull-based equivalent. Workaround: Master Alloy tails pod logs on each cluster via K8s API through Gateway Tailscale. Logs tailed twice (locally + master) — acceptable for resilience.
+
 ## Manifests
 
 Framework manifests: `agents/deployer/manifests/`
 User manifests: `profile/additions/`
+
+## Credentials
+
+`profile/config.yaml` — cluster IPs, hostnames, service ports
+`pass` store (`kordinate/`) — GPG-encrypted, accessed via `pass show`/`pass insert`
 
 ## Constraints
 
