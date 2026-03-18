@@ -24,6 +24,8 @@ esac
 
 # Resolve paths
 KORDINATE_HOME="${KORDINATE_HOME:-$(cd "$(dirname "$0")/.." && pwd)}"
+source "$KORDINATE_HOME/lib/cache.sh"
+
 AGENT_DIR="$KORDINATE_HOME/agents/$AGENT"
 SHARED="$KORDINATE_HOME/agents/shared/MEMORY.md"
 STATIC="$AGENT_DIR/memory/static"
@@ -35,12 +37,8 @@ HASH_FILE="$DYNAMIC/.hash"
 # Ensure dynamic dir exists
 mkdir -p "$DYNAMIC"
 
-# Compute hash of source files
-CURRENT_HASH=$(find "$SHARED" "$STATIC" "$INSTRUCTIONS" -type f 2>/dev/null | sort | xargs cat 2>/dev/null | md5sum | cut -d' ' -f1)
-STORED_HASH=$(cat "$HASH_FILE" 2>/dev/null)
-
 # Skip if unchanged
-if [ "$CURRENT_HASH" = "$STORED_HASH" ] && [ -f "$MEMORY_FILE" ]; then
+if cache_check "$HASH_FILE" "$SHARED" "$STATIC" "$INSTRUCTIONS" && [ -f "$MEMORY_FILE" ]; then
   echo '{}'; exit 0
 fi
 
@@ -117,7 +115,7 @@ STATIC_LINES=${STATIC_LINES:-0}
 } > "$MEMORY_FILE"
 
 # Store hash
-echo "$CURRENT_HASH" > "$HASH_FILE"
+cache_store "$HASH_FILE" "$SHARED" "$STATIC" "$INSTRUCTIONS"
 
 # Allow agent to spawn
 echo '{}'
