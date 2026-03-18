@@ -1,41 +1,53 @@
 # kordinate
 
-A Claude Code operations framework for managing multi-cluster Kubernetes infrastructure. Kordinate provides a persistent workstation pod, specialized agents, safety guardrails, and a GitOps deployment pipeline — all orchestrated through Claude Code running inside a Kubernetes pod.
+A Claude Code operations framework for multi-cluster Kubernetes infrastructure.
 
 ## Architecture
 
 ```
-+-------------------------------------------------------------+
-|  Workstation Pod (master namespace)                         |
-|                                                             |
-|  +------------------+    +-----------------------------+    |
-|  |   Claude Code    |    |         Agents              |    |
-|  |                  |--->|  deployer  sauron            |    |
-|  |  /home/claude    |    |  designer  scribe            |    |
-|  |  (PVC-backed)    |    +-----------------------------+    |
-|  +------------------+                                       |
-|         |                                                   |
-|  +------+------------------------------------------------+  |
-|  |                   Hooks (Safety Layer)                 |  |
-|  |  guard-kubectl  guard-md  guard-grafana               |  |
-|  |  guard-redis    guard-git auto-merge-to-dev           |  |
-|  +-------------------------------------------------------+  |
-|         |                                                   |
-+---------|---------------------------------------------------+
-          | SSH / kubectl
-          |
-    +-----+------+------------------+
-    |            |                  |
-+---v----+  +---v----+  +----------v---+
-|cluster-a|  |cluster-b|  | cluster-n ...|
-+---------+  +---------+  +--------------+
-
-Remote Access: Tailscale SSH --> Workstation Pod
+                  Tailscale SSH
+                       │
+             ┌─────────▼──────────┐
+             │  Workstation Pod    │
+             │  (master namespace) │
+             │                     │
+             │  /home/claude (PVC) │
+             │  Claude Code        │
+             │  4 agents           │
+             └────┬──────────┬────┘
+                  │          │
+           SSH + kubectl     │
+          ┌───────┘          └───────┐
+    ┌─────▼──────┐          ┌───────▼─────┐
+    │  cluster-a  │          │  cluster-b   │
+    │ dev│test│prod│          │ dev│test│prod │
+    └─────────────┘          └──────────────┘
 ```
 
-- The workstation pod runs in the `master` namespace and hosts Claude Code with a PVC-backed home directory at `/home/claude`.
-- Agents operate via SSH to target clusters, with hooks enforcing safety at every boundary.
-- Tailscale provides remote SSH access. Ephemeral Tailscale nodes are auto-cleaned via API on boot.
+- Workstation runs in the `master` namespace with a PVC-backed home directory at `/home/claude`.
+- Agents operate on remote clusters via SSH. Safety hooks enforce which agent can do what.
+- Tailscale provides remote SSH access. Ephemeral nodes are auto-cleaned on boot.
+
+## Workflow
+
+tmux auto-attaches on SSH login. Each project gets its own session.
+
+```
+tmux
+├── kordinate (session)
+│   ├── window 0 → main branch (direct)
+│   ├── window 1 → session/w1-kordinate (worktree)
+│   └── window 2 → session/w2-kordinate (worktree)
+└── your-project (session)
+    ├── window 0 → main branch
+    └── window 1 → session/w1-your-project (worktree)
+```
+
+Each window runs `bin/claude-session`:
+- **Open** — creates a git worktree + session branch, launches Claude Code
+- **Exit** — pushes and creates a PR, or cleans up if no changes
+
+Branch flow: `session/*` → `main` → `test` → `prod`. Session branches auto-merge to main. Promotion to test and prod is manual via the deployer agent.
 
 ## Quick Start
 
@@ -113,70 +125,35 @@ monitoring:
 
 Credentials are stored in a GPG-encrypted `pass` store under the `kordinate/` prefix. Agents retrieve secrets at runtime; nothing is stored in plaintext in the repository.
 
-See [agents/README.md](agents/README.md) for agent documentation, hooks, and commands.
-
-## Branch Model
-
-```
-session/* --> main --> test --> prod
-```
-
-- Session branches are auto-created as worktrees via `bin/claude-session`.
-- The `auto-merge-to-dev.sh` hook fast-forwards `main` after each push to a session branch.
-- Promotion from `main` to `test` and `test` to `prod` is manual.
+See [agents/README.md](agents/README.md) for agent documentation, hooks, and commands. See [profile/README.md](profile/README.md) for the full config structure.
 
 ## Repository Structure
 
 ```
 kordinate/
-├── agents/
-│   ├── deployer/          # Deployment agent (manifests, commands)
-│   ├── sauron/            # Monitoring & validation agent
+├── agents/                # Agent definitions (CLAUDE.md, commands/)
+│   ├── deployer/          # Deployment + infrastructure
+│   ├── sauron/            # Monitoring + validation
 │   ├── designer/          # Architecture review + pattern authority
-│   └── scribe/            # Documentation agent
-├── agent-memory/          # Per-agent knowledge
+│   └── scribe/            # Documentation (sole .md editor)
+├── agent-memory/          # Cross-project agent knowledge
 │   ├── deployer/
 │   ├── sauron/
 │   ├── designer/          # Includes patterns/ and patterns.md
 │   └── scribe/
-├── bin/                   # claude-session, tmux management
+├── bin/                   # claude-session, tmux helpers
 ├── commands/              # Shared slash commands (boot, consult, merge)
 ├── hooks/                 # Safety guardrail hooks
-├── setup/                 # Bootstrap helpers (lib.sh, auth-check.sh)
+├── setup/                 # Bootstrap helpers
 ├── profile/               # Site-specific config (git-crypt encrypted)
-│   ├── config.yaml        # Cluster infrastructure
-│   ├── topology.yaml      # App topology, health thresholds
-│   ├── locks/             # Agent auth locks
-│   ├── keystore           # Symlink → pass store
-│   ├── overlays/          # Per-stack kustomize overlays
-│   └── additions/         # Extra k8s manifests
 ├── .mcp.json              # MCP server config (git-crypt encrypted)
 ├── kordinate              # Bootstrap CLI
 ├── settings.json          # Claude Code settings
 └── CLAUDE.md              # Global agent guidelines
 ```
 
-## Workstation
+## Further Reading
 
-The workstation is a containerized Claude Code environment running as a Kubernetes pod.
-
-- **Persistent storage**: A PVC backs `/home/claude`, preserving state across pod restarts.
-- **Remote access**: Tailscale SSH connects directly to the workstation pod. Ephemeral Tailscale nodes are auto-cleaned via the Tailscale API on each boot.
-- **Session management**: `tmux` auto-attaches on login, with session scripts in `bin/`.
-- **Recovery**: If Tailscale SSH is unavailable, access the pod directly from a cluster node via `kubectl exec`.
-
-## Framework vs User Content
-
-Kordinate separates framework code (tracked in git) from user-specific configuration (git-crypt encrypted under `profile/`).
-
-### Framework (tracked)
-
-Everything outside `profile/`: agents, commands, hooks, `bin/`, base manifests with template placeholders, and `agent-memory/` files. This is the shared, portable layer that defines how the system operates.
-
-### User content (profile/, git-crypt encrypted)
-
-`config.yaml`, `topology.yaml`, kustomize overlays, agent auth locks, `mcp.json`, and the `keystore` symlink to the pass store. This is the site-specific layer that tells the framework what to operate on.
-
-### How they connect
-
-Agent memory files describe operational patterns and procedures in general terms. `topology.yaml` provides the concrete values — cluster names, app definitions, thresholds — that agents reference at runtime. The framework defines the "how"; the profile defines the "what" and "where."
+- [agents/README.md](agents/README.md) — Agent system: hooks, commands, lock-based authorization
+- [profile/README.md](profile/README.md) — Site-specific configuration and layout
+- [setup/README.md](setup/README.md) — Bootstrap scripts and doctor categories

@@ -1,6 +1,6 @@
 # Agents
 
-Kordinate ships four specialized agents, each scoped to a specific operational domain.
+Kordinate ships four specialized agents. Each is scoped to an operational domain and enforced by safety hooks.
 
 | Agent    | Triggers                                           | Purpose                    |
 |----------|---------------------------------------------------|----------------------------|
@@ -9,13 +9,22 @@ Kordinate ships four specialized agents, each scoped to a specific operational d
 | designer | `review architecture`, `design review`            | Architecture review + pattern authority |
 | scribe   | `update docs`, `add api key`, `add mcp`, `write readme`   | Documentation (sole `.md` editor) |
 
-## Consultation Protocol
-
-Ask an agent a question without transferring full control:
+## How Agents Work
 
 ```
-/consult deployer "Is your-app healthy on cluster-a?"
+User message
+ │
+ ├── matches trigger ──► spawn agent
+ │   ├── deployer ──► kubectl ops   (guard-kubectl, guard-git, guard-redis)
+ │   ├── sauron ────► monitoring    (guard-grafana)
+ │   ├── designer ──► architecture
+ │   └── scribe ────► .md edits     (guard-md)
+ │
+ └── /consult <agent> "question"
+     └── agent reads knowledge ──► returns answer
 ```
+
+Agents authenticate by placing a lock file before performing guarded operations. After completing work, the lock is removed.
 
 ## Hooks (Safety Guardrails)
 
@@ -37,6 +46,20 @@ Agents authorize themselves by placing a lock file before operating:
 1. Agent copies lock from `profile/locks/<agent>` to `/tmp/.<agent>-auth`
 2. Hook compares lock file with `/tmp/` file
 3. Agent removes lock file after completing work
+
+## Consultation Protocol
+
+Ask an agent a question without transferring full control:
+
+```
+/consult deployer "Is your-app healthy on cluster-a?"
+```
+
+| Agent | Expertise |
+|-------|-----------|
+| designer | Architecture, components, failure modes, data flow, design patterns |
+| sauron | Metrics, health checks, log events, dashboards |
+| deployer | Cluster state, pod status, deployment status, versions, networking |
 
 ## Commands
 

@@ -89,8 +89,6 @@ Two-tier state:
 **Session-ephemeral** — `.claude/agent-state/<name>.json` (gitignored):
 - session_id, last_line, last_commit, agent_id, context_summary
 
-The repo contains agent definitions (CLAUDE.md, commands/) but no runtime state.
-
 ### Where does it go?
 
 | Question | Location | Examples |
@@ -98,10 +96,3 @@ The repo contains agent definitions (CLAUDE.md, commands/) but no runtime state.
 | Useful across any project? | `agent-memory/<agent>/` | cAdvisor patterns, library docs, infra monitoring reference |
 | Tied to a specific project? | `<project-repo>/.claude/` | agent-memory/sauron/metrics.md |
 | Project monitoring artifacts? | `<project-repo>/monitoring/` | dashboards/, health.yaml, grafana-dashboards-patch.json |
-
-Rule of thumb: "Would this be useful if the user had a completely different project?" — if yes, `agent-memory/`. If no, it goes in the project repo.
-
----
-
-*Last Updated*: 2026-03-18
-
