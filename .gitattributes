@@ -1,4 +1,5 @@
-# Encrypt all profile content except README and locks
+# Encrypt site-specific content
+.mcp.json filter=git-crypt diff=git-crypt
 profile/** filter=git-crypt diff=git-crypt
 profile/README.md !filter !diff
 profile/locks/** !filter !diff

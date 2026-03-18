@@ -516,10 +516,8 @@ cmd_hydrate() {
   fi
 
   local OUTPUT_DIR
-  if [ -d "$HOME/.claude/profile" ]; then
-    OUTPUT_DIR="$HOME/.claude/profile"
-  elif [ -d "$SCRIPT_DIR/profile" ]; then
-    OUTPUT_DIR="$SCRIPT_DIR/profile"
+  if [ -d "$HOME/.claude" ]; then
+    OUTPUT_DIR="$HOME/.claude"
   else
     OUTPUT_DIR="$SCRIPT_DIR"
   fi
@@ -580,14 +578,9 @@ for name, cl in clusters.items():
         grafana_added = True
 
 print(json.dumps(mcp, indent=2))
-" > "$OUTPUT_DIR/mcp.json"
+" > "$OUTPUT_DIR/.mcp.json"
 
-  # Ensure symlink exists at ~/.claude/.mcp.json
-  if [ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude/.mcp.json" ]; then
-    ln -sf profile/mcp.json "$HOME/.claude/.mcp.json"
-  fi
-
-  log "Generated mcp.json at $OUTPUT_DIR/mcp.json"
+  log "Generated .mcp.json at $OUTPUT_DIR/.mcp.json"
 }
 
 # ═══════════════════════════════════════════════════════════════
