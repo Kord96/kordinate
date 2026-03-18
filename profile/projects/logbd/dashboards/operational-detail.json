@@ -433,7 +433,7 @@
     {
       "id": 507,
       "type": "logs",
-      "title": "Ingestion \u2014 Errors & Warnings",
+      "title": "Ingestion — Errors & Warnings",
       "datasource": {
         "type": "loki",
         "uid": "${loki}"
@@ -975,7 +975,7 @@
     {
       "id": 523,
       "type": "logs",
-      "title": "Processing \u2014 Errors & Warnings",
+      "title": "Processing — Errors & Warnings",
       "datasource": {
         "type": "loki",
         "uid": "${loki}"
@@ -1639,7 +1639,7 @@
     {
       "id": 538,
       "type": "logs",
-      "title": "Enrichment \u2014 Errors & Warnings",
+      "title": "Enrichment — Errors & Warnings",
       "datasource": {
         "type": "loki",
         "uid": "${loki}"
@@ -1711,161 +1711,6 @@
           "format": "table",
           "refId": "A",
           "rawSql": "SELECT label AS \"Label\", CASE WHEN is_admin THEN 'admin' ELSE 'user' END AS \"Role\", strftime(created_at, '%Y-%m-%d %H:%M') AS \"Created\", COALESCE(strftime(activated_at, '%Y-%m-%d %H:%M'), '-') AS \"Activated\", COALESCE(strftime(expires_at, '%Y-%m-%d %H:%M'), 'never') AS \"Expires\", CASE WHEN revoked THEN 'revoked' WHEN activated_at IS NULL THEN 'pending' ELSE 'active' END AS \"Status\" FROM api_auth.api_token ORDER BY created_at"
-        }
-      ]
-    },
-    {
-      "id": 541,
-      "type": "timeseries",
-      "title": "API Request Rate",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${prometheus}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 10,
-            "spanNulls": false
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 104
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prometheus}"
-          },
-          "expr": "sum by (status) (rate(http_requests_total{namespace=~\"$namespace\", component=\"api\"}[5m]))",
-          "legendFormat": "{{status}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 542,
-      "type": "timeseries",
-      "title": "API Request Latency",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${prometheus}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "drawStyle": "line",
-            "lineWidth": 1,
-            "fillOpacity": 10,
-            "spanNulls": false
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 104
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "multi"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prometheus}"
-          },
-          "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{namespace=~\"$namespace\", component=\"api\"}[5m]))",
-          "legendFormat": "p50",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prometheus}"
-          },
-          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{namespace=~\"$namespace\", component=\"api\"}[5m]))",
-          "legendFormat": "p95",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prometheus}"
-          },
-          "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{namespace=~\"$namespace\", component=\"api\"}[5m]))",
-          "legendFormat": "p99",
-          "refId": "C"
-        }
-      ]
-    },
-    {
-      "id": 543,
-      "type": "stat",
-      "title": "Error Rate",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${prometheus}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 112
-      },
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value"
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prometheus}"
-          },
-          "expr": "sum(rate(http_requests_total{namespace=~\"$namespace\", component=\"api\", status=~\"4..|5..\"}[5m])) / clamp_min(sum(rate(http_requests_total{namespace=~\"$namespace\", component=\"api\"}[5m])), 0.001)",
-          "legendFormat": "Error Rate",
-          "refId": "A"
         }
       ]
     },
@@ -2111,7 +1956,7 @@
     {
       "id": 549,
       "type": "logs",
-      "title": "Serving \u2014 Errors & Warnings",
+      "title": "Serving — Errors & Warnings",
       "datasource": {
         "type": "loki",
         "uid": "${loki}"
@@ -2388,7 +2233,7 @@
     {
       "id": 556,
       "type": "logs",
-      "title": "Dependencies \u2014 Errors & Warnings",
+      "title": "Dependencies — Errors & Warnings",
       "datasource": {
         "type": "loki",
         "uid": "${loki}"
