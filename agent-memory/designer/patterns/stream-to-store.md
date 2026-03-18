@@ -1,4 +1,4 @@
-# Stream-to-Store — Design Perspective
+# Stream-to-Store
 
 ```
   ┌────────┐     ┌──────────┐     ┌────────┐     ┌───────┐     ┌───────┐
@@ -10,9 +10,11 @@
                                   trigger         offset
 ```
 
+## Architecture
+
 Look for correct offset management — commits only after successful flush.
 
-## Review Checklist
+### Review Checklist
 
 - Offsets are committed after the store write succeeds, not before
 - Buffer has both size and time-based flush triggers
@@ -20,8 +22,20 @@ Look for correct offset management — commits only after successful flush.
 - Consumer group rebalancing is handled without data loss or duplication
 - Store writes are idempotent (safe to replay on reprocessing)
 
-## Anti-patterns
+### Anti-patterns
 
 - Auto-commit enabled — offsets advance regardless of flush success
 - Unbounded buffer with no size limit (memory exhaustion on slow stores)
 - No dead-letter handling for permanently unprocessable messages
+
+## Monitoring
+
+TODO
+
+## Deployment
+
+TODO
+
+## Testing
+
+TODO

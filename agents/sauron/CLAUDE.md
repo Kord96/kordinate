@@ -89,6 +89,7 @@ Shared:
 - Project-specific artifacts go in the project repo, not the profile repo.
 
 Agent-specific:
+- When encountering a recognized design pattern in a project, consult the designer for monitoring perspective: `/consult designer "monitoring perspective for <pattern> in <project>"`.
 - Project-specific commands (debug skills, health checks) go in the project's `.claude/commands/`, not in the shared profile repo (kordinate).
 
 ## Project Knowledge

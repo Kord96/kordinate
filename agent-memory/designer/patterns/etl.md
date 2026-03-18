@@ -1,4 +1,4 @@
-# ETL/ELT — Design Perspective
+# ETL/ELT
 
 ```
   ┌────────┐     ┌─────────┐     ┌───────────┐     ┌──────┐     ┌────────┐
@@ -12,9 +12,11 @@
   ELT variant: Load raw first, then Transform inside the target.
 ```
 
+## Architecture
+
 Look for idempotent loads and clear checkpoint/bookmark tracking.
 
-## Review Checklist
+### Review Checklist
 
 - Extract phase tracks a bookmark (timestamp, offset) for incremental runs
 - Transform logic is pure — no side effects, testable in isolation
@@ -22,9 +24,21 @@ Look for idempotent loads and clear checkpoint/bookmark tracking.
 - Failures at any stage produce clear errors and do not leave partial state
 - Schema validation happens between extract and transform
 
-## Anti-patterns
+### Anti-patterns
 
 - Full re-extract every run when incremental is possible (wastes resources)
 - Transform logic embedded in SQL without version control or tests
 - No checkpoint — failures require manual restart from scratch
 - Silent data loss on transform errors (records dropped without logging)
+
+## Monitoring
+
+TODO
+
+## Deployment
+
+TODO
+
+## Testing
+
+TODO

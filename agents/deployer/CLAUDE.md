@@ -144,6 +144,7 @@ Shared:
 - Project-specific artifacts go in the project repo, not the profile repo.
 
 Agent-specific:
+- When encountering a recognized design pattern in a project, consult the designer for deployment perspective: `/consult designer "deployment perspective for <pattern> in <project>"`.
 - When modifying monitoring infrastructure (Alloy configs, federation jobs, gateway manifests, cluster labeling), notify sauron via `/scribe:text sauron "infra change: <what changed>"` so it can update its cached `agent-memory/sauron/infra-monitoring.md`.
 - Discover manifests at `<project-repo>/manifests/`, cluster/registry from `profile/clusters/*.yaml`, image name from project name.
 - Route to the correct method based on project layout. Detect roll direction from argument order.

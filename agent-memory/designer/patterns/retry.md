@@ -1,4 +1,4 @@
-# Retry with Backoff — Design Perspective
+# Retry with Backoff
 
 ```
                     ┌─────────┐
@@ -23,9 +23,11 @@
                                   └──────────┘
 ```
 
+## Architecture
+
 Look for bounded retries with exponential backoff, jitter, and a dead-letter path.
 
-## Review Checklist
+### Review Checklist
 
 - Max retry count is configured and bounded — no infinite retry loops
 - Backoff is exponential with jitter (not fixed delay — avoids thundering herd)
@@ -33,9 +35,21 @@ Look for bounded retries with exponential backoff, jitter, and a dead-letter pat
 - Dead-letter queue or equivalent captures permanently failed operations
 - Retry state is observable (metrics on attempt count and DLQ depth)
 
-## Anti-patterns
+### Anti-patterns
 
 - Fixed-delay retries — all clients retry simultaneously after an outage
 - Retrying non-idempotent operations without deduplication
 - No max retry limit — stuck requests consume resources indefinitely
 - Silent discard of failed operations (no dead-letter, no alert)
+
+## Monitoring
+
+TODO
+
+## Deployment
+
+TODO
+
+## Testing
+
+TODO

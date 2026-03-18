@@ -1,4 +1,4 @@
-# CQRS — Design Perspective
+# CQRS
 
 ```
                Commands                          Queries
@@ -16,9 +16,11 @@
             Write Store     Event Bridge       Read Store
 ```
 
+## Architecture
+
 Look for strict separation between write and read paths with an explicit sync mechanism.
 
-## Review Checklist
+### Review Checklist
 
 - Commands mutate only the write model — no direct writes to the read store
 - Queries read only from the read model — never from the write store
@@ -26,8 +28,20 @@ Look for strict separation between write and read paths with an explicit sync me
 - Eventual consistency is documented and acceptable for the use case
 - Read model can be rebuilt from scratch (replayable projections)
 
-## Anti-patterns
+### Anti-patterns
 
 - Read path sneaking writes back into the write model
 - No clear sync mechanism — read model silently drifts from write model
 - Applying CQRS where a single model would suffice (unnecessary complexity)
+
+## Monitoring
+
+TODO
+
+## Deployment
+
+TODO
+
+## Testing
+
+TODO

@@ -28,8 +28,8 @@ For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/profile/
 
 ## Agent Knowledge
 
-- **Shared pattern index** — `agent-memory/patterns.md` — catalog of all recognized design patterns with categories and descriptions
-- **Per-agent knowledge** — `agent-memory/<agent>/` — curated docs and auto-managed memory, organized by topic and `patterns/` subdirectory
+- **Pattern index** — `agent-memory/designer/patterns.md` — catalog of all recognized design patterns with categories and descriptions. The designer agent is the pattern authority; other agents consult the designer for pattern context.
+- **Per-agent knowledge** — `agent-memory/<agent>/` — curated docs and auto-managed memory, organized by topic
 - **Per-project knowledge** — `<project-repo>/.claude/agent-memory/<agent>/` — project-specific operational docs (metrics, health checks, deploy config)
 - **Per-project monitoring** — `<project-repo>/monitoring/` — dashboards, health checks, alerting (discovered by convention)
 
@@ -63,7 +63,7 @@ When the user says "consult <agent>", "ask <agent>", or "check with <agent>" fol
 
 | Agent | Expertise |
 |-------|-----------|
-| designer | Architecture, components, failure modes, data flow |
+| designer | Architecture, components, failure modes, data flow, design patterns |
 | sauron | Metrics, health checks, log events, dashboards |
 | deployer | Cluster state, pod status, deployment status, versions, networking |
 
@@ -80,7 +80,7 @@ Two-tier state:
 **Agent memory (cross-project)** — `~/.claude/agent-memory/<name>/` (tracked in git):
 - Curated knowledge and Claude auto-managed memory live side by side
 - Cross-project docs: `agent-memory/<agent>/<topic>.md`
-- Shared pattern index: `agent-memory/patterns.md`
+- Pattern index: `agent-memory/designer/patterns.md` (designer is the pattern authority)
 - The `guard-md.sh` hook exempts `agent-memory/` paths so agents can write freely
 
 **Project-specific knowledge** — lives in the project repo:
