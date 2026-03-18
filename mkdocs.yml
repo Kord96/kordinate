@@ -4,9 +4,11 @@ repo_url: https://github.com/Kord96/kordinate
 
 theme:
   name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
   palette:
     scheme: slate
-    primary: deep purple
+    primary: teal
     accent: amber
   features:
     - navigation.sections
