@@ -37,7 +37,7 @@ case "$BRANCH" in
 esac
 
 # For test/prod, check deployer auth
-SECRET=$(cat "$HOME/.claude/profile/secrets/deployer" 2>/dev/null)
+SECRET=$(cat "$HOME/.claude/profile/locks/deployer" 2>/dev/null)
 AUTH=$(cat /tmp/.deployer-auth 2>/dev/null)
 
 if [[ -n "$SECRET" && "$AUTH" == "$SECRET" ]]; then

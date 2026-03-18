@@ -25,7 +25,7 @@ Run a single category with `./setup.sh doctor --category <name>`.
 | Category | Checks |
 |----------|--------|
 | `prereqs` | Required local tools: git, gh, python3, openssl, tmux, claude, curl, ssh |
-| `framework` | `~/.claude/` installation: CLAUDE.md, agents, commands, hooks, settings, auth secrets |
+| `framework` | `~/.claude/` installation: CLAUDE.md, agents, commands, hooks, settings, auth locks |
 | `profile` | Sensitive config: `pass` store (`kordinate/`), profile/config.yaml, profile/mcp.json, shell RC |
 | `connectivity` | External services: GitHub auth, Tailscale, K8s cluster, namespaces, secrets |
 

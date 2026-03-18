@@ -12,7 +12,7 @@ For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/profile/
 
 ## Rules
 
-- Credentials live in `pass` under `kordinate/` — agents read with `pass show` and write with `pass insert` directly. Agent auth tokens live in `profile/secrets/`, and `profile/keystore` symlinks to the pass store.
+- Credentials live in `pass` under `kordinate/` — agents read with `pass show` and write with `pass insert` directly. Agent auth locks live in `profile/locks/`, and `profile/keystore` symlinks to the pass store.
 - Follow the project's existing patterns — don't introduce new libraries, frameworks, or conventions
 - Never edit profile docs directly — delegate to the scribe agent (see Profile Doc Policy below)
 - Never let more than 3 user messages with code changes pass without committing and pushing

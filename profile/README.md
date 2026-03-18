@@ -9,7 +9,7 @@ profile/
 ├── config.yaml             # Cluster IPs, ports, services, registry
 ├── topology.yaml           # App definitions, monitoring, health thresholds
 ├── mcp.json                # MCP server config (symlinked from ../.mcp.json)
-├── secrets/                # Agent auth tokens (deployer, sauron, scribe)
+├── locks/                  # Agent auth locks (deployer, sauron, scribe)
 ├── keystore/               # Symlink → ~/.password-store/kordinate/
 ├── additions/              # Extra k8s manifests applied to clusters
 ├── overlays/               # Kustomize overlays per cluster/environment
@@ -26,7 +26,7 @@ cp /dev/null profile/config.yaml
 # Generate MCP server config from config.yaml + pass store
 ./kordinate hydrate
 
-# Agent secrets are generated during bootstrap
+# Agent auth locks are generated during bootstrap
 # Pass keystore is set up via ./kordinate init or ./kordinate import
 ```
 

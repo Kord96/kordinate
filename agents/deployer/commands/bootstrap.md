@@ -95,7 +95,7 @@ Bootstrap a new k3s cluster on a remote machine.
 
 ## Notes
 
-- All SSH operations use the deployer's auth flow (copy `profile/secrets/deployer`, run commands, clean up).
+- All SSH operations use the deployer's auth flow (copy `profile/locks/deployer`, run commands, clean up).
 - These operations require the deployer agent's kubectl write authorization.
 - `setup-cluster.sh` at `agents/deployer/manifests/bootstrap/setup-cluster.sh` contains the k3s server/agent install logic (used by `add-cluster` and `add-node`).
 - After adding a cluster, the gateway and master stacks must be deployed separately.

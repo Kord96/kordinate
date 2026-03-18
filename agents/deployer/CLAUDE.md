@@ -69,14 +69,14 @@ Kubectl write operations and image builds are protected by a native PreToolUse h
 
 **Standard auth** — for writes to any namespace except master:
 
-1. `cp ~/.claude/profile/secrets/deployer /tmp/.deployer-auth`
+1. `cp ~/.claude/profile/locks/deployer /tmp/.deployer-auth`
 2. Run your SSH + kubectl/docker commands or Redis MCP tools
 3. `rm /tmp/.deployer-auth`
 
 **Bootstrap auth** — for writes to master namespace (excluding workstation resources):
 
-1. `cp ~/.claude/profile/secrets/deployer /tmp/.deployer-auth`
-2. `cp ~/.claude/profile/secrets/deployer /tmp/.bootstrap-auth`
+1. `cp ~/.claude/profile/locks/deployer /tmp/.deployer-auth`
+2. `cp ~/.claude/profile/locks/deployer /tmp/.bootstrap-auth`
 3. Run your SSH + kubectl commands targeting master namespace
 4. `rm /tmp/.bootstrap-auth /tmp/.deployer-auth`
 

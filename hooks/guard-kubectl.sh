@@ -15,7 +15,7 @@ CMD=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).ge
 
 # Only guard SSH commands containing kubectl write operations
 if echo "$CMD" | grep -qE 'ssh\s+\S+.*kubectl\s+(apply|delete|scale|rollout|create|patch|set|replace|edit|label|annotate|taint|drain|cordon|uncordon)'; then
-  SECRET=$(cat "$HOME/.claude/profile/secrets/deployer" 2>/dev/null)
+  SECRET=$(cat "$HOME/.claude/profile/locks/deployer" 2>/dev/null)
   AUTH=$(cat /tmp/.deployer-auth 2>/dev/null)
 
   if [[ -n "$SECRET" && "$AUTH" == "$SECRET" ]]; then
@@ -73,7 +73,7 @@ fi
 
 # Also guard direct docker build/push via SSH
 if echo "$CMD" | grep -qE 'ssh\s+\S+.*(docker\s+(build|push|tag|save)|k3s\s+ctr)'; then
-  SECRET=$(cat "$HOME/.claude/profile/secrets/deployer" 2>/dev/null)
+  SECRET=$(cat "$HOME/.claude/profile/locks/deployer" 2>/dev/null)
   AUTH=$(cat /tmp/.deployer-auth 2>/dev/null)
 
   if [[ -n "$SECRET" && "$AUTH" == "$SECRET" ]]; then
