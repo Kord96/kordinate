@@ -4,8 +4,8 @@ repo_url: https://github.com/Kord96/kordinate
 
 theme:
   name: material
-  logo: assets/logo.png
-  favicon: assets/logo.png
+  logo: assets/logo_light.png
+  favicon: assets/logo_dark.png
   palette:
     scheme: slate
     primary: custom
