@@ -41,6 +41,15 @@
         ]
       },
       {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/agent-memory.sh"
+          }
+        ]
+      },
+      {
         "matcher": "mcp__redis",
         "hooks": [
           {

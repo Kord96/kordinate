@@ -32,6 +32,7 @@ User message
 | `guard-redis.sh`     | Blocks Redis MCP calls unless deployer is authorized.                         |
 | `guard-git.sh`       | Blocks git push to test/prod branches unless deployer is authorized.          |
 | `auto-merge-to-dev.sh` | Post-push hook that auto-merges session branches to main.                  |
+| `agent-memory.sh`    | Pre-agent hook that regenerates MEMORY.md from static + instructions + shared memory. Hash-based — only runs if source files changed. |
 
 ## Lock-Based Authorization
 
