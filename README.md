@@ -27,110 +27,38 @@ Each window runs `bin/claude-session`:
 - **Open** — creates a git worktree + session branch, launches Claude Code
 - **Exit** — pushes and creates a PR, or cleans up if no changes
 
-Branch flow: `session/*` → `main` → `test` → `prod`. Session branches auto-merge to main. Promotion to test and prod is manual via the deployer agent.
+Branch flow: `session/*` → `main` → `test` → `prod`.
 
 ## Quick Start
-
-### Prerequisites
-
-- Linux machine with `git`, `gh` (authenticated), `curl`, `python3`
-- Tailscale account
-- GPG key (for encrypted credential store)
-
-### Bootstrap
 
 ```bash
 git clone <repo-url> ~/kordinate
 cd ~/kordinate
-# Edit profile/config.yaml with your cluster IPs, registry, namespaces
-sudo ./installer/kordinate-cli init
+./installer/link.sh
+./installer/kordinate-cli init
 ```
-
-### Additional Setup Commands
-
-```bash
-# Hydrate profile/mcp.json from profile/config.yaml (re-run after config changes)
-./installer/kordinate-cli hydrate
-
-# Export current profile for backup
-./installer/kordinate-cli export
-
-# Import a previously exported profile
-./installer/kordinate-cli import <file>
-```
-
-## Configuration
-
-Kordinate uses two configuration files with distinct purposes.
-
-### config.yaml — Infrastructure
-
-Machine-consumed configuration for cluster infrastructure. Lives at `profile/config.yaml`. Used by the bootstrap CLI, manifest templates, and the deployer agent.
-
-```yaml
-clusters:
-  cluster-a:
-    ip: 10.0.0.1
-    nodes:
-      - name: node-1
-        ip: 10.0.0.2
-    registry: registry.example.com:5000
-    namespaces:
-      - apps
-      - monitoring
-```
-
-See `profile/README.md` for config structure.
-
-### profile/topology.yaml — Operational Context
-
-Human-oriented configuration that gives agents the context they need for decision-making. Defines application definitions, monitoring standards, and health thresholds.
-
-```yaml
-apps:
-  your-app:
-    cluster: cluster-a
-    namespace: apps
-    replicas: 3
-    health:
-      endpoint: /healthz
-      threshold: 95
-monitoring:
-  standards:
-    scrape_interval: 15s
-    alert_threshold: 5m
-```
-
-### Credentials
-
-Credentials are stored in a GPG-encrypted `pass` store under the `kordinate/` prefix. Agents retrieve secrets at runtime; nothing is stored in plaintext in the repository.
-
-See [agents/README.md](agents/README.md) for agent documentation, hooks, and commands. See [profile/README.md](profile/README.md) for the full config structure.
 
 ## Repository Structure
 
 ```
 ~/kordinate/
-├── kordinate/              # Claude Code framework (linked into ~/.claude/)
-│   ├── agents/             # Agent definitions, commands, AGENT.md
-│   │   ├── deployer/
-│   │   ├── sauron/
-│   │   ├── designer/
-│   │   ├── scribe/
-│   │   └── memory/         # Cross-project agent knowledge
-│   ├── commands/            # Shared slash commands
-│   ├── hooks/               # Safety guardrail hooks
-│   └── profile/             # Site-specific config (git-crypt encrypted)
-├── installer/               # Bootstrap + linking
-│   ├── link.sh
-│   ├── kordinate-cli
-│   ├── lib.sh
-│   └── auth-check.sh
-├── bin/                     # Session + tmux helpers
+├── kordinate/              # Framework (linked into ~/.claude/)
+│   ├── agents/             # Agent definitions, commands, memory
+│   ├── commands/           # Shared slash commands
+│   ├── hooks/              # Safety guardrail hooks
+│   ├── profile/            # Site-specific config (encrypted)
+│   └── settings.json       # Hook registrations
+├── installer/              # Bootstrap + linking
+├── bin/                    # Session + tmux helpers
+├── docs/                   # Documentation
 └── README.md
 ```
 
-## Further Reading
+## Documentation
 
-- [kordinate/README.md](kordinate/README.md) — Framework: agents, hooks, commands, profile
-- [installer/README.md](installer/README.md) — Bootstrap CLI and linking
+| Doc | Topic |
+|-----|-------|
+| [docs/agents.md](docs/agents.md) | Agents, hooks, locks, commands, memory model |
+| [docs/profile.md](docs/profile.md) | Site-specific configuration and layout |
+| [docs/installer.md](docs/installer.md) | Bootstrap CLI and linking |
+| [docs/links.md](docs/links.md) | Link mapping (kordinate → Claude Code) |

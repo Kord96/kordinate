@@ -24,7 +24,7 @@ Managed by `link.sh`. The mapping decouples agent conventions from kordinate's i
 
 Kordinate can reorganize freely. Claude Code sees stable paths. Only the mapping changes.
 
-See [LINKS.md](LINKS.md) for the full mapping. To reorganize kordinate internals, update the arrays in `link.sh` and re-run it.
+See [links.md](links.md) for the full mapping. To reorganize kordinate internals, update the arrays in `link.sh` and re-run it.
 
 ## Usage
 
