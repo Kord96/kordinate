@@ -1,5 +1,17 @@
 # Hexagonal (Ports & Adapters) — Design Perspective
 
+```
+                  ┌───────────────────┐
+HTTP ──► Adapter ─┤                   ├─ Adapter ──► Postgres
+                  │   Domain Logic    │
+ CLI ──► Adapter ─┤                   ├─ Adapter ──► Redis
+                  │ (no infra imports)│
+Test ──► Adapter ─┤                   ├─ Adapter ──► S3
+                  └───────────────────┘
+                   Ports (interfaces)    Ports (interfaces)
+                   ◄── driving side      driven side ──►
+```
+
 Look for clean separation between domain logic and infrastructure.
 
 ## Review Checklist

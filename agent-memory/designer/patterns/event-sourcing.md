@@ -1,5 +1,17 @@
 # Event Sourcing — Design Perspective
 
+```
+  Command ──► Aggregate ──► Event(s) ──► Event Store
+                                              │
+                 ┌────────────────────────────┘
+                 │ replay
+                 ▼
+            Current State ◄── Snapshot (optional, for long histories)
+                 │
+                 ▼
+            Read Model (projection for queries)
+```
+
 Look for correct event modeling and state reconstruction.
 
 ## Review Checklist

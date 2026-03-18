@@ -1,5 +1,19 @@
 # Circuit Breaker — Design Perspective
 
+```
+        success           threshold            timeout
+          │                exceeded               │
+          ▼                   │                    ▼
+      ┌────────┐         ┌───┴───┐         ┌───────────┐
+      │ CLOSED │──fail──►│ OPEN  │──wait───►│ HALF-OPEN │
+      │        │         │       │         │           │
+      │ normal │         │reject │         │  1 probe  │
+      │  flow  │         │  all  │         │  request  │
+      └────────┘         └───────┘         └─────┬─────┘
+          ▲                                      │
+          └──────── probe succeeds ──────────────┘
+```
+
 Look for correct state machine implementation: closed -> open -> half-open.
 
 ## Review Checklist
