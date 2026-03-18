@@ -58,3 +58,23 @@ Site-specific config at `profile/` — git-crypt encrypted. See [profile/README.
 | `settings.json` | Claude Code hooks, permissions |
 | `locks/` | Agent auth locks |
 | `keystore/` | Symlink to `pass` store |
+
+## Agent Memory
+
+Each agent has a `memory/` directory colocated with its definition:
+
+```
+agents/<agent>/
+├── CLAUDE.md
+├── commands/
+└── memory/        # cross-project knowledge for this agent
+```
+
+Agents also store project-specific knowledge in the project repo at `<repo>/.claude/agent-memory/<agent>/`.
+
+| Question | Location |
+|----------|----------|
+| Useful across any project? | `agents/<agent>/memory/` |
+| Tied to a specific project? | `<project-repo>/.claude/agent-memory/<agent>/` |
+| Project manifests? | `<project-repo>/manifests/` |
+| Project monitoring? | `<project-repo>/monitoring/` |
