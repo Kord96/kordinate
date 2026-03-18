@@ -88,6 +88,16 @@ cd ~/kordinate
 ./installer/kordinate-cli init   # bootstrap k8s + workstation
 ```
 
+Joining an existing cluster:
+
+```bash
+git clone <repo-url> ~/kordinate
+cd ~/kordinate
+git-crypt unlock                 # decrypt profile/
+./installer/link.sh
+./installer/kordinate-cli hydrate
+```
+
 ## Repository Structure
 
 ```
@@ -109,5 +119,4 @@ cd ~/kordinate
 |-----|-------|
 | [docs/agents.md](docs/agents.md) | Agents, hooks, locks, commands, memory |
 | [docs/profile.md](docs/profile.md) | Site-specific configuration |
-| [docs/installer.md](docs/installer.md) | Bootstrap and linking |
-| [docs/links.md](docs/links.md) | Link mapping tables |
+| [docs/claude-links.md](docs/claude-links.md) | Link mapping (kordinate → Claude Code) |
