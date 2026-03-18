@@ -11,7 +11,7 @@ metadata:
 spec:
   accessModes:
   - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: STORAGE_CLASS
   resources:
     requests:
       storage: 5Gi
@@ -52,20 +52,20 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              mkdir -p /dashboards/logbd/Drill /dashboards/general
-              [ -d /tmp/cm-business ] && cp /tmp/cm-business/*.json /dashboards/logbd/ 2>/dev/null || true
-              [ -d /tmp/cm-drill ] && cp /tmp/cm-drill/*.json /dashboards/logbd/Drill/ 2>/dev/null || true
-              [ -d /tmp/cm-general ] && cp /tmp/cm-general/*.json /dashboards/general/ 2>/dev/null || true
+              mkdir -p /dashboards/logbd/Drill /dashboards/infra
+              [ -d /tmp/cm-logbd ] && cp /tmp/cm-logbd/*.json /dashboards/logbd/ 2>/dev/null || true
+              [ -d /tmp/cm-logbd-drill ] && cp /tmp/cm-logbd-drill/*.json /dashboards/logbd/Drill/ 2>/dev/null || true
+              [ -d /tmp/cm-infra ] && cp /tmp/cm-infra/*.json /dashboards/infra/ 2>/dev/null || true
               echo "Copied $(find /dashboards -name '*.json' | wc -l) dashboards total"
           volumeMounts:
             - name: dashboards
               mountPath: /dashboards
-            - name: db-business
-              mountPath: /tmp/cm-business
-            - name: db-drill
-              mountPath: /tmp/cm-drill
-            - name: db-general
-              mountPath: /tmp/cm-general
+            - name: db-logbd
+              mountPath: /tmp/cm-logbd
+            - name: db-logbd-drill
+              mountPath: /tmp/cm-logbd-drill
+            - name: db-infra
+              mountPath: /tmp/cm-infra
       containers:
         - name: grafana
           image: grafana/grafana:11.4.0
@@ -120,17 +120,17 @@ spec:
         - name: grafana-datasources
           configMap:
             name: grafana-datasources
-        - name: db-business
+        - name: db-logbd
           configMap:
-            name: grafana-db-business
+            name: grafana-db-logbd
             optional: true
-        - name: db-drill
+        - name: db-logbd-drill
           configMap:
-            name: grafana-db-drill
+            name: grafana-db-logbd-drill
             optional: true
-        - name: db-general
+        - name: db-infra
           configMap:
-            name: grafana-db-general
+            name: grafana-db-infra
             optional: true
 ---
 apiVersion: v1

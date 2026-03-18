@@ -81,10 +81,19 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy ta
 - Neither Gateway Alloy nor Sentinel monitor MinIO health
 - This is a critical gap since snapshots depend entirely on MinIO availability
 
+## Dashboard Provisioning
+
+Grafana dashboards are provisioned via ConfigMaps (GitOps-compatible). Sauron owns dashboard content; deployer creates the ConfigMaps at deploy time.
+
+| ConfigMap | Source path | Content |
+|-----------|------------|---------|
+| `grafana-db-logbd` | `~/.claude/profile/projects/logbd/dashboards/*.json` | Project-specific dashboards |
+| `grafana-db-logbd-drill` | `~/.claude/profile/projects/logbd/dashboards/drill/*.json` | Project drill-down dashboards |
+| `grafana-db-infra` | `~/.claude/agent-memory/sauron/dashboards/*.json` | General infra dashboards |
+
 ## Operational Notes
 
 - Gateway Prometheus has only 3h retention — it is a buffer, not long-term storage
 - Master owns all long-term data (30d retention for both Prom and Loki)
-- Grafana dashboards are provisioned via ConfigMaps (GitOps-compatible)
 - The `cluster` label is injected by Gateway Alloy from `CLUSTER_NAME` env var (sourced from `cluster-identity` ConfigMap)
 - Federation pulls from Gateway Prom `/federate` — never add direct pod scraping to Master Alloy
