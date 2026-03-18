@@ -6,4 +6,4 @@ profile/settings.json !filter !diff
 profile/keybindings.json !filter !diff
 
 # Encrypt agent operational memory (site-specific auto-memory)
-agents/*/memory/operational/** filter=git-crypt diff=git-crypt
+agents/*/memory/dynamic/** filter=git-crypt diff=git-crypt

@@ -68,26 +68,23 @@ Ask an agent a question without transferring full control:
 | `/deployer:diff`  | Stage incremental data changes                       |
 | `/deployer:bootstrap` | Bootstrap cluster infrastructure                 |
 
-## Memory
-
-Each agent has a `memory/` directory with two layers:
+## Agent Structure
 
 ```
 agents/<agent>/
-├── AGENT.md
-├── commands/
-└── memory/
-    ├── *.md              # curated knowledge (generic)
-    ├── libraries/        # library reference docs
-    └── operational/      # auto-managed memory (encrypted)
+├── AGENT.md              # role, commands, rules (router)
+├── instructions/         # procedures (workflow, auth, tools)
+├── memory/
+│   ├── static/           # curated knowledge (generic, git-tracked)
+│   └── dynamic/          # auto-managed notes (site-specific, encrypted)
+└── commands/             # slash command definitions
 ```
-
-Claude auto-loads `MEMORY.md` from `operational/` on startup. Curated knowledge at the parent `memory/` level is read on demand.
 
 | What | Where |
 |------|-------|
-| Generic knowledge | `agents/<agent>/memory/` |
-| Site-specific auto-memory | `agents/<agent>/memory/operational/` (encrypted) |
+| Procedures (how to do things) | `agents/<agent>/instructions/` |
+| Generic knowledge | `agents/<agent>/memory/static/` |
+| Site-specific auto-memory | `agents/<agent>/memory/dynamic/` (encrypted) |
 | Project-specific | `<project-repo>/.claude/agent-memory/<agent>/` |
 | Project manifests | `<project-repo>/manifests/` |
 | Project monitoring | `<project-repo>/monitoring/` |

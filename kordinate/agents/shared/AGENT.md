@@ -51,6 +51,6 @@ When the user says "consult", "ask", or "check with" an agent, run `/consult <ag
 
 | What to write | Where |
 |---------------|-------|
-| Generic knowledge | your `memory/` directory |
-| Site-specific notes | your `memory/operational/` directory |
+| Generic knowledge | `memory/static/` |
+| Site-specific notes | `memory/dynamic/` |
 | Project-specific notes | `<repo>/.claude/agent-memory/<you>/` |

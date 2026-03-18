@@ -35,10 +35,10 @@ Run `./installer/link.sh` to deploy. Run `./installer/link.sh sync` to copy chan
 |-------------------------|------------------|-----|
 | `hooks/` | `kordinate/hooks/` | Referenced by `settings.json` with `$HOME/.claude/hooks/` paths |
 | `profile/` | `kordinate/profile/` | Hooks read locks at `$HOME/.claude/profile/locks/` |
-| `agent-memory/deployer` | `kordinate/agents/deployer/memory/operational/` | Auto-memory (encrypted) |
-| `agent-memory/sauron` | `kordinate/agents/sauron/memory/operational/` | Auto-memory (encrypted) |
-| `agent-memory/designer` | `kordinate/agents/designer/memory/operational/` | Auto-memory (encrypted) |
-| `agent-memory/scribe` | `kordinate/agents/scribe/memory/operational/` | Auto-memory (encrypted) |
+| `agent-memory/deployer` | `kordinate/agents/deployer/memory/dynamic/` | Auto-memory (encrypted) |
+| `agent-memory/sauron` | `kordinate/agents/sauron/memory/dynamic/` | Auto-memory (encrypted) |
+| `agent-memory/designer` | `kordinate/agents/designer/memory/dynamic/` | Auto-memory (encrypted) |
+| `agent-memory/scribe` | `kordinate/agents/scribe/memory/dynamic/` | Auto-memory (encrypted) |
 | `.gitattributes` | `kordinate/.gitattributes` | git-crypt encryption rules |
 
 ## External resources — symlinked

@@ -58,10 +58,10 @@ CLAUDE_COPIES=(
 KORDINATE_SYMLINKS=(
   "hooks:kordinate/hooks"
   "profile:kordinate/profile"
-  "agent-memory/deployer:kordinate/agents/deployer/memory/operational"
-  "agent-memory/sauron:kordinate/agents/sauron/memory/operational"
-  "agent-memory/designer:kordinate/agents/designer/memory/operational"
-  "agent-memory/scribe:kordinate/agents/scribe/memory/operational"
+  "agent-memory/deployer:kordinate/agents/deployer/memory/dynamic"
+  "agent-memory/sauron:kordinate/agents/sauron/memory/dynamic"
+  "agent-memory/designer:kordinate/agents/designer/memory/dynamic"
+  "agent-memory/scribe:kordinate/agents/scribe/memory/dynamic"
   ".gitattributes:kordinate/.gitattributes"
 )
 
