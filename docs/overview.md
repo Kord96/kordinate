@@ -61,4 +61,5 @@ How kordinate's pieces fit together.
 | [agents.md](agents.md) | Agent table, hooks, commands, consultation |
 | [memory.md](memory.md) | Memory model, static/dynamic/project, startup |
 | [profile.md](profile.md) | Config structure, YAML reference |
+| [infrastructure.md](infrastructure.md) | Observability stack and data flow |
 | [claude-links.md](claude-links.md) | How kordinate maps to Claude Code paths |
