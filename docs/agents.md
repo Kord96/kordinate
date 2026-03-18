@@ -1,98 +1,111 @@
-# Agents
+# Agent System
 
-## Overview
+How kordinate's agents, hooks, and memory work together.
 
-| Agent    | Triggers                                           | Purpose                    |
-|----------|---------------------------------------------------|----------------------------|
-| deployer | `roll`, `migrate`, `stop`, `clean`, `diff`        | GitOps deployments         |
-| sauron   | `add monitoring`, `add metrics`, `health check`, `dashboard`, `run tests`, ... | Observability & validation |
-| designer | `review architecture`, `design review`            | Architecture review + pattern authority |
-| scribe   | `update docs`, `add api key`, `add mcp`, `write readme`, ... | Documentation (sole `.md` editor) |
+## Agents
+
+| Agent | Triggers | What it does |
+|-------|----------|-------------|
+| deployer | `roll`, `migrate`, `stop`, `clean`, `diff` | Rolls deployments between environments, manages infrastructure |
+| sauron | `add monitoring`, `health check`, `dashboard`, `run tests`, ... | Adds monitoring, validates code, manages dashboards |
+| designer | `review architecture`, `design review` | Reviews architecture, owns design patterns |
+| scribe | `update docs`, `add api key`, `add mcp`, ... | Sole editor of `.md` files |
+
+## How Requests Flow
 
 ```
 User message
  │
  ├── matches trigger ──► spawn agent
- │   ├── deployer ──► kubectl ops   (guard-kubectl, guard-git, guard-redis)
- │   ├── sauron ────► monitoring    (guard-grafana)
- │   ├── designer ──► architecture
- │   └── scribe ────► .md edits     (guard-md)
+ │   │
+ │   │  every tool call passes through hooks:
+ │   │
+ │   ├── deployer ──► kubectl, docker, redis  (guard-kubectl, guard-git, guard-redis)
+ │   ├── sauron ────► grafana MCP             (guard-grafana)
+ │   ├── designer ──► read-only analysis
+ │   └── scribe ────► .md file edits          (guard-md)
  │
  └── /consult <agent> "question"
-     └── agent reads knowledge ──► returns answer
+     └── agent reads its memory ──► returns answer
 ```
 
-## Hooks
+## Safety Hooks
 
-| Hook                 | What It Guards                                                                 |
-|----------------------|-------------------------------------------------------------------------------|
-| `guard-kubectl.sh`   | Blocks kubectl write operations via SSH unless deployer is authorized. Master namespace requires bootstrap auth. Workstation resources always blocked. |
-| `guard-md.sh`        | Blocks `.md` file edits unless scribe is authorized.                          |
-| `guard-grafana.sh`   | Blocks Grafana MCP calls unless sauron is authorized.                         |
-| `guard-redis.sh`     | Blocks Redis MCP calls unless deployer is authorized.                         |
-| `guard-git.sh`       | Blocks git push to test/prod branches unless deployer is authorized.          |
-| `auto-merge-to-dev.sh` | Post-push hook that auto-merges session branches to main.                  |
-| `agent-memory.sh`    | Pre-agent hook that regenerates MEMORY.md from static + instructions + shared memory. Hash-based — only runs if source files changed. |
+Hooks are registered in `settings.json` and fire on every tool call.
 
-## Lock-Based Authorization
+### Guards
 
-Agents authorize themselves by placing a lock file before operating:
+Each guard enforces that only the authorized agent can perform certain operations. Agents authenticate by copying a lock file before operating:
 
-1. Agent copies lock from `profile/locks/<agent>` to `/tmp/.<agent>-auth`
-2. Hook compares lock file with `/tmp/` file
-3. Agent removes lock file after completing work
+1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
+2. Hook reads both files, allows if they match
+3. Agent removes `/tmp/.<agent>-auth` after completing work
 
-## Consultation Protocol
+| Hook | Agent | What it guards |
+|------|-------|---------------|
+| `guard-kubectl.sh` | deployer | kubectl writes via SSH. Master namespace needs bootstrap auth. Workstation always blocked. |
+| `guard-git.sh` | deployer | git push to test/prod branches |
+| `guard-redis.sh` | deployer | Redis MCP access |
+| `guard-grafana.sh` | sauron | Grafana MCP and dashboard JSON edits |
+| `guard-md.sh` | scribe | All `.md` file edits |
+
+### Automation
+
+| Hook | When | What it does |
+|------|------|-------------|
+| `auto-merge-to-dev.sh` | After git push | Fast-forwards main if a session branch was pushed |
+| `agent-memory.sh` | Before agent spawn | Regenerates agent's MEMORY.md if source files changed |
+
+## Consultation
 
 Ask an agent a question without transferring full control:
 
 ```
-/consult deployer "Is your-app healthy on cluster-a?"
+/consult deployer "Is logbd healthy on vandc?"
 ```
 
 | Agent | Expertise |
 |-------|-----------|
-| designer | Architecture, components, failure modes, data flow, design patterns |
+| designer | Architecture, components, failure modes, data flow, patterns |
 | sauron | Metrics, health checks, log events, dashboards |
-| deployer | Cluster state, pod status, deployment status, versions, networking |
+| deployer | Cluster state, pod status, versions, networking |
 
 ## Commands
 
-| Command           | Description                                          |
-|-------------------|------------------------------------------------------|
-| `/boot`           | Initialize the workstation environment               |
-| `/consult`        | Query an agent without full handoff                  |
-| `/merge`          | Merge current session branch                         |
-| `/deployer:roll`  | Roll between environments                            |
-| `/deployer:stop`  | Scale down an environment                            |
-| `/deployer:clean` | Clean up environment data                            |
-| `/deployer:diff`  | Stage incremental data changes                       |
-| `/deployer:bootstrap` | Bootstrap cluster infrastructure                 |
+| Command | Description |
+|---------|-------------|
+| `/boot` | Initialize the workstation environment |
+| `/consult` | Query an agent without full handoff |
+| `/merge` | Merge current session branch |
+| `/deployer:roll` | Roll between environments |
+| `/deployer:stop` | Scale down an environment |
+| `/deployer:clean` | Clean up environment data |
+| `/deployer:diff` | Stage incremental data changes |
+| `/deployer:bootstrap` | Bootstrap cluster infrastructure |
 
-## Agent Structure
+## Agent Directory Structure
+
+Each agent is self-contained:
 
 ```
 agents/<agent>/
 ├── AGENT.md              # role, commands, rules
-├── instructions/         # procedures (workflow, auth, tools)
+├── instructions/         # how to do things (workflow, auth, tools)
 ├── memory/
-│   ├── static/           # curated knowledge (generic, any install)
+│   ├── static/           # curated knowledge (generic)
 │   └── dynamic/          # auto-managed notes (site-specific, encrypted)
 └── commands/             # slash command definitions
 ```
 
-| Content | Location | Encrypted |
-|---------|----------|-----------|
-| Procedures | `instructions/` | no |
-| Generic knowledge | `memory/static/` | no |
-| Site-specific notes | `memory/dynamic/` | yes |
-| Project-specific | `<repo>/.claude/agent-memory/<agent>/` | no |
+The `agent-memory.sh` hook combines `instructions/` + `memory/static/` + `shared/MEMORY.md` into a single `MEMORY.md` in `dynamic/` before each agent spawn. This is what the agent auto-reads on startup.
 
-## Top-Level & Shared
+## Shared
 
 ```
 agents/
-├── AGENT.md              # master agent instructions (linked as ~/.claude/CLAUDE.md)
+├── AGENT.md              # master agent instructions (→ ~/.claude/CLAUDE.md)
 └── shared/
-    └── MEMORY.md         # shared subagent memory (startup, rules, memory locations)
+    └── MEMORY.md         # common rules injected into every agent's memory
 ```
+
+`AGENT.md` is read by the master Claude session — it contains agent routing and branch model. `shared/MEMORY.md` is injected into subagent memory by the hook — it contains operational rules all agents share.
