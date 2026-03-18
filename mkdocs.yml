@@ -39,12 +39,11 @@ extra_css:
 nav:
   - Home: index.md
   - Overview: overview.md
+  - Getting Started: getting-started.md
   - Agents: agents.md
   - Memory: memory.md
-  - Infrastructure: infrastructure.md
-  - Profile: profile.md
-  - Claude Links: claude-links.md
   - Reference:
+      - Infrastructure: reference/infrastructure.md
       - Patterns:
           - Index: reference/patterns/index.md
           - API Gateway: reference/patterns/api-gateway.md

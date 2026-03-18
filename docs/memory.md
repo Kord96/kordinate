@@ -47,12 +47,6 @@ agents/shared/
 
 Injected into every agent's generated `MEMORY.md` by the hook. Contains operational rules all agents share (credentials, commit conventions, tool restrictions).
 
-## Project Conventions
+## Consultation Cache
 
-Agents also discover knowledge from project repos:
-
-| Convention | Agent | Purpose |
-|-----------|-------|---------|
-| `<repo>/manifests/` | deployer | k8s manifests |
-| `<repo>/monitoring/` | sauron | Dashboards, health checks |
-| `<repo>/.claude/agent-memory/<agent>/` | any | Project-specific agent notes |
+Consultation results are cached at `agents/shared/memory/dynamic/<consulter>-<consultant>.cache`. The cache uses the same hash-based system as agent memory — if the consultant's source files change, the cache goes stale automatically. Agents can also force re-consultation via `/invalidate <agent>`.

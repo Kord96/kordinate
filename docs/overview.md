@@ -58,8 +58,7 @@ How kordinate's pieces fit together.
 | Doc | What you'll learn |
 |-----|-------------------|
 | This file | How the pieces fit together |
+| [getting-started.md](getting-started.md) | Profile config, link mapping, setup |
 | [agents.md](agents.md) | Agent table, hooks, commands, consultation |
 | [memory.md](memory.md) | Memory model, static/dynamic/project, startup |
-| [profile.md](profile.md) | Config structure, YAML reference |
-| [infrastructure.md](infrastructure.md) | Observability stack and data flow |
-| [claude-links.md](claude-links.md) | How kordinate maps to Claude Code paths |
+| [reference/](reference/patterns/index.md) | Design patterns, libraries, infrastructure |
