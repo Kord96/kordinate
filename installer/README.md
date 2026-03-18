@@ -16,20 +16,13 @@ Bootstrap and linking scripts for kordinate.
 Managed by `link.sh`. The mapping decouples agent conventions from kordinate's internal structure. If kordinate reorganizes, update the mapping — the agent sees the same paths.
 
 ```
-┌─────────────┐      link.sh       ┌──────────────┐
-│  kordinate/  │ ──── mapping ────► │  ~/.claude/   │
-│  (repo)      │                    │  (agent sees) │
-└─────────────┘                    └───────┬──────┘
-                                           │
-                                    ┌──────▼──────┐
-                                    │  Claude Code │
-                                    │  Cursor      │
-                                    │  Copilot     │
-                                    │  ...         │
-                                    └─────────────┘
+┌─────────────┐      link.sh       ┌──────────────┐      ┌──────────────┐
+│  kordinate/  │ ──── mapping ────► │  ~/.claude/   │ ◄──  │  Claude Code  │
+│  (repo)      │                    │  (symlinks)   │      │              │
+└─────────────┘                    └──────────────┘      └──────────────┘
 ```
 
-Kordinate can reorganize freely. The agent sees stable paths. Only the mapping changes.
+Kordinate can reorganize freely. Claude Code sees stable paths. Only the mapping changes.
 
 ### Claude Code conventions
 
