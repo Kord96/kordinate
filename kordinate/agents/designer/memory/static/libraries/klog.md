@@ -1,41 +1,42 @@
-# klog — Design Perspective
+# klog
 
-Structured JSON logging with context binding and validation. structlog-based.
+Structured JSON logging with context binding and validation. structlog-based. `pip install klog`.
 
-## Pattern
+## Architecture
 
-`configure once -> log everywhere`
-
-Session IDs, trace context, field filtering, dimension validation, and async batched API log pushing.
-
-## Key Classes
+Pattern: `configure once -> log everywhere`. Session IDs, trace context, field filtering, dimension validation, async batched API log pushing.
 
 | Class | Role |
 |-------|------|
-| Logger | Structured logger with context integration and extension hooks |
 | configure_logging | One-time setup — structlog processors, handlers, filters |
 | log_context | Context manager for dimension binding (nested, inheritable) |
 | trace_context | Context manager for service + trace_id binding |
 | log_capture | Test helper — capture logs for assertions |
 | APIPushHandler | Async batched HTTP log pushing (stdlib only) |
 
-## When to Use
+Review: configure_logging called once at startup? log_context for scope binding? stdlib loggers bridged? APIPushHandler only for external APIs (not Loki)?
 
-- Setting up structured logging in any Python service
-- Adding trace context and correlation IDs
-- Filtering logs by field values at runtime
-- Pushing logs to an HTTP API endpoint
-- Capturing logs in tests for assertions
+## Monitoring
 
-## Architecture Review Checklist
+| Component | What to validate |
+|-----------|-----------------|
+| configure_logging | Called at startup with correct renderer (JSON for prod) |
+| log_context | Dimension consistency across scopes |
+| log_capture | Used in tests to assert critical log events |
+| APIPushHandler | Monitor for failures/backpressure |
 
-- Is configure_logging called once at startup (not per-module)?
-- Is log_context used for scope binding instead of manual field passing?
-- Are stdlib loggers bridged so library logs are also structured?
-- Is APIPushHandler used only for external API targets (not Loki — Alloy handles that)?
+Log review: inconsistent event names, missing dimensions (consumer, duration_s, count), wrong levels, unstructured f-strings, missing rate limiting on high-frequency warnings.
 
-## Install
+## Deployment
 
-```
-pip install klog
-```
+Library dependency, not a standalone service — no pods to manage. All Python services include klog in requirements. configure_logging must be called at startup for Alloy/Loki ingestion. APIPushHandler needs network access — check NetworkPolicy.
+
+Deploy method: git-branch (trusted publishing via GitHub Actions OIDC).
+
+## Testing
+
+- Are log levels correct per logging standards?
+- Are event names snake_case and consistent?
+- Are dimensions structured (not f-string interpolation)?
+- Are noisy library loggers (kafka, urllib3) suppressed?
+- Is log_capture used in tests?

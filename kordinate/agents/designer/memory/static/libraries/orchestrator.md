@@ -1,14 +1,10 @@
-# orchestrator — Design Perspective
+# orchestrator
 
-Service lifecycle framework for k8s. Scheduling, health checks, retry logic, and process management.
+Service lifecycle framework for k8s. Scheduling, health checks, retry logic, process management. `pip install k8s-orchestrator`.
 
-## Pattern
+## Architecture
 
-`scheduler -> runner -> health -> retry`
-
-Manages how services run, start, stop, and recover.
-
-## Key Classes
+Pattern: `scheduler -> runner -> health -> retry`.
 
 | Class | Role |
 |-------|------|
@@ -18,23 +14,28 @@ Manages how services run, start, stop, and recover.
 | RetryPolicy | Configurable retry with backoff |
 | ProcessRunner | Subprocess management with signal handling |
 
-## When to Use
+Review: ServiceManager for multi-process coordination? HealthChecks on all external deps? RetryPolicy with appropriate backoff? Scheduler instead of sleep loops? Graceful shutdown (SIGTERM)?
 
-- Managing long-running services with health checks
-- Scheduling periodic tasks (cron-like)
-- Process supervision with restart policies
-- Services that need graceful shutdown and retry logic
+## Monitoring
 
-## Architecture Review Checklist
+Prefix: `orchestrator_`
 
-- Is ServiceManager used for multi-process coordination (not bare subprocess)?
-- Are HealthChecks wired to all external dependencies?
-- Is RetryPolicy configured with appropriate backoff for each failure mode?
-- Is Scheduler used for periodic tasks instead of sleep loops?
-- Is graceful shutdown handled (SIGTERM propagation)?
+| Metric | Type | Meaning |
+|--------|------|---------|
+| orchestrator_services_running | gauge | Active services |
+| orchestrator_services_healthy | gauge | Services passing health checks |
+| orchestrator_restarts_total | counter | Restart frequency (high = instability) |
+| orchestrator_health_check_duration_seconds | histogram | Health check latency (spikes = dependency issues) |
+| orchestrator_task_executions_total | counter | Scheduled task runs |
 
-## Install
+Dashboard patterns: service status matrix, restart rate over time, health check latency (p50/p95), task execution timeline.
 
-```
-pip install k8s-orchestrator
-```
+## Deployment
+
+ServiceManager handles graceful shutdown — set terminationGracePeriodSeconds. HealthCheck endpoints wired to k8s readiness/liveness probes. Scheduler tasks are in-process (no external cron). RetryPolicy backoff may delay recovery — check restart counts after deploys.
+
+Deploy method: git-branch (trusted publishing via GitHub Actions OIDC).
+
+## Testing
+
+Config file: `config.py`. Use nokrashi-tools TestSuite. Verify all orchestrator_* metrics exposed and scraped.

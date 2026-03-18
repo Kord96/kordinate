@@ -1,14 +1,10 @@
-# stoik — Design Perspective
+# stoik
 
-Stream-to-store pipeline framework. Kafka -> buffer -> batch flush -> DuckDB.
+Stream-to-store pipeline framework. Kafka → buffer → batch flush → DuckDB. `pip install stoik` (or `stoik[all]` for FlightSQL).
 
-## Pattern
+## Architecture
 
-`producer -> buffer -> consumer`
-
-Handles backpressure, retries, and exactly-once delivery.
-
-## Key Classes
+Pattern: `producer -> buffer -> consumer`. Handles backpressure, retries, exactly-once delivery.
 
 | Class | Role |
 |-------|------|
@@ -17,22 +13,28 @@ Handles backpressure, retries, and exactly-once delivery.
 | StoicConsumer | Kafka consumer with commit tracking |
 | StoicServer | FastAPI + FlightSQL server for serving stored data |
 
-## When to Use
+Review: buffer flush configured (size + time)? Delivery callbacks handle errors? Commit tracking aligned with flush? FlightSQL for query access?
 
-- Ingesting data from Kafka into DuckDB or other stores
-- Event processing with buffered batch writes
-- Stream pipelines that need backpressure and retry logic
+## Monitoring
 
-## Architecture Review Checklist
+Prefix: `stoik_`
 
-- Is the buffer flush configured correctly (size + time triggers)?
-- Are delivery callbacks handling errors (dead letter, retry)?
-- Is commit tracking aligned with flush (exactly-once semantics)?
-- Is FlightSQL server used for query access instead of direct DB reads?
+| Metric | Type | Meaning |
+|--------|------|---------|
+| stoik_messages_consumed_total | counter | Consumer ingestion rate |
+| stoik_messages_produced_total | counter | Producer output rate |
+| stoik_buffer_flush_total | counter | Flush frequency (too low = stale data) |
+| stoik_buffer_flush_duration_seconds | histogram | Flush performance (spikes = DB pressure) |
+| stoik_errors_total | counter | Error rate (parse, flush failures) |
 
-## Install
+Health: consumer lag, buffer size growth, flush duration, dependency reachability (Kafka, DuckDB). Dashboard: throughput per component, flush rate/duration, error rate by type, lag trend.
 
-```
-pip install stoik        # core
-pip install stoik[all]   # includes flight deps
-```
+## Deployment
+
+All consumers use same Docker image — component selection via entrypoint/args. FlightSQL needs `stoik[all]`. PVC must be bound before scaling (DuckDB). Consumer lag spikes during rollout — expected, recovers after rebalance.
+
+Deploy method: git-branch (trusted publishing via GitHub Actions OIDC).
+
+## Testing
+
+Config file: `config.py`. Use nokrashi-tools TestSuite. Skip: `test_constants_in_config`. Verify all stoik_* metrics exposed and scraped.
