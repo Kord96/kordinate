@@ -20,7 +20,7 @@ Roll checks for `/tmp/diff/manifest.json` and applies everything listed in it.
 
 ## Steps
 
-1. Parse project, source, and target from `$ARGUMENTS`. Read `~/.claude/agents/deployer/deploys/<project>.yaml` for cluster info.
+1. Parse project, source, and target from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/clusters/*.yaml`.
 
 2. SSH to the cluster. **Inventory both environments**:
 

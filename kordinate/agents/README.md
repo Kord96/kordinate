@@ -5,7 +5,7 @@ Kordinate ships four specialized agents. Each is scoped to an operational domain
 | Agent    | Triggers                                           | Purpose                    |
 |----------|---------------------------------------------------|----------------------------|
 | deployer | `roll`, `migrate`, `stop`, `clean`, `diff`        | GitOps deployments         |
-| sauron   | `add monitoring`, `health check`, `dashboard`, `run tests` | Observability & validation |
+| sauron   | `add monitoring`, `add metrics`, `health check`, `dashboard`, `set up logging`, `run tests`, `code validation` | Observability & validation |
 | designer | `review architecture`, `design review`            | Architecture review + pattern authority |
 | scribe   | `update docs`, `add api key`, `add mcp`, `write readme`   | Documentation (sole `.md` editor) |
 

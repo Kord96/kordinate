@@ -11,7 +11,7 @@ Optional flags:
 
 ## Steps
 
-1. Parse project and env from `$ARGUMENTS`. Read `~/.claude/agents/deployer/deploys/<project>.yaml` for cluster and component list.
+1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/clusters/*.yaml`.
 
 2. SSH to the cluster. List all deployments/statefulsets in the target namespace for this project:
    ```
@@ -26,12 +26,9 @@ Optional flags:
 
 5. **Verify**: `kubectl get pods -n <namespace>` — confirm target pods are terminated.
 
-6. **Update tracking**: set env status to `scaled-down` and `pods_running: 0` in `~/.claude/agents/deployer/deploys/<project>.yaml`.
-
-7. Report: which pods were stopped, which were skipped (infra without flag), current pod count.
+6. Report: which pods were stopped, which were skipped (infra without flag), current pod count.
 
 ## Rules
 
 - Never stop infra without `--include-infra` — apps depend on infra being ready on restart.
-- Always update the deploy tracking file after stopping.
 - If pods fail to terminate within 60s, report but don't force-kill.

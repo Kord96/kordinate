@@ -12,4 +12,4 @@ Prioritize using Grafana renderer (curl to /render/d/...) for visual investigati
 
 **How to apply:** After making dashboard JSON edits, always render a screenshot to verify the result before reporting success.
 
-**Note:** For project-specific notes, use `/scribe:update-project-agent-memory` to write to `.claude/agent-memory/<name>/` instead of native memory.
+**Note:** For project-specific notes, use `/scribe:update-subagent-memory` to write to `.claude/agent-memory/<name>/` instead of native memory.

@@ -37,8 +37,8 @@ For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/profile/
 
 | Agent | Triggers | Purpose |
 |-------|----------|---------|
-| sauron | "add monitoring", "add metrics", "health check", "dashboard", "set up logging", "run tests", "code validation" | Monitoring & validation: metrics, health, logging, dashboards, testing |
-| designer | "review architecture", "design review" | Architecture review + produces docs/architecture.md |
+| sauron | "add monitoring", "add metrics", "health check", "prometheus", "dashboard", "set up logging", "add logging", "review logs", "run tests", "code validation", "validate code" | Monitoring & validation: metrics, health, logging, dashboards, testing |
+| designer | "review architecture", "design review" | Architecture review + pattern authority |
 | deployer | "roll", "migrate", "stop", "clean", "diff" | GitOps: roll between environments, lifecycle management |
 | scribe | "update docs", "add api key", "add project", "add mcp" | Sole editor of all documentation (.md files) |
 

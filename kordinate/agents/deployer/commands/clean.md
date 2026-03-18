@@ -16,7 +16,7 @@ Pods must be stopped first (`/deployer:stop`). This command will refuse to run i
 
 ## Steps
 
-1. Parse project and env from `$ARGUMENTS`. Read `~/.claude/agents/deployer/deploys/<project>.yaml` for cluster info.
+1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/clusters/*.yaml`.
 
 2. SSH to the cluster. **Verify pods are stopped**:
    ```
