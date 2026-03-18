@@ -87,9 +87,11 @@ agents/<agent>/
 | Site-specific notes | `memory/dynamic/` | yes |
 | Project-specific | `<repo>/.claude/agent-memory/<agent>/` | no |
 
-## Shared
+## Top-Level & Shared
 
 ```
-agents/shared/
-└── MEMORY.md             # shared memory: rules, routing, startup
+agents/
+├── AGENT.md              # master agent instructions (linked as ~/.claude/CLAUDE.md)
+└── shared/
+    └── MEMORY.md         # shared subagent memory (startup, rules, memory locations)
 ```

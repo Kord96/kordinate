@@ -23,7 +23,7 @@ Run `./installer/link.sh` to deploy. Run `./installer/link.sh sync` to copy chan
 
 | Convention (at `~/.claude/`) | Kordinate source | Direction |
 |------------------------------|------------------|-----------|
-| `CLAUDE.md` | `kordinate/agents/shared/MEMORY.md` | deploy: repo → claude, sync: claude → repo |
+| `CLAUDE.md` | `kordinate/agents/AGENT.md` | deploy: repo → claude, sync: claude → repo |
 | `agents/deployer/CLAUDE.md` | `kordinate/agents/deployer/AGENT.md` | deploy: repo → claude, sync: claude → repo |
 | `agents/sauron/CLAUDE.md` | `kordinate/agents/sauron/AGENT.md` | deploy: repo → claude, sync: claude → repo |
 | `agents/designer/CLAUDE.md` | `kordinate/agents/designer/AGENT.md` | deploy: repo → claude, sync: claude → repo |
