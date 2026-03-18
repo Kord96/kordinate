@@ -42,7 +42,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: STORAGE_CLASS
   resources:
     requests:
       storage: 20Gi
@@ -69,7 +69,7 @@ spec:
       hostname: claude-workstation
       containers:
         - name: workstation
-          image: 100.95.237.24:5000/workstation:latest
+          image: REGISTRY/workstation:latest
           stdin: true
           tty: true
           env:

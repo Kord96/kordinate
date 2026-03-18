@@ -176,29 +176,19 @@
       },
       "targets": [
         {
-          "expr": "(max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.95) + (max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.8)",
-          "legendFormat": "PVC Disk",
-          "refId": "A"
-        },
-        {
-          "expr": "min(up{component=\"kafka\", namespace=~\"$namespace\"}) * 2",
-          "legendFormat": "Kafka",
-          "refId": "B"
-        },
-        {
           "expr": "(max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)",
           "legendFormat": "Node CPU",
-          "refId": "C"
+          "refId": "A"
         },
         {
           "expr": "(max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.85)",
           "legendFormat": "Node Memory",
-          "refId": "D"
+          "refId": "B"
         },
         {
           "expr": "(max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)",
           "legendFormat": "Node Disk",
-          "refId": "E"
+          "refId": "C"
         }
       ]
     },
@@ -206,7 +196,7 @@
       "id": 2,
       "type": "stat",
       "title": "Physical Health",
-      "description": "Minimum of infrastructure checks (PVC Disk, Kafka, Node CPU, Node Memory, Node Disk)",
+      "description": "Minimum of node health checks (Node CPU, Node Memory, Node Disk)",
       "datasource": {
         "type": "prometheus",
         "uid": "${prometheus}"
@@ -273,7 +263,7 @@
       },
       "targets": [
         {
-          "expr": "min(((max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.95) + (max(pipeline_pvc_used_bytes{namespace=~\"$namespace\"} / pipeline_pvc_capacity_bytes{namespace=~\"$namespace\"}) < bool 0.8)) or (min(up{component=\"kafka\", namespace=~\"$namespace\"}) * 2) or ((max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)) or ((max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.85)) or ((max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)))",
+          "expr": "min(((max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)) or ((max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.85)) or ((max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)))",
           "legendFormat": "",
           "refId": "A"
         }
