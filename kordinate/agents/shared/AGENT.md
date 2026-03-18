@@ -49,8 +49,10 @@ When the user says "consult", "ask", or "check with" an agent, run `/consult <ag
 
 ## Memory
 
-| What to write | Where |
-|---------------|-------|
+See `shared/MEMORY.md` for the full memory system. Quick reference:
+
+| What | Where |
+|------|-------|
 | Generic knowledge | `memory/static/` |
 | Site-specific notes | `memory/dynamic/` |
-| Project-specific notes | `<repo>/.claude/agent-memory/<you>/` |
+| Project-specific | `<repo>/.claude/agent-memory/<you>/` |

@@ -68,23 +68,6 @@ Ask an agent a question without transferring full control:
 | `/deployer:diff`  | Stage incremental data changes                       |
 | `/deployer:bootstrap` | Bootstrap cluster infrastructure                 |
 
-## Agent Structure
+## Agent Structure & Memory
 
-```
-agents/<agent>/
-├── AGENT.md              # role, commands, rules (router)
-├── instructions/         # procedures (workflow, auth, tools)
-├── memory/
-│   ├── static/           # curated knowledge (generic, git-tracked)
-│   └── dynamic/          # auto-managed notes (site-specific, encrypted)
-└── commands/             # slash command definitions
-```
-
-| What | Where |
-|------|-------|
-| Procedures (how to do things) | `agents/<agent>/instructions/` |
-| Generic knowledge | `agents/<agent>/memory/static/` |
-| Site-specific auto-memory | `agents/<agent>/memory/dynamic/` (encrypted) |
-| Project-specific | `<project-repo>/.claude/agent-memory/<agent>/` |
-| Project manifests | `<project-repo>/manifests/` |
-| Project monitoring | `<project-repo>/monitoring/` |
+See [shared/MEMORY.md](shared/MEMORY.md) for the full memory system documentation.
