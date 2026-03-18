@@ -47,7 +47,7 @@ CLAUDE_SYMLINKS=(
 # claude_path is relative to ~/.claude/
 # kordinate_path is relative to repo root
 CLAUDE_COPIES=(
-  "CLAUDE.md:kordinate/agents/shared/AGENT.md"
+  "CLAUDE.md:kordinate/agents/shared/MEMORY.md"
   "agents/deployer/CLAUDE.md:kordinate/agents/deployer/AGENT.md"
   "agents/sauron/CLAUDE.md:kordinate/agents/sauron/AGENT.md"
   "agents/designer/CLAUDE.md:kordinate/agents/designer/AGENT.md"

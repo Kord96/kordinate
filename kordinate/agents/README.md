@@ -91,5 +91,5 @@ agents/<agent>/
 
 ```
 agents/shared/
-└── AGENT.md              # rules all agents follow
+└── MEMORY.md             # shared memory: rules, routing, startup
 ```
