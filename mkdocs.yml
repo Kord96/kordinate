@@ -1,0 +1,64 @@
+site_name: Kordinate
+site_description: Multi-cluster k8s infrastructure managed by specialized agents
+repo_url: https://github.com/Kord96/kordinate
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: deep purple
+    accent: amber
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - def_list
+  - toc:
+      permalink: true
+
+nav:
+  - Overview: overview.md
+  - Agents: agents.md
+  - Memory: memory.md
+  - Infrastructure: infrastructure.md
+  - Profile: profile.md
+  - Claude Links: claude-links.md
+  - Reference:
+      - Patterns:
+          - Index: reference/patterns/index.md
+          - API Gateway: reference/patterns/api-gateway.md
+          - Backpressure: reference/patterns/backpressure.md
+          - Bulkhead: reference/patterns/bulkhead.md
+          - Choreography: reference/patterns/choreography.md
+          - Circuit Breaker: reference/patterns/circuit-breaker.md
+          - CQRS: reference/patterns/cqrs.md
+          - DDD: reference/patterns/ddd.md
+          - ETL: reference/patterns/etl.md
+          - Event Sourcing: reference/patterns/event-sourcing.md
+          - Hexagonal: reference/patterns/hexagonal.md
+          - Plugin: reference/patterns/plugin.md
+          - Retry: reference/patterns/retry.md
+          - Saga: reference/patterns/saga.md
+          - Service Manager: reference/patterns/service-manager.md
+          - Sidecar: reference/patterns/sidecar.md
+          - Stream to Store: reference/patterns/stream-to-store.md
+      - Libraries:
+          - Index: reference/libraries/index.md
+          - klog: reference/libraries/klog.md
+          - Orchestrator: reference/libraries/orchestrator.md
+          - Stoik: reference/libraries/stoik.md

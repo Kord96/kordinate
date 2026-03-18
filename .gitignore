@@ -43,6 +43,9 @@ kordinate/agents/*/deploys/
 kordinate/agents/*/CLAUDE.md
 
 
+# MkDocs build output
+site/
+
 # Legacy
 __pycache__/
 .merge-lock/
