@@ -25,10 +25,6 @@ agent-state/
 # Secrets and credentials
 .credentials.json
 
-# Profile — all user content, only README.md tracked
-profile/*
-!profile/README.md
-
 # Agent runtime state
 agents/*/inbox.md
 agents/*/deploys/

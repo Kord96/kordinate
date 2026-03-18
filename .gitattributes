@@ -1,0 +1,3 @@
+# Encrypt all profile content except README.md
+profile/** filter=git-crypt diff=git-crypt
+profile/README.md !filter !diff
