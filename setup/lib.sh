@@ -1,7 +1,7 @@
 #!/bin/bash
 # Shared setup utilities. Source this, don't execute it.
 
-CLAUDE_HOME="${CLAUDE_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+KORDINATE_HOME="${KORDINATE_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 CLAUDE_DIR="$HOME/.claude"
 
 # Colors

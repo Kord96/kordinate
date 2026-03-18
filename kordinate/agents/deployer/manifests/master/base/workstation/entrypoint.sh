@@ -3,12 +3,12 @@
 set -euo pipefail
 
 # ─── Shell config (once) ───
-if ! grep -q 'CLAUDE_HOME' ~/.bashrc 2>/dev/null; then
+if ! grep -q 'KORDINATE_HOME' ~/.bashrc 2>/dev/null; then
   cat >> ~/.bashrc <<'BASHRC'
-export CLAUDE_HOME="$HOME/.claude"
-export PATH="$CLAUDE_HOME/bin:$PATH"
+export KORDINATE_HOME="$HOME/kordinate"
+export PATH="$KORDINATE_HOME/bin:$PATH"
 alias claude="claude-session --dangerously-skip-permissions"
-[ -f "$CLAUDE_HOME/bin/tmux-session.bash" ] && source "$CLAUDE_HOME/bin/tmux-session.bash"
+[ -f "$KORDINATE_HOME/bin/tmux-session.bash" ] && source "$KORDINATE_HOME/bin/tmux-session.bash"
 BASHRC
 fi
 
@@ -19,8 +19,8 @@ if [ ! -f ~/.bash_profile ]; then
 PROF
 fi
 
-export CLAUDE_HOME="$HOME/.claude"
-export PATH="$CLAUDE_HOME/bin:$PATH"
+export KORDINATE_HOME="$HOME/kordinate"
+export PATH="$KORDINATE_HOME/bin:$PATH"
 
 # ─── SSH ───
 mkdir -p ~/.ssh
@@ -68,8 +68,8 @@ else
 fi
 
 # ─── Update kordinate (if repo exists) ───
-if [ -d ~/.claude/.git ]; then
-  git -C ~/.claude pull --ff-only 2>/dev/null || true
+if [ -d ~/kordinate/.git ]; then
+  git -C ~/kordinate pull --ff-only 2>/dev/null || true
 fi
 
 echo "Workstation ready."
