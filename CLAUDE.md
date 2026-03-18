@@ -67,8 +67,6 @@ When the user says "consult <agent>", "ask <agent>", or "check with <agent>" fol
 | sauron | Metrics, health checks, log events, dashboards |
 | deployer | Cluster state, pod status, deployment status, versions, networking |
 
-For async inter-agent messaging, use `/scribe:text <agent> "<message>"` to append a timestamped message to the target agent's inbox (`~/.claude/agents/<name>/inbox.md`). Agents check their inbox on startup, periodically, and before returning results.
-
 ## Documentation Policy
 
 All `.md` files are protected. Only the **scribe agent** may edit them — enforced by a native PreToolUse hook with token-based auth.

@@ -107,15 +107,6 @@ How to answer:
 4. Answer concisely and specifically — the caller needs facts, not explanations.
 5. Keep responses under 50 lines.
 
-## Inbox
-
-Check `~/.claude/agents/designer/inbox.md` for messages from other agents or the parent:
-- On startup (during /boot)
-- Every ~20 tool calls during long tasks
-- Before returning results
-
-Process messages in order, then clear processed entries (leave the `# Inbox` header).
-
 ## Memory
 
 Native `memory: user` is enabled — Claude auto-manages persistent memory at `~/.claude/agent-memory/designer/`. Session-ephemeral state (session_id, last_line, last_commit, last_changelog_line, context_summary) lives in `.claude/agent-state/designer.json` (gitignored), written directly via Bash.

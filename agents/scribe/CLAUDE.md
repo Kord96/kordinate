@@ -91,15 +91,6 @@ How to answer:
 2. Return the full template content so the calling agent can use it as a structure guide.
 3. If no template exists for the requested agent/file, say so.
 
-## Inbox
-
-Check `~/.claude/agents/scribe/inbox.md` for messages from other agents or the parent:
-- On startup (during /boot)
-- Every ~20 tool calls during long tasks
-- Before returning results
-
-Process messages in order, then clear processed entries (leave the `# Inbox` header).
-
 ## Memory
 
 Native `memory: user` is enabled — Claude auto-manages persistent memory at `~/.claude/agent-memory/scribe/`. Session-ephemeral state (session_id, last_line, last_commit, last_changelog_line, context_summary) lives in `.claude/agent-state/scribe.json` (gitignored), written directly via Bash.

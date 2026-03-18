@@ -26,7 +26,6 @@ agent-state/
 .credentials.json
 
 # Agent runtime state
-agents/*/inbox.md
 agents/*/deploys/
 
 # Legacy

@@ -17,14 +17,6 @@ Ask an agent a question without transferring full control:
 /consult deployer "Is your-app healthy on cluster-a?"
 ```
 
-## Async Messaging
-
-Send a message to an agent via scribe relay:
-
-```
-/scribe:text sauron "Add a dashboard for your-app memory usage"
-```
-
 ## Hooks (Safety Guardrails)
 
 Hooks intercept tool calls and enforce authorization before execution.
@@ -54,4 +46,3 @@ Agents authorize themselves by placing a lock file before operating:
 | `/consult`        | Query an agent without full handoff                  |
 | `/merge`          | Merge current session branch                         |
 | `/deployer:roll`  | Trigger a rolling deployment via the deployer agent  |
-| `/scribe:text`    | Send an async message to an agent via scribe         |
