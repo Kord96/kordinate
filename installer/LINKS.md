@@ -1,23 +1,35 @@
 # Link Mapping
 
-Single source of truth for all symlinks managed by `link.sh`.
+Single source of truth for all links managed by `link.sh`.
 
-## Claude Code conventions
+## Method
 
-Claude Code discovers these by convention at `~/.claude/`:
+- **Directories** — symlinked. Claude Code reads and writes through them.
+- **Renamed files** (AGENT.md → CLAUDE.md) — copied on deploy, synced back before commit.
+
+Run `./installer/link.sh` to deploy. Run `./installer/link.sh sync` to copy changes back.
+
+## Claude Code conventions — symlinked
 
 | Convention (at `~/.claude/`) | Kordinate source | Purpose |
 |------------------------------|------------------|---------|
-| `CLAUDE.md` | `kordinate/agents/shared/AGENT.md` | Global agent guidelines |
 | `settings.json` | `kordinate/profile/settings.json` | Hooks, permissions, settings |
 | `keybindings.json` | `kordinate/profile/keybindings.json` | Keyboard shortcuts |
 | `.mcp.json` | `kordinate/profile/mcp.json` | MCP server config (encrypted) |
 | `agents/` | `kordinate/agents/` | Agent definitions + commands |
 | `commands/` | `kordinate/commands/` | Shared slash commands |
 
-## Kordinate internal
+## Claude Code conventions — copied (renamed)
 
-NOT Claude Code conventions — linked into `~/.claude/` so hooks, agent docs, and scripts resolve at stable paths:
+| Convention (at `~/.claude/`) | Kordinate source | Direction |
+|------------------------------|------------------|-----------|
+| `CLAUDE.md` | `kordinate/agents/shared/AGENT.md` | deploy: repo → claude, sync: claude → repo |
+| `agents/deployer/CLAUDE.md` | `kordinate/agents/deployer/AGENT.md` | deploy: repo → claude, sync: claude → repo |
+| `agents/sauron/CLAUDE.md` | `kordinate/agents/sauron/AGENT.md` | deploy: repo → claude, sync: claude → repo |
+| `agents/designer/CLAUDE.md` | `kordinate/agents/designer/AGENT.md` | deploy: repo → claude, sync: claude → repo |
+| `agents/scribe/CLAUDE.md` | `kordinate/agents/scribe/AGENT.md` | deploy: repo → claude, sync: claude → repo |
+
+## Kordinate internal — symlinked
 
 | Link (at `~/.claude/`) | Kordinate source | Why |
 |-------------------------|------------------|-----|
@@ -29,7 +41,7 @@ NOT Claude Code conventions — linked into `~/.claude/` so hooks, agent docs, a
 | `agent-memory/scribe` | `kordinate/agents/scribe/memory/` | Per-agent knowledge |
 | `.gitattributes` | `kordinate/.gitattributes` | git-crypt encryption rules |
 
-## External resources
+## External resources — symlinked
 
 | Link (relative to repo) | Target | Purpose |
 |--------------------------|--------|---------|

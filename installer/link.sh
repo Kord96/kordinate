@@ -1,13 +1,15 @@
 #!/bin/bash
 # Link kordinate framework into paths that Claude Code and other tools expect.
 #
-# Usage: ./installer/link.sh
+# Usage:
+#   ./installer/link.sh          # deploy: repo → ~/.claude/
+#   ./installer/link.sh sync     # sync: ~/.claude/ → repo (renamed files only)
 #
-# The mapping below decouples Claude Code conventions from kordinate's
-# internal structure. If kordinate reorganizes, update the mapping —
-# Claude Code and hooks continue to work unchanged.
+# Directories are symlinked (Claude reads/writes through them).
+# Renamed files (AGENT.md → CLAUDE.md) are copied. Run "sync" to
+# copy changes back before committing.
 #
-# See installer/README.md for the full links manifest.
+# See installer/LINKS.md for the full mapping.
 
 set -euo pipefail
 
@@ -24,14 +26,15 @@ fi
 # ═══════════════════════════════════════════════════════════════
 # MAPPING
 #
-# Format: "link_name:target_path"
-# Link names are relative to ~/.claude/
-# Target paths are relative to the repo root (made absolute at link time)
+# Symlinks: "link_name:target_path" — directories and files that
+#   don't need renaming. Target paths relative to repo root.
+#
+# Copies: "dest_name:source_path" — files that need renaming
+#   (AGENT.md → CLAUDE.md). Copied on deploy, synced back on sync.
 # ═══════════════════════════════════════════════════════════════
 
-# Claude Code conventions — Claude discovers these at ~/.claude/
-CLAUDE_LINKS=(
-  "CLAUDE.md:kordinate/agents/shared/AGENT.md"
+# Claude Code conventions — symlinked
+CLAUDE_SYMLINKS=(
   "settings.json:kordinate/profile/settings.json"
   "keybindings.json:kordinate/profile/keybindings.json"
   ".mcp.json:kordinate/profile/mcp.json"
@@ -39,9 +42,20 @@ CLAUDE_LINKS=(
   "commands:kordinate/commands"
 )
 
-# Kordinate internal — NOT Claude conventions, linked so hooks/scripts
-# can reference them at stable ~/.claude/ paths
-KORDINATE_LINKS=(
+# Claude Code conventions — copied (renamed files)
+# Format: "claude_path:kordinate_path"
+# claude_path is relative to ~/.claude/
+# kordinate_path is relative to repo root
+CLAUDE_COPIES=(
+  "CLAUDE.md:kordinate/agents/shared/AGENT.md"
+  "agents/deployer/CLAUDE.md:kordinate/agents/deployer/AGENT.md"
+  "agents/sauron/CLAUDE.md:kordinate/agents/sauron/AGENT.md"
+  "agents/designer/CLAUDE.md:kordinate/agents/designer/AGENT.md"
+  "agents/scribe/CLAUDE.md:kordinate/agents/scribe/AGENT.md"
+)
+
+# Kordinate internal — symlinked
+KORDINATE_SYMLINKS=(
   "hooks:kordinate/hooks"
   "profile:kordinate/profile"
   "agent-memory/deployer:kordinate/agents/deployer/memory"
@@ -51,13 +65,37 @@ KORDINATE_LINKS=(
   ".gitattributes:kordinate/.gitattributes"
 )
 
-# External resources — absolute targets outside the repo
+# External resources — symlinked with absolute targets
 EXTERNAL_LINKS=(
   "kordinate/profile/keystore:$HOME/.password-store/kordinate"
 )
 
 # ═══════════════════════════════════════════════════════════════
-# APPLY LINKS
+# SYNC: copy modified CLAUDE.md files back to repo as AGENT.md
+# ═══════════════════════════════════════════════════════════════
+
+cmd_sync() {
+  echo "=== Sync: ~/.claude/ → repo ==="
+  for mapping in "${CLAUDE_COPIES[@]}"; do
+    local claude_path="${mapping%%:*}"
+    local repo_path="${mapping#*:}"
+    local src="$TARGET/$claude_path"
+    local dest="$REPO_ROOT/$repo_path"
+    if [ -f "$src" ] && [ ! -L "$src" ]; then
+      if ! diff -q "$src" "$dest" &>/dev/null; then
+        cp "$src" "$dest"
+        echo "  ←   $claude_path → $repo_path"
+      else
+        echo "  ok  $claude_path (unchanged)"
+      fi
+    fi
+  done
+  echo ""
+  echo "Done."
+}
+
+# ═══════════════════════════════════════════════════════════════
+# DEPLOY: repo → ~/.claude/
 # ═══════════════════════════════════════════════════════════════
 
 create_link() {
@@ -72,23 +110,12 @@ create_link() {
   fi
 }
 
-# Ensure ~/.claude exists as a real directory
-if [ ! -d "$TARGET" ] && [ ! -L "$TARGET" ]; then
-  mkdir -p "$TARGET"
-  echo "  Created $TARGET"
-elif [ -L "$TARGET" ]; then
-  echo "  WARNING: ~/.claude is a symlink — removing to create directory"
-  rm "$TARGET"
-  mkdir -p "$TARGET"
-fi
-
-apply_links() {
+apply_symlinks() {
   local -n arr=$1
   for mapping in "${arr[@]}"; do
     local name="${mapping%%:*}"
     local source="${mapping#*:}"
     local dest="$TARGET/$name"
-    # Create parent directory if link is nested (e.g., agent-memory/deployer)
     local parent
     parent="$(dirname "$dest")"
     [ "$parent" != "$TARGET" ] && mkdir -p "$parent"
@@ -96,64 +123,88 @@ apply_links() {
   done
 }
 
-echo "=== Claude Code conventions ==="
-apply_links CLAUDE_LINKS
+deploy_copies() {
+  for mapping in "${CLAUDE_COPIES[@]}"; do
+    local claude_path="${mapping%%:*}"
+    local repo_path="${mapping#*:}"
+    local dest="$TARGET/$claude_path"
+    local src="$REPO_ROOT/$repo_path"
+    if [ -L "$dest" ]; then
+      # Replace stale symlink with real file
+      rm "$dest"
+    fi
+    if [ -f "$src" ]; then
+      cp "$src" "$dest"
+      echo "  +   $claude_path (copied from $repo_path)"
+    fi
+  done
+}
 
-echo ""
-echo "=== Kordinate internal ==="
-apply_links KORDINATE_LINKS
-
-echo ""
-echo "=== Agent compatibility ==="
-# Create CLAUDE.md → AGENT.md symlinks inside each agent dir
-# so Claude Code finds agent definitions at the expected name
-for agent_dir in "$REPO_ROOT"/kordinate/agents/*/; do
-  [ -f "$agent_dir/AGENT.md" ] || continue
-  compat="$agent_dir/CLAUDE.md"
-  agent="$(basename "$agent_dir")"
-  if [ -L "$compat" ]; then
-    echo "  ok  $agent/CLAUDE.md"
-  else
-    ln -s AGENT.md "$compat"
-    echo "  +   $agent/CLAUDE.md → AGENT.md"
+cmd_deploy() {
+  # Ensure ~/.claude exists as a real directory
+  if [ ! -d "$TARGET" ] && [ ! -L "$TARGET" ]; then
+    mkdir -p "$TARGET"
+    echo "  Created $TARGET"
+  elif [ -L "$TARGET" ]; then
+    echo "  WARNING: ~/.claude is a symlink — removing to create directory"
+    rm "$TARGET"
+    mkdir -p "$TARGET"
   fi
-done
 
-echo ""
-echo "=== External resource links ==="
+  echo "=== Claude Code symlinks ==="
+  apply_symlinks CLAUDE_SYMLINKS
 
-for mapping in "${EXTERNAL_LINKS[@]}"; do
-  link_path="${mapping%%:*}"
-  target="${mapping#*:}"
-  dest="$REPO_ROOT/$link_path"
+  echo ""
+  echo "=== Claude Code copies (renamed) ==="
+  deploy_copies
 
-  if [ -L "$dest" ]; then
-    echo "  ok  $link_path"
-  elif [[ "$target" == /* ]] && [ ! -e "$target" ]; then
-    echo "  SKIP $link_path (target not found: $target)"
-  else
-    ln -s "$target" "$dest"
-    echo "  +   $link_path → $target"
-  fi
-done
+  echo ""
+  echo "=== Kordinate internal ==="
+  apply_symlinks KORDINATE_SYMLINKS
 
-echo ""
-echo "=== PATH ==="
+  echo ""
+  echo "=== External resource links ==="
+  for mapping in "${EXTERNAL_LINKS[@]}"; do
+    local link_path="${mapping%%:*}"
+    local target="${mapping#*:}"
+    local dest="$REPO_ROOT/$link_path"
+    if [ -L "$dest" ]; then
+      echo "  ok  $link_path"
+    elif [[ "$target" == /* ]] && [ ! -e "$target" ]; then
+      echo "  SKIP $link_path (target not found: $target)"
+    else
+      ln -s "$target" "$dest"
+      echo "  +   $link_path → $target"
+    fi
+  done
 
-SHELL_RC="$HOME/.bashrc"
-[ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"
-MARKER="# kordinate"
-if ! grep -q "$MARKER" "$SHELL_RC" 2>/dev/null; then
-  cat >> "$SHELL_RC" <<EOF
+  echo ""
+  echo "=== PATH ==="
+  SHELL_RC="$HOME/.bashrc"
+  [ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"
+  MARKER="# kordinate"
+  if ! grep -q "$MARKER" "$SHELL_RC" 2>/dev/null; then
+    cat >> "$SHELL_RC" <<EOF
 
 $MARKER
 export KORDINATE_HOME="$REPO_ROOT"
 export PATH="$REPO_ROOT/bin:\$PATH"
 EOF
-  echo "  +   Added $REPO_ROOT/bin to PATH in $SHELL_RC"
-else
-  echo "  ok  PATH already configured"
-fi
+    echo "  +   Added $REPO_ROOT/bin to PATH in $SHELL_RC"
+  else
+    echo "  ok  PATH already configured"
+  fi
 
-echo ""
-echo "Done."
+  echo ""
+  echo "Done."
+}
+
+# ═══════════════════════════════════════════════════════════════
+# MAIN
+# ═══════════════════════════════════════════════════════════════
+
+case "${1:-deploy}" in
+  sync)   cmd_sync ;;
+  deploy) cmd_deploy ;;
+  *)      echo "Usage: $0 [deploy|sync]"; exit 1 ;;
+esac
