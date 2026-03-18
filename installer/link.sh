@@ -1,8 +1,11 @@
 #!/bin/bash
-# Link kordinate framework into ~/.claude so Claude Code discovers it.
-# Also creates external resource symlinks (pass keystore, mcp.json alias).
+# Link kordinate framework into paths that Claude Code and other tools expect.
 #
 # Usage: ./installer/link.sh
+#
+# The mapping below decouples Claude Code conventions from kordinate's
+# internal structure. If kordinate reorganizes, update the mapping —
+# Claude Code and hooks continue to work unchanged.
 #
 # See installer/README.md for the full links manifest.
 
@@ -18,67 +21,90 @@ if [ ! -d "$FRAMEWORK" ]; then
   exit 1
 fi
 
-echo "=== Claude Code discovery links ==="
+# ═══════════════════════════════════════════════════════════════
+# MAPPING: Claude convention → kordinate source
+#
+# Format: "convention_path:kordinate_path"
+# Convention paths are relative to ~/.claude/
+# Kordinate paths are relative to the repo root
+# ═══════════════════════════════════════════════════════════════
 
-# When ~/.claude is a real directory (current workstation setup),
-# create individual symlinks inside it.
-# When ~/.claude doesn't exist or is already a symlink, link the whole dir.
-if [ -d "$TARGET" ] && [ ! -L "$TARGET" ]; then
-  # ~/.claude is a real directory — create symlinks inside it
-  for item in CLAUDE.md settings.json keybindings.json .mcp.json .gitattributes agents agent-memory commands hooks profile; do
-    src="kordinate/$item"
-    dest="$TARGET/$item"
-    if [ -L "$dest" ]; then
-      echo "  ok  $item"
-    elif [ -e "$dest" ]; then
-      echo "  SKIP $item (real file/dir exists — move it first)"
-    else
-      ln -s "$src" "$dest"
-      echo "  +   $item → $src"
-    fi
-  done
-elif [ -L "$TARGET" ]; then
-  current=$(readlink -f "$TARGET")
-  if [ "$current" = "$(readlink -f "$FRAMEWORK")" ]; then
-    echo "  ok  ~/.claude → $FRAMEWORK"
+CLAUDE_LINKS=(
+  "CLAUDE.md:kordinate/CLAUDE.md"
+  "settings.json:kordinate/settings.json"
+  "keybindings.json:kordinate/keybindings.json"
+  ".mcp.json:kordinate/.mcp.json"
+  ".gitattributes:kordinate/.gitattributes"
+  "agents:kordinate/agents"
+  "commands:kordinate/commands"
+  "hooks:kordinate/hooks"
+  "profile:kordinate/profile"
+  "agent-memory:kordinate/agent-memory"
+)
+
+# External resource links (absolute targets)
+# Format: "link_path:absolute_target"
+# Link paths are relative to the repo root
+EXTERNAL_LINKS=(
+  "kordinate/profile/keystore:$HOME/.password-store/kordinate"
+  "kordinate/profile/mcp.json:../.mcp.json"
+)
+
+# ═══════════════════════════════════════════════════════════════
+# APPLY LINKS
+# ═══════════════════════════════════════════════════════════════
+
+create_link() {
+  local dest="$1" src="$2"
+  if [ -L "$dest" ]; then
+    echo "  ok  $(basename "$dest")"
+  elif [ -e "$dest" ]; then
+    echo "  SKIP $(basename "$dest") (real file/dir exists)"
   else
-    echo "  ~/.claude points to $current, relinking"
-    ln -sfn "$FRAMEWORK" "$TARGET"
-    echo "  +   ~/.claude → $FRAMEWORK"
+    ln -s "$src" "$dest"
+    echo "  +   $(basename "$dest") → $src"
   fi
-else
-  ln -sfn "$FRAMEWORK" "$TARGET"
-  echo "  +   ~/.claude → $FRAMEWORK"
+}
+
+echo "=== Claude Code links ==="
+
+# Ensure ~/.claude exists as a real directory
+if [ ! -d "$TARGET" ] && [ ! -L "$TARGET" ]; then
+  mkdir -p "$TARGET"
+  echo "  Created $TARGET"
+elif [ -L "$TARGET" ]; then
+  echo "  WARNING: ~/.claude is a symlink — removing to create directory"
+  rm "$TARGET"
+  mkdir -p "$TARGET"
 fi
+
+for mapping in "${CLAUDE_LINKS[@]}"; do
+  convention="${mapping%%:*}"
+  source="${mapping#*:}"
+  create_link "$TARGET/$convention" "$source"
+done
 
 echo ""
 echo "=== External resource links ==="
 
-# profile/keystore → pass store
-KEYSTORE="$FRAMEWORK/profile/keystore"
-PASS_STORE="$HOME/.password-store/kordinate"
-if [ -L "$KEYSTORE" ]; then
-  echo "  ok  profile/keystore"
-elif [ -d "$PASS_STORE" ]; then
-  ln -s "$PASS_STORE" "$KEYSTORE"
-  echo "  +   profile/keystore → $PASS_STORE"
-else
-  echo "  SKIP profile/keystore (pass store not found at $PASS_STORE)"
-fi
+for mapping in "${EXTERNAL_LINKS[@]}"; do
+  link_path="${mapping%%:*}"
+  target="${mapping#*:}"
+  dest="$REPO_ROOT/$link_path"
 
-# profile/mcp.json → ../.mcp.json
-MCP_LINK="$FRAMEWORK/profile/mcp.json"
-if [ -L "$MCP_LINK" ]; then
-  echo "  ok  profile/mcp.json"
-else
-  ln -s ../.mcp.json "$MCP_LINK"
-  echo "  +   profile/mcp.json → ../.mcp.json"
-fi
+  if [ -L "$dest" ]; then
+    echo "  ok  $link_path"
+  elif [[ "$target" == /* ]] && [ ! -e "$target" ]; then
+    echo "  SKIP $link_path (target not found: $target)"
+  else
+    ln -s "$target" "$dest"
+    echo "  +   $link_path → $target"
+  fi
+done
 
 echo ""
 echo "=== PATH ==="
 
-# Add bin/ to PATH if not already there
 SHELL_RC="$HOME/.bashrc"
 [ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"
 MARKER="# kordinate"

@@ -7,38 +7,47 @@ Bootstrap and linking scripts for kordinate.
 | Script | Purpose |
 |--------|---------|
 | `kordinate-cli` | Main CLI: `init`, `join`, `hydrate`, `export`, `import` |
-| `link.sh` | Creates symlinks so Claude Code discovers `kordinate/` at `~/.claude/` |
+| `link.sh` | Creates symlinks from Claude Code conventions to kordinate sources |
 | `lib.sh` | Shared utilities: colors, logging, kubectl resolver (sourced by other scripts) |
 | `auth-check.sh` | Workstation auth setup: GPG, pass, GitHub, Tailscale, Claude credentials |
 
 ## Links
 
-Managed by `link.sh`. These symlinks bridge kordinate's framework into locations that Claude Code and other tools expect.
+Managed by `link.sh`. The mapping decouples Claude Code's expected paths from kordinate's internal structure. If kordinate reorganizes internally, update the mapping in `link.sh` — Claude Code continues to work unchanged.
 
-### Claude Code discovery
+### Claude Code conventions
 
-Created at `~/.claude/` root so Claude Code finds its convention files:
+Claude Code expects these at `~/.claude/`. Each maps to a kordinate source:
 
-| Link | Target | Why |
-|------|--------|-----|
-| `~/.claude/CLAUDE.md` | `kordinate/CLAUDE.md` | Global agent guidelines |
-| `~/.claude/settings.json` | `kordinate/settings.json` | Hooks, permissions, settings |
-| `~/.claude/keybindings.json` | `kordinate/keybindings.json` | Keyboard shortcuts |
-| `~/.claude/.mcp.json` | `kordinate/.mcp.json` | MCP server config |
-| `~/.claude/agents` | `kordinate/agents` | Agent definitions |
-| `~/.claude/commands` | `kordinate/commands` | Slash commands |
-| `~/.claude/hooks` | `kordinate/hooks` | Safety guardrail hooks |
-| `~/.claude/profile` | `kordinate/profile` | Site-specific config |
-| `~/.claude/agent-memory` | `kordinate/agent-memory` | Cross-project knowledge |
+| Convention (at `~/.claude/`) | Kordinate source | Purpose |
+|------------------------------|------------------|---------|
+| `CLAUDE.md` | `kordinate/CLAUDE.md` | Global agent guidelines |
+| `settings.json` | `kordinate/settings.json` | Hooks, permissions, settings |
+| `keybindings.json` | `kordinate/keybindings.json` | Keyboard shortcuts |
+| `.mcp.json` | `kordinate/.mcp.json` | MCP server config |
+| `.gitattributes` | `kordinate/.gitattributes` | git-crypt rules |
+| `agents/` | `kordinate/agents/` | Agent definitions + commands |
+| `commands/` | `kordinate/commands/` | Shared slash commands |
+| `hooks/` | `kordinate/hooks/` | Safety guardrail hooks |
+| `profile/` | `kordinate/profile/` | Site-specific config |
+| `agent-memory/` | `kordinate/agent-memory/` | Cross-project knowledge |
 
 ### External resources
 
-Created inside `kordinate/profile/` to connect external stores:
+| Link (relative to repo) | Target | Purpose |
+|--------------------------|--------|---------|
+| `kordinate/profile/keystore` | `~/.password-store/kordinate/` | GPG-encrypted credential store (`pass`) |
+| `kordinate/profile/mcp.json` | `../.mcp.json` | Alias to MCP config at framework root |
 
-| Link | Target | Why |
-|------|--------|-----|
-| `profile/keystore` | `~/.password-store/kordinate/` | GPG-encrypted credential store (`pass`) |
-| `profile/mcp.json` | `../.mcp.json` | MCP config lives at framework root, profile provides alias |
+### Changing the mapping
+
+To reorganize kordinate internals (e.g., move `agent-memory/` into `agents/`):
+
+1. Move the files within `kordinate/`
+2. Update the `CLAUDE_LINKS` array in `link.sh` (e.g., `"agent-memory:kordinate/agents/memory"`)
+3. Re-run `./installer/link.sh`
+
+Claude Code sees the same paths at `~/.claude/` — no hook, settings, or agent doc changes needed.
 
 ## Usage
 
