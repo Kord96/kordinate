@@ -36,7 +36,7 @@ Project-specific deployment configs live in the project repo at `<repo>/.claude/
 | Tool | Type | Purpose |
 |------|------|---------|
 | postgres.py | script (local) | Compare SQLAlchemy models against live DB schema |
-| Container registry | infra | `<registry>` (see `~/.claude/config.yaml`) — image distribution for k8s clusters |
+| Container registry | infra | `<registry>` (see `~/.claude/profile/config.yaml`) — image distribution for k8s clusters |
 | Redis MCP | MCP server | Query Redis state and data across clusters |
 
 ## Workflow
@@ -69,14 +69,14 @@ Kubectl write operations and image builds are protected by a native PreToolUse h
 
 **Standard auth** — for writes to any namespace except master:
 
-1. `cp ~/.claude/.deployer-secret /tmp/.deployer-auth`
+1. `cp ~/.claude/profile/secrets/deployer /tmp/.deployer-auth`
 2. Run your SSH + kubectl/docker commands or Redis MCP tools
 3. `rm /tmp/.deployer-auth`
 
 **Bootstrap auth** — for writes to master namespace (excluding workstation resources):
 
-1. `cp ~/.claude/.deployer-secret /tmp/.deployer-auth`
-2. `cp ~/.claude/.deployer-secret /tmp/.bootstrap-auth`
+1. `cp ~/.claude/profile/secrets/deployer /tmp/.deployer-auth`
+2. `cp ~/.claude/profile/secrets/deployer /tmp/.bootstrap-auth`
 3. Run your SSH + kubectl commands targeting master namespace
 4. `rm /tmp/.bootstrap-auth /tmp/.deployer-auth`
 
@@ -156,7 +156,7 @@ Agent-specific:
 - Project manifests are namespace-agnostic — no hardcoded `namespace:` field. Always use `kubectl apply -n <namespace>`. Infrastructure manifests use Kustomize overlays which set the namespace automatically.
 - Use `--cache-from` the registry image when building: `docker pull <registry>/<image>:<tag> || true` then `docker build --cache-from <registry>/<image>:<tag> ...`
 - Never delete the latest pushed image from the registry — it serves as the build cache for subsequent builds.
-- For kubectl deploys, use the cluster registry (address per `~/.claude/config.yaml`) — do not pipe images to individual nodes.
+- For kubectl deploys, use the cluster registry (address per `~/.claude/profile/config.yaml`) — do not pipe images to individual nodes.
 - Never force-push to main — only fast-forward merges after rebase.
 - Do not delete session branches after merge — sessions may still be active.
 - **Workstation safety**: The `master` namespace contains the workstation pod you are running inside. The following are ALWAYS blocked regardless of auth level: `kubectl apply -k master/`, `kubectl apply -f workstation.yaml`, any write command containing "workstation", and `kubectl drain/cordon`. Other master namespace writes (grafana, prometheus, loki, alloy, ingress) are allowed only with bootstrap auth (`/tmp/.bootstrap-auth`). Only `/deployer:bootstrap deploy-master` should use bootstrap auth. Regular deployer operations must not touch master namespace.

@@ -1,5 +1,5 @@
 # Operational context — read by agents for decision-making.
-# For infrastructure (IPs, ports, nodes), see config.yaml.
+# For infrastructure (IPs, ports, nodes), see profile/config.yaml.
 #
 # Copy to topology.yaml and fill in your values.
 

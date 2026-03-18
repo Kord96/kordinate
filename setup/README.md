@@ -14,7 +14,7 @@ Setup scripts for kordinate — dispatched by `./setup.sh`.
 | `doctor.sh` | `./setup.sh doctor` | Check prerequisites, framework, profile, and connectivity |
 | `bootstrap.sh` | `./setup.sh bootstrap` | Orchestrate cluster setup from scratch |
 | `uninstall.sh` | `./setup.sh uninstall` | Remove kordinate-installed files from `~/.claude/` and shell |
-| `hydrate.sh` | `./setup.sh hydrate` | Generate `.mcp.json` from `config.yaml` + `pass` store |
+| `hydrate.sh` | `./setup.sh hydrate` | Generate `profile/mcp.json` from `profile/config.yaml` + `pass` store |
 | `export.sh` | `./setup.sh export` | Export `pass` store credentials to encrypted backup |
 | `import.sh` | `./setup.sh import` | Import credentials from encrypted backup into `pass` store |
 
@@ -26,7 +26,7 @@ Run a single category with `./setup.sh doctor --category <name>`.
 |----------|--------|
 | `prereqs` | Required local tools: git, gh, python3, openssl, tmux, claude, curl, ssh |
 | `framework` | `~/.claude/` installation: CLAUDE.md, agents, commands, hooks, settings, auth secrets |
-| `profile` | Sensitive config: `pass` store (`kordinate/`), config.yaml, .mcp.json, shell RC |
+| `profile` | Sensitive config: `pass` store (`kordinate/`), profile/config.yaml, profile/mcp.json, shell RC |
 | `connectivity` | External services: GitHub auth, Tailscale, K8s cluster, namespaces, secrets |
 
 ## Bootstrap Subcommands

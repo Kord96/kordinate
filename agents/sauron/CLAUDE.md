@@ -60,7 +60,7 @@ Before acting, build understanding from these sources:
    **Logging** — Generate project-specific logging.py using klog/ as the pattern (see klog/README.md for module guide). structlog with JSON renderer (prod) or ConsoleRenderer (dev). stdlib bridge, suppress noisy loggers (kafka, urllib3). Review: inconsistent events, missing dimensions, wrong levels, unstructured f-strings. Consult `monitoring.md` for monitoring layers and reference patterns, `logging.md` for structured logging standards.
 
    **Dashboards** — Generate Grafana dashboard JSON or PromQL queries using the Grafana MCP. You are the only agent authorized to use Grafana MCP tools. Before using them, authenticate:
-   1. `cp ~/.claude/.sauron-secret /tmp/.sauron-auth`
+   1. `cp ~/.claude/profile/secrets/sauron /tmp/.sauron-auth`
    2. Use Grafana MCP tools
    3. `rm /tmp/.sauron-auth`
 

@@ -9,7 +9,7 @@ FILE=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).g
 
 # Only guard .md files (exempt native agent-memory directories)
 if [[ "$FILE" == *.md ]] && [[ "$FILE" != */agent-memory/* ]]; then
-  SECRET=$(cat "$HOME/.claude/.scribe-secret" 2>/dev/null)
+  SECRET=$(cat "$HOME/.claude/profile/secrets/scribe" 2>/dev/null)
   AUTH=$(cat /tmp/.scribe-auth 2>/dev/null)
 
   if [[ -n "$SECRET" && "$AUTH" == "$SECRET" ]]; then

@@ -4,7 +4,7 @@
 
 INPUT=$(cat)
 
-SECRET=$(cat "$HOME/.claude/.sauron-secret" 2>/dev/null)
+SECRET=$(cat "$HOME/.claude/profile/secrets/sauron" 2>/dev/null)
 AUTH=$(cat /tmp/.sauron-auth 2>/dev/null)
 
 DENY='{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Blocked: Grafana/dashboard access is restricted to the sauron agent. Spawn sauron for dashboard edits, Grafana API calls, and renderer usage."}}'

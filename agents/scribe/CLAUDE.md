@@ -39,7 +39,7 @@ You are the sole agent authorized to edit `.md` files. All other agents must del
 ## Workflow
 
 1. **Authenticate** — once per invocation, not per file:
-   1. `cp ~/.claude/.scribe-secret /tmp/.scribe-auth` at the start of your invocation
+   1. `cp ~/.claude/profile/secrets/scribe /tmp/.scribe-auth` at the start of your invocation
    2. Perform ALL Edit/Write operations for the entire task
    3. `rm /tmp/.scribe-auth` only when all writes are complete
 

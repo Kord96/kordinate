@@ -24,15 +24,13 @@ agent-state/
 
 # Secrets and credentials
 .credentials.json
-.*-secret
-.mcp.json
-
-# Real config with IPs (generated from template)
-config.yaml
 
 # Profile — user content ignored, scaffolding tracked
-profile/topology.yaml
 profile/config.yaml
+profile/topology.yaml
+profile/mcp.json
+profile/secrets/
+profile/keystore
 profile/overlays/*/
 profile/additions/*/
 

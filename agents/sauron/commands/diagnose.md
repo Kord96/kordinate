@@ -1,6 +1,6 @@
 Debug a production issue using the project's observability catalog as a guide.
 
-**Input**: $ARGUMENTS (required: symptom description. Optional: `--cluster <name>` defaults to first cluster in ~/.claude/config.yaml, `--catalog <path>` defaults to `docs/observability-catalog.yaml`)
+**Input**: $ARGUMENTS (required: symptom description. Optional: `--cluster <name>` defaults to first cluster in ~/.claude/profile/config.yaml, `--catalog <path>` defaults to `docs/observability-catalog.yaml`)
 
 ## Context
 

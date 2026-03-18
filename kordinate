@@ -5,7 +5,7 @@
 # Usage:
 #   sudo ./kordinate init       # install k3s, deploy workstation, setup auth
 #   sudo ./kordinate join       # join an existing cluster as agent node
-#   ./kordinate hydrate         # generate .mcp.json from config.yaml + pass
+#   ./kordinate hydrate         # generate .mcp.json from profile/config.yaml + pass
 #   ./kordinate export [file]   # bundle GPG key + pass store → encrypted archive
 #   ./kordinate import <file>   # restore GPG key + pass store from archive
 #
@@ -44,7 +44,7 @@ require_root() {
 read_config() {
   python3 -c "
 import yaml, sys
-c = yaml.safe_load(open('$SCRIPT_DIR/config.yaml'))
+c = yaml.safe_load(open('$SCRIPT_DIR/profile/config.yaml'))
 path = sys.argv[1].split('.')
 v = c
 for p in path:
@@ -89,7 +89,7 @@ ws_pod() { kc get pod -n master -l app=workstation -o jsonpath='{.items[0].metad
 # ═══════════════════════════════════════════════════════════════
 
 discover_clusters() {
-  local config="$SCRIPT_DIR/config.yaml"
+  local config="$SCRIPT_DIR/profile/config.yaml"
   [ -f "$config" ] || return 1
   local found=false
   while IFS=' ' read -r name ip; do
@@ -168,7 +168,7 @@ install_k3s_agent() {
 
 update_config_add_node() {
   local cluster_name="$1" node_ip="$2"
-  local config="$SCRIPT_DIR/config.yaml"
+  local config="$SCRIPT_DIR/profile/config.yaml"
   [ -f "$config" ] || return 0
   python3 -c "
 import yaml, sys
@@ -360,11 +360,10 @@ cmd_init() {
         TMP_REPO=$(mktemp -d)
         git init "$TMP_REPO"
         cp -r "$SCRIPT_DIR/agents" "$SCRIPT_DIR/commands" "$SCRIPT_DIR/hooks" \
-              "$SCRIPT_DIR/CLAUDE.md" "$SCRIPT_DIR/config.yaml.template" \
+              "$SCRIPT_DIR/CLAUDE.md" "$SCRIPT_DIR/profile" \
               "$SCRIPT_DIR/settings.json" "$SCRIPT_DIR/bin" "$SCRIPT_DIR/setup" \
               "$SCRIPT_DIR/kordinate" \
               "$TMP_REPO/" 2>/dev/null || true
-        [ -f "$SCRIPT_DIR/config.yaml" ] && cp "$SCRIPT_DIR/config.yaml" "$TMP_REPO/"
         git -C "$TMP_REPO" add -A
         git -C "$TMP_REPO" commit -m "initial kordinate setup"
         git -C "$TMP_REPO" remote add origin "https://github.com/${GH_USER}/${REPO_NAME}.git"
@@ -428,8 +427,8 @@ cmd_init() {
 
   if [ "$IS_AGENT_JOIN" = "true" ]; then
     log "Agent join — config.yaml already updated"
-  elif [ -f "$SCRIPT_DIR/config.yaml" ]; then
-    log "config.yaml already exists"
+  elif [ -f "$SCRIPT_DIR/profile/config.yaml" ]; then
+    log "profile/config.yaml already exists"
   else
     local NODE_IP CLUSTER_NAME TS_IP
     NODE_IP=$(detect_node_ip)
@@ -457,10 +456,10 @@ config = {
     'network': {'tailnet': '', 'grafana_public': ''},
     'cloudflare': {'account_id': '', 'tunnel_id': '', 'tunnel_name': '', 'domains': []},
 }
-with open('$SCRIPT_DIR/config.yaml', 'w') as f:
+with open('$SCRIPT_DIR/profile/config.yaml', 'w') as f:
     yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 "
-    log "Generated config.yaml for cluster $CLUSTER_NAME"
+    log "Generated profile/config.yaml for cluster $CLUSTER_NAME"
   fi
 
   echo ""
@@ -507,18 +506,20 @@ cmd_join() {
 # ═══════════════════════════════════════════════════════════════
 cmd_hydrate() {
   local CONFIG
-  if [ -f "$HOME/.claude/config.yaml" ]; then
-    CONFIG="$HOME/.claude/config.yaml"
-  elif [ -f "$SCRIPT_DIR/config.yaml" ]; then
-    CONFIG="$SCRIPT_DIR/config.yaml"
+  if [ -f "$HOME/.claude/profile/config.yaml" ]; then
+    CONFIG="$HOME/.claude/profile/config.yaml"
+  elif [ -f "$SCRIPT_DIR/profile/config.yaml" ]; then
+    CONFIG="$SCRIPT_DIR/profile/config.yaml"
   else
     err "config.yaml not found"
     exit 1
   fi
 
   local OUTPUT_DIR
-  if [ -d "$HOME/.claude" ]; then
-    OUTPUT_DIR="$HOME/.claude"
+  if [ -d "$HOME/.claude/profile" ]; then
+    OUTPUT_DIR="$HOME/.claude/profile"
+  elif [ -d "$SCRIPT_DIR/profile" ]; then
+    OUTPUT_DIR="$SCRIPT_DIR/profile"
   else
     OUTPUT_DIR="$SCRIPT_DIR"
   fi
@@ -579,9 +580,14 @@ for name, cl in clusters.items():
         grafana_added = True
 
 print(json.dumps(mcp, indent=2))
-" > "$OUTPUT_DIR/.mcp.json"
+" > "$OUTPUT_DIR/mcp.json"
 
-  log "Generated .mcp.json at $OUTPUT_DIR/.mcp.json"
+  # Ensure symlink exists at ~/.claude/.mcp.json
+  if [ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude/.mcp.json" ]; then
+    ln -sf profile/mcp.json "$HOME/.claude/.mcp.json"
+  fi
+
+  log "Generated mcp.json at $OUTPUT_DIR/mcp.json"
 }
 
 # ═══════════════════════════════════════════════════════════════
