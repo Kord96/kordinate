@@ -132,7 +132,7 @@ See [agents/README.md](agents/README.md) for agent documentation, hooks, and com
 ```
 ~/kordinate/
 ├── kordinate/              # Claude Code framework (linked into ~/.claude/)
-│   ├── CLAUDE.md
+│   ├── AGENT.md              # Global agent guidelines (linked as CLAUDE.md)
 │   ├── agents/             # Agent definitions + commands
 │   │   ├── deployer/
 │   │   ├── sauron/

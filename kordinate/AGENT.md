@@ -1,6 +1,6 @@
-# Global Claude Code Guidelines
+# Agent Guidelines
 
-*Applies to all projects unless overridden in project-specific CLAUDE.md*
+*Applies to all projects unless overridden in project-specific instructions*
 
 ## Context
 

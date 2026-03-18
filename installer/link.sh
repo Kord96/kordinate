@@ -31,7 +31,7 @@ fi
 
 # Claude Code conventions — Claude discovers these at ~/.claude/
 CLAUDE_LINKS=(
-  "CLAUDE.md:kordinate/CLAUDE.md"
+  "CLAUDE.md:kordinate/AGENT.md"
   "settings.json:kordinate/profile/settings.json"
   "keybindings.json:kordinate/profile/keybindings.json"
   ".mcp.json:kordinate/profile/mcp.json"

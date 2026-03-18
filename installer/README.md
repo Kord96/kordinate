@@ -21,7 +21,7 @@ Claude Code discovers these by convention at `~/.claude/`:
 
 | Convention (at `~/.claude/`) | Kordinate source | Purpose |
 |------------------------------|------------------|---------|
-| `CLAUDE.md` | `kordinate/CLAUDE.md` | Global agent guidelines |
+| `CLAUDE.md` | `kordinate/AGENT.md` | Global agent guidelines |
 | `settings.json` | `kordinate/profile/settings.json` | Hooks, permissions, settings |
 | `keybindings.json` | `kordinate/profile/keybindings.json` | Keyboard shortcuts |
 | `.mcp.json` | `kordinate/profile/mcp.json` | MCP server config (encrypted) |
