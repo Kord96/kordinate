@@ -80,7 +80,7 @@ fi
 for mapping in "${CLAUDE_LINKS[@]}"; do
   convention="${mapping%%:*}"
   source="${mapping#*:}"
-  create_link "$TARGET/$convention" "$source"
+  create_link "$TARGET/$convention" "$REPO_ROOT/$source"
 done
 
 echo ""
