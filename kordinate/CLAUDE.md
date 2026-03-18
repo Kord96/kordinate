@@ -4,7 +4,7 @@
 
 ## Context
 
-Kordinate repo at `~/.claude/`. Multi-cluster k8s infrastructure — agents, commands, config, and knowledge all live here. Deploys to clusters via SSH.
+Kordinate repo at `~/kordinate/`. Multi-cluster k8s infrastructure — agents, commands, config, and knowledge all live here. Deploys to clusters via SSH.
 
 For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/profile/config.yaml`
 

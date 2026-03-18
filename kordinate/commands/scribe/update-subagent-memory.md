@@ -6,7 +6,7 @@ Update a subagent's memory — either global or project-local.
 
 This command handles both memory locations:
 
-- **Global memory** (`~/.claude/agent-memory/<name>/`): Cross-project knowledge. Not git-tracked. Use when the content applies to the agent regardless of project (general operational notes, cross-project workarounds).
+- **Global memory** (`~/.claude/agent-memory/<name>/`): Cross-project knowledge. Git-tracked (lives in the kordinate repo at `agents/memory/`). Use when the content applies to the agent regardless of project (general operational notes, cross-project workarounds).
 - **Project-local memory** (`<repo>/.claude/agent-memory/<name>/`): Project-specific knowledge. Git-tracked. Use when the content is specific to the current repo (debug reference tables, project-specific workflows, repo-specific operational notes).
 
 How to detect which to use:
@@ -31,7 +31,7 @@ How to detect which to use:
    <memory content>
    ```
 5. If project-local: stage and commit the file (it is git-tracked)
-6. If global: no commit needed (lives at `~/.claude/`, not in git)
+6. If global: stage and commit the file (it is git-tracked in the kordinate repo)
 
 ## Restrictions
 

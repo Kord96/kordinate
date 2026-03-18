@@ -60,23 +60,23 @@ Branch flow: `session/*` → `main` → `test` → `prod`. Session branches auto
 ### Bootstrap
 
 ```bash
-git clone <repo-url> kordinate
-cd kordinate
+git clone <repo-url> ~/kordinate
+cd ~/kordinate
 # Edit profile/config.yaml with your cluster IPs, registry, namespaces
-sudo ./kordinate init
+sudo ./installer/kordinate-cli init
 ```
 
 ### Additional Setup Commands
 
 ```bash
 # Hydrate profile/mcp.json from profile/config.yaml (re-run after config changes)
-./kordinate hydrate
+./installer/kordinate-cli hydrate
 
 # Export current profile for backup
-./kordinate export
+./installer/kordinate-cli export
 
 # Import a previously exported profile
-./kordinate import <file>
+./installer/kordinate-cli import <file>
 ```
 
 ## Configuration
@@ -130,30 +130,29 @@ See [agents/README.md](agents/README.md) for agent documentation, hooks, and com
 ## Repository Structure
 
 ```
-kordinate/
-├── agents/                # Agent definitions (CLAUDE.md, commands/)
-│   ├── deployer/          # Deployment + infrastructure
-│   ├── sauron/            # Monitoring + validation
-│   ├── designer/          # Architecture review + pattern authority
-│   └── scribe/            # Documentation (sole .md editor)
-├── agent-memory/          # Cross-project agent knowledge
-│   ├── deployer/
-│   ├── sauron/
-│   ├── designer/          # Includes patterns/ and patterns.md
-│   └── scribe/
-├── bin/                   # claude-session, tmux helpers
-├── commands/              # Shared slash commands (boot, consult, merge)
-├── hooks/                 # Safety guardrail hooks
-├── setup/                 # Bootstrap helpers
-├── profile/               # Site-specific config (git-crypt encrypted)
-├── .mcp.json              # MCP server config (git-crypt encrypted)
-├── kordinate              # Bootstrap CLI
-├── settings.json          # Claude Code settings
-└── CLAUDE.md              # Global agent guidelines
+~/kordinate/
+├── kordinate/              # Claude Code framework (linked into ~/.claude/)
+│   ├── CLAUDE.md
+│   ├── agents/             # Agent definitions + commands
+│   │   ├── deployer/
+│   │   ├── sauron/
+│   │   ├── designer/
+│   │   ├── scribe/
+│   │   └── memory/         # Cross-project agent knowledge
+│   ├── commands/            # Shared slash commands
+│   ├── hooks/               # Safety guardrail hooks
+│   └── profile/             # Site-specific config (git-crypt encrypted)
+├── installer/               # Bootstrap + linking
+│   ├── link.sh
+│   ├── kordinate-cli
+│   ├── lib.sh
+│   └── auth-check.sh
+├── bin/                     # Session + tmux helpers
+└── README.md
 ```
 
 ## Further Reading
 
 - [agents/README.md](agents/README.md) — Agent system: hooks, commands, lock-based authorization
 - [profile/README.md](profile/README.md) — Site-specific configuration and layout
-- [setup/README.md](setup/README.md) — Bootstrap scripts and doctor categories
+- [installer/README.md](installer/README.md) — Bootstrap CLI and linking
