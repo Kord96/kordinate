@@ -30,7 +30,7 @@ Claude Code expects these at `~/.claude/`. Each maps to a kordinate source:
 | `commands/` | `kordinate/commands/` | Shared slash commands |
 | `hooks/` | `kordinate/hooks/` | Safety guardrail hooks |
 | `profile/` | `kordinate/profile/` | Site-specific config |
-| `agent-memory/` | `kordinate/agent-memory/` | Cross-project knowledge |
+| `agent-memory/` | `kordinate/agents/memory/` | Cross-project knowledge |
 
 ### External resources
 

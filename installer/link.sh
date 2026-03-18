@@ -39,7 +39,7 @@ CLAUDE_LINKS=(
   "commands:kordinate/commands"
   "hooks:kordinate/hooks"
   "profile:kordinate/profile"
-  "agent-memory:kordinate/agent-memory"
+  "agent-memory:kordinate/agents/memory"
 )
 
 # External resource links (absolute targets)
