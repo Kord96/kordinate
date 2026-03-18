@@ -115,13 +115,12 @@ git-crypt unlock                 # decrypt profile/
 
 ## Documentation
 
-| Doc | Level | Topic |
-|-----|-------|-------|
-| [docs/overview.md](docs/overview.md) | Start here | How the pieces fit together |
-| [docs/agents.md](docs/agents.md) | Mid-level | Agents, hooks, commands, consultation |
-| [docs/memory.md](docs/memory.md) | Mid-level | Memory model: static, dynamic, project |
-| [docs/profile.md](docs/profile.md) | Reference | Site-specific config and YAML structure |
-| [docs/infrastructure.md](docs/infrastructure.md) | Reference | Observability stack and data flow |
-| [docs/reference/patterns/](docs/reference/patterns/index.md) | Reference | Design patterns (with diagrams) |
-| [docs/reference/libraries/](docs/reference/libraries/index.md) | Reference | Library docs (all agent perspectives) |
-| [docs/claude-links.md](docs/claude-links.md) | Reference | Link mapping (kordinate → Claude Code) |
+Full docs at **[kord96.github.io/kordinate](https://kord96.github.io/kordinate/)**
+
+| Doc | Topic |
+|-----|-------|
+| [Overview](https://kord96.github.io/kordinate/overview/) | How the pieces fit together |
+| [Getting Started](https://kord96.github.io/kordinate/getting-started/) | Profile config, link mapping, setup |
+| [Agents](https://kord96.github.io/kordinate/agents/) | Agents, hooks, commands, consultation |
+| [Memory](https://kord96.github.io/kordinate/memory/) | Memory model: static, dynamic, project |
+| [Reference](https://kord96.github.io/kordinate/reference/patterns/) | Design patterns, libraries, infrastructure |
