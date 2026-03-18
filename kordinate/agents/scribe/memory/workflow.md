@@ -1,7 +1,7 @@
 # Workflow
 
 1. **Authenticate** — once per invocation, not per file:
-   1. `cp <lock> /tmp/.scribe-auth` (lock path from paths.json profile)
+   1. `cp profile/locks/scribe /tmp/.scribe-auth`
    2. Perform ALL Edit/Write operations for the entire task
    3. `rm /tmp/.scribe-auth` only when all writes are complete
 

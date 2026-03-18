@@ -6,7 +6,7 @@ Kubectl write operations and image builds are protected by `guard-kubectl.sh`. O
 
 For writes to any namespace except master:
 
-1. `cp <lock> /tmp/.deployer-auth` (lock path from paths.json)
+1. `cp profile/locks/deployer /tmp/.deployer-auth`
 2. Run SSH + kubectl/docker commands or Redis MCP tools
 3. `rm /tmp/.deployer-auth`
 
