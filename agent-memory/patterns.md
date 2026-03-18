@@ -24,7 +24,7 @@
 
 | Pattern | Repo | Description |
 |---------|------|-------------|
-| Stoik (stream-to-store) | [stoik](https://pypi.org/project/stoik/) | Kafka consumer that writes to a local DuckDB store via buffered flushes. Core pattern for pipeline services. |
+| Stoik (stream-to-store) | [stoik](https://github.com/Kord96/stoik) | Kafka consumer that writes to a local DuckDB store via buffered flushes. Core pattern for pipeline services. |
 | ETL/ELT | — | Batch extract-transform-load for periodic data processing. Scheduled via cron or orchestrator. |
 | Event sourcing | — | Append-only event log as the source of truth. Current state derived by replaying events. |
 | CQRS | — | Separate models for reading and writing data. Write model optimized for consistency, read model for query performance. |
@@ -50,5 +50,5 @@
 
 | Pattern | Repo | Description |
 |---------|------|-------------|
-| Orchestrator (service manager) | [orchestrator](https://pypi.org/project/orchestrator-lib/) | Manages service startup, shutdown, health reporting, and graceful degradation within a single process. |
+| Orchestrator (service manager) | [orchestrator](https://github.com/Kord96/orchestrator) | Manages service startup, shutdown, health reporting, and graceful degradation within a single process. |
 | Sidecar | — | Auxiliary container running alongside the main workload, handling cross-cutting concerns (networking, logging, auth). |
