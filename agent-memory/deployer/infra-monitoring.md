@@ -83,13 +83,28 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy ta
 
 ## Dashboard Provisioning
 
-Grafana dashboards are provisioned via ConfigMaps (GitOps-compatible). Sauron owns dashboard content; deployer creates the ConfigMaps at deploy time.
+Grafana dashboards are provisioned via ConfigMaps (GitOps-compatible). Sauron owns dashboard content; deployer creates the ConfigMaps and patches the Grafana deployment at deploy time.
+
+The base `grafana.yaml` is generic — no project-specific references. Dashboard volumes are added via a JSON patch from the project profile.
+
+### Deploy flow
+
+1. `kubectl apply -f grafana.yaml` — generic base (no dashboards)
+2. Create ConfigMaps from dashboard sources:
+   ```
+   kubectl create configmap grafana-db-logbd --from-file=~/.claude/profile/projects/logbd/dashboards/ -n master
+   kubectl create configmap grafana-db-logbd-drill --from-file=~/.claude/profile/projects/logbd/dashboards/drill/ -n master
+   kubectl create configmap grafana-db-infra --from-file=~/.claude/agent-memory/sauron/dashboards/ -n master
+   ```
+3. `kubectl patch deployment grafana -n master --type=json -p "$(cat ~/.claude/profile/projects/logbd/grafana-dashboards-patch.json)"`
+
+### ConfigMap → source mapping
 
 | ConfigMap | Source path | Content |
 |-----------|------------|---------|
-| `grafana-db-logbd` | `~/.claude/profile/projects/logbd/dashboards/*.json` | Project-specific dashboards |
-| `grafana-db-logbd-drill` | `~/.claude/profile/projects/logbd/dashboards/drill/*.json` | Project drill-down dashboards |
-| `grafana-db-infra` | `~/.claude/agent-memory/sauron/dashboards/*.json` | General infra dashboards |
+| `grafana-db-logbd` | `profile/projects/logbd/dashboards/*.json` | Project-specific dashboards |
+| `grafana-db-logbd-drill` | `profile/projects/logbd/dashboards/drill/*.json` | Project drill-down dashboards |
+| `grafana-db-infra` | `agent-memory/sauron/dashboards/*.json` | General infra dashboards |
 
 ## Operational Notes
 

@@ -47,25 +47,6 @@ spec:
               mountPath: /var/lib/grafana
           securityContext:
             runAsUser: 0
-        - name: copy-dashboards
-          image: busybox:1.36
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              mkdir -p /dashboards/logbd/Drill /dashboards/infra
-              [ -d /tmp/cm-logbd ] && cp /tmp/cm-logbd/*.json /dashboards/logbd/ 2>/dev/null || true
-              [ -d /tmp/cm-logbd-drill ] && cp /tmp/cm-logbd-drill/*.json /dashboards/logbd/Drill/ 2>/dev/null || true
-              [ -d /tmp/cm-infra ] && cp /tmp/cm-infra/*.json /dashboards/infra/ 2>/dev/null || true
-              echo "Copied $(find /dashboards -name '*.json' | wc -l) dashboards total"
-          volumeMounts:
-            - name: dashboards
-              mountPath: /dashboards
-            - name: db-logbd
-              mountPath: /tmp/cm-logbd
-            - name: db-logbd-drill
-              mountPath: /tmp/cm-logbd-drill
-            - name: db-infra
-              mountPath: /tmp/cm-infra
       containers:
         - name: grafana
           image: grafana/grafana:11.4.0
@@ -93,8 +74,6 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
-            - name: dashboards
-              mountPath: /dashboards
         - name: grafana-renderer
           image: grafana/grafana-image-renderer:latest
           ports:
@@ -112,26 +91,12 @@ spec:
         - name: grafana-data
           persistentVolumeClaim:
             claimName: grafana-data
-        - name: dashboards
-          emptyDir: {}
         - name: grafana-provisioning
           configMap:
             name: grafana-provisioning
         - name: grafana-datasources
           configMap:
             name: grafana-datasources
-        - name: db-logbd
-          configMap:
-            name: grafana-db-logbd
-            optional: true
-        - name: db-logbd-drill
-          configMap:
-            name: grafana-db-logbd-drill
-            optional: true
-        - name: db-infra
-          configMap:
-            name: grafana-db-infra
-            optional: true
 ---
 apiVersion: v1
 kind: Service
