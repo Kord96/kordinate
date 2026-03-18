@@ -22,29 +22,33 @@ if [ ! -d "$FRAMEWORK" ]; then
 fi
 
 # ═══════════════════════════════════════════════════════════════
-# MAPPING: Claude convention → kordinate source
+# MAPPING
 #
-# Format: "convention_path:kordinate_path"
-# Convention paths are relative to ~/.claude/
-# Kordinate paths are relative to the repo root
+# Format: "link_name:target_path"
+# Link names are relative to ~/.claude/
+# Target paths are relative to the repo root (made absolute at link time)
 # ═══════════════════════════════════════════════════════════════
 
+# Claude Code conventions — Claude discovers these at ~/.claude/
 CLAUDE_LINKS=(
   "CLAUDE.md:kordinate/CLAUDE.md"
   "settings.json:kordinate/profile/settings.json"
   "keybindings.json:kordinate/profile/keybindings.json"
   ".mcp.json:kordinate/profile/mcp.json"
-  ".gitattributes:kordinate/.gitattributes"
   "agents:kordinate/agents"
   "commands:kordinate/commands"
+)
+
+# Kordinate internal — NOT Claude conventions, linked so hooks/scripts
+# can reference them at stable ~/.claude/ paths
+KORDINATE_LINKS=(
   "hooks:kordinate/hooks"
   "profile:kordinate/profile"
   "agent-memory:kordinate/agents/memory"
+  ".gitattributes:kordinate/.gitattributes"
 )
 
-# External resource links (absolute targets)
-# Format: "link_path:absolute_target"
-# Link paths are relative to the repo root
+# External resources — absolute targets outside the repo
 EXTERNAL_LINKS=(
   "kordinate/profile/keystore:$HOME/.password-store/kordinate"
 )
@@ -65,8 +69,6 @@ create_link() {
   fi
 }
 
-echo "=== Claude Code links ==="
-
 # Ensure ~/.claude exists as a real directory
 if [ ! -d "$TARGET" ] && [ ! -L "$TARGET" ]; then
   mkdir -p "$TARGET"
@@ -77,11 +79,21 @@ elif [ -L "$TARGET" ]; then
   mkdir -p "$TARGET"
 fi
 
-for mapping in "${CLAUDE_LINKS[@]}"; do
-  convention="${mapping%%:*}"
-  source="${mapping#*:}"
-  create_link "$TARGET/$convention" "$REPO_ROOT/$source"
-done
+apply_links() {
+  local -n arr=$1
+  for mapping in "${arr[@]}"; do
+    local name="${mapping%%:*}"
+    local source="${mapping#*:}"
+    create_link "$TARGET/$name" "$REPO_ROOT/$source"
+  done
+}
+
+echo "=== Claude Code conventions ==="
+apply_links CLAUDE_LINKS
+
+echo ""
+echo "=== Kordinate internal ==="
+apply_links KORDINATE_LINKS
 
 echo ""
 echo "=== External resource links ==="

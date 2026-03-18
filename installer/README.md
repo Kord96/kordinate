@@ -17,7 +17,7 @@ Managed by `link.sh`. The mapping decouples Claude Code's expected paths from ko
 
 ### Claude Code conventions
 
-Claude Code expects these at `~/.claude/`. Each maps to a kordinate source:
+Claude Code discovers these by convention at `~/.claude/`:
 
 | Convention (at `~/.claude/`) | Kordinate source | Purpose |
 |------------------------------|------------------|---------|
@@ -25,12 +25,19 @@ Claude Code expects these at `~/.claude/`. Each maps to a kordinate source:
 | `settings.json` | `kordinate/profile/settings.json` | Hooks, permissions, settings |
 | `keybindings.json` | `kordinate/profile/keybindings.json` | Keyboard shortcuts |
 | `.mcp.json` | `kordinate/profile/mcp.json` | MCP server config (encrypted) |
-| `.gitattributes` | `kordinate/.gitattributes` | git-crypt rules |
 | `agents/` | `kordinate/agents/` | Agent definitions + commands |
 | `commands/` | `kordinate/commands/` | Shared slash commands |
-| `hooks/` | `kordinate/hooks/` | Safety guardrail hooks |
-| `profile/` | `kordinate/profile/` | Site-specific config |
-| `agent-memory/` | `kordinate/agents/memory/` | Cross-project knowledge |
+
+### Kordinate internal links
+
+These are NOT Claude Code conventions — they're linked into `~/.claude/` so that hooks, agent docs, and scripts can reference them at stable paths:
+
+| Link (at `~/.claude/`) | Kordinate source | Why |
+|-------------------------|------------------|-----|
+| `hooks/` | `kordinate/hooks/` | Referenced by `settings.json` with `$HOME/.claude/hooks/` paths |
+| `profile/` | `kordinate/profile/` | Hooks read locks at `$HOME/.claude/profile/locks/` |
+| `agent-memory/` | `kordinate/agents/memory/` | Agent docs reference `~/.claude/agent-memory/<name>/` |
+| `.gitattributes` | `kordinate/.gitattributes` | git-crypt needs it at repo root (when repo is at `~/.claude/`) |
 
 ### External resources
 
