@@ -26,7 +26,7 @@ cp /dev/null profile/config.yaml
 # Edit with your cluster details (see config structure below)
 
 # Generate MCP server config from config.yaml + pass store
-./kordinate hydrate
+./installer/kordinate-cli hydrate
 
 # Agent auth locks are generated during bootstrap
 # Pass keystore is set up via ./kordinate init or ./kordinate import

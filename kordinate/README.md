@@ -7,9 +7,9 @@ The Claude Code framework: agents, hooks, commands, and site-specific config. Li
 | Agent    | Triggers                                           | Purpose                    |
 |----------|---------------------------------------------------|----------------------------|
 | deployer | `roll`, `migrate`, `stop`, `clean`, `diff`        | GitOps deployments         |
-| sauron   | `add monitoring`, `add metrics`, `health check`, `dashboard`, `set up logging`, `run tests`, `code validation` | Observability & validation |
+| sauron   | `add monitoring`, `add metrics`, `health check`, `dashboard`, `set up logging`, `run tests`, `code validation`, ... | Observability & validation (see [AGENT.md](agents/sauron/AGENT.md) for full list) |
 | designer | `review architecture`, `design review`            | Architecture review + pattern authority |
-| scribe   | `update docs`, `add api key`, `add mcp`, `write readme`   | Documentation (sole `.md` editor) |
+| scribe   | `update docs`, `add api key`, `add mcp`, `write readme`, ... | Documentation (sole `.md` editor, see [AGENT.md](agents/scribe/AGENT.md) for full list) |
 
 ```
 User message
@@ -45,6 +45,10 @@ See [agents/README.md](agents/README.md) for lock-based authorization and consul
 | `/consult`        | Query an agent without full handoff                  |
 | `/merge`          | Merge current session branch                         |
 | `/deployer:roll`  | Trigger a rolling deployment via the deployer agent  |
+| `/deployer:stop`  | Scale down an environment                            |
+| `/deployer:clean` | Clean up environment data                            |
+| `/deployer:diff`  | Stage incremental data changes for next roll         |
+| `/deployer:bootstrap` | Bootstrap cluster infrastructure                 |
 
 ## Profile
 

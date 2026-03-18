@@ -31,7 +31,7 @@ For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/profile/
 | sauron | "add monitoring", "add metrics", "health check", "prometheus", "dashboard", "set up logging", "add logging", "review logs", "run tests", "code validation", "validate code" | Monitoring & validation |
 | designer | "review architecture", "design review" | Architecture review + pattern authority |
 | deployer | "roll", "migrate", "stop", "clean", "diff" | GitOps deployments |
-| scribe | "update docs", "add api key", "add project", "add mcp" | Documentation (sole .md editor) |
+| scribe | "update docs", "update profile docs", "update project docs", "add api key", "store api key", "add mcp", "update agent docs", "write readme", "update readme" | Documentation (sole .md editor) |
 
 ## Branch Model
 
@@ -51,7 +51,9 @@ When the user says "consult", "ask", or "check with" an agent, run `/consult <ag
 
 ## Agent Memory
 
-- **Cross-project**: `~/.claude/agent-memory/<agent>/` — curated knowledge, auto-managed memory
-- **Project-specific**: `<project-repo>/.claude/agent-memory/<agent>/` — operational docs
-- **Project manifests**: `<project-repo>/manifests/` — k8s manifests (discovered by convention)
-- **Project monitoring**: `<project-repo>/monitoring/` — dashboards, health checks (discovered by convention)
+See `kordinate/README.md` for memory locations and conventions.
+
+- `~/.claude/agent-memory/<agent>/`
+- `<project-repo>/.claude/agent-memory/<agent>/`
+- `<project-repo>/manifests/`
+- `<project-repo>/monitoring/`

@@ -2,6 +2,32 @@
 
 > **For your specific cluster topology, see `profile/topology.yaml`.**
 
+## Cluster Topology
+
+```
+                  Tailscale SSH
+                       │
+             ┌─────────▼──────────┐
+             │  Workstation Pod    │
+             │  (master namespace) │
+             │                     │
+             │  /home/claude (PVC) │
+             │  Claude Code        │
+             │  4 agents           │
+             └────┬──────────┬────┘
+                  │          │
+           SSH + kubectl     │
+          ┌───────┘          └───────┐
+    ┌─────▼──────┐          ┌───────▼─────┐
+    │  cluster-a  │          │  cluster-b   │
+    │ dev│test│prod│          │ dev│test│prod │
+    └─────────────┘          └──────────────┘
+```
+
+- Workstation runs in the `master` namespace with a PVC-backed home directory at `/home/claude`.
+- Agents operate on remote clusters via SSH. Safety hooks enforce which agent can do what.
+- Tailscale provides remote SSH access. Ephemeral nodes are auto-cleaned on boot.
+
 ## Overview
 
 Each k3s cluster is a standalone Kubernetes installation with its own control plane,

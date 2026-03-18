@@ -4,29 +4,9 @@ A Claude Code operations framework for multi-cluster Kubernetes infrastructure.
 
 ## Architecture
 
-```
-                  Tailscale SSH
-                       │
-             ┌─────────▼──────────┐
-             │  Workstation Pod    │
-             │  (master namespace) │
-             │                     │
-             │  /home/claude (PVC) │
-             │  Claude Code        │
-             │  4 agents           │
-             └────┬──────────┬────┘
-                  │          │
-           SSH + kubectl     │
-          ┌───────┘          └───────┐
-    ┌─────▼──────┐          ┌───────▼─────┐
-    │  cluster-a  │          │  cluster-b   │
-    │ dev│test│prod│          │ dev│test│prod │
-    └─────────────┘          └──────────────┘
-```
-
-- Workstation runs in the `master` namespace with a PVC-backed home directory at `/home/claude`.
-- Agents operate on remote clusters via SSH. Safety hooks enforce which agent can do what.
-- Tailscale provides remote SSH access. Ephemeral nodes are auto-cleaned on boot.
+- The workstation is a Kubernetes pod in the `master` namespace with a PVC-backed home directory at `/home/claude`, running Claude Code with 4 specialized agents.
+- Agents manage remote clusters over SSH through Tailscale. Safety hooks enforce per-agent permissions.
+- Each cluster runs independent dev/test/prod environments; the workstation orchestrates across all of them.
 
 ## Workflow
 
