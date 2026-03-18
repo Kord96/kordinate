@@ -132,8 +132,7 @@ See [agents/README.md](agents/README.md) for agent documentation, hooks, and com
 ```
 ~/kordinate/
 ├── kordinate/              # Claude Code framework (linked into ~/.claude/)
-│   ├── AGENT.md              # Global agent guidelines (linked as CLAUDE.md)
-│   ├── agents/             # Agent definitions + commands
+│   ├── agents/             # Agent definitions, commands, AGENT.md
 │   │   ├── deployer/
 │   │   ├── sauron/
 │   │   ├── designer/
@@ -153,6 +152,5 @@ See [agents/README.md](agents/README.md) for agent documentation, hooks, and com
 
 ## Further Reading
 
-- [agents/README.md](agents/README.md) — Agent system: hooks, commands, lock-based authorization
-- [profile/README.md](profile/README.md) — Site-specific configuration and layout
+- [kordinate/README.md](kordinate/README.md) — Framework: agents, hooks, commands, profile
 - [installer/README.md](installer/README.md) — Bootstrap CLI and linking
