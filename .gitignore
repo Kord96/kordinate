@@ -40,6 +40,9 @@ agent-state/
 # Agent runtime state
 kordinate/agents/*/deploys/
 
+# Compatibility symlinks (created by link.sh)
+kordinate/agents/*/CLAUDE.md
+
 # Legacy
 __pycache__/
 .merge-lock/

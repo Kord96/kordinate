@@ -104,6 +104,22 @@ echo "=== Kordinate internal ==="
 apply_links KORDINATE_LINKS
 
 echo ""
+echo "=== Agent compatibility ==="
+# Create CLAUDE.md → AGENT.md symlinks inside each agent dir
+# so Claude Code finds agent definitions at the expected name
+for agent_dir in "$REPO_ROOT"/kordinate/agents/*/; do
+  [ -f "$agent_dir/AGENT.md" ] || continue
+  compat="$agent_dir/CLAUDE.md"
+  agent="$(basename "$agent_dir")"
+  if [ -L "$compat" ]; then
+    echo "  ok  $agent/CLAUDE.md"
+  else
+    ln -s AGENT.md "$compat"
+    echo "  +   $agent/CLAUDE.md → AGENT.md"
+  fi
+done
+
+echo ""
 echo "=== External resource links ==="
 
 for mapping in "${EXTERNAL_LINKS[@]}"; do
