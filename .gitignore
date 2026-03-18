@@ -25,6 +25,18 @@ agent-state/
 # Secrets and credentials
 .credentials.json
 
+# Symlinks (linking layer — created by link.sh or manually)
+/CLAUDE.md
+/settings.json
+/keybindings.json
+/.mcp.json
+/.gitattributes
+/agents
+/agent-memory
+/commands
+/hooks
+/profile
+
 # Agent runtime state
 kordinate/agents/*/deploys/
 
