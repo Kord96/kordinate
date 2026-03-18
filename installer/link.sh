@@ -35,7 +35,7 @@ fi
 
 # Claude Code conventions — symlinked
 CLAUDE_SYMLINKS=(
-  "settings.json:kordinate/profile/settings.json"
+  "settings.json:kordinate/settings.json"
   "keybindings.json:kordinate/profile/keybindings.json"
   ".mcp.json:kordinate/profile/mcp.json"
   "agents:kordinate/agents"

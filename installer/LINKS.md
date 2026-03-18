@@ -13,7 +13,7 @@ Run `./installer/link.sh` to deploy. Run `./installer/link.sh sync` to copy chan
 
 | Convention (at `~/.claude/`) | Kordinate source | Purpose |
 |------------------------------|------------------|---------|
-| `settings.json` | `kordinate/profile/settings.json` | Hooks, permissions, settings |
+| `settings.json` | `kordinate/settings.json` | Hooks, permissions, settings |
 | `keybindings.json` | `kordinate/profile/keybindings.json` | Keyboard shortcuts |
 | `.mcp.json` | `kordinate/profile/mcp.json` | MCP server config (encrypted) |
 | `agents/` | `kordinate/agents/` | Agent definitions + commands |

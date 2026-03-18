@@ -1,6 +1,6 @@
 # profile/
 
-Site-specific configuration. Everything here is git-crypt encrypted except this file, locks, settings, and keybindings.
+Site-specific configuration. Everything here is git-crypt encrypted except this file, locks, and keybindings.
 
 ## Layout
 
@@ -9,8 +9,7 @@ profile/
 ├── config.yaml             # Cluster IPs, ports, services, registry (encrypted)
 ├── topology.yaml           # App definitions, monitoring, health thresholds (encrypted)
 ├── mcp.json                # MCP server config (encrypted)
-├── settings.json           # Claude Code settings: hooks, permissions
-├── keybindings.json        # Claude Code keyboard shortcuts
+├── keybindings.json        # Keyboard shortcuts
 ├── locks/                  # Agent auth locks (deployer, sauron, scribe)
 ├── keystore/               # Symlink → ~/.password-store/kordinate/
 ├── additions/              # Extra k8s manifests applied to clusters

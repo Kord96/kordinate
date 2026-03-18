@@ -2,7 +2,6 @@
 profile/** filter=git-crypt diff=git-crypt
 profile/README.md !filter !diff
 profile/locks/** !filter !diff
-profile/settings.json !filter !diff
 profile/keybindings.json !filter !diff
 
 # Encrypt agent operational memory (site-specific auto-memory)
