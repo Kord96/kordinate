@@ -31,9 +31,9 @@ fi
 
 CLAUDE_LINKS=(
   "CLAUDE.md:kordinate/CLAUDE.md"
-  "settings.json:kordinate/settings.json"
-  "keybindings.json:kordinate/keybindings.json"
-  ".mcp.json:kordinate/.mcp.json"
+  "settings.json:kordinate/profile/settings.json"
+  "keybindings.json:kordinate/profile/keybindings.json"
+  ".mcp.json:kordinate/profile/mcp.json"
   ".gitattributes:kordinate/.gitattributes"
   "agents:kordinate/agents"
   "commands:kordinate/commands"
@@ -47,7 +47,6 @@ CLAUDE_LINKS=(
 # Link paths are relative to the repo root
 EXTERNAL_LINKS=(
   "kordinate/profile/keystore:$HOME/.password-store/kordinate"
-  "kordinate/profile/mcp.json:../.mcp.json"
 )
 
 # ═══════════════════════════════════════════════════════════════

@@ -22,9 +22,9 @@ Claude Code expects these at `~/.claude/`. Each maps to a kordinate source:
 | Convention (at `~/.claude/`) | Kordinate source | Purpose |
 |------------------------------|------------------|---------|
 | `CLAUDE.md` | `kordinate/CLAUDE.md` | Global agent guidelines |
-| `settings.json` | `kordinate/settings.json` | Hooks, permissions, settings |
-| `keybindings.json` | `kordinate/keybindings.json` | Keyboard shortcuts |
-| `.mcp.json` | `kordinate/.mcp.json` | MCP server config |
+| `settings.json` | `kordinate/profile/settings.json` | Hooks, permissions, settings |
+| `keybindings.json` | `kordinate/profile/keybindings.json` | Keyboard shortcuts |
+| `.mcp.json` | `kordinate/profile/mcp.json` | MCP server config (encrypted) |
 | `.gitattributes` | `kordinate/.gitattributes` | git-crypt rules |
 | `agents/` | `kordinate/agents/` | Agent definitions + commands |
 | `commands/` | `kordinate/commands/` | Shared slash commands |
@@ -37,7 +37,6 @@ Claude Code expects these at `~/.claude/`. Each maps to a kordinate source:
 | Link (relative to repo) | Target | Purpose |
 |--------------------------|--------|---------|
 | `kordinate/profile/keystore` | `~/.password-store/kordinate/` | GPG-encrypted credential store (`pass`) |
-| `kordinate/profile/mcp.json` | `../.mcp.json` | Alias to MCP config at framework root |
 
 ### Changing the mapping
 
