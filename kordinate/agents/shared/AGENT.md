@@ -51,9 +51,8 @@ When the user says "consult", "ask", or "check with" an agent, run `/consult <ag
 
 ## Agent Memory
 
-See `kordinate/README.md` for memory locations and conventions.
-
-- `~/.claude/agent-memory/<agent>/`
-- `<project-repo>/.claude/agent-memory/<agent>/`
-- `<project-repo>/manifests/`
-- `<project-repo>/monitoring/`
+- `~/.claude/agent-memory/<agent>/` — auto-managed operational memory (site-specific, encrypted)
+- `~/.claude/agents/<agent>/memory/` — curated knowledge (generic, parent of auto-memory)
+- `<project-repo>/.claude/agent-memory/<agent>/` — project-specific notes
+- `<project-repo>/manifests/` — k8s manifests (deployer convention)
+- `<project-repo>/monitoring/` — dashboards, health checks (sauron convention)

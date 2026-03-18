@@ -65,20 +65,24 @@ Site-specific config at `profile/` — git-crypt encrypted. See [profile/README.
 
 ## Agent Memory
 
-Each agent has a `memory/` directory colocated with its definition:
+Each agent has a `memory/` directory with two layers:
 
 ```
 agents/<agent>/
-├── CLAUDE.md
+├── AGENT.md
 ├── commands/
-└── memory/        # cross-project knowledge for this agent
+└── memory/
+    ├── *.md              # curated knowledge (generic, not encrypted)
+    ├── libraries/        # library reference docs
+    └── operational/      # auto-managed memory (site-specific, encrypted)
 ```
 
-Agents also store project-specific knowledge in the project repo at `<repo>/.claude/agent-memory/<agent>/`.
+Claude writes auto-memory to `operational/` (linked as `~/.claude/agent-memory/<agent>/`). Agents access curated knowledge at the parent `memory/` level via `~/.claude/agents/<agent>/memory/`.
 
 | Question | Location |
 |----------|----------|
-| Useful across any project? | `agents/<agent>/memory/` |
-| Tied to a specific project? | `<project-repo>/.claude/agent-memory/<agent>/` |
-| Project manifests? | `<project-repo>/manifests/` |
-| Project monitoring? | `<project-repo>/monitoring/` |
+| Generic knowledge (any install) | `agents/<agent>/memory/` |
+| Site-specific auto-memory | `agents/<agent>/memory/operational/` (encrypted) |
+| Tied to a specific project | `<project-repo>/.claude/agent-memory/<agent>/` |
+| Project manifests | `<project-repo>/manifests/` |
+| Project monitoring | `<project-repo>/monitoring/` |

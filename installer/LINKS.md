@@ -35,10 +35,10 @@ Run `./installer/link.sh` to deploy. Run `./installer/link.sh sync` to copy chan
 |-------------------------|------------------|-----|
 | `hooks/` | `kordinate/hooks/` | Referenced by `settings.json` with `$HOME/.claude/hooks/` paths |
 | `profile/` | `kordinate/profile/` | Hooks read locks at `$HOME/.claude/profile/locks/` |
-| `agent-memory/deployer` | `kordinate/agents/deployer/memory/` | Per-agent knowledge |
-| `agent-memory/sauron` | `kordinate/agents/sauron/memory/` | Per-agent knowledge |
-| `agent-memory/designer` | `kordinate/agents/designer/memory/` | Per-agent knowledge |
-| `agent-memory/scribe` | `kordinate/agents/scribe/memory/` | Per-agent knowledge |
+| `agent-memory/deployer` | `kordinate/agents/deployer/memory/operational/` | Auto-memory (encrypted) |
+| `agent-memory/sauron` | `kordinate/agents/sauron/memory/operational/` | Auto-memory (encrypted) |
+| `agent-memory/designer` | `kordinate/agents/designer/memory/operational/` | Auto-memory (encrypted) |
+| `agent-memory/scribe` | `kordinate/agents/scribe/memory/operational/` | Auto-memory (encrypted) |
 | `.gitattributes` | `kordinate/.gitattributes` | git-crypt encryption rules |
 
 ## External resources — symlinked
