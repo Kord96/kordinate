@@ -1,6 +1,0 @@
-# Project knowledge files deployer requires.
-# On startup, /boot checks if these exist for the current project.
-# Missing files trigger consultation with scribe for templates.
-# Files are looked up in <project-repo>/.claude/
-project_files:
-  - deploy.yaml

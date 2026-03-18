@@ -85,7 +85,7 @@ Two-tier state:
 
 **Project-specific knowledge** — lives in the project repo:
 - Agent memory: `<repo>/.claude/agent-memory/<agent>/` — operational notes, metrics catalogs, debug references
-- Deploy config: `<repo>/.claude/deploy.yaml` — deployment method, target, environment state
+- Manifests: `<repo>/manifests/` — k8s manifests discovered by convention; cluster/registry info from `profile/clusters/*.yaml`
 - Monitoring: `<repo>/monitoring/` — dashboards, health checks, alerting (discovered by convention)
 
 **Session-ephemeral** — `.claude/agent-state/<name>.json` (gitignored):
@@ -98,7 +98,7 @@ The repo contains agent definitions (CLAUDE.md, commands/) but no runtime state.
 | Question | Location | Examples |
 |----------|----------|---------|
 | Useful across any project? | `agent-memory/<agent>/` | cAdvisor patterns, library docs, infra monitoring reference |
-| Tied to a specific project? | `<project-repo>/.claude/` | deploy.yaml, agent-memory/sauron/metrics.md |
+| Tied to a specific project? | `<project-repo>/.claude/` | agent-memory/sauron/metrics.md |
 | Project monitoring artifacts? | `<project-repo>/monitoring/` | dashboards/, health.yaml, grafana-dashboards-patch.json |
 
 Rule of thumb: "Would this be useful if the user had a completely different project?" — if yes, `agent-memory/`. If no, it goes in the project repo.

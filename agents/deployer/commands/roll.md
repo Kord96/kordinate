@@ -17,7 +17,7 @@ The environment order is: `main` (dev) → `test` → `prod`
 
 1. Parse project, source, and target from `$ARGUMENTS`. If missing, show usage and exit.
 
-2. Read `~/.claude/agents/deployer/deploys/<project>.yaml` to get method, branch mapping, and current state.
+2. Discover project layout: find manifests at `<project-repo>/manifests/`, get cluster/registry from `~/.claude/profile/clusters/*.yaml`, use project name as image name. Use the global branch model (main/test/prod).
 
 3. **Determine direction**: compare source and target against `main < test < prod`.
 
@@ -72,7 +72,7 @@ The environment order is: `main` (dev) → `test` → `prod`
 
    If any diff apply fails, report the error but continue with remaining diffs. Failed diff files are left in place for retry.
 
-8. **Update tracking**: Edit `~/.claude/agents/deployer/deploys/<project>.yaml` — update environment status, last_deployed.
+8. **Report tracking**: Log the deployment result (project, environment, commit hash, timestamp).
 
 9. Report results: project, direction, source → target, commit hash, health/CI status. Include in report: how many diff files were applied, rows imported, any failures.
 

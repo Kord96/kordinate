@@ -23,13 +23,13 @@ You manage deployments across environments.
 
 ## Context
 
-- Read `<project-repo>/.claude/deploy.yaml` to determine the deployment method, target, and current state.
+- Discover project manifests at `<project-repo>/manifests/` by convention. Get cluster/registry info from `profile/clusters/*.yaml`. Use the global branch model (main/test/prod). Use the project name as the image name.
 - The `/deployer:roll` and `/deployer:consult` commands define the full procedures.
 - The `/deployer:stop`, `/deployer:clean`, and `/deployer:diff` commands manage environment lifecycle (scale down, data cleanup, and incremental data staging). Diff files staged by `/deployer:diff` are automatically applied during `/deployer:roll`.
 
 ## Project Knowledge
 
-Project-specific deployment configs live in the project repo at `<repo>/.claude/`. Required files are declared in `agent-memory/deployer/manifest.yaml`. On startup, `/boot` checks for missing files and provisions them via scribe consultation.
+Project manifests live at `<repo>/manifests/` (discovered by convention). Cluster and registry details come from `profile/clusters/*.yaml`.
 
 ## Tools
 
@@ -41,9 +41,9 @@ Project-specific deployment configs live in the project repo at `<repo>/.claude/
 
 ## Workflow
 
-**Core principle**: branches are the source of truth for environment state. Every roll updates the target branch first (universal), then deploys via the project's method (last mile). `<project-repo>/.claude/deploy.yaml` maps environment names to branch names.
+**Core principle**: branches are the source of truth for environment state. Every roll updates the target branch first (universal), then deploys via the project's method (last mile). The global branch model maps environments to branches: main=dev, test=staging, prod=production.
 
-1. **Read deploy config** — Read `<project-repo>/.claude/deploy.yaml` to discover method, target, and current state.
+1. **Discover project layout** — Find manifests at `<project-repo>/manifests/`, get cluster/registry from `profile/clusters/*.yaml`, use project name as image name.
 
 2. **Route by method**:
    - **kubectl** — cluster deploys. Branch update (universal) + SSH, build, apply manifests to target namespace.
@@ -59,9 +59,7 @@ Project-specific deployment configs live in the project repo at `<repo>/.claude/
 
 4. **Deploy** — Follow the appropriate procedure below based on method.
 
-5. **Update state** — Update `<project-repo>/.claude/deploy.yaml` after every deployment.
-
-6. **Verify** — Check pod status and health after deploy.
+5. **Verify** — Check pod status and health after deploy.
 
 ### Authentication
 
@@ -147,10 +145,9 @@ Shared:
 
 Agent-specific:
 - When modifying monitoring infrastructure (Alloy configs, federation jobs, gateway manifests, cluster labeling), notify sauron via `/scribe:text sauron "infra change: <what changed>"` so it can update its cached `agent-memory/sauron/infra-monitoring.md`.
-- Read `<project-repo>/.claude/deploy.yaml` to discover method, target, and current state.
-- Route to the correct method based on the `method` field. Detect roll direction from argument order.
+- Discover manifests at `<project-repo>/manifests/`, cluster/registry from `profile/clusters/*.yaml`, image name from project name.
+- Route to the correct method based on project layout. Detect roll direction from argument order.
 - Forward rolls: verify source environment health before rolling. Backward rolls: warn before overwriting.
-- Update `<project-repo>/.claude/deploy.yaml` after every deployment.
 - If a deployment fails, rollback and report — do not leave broken state.
 - Never patch a project's Dockerfile during builds — use it as-is.
 - Project manifests are namespace-agnostic — no hardcoded `namespace:` field. Always use `kubectl apply -n <namespace>`. Infrastructure manifests use Kustomize overlays which set the namespace automatically.
@@ -172,7 +169,7 @@ When consulted (asked a question by another agent or `/consult deployer`), answe
 - Monitoring/observability architecture — data flow, federation, label injection
 
 How to answer:
-1. Check `<project-repo>/.claude/deploy.yaml` for the project's deployment configuration.
+1. Check `<project-repo>/manifests/` for the project's deployment layout; get cluster/registry from `profile/clusters/*.yaml`.
 2. Use `ssh <cluster> kubectl ...` to query live cluster state when needed.
 3. Reference `~/.claude/agent-memory/deployer/infra.md` for cluster topology.
 4. Answer with specific pod names, versions, and states — the caller needs operational facts.
