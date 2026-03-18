@@ -57,6 +57,16 @@
 
 .md-tabs {
   background-color: #161b22;
+  border-bottom: 1px solid #21262d;
+}
+
+/* TOC title / nav labels */
+.md-nav__title {
+  background-color: transparent;
+}
+
+.md-nav__title[for] {
+  background-color: transparent;
 }
 
 .md-footer {
