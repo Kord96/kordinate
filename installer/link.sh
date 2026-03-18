@@ -44,7 +44,10 @@ CLAUDE_LINKS=(
 KORDINATE_LINKS=(
   "hooks:kordinate/hooks"
   "profile:kordinate/profile"
-  "agent-memory:kordinate/agents/memory"
+  "agent-memory/deployer:kordinate/agents/deployer/memory"
+  "agent-memory/sauron:kordinate/agents/sauron/memory"
+  "agent-memory/designer:kordinate/agents/designer/memory"
+  "agent-memory/scribe:kordinate/agents/scribe/memory"
   ".gitattributes:kordinate/.gitattributes"
 )
 
@@ -84,7 +87,12 @@ apply_links() {
   for mapping in "${arr[@]}"; do
     local name="${mapping%%:*}"
     local source="${mapping#*:}"
-    create_link "$TARGET/$name" "$REPO_ROOT/$source"
+    local dest="$TARGET/$name"
+    # Create parent directory if link is nested (e.g., agent-memory/deployer)
+    local parent
+    parent="$(dirname "$dest")"
+    [ "$parent" != "$TARGET" ] && mkdir -p "$parent"
+    create_link "$dest" "$REPO_ROOT/$source"
   done
 }
 

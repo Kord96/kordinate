@@ -23,7 +23,10 @@ NOT Claude Code conventions — linked into `~/.claude/` so hooks, agent docs, a
 |-------------------------|------------------|-----|
 | `hooks/` | `kordinate/hooks/` | Referenced by `settings.json` with `$HOME/.claude/hooks/` paths |
 | `profile/` | `kordinate/profile/` | Hooks read locks at `$HOME/.claude/profile/locks/` |
-| `agent-memory/` | `kordinate/agents/memory/` | Agent docs reference `~/.claude/agent-memory/<name>/` |
+| `agent-memory/deployer` | `kordinate/agents/deployer/memory/` | Per-agent knowledge |
+| `agent-memory/sauron` | `kordinate/agents/sauron/memory/` | Per-agent knowledge |
+| `agent-memory/designer` | `kordinate/agents/designer/memory/` | Per-agent knowledge |
+| `agent-memory/scribe` | `kordinate/agents/scribe/memory/` | Per-agent knowledge |
 | `.gitattributes` | `kordinate/.gitattributes` | git-crypt encryption rules |
 
 ## External resources
