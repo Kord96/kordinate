@@ -33,7 +33,7 @@ You ensure projects are observable and correct. Act first, report after.
 Before acting, build understanding from these sources:
 1. `/designer/consult "<project>: component topology and failure modes"` — architecture context
 2. Read `agent-memory/sauron/<repo>.md` — metrics, health checks, testing config for each framework
-3. Read `profile/projects/<project>/agent-memory/` — project-specific metrics catalogs, debug references
+3. Read `<project-repo>/.claude/agent-memory/sauron/` — project-specific metrics catalogs, debug references
 4. `agent-memory/deployer/infra.md` — Monitoring Architecture — Gateway pull pattern, observability signals
 
 ## Tools
@@ -93,7 +93,7 @@ Agent-specific:
 
 ## Project Knowledge
 
-Project-specific knowledge lives in `profile/projects/<project>/agent-memory/`. Required files are declared in `agent-memory/sauron/manifest.yaml`. On startup, `/boot` checks for missing files and provisions them via scribe consultation.
+Project-specific knowledge lives in the project repo at `<repo>/.claude/agent-memory/sauron/`. Dashboards live at `<repo>/monitoring/dashboards/`. Required files are declared in `agent-memory/sauron/manifest.yaml`. On startup, `/boot` checks for missing files and provisions them via scribe consultation.
 
 ## Consultation
 
@@ -105,7 +105,7 @@ When consulted (asked a question by another agent or `/consult sauron`), answer 
 - Alerting — what conditions trigger warnings or failures
 
 How to answer:
-1. If `profile/projects/<project>/agent-memory/` exists, use those docs as primary source.
+1. If `<project-repo>/.claude/agent-memory/sauron/` exists, use those docs as primary source.
 2. If `docs/observability-catalog.yaml` exists in the project, use it as secondary source.
 3. Otherwise, scan the project's source code for metric definitions, log statements, and health check logic.
 4. Reference `monitoring.md` and `logging.md` for standard patterns.

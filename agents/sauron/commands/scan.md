@@ -42,7 +42,7 @@ Scan a project for all observability signals — metrics, log statements, and he
 
 5. **Cross-reference with Grafana dashboards** — if dashboard JSON files exist:
    ```bash
-   find <project>/agents/deployer/manifests/master/base/dashboards/ -name "*.json" 2>/dev/null
+   find <project>/monitoring/dashboards/ -name "*.json" 2>/dev/null
    ```
    For each dashboard, extract all PromQL expressions and check which metrics from step 2 are referenced. Flag:
    - **Unused metrics** — defined in code but not in any dashboard

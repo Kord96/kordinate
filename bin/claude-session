@@ -43,6 +43,7 @@ fi
 # Create a worktree. All runtime state lives at ~/.claude/ — nothing to copy.
 create_worktree() {
   local wt_path="$1" branch_arg="$2"
+  mkdir -p "$(dirname "$wt_path")"
   git -C "$repo_root" worktree add "$wt_path" $branch_arg
   mkdir -p "$wt_path/.claude/agent-state"
 }
@@ -61,7 +62,7 @@ else
 fi
 
 branch="session/${session_id}"
-worktree="${repo_root}/../${session_id}"
+worktree="${repo_root}/.worktrees/${session_id}"
 
 # Try --continue, fall back to fresh start if no conversation exists
 run_claude_continue() {

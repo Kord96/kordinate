@@ -94,7 +94,7 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy ta
 
 ## Known Monitoring Gaps
 
-Check `profile/projects/` for project-specific monitoring gaps.
+Check the project repo's `monitoring/` directory and `.claude/agent-memory/sauron/` for project-specific monitoring gaps.
 
 ## Rules
 

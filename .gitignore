@@ -19,6 +19,9 @@ plugins/
 # Agent state is session-ephemeral
 agent-state/
 
+# Session worktrees
+.worktrees/
+
 # Secrets and credentials
 .credentials.json
 .*-secret
@@ -31,9 +34,7 @@ config.yaml
 profile/topology.yaml
 profile/config.yaml
 profile/overlays/*/
-profile/dashboards/*/
 profile/additions/*/
-profile/projects/*/agent-memory/
 
 # Agent runtime state
 agents/*/inbox.md

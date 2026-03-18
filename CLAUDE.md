@@ -30,7 +30,8 @@ For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/config.y
 
 - **Shared pattern index** — `agent-memory/patterns.md` — catalog of all recognized design patterns with categories and descriptions
 - **Per-agent knowledge** — `agent-memory/<agent>/` — curated docs and auto-managed memory, organized by topic and `patterns/` subdirectory
-- **Per-project knowledge** — `profile/projects/<project>/agent-memory/` — project-specific operational docs (metrics, health checks)
+- **Per-project knowledge** — `<project-repo>/.claude/agent-memory/<agent>/` — project-specific operational docs (metrics, health checks, deploy config)
+- **Per-project monitoring** — `<project-repo>/monitoring/` — dashboards, health checks, alerting (discovered by convention)
 
 ## Agents
 
@@ -76,16 +77,16 @@ All `.md` files are protected. Only the **scribe agent** may edit them — enfor
 
 Two-tier state:
 
-**Agent memory** — `~/.claude/agent-memory/<name>/` (tracked in git):
+**Agent memory (cross-project)** — `~/.claude/agent-memory/<name>/` (tracked in git):
 - Curated knowledge and Claude auto-managed memory live side by side
 - Cross-project docs: `agent-memory/<agent>/<topic>.md`
 - Shared pattern index: `agent-memory/patterns.md`
 - The `guard-md.sh` hook exempts `agent-memory/` paths so agents can write freely
 
-**Profile** — `~/.claude/profile/` (tracked in git):
-- `projects/<project>/` — project-specific config (dashboards, deploy.yaml, agent-memory/)
-- `overlays/` — deployment-time patches (e.g. grafana-dashboards-patch.json)
-- `additions/` — user-managed platform services
+**Project-specific knowledge** — lives in the project repo:
+- Agent memory: `<repo>/.claude/agent-memory/<agent>/` — operational notes, metrics catalogs, debug references
+- Deploy config: `<repo>/.claude/deploy.yaml` — deployment method, target, environment state
+- Monitoring: `<repo>/monitoring/` — dashboards, health checks, alerting (discovered by convention)
 
 **Session-ephemeral** — `.claude/agent-state/<name>.json` (gitignored):
 - session_id, last_line, last_commit, agent_id, context_summary
@@ -96,11 +97,11 @@ The repo contains agent definitions (CLAUDE.md, commands/) but no runtime state.
 
 | Question | Location | Examples |
 |----------|----------|---------|
-| Useful across any project? | `agent-memory/<agent>/` | cAdvisor patterns, library docs, `sauron/dashboards/physical-resources.json` |
-| Tied to a specific project? | `profile/projects/<project>/` | logBD dashboards, `deploy.yaml`, `grafana-dashboards-patch.json` |
-| Project-specific agent knowledge? | `profile/projects/<project>/agent-memory/<agent>/` | Per-project metrics catalogs, health-check references |
+| Useful across any project? | `agent-memory/<agent>/` | cAdvisor patterns, library docs, infra monitoring reference |
+| Tied to a specific project? | `<project-repo>/.claude/` | deploy.yaml, agent-memory/sauron/metrics.md |
+| Project monitoring artifacts? | `<project-repo>/monitoring/` | dashboards/, health.yaml, grafana-dashboards-patch.json |
 
-Rule of thumb: "Would this be useful if the user had a completely different project?" — if yes, `agent-memory/`. If no, `profile/projects/<project>/`.
+Rule of thumb: "Would this be useful if the user had a completely different project?" — if yes, `agent-memory/`. If no, it goes in the project repo.
 
 ---
 
