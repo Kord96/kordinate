@@ -115,8 +115,10 @@ git-crypt unlock                 # decrypt profile/
 
 ## Documentation
 
-| Doc | Topic |
-|-----|-------|
-| [docs/agents.md](docs/agents.md) | Agents, hooks, locks, commands, memory |
-| [docs/profile.md](docs/profile.md) | Site-specific configuration |
-| [docs/claude-links.md](docs/claude-links.md) | Link mapping (kordinate → Claude Code) |
+| Doc | Level | Topic |
+|-----|-------|-------|
+| [docs/overview.md](docs/overview.md) | Start here | How the pieces fit together |
+| [docs/agents.md](docs/agents.md) | Mid-level | Agents, hooks, commands, consultation |
+| [docs/memory.md](docs/memory.md) | Mid-level | Memory model: static, dynamic, project |
+| [docs/profile.md](docs/profile.md) | Reference | Site-specific config and YAML structure |
+| [docs/claude-links.md](docs/claude-links.md) | Reference | Link mapping (kordinate → Claude Code) |

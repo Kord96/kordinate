@@ -1,8 +1,6 @@
-# Agent System
+# Agents
 
-How kordinate's agents, hooks, and memory work together.
-
-## Agents
+## Overview
 
 | Agent | Triggers | What it does |
 |-------|----------|-------------|
@@ -31,7 +29,7 @@ User message
 
 ## Safety Hooks
 
-Hooks are registered in `settings.json` and fire on every tool call.
+Hooks fire on every tool call. Registered in `settings.json`.
 
 ### Guards
 
@@ -82,30 +80,3 @@ Ask an agent a question without transferring full control:
 | `/deployer:clean` | Clean up environment data |
 | `/deployer:diff` | Stage incremental data changes |
 | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
-
-## Agent Directory Structure
-
-Each agent is self-contained:
-
-```
-agents/<agent>/
-├── AGENT.md              # role, commands, rules
-├── instructions/         # how to do things (workflow, auth, tools)
-├── memory/
-│   ├── static/           # curated knowledge (generic)
-│   └── dynamic/          # auto-managed notes (site-specific, encrypted)
-└── commands/             # slash command definitions
-```
-
-The `agent-memory.sh` hook combines `instructions/` + `memory/static/` + `shared/MEMORY.md` into a single `MEMORY.md` in `dynamic/` before each agent spawn. This is what the agent auto-reads on startup.
-
-## Shared
-
-```
-agents/
-├── AGENT.md              # master agent instructions (→ ~/.claude/CLAUDE.md)
-└── shared/
-    └── MEMORY.md         # common rules injected into every agent's memory
-```
-
-`AGENT.md` is read by the master Claude session — it contains agent routing and branch model. `shared/MEMORY.md` is injected into subagent memory by the hook — it contains operational rules all agents share.
