@@ -16,28 +16,20 @@ Bootstrap and linking scripts for kordinate.
 Managed by `link.sh`. The mapping decouples agent conventions from kordinate's internal structure. If kordinate reorganizes, update the mapping — the agent sees the same paths.
 
 ```
-~/kordinate/                           ~/.claude/
-(repo)                                 (agent config dir)
-
-kordinate/                             Claude Code conventions
-├── AGENT.md ·······················── CLAUDE.md
-├── agents/ ························── agents/
-├── commands/ ······················── commands/
-└── profile/
-    ├── settings.json ··············── settings.json
-    ├── keybindings.json ···········── keybindings.json
-    └── mcp.json ···················── .mcp.json
-
-kordinate/                             Kordinate internal
-├── hooks/ ·························── hooks/
-├── profile/ ·······················── profile/
-├── agents/memory/ ·················── agent-memory/
-└── .gitattributes ·················── .gitattributes
-
-~/.password-store/kordinate/ ·······── kordinate/profile/keystore
+┌─────────────┐      link.sh       ┌──────────────┐
+│  kordinate/  │ ──── mapping ────► │  ~/.claude/   │
+│  (repo)      │                    │  (agent sees) │
+└─────────────┘                    └───────┬──────┘
+                                           │
+                                    ┌──────▼──────┐
+                                    │  Claude Code │
+                                    │  Cursor      │
+                                    │  Copilot     │
+                                    │  ...         │
+                                    └─────────────┘
 ```
 
-The left side can reorganize freely. The right side stays stable — only the dotted lines (link.sh mapping) change.
+Kordinate can reorganize freely. The agent sees stable paths. Only the mapping changes.
 
 ### Claude Code conventions
 
