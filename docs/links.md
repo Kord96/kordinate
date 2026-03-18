@@ -16,14 +16,11 @@ Directories that Claude Code reads/writes through directly:
 | `keybindings.json` | `kordinate/profile/keybindings.json` | Keyboard shortcuts |
 | `.mcp.json` | `kordinate/profile/mcp.json` | MCP server config |
 
-Per-agent auto-memory (Claude writes here):
+Per-agent auto-memory (Claude writes here), for each agent:
 
 | At `~/.claude/` | Points to |
 |------------------|-----------|
-| `agent-memory/deployer/` | `kordinate/agents/deployer/memory/dynamic/` |
-| `agent-memory/sauron/` | `kordinate/agents/sauron/memory/dynamic/` |
-| `agent-memory/designer/` | `kordinate/agents/designer/memory/dynamic/` |
-| `agent-memory/scribe/` | `kordinate/agents/scribe/memory/dynamic/` |
+| `agent-memory/<agent>/` | `kordinate/agents/<agent>/memory/dynamic/` |
 
 ## Copies
 
@@ -32,10 +29,7 @@ Files that need renaming (`AGENT.md` → `CLAUDE.md`). Copied on `link.sh deploy
 | At `~/.claude/` | Source in repo |
 |------------------|----------------|
 | `CLAUDE.md` | `kordinate/agents/AGENT.md` |
-| `agents/deployer/CLAUDE.md` | `kordinate/agents/deployer/AGENT.md` |
-| `agents/sauron/CLAUDE.md` | `kordinate/agents/sauron/AGENT.md` |
-| `agents/designer/CLAUDE.md` | `kordinate/agents/designer/AGENT.md` |
-| `agents/scribe/CLAUDE.md` | `kordinate/agents/scribe/AGENT.md` |
+| `agents/<agent>/CLAUDE.md` | `kordinate/agents/<agent>/AGENT.md` |
 
 ## External
 
