@@ -8,8 +8,8 @@ theme:
   favicon: assets/logo.png
   palette:
     scheme: slate
-    primary: black
-    accent: deep orange
+    primary: custom
+    accent: custom
   features:
     - navigation.sections
     - navigation.expand

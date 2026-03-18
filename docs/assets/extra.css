@@ -1,57 +1,64 @@
-/* FB-style dark mode: gray surfaces, accent color for interactive elements only */
+/* GitHub dark mode */
 
 :root {
-  --md-primary-fg-color: #242526;
-  --md-primary-bg-color: #e4e6eb;
-  --md-accent-fg-color: #e05a2b;
+  --md-primary-fg-color: #161b22;
+  --md-primary-bg-color: #c9d1d9;
+  --md-accent-fg-color: #58a6ff;
 
-  /* Surface colors */
-  --md-default-bg-color: #18191a;
-  --md-default-fg-color--light: #b0b3b8;
+  --md-default-bg-color: #0d1117;
+  --md-default-fg-color: #c9d1d9;
+  --md-default-fg-color--light: #8b949e;
+  --md-default-fg-color--lighter: #8b949e;
 }
 
-/* Header blends with background */
 .md-header {
-  background-color: #242526;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+  background-color: #161b22;
+  box-shadow: 0 1px 0 #21262d;
 }
 
-/* Navigation sidebar */
 .md-sidebar {
-  background-color: #242526;
+  background-color: #0d1117;
 }
 
-/* Active nav item uses accent */
 .md-nav__link--active,
 .md-nav__link:hover {
   color: var(--md-accent-fg-color) !important;
 }
 
-/* Links use accent */
 .md-typeset a {
-  color: var(--md-accent-fg-color);
+  color: #58a6ff;
 }
 
 .md-typeset a:hover {
-  color: #ff7043;
+  color: #79c0ff;
 }
 
-/* Search bar */
 .md-search__input {
-  background-color: #3a3b3c;
+  background-color: #161b22;
+  border: 1px solid #30363d;
 }
 
-/* Code blocks */
 .md-typeset code {
-  background-color: #3a3b3c;
+  background-color: #161b22;
+  border: 1px solid #30363d;
 }
 
-/* Tables */
+.md-typeset pre > code {
+  border: none;
+}
+
 .md-typeset table:not([class]) th {
-  background-color: #2d2e2f;
+  background-color: #161b22;
 }
 
-/* Tab indicators */
+.md-typeset table:not([class]) tr:nth-child(2n) {
+  background-color: #161b22;
+}
+
 .md-tabs {
-  background-color: #242526;
+  background-color: #161b22;
+}
+
+.md-footer {
+  background-color: #161b22;
 }
