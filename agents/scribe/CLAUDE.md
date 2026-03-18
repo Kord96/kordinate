@@ -83,11 +83,11 @@ Agent-specific:
 ## Consultation
 
 When consulted (asked a question by another agent or `/consult scribe`), answer about:
-- **Templates** — return template content from `knowledge/templates/agents/<agent>/` for the requested agent and file type
+- **Templates** — return template content from `agent-memory/scribe/templates/agents/<agent>/` for the requested agent and file type
 - **Document formats** — advise on standard document structure and conventions
 
 How to answer:
-1. Read the requested template from `knowledge/templates/agents/<agent>/<filename>`.
+1. Read the requested template from `agent-memory/scribe/templates/agents/<agent>/<filename>`.
 2. Return the full template content so the calling agent can use it as a structure guide.
 3. If no template exists for the requested agent/file, say so.
 

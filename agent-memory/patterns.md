@@ -10,6 +10,29 @@
 | resilience | How the system handles failure | What happens when a dependency goes down? |
 | lifecycle | How a single service starts, runs, and stops | Does the service boot and shut down cleanly? |
 
+## Agent Coverage
+
+Which agents have perspective docs for each pattern. Links point to `agent-memory/<agent>/patterns/<pattern>.md`.
+
+| Pattern | Designer | Deployer | Sauron |
+|---------|----------|----------|--------|
+| Hexagonal | [view](designer/patterns/hexagonal.md) | — | — |
+| DDD | — | — | — |
+| Plugin | — | — | — |
+| Stream-to-store | — | — | — |
+| ETL/ELT | — | — | — |
+| Event sourcing | [view](designer/patterns/event-sourcing.md) | [view](deployer/patterns/event-sourcing.md) | — |
+| CQRS | — | — | — |
+| Saga | [view](designer/patterns/saga.md) | — | [view](sauron/patterns/saga.md) |
+| Choreography | — | — | — |
+| API gateway | — | — | — |
+| Circuit breaker | [view](designer/patterns/circuit-breaker.md) | [view](deployer/patterns/circuit-breaker.md) | [view](sauron/patterns/circuit-breaker.md) |
+| Bulkhead | — | — | — |
+| Retry with backoff | — | — | — |
+| Backpressure | — | — | [view](sauron/patterns/backpressure.md) |
+| Service manager | — | — | — |
+| Sidecar | — | — | — |
+
 ## Patterns
 
 ### Structural

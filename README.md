@@ -187,7 +187,7 @@ session/* --> main --> test --> prod
 ```
 kordinate/
 ├── agents/
-│   ├── deployer/          # Deployment agent (manifests, knowledge, commands)
+│   ├── deployer/          # Deployment agent (manifests, commands)
 │   ├── sauron/            # Monitoring & validation agent
 │   ├── designer/          # Architecture review agent
 │   └── scribe/            # Documentation agent
@@ -195,14 +195,19 @@ kordinate/
 ├── commands/              # Shared slash commands (boot, consult, merge)
 ├── hooks/                 # Safety guardrail hooks
 ├── setup/                 # Bootstrap helpers
+├── agent-memory/          # Per-agent knowledge + patterns (tracked)
+│   ├── patterns.md        # Shared pattern index
+│   ├── deployer/          # Deployer agent knowledge
+│   ├── sauron/            # Sauron agent knowledge + libraries/
+│   ├── designer/          # Designer agent knowledge
+│   └── scribe/            # Scribe agent knowledge + templates/
 ├── profile/               # User-specific (gitignored)
 │   ├── config.yaml        # Cluster infrastructure
 │   ├── topology.yaml      # Operational context for agents
 │   ├── overlays/          # Per-cluster kustomize patches
 │   ├── dashboards/        # User dashboards
 │   ├── additions/         # User platform manifests
-│   └── knowledge/
-│       └── projects/      # Per-project operational docs
+│   └── projects/          # Per-project operational docs + agent-memory/
 ├── config.yaml.template   # Config template
 ├── settings.json          # Claude Code settings
 ├── setup.sh               # Bootstrap script
@@ -224,12 +229,12 @@ Kordinate separates framework code (tracked in git) from user-specific configura
 
 ### Framework (tracked)
 
-Everything outside `profile/`: agents, commands, hooks, `bin/`, base manifests with template placeholders, and knowledge pattern files. This is the shared, portable layer that defines how the system operates.
+Everything outside `profile/`: agents, commands, hooks, `bin/`, base manifests with template placeholders, and `agent-memory/` files. This is the shared, portable layer that defines how the system operates.
 
 ### User content (profile/, gitignored)
 
-`config.yaml`, `topology.yaml`, kustomize overlays, dashboards, and per-project knowledge. This is the site-specific layer that tells the framework what to operate on.
+`config.yaml`, `topology.yaml`, kustomize overlays, dashboards, and per-project agent-memory. This is the site-specific layer that tells the framework what to operate on.
 
 ### How they connect
 
-Knowledge files within agents describe operational patterns and procedures in general terms. `topology.yaml` provides the concrete values — cluster names, app definitions, thresholds — that agents reference at runtime. The framework defines the "how"; the profile defines the "what" and "where."
+Agent memory files describe operational patterns and procedures in general terms. `topology.yaml` provides the concrete values — cluster names, app definitions, thresholds — that agents reference at runtime. The framework defines the "how"; the profile defines the "what" and "where."

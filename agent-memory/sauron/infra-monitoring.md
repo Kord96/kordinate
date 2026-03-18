@@ -94,7 +94,7 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy ta
 
 ## Known Monitoring Gaps
 
-Check `profile/knowledge/projects/` for project-specific monitoring gaps.
+Check `profile/projects/` for project-specific monitoring gaps.
 
 ## Rules
 

@@ -6,7 +6,7 @@
 
 Kordinate repo at `~/.claude/`. Multi-cluster k8s infrastructure — agents, commands, config, and knowledge all live here. Deploys to clusters via SSH.
 
-For reference: `~/.claude/agents/deployer/knowledge/infra.md` · `~/.claude/config.yaml`
+For reference: `~/.claude/agent-memory/deployer/infra.md` · `~/.claude/config.yaml`
 
 ---
 
@@ -74,22 +74,19 @@ All `.md` files are protected. Only the **scribe agent** may edit them — enfor
 
 ## Agent Memory Model
 
-Three-tier state:
+Two-tier state:
 
-**Knowledge** — `~/.claude/agents/<name>/knowledge/` (profile repo):
-- Cross-project docs: `knowledge/<topic>.md`
-- Project-specific docs: `knowledge/projects/<project>/`
-- Authoritative reference material — agents read these instead of fetching at runtime
-
-**Native memory** — `~/.claude/agent-memory/<name>/` (enabled via `memory: user` in frontmatter):
-- Claude auto-manages persistent memory files across sessions
+**Agent memory** — `~/.claude/agent-memory/<name>/` (tracked in git):
+- Curated knowledge and Claude auto-managed memory live side by side
+- Cross-project docs: `agent-memory/<agent>/<topic>.md`
+- Project-specific docs: `profile/projects/<project>/agent-memory/`
+- Shared pattern index: `agent-memory/patterns.md`
 - The `guard-md.sh` hook exempts `agent-memory/` paths so agents can write freely
-- Use for behavioral preferences and cross-project operational notes only
 
-**Local** — `.claude/agent-state/<name>.json` (gitignored):
+**Session-ephemeral** — `.claude/agent-state/<name>.json` (gitignored):
 - session_id, last_line, last_commit, agent_id, context_summary
 
-The repo contains agent definitions (CLAUDE.md, commands/, knowledge/) but no runtime state.
+The repo contains agent definitions (CLAUDE.md, commands/) but no runtime state.
 
 ---
 

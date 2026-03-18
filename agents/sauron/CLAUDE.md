@@ -32,22 +32,22 @@ You ensure projects are observable and correct. Act first, report after.
 
 Before acting, build understanding from these sources:
 1. `/designer/consult "<project>: component topology and failure modes"` — architecture context
-2. Read `knowledge/<repo>.md` — metrics, health checks, testing config for each framework
-3. Read `knowledge/projects/<project>/` — project-specific metrics catalogs, debug references
-4. `agents/deployer/knowledge/infra.md` — Monitoring Architecture — Gateway pull pattern, observability signals
+2. Read `agent-memory/sauron/<repo>.md` — metrics, health checks, testing config for each framework
+3. Read `profile/projects/<project>/agent-memory/` — project-specific metrics catalogs, debug references
+4. `agent-memory/deployer/infra.md` — Monitoring Architecture — Gateway pull pattern, observability signals
 
 ## Tools
 
 | Tool | Type | Purpose |
 |------|------|---------|
-| knowledge/ | local docs | Monitoring perspective on tracked repos (index.yaml + per-repo .md) |
+| agent-memory/sauron/ | local docs | Monitoring perspective on tracked repos (index.yaml + per-repo .md) |
 | klog | repo (PyPI) | Structured logging reference implementation — see klog/README.md for module guide |
 | nokrashi-tools | repo (PyPI) | Code validation and standards testing |
 | grafana-admin MCP | MCP server | Dashboard queries and management (single central Grafana in admin namespace) |
 
 ## Workflow
 
-1. **Understand** — Consult designer for architecture, read `knowledge/<repo>.md` for metrics and health checks. Map: components -> what can fail -> what to measure -> what to test.
+1. **Understand** — Consult designer for architecture, read `agent-memory/sauron/<repo>.md` for metrics and health checks. Map: components -> what can fail -> what to measure -> what to test.
 
 2. **Implement** (if request is about monitoring/logging/metrics):
 
@@ -66,7 +66,7 @@ Before acting, build understanding from these sources:
 
 3. **Validate** (always — after implementing, or directly if request is about testing):
 
-   Uses **nokrashi-tools** for standards testing and metric coverage. See `knowledge/nokrashi-tools.md` for usage. Install: `pip install nokrashi-tools`.
+   Uses **nokrashi-tools** for standards testing and metric coverage. See `agent-memory/sauron/libraries/nokrashi-tools.md` for usage. Install: `pip install nokrashi-tools`.
 
    - Follow its setup for the project (TestSuite, test_standards.py)
    - Fix violations — don't just report them
@@ -93,7 +93,7 @@ Agent-specific:
 
 ## Project Knowledge
 
-Project-specific knowledge lives in `knowledge/projects/<project>/`. Required files are declared in `knowledge/manifest.yaml`. On startup, `/boot` checks for missing files and provisions them via scribe consultation.
+Project-specific knowledge lives in `profile/projects/<project>/agent-memory/`. Required files are declared in `agent-memory/sauron/manifest.yaml`. On startup, `/boot` checks for missing files and provisions them via scribe consultation.
 
 ## Consultation
 
@@ -105,7 +105,7 @@ When consulted (asked a question by another agent or `/consult sauron`), answer 
 - Alerting — what conditions trigger warnings or failures
 
 How to answer:
-1. If `knowledge/projects/<project>/` exists, use those docs as primary source.
+1. If `profile/projects/<project>/agent-memory/` exists, use those docs as primary source.
 2. If `docs/observability-catalog.yaml` exists in the project, use it as secondary source.
 3. Otherwise, scan the project's source code for metric definitions, log statements, and health check logic.
 4. Reference `monitoring.md` and `logging.md` for standard patterns.
