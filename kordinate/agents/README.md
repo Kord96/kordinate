@@ -68,6 +68,28 @@ Ask an agent a question without transferring full control:
 | `/deployer:diff`  | Stage incremental data changes                       |
 | `/deployer:bootstrap` | Bootstrap cluster infrastructure                 |
 
-## Agent Structure & Memory
+## Agent Structure
 
-See [shared/MEMORY.md](shared/MEMORY.md) for the full memory system documentation.
+```
+agents/<agent>/
+├── AGENT.md              # role, commands, rules
+├── instructions/         # procedures (workflow, auth, tools)
+├── memory/
+│   ├── static/           # curated knowledge (generic, any install)
+│   └── dynamic/          # auto-managed notes (site-specific, encrypted)
+└── commands/             # slash command definitions
+```
+
+| Content | Location | Encrypted |
+|---------|----------|-----------|
+| Procedures | `instructions/` | no |
+| Generic knowledge | `memory/static/` | no |
+| Site-specific notes | `memory/dynamic/` | yes |
+| Project-specific | `<repo>/.claude/agent-memory/<agent>/` | no |
+
+## Shared
+
+```
+agents/shared/
+└── AGENT.md              # rules all agents follow
+```
