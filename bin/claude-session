@@ -44,7 +44,18 @@ fi
 create_worktree() {
   local wt_path="$1" branch_arg="$2"
   mkdir -p "$(dirname "$wt_path")"
-  git -C "$repo_root" worktree add "$wt_path" $branch_arg
+  # git-crypt smudge filter fails during normal worktree checkout because
+  # the worktree doesn't have the key yet. Work around by:
+  # 1. Bypass smudge/clean filters during checkout (files land as plaintext)
+  # 2. Symlink git-crypt key from main repo into worktree's git dir
+  # 3. No re-checkout needed — files match the committed (now encrypted) blobs
+  local wt_gitdir
+  wt_gitdir="$repo_root/.git/worktrees/$(basename "$wt_path")"
+  git -c filter.git-crypt.smudge=cat -c filter.git-crypt.clean=cat \
+    -C "$repo_root" worktree add "$wt_path" $branch_arg
+  ln -sf "$repo_root/.git/git-crypt" "$wt_gitdir/git-crypt"
+  # Re-checkout encrypted files with proper smudge filter now that key is available
+  git -C "$wt_path" checkout HEAD -- .
   mkdir -p "$wt_path/.claude/agent-state"
 }
 
