@@ -1,39 +1,59 @@
 /* Make mermaid diagrams clickable — opens full-size SVG in new tab */
-(function () {
-  function makeClickable() {
-    var svgs = document.querySelectorAll("pre.mermaid svg, .mermaid svg, [data-mermaid-id] svg");
-    var found = false;
-    svgs.forEach(function (svg) {
-      if (svg.dataset.zoomReady) return;
-      svg.dataset.zoomReady = "true";
-      svg.style.cursor = "pointer";
-      svg.addEventListener("click", function () {
+document.addEventListener("click", function (e) {
+  /* Walk up from click target to find an SVG inside a mermaid container */
+  var el = e.target;
+  var svg = null;
+  while (el && el !== document.body) {
+    if (el.tagName === "svg" || el.tagName === "SVG") {
+      svg = el;
+    }
+    if (
+      el.classList &&
+      (el.classList.contains("mermaid") || el.hasAttribute("data-processed"))
+    ) {
+      /* Found a mermaid container — use the SVG we found */
+      if (svg) {
+        e.preventDefault();
+        e.stopPropagation();
         var clone = svg.cloneNode(true);
         clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        delete clone.dataset.zoomReady;
-        clone.style.cursor = "";
-        var style = document.createElementNS("http://www.w3.org/2000/svg", "style");
+        var style = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "style"
+        );
         style.textContent = "svg { background: #1e1e2e; padding: 2rem; }";
         clone.insertBefore(style, clone.firstChild);
         var data = new XMLSerializer().serializeToString(clone);
         var blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" });
         window.open(URL.createObjectURL(blob), "_blank");
-      });
-      found = true;
+        return;
+      }
+    }
+    el = el.parentElement;
+  }
+});
+
+/* Add pointer cursor to rendered mermaid diagrams */
+(function () {
+  function addCursor() {
+    var containers = document.querySelectorAll(
+      "pre.mermaid, .mermaid[data-processed], [data-processed]"
+    );
+    containers.forEach(function (c) {
+      if (c.querySelector("svg")) {
+        c.style.cursor = "pointer";
+      }
     });
-    return found;
+    return containers.length > 0;
   }
 
-  /* Poll until mermaid has rendered */
   var attempts = 0;
   var timer = setInterval(function () {
-    if (makeClickable() || ++attempts > 50) clearInterval(timer);
+    if (addCursor() || ++attempts > 50) clearInterval(timer);
   }, 200);
 
-  /* Re-run on Material instant navigation */
   new MutationObserver(function () {
-    attempts = 0;
-    makeClickable();
+    addCursor();
   }).observe(document.body || document.documentElement, {
     childList: true,
     subtree: true,
