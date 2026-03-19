@@ -5,17 +5,18 @@ How apps expose telemetry to the platform. Three concerns — logs, metrics, hea
 ## Overview
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph ns[App Namespace]
-        A1[app pod 1] & A2[app pod 2] & A3[app pod N]
-        VIT[Vitals pod<br/>one per app]
+        APPS[App pods<br/>stdout JSON + /metrics]
+        VIT[Vitals pod<br/>/metrics :9131]
     end
 
-    A1 & A2 & A3 -->|:app-port /metrics| GA[Gateway Alloy]
-    A1 & A2 & A3 -.->|stdout JSON| GA
-    VIT -->|:9131 /metrics| GA
-    GA --> P[Prom] & L[Loki]
+    subgraph gw[Gateway Namespace]
+        AL[Alloy] --> P[Prom] & L[Loki]
+    end
 
+    APPS -->|/metrics + logs| AL
+    VIT -->|vitals_* metrics| AL
     P -.->|query| VIT
 ```
 
@@ -142,17 +143,16 @@ The platform should detect silent vitals failures:
 ```mermaid
 flowchart TB
     subgraph ns[App Namespace]
-        A[App pods<br/>stdout JSON + /metrics]
-        V[Vitals pod<br/>/metrics]
+        A[App pods]
+        V[Vitals pod]
     end
 
     subgraph gw[Gateway Namespace]
         AL[Alloy] --> P[Prom<br/>3h] & L[Loki<br/>3h]
     end
 
-    A -->|logs via K8s API| AL
-    A -->|:app-port /metrics| AL
-    V -->|:9131 /metrics| AL
+    A -->|/metrics + logs| AL
+    V -->|vitals_* metrics| AL
     P -.->|query| V
 
     subgraph master[Master Namespace]
@@ -161,7 +161,7 @@ flowchart TB
     end
 
     P -->|/federate| MA
-    gw -->|K8s API pod logs| MA
+    gw -->|K8s API logs| MA
 ```
 
 ## When to use
