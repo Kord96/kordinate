@@ -132,11 +132,12 @@ flowchart TB
         nodes -->|host + container metrics| AL
         PR -->|:9090| GWT
         LK -->|:3100| GWT
+        LK -->|:3101 /federate| GWT
         myapp -.->|app ports| GWT
     end
 
     GWT -->|:9090 /federate| MA
-    GWT -->|:3100| MA
+    GWT -->|:3101 /federate| MA
     GWT -.->|app ports| EXT[external access]
 
     subgraph master[master]
@@ -147,7 +148,10 @@ flowchart TB
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with local retention.
 
-**Federation:** Gateway Tailscale forwards `:9090` (Prom), `:3100` (Loki), and app ports on the tailnet. Master Alloy pulls metrics via `/federate` from `:9090` and logs from Loki via `:3100`. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
+**Federation:** Gateway Tailscale forwards `:9090` (Prom /federate), `:3100` (Loki direct), `:3101` (Loki /federate), and app ports on the tailnet. Master Alloy pulls both metrics and logs via `/federate` — symmetric pull model.
+
+!!! note "Loki federation sidecar"
+    Loki has no native `/federate` endpoint. A sidecar container in the Loki pod provides one — it queries local Loki and serves a cursor-based pull API on `:3101`. Master Alloy pulls from `:3101/federate` the same way it pulls metrics from `:9090/federate`. Logs are collected once by Gateway Alloy, stored in Loki, and pulled by master on demand.
 
 ??? abstract "What Alloy normalizes"
 
