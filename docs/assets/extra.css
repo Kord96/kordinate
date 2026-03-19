@@ -1,16 +1,35 @@
 /* Minimal overrides — let Material slate theme handle the rest */
 
+/* ── Mermaid diagram sizing ────────────────────────────────────── */
+
+/* Break diagrams out of the content column for more room */
+pre.mermaid {
+  position: relative;
+  margin-left: -2rem;
+  margin-right: -2rem;
+  padding: 1.5rem 2rem;
+  overflow-x: auto;
+}
+
+/* Ensure SVGs use available width and don't shrink too small */
+pre.mermaid svg {
+  min-height: 300px;
+  max-width: none;
+  width: 100%;
+  height: auto;
+}
+
 /* ── Mermaid diagram styling ───────────────────────────────────── */
 
 /* Node text */
 .mermaid .nodeLabel {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
 /* Subgraph labels — more prominent */
 .mermaid .cluster-label .nodeLabel {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -25,7 +44,7 @@
 
 /* Edge labels */
 .mermaid .edgeLabel {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 /* ── Zoom button ───────────────────────────────────────────────── */
