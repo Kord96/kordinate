@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-Generate master alloy.yaml and gateway-registry.yaml from config sources.
+Generate master alloy.yaml and gateway-registry.yaml from profile/config.yaml.
+
+Single source of truth — all gateway IPs, ports, and cluster names come
+from profile/config.yaml. No separate gateway-ips.yaml needed.
 
 Reads:
-  - profile/config.yaml          (cluster names, service ports)
-  - master/gateway-ips.yaml      (gateway Tailscale IPs, MinIO status)
+  - profile/config.yaml  (clusters.*.gateway_tailscale_ip, services.registry)
 
 Writes:
   - master/base/alloy.yaml
@@ -23,332 +25,289 @@ import yaml
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.join(SCRIPT_DIR, "base")
-PROFILE_CONFIG = os.path.join(SCRIPT_DIR, "..", "..", "..", "..", "profile", "config.yaml")
-GATEWAY_IPS = os.path.join(SCRIPT_DIR, "gateway-ips.yaml")
+PROFILE_CONFIG = os.path.join(
+    SCRIPT_DIR, "..", "..", "..", "..", "profile", "config.yaml"
+)
 
-# Default ports if not overridden in gateway-ips.yaml
-DEFAULT_PORTS = {
-    "metrics": 9090,
-    "minio": 9000,
-}
+PORTS = {"metrics": 9090, "minio": 9000}
 
 
-def load_configs():
-    """Load profile config and gateway IPs."""
+def load_config():
     with open(PROFILE_CONFIG) as f:
-        profile = yaml.safe_load(f)
-
-    with open(GATEWAY_IPS) as f:
-        gw_ips = yaml.safe_load(f)
-
-    return profile, gw_ips
+        return yaml.safe_load(f)
 
 
-def build_gateway_list(profile, gw_ips):
-    """Build ordered list of gateways with all needed fields."""
+def build_gateway_list(profile):
     gateways = []
     for name in sorted(profile["clusters"].keys()):
-        if name not in gw_ips["gateways"]:
-            print(f"WARNING: cluster '{name}' in config.yaml but not in gateway-ips.yaml — skipping",
-                  file=sys.stderr)
+        cluster = profile["clusters"][name]
+        gw_ip = cluster.get("gateway_tailscale_ip")
+        if not gw_ip:
+            print(
+                f"WARNING: cluster '{name}' has no gateway_tailscale_ip — skipping",
+                file=sys.stderr,
+            )
             continue
-        gw = gw_ips["gateways"][name]
-        ports = {k: gw.get(k, v) for k, v in DEFAULT_PORTS.items()}
-        gateways.append({
-            "name": name,
-            "tailscale_ip": gw["tailscale_ip"],
-            "ports": ports,
-        })
+        registry = cluster.get("services", {}).get("registry", {})
+        gateways.append(
+            {
+                "name": name,
+                "tailscale_ip": gw_ip,
+                "ports": dict(PORTS),
+                "registry": f"{registry.get('host', 'localhost')}:{registry.get('port', 5000)}"
+                if registry
+                else None,
+            }
+        )
     return gateways
 
 
-def comment_block(text):
-    """Comment out a block of YAML lines."""
-    lines = []
-    for line in text.splitlines():
-        if line.strip():
-            lines.append("# " + line)
-        else:
-            lines.append("#")
-    return "\n".join(lines)
-
-
 # ---------------------------------------------------------------------------
-# alloy.yaml generation
+# alloy.yaml
 # ---------------------------------------------------------------------------
 
-def gen_alloy_config_inner(gateways):
-    """Generate the inner Alloy config (the config.alloy content)."""
-    lines = []
 
-    # Metrics section
-    lines.append("// " + "=" * 51)
-    lines.append("// METRICS — pull from all Gateway Proms via /federate")
-    lines.append("// " + "=" * 51)
-    lines.append("")
+def gen_alloy_config(gateways):
+    L = []
 
-    for gw in gateways:
-        name = gw["name"]
-        ip = gw["tailscale_ip"]
-        port = gw["ports"]["metrics"]
-        lines.append(f'prometheus.scrape "federate_{name}" {{')
-        lines.append(f"  targets = [{{")
-        lines.append(f'    __address__ = "{ip}:{port}",')
-        lines.append(f"  }}]")
-        lines.append(f'  metrics_path    = "/federate"')
-        lines.append(f'  params          = {{ "match[]" = ["{{__name__=~\\".+\\"}}"] }}')
-        lines.append(f'  scrape_interval = "60s"')
-        lines.append(f'  scrape_timeout  = "25s"')
-        lines.append(f"  honor_labels    = true")
-        lines.append(f"  forward_to      = [prometheus.remote_write.master.receiver]")
-        lines.append(f"}}")
-        lines.append("")
-
-    lines.append('prometheus.remote_write "master" {')
-    lines.append("  endpoint {")
-    lines.append('    url = "http://prometheus.master.svc.cluster.local:9191/api/v1/write"')
-    lines.append("  }")
-    lines.append("}")
-    lines.append("")
-
-    # Logs section
-    lines.append("// " + "=" * 51)
-    lines.append("// LOGS — tail JSON Lines files fetched from gateway MinIO buckets")
-    lines.append("// Sidecar on each cluster writes files to MinIO in gateway namespace")
-    lines.append("// Master puller sidecar fetches via Tailscale :9000, writes to /data/federate/")
-    lines.append("// Master Alloy tails with loki.source.file")
-    lines.append("// " + "=" * 51)
-    lines.append("")
+    L.append("// " + "=" * 51)
+    L.append("// METRICS — pull from all Gateway Proms via /federate")
+    L.append("// " + "=" * 51)
+    L.append("")
 
     for gw in gateways:
-        name = gw["name"]
+        L.append(f'prometheus.scrape "federate_{gw["name"]}" {{')
+        L.append(f"  targets = [{{")
+        L.append(f'    __address__ = "{gw["tailscale_ip"]}:{gw["ports"]["metrics"]}",')
+        L.append(f"  }}]")
+        L.append(f'  metrics_path    = "/federate"')
+        L.append(f'  params          = {{ "match[]" = ["{{__name__=~\\".+\\"}}"] }}')
+        L.append(f'  scrape_interval = "60s"')
+        L.append(f'  scrape_timeout  = "25s"')
+        L.append(f"  honor_labels    = true")
+        L.append(f"  forward_to      = [prometheus.remote_write.master.receiver]")
+        L.append(f"}}")
+        L.append("")
 
-        log_block = [
-            f'local.file_match "logs_{name}" {{',
-            f"  path_targets = [{{",
-            f'    __path__ = "/data/federate/{name}/*.json",',
-            f'    cluster  = "{name}",',
-            f"  }}]",
-            f"}}",
-            f"",
-            f'loki.source.file "logs_{name}" {{',
-            f"  targets    = local.file_match.logs_{name}.targets",
-            f"  forward_to = [loki.process.federate.receiver]",
-            f"}}",
-        ]
+    L.append('prometheus.remote_write "master" {')
+    L.append("  endpoint {")
+    L.append(
+        '    url = "http://prometheus.master.svc.cluster.local:9191/api/v1/write"'
+    )
+    L.append("  }")
+    L.append("}")
+    L.append("")
 
-        lines.append(f"// -- {name} cluster logs (puller sidecar writes to /data/federate/{name}/) --")
-        lines.extend(log_block)
-        lines.append("")
+    L.append("// " + "=" * 51)
+    L.append("// LOGS — tail files fetched by puller sidecar from gateway MinIO")
+    L.append("// " + "=" * 51)
+    L.append("")
 
-    # Log processing pipeline (static)
-    lines.append('// -- Parse federated log lines --')
-    lines.append('// Each line: {"stream": {labels}, "ts": "...", "line": "..."}')
-    lines.append('loki.process "federate" {')
-    lines.append("  // Extract the embedded stream labels and original log line")
-    lines.append("  stage.json {")
-    lines.append("    expressions = {")
-    lines.append('      stream_app       = "stream.app",')
-    lines.append('      stream_component = "stream.component",')
-    lines.append('      stream_namespace = "stream.namespace",')
-    lines.append('      stream_cluster   = "stream.cluster",')
-    lines.append('      stream_node      = "stream.node",')
-    lines.append('      stream_pod       = "stream.pod",')
-    lines.append('      stream_container = "stream.container",')
-    lines.append('      stream_level     = "stream.level",')
-    lines.append('      stream_consumer  = "stream.consumer",')
-    lines.append('      original_line    = "line",')
-    lines.append("    }")
-    lines.append("  }")
-    lines.append("")
-    lines.append("  // Apply the original labels")
-    lines.append("  stage.labels {")
-    lines.append("    values = {")
-    lines.append('      app       = "stream_app",')
-    lines.append('      component = "stream_component",')
-    lines.append('      namespace = "stream_namespace",')
-    lines.append('      cluster   = "stream_cluster",')
-    lines.append('      node      = "stream_node",')
-    lines.append('      pod       = "stream_pod",')
-    lines.append('      container = "stream_container",')
-    lines.append('      level     = "stream_level",')
-    lines.append('      consumer  = "stream_consumer",')
-    lines.append("    }")
-    lines.append("  }")
-    lines.append("")
-    lines.append("  // Replace the log line with the original content")
-    lines.append("  stage.output {")
-    lines.append('    source = "original_line"')
-    lines.append("  }")
-    lines.append("")
-    lines.append("  forward_to = [loki.write.master.receiver]")
-    lines.append("}")
-    lines.append("")
-    lines.append("// Write to Master Loki in master namespace")
-    lines.append('loki.write "master" {')
-    lines.append("  endpoint {")
-    lines.append('    url = "http://loki.master.svc.cluster.local:3100/loki/api/v1/push"')
-    lines.append("  }")
-    lines.append("}")
+    for gw in gateways:
+        n = gw["name"]
+        L.append(f'local.file_match "logs_{n}" {{')
+        L.append(f"  path_targets = [{{")
+        L.append(f'    __path__ = "/data/federate/{n}/*.jsonl",')
+        L.append(f'    cluster  = "{n}",')
+        L.append(f"  }}]")
+        L.append(f"}}")
+        L.append("")
+        L.append(f'loki.source.file "logs_{n}" {{')
+        L.append(f"  targets    = local.file_match.logs_{n}.targets")
+        L.append(f"  forward_to = [loki.process.federate.receiver]")
+        L.append(f"}}")
+        L.append("")
 
-    return lines
+    L.append('loki.process "federate" {')
+    L.append("  stage.json {")
+    L.append("    expressions = {")
+    for label in [
+        "app",
+        "component",
+        "namespace",
+        "cluster",
+        "node",
+        "pod",
+        "container",
+        "level",
+        "consumer",
+    ]:
+        L.append(f'      stream_{label:12s} = "stream.{label}",')
+    L.append('      original_line    = "line",')
+    L.append("    }")
+    L.append("  }")
+    L.append("  stage.labels {")
+    L.append("    values = {")
+    for label in [
+        "app",
+        "component",
+        "namespace",
+        "cluster",
+        "node",
+        "pod",
+        "container",
+        "level",
+        "consumer",
+    ]:
+        L.append(f'      {label:12s} = "stream_{label}",')
+    L.append("    }")
+    L.append("  }")
+    L.append('  stage.output { source = "original_line" }')
+    L.append("  forward_to = [loki.write.master.receiver]")
+    L.append("}")
+    L.append("")
+    L.append('loki.write "master" {')
+    L.append("  endpoint {")
+    L.append(
+        '    url = "http://loki.master.svc.cluster.local:3100/loki/api/v1/push"'
+    )
+    L.append("  }")
+    L.append("}")
+
+    return L
 
 
 def gen_alloy_yaml(gateways):
-    """Generate the full alloy.yaml manifest."""
-    out = []
+    config_lines = gen_alloy_config(gateways)
+    indented = "\n".join("    " + l if l else "" for l in config_lines)
 
-    out.append("## Generated by generate-config.py — do not edit directly.")
-    out.append("## Regenerate: cd master && python3 generate-config.py")
-    out.append("##")
-    out.append("## Master Alloy — pulls metrics and logs from all cluster gateways.")
-    out.append("## Metrics: pulls /federate from each gateway's Prom via Tailscale (:9090).")
-    out.append("## Logs: puller sidecar fetches JSON Lines from each gateway's MinIO via Tailscale (:9000).")
-    out.append("## Puller writes to emptyDir shared with Alloy. Alloy tails with loki.source.file.")
-    out.append("## Writes metrics to Master Prometheus, logs to Master Loki.")
-
-    # ConfigMap
-    alloy_config_lines = gen_alloy_config_inner(gateways)
-    # Indent each line by 4 spaces for the YAML literal block
-    indented_config = "\n".join("    " + line if line else "" for line in alloy_config_lines)
-
-    out.append("apiVersion: v1")
-    out.append("kind: ConfigMap")
-    out.append("metadata:")
-    out.append("  name: alloy-config")
-    out.append("  labels:")
-    out.append("    app: monitoring")
-    out.append("    component: alloy")
-    out.append("data:")
-    out.append("  config.alloy: |")
-    out.append(indented_config)
-    out.append("---")
-
-    # Deployment
-    out.append("apiVersion: apps/v1")
-    out.append("kind: Deployment")
-    out.append("metadata:")
-    out.append("  name: alloy")
-    out.append("  labels:")
-    out.append("    app: monitoring")
-    out.append("    component: alloy")
-    out.append("spec:")
-    out.append("  replicas: 1")
-    out.append("  strategy:")
-    out.append("    type: Recreate")
-    out.append("  selector:")
-    out.append("    matchLabels:")
-    out.append("      app: monitoring")
-    out.append("      component: alloy")
-    out.append("  template:")
-    out.append("    metadata:")
-    out.append("      labels:")
-    out.append("        app: monitoring")
-    out.append("        component: alloy")
-    out.append("    spec:")
-    out.append("      containers:")
-    out.append("        - name: alloy")
-    out.append("          image: grafana/alloy:v1.5.1")
-    out.append("          args:")
-    out.append("            - run")
-    out.append("            - /etc/alloy/config.alloy")
-    out.append("            - --stability.level=generally-available")
-    out.append("          resources:")
-    out.append("            requests:")
-    out.append("              cpu: 200m")
-    out.append("              memory: 256Mi")
-    out.append("            limits:")
-    out.append("              memory: 1Gi")
-    out.append("          volumeMounts:")
-    out.append("            - name: config")
-    out.append("              mountPath: /etc/alloy")
-    out.append("            - name: federate-data")
-    out.append("              mountPath: /data/federate")
-    out.append("              readOnly: true")
-    out.append("      volumes:")
-    out.append("        - name: config")
-    out.append("          configMap:")
-    out.append("            name: alloy-config")
-    out.append("        - name: federate-data")
-    out.append("          emptyDir: {}")
-
-    return "\n".join(out) + "\n"
+    out = f"""## Generated by generate-config.py — do not edit directly.
+## Source: profile/config.yaml
+## Regenerate: cd master && python3 generate-config.py
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+  labels:
+    app: monitoring
+    component: alloy
+data:
+  config.alloy: |
+{indented}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alloy
+  labels:
+    app: monitoring
+    component: alloy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: monitoring
+      component: alloy
+  template:
+    metadata:
+      labels:
+        app: monitoring
+        component: alloy
+    spec:
+      containers:
+        - name: alloy
+          image: grafana/alloy:v1.5.1
+          args: [run, /etc/alloy/config.alloy, --stability.level=generally-available]
+          resources:
+            requests: {{ cpu: 200m, memory: 256Mi }}
+            limits: {{ memory: 1Gi }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/alloy
+            - name: federate-logs
+              mountPath: /data/federate
+              readOnly: true
+        - name: log-puller
+          image: docker.io/library/log-puller:latest
+          imagePullPolicy: Never
+          args:
+            - --registry=/etc/gateway-registry/gateways.yaml
+            - --output-dir=/data/federate
+            - --interval=60
+            - --retention=7200
+          resources:
+            requests: {{ cpu: 50m, memory: 64Mi }}
+            limits: {{ memory: 128Mi }}
+          volumeMounts:
+            - name: federate-logs
+              mountPath: /data/federate
+            - name: gateway-registry
+              mountPath: /etc/gateway-registry
+              readOnly: true
+      volumes:
+        - name: config
+          configMap: {{ name: alloy-config }}
+        - name: federate-logs
+          emptyDir: {{}}
+        - name: gateway-registry
+          configMap: {{ name: gateway-registry }}
+"""
+    return out
 
 
 # ---------------------------------------------------------------------------
-# gateway-registry.yaml generation
+# gateway-registry.yaml
 # ---------------------------------------------------------------------------
 
-def gen_gateway_registry_yaml(gateways):
-    """Generate the gateway-registry ConfigMap."""
-    out = []
-    out.append("## Generated by generate-config.py — do not edit directly.")
-    out.append("## Regenerate: cd master && python3 generate-config.py")
-    out.append("##")
-    out.append("## Gateway Registry — lists all cluster gateways for master to discover.")
-    out.append("##")
-    out.append("apiVersion: v1")
-    out.append("kind: ConfigMap")
-    out.append("metadata:")
-    out.append("  name: gateway-registry")
-    out.append("  labels:")
-    out.append("    app: monitoring")
-    out.append("    component: master")
-    out.append("data:")
-    out.append("  gateways.yaml: |")
-    out.append("    gateways:")
 
+def gen_registry_yaml(gateways):
+    entries = []
     for gw in gateways:
-        out.append(f"      - name: {gw['name']}")
-        out.append(f'        tailscale_ip: "{gw["tailscale_ip"]}"')
-        out.append(f"        ports:")
-        out.append(f"          metrics: {gw['ports']['metrics']}")
-        out.append(f"          minio: {gw['ports']['minio']}")
+        entries.append(f"      - name: {gw['name']}")
+        entries.append(f'        tailscale_ip: "{gw["tailscale_ip"]}"')
+        entries.append(f"        ports:")
+        for k, v in gw["ports"].items():
+            entries.append(f"          {k}: {v}")
 
-    return "\n".join(out) + "\n"
+    return f"""## Generated by generate-config.py — do not edit directly.
+## Source: profile/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-registry
+  labels:
+    app: monitoring
+    component: master
+data:
+  gateways.yaml: |
+    gateways:
+{chr(10).join(entries)}
+"""
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Generate master manifests from config")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Print to stdout instead of writing files")
+    parser = argparse.ArgumentParser(description="Generate master manifests")
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    profile, gw_ips = load_configs()
-    gateways = build_gateway_list(profile, gw_ips)
+    profile = load_config()
+    gateways = build_gateway_list(profile)
 
     if not gateways:
-        print("ERROR: No gateways found. Check config.yaml and gateway-ips.yaml.",
+        print("ERROR: No gateways found. Add gateway_tailscale_ip to profile/config.yaml.",
               file=sys.stderr)
         sys.exit(1)
 
-    alloy_content = gen_alloy_yaml(gateways)
-    registry_content = gen_gateway_registry_yaml(gateways)
+    alloy = gen_alloy_yaml(gateways)
+    registry = gen_registry_yaml(gateways)
 
     if args.dry_run:
-        print("=" * 60)
-        print("=== alloy.yaml")
-        print("=" * 60)
-        print(alloy_content)
-        print("=" * 60)
-        print("=== gateway-registry.yaml")
-        print("=" * 60)
-        print(registry_content)
+        print(alloy)
+        print("---")
+        print(registry)
     else:
-        alloy_path = os.path.join(BASE_DIR, "alloy.yaml")
-        registry_path = os.path.join(BASE_DIR, "gateway-registry.yaml")
-
-        with open(alloy_path, "w") as f:
-            f.write(alloy_content)
-        print(f"Wrote {alloy_path}")
-
-        with open(registry_path, "w") as f:
-            f.write(registry_content)
-        print(f"Wrote {registry_path}")
+        for name, content in [("alloy.yaml", alloy), ("gateway-registry.yaml", registry)]:
+            path = os.path.join(BASE_DIR, name)
+            with open(path, "w") as f:
+                f.write(content)
+            print(f"Wrote {path}")
 
 
 if __name__ == "__main__":
