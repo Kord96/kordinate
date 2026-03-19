@@ -19,6 +19,14 @@ pre.mermaid svg {
   height: auto;
 }
 
+/* Click hint on hover */
+pre.mermaid svg:hover,
+.mermaid svg:hover {
+  outline: 2px solid var(--md-accent-fg-color, #536dfe);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 /* ── Mermaid diagram styling ───────────────────────────────────── */
 
 /* Node text */
@@ -45,33 +53,4 @@ pre.mermaid svg {
 /* Edge labels */
 .mermaid .edgeLabel {
   font-size: 0.8rem;
-}
-
-/* ── Zoom button ───────────────────────────────────────────────── */
-
-.mermaid-zoom {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: var(--md-default-bg-color, #1e1e1e);
-  border: 1px solid var(--md-default-fg-color--lightest, #444);
-  color: var(--md-default-fg-color--light, #999);
-  border-radius: 4px;
-  padding: 0.2rem 0.45rem;
-  cursor: pointer;
-  font-size: 0.8rem;
-  line-height: 1;
-  opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 1;
-}
-
-pre.mermaid:hover .mermaid-zoom,
-.mermaid:hover .mermaid-zoom {
-  opacity: 1;
-}
-
-.mermaid-zoom:hover {
-  color: var(--md-accent-fg-color, #536dfe);
-  border-color: var(--md-accent-fg-color, #536dfe);
 }
