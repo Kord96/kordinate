@@ -18,9 +18,59 @@ flowchart TB
         AG <-->|every tool call| HK[Hooks]
     end
 
-    AG -->|SSH + kubectl| C1[cluster-a<br/>dev · test · prod]
-    AG -->|SSH + kubectl| C2[cluster-b<br/>dev · test · prod]
+    AG -->|SSH + kubectl| C1[cluster-a]
+    AG -->|SSH + kubectl| C2[cluster-b]
 ```
+
+## Cluster Architecture
+
+Each k3s cluster is standalone with its own control plane, worker nodes, and observability stack. Clusters connect over Tailscale but operate independently.
+
+Every application namespace has the same structure — apps, a gateway alloy, and local prom/loki buffers. The `monitor` namespace provides cluster-wide metrics (kubelet, KSM). The `master` namespace lives on one cluster and pulls from all others.
+
+```mermaid
+flowchart TB
+    subgraph CA[cluster-a]
+        subgraph dev-a[dev namespace]
+            A1[apps] --> GA1[gateway alloy] --> S1[prom + loki<br/>3h buffer]
+        end
+        subgraph test-a[test namespace]
+            A2[apps] --> GA2[gateway alloy] --> S2[prom + loki<br/>3h buffer]
+        end
+        subgraph prod-a[prod namespace]
+            A3[apps] --> GA3[gateway alloy] --> S3[prom + loki<br/>3h buffer]
+        end
+        subgraph mon-a[monitor namespace]
+            GA4[gateway alloy<br/>cluster-wide metrics] --> S4[prom + loki<br/>3h buffer]
+        end
+    end
+
+    subgraph M[master namespace — one cluster only]
+        MA[master alloy] --> MP[master prom<br/>30d retention]
+        MA --> ML[master loki<br/>30d retention]
+        MP --> G[Grafana]
+        ML --> G
+    end
+
+    S1 & S2 & S3 & S4 -->|pull via tailscale| MA
+
+    subgraph CB[cluster-b]
+        subgraph dev-b[dev namespace]
+            B1[apps] --> GB1[gateway alloy] --> SB1[prom + loki<br/>3h buffer]
+        end
+        subgraph prod-b[prod namespace]
+            B2[apps] --> GB2[gateway alloy] --> SB2[prom + loki<br/>3h buffer]
+        end
+        subgraph mon-b[monitor namespace]
+            GB3[gateway alloy<br/>cluster-wide metrics] --> SB3[prom + loki<br/>3h buffer]
+        end
+    end
+
+    SB1 & SB2 & SB3 -->|pull via tailscale| MA
+```
+
+!!! note "Namespace model"
+    Each namespace is self-contained: apps emit stdout (JSON) and expose `/metrics`, the local gateway alloy scrapes both, and writes to namespace-local prom/loki with 3h retention. The `monitor` namespace doesn't run apps — it collects cluster-wide signals (kubelet, kube-state-metrics). Master pulls from all namespaces' gateways across all clusters.
 
 ## Worktree Sessions
 
@@ -48,44 +98,11 @@ flowchart TB
 
 Branch flow: `session/*` → `main` → `test` → `prod`
 
-## Cluster Architecture
-
-Each k3s cluster is standalone with its own control plane, worker nodes, and observability stack. Clusters connect over Tailscale but operate independently.
-
-The `master` namespace provides a unified cross-cluster view. It lives on one cluster but is logically separate — it pulls data from clusters, clusters don't push to it.
-
-```mermaid
-flowchart TB
-    subgraph CA[cluster-a]
-        A1[Apps] -->|stdout + /metrics| GA1[Gateway Alloy]
-        GA1 --> GP1[Gateway Prom<br/>3h buffer]
-        GA1 --> GL1[Gateway Loki<br/>3h buffer]
-    end
-
-    subgraph M[master namespace]
-        MA[Master Alloy] --> MP[Master Prom<br/>30d retention]
-        MA --> ML[Master Loki<br/>30d retention]
-        MP --> G[Grafana]
-        ML --> G
-    end
-
-    subgraph CB[cluster-b]
-        A2[Apps] -->|stdout + /metrics| GA2[Gateway Alloy]
-        GA2 --> GP2[Gateway Prom<br/>3h buffer]
-        GA2 --> GL2[Gateway Loki<br/>3h buffer]
-    end
-
-    GP1 -->|"/federate (pull)"| MA
-    GL1 -.->|"K8s API (pull)"| MA
-    GP2 -->|"/federate (pull)"| MA
-    GL2 -.->|"K8s API (pull)"| MA
-```
-
 ## Data Flow
 
-All observability is **pull-based**. The gateway is the cluster's single external interface.
+All observability is **pull-based**. The gateway is each namespace's single collection point.
 
-??? abstract "Inside each cluster"
+??? abstract "Inside each namespace"
 
     ```mermaid
     flowchart TB
@@ -124,12 +141,13 @@ All observability is **pull-based**. The gateway is the cluster's single externa
 ## Key Principles
 
 !!! info ""
-    - Gateway is the cluster's single external interface — all external access goes through Gateway Tailscale
-    - Master pulls from gateways — clusters are unaware of master
+    - Each namespace is self-contained with its own gateway, prom, and loki
+    - Gateway is the namespace's single external interface
+    - Master pulls from all namespace gateways — clusters are unaware of master
     - Both clusters are treated identically by master (symmetric design)
-    - Apps write structured JSON to stdout — Gateway Alloy tails via K8s API
-    - Apps expose `/metrics` — Gateway Alloy discovers and scrapes via pod annotations
-    - If master goes down, clusters keep collecting
+    - Apps write structured JSON to stdout — gateway alloy tails via K8s API
+    - Apps expose `/metrics` — gateway alloy discovers and scrapes via pod annotations
+    - If master goes down, clusters keep collecting locally
     - If a cluster goes down, master retains historical data
     - Grafana queries only master's local stores — single datasource per signal
 
