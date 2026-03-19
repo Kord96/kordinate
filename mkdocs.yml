@@ -38,13 +38,13 @@ extra_css:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
   - Agents: agents.md
   - Hooks: hooks.md
   - Consultation: consultation.md
   - Memory: memory.md
   - Reference:
       - Infrastructure: reference/infrastructure.md
+      - Link Mapping: reference/link-mapping.md
       - Patterns:
           - Index: reference/patterns/index.md
           - API Gateway: reference/patterns/api-gateway.md
