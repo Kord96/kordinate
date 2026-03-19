@@ -66,31 +66,31 @@ flowchart TB
 !!! note "Namespace model"
     App namespaces run workloads only — no observability components. Apps emit structured JSON to stdout and expose `/metrics`. The gateway namespace runs a single Alloy that scrapes all app pods (via annotations), kubelet (cAdvisor), KSM, and tails logs via K8s API. It writes to namespace-local Prom + Loki with 3h retention. Master pulls from each cluster's gateway.
 
-## Worktree Sessions
+??? abstract "Worktree sessions"
 
-Each tmux window creates an isolated git worktree + branch. On exit: push + PR if changes, cleanup if not.
+    Each tmux window creates an isolated git worktree + branch via `bin/claude-session`. On exit: push + PR if changes, cleanup if not.
 
-```mermaid
-flowchart TB
-    subgraph tmux
-        direction TB
-        subgraph ks[kordinate session]
-            W0[window 0 — main branch<br/>no worktree]
-            W1[window 1 — session/w1-kordinate<br/>isolated worktree]
-            W2[window 2 — session/w2-kordinate<br/>isolated worktree]
+    ```mermaid
+    flowchart TB
+        subgraph tmux
+            direction TB
+            subgraph ks[kordinate session]
+                W0[window 0 — main branch<br/>no worktree]
+                W1[window 1 — session/w1-kordinate<br/>isolated worktree]
+                W2[window 2 — session/w2-kordinate<br/>isolated worktree]
+            end
+            subgraph ps[your-project session]
+                PW0[window 0 — main branch]
+                PW1[window 1 — session/w1-project<br/>isolated worktree]
+            end
         end
-        subgraph ps[your-project session]
-            PW0[window 0 — main branch]
-            PW1[window 1 — session/w1-project<br/>isolated worktree]
-        end
-    end
 
-    W1 & W2 & PW1 -->|on exit| PR{changes?}
-    PR -->|yes| PUSH[push + create PR]
-    PR -->|no| CLEAN[cleanup worktree]
-```
+        W1 & W2 & PW1 -->|on exit| PR{changes?}
+        PR -->|yes| PUSH[push + create PR]
+        PR -->|no| CLEAN[cleanup worktree]
+    ```
 
-Branch flow: `session/*` → `main` → `test` → `prod`
+    Branch flow: `session/*` → `main` → `test` → `prod`
 
 ## Data Flow
 
