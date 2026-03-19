@@ -29,13 +29,13 @@ Required:
 ## Observability
 
 Apps follow the observability contract: `/metrics` + stdout JSON + vitals pod.
-Gateway collects via Alloy. Master federates via `:9090` /federate (metrics) and `:3101` /federate (logs).
+Gateway collects via Alloy. Master federates metrics via `:9090` /federate. Logs: gateway sidecar writes to MinIO, master puller fetches via `:9000`.
 
 1. **Metrics**: Expose `/metrics` endpoint in Prometheus format
    - Scraped by Gateway Alloy; master federates from gateway Prometheus (:9090/federate)
    - Examples: request rate, error count, queue depth, cache hit ratio
 
-2. **Logs**: Write structured JSON to stdout — tailed locally by Gateway Alloy, pulled by master via Loki /federate (:3101)
+2. **Logs**: Write structured JSON to stdout — tailed locally by Gateway Alloy, pulled by master via MinIO (:9000)
    - Required fields: `level`, `message`
    - Optional fields: `trace_id`, `consumer`, `error`
 

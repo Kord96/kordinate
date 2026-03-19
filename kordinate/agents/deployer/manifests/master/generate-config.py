@@ -4,7 +4,7 @@ Generate master alloy.yaml and gateway-registry.yaml from config sources.
 
 Reads:
   - profile/config.yaml          (cluster names, service ports)
-  - master/gateway-ips.yaml      (gateway Tailscale IPs, NFS status)
+  - master/gateway-ips.yaml      (gateway Tailscale IPs, MinIO status)
 
 Writes:
   - master/base/alloy.yaml
@@ -29,8 +29,7 @@ GATEWAY_IPS = os.path.join(SCRIPT_DIR, "gateway-ips.yaml")
 # Default ports if not overridden in gateway-ips.yaml
 DEFAULT_PORTS = {
     "metrics": 9090,
-    "logs_federate": 3101,
-    "nfs": 2049,
+    "minio": 9000,
 }
 
 
@@ -58,7 +57,6 @@ def build_gateway_list(profile, gw_ips):
         gateways.append({
             "name": name,
             "tailscale_ip": gw["tailscale_ip"],
-            "nfs_enabled": gw.get("nfs_enabled", True),
             "ports": ports,
         })
     return gateways
@@ -78,48 +76,6 @@ def comment_block(text):
 # ---------------------------------------------------------------------------
 # alloy.yaml generation
 # ---------------------------------------------------------------------------
-
-def gen_nfs_pv_pvc(gw):
-    """Generate NFS PV + PVC block for a single gateway."""
-    name = gw["name"]
-    ip = gw["tailscale_ip"]
-
-    return f"""\
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: alloy-nfs-{name}
-  labels:
-    app: monitoring
-    component: alloy
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadOnlyMany
-  mountOptions:
-    - nfsvers=4
-    - ro
-  nfs:
-    server: "{ip}"
-    path: /federate
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: alloy-nfs-{name}
-  labels:
-    app: monitoring
-    component: alloy
-spec:
-  accessModes:
-    - ReadOnlyMany
-  resources:
-    requests:
-      storage: 1Gi
-  volumeName: alloy-nfs-{name}
-  storageClassName: \"\""""
-
 
 def gen_alloy_config_inner(gateways):
     """Generate the inner Alloy config (the config.alloy content)."""
@@ -157,15 +113,15 @@ def gen_alloy_config_inner(gateways):
 
     # Logs section
     lines.append("// " + "=" * 51)
-    lines.append("// LOGS — tail JSON Lines files from gateway NFS shares")
-    lines.append("// Sidecar on each cluster writes files to /data/federate/")
-    lines.append("// Master mounts via NFS over Tailscale, tails with loki.source.file")
+    lines.append("// LOGS — tail JSON Lines files fetched from gateway MinIO buckets")
+    lines.append("// Sidecar on each cluster writes files to MinIO in gateway namespace")
+    lines.append("// Master puller sidecar fetches via Tailscale :9000, writes to /data/federate/")
+    lines.append("// Master Alloy tails with loki.source.file")
     lines.append("// " + "=" * 51)
     lines.append("")
 
     for gw in gateways:
         name = gw["name"]
-        enabled = gw["nfs_enabled"]
 
         log_block = [
             f'local.file_match "logs_{name}" {{',
@@ -181,16 +137,8 @@ def gen_alloy_config_inner(gateways):
             f"}}",
         ]
 
-        if not enabled:
-            lines.append(f"// -- {name} cluster logs -- (disabled: NFS not deployed)")
-            for line in log_block:
-                if line:
-                    lines.append(f"// {line}")
-                else:
-                    lines.append("//")
-        else:
-            lines.append(f"// -- {name} cluster logs --")
-            lines.extend(log_block)
+        lines.append(f"// -- {name} cluster logs (puller sidecar writes to /data/federate/{name}/) --")
+        lines.extend(log_block)
         lines.append("")
 
     # Log processing pipeline (static)
@@ -255,20 +203,9 @@ def gen_alloy_yaml(gateways):
     out.append("##")
     out.append("## Master Alloy — pulls metrics and logs from all cluster gateways.")
     out.append("## Metrics: pulls /federate from each gateway's Prom via Tailscale (:9090).")
-    out.append("## Logs: tails JSON Lines files from each gateway's NFS share via Tailscale (:2049).")
+    out.append("## Logs: puller sidecar fetches JSON Lines from each gateway's MinIO via Tailscale (:9000).")
+    out.append("## Puller writes to emptyDir shared with Alloy. Alloy tails with loki.source.file.")
     out.append("## Writes metrics to Master Prometheus, logs to Master Loki.")
-    out.append("##")
-    out.append("## NFS PV/PVCs for gateway log federation (NFSv4-only servers)")
-
-    # NFS PV/PVCs
-    for gw in gateways:
-        pv_pvc = gen_nfs_pv_pvc(gw)
-        if not gw["nfs_enabled"]:
-            out.append(f"## {gw['name']} cluster NFS — disabled (nfs_enabled: false in gateway-ips.yaml)")
-            out.append(comment_block(pv_pvc))
-        else:
-            out.append(pv_pvc)
-    out.append("---")
 
     # ConfigMap
     alloy_config_lines = gen_alloy_config_inner(gateways)
@@ -325,28 +262,15 @@ def gen_alloy_yaml(gateways):
     out.append("          volumeMounts:")
     out.append("            - name: config")
     out.append("              mountPath: /etc/alloy")
-
-    for gw in gateways:
-        if gw["nfs_enabled"]:
-            out.append(f"            - name: logs-{gw['name']}")
-            out.append(f"              mountPath: /data/federate/{gw['name']}")
-            out.append(f"              readOnly: true")
-        else:
-            out.append(f"            # {gw['name']}: NFS not deployed — mount skipped")
-
+    out.append("            - name: federate-data")
+    out.append("              mountPath: /data/federate")
+    out.append("              readOnly: true")
     out.append("      volumes:")
     out.append("        - name: config")
     out.append("          configMap:")
     out.append("            name: alloy-config")
-
-    for gw in gateways:
-        if gw["nfs_enabled"]:
-            out.append(f"        - name: logs-{gw['name']}")
-            out.append(f"          persistentVolumeClaim:")
-            out.append(f"            claimName: alloy-nfs-{gw['name']}")
-            out.append(f"            readOnly: true")
-        else:
-            out.append(f"        # {gw['name']}: NFS not deployed — volume skipped")
+    out.append("        - name: federate-data")
+    out.append("          emptyDir: {}")
 
     return "\n".join(out) + "\n"
 
@@ -377,11 +301,9 @@ def gen_gateway_registry_yaml(gateways):
     for gw in gateways:
         out.append(f"      - name: {gw['name']}")
         out.append(f'        tailscale_ip: "{gw["tailscale_ip"]}"')
-        out.append(f"        nfs_enabled: {str(gw['nfs_enabled']).lower()}")
         out.append(f"        ports:")
         out.append(f"          metrics: {gw['ports']['metrics']}")
-        out.append(f"          logs_federate: {gw['ports']['logs_federate']}")
-        out.append(f"          nfs: {gw['ports']['nfs']}")
+        out.append(f"          minio: {gw['ports']['minio']}")
 
     return "\n".join(out) + "\n"
 

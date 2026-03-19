@@ -22,7 +22,7 @@ For cluster-specific details, see `profile/config.yaml` and `profile/topology.ya
 
 Inside each cluster: Gateway Alloy scrapes app pods (/metrics), kubelet (cAdvisor), KSM, and tails pod stdout via K8s API locally. Writes to Gateway Prom and Gateway Loki.
 
-Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) through Gateway Tailscale. For logs, a sidecar in each cluster's Loki pod queries local Loki every 60s and writes JSON Lines files to a gateway NFS PVC (1 hour retention, auto-cleaned). Gateway Tailscale exposes NFS on :2049. Master Alloy mounts NFS from each gateway via Tailscale and tails files with loki.source.file — labels preserved in JSON Lines format, re-extracted by master Alloy's loki.process pipeline. Pull-based: master reads at its own pace, no K8s API from master. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores.
+Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) through Gateway Tailscale. For logs, a sidecar in each cluster's Loki pod queries local Loki every 60s and writes JSON Lines files to a MinIO bucket in the gateway namespace (1 hour retention, auto-cleaned). Gateway Tailscale exposes MinIO on :9000. A puller sidecar on master fetches from each gateway's MinIO via Tailscale :9000, writes to a local emptyDir volume, and master Alloy tails the files with loki.source.file — labels preserved in JSON Lines format, re-extracted by master Alloy's loki.process pipeline. Pull-based: master reads at its own pace, no K8s API from master. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores.
 
 ## Pod Labels
 
@@ -55,7 +55,7 @@ Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) through Ga
 
 ## Log Shipping
 
-Prometheus: /federate for metrics pull (:9090). Loki: sidecar in each Loki pod queries local Loki every 60s, writes JSON Lines to gateway NFS PVC (1 hour retention, auto-cleaned). Gateway Tailscale exposes NFS on :2049. Master Alloy mounts NFS from each gateway and tails files with loki.source.file. Labels preserved in JSON Lines, re-extracted by master Alloy's loki.process pipeline. Pull-based, no K8s API from master.
+Prometheus: /federate for metrics pull (:9090). Loki: sidecar in each Loki pod queries local Loki every 60s, writes JSON Lines to MinIO in gateway namespace (1 hour retention, auto-cleaned). Gateway Tailscale exposes MinIO on :9000. Master puller sidecar fetches from MinIO, writes to local volume, master Alloy tails with loki.source.file. Labels preserved in JSON Lines, re-extracted by master Alloy's loki.process pipeline. Pull-based, no K8s API from master.
 
 ## Manifests
 

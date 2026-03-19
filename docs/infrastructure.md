@@ -125,19 +125,19 @@ flowchart TB
 
         subgraph gw[gateway]
             GWT[TS sidecar<br/>or Workstation]
-            NFS[NFS PVC]
+            MIO[MinIO]
         end
 
         myapp -->|uses| infra
         myapp & infra -->|/metrics + logs| AL
         nodes -->|host + container metrics| AL
         PR -->|:9090| GWT
-        LK -->|JSON Lines| NFS
+        LK -->|sidecar writes<br/>JSON Lines| MIO
         myapp -.->|app ports| GWT
     end
 
     GWT -->|:9090 /federate| MA
-    GWT -->|:2049 NFS| MA
+    GWT -->|:9000 MinIO| MA
     GWT -.->|app ports| EXT[external access]
 
     subgraph master[master]
@@ -148,10 +148,10 @@ flowchart TB
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with local retention.
 
-**Federation:** Gateway Tailscale forwards `:9090` (Prom /federate), `:2049` (NFS), and app ports on the tailnet. Master Alloy pulls metrics via Prom `/federate` and tails log files from each gateway's NFS mount using `loki.source.file` — pull-based, master reads at its own pace.
+**Federation:** Gateway Tailscale forwards `:9090` (Prom /federate), `:9000` (MinIO), and app ports on the tailnet. Master Alloy pulls metrics via Prom `/federate`. For logs, a puller sidecar on master fetches JSON Lines from each gateway's MinIO bucket via Tailscale `:9000`, writes to local emptyDir, and master Alloy tails the files with `loki.source.file` — pull-based, master reads at its own pace.
 
 !!! note "Loki federation sidecar"
-    Loki does not support pull-based federation natively. A sidecar in the Loki pod queries `localhost:3100` every 60s and writes JSON Lines files to a gateway NFS PVC (1 hour retention, auto-cleaned). Gateway Tailscale exposes the NFS volume on `:2049`. Master Alloy mounts NFS from each gateway via Tailscale and tails the files with `loki.source.file`. Labels are preserved in the JSON Lines format and re-extracted by master Alloy's `loki.process` pipeline.
+    Loki does not support pull-based federation natively. A sidecar in the Loki pod queries `localhost:3100` every 60s and writes JSON Lines files to a MinIO bucket in the gateway namespace (1 hour retention, auto-cleaned). Gateway Tailscale exposes MinIO on `:9000`. A puller sidecar on master fetches from each gateway's MinIO via Tailscale `:9000`, writes to a local emptyDir volume, and master Alloy tails the files with `loki.source.file`. Labels are preserved in the JSON Lines format and re-extracted by master Alloy's `loki.process` pipeline.
 
 ??? abstract "What Alloy normalizes"
 
