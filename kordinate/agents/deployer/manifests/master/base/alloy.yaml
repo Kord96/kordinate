@@ -1,7 +1,7 @@
 ##
-## Master Alloy — pulls metrics from both cluster gateways.
+## Master Alloy — pulls metrics and logs from all cluster gateways.
 ## Metrics: pulls /federate from each gateway's Prom via Tailscale (:9090).
-## Logs: pending — will scrape :3101/federate when Loki federation sidecar is built.
+## Logs: tails JSON Lines files from each gateway's NFS share via Tailscale (:2049).
 ## Writes metrics to Master Prometheus, logs to Master Loki.
 ##
 apiVersion: v1
@@ -48,29 +48,74 @@ data:
     }
 
     // ═══════════════════════════════════════════════
-    // LOGS — pull from both Gateway Loki federation sidecars
-    // The federation sidecar at :3101/federate returns recent logs.
-    // Alloy periodically fetches and forwards to the local Loki pipeline.
-    // Integration requires a custom scrape component or external script.
-    // Gateway IPs: 100.113.48.89 (home), 100.107.8.117 (vandc)
-    // TODO: implement once federation sidecar format is finalized
+    // LOGS — tail JSON Lines files from gateway NFS shares
+    // Sidecar on each cluster writes files to /data/federate/
+    // Master mounts via NFS over Tailscale, tails with loki.source.file
     // ═══════════════════════════════════════════════
 
-    // ── Shared log processing pipeline ──
-    loki.process "pipeline" {
-      // Parse JSON structured logs
+    // ── Home cluster logs ──
+    local.file_match "logs_home" {
+      path_targets = [{
+        __path__ = "/data/federate/home/*.json",
+        cluster  = "home",
+      }]
+    }
+
+    loki.source.file "logs_home" {
+      targets    = local.file_match.logs_home.targets
+      forward_to = [loki.process.federate.receiver]
+    }
+
+    // ── Vandc cluster logs ──
+    local.file_match "logs_vandc" {
+      path_targets = [{
+        __path__ = "/data/federate/vandc/*.json",
+        cluster  = "vandc",
+      }]
+    }
+
+    loki.source.file "logs_vandc" {
+      targets    = local.file_match.logs_vandc.targets
+      forward_to = [loki.process.federate.receiver]
+    }
+
+    // ── Parse federated log lines ──
+    // Each line: {"stream": {labels}, "ts": "...", "line": "..."}
+    loki.process "federate" {
+      // Extract the embedded stream labels and original log line
       stage.json {
         expressions = {
-          level    = "level",
-          consumer = "consumer",
+          stream_app       = "stream.app",
+          stream_component = "stream.component",
+          stream_namespace = "stream.namespace",
+          stream_cluster   = "stream.cluster",
+          stream_node      = "stream.node",
+          stream_pod       = "stream.pod",
+          stream_container = "stream.container",
+          stream_level     = "stream.level",
+          stream_consumer  = "stream.consumer",
+          original_line    = "line",
         }
       }
 
+      // Apply the original labels
       stage.labels {
         values = {
-          level    = "",
-          consumer = "",
+          app       = "stream_app",
+          component = "stream_component",
+          namespace = "stream_namespace",
+          cluster   = "stream_cluster",
+          node      = "stream_node",
+          pod       = "stream_pod",
+          container = "stream_container",
+          level     = "stream_level",
+          consumer  = "stream_consumer",
         }
+      }
+
+      // Replace the log line with the original content
+      stage.output {
+        source = "original_line"
       }
 
       forward_to = [loki.write.master.receiver]
@@ -120,7 +165,23 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/alloy
+            - name: logs-home
+              mountPath: /data/federate/home
+              readOnly: true
+            - name: logs-vandc
+              mountPath: /data/federate/vandc
+              readOnly: true
       volumes:
         - name: config
           configMap:
             name: alloy-config
+        - name: logs-home
+          nfs:
+            server: "100.113.48.89"
+            path: /federate
+            readOnly: true
+        - name: logs-vandc
+          nfs:
+            server: "100.107.8.117"
+            path: /federate
+            readOnly: true
