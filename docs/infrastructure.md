@@ -89,13 +89,14 @@ All observability is **pull-based**. Each cluster's gateway namespace is the sin
 ```mermaid
 flowchart LR
     subgraph cluster[Each cluster — gateway namespace]
-        AL[Alloy] --> P[Prom<br/>3h] & L[Loki<br/>3h]
-        GW[Gateway<br/>Tailscale]
+        AL[Alloy] --> L[Loki<br/>3h] & P[Prom<br/>3h]
+        P --- GW[Gateway<br/>Tailscale]
+        K8S[K8s API] --- GW
     end
 
     Apps[app pods] -.->|/metrics + stdout| AL
     GW -->|:9090 /federate| MA
-    GW -->|:6443 K8s API<br/>pod logs| MA
+    GW -->|:6443 pod logs| MA
 
     subgraph master[Master namespace]
         MA[Master Alloy] --> MP[Prom<br/>30d] & ML[Loki<br/>30d]
