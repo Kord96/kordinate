@@ -1,59 +1,76 @@
-/* Make mermaid diagrams clickable — opens full-size SVG in new tab */
-document.addEventListener("click", function (e) {
-  /* Walk up from click target to find an SVG inside a mermaid container */
-  var el = e.target;
-  var svg = null;
-  while (el && el !== document.body) {
-    if (el.tagName === "svg" || el.tagName === "SVG") {
-      svg = el;
-    }
-    if (
-      el.classList &&
-      (el.classList.contains("mermaid") || el.hasAttribute("data-processed"))
-    ) {
-      /* Found a mermaid container — use the SVG we found */
-      if (svg) {
-        e.preventDefault();
-        e.stopPropagation();
-        var clone = svg.cloneNode(true);
-        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        var style = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "style"
-        );
-        style.textContent = "svg { background: #1e1e2e; padding: 2rem; }";
-        clone.insertBefore(style, clone.firstChild);
-        var data = new XMLSerializer().serializeToString(clone);
-        var blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" });
-        window.open(URL.createObjectURL(blob), "_blank");
-        return;
-      }
-    }
-    el = el.parentElement;
-  }
-});
-
-/* Add pointer cursor to rendered mermaid diagrams */
+/* Initialize mermaid manually and make diagrams clickable */
 (function () {
-  function addCursor() {
-    var containers = document.querySelectorAll(
-      "pre.mermaid, .mermaid[data-processed], [data-processed]"
-    );
-    containers.forEach(function (c) {
-      if (c.querySelector("svg")) {
-        c.style.cursor = "pointer";
-      }
+  function initMermaid() {
+    /* Find unprocessed mermaid elements */
+    var elements = document.querySelectorAll("pre.mermaid code");
+    if (elements.length === 0) return false;
+
+    elements.forEach(function (code) {
+      var pre = code.parentElement;
+      /* Create a div with the diagram text for mermaid to process */
+      var div = document.createElement("div");
+      div.className = "mermaid";
+      div.textContent = code.textContent;
+      pre.parentElement.insertBefore(div, pre);
+      pre.remove();
     });
-    return containers.length > 0;
+
+    /* Initialize mermaid if loaded */
+    if (typeof mermaid !== "undefined") {
+      mermaid.initialize({ startOnLoad: false, theme: "dark" });
+      mermaid.run();
+    } else {
+      /* Load mermaid ourselves */
+      var script = document.createElement("script");
+      script.src = "https://unpkg.com/mermaid@11/dist/mermaid.min.js";
+      script.onload = function () {
+        mermaid.initialize({ startOnLoad: false, theme: "dark" });
+        mermaid.run();
+      };
+      document.head.appendChild(script);
+    }
+    return true;
   }
 
+  function makeClickable() {
+    document.querySelectorAll(".mermaid svg, [data-processed] svg").forEach(
+      function (svg) {
+        if (svg.dataset.clickReady) return;
+        svg.dataset.clickReady = "true";
+        svg.style.cursor = "pointer";
+        svg.addEventListener("click", function () {
+          var clone = svg.cloneNode(true);
+          clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+          delete clone.dataset.clickReady;
+          clone.style.cursor = "";
+          var style = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "style"
+          );
+          style.textContent = "svg { background: #1e1e2e; padding: 2rem; }";
+          clone.insertBefore(style, clone.firstChild);
+          var data = new XMLSerializer().serializeToString(clone);
+          var blob = new Blob([data], { type: "image/svg+xml;charset=utf-8" });
+          window.open(URL.createObjectURL(blob), "_blank");
+        });
+      }
+    );
+  }
+
+  /* Wait for DOM, then init mermaid + click handling */
   var attempts = 0;
+  var mermaidInited = false;
   var timer = setInterval(function () {
-    if (addCursor() || ++attempts > 50) clearInterval(timer);
+    if (!mermaidInited) mermaidInited = initMermaid();
+    makeClickable();
+    if (++attempts > 100) clearInterval(timer);
   }, 200);
 
+  /* Re-run on Material instant navigation */
   new MutationObserver(function () {
-    addCursor();
+    attempts = 0;
+    initMermaid();
+    makeClickable();
   }).observe(document.body || document.documentElement, {
     childList: true,
     subtree: true,
