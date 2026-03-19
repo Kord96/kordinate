@@ -10,12 +10,12 @@ Each k3s cluster is standalone with its own observability stack. The master name
 - **Gateway Alloy**: Scrapes all pods (via prometheus.io annotations), kubelet/cAdvisor, kube-state-metrics, Kafka JMX, node-exporter. Injects `cluster` label. Writes to local Prometheus via remote_write. Tails pod logs and pushes to local Loki.
 - **Gateway Prometheus**: Short-term buffer (retention per `profile/topology.yaml`).
 - **Gateway Loki**: Log storage with rate limiting.
-- **Gateway (Tailscale sidecar)**: Exposes Prom, Loki, and K8s API over Tailscale.
+- **Gateway (Tailscale sidecar)**: Exposes Prom /federate (:9090) and Loki /federate (:3101) over Tailscale.
 
 The `master` namespace (one cluster only) provides a unified cross-cluster view:
 
 - **Master Prometheus** — FEDERATES from all gateway Prometheus instances. It does NOT directly scrape pods. This is the single datasource for Grafana.
-- **Master Alloy** — handles ONLY logs (tails pods via K8s API, writes to Master Loki). No metrics scraping.
+- **Master Alloy** — handles ONLY logs (pulls from Gateway Loki via /federate on :3101, writes to Master Loki). No metrics scraping.
 - **Master Loki** — receives logs from Master Alloy.
 - **Grafana** — queries only master's local Prometheus and Loki.
 
@@ -28,7 +28,7 @@ Each remote cluster:
                                      Master Prometheus (unified view)
 
 Logs:
-  pods → Master Alloy (K8s API tail) → Master Loki
+  Gateway Loki → Master Alloy (/federate :3101) → Master Loki
 ```
 
 ## Cluster Label
@@ -38,8 +38,8 @@ The `cluster` label is injected by each gateway Alloy via the `CLUSTER_NAME` env
 ## Metrics Flow
 
 ```
-Pod metrics → Gateway Alloy scrapes → Gateway Prom (3h) → Master Alloy federates → Master Prom (30d) → Grafana
-Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy tails     → Master Loki (30d) → Grafana
+Pod metrics → Gateway Alloy scrapes → Gateway Prom (cluster-defined) → Master Prom federates (:9090/federate) → Master Prom (30d) → Grafana
+Pod logs    → Gateway Alloy tails   → Gateway Loki (30d)            → Master Alloy federates (:3101/federate) → Master Loki (30d) → Grafana
 ```
 
 ## Available Metrics Catalog
@@ -71,7 +71,7 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d) → Master Alloy ta
 - `node_cpu_seconds_total`, `node_memory_MemTotal_bytes`, `node_memory_MemAvailable_bytes`
 - `node_filesystem_*`, `node_disk_*`, `node_network_*`
 
-## Sentinel (Alert Evaluation)
+## Vitals (Alert Evaluation)
 
 ### Overview
 - Runs in the prod namespace

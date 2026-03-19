@@ -1,3 +1,6 @@
+## TODO: Add a federation sidecar container on :3101 to this pod.
+## The sidecar will expose a /federate endpoint for master Alloy to scrape,
+## replacing the current K8s API log tailing approach.
 ##
 ## Gateway Loki — local log store (30d retention)
 ## Receives logs from Alloy via push API.

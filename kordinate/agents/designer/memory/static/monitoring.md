@@ -24,9 +24,9 @@ all clusters — clusters are unaware of master.
 │                        (30d retention)     (30d retention)│
 └────────────────────────┬────────────────────────────────┘
                          │
-              pull (read-only kubeconfigs over Tailscale)
-              metrics: /federate from gateway Prometheus
-              logs: tail pods via K8s API
+              pull (over Tailscale)
+              metrics: /federate from gateway Prometheus (:9090)
+              logs: /federate from gateway Loki (:3101)
                          │
                     Master Alloy
                     ┌────┴────┐
@@ -41,10 +41,10 @@ all clusters — clusters are unaware of master.
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Gateway Alloy | gateway ns (every cluster) | Scrapes local pods, kubelet, KSM; tails logs via K8s API |
+| Gateway Alloy | gateway ns (every cluster) | Scrapes local pods, kubelet, KSM; tails logs; writes to local Prom and Loki |
 | Gateway Prometheus | gateway ns (every cluster) | Local metrics buffer, serves /federate for master |
 | Gateway Loki | gateway ns (every cluster) | Local log store (30d retention) |
-| Master Alloy | master ns (one cluster) | Pulls metrics via /federate and logs via K8s API from all clusters |
+| Master Alloy | master ns (one cluster) | Pulls metrics via /federate (:9090) and logs via /federate (:3101) from all clusters |
 | Master Prometheus | master ns | Centralized metrics store (30d), receives remote_write from master Alloy |
 | Master Loki | master ns | Centralized log store (30d), receives push from master Alloy |
 | Grafana | master ns | Dashboards, queries only master Prometheus + master Loki |
@@ -52,7 +52,7 @@ all clusters — clusters are unaware of master.
 ## App Contract
 
 - **Metrics**: Expose `/metrics` in Prometheus format. Gateway Alloy discovers via `prometheus.io/scrape=true` pod annotation.
-- **Logs**: Write structured JSON to stdout. Gateway Alloy tails via `loki.source.kubernetes` (K8s API). Required fields: `level`, `message`.
+- **Logs**: Write structured JSON to stdout. Gateway Alloy tails locally; master pulls via Loki /federate (:3101). Required fields: `level`, `message`.
 - Labels injected by Alloy: `cluster`, `namespace`, `component`, `tier`, `node`, `pod`.
 
 ## Key Principles
@@ -69,4 +69,4 @@ all clusters — clusters are unaware of master.
 | Gateway Alloy down | Local cluster loses new metric/log collection; master loses that cluster's data | Missing data in Grafana, pod restart count |
 | Master Alloy down | Grafana stops receiving new data from all clusters; clusters unaffected | Stale data in dashboards |
 | Gateway Prometheus down | Master can't federate metrics from that cluster; local Alloy has nowhere to write | Federation errors in master Alloy logs |
-| Tailscale connectivity | Master can't reach remote clusters | Federation scrape failures, log tail disconnects |
+| Tailscale connectivity | Master can't reach remote clusters | Federation scrape failures (metrics and logs) |

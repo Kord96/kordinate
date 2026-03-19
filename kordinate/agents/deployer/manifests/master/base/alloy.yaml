@@ -1,7 +1,7 @@
 ##
-## Master Alloy — pulls metrics and logs from both cluster gateways.
+## Master Alloy — pulls metrics from both cluster gateways.
 ## Metrics: pulls /federate from each gateway's Prom via Tailscale (:9090).
-## Logs: tails pods via K8s API through each gateway's Tailscale.
+## Logs: pending — will scrape :3101/federate when Loki federation sidecar is built.
 ## Writes metrics to Master Prometheus, logs to Master Loki.
 ##
 apiVersion: v1
@@ -48,110 +48,9 @@ data:
     }
 
     // ═══════════════════════════════════════════════
-    // LOGS — tail pod stdout/stderr from both clusters via K8s API
+    // LOGS — TODO: replace with :3101/federate scraping
+    // when the Loki federation sidecar is built on each gateway.
     // ═══════════════════════════════════════════════
-
-    // ── Home cluster (via kubeconfig over Tailscale) ──
-    discovery.kubernetes "home_pods" {
-      role            = "pod"
-      kubeconfig_file = "/etc/home-kubeconfig/kubeconfig"
-    }
-
-    discovery.relabel "home_logs" {
-      targets = discovery.kubernetes.home_pods.targets
-
-      rule {
-        source_labels = ["__meta_kubernetes_pod_label_app"]
-        target_label  = "app"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_label_component"]
-        target_label  = "component"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_label_tier"]
-        target_label  = "tier"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_namespace"]
-        target_label  = "namespace"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_node_name"]
-        target_label  = "node"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_name"]
-        target_label  = "pod"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_container_name"]
-        target_label  = "container"
-      }
-      rule {
-        target_label = "cluster"
-        replacement  = "home"
-      }
-    }
-
-    loki.source.kubernetes "home_pods" {
-      targets    = discovery.relabel.home_logs.output
-      forward_to = [loki.process.pipeline.receiver]
-      client {
-        kubeconfig_file = "/etc/home-kubeconfig/kubeconfig"
-      }
-    }
-
-    // ── Vandc cluster (via kubeconfig over Tailscale) ──
-    discovery.kubernetes "vandc_pods" {
-      role            = "pod"
-      kubeconfig_file = "/etc/vandc-kubeconfig/kubeconfig"
-    }
-
-    discovery.relabel "vandc_logs" {
-      targets = discovery.kubernetes.vandc_pods.targets
-
-      rule {
-        source_labels = ["__meta_kubernetes_pod_label_app"]
-        target_label  = "app"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_label_component"]
-        target_label  = "component"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_label_tier"]
-        target_label  = "tier"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_namespace"]
-        target_label  = "namespace"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_node_name"]
-        target_label  = "node"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_name"]
-        target_label  = "pod"
-      }
-      rule {
-        source_labels = ["__meta_kubernetes_pod_container_name"]
-        target_label  = "container"
-      }
-      rule {
-        target_label = "cluster"
-        replacement  = "vandc"
-      }
-    }
-
-    loki.source.kubernetes "vandc_pods" {
-      targets    = discovery.relabel.vandc_logs.output
-      forward_to = [loki.process.pipeline.receiver]
-      client {
-        kubeconfig_file = "/etc/vandc-kubeconfig/kubeconfig"
-      }
-    }
 
     // ── Shared log processing pipeline ──
     loki.process "pipeline" {
@@ -217,19 +116,7 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/alloy
-            - name: home-kubeconfig
-              mountPath: /etc/home-kubeconfig
-              readOnly: true
-            - name: vandc-kubeconfig
-              mountPath: /etc/vandc-kubeconfig
-              readOnly: true
       volumes:
         - name: config
           configMap:
             name: alloy-config
-        - name: home-kubeconfig
-          secret:
-            secretName: home-kubeconfig
-        - name: vandc-kubeconfig
-          secret:
-            secretName: vandc-kubeconfig

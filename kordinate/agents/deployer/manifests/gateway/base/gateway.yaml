@@ -23,9 +23,8 @@ data:
   serve.json: |
     {
       "TCP": {
-        "6443": { "TCPForward": "kubernetes.default.svc.cluster.local:443" },
         "9090": { "TCPForward": "prometheus.monitor.svc.cluster.local:9090" },
-        "3100": { "TCPForward": "loki.monitor.svc.cluster.local:3100" }
+        "3101": { "TCPForward": "loki.monitor.svc.cluster.local:3101" }
       }
     }
 ---

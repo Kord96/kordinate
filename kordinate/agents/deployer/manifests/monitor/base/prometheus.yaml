@@ -1,5 +1,5 @@
 ##
-## Gateway Prometheus — short-term metrics buffer (3h retention)
+## Gateway Prometheus — short-term metrics buffer (7d retention)
 ## Receives metrics from Alloy via remote_write.
 ## Exposed on tailnet via Tailscale for master to federate.
 ##
@@ -56,7 +56,7 @@ spec:
         - name: prometheus
           image: prom/prometheus:v2.51.0
           args:
-            - --storage.tsdb.retention.time=3h
+            - --storage.tsdb.retention.time=7d
             - --storage.tsdb.path=/prometheus
             - --web.listen-address=:9090
             - --config.file=/etc/prometheus/prometheus.yml

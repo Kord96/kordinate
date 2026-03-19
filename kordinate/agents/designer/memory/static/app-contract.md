@@ -28,13 +28,18 @@ Required:
 
 ## Observability
 
+Apps follow the observability contract: `/metrics` + stdout JSON + vitals pod.
+Gateway collects via Alloy. Master federates via `:9090` /federate (metrics) and `:3101` /federate (logs).
+
 1. **Metrics**: Expose `/metrics` endpoint in Prometheus format
-   - Scraped by Alloy from the gateway namespace
+   - Scraped by Gateway Alloy; master federates from gateway Prometheus (:9090/federate)
    - Examples: request rate, error count, queue depth, cache hit ratio
 
-2. **Logs**: Write structured JSON to stdout — tailed by Alloy via K8s API
+2. **Logs**: Write structured JSON to stdout — tailed locally by Gateway Alloy, pulled by master via Loki /federate (:3101)
    - Required fields: `level`, `message`
    - Optional fields: `trace_id`, `consumer`, `error`
+
+3. **Health**: Vitals pod evaluates app health via gateway Prometheus queries
 
 ## Enforcement
 
