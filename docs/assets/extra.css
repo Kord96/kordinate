@@ -1,74 +1,321 @@
-/* GitHub dark mode */
+/* Kordinate — Control Surface theme
+   GitHub dark bones + geometric precision inspired by the hex-K logo */
 
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+/* ── Palette ── */
 :root {
-  --md-primary-fg-color: #161b22;
-  --md-primary-bg-color: #c9d1d9;
-  --md-accent-fg-color: #58a6ff;
+  --kd-bg:         #0d1117;
+  --kd-surface:    #161b22;
+  --kd-surface-2:  #1c2129;
+  --kd-border:     #21262d;
+  --kd-border-lt:  #30363d;
+  --kd-text:       #c9d1d9;
+  --kd-text-dim:   #8b949e;
+  --kd-blue:       #58a6ff;
+  --kd-blue-glow:  rgba(88, 166, 255, 0.15);
+  --kd-blue-hover: #79c0ff;
+  --kd-green:      #3fb950;
+  --kd-orange:     #d29922;
 
-  --md-default-bg-color: #0d1117;
-  --md-default-fg-color: #c9d1d9;
-  --md-default-fg-color--light: #8b949e;
-  --md-default-fg-color--lighter: #8b949e;
+  /* Material overrides */
+  --md-primary-fg-color:          var(--kd-surface);
+  --md-primary-bg-color:          var(--kd-text);
+  --md-accent-fg-color:           var(--kd-blue);
+  --md-default-bg-color:          var(--kd-bg);
+  --md-default-fg-color:          var(--kd-text);
+  --md-default-fg-color--light:   var(--kd-text-dim);
+  --md-default-fg-color--lighter: var(--kd-text-dim);
+  --md-typeset-color:             var(--kd-text);
+
+  /* Typography */
+  --md-text-font: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --md-code-font: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 }
 
+/* ── Typography ── */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e6edf3;
+}
+
+.md-typeset h1 {
+  border-bottom: 2px solid var(--kd-blue);
+  padding-bottom: 0.4em;
+  margin-bottom: 1em;
+}
+
+.md-typeset h2 {
+  border-bottom: 1px solid var(--kd-border);
+  padding-bottom: 0.3em;
+  margin-top: 2em;
+}
+
+.md-typeset h2::before {
+  content: "// ";
+  color: var(--kd-text-dim);
+  font-weight: 400;
+}
+
+/* ── Header ── */
 .md-header {
-  background-color: #161b22;
-  box-shadow: 0 1px 0 #21262d;
+  background-color: var(--kd-surface);
+  box-shadow: 0 1px 0 var(--kd-border);
+  backdrop-filter: blur(8px);
 }
 
-.md-sidebar {
-  background-color: #0d1117;
+.md-header__title {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
 }
 
-.md-nav__link--active,
-.md-nav__link:hover {
-  color: var(--md-accent-fg-color) !important;
-}
-
-.md-typeset a {
-  color: #58a6ff;
-}
-
-.md-typeset a:hover {
-  color: #79c0ff;
-}
-
-.md-search__input {
-  background-color: #161b22;
-  border: 1px solid #30363d;
-}
-
-.md-typeset code {
-  background-color: #161b22;
-  border: 1px solid #30363d;
-}
-
-.md-typeset pre > code {
-  border: none;
-}
-
-.md-typeset table:not([class]) th {
-  background-color: #161b22;
-}
-
-.md-typeset table:not([class]) tr:nth-child(2n) {
-  background-color: #161b22;
-}
-
+/* ── Tabs ── */
 .md-tabs {
-  background-color: #161b22;
-  border-bottom: 1px solid #21262d;
+  background-color: var(--kd-surface);
+  border-bottom: 1px solid var(--kd-border);
 }
 
-/* TOC title / nav labels */
+.md-tabs__link {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover {
+  opacity: 1;
+  color: var(--kd-blue) !important;
+}
+
+/* ── Sidebar ── */
+.md-sidebar {
+  background-color: var(--kd-bg);
+}
+
 .md-nav__title {
   background-color: transparent;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kd-text-dim);
 }
 
 .md-nav__title[for] {
   background-color: transparent;
 }
 
+.md-nav__link {
+  font-size: 0.8rem;
+  transition: color 0.15s, border-color 0.15s;
+  border-left: 2px solid transparent;
+  margin-left: -0.6rem;
+  padding-left: calc(0.6rem + 0.6rem);
+}
+
+.md-nav__link--active {
+  color: var(--kd-blue) !important;
+  border-left-color: var(--kd-blue) !important;
+  font-weight: 500;
+}
+
+.md-nav__link:hover {
+  color: var(--kd-blue-hover) !important;
+  border-left-color: var(--kd-border-lt) !important;
+}
+
+/* ── Links ── */
+.md-typeset a {
+  color: var(--kd-blue);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.md-typeset a:hover {
+  color: var(--kd-blue-hover);
+  border-bottom-color: var(--kd-blue-hover);
+}
+
+/* ── Code ── */
+.md-typeset code {
+  background-color: var(--kd-surface-2);
+  border: 1px solid var(--kd-border);
+  border-radius: 4px;
+  font-size: 0.82em;
+  padding: 0.15em 0.4em;
+  color: #e6edf3;
+}
+
+.md-typeset pre {
+  border: 1px solid var(--kd-border);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.md-typeset pre::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--kd-blue) 0%, var(--kd-green) 100%);
+}
+
+.md-typeset pre > code {
+  border: none;
+  background-color: var(--kd-surface);
+  border-radius: 0;
+  font-size: 0.82em;
+  padding: 1em 1em 1em 1.2em;
+}
+
+/* ── Tables ── */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--kd-border);
+  border-radius: 6px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.85em;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--kd-surface);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.8em;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--kd-text-dim);
+  border-bottom: 2px solid var(--kd-border);
+  padding: 0.8em 1em;
+}
+
+.md-typeset table:not([class]) td {
+  border-bottom: 1px solid var(--kd-border);
+  padding: 0.7em 1em;
+}
+
+.md-typeset table:not([class]) tr:last-child td {
+  border-bottom: none;
+}
+
+.md-typeset table:not([class]) tr:nth-child(2n) {
+  background-color: rgba(22, 27, 34, 0.5);
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background-color: var(--kd-blue-glow);
+  transition: background-color 0.15s;
+}
+
+/* ── Search ── */
+.md-search__input {
+  background-color: var(--kd-surface);
+  border: 1px solid var(--kd-border);
+  border-radius: 6px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.8rem;
+}
+
+.md-search__input:focus {
+  border-color: var(--kd-blue);
+  box-shadow: 0 0 0 3px var(--kd-blue-glow);
+}
+
+.md-search__input::placeholder {
+  font-family: "IBM Plex Mono", monospace;
+  letter-spacing: 0.02em;
+}
+
+/* ── Footer ── */
 .md-footer {
-  background-color: #161b22;
+  background-color: var(--kd-surface);
+  border-top: 1px solid var(--kd-border);
+}
+
+/* ── Admonitions ── */
+.md-typeset .admonition,
+.md-typeset details {
+  border: 1px solid var(--kd-border);
+  border-radius: 6px;
+  background-color: var(--kd-surface);
+  box-shadow: none;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--kd-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--kd-border-lt);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--kd-text-dim);
+}
+
+/* ── Content width ── */
+.md-content__inner {
+  max-width: 52rem;
+}
+
+/* ── Permalink anchors ── */
+.md-typeset .headerlink {
+  color: var(--kd-border-lt);
+  transition: color 0.15s;
+}
+
+.md-typeset .headerlink:hover {
+  color: var(--kd-blue);
+}
+
+/* ── Lists ── */
+.md-typeset ul li,
+.md-typeset ol li {
+  margin-bottom: 0.3em;
+}
+
+.md-typeset ul li::marker {
+  color: var(--kd-text-dim);
+}
+
+/* ── Horizontal rules ── */
+.md-typeset hr {
+  border-color: var(--kd-border);
+}
+
+/* ── Selection ── */
+::selection {
+  background-color: rgba(88, 166, 255, 0.3);
+  color: #fff;
+}
+
+/* ── Smooth transitions ── */
+.md-nav__link,
+.md-tabs__link,
+.md-typeset a,
+.md-typeset code,
+.md-search__input {
+  transition: all 0.15s ease;
 }
