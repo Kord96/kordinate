@@ -43,6 +43,7 @@ memory.md:
   - kordinate/hooks/agent-memory.sh
   - kordinate/agents/shared/MEMORY.md
   - kordinate/lib/cache.sh
+  - installer/link.sh
 
 reference/link-mapping.md:
   - installer/link.sh
