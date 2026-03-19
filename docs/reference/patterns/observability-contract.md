@@ -14,13 +14,13 @@ flowchart TB
         P1 ~~~ P2 ~~~ PN ~~~ VIT
     end
 
-    subgraph gw[monitor namespace]
-        AL[Alloy] --> LK[Loki] & PR[Prom]
-    end
-
-    app -->|metrics + logs| AL
-    VIT -->|vitals_* health| AL
+    P1 & P2 & PN -->|/metrics + logs| AL
+    VIT -->|health metrics| AL
     PR -.->|app metrics query| VIT
+
+    subgraph mon[monitor namespace]
+        AL[Alloy] --> PR[Prom] & LK[Loki]
+    end
 ```
 
 !!! tip ""
