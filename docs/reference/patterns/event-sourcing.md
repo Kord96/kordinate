@@ -1,54 +1,35 @@
 # Event Sourcing
 
+Persists state as an append-only sequence of events rather than overwriting a current-state record.
+
+## When to Use
+
+- You need a complete audit trail of every change that happened
+- You want to rebuild state at any point in time by replaying events
+- Domain events are a natural fit for your business logic (orders, transactions, workflows)
+
+## How It Works
+
+```mermaid
+flowchart LR
+    Cmd[Command] --> Agg[Aggregate]
+    Agg --> Evt[Event Store<br/>append-only]
+    Evt -->|replay| State[Current State]
+    Evt --> Proj[Projection<br/>read model]
+    Snap[Snapshot] -.->|shortcut for<br/>long histories| State
 ```
-  Command ──► Aggregate ──► Event(s) ──► Event Store
-                                              │
-                 ┌────────────────────────────┘
-                 │ replay
-                 ▼
-            Current State ◄── Snapshot (optional, for long histories)
-                 │
-                 ▼
-            Read Model (projection for queries)
-```
 
-## Architecture
+A command is handled by an aggregate, which emits one or more immutable events. These events are appended to an event store. Current state is reconstructed by replaying events from the store. For aggregates with long histories, snapshots provide a replay shortcut. Projections build read-optimized views from the event stream.
 
-Look for correct event modeling and state reconstruction.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - Full history — you can reconstruct state at any point in time
+    - Natural audit trail with no extra work
+    - Supports temporal queries and what-if replay scenarios
 
-- Events are immutable facts, named in past tense (OrderPlaced, not PlaceOrder)
-- Aggregate state is derived solely from replaying events — no side-channel writes
-- Event schema includes a version field for future evolution
-- Snapshots exist for aggregates with long event histories
-
-### Anti-patterns
-
-- Mutable events or events that reference other events by content
-- Business logic in the event store layer
-- Missing event versioning — schema changes break replay
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-Handle event store migrations and replay behavior during rollouts.
-
-### Rollout Implications
-
-- Event schema changes require versioned events — deploy consumers that read both old and new versions before deploying producers that write new versions
-- Replay during rollout: if a new version triggers a full replay, expect increased load on the event store — scale accordingly
-- Snapshot invalidation: schema changes may invalidate existing snapshots — plan for snapshot rebuild time
-- Blue-green deployments are safer than rolling updates for event schema migrations
-
-### Pre-deploy Checklist
-
-- Confirm backward-compatible event schema (old consumers can read new events)
-- Verify snapshot rebuild time fits within maintenance window if snapshots are invalidated
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Events must be immutable — never mutate or delete stored events
+    - Missing event versioning breaks replay when schemas evolve
+    - Long event histories without snapshots make state reconstruction slow
+    - Added complexity vs. simple CRUD — only use when the audit/replay benefit justifies it

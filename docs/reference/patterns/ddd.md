@@ -1,47 +1,38 @@
 # Domain-Driven Design (DDD)
 
+Organizes software around business domains using bounded contexts, aggregates, and a shared ubiquitous language.
+
+## When to Use
+
+- The business domain is complex and the biggest source of project risk
+- Multiple teams work on different parts of the system and need clear boundaries
+- You want code structure to mirror how the business actually thinks and talks
+
+## How It Works
+
+```mermaid
+flowchart LR
+    subgraph BC1[Bounded Context: Orders]
+        A1[Aggregate: Order]
+    end
+    subgraph BC2[Bounded Context: Inventory]
+        A2[Aggregate: Stock]
+    end
+    BC1 -->|domain events| ACL[Anti-Corruption Layer]
+    ACL --> BC2
 ```
-  ┌─────────────────┐         events         ┌─────────────────┐
-  │  Bounded Context│  ──────────────────►   │  Bounded Context│
-  │    "Orders"     │                        │   "Inventory"   │
-  │                 │  ◄──────────────────   │                 │
-  │  ┌───────────┐  │    anti-corruption     │  ┌───────────┐  │
-  │  │ Aggregate │  │        layer           │  │ Aggregate │  │
-  │  │  (Order)  │  │                        │  │  (Stock)  │  │
-  │  └───────────┘  │                        │  └───────────┘  │
-  └─────────────────┘                        └─────────────────┘
-        │                                          │
-        ▼                                          ▼
-   Domain Events                             Domain Events
-```
 
-## Architecture
+Each **bounded context** owns its data and models, using terminology consistent with that part of the business (ubiquitous language). **Aggregates** enforce business invariants within a context. Contexts communicate through domain events or APIs, with an **anti-corruption layer** translating between different models so internal representations never leak across boundaries.
 
-Look for clear bounded context boundaries with no leaking of internal models.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - Code boundaries match business boundaries — easier to reason about and evolve
+    - Aggregates enforce invariants in one place rather than scattering rules across services
+    - Anti-corruption layers prevent one team's model changes from breaking another
 
-- Each bounded context owns its data and exposes only domain events or APIs
-- Aggregates enforce invariants — no external code mutates aggregate state directly
-- Ubiquitous language is consistent within a context (naming matches domain terms)
-- Anti-corruption layers translate between contexts — no shared domain objects
-- Context map exists documenting upstream/downstream relationships
-
-### Anti-patterns
-
-- Shared database tables across bounded contexts
-- Domain objects imported directly from another context's internals
-- Anemic domain model — aggregates are plain data bags with logic elsewhere
-- God aggregate that grows unbounded instead of splitting into sub-contexts
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Shared database tables across bounded contexts — breaks ownership boundaries
+    - Anemic domain models where aggregates are plain data bags with logic elsewhere
+    - Importing domain objects directly from another context's internals
+    - God aggregates that grow unbounded instead of splitting into sub-contexts

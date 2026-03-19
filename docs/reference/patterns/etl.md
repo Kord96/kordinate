@@ -1,44 +1,37 @@
-# ETL/ELT
+# ETL / ELT
 
+Extracts data from sources, transforms it, and loads it into a target system — or loads raw first and transforms in-place (ELT).
+
+## When to Use
+
+- You need to move data between systems on a schedule (APIs, databases, data warehouses)
+- Raw source data needs cleaning, enrichment, or reshaping before it is useful
+- You want incremental, resumable data pipelines rather than manual one-off scripts
+
+## How It Works
+
+```mermaid
+flowchart LR
+    Src[Source<br/>API / DB] --> E[Extract<br/>with bookmark]
+    E --> T[Transform<br/>clean, enrich]
+    T --> L[Load<br/>idempotent upsert]
+    L --> Tgt[Target<br/>Warehouse / Lake]
+    L --> CP[Checkpoint<br/>save bookmark]
 ```
-  ┌────────┐     ┌─────────┐     ┌───────────┐     ┌──────┐     ┌────────┐
-  │ Source │────►│ Extract │────►│ Transform │────►│ Load │────►│ Target │
-  │(API/DB)│     │         │     │ (clean,   │     │      │     │(DW/Lake│
-  └────────┘     └─────────┘     │  enrich)  │     └──┬───┘     └────────┘
-                                  └───────────┘        │
-                                                   checkpoint
-                                                   (bookmark)
 
-  ELT variant: Load raw first, then Transform inside the target.
-```
+**Extract** reads data incrementally using a bookmark (timestamp or offset). **Transform** cleans and enriches — this should be pure logic with no side effects. **Load** writes to the target idempotently so reruns do not create duplicates. A checkpoint saves the bookmark for the next run.
 
-## Architecture
+In the **ELT** variant, raw data is loaded first and transformation happens inside the target (e.g., dbt models in a warehouse).
 
-Look for idempotent loads and clear checkpoint/bookmark tracking.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - Incremental extraction avoids re-reading the entire source every run
+    - Idempotent loads make the pipeline safe to retry and replay
+    - Pure transform logic is easy to test in isolation
 
-- Extract phase tracks a bookmark (timestamp, offset) for incremental runs
-- Transform logic is pure — no side effects, testable in isolation
-- Load phase is idempotent (re-running does not create duplicates)
-- Failures at any stage produce clear errors and do not leave partial state
-- Schema validation happens between extract and transform
-
-### Anti-patterns
-
-- Full re-extract every run when incremental is possible (wastes resources)
-- Transform logic embedded in SQL without version control or tests
-- No checkpoint — failures require manual restart from scratch
-- Silent data loss on transform errors (records dropped without logging)
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Full re-extract every run when incremental is possible (wastes resources)
+    - No checkpoint — failures require restarting from scratch
+    - Transform logic embedded in SQL without version control or tests
+    - Silent data loss when transform errors drop records without logging

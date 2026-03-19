@@ -8,24 +8,18 @@ You connect to a workstation pod running inside Kubernetes via Tailscale SSH. Cl
 
 ```mermaid
 flowchart TB
-    U([You]) -->|Tailscale SSH| WP
+    U([You]) -->|Tailscale SSH| T
 
     subgraph WP[Workstation Pod]
-        T[tmux] --> CC[Claude Code]
-        CC --> AG[Agents<br/>deployer · sauron · designer · scribe]
+        T[tmux] -->|window 0| CC0[Claude Code<br/>main branch]
+        T -->|window 1| CC1[Claude Code<br/>worktree]
+        T -->|window 2| CC2[Claude Code<br/>worktree]
+        CC1 --> AG[Agents]
         AG <-->|every tool call| HK[Hooks]
     end
 
-    WP -->|SSH + kubectl| C1
-    WP -->|SSH + kubectl| C2
-
-    subgraph C1[cluster-a]
-        D1[dev] ~~~ T1[test] ~~~ P1[prod]
-    end
-
-    subgraph C2[cluster-b]
-        D2[dev] ~~~ T2[test] ~~~ P2[prod]
-    end
+    AG -->|SSH + kubectl| C1[cluster-a<br/>dev · test · prod]
+    AG -->|SSH + kubectl| C2[cluster-b<br/>dev · test · prod]
 ```
 
 ## Worktree Sessions
@@ -33,14 +27,23 @@ flowchart TB
 Each tmux window creates an isolated git worktree + branch. On exit: push + PR if changes, cleanup if not.
 
 ```mermaid
-flowchart LR
-    subgraph kordinate[kordinate session]
-        W0[window 0<br/>main branch] ~~~ W1[window 1<br/>session/w1] ~~~ W2[window 2<br/>session/w2]
+flowchart TB
+    subgraph tmux
+        direction TB
+        subgraph ks[kordinate session]
+            W0[window 0 — main branch<br/>no worktree]
+            W1[window 1 — session/w1-kordinate<br/>isolated worktree]
+            W2[window 2 — session/w2-kordinate<br/>isolated worktree]
+        end
+        subgraph ps[your-project session]
+            PW0[window 0 — main branch]
+            PW1[window 1 — session/w1-project<br/>isolated worktree]
+        end
     end
 
-    subgraph project[your-project session]
-        PW0[window 0<br/>main branch] ~~~ PW1[window 1<br/>session/w1]
-    end
+    W1 & W2 & PW1 -->|on exit| PR{changes?}
+    PR -->|yes| PUSH[push + create PR]
+    PR -->|no| CLEAN[cleanup worktree]
 ```
 
 Branch flow: `session/*` → `main` → `test` → `prod`

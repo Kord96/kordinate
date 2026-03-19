@@ -1,50 +1,36 @@
 # Choreography
 
+Coordinates distributed workflows through events on a shared bus — each service reacts independently with no central orchestrator.
+
+## When to Use
+
+- Services need loose coupling and should be deployable independently
+- The workflow is simple enough that each service can decide what to do based on events it receives
+- You want to avoid a central coordinator that becomes a single point of failure
+
+## How It Works
+
+```mermaid
+flowchart TD
+    EB[Event Bus<br/>Kafka / SNS]
+    A[Service A] -->|publish| EB
+    EB -->|subscribe| B[Service B]
+    EB -->|subscribe| C[Service C]
+    B -->|publish| EB
+    C -->|publish| EB
 ```
-                       ┌───────────────────┐
-                       │    Event Bus      │
-                       │  (Kafka / SNS)    │
-                       └─┬──────┬──────┬───┘
-                         │      │      │
-              subscribe  │      │      │  subscribe
-                 ┌───────┘      │      └───────┐
-                 ▼              ▼              ▼
-           ┌──────────┐  ┌──────────┐  ┌──────────┐
-           │Service A │  │Service B │  │Service C │
-           │          │  │          │  │          │
-           │ react &  │  │ react &  │  │ react &  │
-           │  publish │  │  publish │  │  publish │
-           └──────────┘  └──────────┘  └──────────┘
 
-  No central coordinator — each service decides what to do with events.
-```
+Each service publishes events when something notable happens and subscribes to events it cares about. There is no central coordinator — the workflow emerges from each service reacting to events and publishing new ones. Every event carries a correlation ID so the full flow can be traced end-to-end.
 
-## Architecture
+## Trade-offs
 
-Look for clear event contracts and no hidden coupling between services.
+!!! success "Strengths"
+    - Services are decoupled — each can be deployed and scaled independently
+    - No single point of failure coordinating the workflow
+    - Adding a new participant means subscribing to existing events, not modifying a central orchestrator
 
-### Review Checklist
-
-- Event schemas are versioned and documented — consumers know what to expect
-- Each service can be deployed independently without breaking the chain
-- Event flows are traceable end-to-end (correlation IDs in every event)
-- Failure in one service does not silently stall the entire workflow
-
-### Anti-patterns
-
-- Implicit ordering assumptions — Service B assumes A always fires first
-- Event ping-pong — two services triggering each other in a loop
-- No observability — impossible to reconstruct what happened from logs alone
-- Choreography used where a saga/orchestrator would be clearer (too many steps)
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Implicit ordering assumptions (Service B assumes A always fires first)
+    - Event ping-pong — two services triggering each other in an infinite loop
+    - Difficult to trace what happened without correlation IDs and good observability
+    - Choreography becomes unwieldy for complex multi-step flows — consider a saga instead

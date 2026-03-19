@@ -1,64 +1,37 @@
 # Saga
 
+Coordinates a multi-step distributed transaction by pairing each step with a compensating rollback action.
+
+## When to Use
+
+- A business operation spans multiple services and you need all-or-nothing semantics
+- Two-phase commit is too expensive or not available across your datastores
+- Each step has a natural "undo" (cancel order, release reservation, refund payment)
+
+## How It Works
+
+```mermaid
+flowchart LR
+    S1[Step 1: Reserve] -->|ok| S2[Step 2: Charge]
+    S2 -->|ok| S3[Step 3: Ship]
+    S3 -->|ok| Done[Success]
+    S3 -->|fail| C3[Compensate 3]
+    C3 --> C2[Compensate 2]
+    C2 --> C1[Compensate 1]
+    C1 --> RB[Rolled back]
 ```
-  Step 1          Step 2          Step 3
-  ┌─────┐        ┌─────┐        ┌─────┐
-  │ Do  │──ok───►│ Do  │──ok───►│ Do  │──► Success
-  └──┬──┘        └──┬──┘        └──┬──┘
-     │              │              │ fail
-     │              │              ▼
-     │              │         Compensate 3
-     │              │              │
-     │              ▼              │
-     │         Compensate 2 ◄──────┘
-     │              │
-     ▼              │
-  Compensate 1 ◄────┘
-     │
-     ▼
-  Rolled back
-```
 
-## Architecture
+Each step executes in sequence. If any step fails, the saga walks backward through compensating actions to undo previously completed steps. A saga coordinator tracks which steps have completed so it knows where to start compensating.
 
-Look for correct compensation logic and failure handling across distributed steps.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - Achieves consistency across services without distributed locks
+    - Each service stays autonomous — no shared database required
+    - Works naturally with event-driven architectures
 
-- Each step has a corresponding compensating action
-- Compensation is idempotent (safe to retry on partial failure)
-- Saga coordinator tracks step state (pending, completed, compensated)
-- Timeout handling exists for steps that may hang
-
-### Anti-patterns
-
-- Missing compensation for one or more steps (partial rollback)
-- Compensating actions that can themselves fail without retry
-- Using sagas where a simple two-phase operation would suffice
-
-## Monitoring
-
-Track distributed transaction outcomes and compensation events.
-
-### Key Metrics
-
-- `saga_completed_total` (counter) — successfully finished sagas
-- `saga_failed_total` (counter) — sagas that triggered compensation
-- `saga_compensation_total` (counter) — individual compensation steps executed
-- `saga_duration_seconds` (histogram) — end-to-end saga duration
-- `saga_step_duration_seconds` (histogram) — per-step latency to find bottlenecks
-
-### Alerts
-
-- Saga failure rate exceeding threshold
-- Compensation failures (compensation step itself failed)
-- Saga duration exceeding expected SLA
-- Stuck sagas (started but neither completed nor compensated)
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Missing compensation for even one step means partial rollback (data inconsistency)
+    - Compensating actions must be idempotent — they may be retried on failure
+    - Adds complexity; use a simple transaction if the operation fits in one service
+    - Sagas that hang need timeout handling to avoid stuck-in-progress states

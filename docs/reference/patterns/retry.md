@@ -1,55 +1,35 @@
 # Retry with Backoff
 
-```
-                    ┌─────────┐
-         ┌────────►│  Call    │
-         │         └────┬────┘
-         │              │
-         │         success / fail?
-         │              │
-         │     ┌────────┴────────┐
-         │     │                 │
-         │  success           fail
-         │     │                 │
-         │     ▼            retries left?
-         │   Done                │
-         │              ┌───────┴───────┐
-         │              │               │
-         │             yes              no
-         │              │               │
-         │          wait (exp           ▼
-         │          backoff        ┌──────────┐
-         └──── + jitter)          │Dead Letter│
-                                  └──────────┘
+Automatically re-attempts a failed operation with increasing delays between tries.
+
+## When to Use
+
+- Transient failures are common (network blips, brief service unavailability)
+- The operation is idempotent or can be made safe to repeat
+- You want graceful recovery without manual intervention
+
+## How It Works
+
+```mermaid
+flowchart TD
+    A[Call] -->|success| B[Done]
+    A -->|fail| C{Retries left?}
+    C -->|yes| D[Wait with exponential backoff + jitter]
+    D --> A
+    C -->|no| E[Dead Letter Queue]
 ```
 
-## Architecture
+On failure, the caller waits an exponentially increasing delay (e.g., 1s, 2s, 4s) plus random jitter to avoid thundering herd, then retries. After exhausting the retry budget, the message goes to a dead-letter queue for later inspection.
 
-Look for bounded retries with exponential backoff, jitter, and a dead-letter path.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - Handles transient errors transparently — callers see eventual success
+    - Jitter prevents synchronized retry storms after an outage
+    - Dead-letter path ensures nothing is silently lost
 
-- Max retry count is configured and bounded — no infinite retry loops
-- Backoff is exponential with jitter (not fixed delay — avoids thundering herd)
-- Retryable vs. non-retryable errors are distinguished (don't retry 400s)
-- Dead-letter queue or equivalent captures permanently failed operations
-- Retry state is observable (metrics on attempt count and DLQ depth)
-
-### Anti-patterns
-
-- Fixed-delay retries — all clients retry simultaneously after an outage
-- Retrying non-idempotent operations without deduplication
-- No max retry limit — stuck requests consume resources indefinitely
-- Silent discard of failed operations (no dead-letter, no alert)
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Retrying non-idempotent operations without deduplication causes duplicates
+    - Fixed-delay retries (no backoff) cause thundering herd on recovery
+    - No max retry limit means stuck requests consume resources indefinitely
+    - Retrying non-retryable errors (e.g., 400 Bad Request) wastes time — classify errors first

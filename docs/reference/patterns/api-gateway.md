@@ -1,45 +1,36 @@
 # API Gateway
 
+A single entry point that routes client requests to backend services while handling cross-cutting concerns like auth and rate limiting.
+
+## When to Use
+
+- Multiple backend services need a unified external API surface
+- You want to centralize authentication, rate limiting, and request routing
+- Clients should not need to know about internal service topology
+
+## How It Works
+
+```mermaid
+flowchart LR
+    C1[Client A] --> GW[API Gateway<br/>routing, auth,<br/>rate limiting]
+    C2[Client B] --> GW
+    C3[Client C] --> GW
+    GW --> S1[Service: Auth]
+    GW --> S2[Service: API]
+    GW --> S3[Service: Data]
 ```
-  ┌─────────┐
-  │Client A │──┐
-  └─────────┘  │     ┌─────────────────┐     ┌──────────────┐
-               ├────►│                 ├────►│ Service: Auth│
-  ┌─────────┐  │     │   API Gateway   │     └──────────────┘
-  │Client B │──┤     │                 │     ┌──────────────┐
-  └─────────┘  │     │ • routing       ├────►│ Service: API │
-               ├────►│ • auth          │     └──────────────┘
-  ┌─────────┐  │     │ • rate limiting │     ┌──────────────┐
-  │Client C │──┘     │ • transform     ├────►│ Service: Data│
-  └─────────┘        └─────────────────┘     └──────────────┘
-```
 
-## Architecture
+All client traffic enters through the gateway. The gateway handles cross-cutting concerns (authentication, rate limiting, request transformation) and routes each request to the appropriate backend service. It is a thin policy and routing layer — it contains no business logic.
 
-Look for the gateway being a thin routing/policy layer with no business logic.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - Clients see a single, stable API regardless of backend service changes
+    - Cross-cutting concerns are handled in one place instead of duplicated per service
+    - Backend services can evolve independently behind the gateway
 
-- Gateway handles cross-cutting concerns only: auth, rate limiting, routing
-- No business logic in the gateway — it delegates to backend services
-- Timeouts and circuit breakers configured for each upstream backend
-- Request/response transformation is minimal and well-documented
-- Gateway failure mode is defined (fail open vs. fail closed)
-
-### Anti-patterns
-
-- Business logic creeping into the gateway (becomes a monolith bottleneck)
-- Gateway as single point of failure with no redundancy or health checks
-- Tight coupling between gateway routing rules and backend implementation details
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Business logic creeping into the gateway — it becomes a monolith bottleneck
+    - Single point of failure if not deployed with redundancy and health checks
+    - Tight coupling between gateway routing rules and backend implementation details
+    - Missing timeouts and circuit breakers for upstream backends

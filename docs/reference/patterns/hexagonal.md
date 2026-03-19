@@ -1,42 +1,38 @@
 # Hexagonal (Ports & Adapters)
 
+Structures an application so domain logic has zero dependencies on infrastructure — all I/O goes through interfaces.
+
+## When to Use
+
+- You want domain logic that is testable without databases, HTTP, or cloud SDKs
+- The application needs to support multiple entry points (HTTP, CLI, message queue)
+- You anticipate swapping infrastructure (e.g., Postgres to DynamoDB) without rewriting business logic
+
+## How It Works
+
+```mermaid
+flowchart LR
+    HTTP --> DA1[Driving Adapter]
+    CLI --> DA2[Driving Adapter]
+    DA1 --> P1[[Port]]
+    DA2 --> P1
+    P1 --> D[Domain Logic<br/>no infra imports]
+    D --> P2[[Port]]
+    P2 --> A1[Driven Adapter<br/>Postgres]
+    P2 --> A2[Driven Adapter<br/>Redis]
 ```
-                  ┌───────────────────┐
-HTTP ──► Adapter ─┤                   ├─ Adapter ──► Postgres
-                  │   Domain Logic    │
- CLI ──► Adapter ─┤                   ├─ Adapter ──► Redis
-                  │ (no infra imports)│
-Test ──► Adapter ─┤                   ├─ Adapter ──► S3
-                  └───────────────────┘
-                   Ports (interfaces)    Ports (interfaces)
-                   ◄── driving side      driven side ──►
-```
 
-## Architecture
+**Ports** are interfaces defined by the domain. **Driving adapters** (left side) translate external input into domain calls. **Driven adapters** (right side) implement infrastructure behind port interfaces. The domain layer never imports infrastructure packages — it only knows about its own ports.
 
-Look for clean separation between domain logic and infrastructure.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - Domain logic is fully testable with in-memory adapters — no mocks of concrete classes needed
+    - Swapping infrastructure means writing a new adapter, not touching business logic
+    - Clear dependency direction: everything points inward toward the domain
 
-- Ports are defined as interfaces/protocols, not concrete classes
-- Adapters implement exactly one port — no multi-port adapters
-- Domain layer has zero imports from infrastructure packages
-- Tests use in-memory adapters, not mocks of concrete classes
-
-### Anti-patterns
-
-- Domain code importing `requests`, `boto3`, or DB drivers directly
-- "Port" interfaces that leak infrastructure details (SQL, HTTP headers)
-- Adapter logic bleeding into domain services
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Port interfaces that leak infrastructure details (SQL dialects, HTTP headers)
+    - Domain code importing `requests`, `boto3`, or DB drivers directly — breaks the architecture
+    - Adapter logic bleeding into domain services
+    - Over-engineering simple CRUD apps that do not benefit from the indirection

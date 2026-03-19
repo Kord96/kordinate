@@ -1,48 +1,35 @@
 # Service Manager
 
+Manages the full lifecycle of a long-running service: startup, health checking, and graceful shutdown.
+
+## When to Use
+
+- You are building a service that runs continuously in a container or on a host
+- The service needs to validate configuration and dependencies before accepting traffic
+- Graceful shutdown matters — in-flight requests must drain and buffers must flush
+
+## How It Works
+
+```mermaid
+flowchart LR
+    S[Startup<br/>config, deps, init] -->|ready signal| R[Running<br/>serve traffic +<br/>health loop]
+    R -->|SIGTERM| D[Shutdown<br/>drain, flush, close]
 ```
-  ┌─────────┐     ┌─────────────────────────┐     ┌──────────┐
-  │ Startup │────►│        Running          │────►│ Shutdown │
-  │         │     │                         │     │          │
-  │ • config│     │  ┌───────────────────┐  │     │ • signal │
-  │ • deps  │     │  │  Health Loop      │  │     │ • drain  │
-  │ • init  │     │  │  ┌─────┐         │  │     │ • flush  │
-  │ • ready │     │  │  │check│──► report│  │     │ • close  │
-  └─────────┘     │  │  └─────┘         │  │     └──────────┘
-                  │  └───────────────────┘  │
-                  │                         │
-                  │  Serves traffic only    │
-                  │  after ready signal     │
-                  └─────────────────────────┘
-```
 
-## Architecture
+On **startup**, the service loads configuration, connects to dependencies, and runs initialization. It does not accept traffic until it signals readiness. While **running**, a health loop reports liveness and readiness to the orchestrator. On **shutdown** (SIGTERM), the service stops accepting new requests, drains in-flight work, flushes buffers, and closes connections before exiting.
 
-Look for clean lifecycle phases: startup completes before serving, shutdown drains before closing.
+!!! note "In our stack"
+    The **orchestrator** library implements this pattern with structured startup/shutdown phases, health check registration, and signal handling.
 
-### Review Checklist
+## Trade-offs
 
-- Startup validates config and dependencies before marking ready
-- Health checks run periodically and report to orchestrator (liveness + readiness)
-- Shutdown handles SIGTERM gracefully — drains in-flight requests, flushes buffers
-- Startup failures produce clear error messages and exit with non-zero code
-- No traffic served until readiness is explicitly signaled
+!!! success "Strengths"
+    - Clean lifecycle prevents serving traffic before dependencies are ready
+    - Graceful shutdown avoids data loss from killed in-flight requests
+    - Health checks let the orchestrator route traffic only to healthy instances
 
-### Anti-patterns
-
-- Serving traffic before dependencies are connected (premature readiness)
-- Shutdown kills in-flight requests without draining (data loss)
-- Health check always returns healthy regardless of actual state
-- No distinction between liveness and readiness probes
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Serving traffic before dependencies are connected (premature readiness)
+    - Shutdown that kills in-flight requests without draining (data loss)
+    - Health checks that always return healthy regardless of actual state
+    - No distinction between liveness probes (is it alive?) and readiness probes (can it serve?)

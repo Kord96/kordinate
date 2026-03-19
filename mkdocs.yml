@@ -46,6 +46,7 @@ nav:
   - Memory: memory.md
   - Reference:
       - Link Mapping: reference/link-mapping.md
+      - Source Map: reference/source-map.md
       - Patterns:
           - Index: reference/patterns/index.md
           - API Gateway: reference/patterns/api-gateway.md

@@ -1,41 +1,37 @@
 # Stream-to-Store
 
+Consumes events from a streaming platform, buffers them, and flushes batches to a persistent store.
+
+## When to Use
+
+- You need to land streaming data (e.g., from Kafka) into a database, data lake, or object store
+- Individual writes per message are too expensive — batching is required
+- Exactly-once or at-least-once delivery semantics matter for correctness
+
+## How It Works
+
+```mermaid
+flowchart LR
+    K[Broker<br/>Kafka] --> CG[Consumer Group]
+    CG --> B[Buffer<br/>batch by size/time]
+    B -->|flush| S[Store<br/>DB / S3]
+    S -->|success| CO[Commit Offset]
 ```
-  ┌────────┐     ┌──────────┐     ┌────────┐     ┌───────┐     ┌───────┐
-  │ Broker │────►│ Consumer │────►│ Buffer │────►│ Flush │────►│ Store │
-  │(Kafka) │     │  group   │     │(batch) │     │       │     │(DB/S3)│
-  └────────┘     └──────────┘     └───┬────┘     └───┬───┘     └───────┘
-                                      │              │
-                                  size/time       commit
-                                  trigger         offset
-```
 
-## Architecture
+A consumer group reads from the broker into an in-memory buffer. The buffer flushes when it hits a size or time threshold. Offsets are committed only after a successful store write, so nothing is lost if the flush fails.
 
-Look for correct offset management — commits only after successful flush.
+!!! note "In our stack"
+    The **stoik** library implements this pattern with configurable flush triggers, offset management, and dead-letter handling.
 
-### Review Checklist
+## Trade-offs
 
-- Offsets are committed after the store write succeeds, not before
-- Buffer has both size and time-based flush triggers
-- Flush failures trigger retry with backoff before giving up
-- Consumer group rebalancing is handled without data loss or duplication
-- Store writes are idempotent (safe to replay on reprocessing)
+!!! success "Strengths"
+    - Batching reduces write amplification and cost on the target store
+    - Offset-after-flush guarantees at-least-once delivery
+    - Consumer group provides horizontal scaling and rebalancing
 
-### Anti-patterns
-
-- Auto-commit enabled — offsets advance regardless of flush success
-- Unbounded buffer with no size limit (memory exhaustion on slow stores)
-- No dead-letter handling for permanently unprocessable messages
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Auto-commit advancing offsets regardless of flush success (data loss)
+    - Unbounded buffer with no size limit — memory exhaustion on slow stores
+    - No dead-letter path for permanently unprocessable messages
+    - Consumer group rebalancing can cause duplicates if not handled carefully

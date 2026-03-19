@@ -1,46 +1,37 @@
 # Plugin Architecture
 
+Allows extending a system's behavior by registering external modules against a stable interface, without modifying the core.
+
+## When to Use
+
+- You want third parties or other teams to extend functionality without changing core code
+- The system needs to support multiple implementations of the same capability
+- Features should be loadable at startup via configuration, not hardcoded
+
+## How It Works
+
+```mermaid
+flowchart TD
+    PA[Plugin A] --> R[Registry]
+    PB[Plugin B] --> R
+    PC[Plugin C] --> R
+    R --> Core[Core<br/>Plugin API interface]
+    Core -->|load, get, invoke| PA
+    Core -->|load, get, invoke| PB
+    Core -->|load, get, invoke| PC
 ```
-                    ┌──────────────┐
-                    │     Core     │
-                    │              │
-                    │  ┌────────┐  │
-  ┌──────────┐     │  │Registry│  │     ┌──────────┐
-  │ Plugin A ├────►│  │        │  │◄────┤ Plugin C │
-  └──────────┘     │  │ load() │  │     └──────────┘
-                    │  │ get()  │  │
-  ┌──────────┐     │  └────────┘  │
-  │ Plugin B ├────►│              │
-  └──────────┘     │  Plugin API  │
-                    │ (interface)  │
-                    └──────────────┘
-```
 
-## Architecture
+Plugins implement a versioned **Plugin API** interface. At startup, the **Registry** discovers and loads plugins. The core invokes plugins through the interface without knowing their internals. The core must function (possibly with reduced features) when no plugins are loaded.
 
-Look for a stable plugin interface with discovery/registration and no core modifications needed.
+## Trade-offs
 
-### Review Checklist
+!!! success "Strengths"
+    - New features added without modifying or redeploying the core
+    - Clean separation of concerns — plugins are self-contained units
+    - Versioned interface protects against silent breakage on core updates
 
-- Plugin interface is well-defined and versioned — plugins depend on it, not on core internals
-- Registration happens at startup via a registry — no hardcoded plugin lists
-- Core functions without any plugins loaded (graceful degradation)
-- Plugin lifecycle is managed (init, start, stop) — no orphaned resources
-
-### Anti-patterns
-
-- Plugins importing core internals beyond the published API surface
-- No versioning on the plugin interface — core changes break all plugins silently
-- Plugin registration order creates hidden dependencies between plugins
-
-## Monitoring
-
-TODO
-
-## Deployment
-
-TODO
-
-## Testing
-
-TODO
+!!! warning "Watch out for"
+    - Plugins importing core internals beyond the published API surface
+    - No versioning on the plugin interface — core changes break all plugins silently
+    - Plugin registration order creating hidden dependencies between plugins
+    - Missing lifecycle management (init, start, stop) — leads to orphaned resources
