@@ -7,17 +7,22 @@ How apps expose telemetry to the platform. Three concerns — logs, metrics, hea
 ```mermaid
 flowchart TB
     subgraph ns[App Namespace]
-        APPS[App pods<br/>stdout JSON + /metrics]
-        VIT[Vitals pod<br/>/metrics :9131]
+        subgraph pods[App Pods]
+            P1[pod 1<br/>/metrics]
+            P2[pod 2<br/>/metrics]
+            PN[pod N<br/>/metrics]
+        end
+        VIT[Vitals<br/>/metrics :9131]
     end
 
     subgraph gw[Gateway Namespace]
-        AL[Alloy] --> P[Prom] & L[Loki]
+        AL[Alloy] --> PR[Prom] & LK[Loki]
     end
 
-    APPS -->|/metrics + logs| AL
-    VIT -->|vitals_* metrics| AL
-    P -.->|query| VIT
+    pods -->|metrics + logs| AL
+    VIT -->|vitals_* health| AL
+    PR -.->|app metrics query| VIT
+    pods -.->|liveness probes| VIT
 ```
 
 | Concern | Owner | Interface | Consumer |
@@ -61,8 +66,8 @@ Each app deploys **one vitals pod per namespace** that evaluates the app's healt
 
 ### How it works
 
-1. Vitals queries **Gateway Prom** for app metrics (cross-namespace: `prometheus.monitor.svc.cluster.local:9090`)
-2. Optionally probes app pods directly (HTTP/TCP liveness checks)
+1. Vitals queries **Gateway Prom** for app metrics (cross-namespace: `prometheus.monitor.svc.cluster.local:9090`) — aggregated metrics like Kafka lag, flush rates, storage usage
+2. Vitals probes **app pods directly** (HTTP/TCP) for instant liveness detection — faster than waiting for Prom's `up` metric
 3. Evaluates thresholds and health logic (app-specific domain knowledge)
 4. Exposes `vitals_*` gauges on `:9131/metrics`
 5. Gateway Alloy scrapes vitals like any other pod
@@ -143,24 +148,27 @@ The platform should detect silent vitals failures:
 ```mermaid
 flowchart TB
     subgraph ns[App Namespace]
-        A[App pods]
-        V[Vitals pod]
+        subgraph pods[App Pods]
+            P1[pod 1] & P2[pod 2] & PN[pod N]
+        end
+        VIT[Vitals]
     end
 
     subgraph gw[Gateway Namespace]
-        AL[Alloy] --> P[Prom<br/>3h] & L[Loki<br/>3h]
+        AL[Alloy] --> PR[Prom<br/>3h] & LK[Loki<br/>3h]
     end
 
-    A -->|/metrics + logs| AL
-    V -->|vitals_* metrics| AL
-    P -.->|query| V
+    pods -->|metrics + logs| AL
+    VIT -->|vitals_* health| AL
+    PR -.->|app metrics query| VIT
+    pods -.->|liveness probes| VIT
 
     subgraph master[Master Namespace]
         MA[Master Alloy] --> MP[Prom<br/>30d] & ML[Loki<br/>30d]
         MP & ML --> G[Grafana]
     end
 
-    P -->|/federate| MA
+    PR -->|/federate| MA
     gw -->|K8s API logs| MA
 ```
 
