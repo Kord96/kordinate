@@ -15,8 +15,11 @@ Common rules for all agents.
 
 ## Memory
 
-| What to write | Where |
-|---------------|-------|
-| Generic knowledge | `memory/static/` |
-| Site-specific notes | `memory/dynamic/` |
-| Project-specific | `<repo>/.claude/agent-memory/<you>/` |
+Two axes — **scope** (global/project) and **mutability** (static/dynamic):
+
+| | Static (pre-defined structure) | Dynamic (free-form) |
+|---|---|---|
+| **Global** | `memory/static/` | `memory/dynamic/` |
+| **Project** | `<repo>/<you>/static/` | `<repo>/<you>/dynamic/` |
+
+Static holds content with pre-defined structure (manifests, dashboards, pattern catalogs). Dynamic is for agent-managed notes and findings. The linking layer symlinks `.claude/agent-memory/<you>/` to `<repo>/<you>/dynamic/` — write through the symlink, it lands in the right place.

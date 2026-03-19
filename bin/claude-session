@@ -57,6 +57,8 @@ create_worktree() {
   # Re-checkout encrypted files with proper smudge filter now that key is available
   git -C "$wt_path" checkout HEAD -- .
   mkdir -p "$wt_path/.claude/agent-state"
+  # Link project-level agent dirs (sauron/, deployer/, etc.) into .claude/agent-memory/
+  ( cd "$wt_path" && "$repo_root/installer/link.sh" link-project ) 2>/dev/null || true
 }
 
 # Generate session ID: tmux-based (stable) or timestamp (fallback)

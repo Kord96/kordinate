@@ -70,6 +70,71 @@ EXTERNAL_LINKS=(
 )
 
 # ═══════════════════════════════════════════════════════════════
+# PROJECT LINKING
+#
+# Links project-level agent dirs into .claude/agent-memory/.
+# Agent dirs at project root follow the same static/dynamic
+# split as global memory:
+#
+#   <project>/<agent>/static/    — pre-defined structure (manifests, dashboards)
+#   <project>/<agent>/dynamic/   — free-form agent notes
+#   .claude/agent-memory/<agent> → <agent>/dynamic/
+#
+# Only agents with existing project dirs get linked.
+# ═══════════════════════════════════════════════════════════════
+
+KNOWN_AGENTS=(deployer sauron designer scribe)
+
+cmd_link_project() {
+  local project_root
+  project_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+    echo "Not in a git repo — skipping project linking"
+    return 0
+  }
+
+  echo "=== Project agent linking ==="
+
+  local linked=0
+  for agent in "${KNOWN_AGENTS[@]}"; do
+    local agent_dir="$project_root/$agent"
+    [ -d "$agent_dir" ] || continue
+
+    # Ensure static/ and dynamic/ exist
+    mkdir -p "$agent_dir/static" "$agent_dir/dynamic"
+
+    local target="$project_root/.claude/agent-memory/$agent"
+    mkdir -p "$(dirname "$target")"
+
+    if [ -L "$target" ]; then
+      local current
+      current=$(readlink "$target")
+      if [ "$current" = "../../${agent}/dynamic" ]; then
+        echo "  ok  $agent"
+      else
+        echo "  WARN $agent → $current (expected ../../${agent}/dynamic)" >&2
+      fi
+    elif [ -d "$target" ]; then
+      # Existing real directory — migrate contents then link
+      echo "  migrate $agent (moving contents to $agent/dynamic/)"
+      cp -a "$target"/. "$agent_dir/dynamic/" 2>/dev/null || true
+      rm -rf "$target"
+      ln -s "../../${agent}/dynamic" "$target"
+      echo "  +   $agent → $agent/dynamic/"
+    else
+      ln -s "../../${agent}/dynamic" "$target"
+      echo "  +   $agent → $agent/dynamic/"
+    fi
+    linked=$((linked + 1))
+  done
+
+  if [ "$linked" -eq 0 ]; then
+    echo "  (no agent dirs found at project root)"
+  fi
+  echo ""
+  echo "Done."
+}
+
+# ═══════════════════════════════════════════════════════════════
 # SYNC: copy modified CLAUDE.md files back to repo as AGENT.md
 # ═══════════════════════════════════════════════════════════════
 
@@ -204,7 +269,8 @@ EOF
 # ═══════════════════════════════════════════════════════════════
 
 case "${1:-deploy}" in
-  sync)   cmd_sync ;;
-  deploy) cmd_deploy ;;
-  *)      echo "Usage: $0 [deploy|sync]"; exit 1 ;;
+  sync)         cmd_sync ;;
+  deploy)       cmd_deploy ;;
+  link-project) cmd_link_project ;;
+  *)            echo "Usage: $0 [deploy|sync|link-project]"; exit 1 ;;
 esac
