@@ -114,7 +114,7 @@ spec:
             - name: loki-data
               mountPath: /data/loki
         - name: federate
-          image: registry.kordinate.io/loki-federate:latest
+          image: 10.95.43.66:5000/loki-federate:latest
           args:
             - --port=3101
             - --window=90
