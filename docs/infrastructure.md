@@ -151,7 +151,7 @@ flowchart TB
 **Federation:** Gateway Tailscale forwards `:9090` (Prom /federate), `:3100` (Loki direct), `:3101` (Loki /federate), and app ports on the tailnet. Master Alloy pulls both metrics and logs via `/federate` — symmetric pull model.
 
 !!! note "Loki federation sidecar"
-    Loki has no native `/federate` endpoint. A sidecar container in the Loki pod provides one — it queries local Loki and serves a cursor-based pull API on `:3101`. Master Alloy pulls from `:3101/federate` the same way it pulls metrics from `:9090/federate`. Logs are collected once by Gateway Alloy, stored in Loki, and pulled by master on demand.
+    Loki does not support pull-based federation natively. A stateless sidecar in the Loki pod provides a `/federate` endpoint on `:3101` — it translates cursor-based pull requests into Loki queries against `localhost:3100`. No buffer or local files — Loki itself is the storage.
 
 ??? abstract "What Alloy normalizes"
 
