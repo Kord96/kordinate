@@ -14,9 +14,7 @@ flowchart TB
         P1 ~~~ P2 ~~~ PN ~~~ VIT
     end
 
-    P1 & P2 & PN -->|/metrics| AL
-    P1 & P2 & PN -->|stdout JSON| K8S[K8s API]
-    K8S -->|tail logs| AL
+    P1 & P2 & PN -->|/metrics + logs| AL
     VIT -->|health metrics| AL
     PR -.->|app metrics query| VIT
 
