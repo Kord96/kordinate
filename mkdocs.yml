@@ -38,7 +38,6 @@ extra_css:
 
 nav:
   - Home: index.md
-  - Overview: overview.md
   - Getting Started: getting-started.md
   - Agents: agents.md
   - Hooks: hooks.md
