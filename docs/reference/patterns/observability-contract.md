@@ -22,7 +22,6 @@ flowchart TB
     pods -->|metrics + logs| AL
     VIT -->|vitals_* health| AL
     PR -.->|app metrics query| VIT
-    pods -.->|liveness probes| VIT
 ```
 
 | Concern | Owner | Interface | Consumer |
@@ -66,11 +65,10 @@ Each app deploys **one vitals pod per namespace** that evaluates the app's healt
 
 ### How it works
 
-1. Vitals queries **Gateway Prom** for app metrics (cross-namespace: `prometheus.monitor.svc.cluster.local:9090`) — aggregated metrics like Kafka lag, flush rates, storage usage
-2. Vitals probes **app pods directly** (HTTP/TCP) for instant liveness detection — faster than waiting for Prom's `up` metric
-3. Evaluates thresholds and health logic (app-specific domain knowledge)
-4. Exposes `vitals_*` gauges on `:9131/metrics`
-5. Gateway Alloy scrapes vitals like any other pod
+1. Vitals queries **Gateway Prom** for app metrics (cross-namespace: `prometheus.monitor.svc.cluster.local:9090`) — raw metrics, aggregations, liveness (`up{}`)
+2. Evaluates thresholds and health logic (app-specific domain knowledge)
+3. Exposes `vitals_*` gauges on `:9131/metrics`
+4. Gateway Alloy scrapes vitals like any other pod
 
 ### Why standalone, not sidecar
 
@@ -161,7 +159,6 @@ flowchart TB
     pods -->|metrics + logs| AL
     VIT -->|vitals_* health| AL
     PR -.->|app metrics query| VIT
-    pods -.->|liveness probes| VIT
 
     subgraph master[Master Namespace]
         MA[Master Alloy] --> MP[Prom<br/>30d] & ML[Loki<br/>30d]
