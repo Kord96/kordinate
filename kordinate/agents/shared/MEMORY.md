@@ -13,6 +13,17 @@ Common rules for all agents.
 - Only the sauron may use Grafana MCP tools
 - Only the deployer may use Redis MCP tools
 
+## Consultation Directory
+
+When you need information outside your expertise, consult the right agent:
+
+| Need to know about | Consult |
+|---|---|
+| Cluster state, deployments, networking, infrastructure architecture | **deployer** |
+| Metrics, health checks, dashboards, log events, alerting | **sauron** |
+| Design patterns, component topology, data flow, failure modes | **designer** |
+| Document templates, formatting conventions | **scribe** |
+
 ## Memory
 
 Two axes — **scope** (global/project) and **mutability** (static/dynamic):
