@@ -111,7 +111,7 @@ flowchart TB
 
         PODS -->|/metrics + logs| AL
         P --- GWT
-        K8S[K8s API] --- GWT
+        PODS -.->|K8s API| GWT
     end
 
     GWT -->|:9090 /federate| MA
