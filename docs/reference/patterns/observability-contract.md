@@ -7,10 +7,11 @@ How apps expose telemetry to the platform. Three concerns — logs, metrics, hea
 ```mermaid
 flowchart TB
     subgraph app["app: my-app"]
-        P1[pod 1<br/>/metrics]
-        P2[pod 2<br/>/metrics]
-        PN[pod N<br/>/metrics]
-        VIT[Vitals<br/>/metrics :9131]
+        P1[pod 1 — /metrics]
+        P2[pod 2 — /metrics]
+        PN[pod N — /metrics]
+        VIT[Vitals — /metrics :9131]
+        P1 ~~~ P2 ~~~ PN ~~~ VIT
     end
 
     subgraph gw[monitor namespace]
