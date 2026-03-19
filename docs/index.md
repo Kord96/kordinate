@@ -2,8 +2,28 @@
 
 Multi-cluster k8s infrastructure managed by specialized agents.
 
-- [Overview](overview.md) — how the pieces fit together
-- [Getting Started](getting-started.md) — installation, profile config, link mapping
-- [Agents](agents.md) — who does what, shared rules, consultation matrix
-- [Memory](memory.md) — how agents store and discover knowledge
-- [Reference](reference/patterns/index.md) — design patterns, libraries, infrastructure
+---
+
+<div class="grid cards" markdown>
+
+-   **[Overview](overview.md)**
+
+    How the pieces fit together — agents, hooks, memory, profile, and the linking layer.
+
+-   **[Getting Started](getting-started.md)**
+
+    Installation, profile config, link mapping between kordinate and Claude Code.
+
+-   **[Agents](agents.md)**
+
+    Who does what, shared rules, safety hooks, consultation matrix, and commands.
+
+-   **[Memory](memory.md)**
+
+    How agents store and discover knowledge — static, dynamic, and project layers.
+
+-   **[Reference](reference/patterns/index.md)**
+
+    Design patterns, shared libraries, and infrastructure documentation.
+
+</div>

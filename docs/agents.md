@@ -71,82 +71,105 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
 
 ## How Requests Flow
 
-```
-User message
- │
- ├── matches trigger ──► spawn agent
- │   │
- │   │  every tool call passes through hooks:
- │   │
- │   ├── deployer ──► kubectl, docker, redis  (guard-kubectl, guard-git, guard-redis)
- │   ├── sauron ────► grafana MCP             (guard-grafana)
- │   ├── designer ──► read-only analysis
- │   └── scribe ────► .md file edits          (guard-md)
- │
- └── /consult <agent> "question"
-     └── agent reads its memory ──► returns answer
+```mermaid
+flowchart TD
+    U[User message] --> T{matches trigger?}
+    T -->|yes| S[spawn agent]
+    T -->|/consult| C[agent reads memory → returns answer]
+    S --> H{hooks check every tool call}
+    H --> D["deployer → kubectl, docker, redis"]
+    H --> SA["sauron → grafana MCP"]
+    H --> DE["designer → read-only analysis"]
+    H --> SC["scribe → .md file edits"]
 ```
 
 ## Safety Hooks
 
 Hooks fire on every tool call. Registered in `settings.json`.
 
-### Guards
+??? abstract "Guards — agent authentication"
+    Each guard enforces that only the authorized agent can perform certain operations. Agents authenticate by copying a lock file before operating:
 
-Each guard enforces that only the authorized agent can perform certain operations. Agents authenticate by copying a lock file before operating:
+    1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
+    2. Hook reads both files, allows if they match
+    3. Agent removes `/tmp/.<agent>-auth` after completing work
 
-1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
-2. Hook reads both files, allows if they match
-3. Agent removes `/tmp/.<agent>-auth` after completing work
+    | Hook | Agent | What it guards |
+    |------|-------|---------------|
+    | `guard-kubectl.sh` | deployer | kubectl writes via SSH. Master namespace needs bootstrap auth. |
+    | `guard-git.sh` | deployer | git push to test/prod branches |
+    | `guard-redis.sh` | deployer | Redis MCP access |
+    | `guard-grafana.sh` | sauron | Grafana MCP and dashboard JSON edits |
+    | `guard-md.sh` | scribe | All `.md` file edits |
 
-| Hook | Agent | What it guards |
-|------|-------|---------------|
-| `guard-kubectl.sh` | deployer | kubectl writes via SSH. Master namespace needs bootstrap auth. Workstation always blocked. |
-| `guard-git.sh` | deployer | git push to test/prod branches |
-| `guard-redis.sh` | deployer | Redis MCP access |
-| `guard-grafana.sh` | sauron | Grafana MCP and dashboard JSON edits |
-| `guard-md.sh` | scribe | All `.md` file edits |
+??? abstract "Automation hooks"
 
-### Automation
-
-| Hook | When | What it does |
-|------|------|-------------|
-| `auto-merge-to-dev.sh` | After git push | Fast-forwards main if a session branch was pushed |
-| `agent-memory.sh` | Before agent spawn | Regenerates agent's MEMORY.md if source files changed |
+    | Hook | When | What it does |
+    |------|------|-------------|
+    | `auto-merge-to-dev.sh` | After git push | Fast-forwards main if a session branch was pushed |
+    | `agent-memory.sh` | Before agent spawn | Regenerates agent's MEMORY.md if source files changed |
 
 ## Consultation
 
 Ask an agent a question without transferring full control:
 
-```
+```bash
 /consult deployer "Is logbd healthy on vandc?"
 ```
 
+Results are cached per consulter-consultant pair. Use `/invalidate <agent>` to force re-consultation.
+
 ### Consultation Matrix
 
-| Consulter | Consultant | Provides |
-|-----------|-----------|----------|
-| deployer | designer | Pattern deployment perspective, architecture constraints for a component |
-| deployer | sauron | Monitoring impact of infra changes, metric dependencies to preserve |
-| sauron | designer | Pattern monitoring perspective — what to observe for a given pattern |
-| sauron | deployer | Live cluster state, pod health, resource usage for monitoring targets |
-| designer | deployer | Current infrastructure reality — what's actually deployed, constraints |
-| designer | sauron | Observability coverage gaps, metric/dashboard inventory |
-| scribe | designer | Architecture context for documentation accuracy |
-| scribe | sauron | Monitoring context for documentation accuracy |
-| scribe | deployer | Infrastructure context for documentation accuracy |
+=== "Deployer asks"
 
-The matrix is bidirectional — designer can ground architecture reviews in live cluster state from deployer, sauron can discover monitoring targets from deployer, etc.
+    | Consultant | Provides |
+    |-----------|----------|
+    | designer | Pattern deployment perspective, architecture constraints |
+    | sauron | Monitoring impact of infra changes, metric dependencies |
+
+=== "Sauron asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | designer | Pattern monitoring perspective — what to observe |
+    | deployer | Live cluster state, pod health, resource usage |
+
+=== "Designer asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | deployer | Current infrastructure reality — what's deployed, constraints |
+    | sauron | Observability coverage gaps, metric/dashboard inventory |
+
+=== "Scribe asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | designer | Architecture context for documentation accuracy |
+    | sauron | Monitoring context for documentation accuracy |
+    | deployer | Infrastructure context for documentation accuracy |
+
+!!! note ""
+    The matrix is bidirectional — designer can ground architecture reviews in live cluster state from deployer, sauron can discover monitoring targets from deployer, etc.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/boot` | Initialize the workstation environment |
-| `/consult` | Query an agent without full handoff |
-| `/merge` | Merge current session branch |
-| `/deployer:roll` | Roll between environments |
-| `/deployer:stop` | Scale down an environment |
-| `/deployer:clean` | Clean up environment data |
-| `/deployer:diff` | Stage incremental data changes |
-| `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+=== "General"
+
+    | Command | Description |
+    |---------|-------------|
+    | `/boot` | Initialize the workstation environment |
+    | `/consult` | Query an agent without full handoff |
+    | `/merge` | Merge current session branch |
+    | `/invalidate` | Force re-consultation for an agent |
+
+=== "Deployer"
+
+    | Command | Description |
+    |---------|-------------|
+    | `/deployer:roll` | Roll between environments |
+    | `/deployer:stop` | Scale down an environment |
+    | `/deployer:clean` | Clean up environment data |
+    | `/deployer:diff` | Stage incremental data changes |
+    | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
