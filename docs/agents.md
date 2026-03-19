@@ -7,7 +7,7 @@
 | deployer | `roll`, `roll forward`, `roll backward`, `publish`, `migrate` | Rolls deployments between environments, manages infrastructure |
 | sauron | `add monitoring`, `add metrics`, `health check`, `prometheus`, `dashboard`, `set up logging`, `add logging`, `review logs`, `run tests`, `code validation`, `validate code` | Adds monitoring, validates code, manages dashboards |
 | designer | `review architecture`, `design review` | Reviews architecture, owns design patterns |
-| scribe | `update docs`, `add api key`, `add mcp`, ... | Sole editor of `.md` files |
+| scribe | `update docs`, `update profile docs`, `update project docs`, `add api key`, `store api key`, `add mcp`, `update agent docs`, `write readme`, `update readme` | Sole editor of `.md` files |
 
 ## Shared Rules
 
@@ -31,6 +31,15 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
     - Project-specific → `<repo>/.claude/agent-memory/<agent>/`
     - Agent resumption: check `.claude/agent-state/<name>.json` for `agent_id`
 
+## Shared Commands
+
+| Command | Description |
+|---------|-------------|
+| `/boot` | Initialize the workstation environment |
+| `/consult` | Query an agent without full handoff |
+| `/merge` | Merge current session branch |
+| `/invalidate` | Force re-consultation for an agent |
+
 ## Agent Specifics
 
 === "Deployer"
@@ -42,6 +51,16 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
     | **Memory Owns** | infra.md, migration.md, troubleshooting.md |
     | **Style** | Reactive — executes on request |
 
+    **Commands**
+
+    | Command | Description |
+    |---------|-------------|
+    | `/deployer:roll` | Roll between environments |
+    | `/deployer:stop` | Scale down an environment |
+    | `/deployer:clean` | Clean up environment data |
+    | `/deployer:diff` | Stage incremental data changes |
+    | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+
 === "Sauron"
 
     | | |
@@ -50,6 +69,13 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
     | **Exclusive Tools** | nokrashi-tools, klog, Grafana MCP |
     | **Memory Owns** | monitoring.md, logging.md, dashboards/ |
     | **Style** | Act first, report after |
+
+    **Commands**
+
+    | Command | Description |
+    |---------|-------------|
+    | `/sauron:scan` | Scan a project for monitoring gaps |
+    | `/sauron:diagnose` | Diagnose a specific issue |
 
 === "Designer"
 
@@ -60,6 +86,12 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
     | **Memory Owns** | patterns/\*.md, libraries/\*.md |
     | **Style** | Analytical — validates against patterns |
 
+    **Commands**
+
+    | Command | Description |
+    |---------|-------------|
+    | `/designer:detect-patterns` | Scan a project for recognized patterns |
+
 === "Scribe"
 
     | | |
@@ -69,23 +101,11 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
     | **Memory Owns** | templates/ |
     | **Style** | Coordinate — write-gate for all docs |
 
-## Commands
-
-=== "General"
+    **Commands**
 
     | Command | Description |
     |---------|-------------|
-    | `/boot` | Initialize the workstation environment |
-    | `/consult` | Query an agent without full handoff |
-    | `/merge` | Merge current session branch |
-    | `/invalidate` | Force re-consultation for an agent |
-
-=== "Deployer"
-
-    | Command | Description |
-    |---------|-------------|
-    | `/deployer:roll` | Roll between environments |
-    | `/deployer:stop` | Scale down an environment |
-    | `/deployer:clean` | Clean up environment data |
-    | `/deployer:diff` | Stage incremental data changes |
-    | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+    | `/scribe:add-mcp` | Add a new MCP server entry |
+    | `/scribe:update-agent-docs` | Update an agent's documentation |
+    | `/scribe:update-project-docs` | Update project-level docs |
+    | `/scribe:update-subagent-memory` | Update agent memory files |

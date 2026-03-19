@@ -1,9 +1,20 @@
 /* Open mermaid diagrams in a new tab for zoomed viewing */
 (function () {
   function addZoomButtons() {
-    document.querySelectorAll(".mermaid svg").forEach(function (svg) {
-      var container = svg.closest(".mermaid");
-      if (!container || container.querySelector(".mermaid-zoom")) return;
+    document.querySelectorAll("pre.mermaid, div.mermaid").forEach(function (el) {
+      var svg = el.querySelector("svg") || (el.tagName === "svg" ? el : null);
+      if (!svg) return;
+
+      /* Wrap in a positioned div if not already wrapped */
+      var wrapper = el.closest(".mermaid-wrapper");
+      if (!wrapper) {
+        wrapper = document.createElement("div");
+        wrapper.className = "mermaid-wrapper";
+        el.parentNode.insertBefore(wrapper, el);
+        wrapper.appendChild(el);
+      }
+
+      if (wrapper.querySelector(".mermaid-zoom")) return;
 
       var btn = document.createElement("button");
       btn.className = "mermaid-zoom";
@@ -13,11 +24,10 @@
         e.preventDefault();
         e.stopPropagation();
 
-        /* Clone SVG and set explicit dimensions + background for standalone viewing */
         var clone = svg.cloneNode(true);
         clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-        /* Add a dark background style for standalone viewing */
+        /* Dark background for standalone viewing */
         var style = document.createElementNS("http://www.w3.org/2000/svg", "style");
         style.textContent = "svg { background: #1e1e2e; padding: 2rem; }";
         clone.insertBefore(style, clone.firstChild);
@@ -27,7 +37,7 @@
         window.open(URL.createObjectURL(blob), "_blank");
       });
 
-      container.appendChild(btn);
+      wrapper.appendChild(btn);
     });
   }
 
@@ -36,9 +46,16 @@
     addZoomButtons();
   });
 
-  document.addEventListener("DOMContentLoaded", function () {
-    observer.observe(document.body, { childList: true, subtree: true });
-    /* Also run once in case mermaid already rendered */
-    addZoomButtons();
-  });
+  /* Material for MkDocs uses instant loading — re-run on navigation */
+  if (typeof document$ !== "undefined") {
+    document$.subscribe(function () {
+      addZoomButtons();
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      observer.observe(document.body, { childList: true, subtree: true });
+      addZoomButtons();
+    });
+  }
 })();

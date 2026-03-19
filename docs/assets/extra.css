@@ -2,12 +2,6 @@
 
 /* ── Mermaid diagram styling ───────────────────────────────────── */
 
-/* Container — relative for zoom button positioning */
-.mermaid {
-  position: relative;
-  padding: 1rem 0;
-}
-
 /* Node text */
 .mermaid .nodeLabel {
   font-size: 0.85rem;
@@ -36,6 +30,12 @@
 
 /* ── Zoom button ───────────────────────────────────────────────── */
 
+/* Wrapper div injected by extra.js around each mermaid element */
+.mermaid-wrapper {
+  position: relative;
+  padding: 1rem 0;
+}
+
 .mermaid-zoom {
   position: absolute;
   top: 0.5rem;
@@ -53,7 +53,7 @@
   z-index: 1;
 }
 
-.mermaid:hover .mermaid-zoom {
+.mermaid-wrapper:hover .mermaid-zoom {
   opacity: 1;
 }
 
