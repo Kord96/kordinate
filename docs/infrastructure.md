@@ -124,18 +124,19 @@ flowchart TB
         end
 
         subgraph gw[gateway]
-            GWT[TS sidecar<br/>or workstation]
+            GWT[TS sidecar<br/>or Workstation]
         end
 
         myapp -->|uses| infra
         myapp & infra -->|/metrics + logs| AL
         nodes -->|host + container metrics| AL
-        PR --- GWT
+        PR -->|:9090| GWT
+        LK -->|:3100| GWT
         myapp -.->|app ports| GWT
     end
 
     GWT -->|:9090 /federate| MA
-    GWT -->|:6443 pod logs| MA
+    GWT -->|:3100 logs| MA
 
     subgraph master[master]
         MA[Master Alloy] --> ML[Loki<br/>30d] & MP[Prom<br/>30d]
@@ -145,7 +146,7 @@ flowchart TB
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with 3h retention.
 
-**Federation:** Gateway Tailscale exposes `:9090` (Prom), `:3100` (Loki), `:6443` (K8s API) on the tailnet. Master pulls metrics via `/federate` from `:9090` and tails pod logs via K8s API from `:6443`. Master never reads from Gateway Loki — `:3100` is for direct cluster debugging only.
+**Federation:** Gateway Tailscale forwards `:9090` (Prom) and `:3100` (Loki) on the tailnet. Master pulls metrics via `/federate` from `:9090`. For logs, master tails pods via K8s API (`:6443`) rather than querying Gateway Loki — `:3100` is available for direct cluster debugging.
 
 ??? abstract "What Alloy normalizes"
 
