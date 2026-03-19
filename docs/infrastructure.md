@@ -136,7 +136,8 @@ flowchart TB
     end
 
     GWT -->|:9090 /federate| MA
-    GWT -->|:3100 logs| MA
+    GWT -->|:3100| MA
+    GWT -.->|app ports| EXT[external access]
 
     subgraph master[master]
         MA[Master Alloy] --> ML[Loki<br/>30d] & MP[Prom<br/>30d]
@@ -146,7 +147,7 @@ flowchart TB
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with 3h retention.
 
-**Federation:** Gateway Tailscale forwards `:9090` (Prom) and `:3100` (Loki) on the tailnet. Master pulls metrics via `/federate` from `:9090`. For logs, master tails pods via K8s API (`:6443`) rather than querying Gateway Loki — `:3100` is available for direct cluster debugging.
+**Federation:** Gateway Tailscale forwards `:9090` (Prom), `:3100` (Loki), and app ports on the tailnet. Master Alloy pulls metrics via `/federate` from `:9090` and logs from Loki via `:3100`. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
 
 ??? abstract "What Alloy normalizes"
 
@@ -163,9 +164,6 @@ flowchart TB
     | Kafka JMX | `kafka_log_log_size` | `pipeline_kafka_topic_size_bytes` |
 
     All other `kube_*` and `kafka_*` metrics are dropped. App metrics and `node_*` metrics pass through unchanged.
-
-!!! warning "Why logs are tailed twice"
-    Loki has no `/federate` equivalent. Master tails the same pods independently via K8s API. Each cluster's Gateway Alloy also tails locally. The two collectors are unaware of each other. Acceptable: clusters remain self-contained, master is independently resilient, K8s API log endpoint is lightweight.
 
 ## Key Principles
 

@@ -22,7 +22,7 @@ For cluster-specific details, see `profile/config.yaml` and `profile/topology.ya
 
 Inside each cluster: Gateway Alloy scrapes app pods (/metrics), kubelet (cAdvisor), KSM, and tails pod stdout via K8s API. Writes to Gateway Prom and Gateway Loki (3h buffer).
 
-Master: Master Alloy pulls Gateway Prom via /federate and tails pod logs via K8s API through Gateway Tailscale. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores.
+Master: Master Alloy pulls Gateway Prom via /federate (:9090) and Gateway Loki via :3100 through Gateway Tailscale. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
 
 ## Pod Labels
 
@@ -55,7 +55,7 @@ Master: Master Alloy pulls Gateway Prom via /federate and tails pod logs via K8s
 
 ## Log Shipping
 
-Prometheus: /federate for metrics pull. Loki: no pull-based equivalent. Workaround: Master Alloy tails pod logs on each cluster via K8s API through Gateway Tailscale. Logs tailed twice (locally + master) — acceptable for resilience.
+Prometheus: /federate for metrics pull (:9090). Loki: Master Alloy reads from Gateway Loki via :3100. Logs are collected once by Gateway Alloy and stored in Gateway Loki — master reads from there. No duplicate tailing.
 
 ## Manifests
 
