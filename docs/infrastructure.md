@@ -31,11 +31,40 @@ flowchart TB
     WP -->|SSH + kubectl| C2[cluster-b]
 ```
 
+??? abstract "Worktree sessions"
+
+    Each tmux window creates an isolated git worktree + branch via `bin/claude-session`. On exit: push + PR if changes, cleanup if not. The `auto-merge-to-dev.sh` hook then tries to fast-forward main — if it fails, run `/merge`.
+
+    ```mermaid
+    flowchart TB
+        subgraph tmux
+            direction TB
+            subgraph ks[kordinate session]
+                W0[window 0 — main branch<br/>no worktree]
+                W1[window 1 — session/w1-kordinate<br/>isolated worktree]
+                W2[window 2 — session/w2-kordinate<br/>isolated worktree]
+            end
+            subgraph ps[your-project session]
+                PW0[window 0 — main branch]
+                PW1[window 1 — session/w1-project<br/>isolated worktree]
+            end
+        end
+
+        W1 & W2 & PW1 -->|on exit| PR{changes?}
+        PR -->|yes| PUSH[push + create PR]
+        PR -->|no| CLEAN[cleanup worktree]
+        PUSH --> FF{fast-forward main?}
+        FF -->|yes| CLOSE[close PR]
+        FF -->|no| MERGE[run /merge]
+    ```
+
+    Branch flow: `session/*` → `main` → `test` → `prod`
+
 ## Cluster Architecture
 
 Each k3s cluster is standalone with its own control plane, worker nodes, and observability stack. Clusters connect over Tailscale but operate independently.
 
-App namespaces (`dev`, `test`, `prod`) run workloads only. The `gateway` namespace (called `monitor` in k8s) runs a single Alloy instance that scrapes all namespaces, with local Prom + Loki buffers. The `master` namespace lives on one cluster and pulls from all gateways.
+App namespaces (`dev`, `test`, `prod`) run workloads only. The `gateway` namespace (called `monitor` in k8s) runs a single Alloy instance that scrapes all namespaces, with local Prom + Loki buffers. The `master` namespace pulls from all gateways.
 
 ```mermaid
 flowchart TB
@@ -64,39 +93,13 @@ flowchart TB
 ```
 
 !!! note "Namespace model"
-    App namespaces run workloads only — no observability components. Apps emit structured JSON to stdout and expose `/metrics`. The gateway namespace runs a single Alloy that scrapes all app pods (via annotations), kubelet (cAdvisor), KSM, and tails logs via K8s API. It writes to namespace-local Prom + Loki with 3h retention. Master pulls from each cluster's gateway.
-
-??? abstract "Worktree sessions"
-
-    Each tmux window creates an isolated git worktree + branch via `bin/claude-session`. On exit: push + PR if changes, cleanup if not.
-
-    ```mermaid
-    flowchart TB
-        subgraph tmux
-            direction TB
-            subgraph ks[kordinate session]
-                W0[window 0 — main branch<br/>no worktree]
-                W1[window 1 — session/w1-kordinate<br/>isolated worktree]
-                W2[window 2 — session/w2-kordinate<br/>isolated worktree]
-            end
-            subgraph ps[your-project session]
-                PW0[window 0 — main branch]
-                PW1[window 1 — session/w1-project<br/>isolated worktree]
-            end
-        end
-
-        W1 & W2 & PW1 -->|on exit| PR{changes?}
-        PR -->|yes| PUSH[push + create PR]
-        PR -->|no| CLEAN[cleanup worktree]
-    ```
-
-    Branch flow: `session/*` → `main` → `test` → `prod`
+    App namespaces run workloads only — no observability components. Apps emit structured JSON to stdout and expose `/metrics`. The gateway namespace runs a single Alloy that scrapes all app pods (via annotations), kubelet (cAdvisor), KSM, and tails logs via K8s API. It writes to namespace-local Prom + Loki with 3h retention. Master pulls from each cluster's gateway. In practice, the master namespace runs on one of the clusters but is logically independent.
 
 ## Data Flow
 
 All observability is **pull-based**. The gateway namespace is each cluster's single collection point.
 
-??? abstract "Inside the gateway namespace"
+???+ abstract "Inside the gateway namespace"
 
     ```mermaid
     flowchart TB
@@ -132,24 +135,22 @@ All observability is **pull-based**. The gateway namespace is each cluster's sin
         ML --> G
     ```
 
+    !!! warning "Loki limitation"
+        Prometheus has `/federate` for pulling metrics. Loki has no equivalent. Workaround: Master Alloy tails pod logs on each cluster via the K8s API, exposed through Gateway Tailscale. Logs are tailed twice (once locally, once by master) — acceptable for resilience.
+
 ## Key Principles
 
-!!! info ""
+!!! info "Collection"
     - App namespaces run workloads only — no observability components
     - One gateway namespace per cluster collects all signals (metrics, logs, cluster state)
-    - Master pulls from each cluster's gateway — clusters are unaware of master
-    - Both clusters are treated identically by master (symmetric design)
     - Apps write structured JSON to stdout — gateway tails via K8s API
     - Apps expose `/metrics` — gateway discovers and scrapes via pod annotations
-    - If master goes down, clusters keep collecting locally (3h buffer)
-    - If a cluster goes down, master retains historical data (30d)
+
+!!! info "Federation"
+    - Master pulls from each cluster's gateway — clusters are unaware of master
+    - Both clusters are treated identically by master (symmetric design)
     - Grafana queries only master's local stores — single datasource per signal
 
-## Log Shipping
-
-!!! warning "Loki limitation"
-    Prometheus has `/federate` for pulling metrics. Loki has no equivalent.
-
-    Workaround: Master Alloy tails pod logs on each cluster via the K8s API, exposed through Gateway Tailscale. Each cluster's Gateway Alloy independently tails the same pods — the two collectors are unaware of each other.
-
-    Logs are tailed twice (once locally, once by master). Acceptable: clusters remain self-contained, master is independently resilient, K8s API log endpoint is lightweight.
+!!! info "Resilience"
+    - If master goes down, clusters keep collecting locally (3h buffer)
+    - If a cluster goes down, master retains historical data (30d)
