@@ -1,40 +1,12 @@
-/* Initialize mermaid manually and make diagrams clickable */
+/* Click any mermaid diagram to open full-size SVG in new tab.
+   Does NOT initialize mermaid — Material for MkDocs handles that. */
 (function () {
-  function initMermaid() {
-    var elements = document.querySelectorAll("pre.mermaid code");
-    if (elements.length === 0) return false;
-
-    elements.forEach(function (code) {
-      var pre = code.parentElement;
-      var div = document.createElement("div");
-      div.className = "mermaid";
-      div.textContent = code.textContent;
-      pre.parentElement.insertBefore(div, pre);
-      pre.remove();
-    });
-
-    if (typeof mermaid !== "undefined") {
-      mermaid.initialize({ startOnLoad: false, theme: "dark" });
-      mermaid.run();
-    } else {
-      var script = document.createElement("script");
-      script.src = "https://unpkg.com/mermaid@11/dist/mermaid.min.js";
-      script.onload = function () {
-        mermaid.initialize({ startOnLoad: false, theme: "dark" });
-        mermaid.run();
-      };
-      document.head.appendChild(script);
-    }
-    return true;
-  }
-
   function makeClickable() {
     document.querySelectorAll(".mermaid").forEach(function (container) {
       var svg = container.querySelector("svg");
       if (!svg || container.dataset.clickReady) return;
       container.dataset.clickReady = "true";
       container.style.cursor = "pointer";
-
       container.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -53,19 +25,6 @@
     });
   }
 
-  var attempts = 0;
-  var mermaidInited = false;
-  var timer = setInterval(function () {
-    if (!mermaidInited) mermaidInited = initMermaid();
-    makeClickable();
-    if (++attempts > 100) clearInterval(timer);
-  }, 200);
-
-  new MutationObserver(function () {
-    attempts = 0;
-    makeClickable();
-  }).observe(document.body || document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
+  var timer = setInterval(function () { makeClickable(); }, 500);
+  setTimeout(function () { clearInterval(timer); }, 30000);
 })();
