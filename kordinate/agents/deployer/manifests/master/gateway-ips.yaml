@@ -1,0 +1,14 @@
+# Gateway Tailscale IPs — maintained by deployer.
+# These are the Tailscale IPs of the consolidated gateway pods,
+# NOT the cluster node IPs. Updated when gateways are redeployed.
+#
+# Source of truth: deployer operational notes / kubectl get pod logs.
+# Used by: generate-config.py to produce alloy.yaml + gateway-registry.yaml.
+
+gateways:
+  home:
+    tailscale_ip: "100.79.204.119"
+    nfs_enabled: false    # NFS not yet deployed on home gateway
+  vandc:
+    tailscale_ip: "100.93.174.24"
+    nfs_enabled: true

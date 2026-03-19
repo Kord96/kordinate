@@ -125,18 +125,19 @@ flowchart TB
 
         subgraph gw[gateway]
             GWT[TS sidecar<br/>or Workstation]
+            NFS[NFS PVC]
         end
 
         myapp -->|uses| infra
         myapp & infra -->|/metrics + logs| AL
         nodes -->|host + container metrics| AL
         PR -->|:9090| GWT
-        LK -->|:3101 /federate| GWT
+        LK -->|JSON Lines| NFS
         myapp -.->|app ports| GWT
     end
 
     GWT -->|:9090 /federate| MA
-    GWT -->|:3101 /federate| MA
+    GWT -->|:2049 NFS| MA
     GWT -.->|app ports| EXT[external access]
 
     subgraph master[master]
@@ -147,10 +148,10 @@ flowchart TB
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with local retention.
 
-**Federation:** Gateway Tailscale forwards `:9090` (Prom /federate), `:3101` (Loki /federate), and app ports on the tailnet. Master Alloy pulls both metrics and logs via `/federate` — symmetric pull model.
+**Federation:** Gateway Tailscale forwards `:9090` (Prom /federate), `:2049` (NFS), and app ports on the tailnet. Master Alloy pulls metrics via Prom `/federate` and tails log files from each gateway's NFS mount using `loki.source.file` — pull-based, master reads at its own pace.
 
 !!! note "Loki federation sidecar"
-    Loki does not support pull-based federation natively. A stateless sidecar in the Loki pod provides a `/federate` endpoint on `:3101`. On each request, it queries `localhost:3100` for the last N seconds of logs and returns them — mimicking how Prometheus `/federate` returns current metric values. Master scrapes both endpoints on the same interval. Loki deduplicates any overlap natively.
+    Loki does not support pull-based federation natively. A sidecar in the Loki pod queries `localhost:3100` every 60s and writes JSON Lines files to a gateway NFS PVC (1 hour retention, auto-cleaned). Gateway Tailscale exposes the NFS volume on `:2049`. Master Alloy mounts NFS from each gateway via Tailscale and tails the files with `loki.source.file`. Labels are preserved in the JSON Lines format and re-extracted by master Alloy's `loki.process` pipeline.
 
 ??? abstract "What Alloy normalizes"
 

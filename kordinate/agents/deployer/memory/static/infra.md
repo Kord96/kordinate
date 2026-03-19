@@ -22,7 +22,7 @@ For cluster-specific details, see `profile/config.yaml` and `profile/topology.ya
 
 Inside each cluster: Gateway Alloy scrapes app pods (/metrics), kubelet (cAdvisor), KSM, and tails pod stdout via K8s API locally. Writes to Gateway Prom and Gateway Loki.
 
-Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) and Gateway Loki via :3101 /federate (logs) through Gateway Tailscale — symmetric pull, no K8s API from master. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
+Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) through Gateway Tailscale. For logs, a sidecar in each cluster's Loki pod queries local Loki every 60s and writes JSON Lines files to a gateway NFS PVC (1 hour retention, auto-cleaned). Gateway Tailscale exposes NFS on :2049. Master Alloy mounts NFS from each gateway via Tailscale and tails files with loki.source.file — labels preserved in JSON Lines format, re-extracted by master Alloy's loki.process pipeline. Pull-based: master reads at its own pace, no K8s API from master. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores.
 
 ## Pod Labels
 
@@ -55,7 +55,7 @@ Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) and Gatewa
 
 ## Log Shipping
 
-Prometheus: /federate for metrics pull (:9090). Loki: Master Alloy pulls from Gateway Loki via :3101 /federate. Logs are collected once by Gateway Alloy and stored in Gateway Loki — master pulls from there via federation. No duplicate tailing, no K8s API from master.
+Prometheus: /federate for metrics pull (:9090). Loki: sidecar in each Loki pod queries local Loki every 60s, writes JSON Lines to gateway NFS PVC (1 hour retention, auto-cleaned). Gateway Tailscale exposes NFS on :2049. Master Alloy mounts NFS from each gateway and tails files with loki.source.file. Labels preserved in JSON Lines, re-extracted by master Alloy's loki.process pipeline. Pull-based, no K8s API from master.
 
 ## Manifests
 
