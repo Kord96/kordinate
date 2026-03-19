@@ -30,12 +30,6 @@
 
 /* ── Zoom button ───────────────────────────────────────────────── */
 
-/* Wrapper div injected by extra.js around each mermaid element */
-.mermaid-wrapper {
-  position: relative;
-  padding: 1rem 0;
-}
-
 .mermaid-zoom {
   position: absolute;
   top: 0.5rem;
@@ -53,7 +47,8 @@
   z-index: 1;
 }
 
-.mermaid-wrapper:hover .mermaid-zoom {
+pre.mermaid:hover .mermaid-zoom,
+.mermaid:hover .mermaid-zoom {
   opacity: 1;
 }
 
