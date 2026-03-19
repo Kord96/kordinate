@@ -6,22 +6,24 @@ How apps expose telemetry to the platform. Three concerns — logs, metrics, hea
 
 ```mermaid
 flowchart LR
-    subgraph pod[Each Pod]
-        APP[App container<br/>/metrics — raw telemetry]
-        VIT[Vitals sidecar<br/>/metrics — health assessment]
-        APP -.->|localhost| VIT
+    subgraph ns[App Namespace]
+        A1[app pod 1] & A2[app pod 2] & A3[app pod N]
+        VIT[Vitals pod<br/>one per app]
     end
 
-    APP -->|:app-port| GA[Gateway Alloy]
-    VIT -->|:9131| GA
+    A1 & A2 & A3 -->|:app-port /metrics| GA[Gateway Alloy]
+    A1 & A2 & A3 -.->|stdout JSON| GA
+    VIT -->|:9131 /metrics| GA
     GA --> P[Prom] & L[Loki]
+
+    P -.->|query| VIT
 ```
 
 | Concern | Owner | Interface | Consumer |
 |---------|-------|-----------|----------|
-| **Logs** | app container | structured JSON → stdout | Gateway Alloy (tails via K8s API) |
-| **Metrics** | app container | `/metrics` on app port | Gateway Alloy (scrapes) |
-| **Health** | vitals sidecar | `/metrics` on `:9131` | Gateway Alloy (scrapes) |
+| **Logs** | app pods | structured JSON → stdout | Gateway Alloy (tails via K8s API) |
+| **Metrics** | app pods | `/metrics` on app port | Gateway Alloy (scrapes) |
+| **Health** | vitals pod | `/metrics` on `:9131` | Gateway Alloy (scrapes) |
 
 ## Logs
 
@@ -50,18 +52,23 @@ annotations:
   prometheus.io/port: "<app-metrics-port>"
 ```
 
-Gateway Alloy normalizes metrics — drops raw `kube_*`/`kafka_*` prefixes, keeps `pipeline_*` and app-specific metrics. Apps should use descriptive metric names with an app-specific prefix.
+Gateway Alloy normalizes metrics — drops raw `kube_*`/`kafka_*` prefixes, keeps app-specific metrics. Apps should use descriptive metric names with an app-specific prefix.
 
-## Health (Vitals Sidecar)
+## Health (Vitals)
 
-Each pod includes a **vitals** sidecar container that evaluates the app container's health and produces standardized health gauges.
+Each app deploys **one vitals pod per namespace** that evaluates the app's health and produces standardized health gauges.
 
 ### How it works
 
-1. Vitals reads the app container's `/metrics` via **localhost** (same pod, shared network namespace)
-2. Evaluates thresholds and health logic (app-specific)
-3. Exposes `vitals_*` gauges on `:9131/metrics`
-4. Gateway Alloy scrapes the vitals port like any other metrics endpoint
+1. Vitals queries **Gateway Prom** for app metrics (cross-namespace: `prometheus.monitor.svc.cluster.local:9090`)
+2. Optionally probes app pods directly (HTTP/TCP liveness checks)
+3. Evaluates thresholds and health logic (app-specific domain knowledge)
+4. Exposes `vitals_*` gauges on `:9131/metrics`
+5. Gateway Alloy scrapes vitals like any other pod
+
+### Why standalone, not sidecar
+
+Health evaluation is often **cross-cutting** — checking Kafka lag across consumer groups, aggregating storage usage across volumes, evaluating pipeline throughput. These require a system-wide view that a per-pod sidecar can't provide. One vitals pod per app keeps the deployment simple and gives the evaluator access to all of the app's metrics in Prom.
 
 ### Metric convention
 
@@ -71,6 +78,7 @@ All gauges use **0 = FAIL, 1 = WARNING, 2 = OK**.
 |--------|----------------|
 | `vitals_process{process}` | Is this process alive? |
 | `vitals_<section>{check}` | Is this concern healthy? |
+
 **Recommended sections** — use these when the concern fits, extend with app-specific sections as needed:
 
 | Section | What it covers |
@@ -83,37 +91,47 @@ All gauges use **0 = FAIL, 1 = WARNING, 2 = OK**.
 
 Check labels should be short, specific, snake_case: `vitals_deps{check="postgres_primary"}`, not `vitals_deps{check="pg"}`.
 
-### Pod spec
+### Deployment
 
-Use **named ports** so Gateway Alloy can target both containers by port name:
+One vitals deployment per app, per namespace:
 
 ```yaml
-containers:
-  - name: my-app
-    ports:
-      - containerPort: 9100
-        name: metrics
-  - name: vitals
-    ports:
-      - containerPort: 9131
-        name: vitals
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vitals
+  labels:
+    app: my-app
+    component: vitals
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: my-app
+        component: vitals
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9131"
+    spec:
+      containers:
+        - name: vitals
+          args: ["-m", "monitor.vitals", "--port", "9131"]
+          env:
+            - name: PROMETHEUS_URL
+              value: "http://prometheus.monitor.svc.cluster.local:9090"
+          ports:
+            - containerPort: 9131
+              name: metrics
 ```
-
-### Startup ordering
-
-The vitals sidecar must handle the app container not being ready yet:
-
-- Treat failed localhost scrape as FAIL (not crash)
-- Retry with backoff until app is reachable
-- Set a timeout (5s) on localhost scrape — treat timeout as a health signal
 
 ### Meta-alerting
 
-The platform should detect silent sidecar failures:
+The platform should detect silent vitals failures:
 
 ```yaml
 - alert: VitalsMissing
-  expr: absent(vitals_process)
+  expr: absent(vitals_process{app="my-app"})
   for: 5m
   labels:
     severity: warning
@@ -123,10 +141,9 @@ The platform should detect silent sidecar failures:
 
 ```mermaid
 flowchart TB
-    subgraph pod[App Pod]
-        A[App container<br/>stdout JSON + /metrics]
-        V[Vitals sidecar<br/>/metrics]
-        A -.->|localhost| V
+    subgraph ns[App Namespace]
+        A[App pods<br/>stdout JSON + /metrics]
+        V[Vitals pod<br/>/metrics]
     end
 
     subgraph gw[Gateway Namespace]
@@ -136,6 +153,7 @@ flowchart TB
     A -->|logs via K8s API| AL
     A -->|:app-port /metrics| AL
     V -->|:9131 /metrics| AL
+    P -.->|query| V
 
     subgraph master[Master Namespace]
         MA[Master Alloy] --> MP[Prom<br/>30d] & ML[Loki<br/>30d]
@@ -150,7 +168,7 @@ flowchart TB
 
 - Every app deployed to the cluster
 - Any service that needs health visibility in Grafana
-- Apps with multiple processes that need per-component health tracking
+- Apps with multiple processes that need cross-component health evaluation
 
 ## When not to use
 
@@ -159,5 +177,4 @@ flowchart TB
 
 ## Related patterns
 
-- [Sidecar](sidecar.md) — vitals is a canonical sidecar use case
 - [Service Manager](service-manager.md) — managed processes should comply with this contract
