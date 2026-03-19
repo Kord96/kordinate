@@ -133,6 +133,7 @@ flowchart TB
         nodes -->|host + container metrics| AL
         PR -->|:9090| GWT
         LK -->|sidecar writes<br/>JSON Lines| MIO
+        MIO -->|:9000| GWT
         myapp -.->|app ports| GWT
     end
 
