@@ -59,6 +59,8 @@ How kordinate's pieces fit together.
 |-----|-------------------|
 | This file | How the pieces fit together |
 | [getting-started.md](getting-started.md) | Profile config, link mapping, setup |
-| [agents.md](agents.md) | Agent table, hooks, commands, consultation |
+| [agents.md](agents.md) | Agent table, shared rules, specifics, commands |
+| [hooks.md](hooks.md) | Safety guards, automation, cache library |
+| [consultation.md](consultation.md) | Cross-agent queries, matrix, caching |
 | [memory.md](memory.md) | Memory model, static/dynamic/project, startup |
 | [reference/](reference/patterns/index.md) | Design patterns, libraries, infrastructure |

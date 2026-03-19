@@ -41,6 +41,8 @@ nav:
   - Overview: overview.md
   - Getting Started: getting-started.md
   - Agents: agents.md
+  - Hooks: hooks.md
+  - Consultation: consultation.md
   - Memory: memory.md
   - Reference:
       - Infrastructure: reference/infrastructure.md

@@ -16,7 +16,15 @@ Multi-cluster k8s infrastructure managed by specialized agents.
 
 -   **[Agents](agents.md)**
 
-    Who does what, shared rules, safety hooks, consultation matrix, and commands.
+    Who does what, shared rules, per-agent specifics, and commands.
+
+-   **[Hooks](hooks.md)**
+
+    Safety guards, automation, request flow, and the shared cache library.
+
+-   **[Consultation](consultation.md)**
+
+    Cross-agent queries, the consultation matrix, and result caching.
 
 -   **[Memory](memory.md)**
 
