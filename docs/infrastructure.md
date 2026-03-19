@@ -56,7 +56,7 @@ flowchart LR
     | Namespace | What runs there |
     |-----------|----------------|
     | `gateway` | Gateway Tailscale (cluster's external interface) + Workstation (if interactive cluster) |
-    | `monitor` | Alloy, Prom (3h), Loki (3h), KSM, node-exporter |
+    | `monitor` | Alloy, Prom (local), Loki (local), KSM, node-exporter |
     | `master` | Master Alloy, Prom (30d), Loki (30d), Grafana — one cluster only |
 
     ```mermaid
@@ -65,7 +65,7 @@ flowchart LR
             A1[dev apps] & A2[test apps] & A3[prod apps]
 
             subgraph mon-a[monitor]
-                GA[alloy] --> PA[prom + loki<br/>3h]
+                GA[alloy] --> PA[prom + loki<br/>local]
             end
 
             subgraph gw-a[gateway]
@@ -120,7 +120,7 @@ flowchart TB
         end
 
         subgraph mon[monitor]
-            AL[Alloy] --> LK[Loki<br/>3h] & PR[Prom<br/>3h]
+            AL[Alloy] --> LK[Loki<br/>local] & PR[Prom<br/>local]
         end
 
         subgraph gw[gateway]
@@ -145,7 +145,7 @@ flowchart TB
     end
 ```
 
-**Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with 3h retention.
+**Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with local retention.
 
 **Federation:** Gateway Tailscale forwards `:9090` (Prom), `:3100` (Loki), and app ports on the tailnet. Master Alloy pulls metrics via `/federate` from `:9090` and logs from Loki via `:3100`. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
 
@@ -179,5 +179,5 @@ flowchart TB
     - Grafana queries only master's local stores — single datasource per signal
 
 !!! info "Resilience"
-    - If master goes down, clusters keep collecting locally (3h buffer)
+    - If master goes down, clusters keep collecting locally (local buffer)
     - If a cluster goes down, master retains historical data (30d)

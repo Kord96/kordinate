@@ -14,13 +14,13 @@ For cluster-specific details, see `profile/config.yaml` and `profile/topology.ya
 | Namespace | What runs there | Scope |
 |-----------|----------------|-------|
 | `gateway` | Gateway Tailscale, Workstation (if interactive cluster), Ingress | Every cluster |
-| `monitor` | Alloy, Prometheus (3h), Loki (3h), KSM, node-exporter | Every cluster |
+| `monitor` | Alloy, Prometheus, Loki, KSM, node-exporter | Every cluster |
 | `master` | Master Alloy, Prometheus (30d), Loki (30d), Grafana | One cluster |
 | `dev`, `test`, `prod` | Application workloads | Every cluster |
 
 ## Data Flow
 
-Inside each cluster: Gateway Alloy scrapes app pods (/metrics), kubelet (cAdvisor), KSM, and tails pod stdout via K8s API. Writes to Gateway Prom and Gateway Loki (3h buffer).
+Inside each cluster: Gateway Alloy scrapes app pods (/metrics), kubelet (cAdvisor), KSM, and tails pod stdout via K8s API. Writes to Gateway Prom and Gateway Loki.
 
 Master: Master Alloy pulls Gateway Prom via /federate (:9090) and Gateway Loki via :3100 through Gateway Tailscale. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
 
