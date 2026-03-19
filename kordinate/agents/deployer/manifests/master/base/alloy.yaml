@@ -33,7 +33,7 @@ data:
 
     prometheus.scrape "federate_vandc" {
       targets = [{
-        __address__ = "100.93.174.24:9090",
+        __address__ = "100.107.8.117:9090",
       }]
       metrics_path    = "/federate"
       params          = { "match[]" = ["{__name__=~\".+\"}"] }
@@ -165,7 +165,8 @@ spec:
               mountPath: /data/federate
               readOnly: true
         - name: log-puller
-          image: 10.95.43.66:5000/log-puller:latest
+          image: docker.io/library/log-puller:latest
+          imagePullPolicy: Never
           args:
             - --registry=/etc/gateway-registry/gateways.yaml
             - --output-dir=/data/federate

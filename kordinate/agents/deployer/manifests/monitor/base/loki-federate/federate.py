@@ -66,11 +66,32 @@ def _minio_url(endpoint: str, path: str) -> str:
     return f"{endpoint.rstrip('/')}/{path.lstrip('/')}"
 
 
+def _bucket_exists(endpoint: str, bucket: str) -> bool:
+    """Check if a bucket exists by issuing a HEAD request."""
+    url = _minio_url(endpoint, f"{bucket}?list-type=2&max-keys=0")
+    req = urllib.request.Request(url, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=10):
+            return True
+    except urllib.error.HTTPError:
+        return False
+    except Exception:
+        return False
+
+
 def _ensure_bucket(endpoint: str, bucket: str):
     """Create the bucket if it doesn't exist (PUT /<bucket>).
 
-    Ignores 409 BucketAlreadyOwnedByYou.
+    First checks if the bucket is accessible (it may have been created
+    externally with auth).  Ignores 409 BucketAlreadyOwnedByYou and
+    403 Forbidden (bucket may already exist but anonymous creation is
+    not allowed).
     """
+    # If we can already list the bucket, it exists — skip creation.
+    if _bucket_exists(endpoint, bucket):
+        print(f"minio: bucket '{bucket}' already exists", flush=True)
+        return
+
     url = _minio_url(endpoint, bucket)
     req = urllib.request.Request(url, method="PUT")
     try:
@@ -78,8 +99,9 @@ def _ensure_bucket(endpoint: str, bucket: str):
             pass
         print(f"minio: created bucket '{bucket}'", flush=True)
     except urllib.error.HTTPError as exc:
-        if exc.code == 409:
-            print(f"minio: bucket '{bucket}' already exists", flush=True)
+        if exc.code in (403, 409):
+            print(f"minio: bucket '{bucket}' already exists (code {exc.code})",
+                  flush=True)
         else:
             raise
 
@@ -119,8 +141,13 @@ def _set_bucket_policy(endpoint: str, bucket: str):
             pass
         print(f"minio: set anonymous policy on '{bucket}'", flush=True)
     except urllib.error.HTTPError as exc:
-        print(f"minio: failed to set bucket policy: {exc.code} {exc.reason}",
-              flush=True)
+        # 403 is expected when policy was set externally with credentials
+        if exc.code == 403:
+            print(f"minio: bucket policy already configured (set externally)",
+                  flush=True)
+        else:
+            print(f"minio: failed to set bucket policy: {exc.code} {exc.reason}",
+                  flush=True)
 
 
 def _put_object(endpoint: str, bucket: str, key: str, data: bytes):
@@ -236,7 +263,7 @@ def main():
     args = parser.parse_args()
 
     endpoint = os.environ.get(
-        "MINIO_ENDPOINT", "http://minio.monitor.svc.cluster.local:9000")
+        "MINIO_ENDPOINT", "http://minio.gateway.svc.cluster.local:9000")
     bucket = "federate"
 
     # Use interval+30s as the query window so no logs are missed between

@@ -21,7 +21,7 @@ data:
           logs_federate: 3101
           nfs: 2049
       - name: vandc
-        tailscale_ip: "100.93.174.24"
+        tailscale_ip: "100.107.8.117"
         nfs_enabled: true
         ports:
           metrics: 9090
