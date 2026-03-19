@@ -2,38 +2,25 @@
 
 How the system is deployed, accessed, and observed.
 
-## Client → Workstation
-
-You connect to a workstation pod running inside Kubernetes via Tailscale SSH. Claude Code runs inside tmux with agents as subprocesses.
+## Overview
 
 ```mermaid
-flowchart TB
-    U([You]) -->|Tailscale SSH| T
+flowchart LR
+    U([You]) -->|Tailscale SSH| WP
 
     subgraph WP[Workstation Pod]
-        T[tmux]
-        T --- W0 & W1 & W2
-
-        subgraph W0[window 0 — main branch]
-            CC0[Claude Code] --> A0[agents] <--> H0[hooks]
-        end
-
-        subgraph W1[window 1 — worktree]
-            CC1[Claude Code] --> A1[agents] <--> H1[hooks]
-        end
-
-        subgraph W2[window 2 — worktree]
-            CC2[Claude Code] --> A2[agents] <--> H2[hooks]
-        end
+        T[tmux] --> CC[Claude Code]
+        CC --> AG[Agents]
+        AG <-->|every tool call| HK[Hooks]
     end
 
-    WP -->|SSH + kubectl| C1[cluster-a]
-    WP -->|SSH + kubectl| C2[cluster-b]
+    AG -->|SSH + kubectl| C1[cluster-a]
+    AG -->|SSH + kubectl| C2[cluster-b]
 ```
 
 ??? abstract "Worktree sessions"
 
-    Each tmux window creates an isolated git worktree + branch via `bin/claude-session`. On exit: push + PR if changes, cleanup if not. The `auto-merge-to-dev.sh` hook then tries to fast-forward main — if it fails, run `/merge`.
+    Each tmux window runs its own Claude Code instance with isolated agents and hooks. Windows create isolated git worktrees + branches via `bin/claude-session`. On exit: push + PR if changes, cleanup if not. The `auto-merge-to-dev.sh` hook then tries to fast-forward main — if it fails, run `/merge`.
 
     ```mermaid
     flowchart TB
@@ -60,40 +47,40 @@ flowchart TB
 
     Branch flow: `session/*` → `main` → `test` → `prod`
 
-## Cluster Architecture
+??? abstract "Cluster architecture"
 
-Each k3s cluster is standalone with its own control plane, worker nodes, and observability stack. Clusters connect over Tailscale but operate independently.
+    Each k3s cluster is standalone with its own control plane, worker nodes, and observability stack. Clusters connect over Tailscale but operate independently.
 
-App namespaces (`dev`, `test`, `prod`) run workloads only. The `gateway` namespace (called `monitor` in k8s) runs a single Alloy instance that scrapes all namespaces, with local Prom + Loki buffers. The `master` namespace pulls from all gateways.
+    App namespaces (`dev`, `test`, `prod`) run workloads only. The `gateway` namespace (called `monitor` in k8s) runs a single Alloy instance that scrapes all namespaces, with local Prom + Loki buffers. The `master` namespace pulls from all gateways. In practice, master runs on one of the clusters but is logically independent.
 
-```mermaid
-flowchart TB
-    subgraph CA[cluster-a]
-        A1[dev apps] & A2[test apps] & A3[prod apps]
+    ```mermaid
+    flowchart TB
+        subgraph CA[cluster-a]
+            A1[dev apps] & A2[test apps] & A3[prod apps]
 
-        subgraph gw-a[gateway namespace]
-            GA[gateway alloy<br/>scrapes all namespaces] --> PA[prom + loki<br/>3h buffer]
+            subgraph gw-a[gateway namespace]
+                GA[gateway alloy<br/>scrapes all namespaces] --> PA[prom + loki<br/>3h buffer]
+            end
+
+            A1 & A2 & A3 -.->|/metrics + stdout| GA
         end
 
-        A1 & A2 & A3 -.->|/metrics + stdout| GA
-    end
+        subgraph M[master namespace]
+            MA[master alloy] --> MP[master prom<br/>30d retention]
+            MA --> ML[master loki<br/>30d retention]
+            MP --> G[Grafana]
+            ML --> G
+        end
 
-    subgraph M[master namespace]
-        MA[master alloy] --> MP[master prom<br/>30d retention]
-        MA --> ML[master loki<br/>30d retention]
-        MP --> G[Grafana]
-        ML --> G
-    end
+        PA -->|pull via tailscale| MA
 
-    PA -->|pull via tailscale| MA
+        CB[cluster-b<br/>same structure]
 
-    CB[cluster-b<br/>same structure]
+        CB -->|pull via tailscale| MA
+    ```
 
-    CB -->|pull via tailscale| MA
-```
-
-!!! note "Namespace model"
-    App namespaces run workloads only — no observability components. Apps emit structured JSON to stdout and expose `/metrics`. The gateway namespace runs a single Alloy that scrapes all app pods (via annotations), kubelet (cAdvisor), KSM, and tails logs via K8s API. It writes to namespace-local Prom + Loki with 3h retention. Master pulls from each cluster's gateway. In practice, the master namespace runs on one of the clusters but is logically independent.
+    !!! note "Namespace model"
+        App namespaces run workloads only — no observability components. Apps emit structured JSON to stdout and expose `/metrics`. The gateway namespace runs a single Alloy that scrapes all app pods (via annotations), kubelet (cAdvisor), KSM, and tails logs via K8s API. It writes to namespace-local Prom + Loki with 3h retention. Master pulls from each cluster's gateway.
 
 ## Data Flow
 
