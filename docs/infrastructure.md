@@ -179,5 +179,5 @@ flowchart TB
     - Grafana queries only master's local stores — single datasource per signal
 
 !!! info "Resilience"
-    - If master goes down, clusters keep collecting locally (local buffer)
+    - If master goes down, clusters keep collecting locally
     - If a cluster goes down, master retains historical data (30d)
