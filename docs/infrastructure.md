@@ -95,14 +95,21 @@ flowchart LR
 All observability is **pull-based**. Apps follow the [observability contract](reference/patterns/observability-contract.md) — Gateway Alloy collects everything into local Prom + Loki. Gateway Tailscale federates to master.
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph cluster[Each cluster]
+        subgraph app["app: my-app"]
+            PODS[pods + vitals]
+        end
+
         subgraph mon[monitor]
             AL[Alloy] --> L[Loki<br/>3h] & P[Prom<br/>3h]
         end
+
         subgraph gw[gateway]
             GWT[Tailscale]
         end
+
+        PODS -->|/metrics + logs| AL
         P --- GWT
         K8S[K8s API] --- GWT
     end
