@@ -6,7 +6,7 @@ How apps expose telemetry to the platform. Three concerns — logs, metrics, hea
 
 ```mermaid
 flowchart TB
-    subgraph ns[App Namespace]
+    subgraph ns["app: my-app"]
         subgraph pods[App Pods]
             P1[pod 1<br/>/metrics]
             P2[pod 2<br/>/metrics]
