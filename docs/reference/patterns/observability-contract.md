@@ -14,12 +14,14 @@ flowchart TB
         P1 ~~~ P2 ~~~ PN ~~~ VIT
     end
 
-    P1 & P2 & PN -->|/metrics + logs| AL
+    P1 & P2 & PN -->|/metrics| AL
+    P1 & P2 & PN -->|stdout JSON| K8S
     VIT -->|health metrics| AL
     PR -.->|app metrics query| VIT
 
     subgraph mon[monitor namespace]
-        AL[Alloy] --> PR[Prom] & LK[Loki]
+        K8S[K8s API] -->|tail logs| AL
+        AL --> PR[Prom] & LK[Loki]
     end
 ```
 
