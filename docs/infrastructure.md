@@ -127,6 +127,7 @@ flowchart TB
             GWT[TS sidecar<br/>or workstation]
         end
 
+        myapp -->|uses| infra
         myapp & infra -->|/metrics + logs| AL
         nodes -->|host + container metrics| AL
         PR --- GWT
