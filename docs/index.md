@@ -5,24 +5,16 @@ Multi-cluster k8s infrastructure managed by specialized agents.
 ## Architecture
 
 ```mermaid
-flowchart TB
-    U([You]) -->|Tailscale SSH| W
-
-    subgraph W[Workstation Pod]
+flowchart LR
+    subgraph kordinate[kordinate framework]
         direction TB
-        subgraph framework[kordinate framework]
-            direction LR
-            A[Agents]
-            H[Hooks]
-            C[Commands]
-            M[Memory]
-        end
-        P[Profile<br/>config · keys · locks]
-        L[Linking Layer<br/>kordinate → ~/.claude/]
+        A[Agents] <-->|guarded by| H[Hooks]
+        A --- C[Commands]
+        A --- M[Memory]
     end
 
-    W -->|SSH + kubectl| K1[cluster-a]
-    W -->|SSH + kubectl| K2[cluster-b]
+    P[Profile<br/>config · keys · locks] --> kordinate
+    kordinate -->|link.sh| R[AI Runtime]
 ```
 
 | Component | Role |

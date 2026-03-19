@@ -38,6 +38,9 @@ markdown_extensions:
 extra_css:
   - assets/extra.css
 
+extra_javascript:
+  - assets/extra.js
+
 nav:
   - Home: index.md
   - Infrastructure: infrastructure.md

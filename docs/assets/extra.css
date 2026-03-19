@@ -1,1 +1,63 @@
 /* Minimal overrides — let Material slate theme handle the rest */
+
+/* ── Mermaid diagram styling ───────────────────────────────────── */
+
+/* Container — relative for zoom button positioning */
+.mermaid {
+  position: relative;
+  padding: 1rem 0;
+}
+
+/* Node text */
+.mermaid .nodeLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Subgraph labels — more prominent */
+.mermaid .cluster-label .nodeLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Subgraph borders */
+.mermaid .cluster rect {
+  rx: 6px;
+  ry: 6px;
+  stroke-width: 1.5px;
+}
+
+/* Edge labels */
+.mermaid .edgeLabel {
+  font-size: 0.75rem;
+}
+
+/* ── Zoom button ───────────────────────────────────────────────── */
+
+.mermaid-zoom {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--md-default-bg-color, #1e1e1e);
+  border: 1px solid var(--md-default-fg-color--lightest, #444);
+  color: var(--md-default-fg-color--light, #999);
+  border-radius: 4px;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 1;
+}
+
+.mermaid:hover .mermaid-zoom {
+  opacity: 1;
+}
+
+.mermaid-zoom:hover {
+  color: var(--md-accent-fg-color, #536dfe);
+  border-color: var(--md-accent-fg-color, #536dfe);
+}
