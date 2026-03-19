@@ -84,9 +84,28 @@ flowchart LR
 
 ## Data Flow
 
-All observability is **pull-based**. The gateway namespace is each cluster's single collection point.
+All observability is **pull-based**. Each cluster's gateway namespace is the single collection and federation point.
 
-???+ abstract "Inside the gateway namespace"
+```mermaid
+flowchart LR
+    subgraph cluster[Each cluster — gateway namespace]
+        AL[Alloy] --> P[Prom<br/>3h] & L[Loki<br/>3h]
+        P & L --- GW[Gateway<br/>Tailscale]
+    end
+
+    Apps[app pods] -.->|/metrics + stdout| AL
+    GW -->|:9090 /federate| MA
+    GW -->|:6443 K8s API| MA
+
+    subgraph master[Master namespace]
+        MA[Master Alloy] --> MP[Prom<br/>30d] & ML[Loki<br/>30d]
+        MP & ML --> G[Grafana]
+    end
+```
+
+Gateway Tailscale exposes three ports on the tailnet: `:9090` (Prometheus), `:3100` (Loki), `:6443` (K8s API). Master Alloy connects to these — it never reaches cluster internals directly.
+
+??? abstract "Inside the gateway namespace"
 
     ```mermaid
     flowchart TB
@@ -110,12 +129,24 @@ All observability is **pull-based**. The gateway namespace is each cluster's sin
 
 ??? abstract "Master federation"
 
+    Master Alloy pulls metrics via `/federate` from each gateway's Prometheus (`:9090`), and tails pod logs via each gateway's K8s API (`:6443`). Both exposed through Gateway Tailscale.
+
     ```mermaid
     flowchart TB
-        MA[Master Alloy] -->|pull /federate| GP[Gateway Prom]
-        MA -.->|tail via K8s API| GL[Gateway Loki]
+        subgraph GW1[cluster-a gateway tailscale]
+            GP1[:9090 Prom]
+            GK1[:6443 K8s API]
+        end
 
-        MA --> MP[Master Prom<br/>30d retention]
+        subgraph GW2[cluster-b gateway tailscale]
+            GP2[:9090 Prom]
+            GK2[:6443 K8s API]
+        end
+
+        GP1 & GK1 -->|tailnet| MA
+        GP2 & GK2 -->|tailnet| MA
+
+        MA[Master Alloy] --> MP[Master Prom<br/>30d retention]
         MA --> ML[Master Loki<br/>30d retention]
 
         MP --> G[Grafana]
