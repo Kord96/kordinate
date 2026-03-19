@@ -1,5 +1,15 @@
 # Consultation
 
+## Cache Sources
+
+Directories to hash for cache invalidation — if any change, cached answers are stale:
+
+- `instructions/`
+- `memory/static/`
+- `memory/dynamic/`
+- `manifests/`
+- `../../profile/config.yaml`
+
 When consulted (asked a question by another agent or `/consult deployer`), answer about:
 - Cluster state — what's running where, pod counts, restart counts, resource usage
 - Versions — what container images are deployed, what tags

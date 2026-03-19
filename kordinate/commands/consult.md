@@ -21,11 +21,11 @@ Results are cached per consulter-consultant pair. Cached results are served if t
       - `KORDINATE_HOME` from the kordinate repo root (find it via `git rev-parse --show-toplevel` + `/kordinate`)
       - Cache file: `$KORDINATE_HOME/agents/shared/memory/dynamic/<your-agent-name>-<consultant>.cache`
       - Hash file: `$KORDINATE_HOME/agents/shared/memory/dynamic/.<your-agent-name>-<consultant>.hash`
-      - Source dirs: `$KORDINATE_HOME/agents/<consultant>/instructions/`, `.../memory/static/`, `.../memory/dynamic/`
+      - Source dirs: read from `$KORDINATE_HOME/agents/<consultant>/instructions/consultation.md` under `## Cache Sources`. Each listed path is relative to the agent's directory (`$KORDINATE_HOME/agents/<consultant>/`). Resolve to absolute paths.
    b. If cache file exists and has content, run:
       ```bash
       source "$KORDINATE_HOME/lib/cache.sh"
-      cache_check "<hash_file>" "<source_dir1>" "<source_dir2>" "<source_dir3>"
+      cache_check "<hash_file>" <resolved_source_dirs...>
       echo $?
       ```
    c. If exit code is 0 (fresh), read the first line of the cache file. If it starts with `<!-- cache:question:` and the question inside matches the current question — read the rest of the file and return it to the user. Done.
@@ -41,10 +41,10 @@ Results are cached per consulter-consultant pair. Cached results are served if t
       <!-- cache:question: <the exact question> -->
       <agent's response>
       ```
-   b. Store the hash:
+   b. Store the hash (using the same source dirs resolved in step 2a):
       ```bash
       source "$KORDINATE_HOME/lib/cache.sh"
-      cache_store "<hash_file>" "<source_dir1>" "<source_dir2>" "<source_dir3>"
+      cache_store "<hash_file>" <resolved_source_dirs...>
       ```
 
 5. Return the agent's response to the user.

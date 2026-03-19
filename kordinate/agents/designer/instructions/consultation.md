@@ -1,5 +1,13 @@
 # Consultation
 
+## Cache Sources
+
+Directories to hash for cache invalidation — if any change, cached answers are stale:
+
+- `instructions/`
+- `memory/static/`
+- `memory/dynamic/`
+
 When consulted, answer about:
 - Component topology — processes, what they do, how they connect
 - Design patterns — which framework each component uses

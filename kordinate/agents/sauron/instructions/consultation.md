@@ -1,5 +1,13 @@
 # Consultation
 
+## Cache Sources
+
+Directories to hash for cache invalidation — if any change, cached answers are stale:
+
+- `instructions/`
+- `memory/static/`
+- `memory/dynamic/`
+
 When consulted, answer about:
 - Metrics — what Prometheus metrics exist, types, labels, what they measure
 - Health checks — status sections, sub-checks, thresholds

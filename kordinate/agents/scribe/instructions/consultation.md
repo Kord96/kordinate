@@ -1,5 +1,12 @@
 # Consultation
 
+## Cache Sources
+
+Directories to hash for cache invalidation — if any change, cached answers are stale:
+
+- `instructions/`
+- `memory/static/`
+
 When consulted, answer about:
 - **Templates** — return content from `templates/agents/<agent>/` for the requested file type
 - **Document formats** — advise on standard structure and conventions
