@@ -90,12 +90,12 @@ All observability is **pull-based**. Each cluster's gateway namespace is the sin
 flowchart LR
     subgraph cluster[Each cluster — gateway namespace]
         AL[Alloy] --> P[Prom<br/>3h] & L[Loki<br/>3h]
-        P & L --- GW[Gateway<br/>Tailscale]
+        GW[Gateway<br/>Tailscale]
     end
 
     Apps[app pods] -.->|/metrics + stdout| AL
     GW -->|:9090 /federate| MA
-    GW -->|:6443 K8s API| MA
+    GW -->|:6443 K8s API<br/>pod logs| MA
 
     subgraph master[Master namespace]
         MA[Master Alloy] --> MP[Prom<br/>30d] & ML[Loki<br/>30d]
@@ -103,7 +103,7 @@ flowchart LR
     end
 ```
 
-Gateway Tailscale exposes three ports on the tailnet: `:9090` (Prometheus), `:3100` (Loki), `:6443` (K8s API). Master Alloy connects to these — it never reaches cluster internals directly.
+Gateway Tailscale exposes three ports on the tailnet: `:9090` (Prometheus), `:3100` (Loki), `:6443` (K8s API). Master uses `:9090` for metrics federation and `:6443` to tail pod logs directly from the K8s API — it never reads from Gateway Loki. The `:3100` port is available for direct cluster debugging only.
 
 ??? abstract "Inside the gateway namespace"
 
@@ -129,22 +129,26 @@ Gateway Tailscale exposes three ports on the tailnet: `:9090` (Prometheus), `:31
 
 ??? abstract "Master federation"
 
-    Master Alloy pulls metrics via `/federate` from each gateway's Prometheus (`:9090`), and tails pod logs via each gateway's K8s API (`:6443`). Both exposed through Gateway Tailscale.
+    **Metrics:** Master Alloy pulls `/federate` from each gateway's Prometheus (`:9090`). Pre-aggregated metrics flow through a single endpoint.
+
+    **Logs:** Master Alloy uses kubeconfig files pointing to each gateway's K8s API (`:6443`). It discovers pods via `discovery.kubernetes` and tails stdout directly via `loki.source.kubernetes` — it never reads from Gateway Loki.
 
     ```mermaid
     flowchart TB
         subgraph GW1[cluster-a gateway tailscale]
-            GP1[:9090 Prom]
-            GK1[:6443 K8s API]
+            GP1[:9090 — Prom /federate]
+            GK1[:6443 — K8s API]
         end
 
         subgraph GW2[cluster-b gateway tailscale]
-            GP2[:9090 Prom]
-            GK2[:6443 K8s API]
+            GP2[:9090 — Prom /federate]
+            GK2[:6443 — K8s API]
         end
 
-        GP1 & GK1 -->|tailnet| MA
-        GP2 & GK2 -->|tailnet| MA
+        GP1 -->|metrics| MA
+        GP2 -->|metrics| MA
+        GK1 -->|pod logs| MA
+        GK2 -->|pod logs| MA
 
         MA[Master Alloy] --> MP[Master Prom<br/>30d retention]
         MA --> ML[Master Loki<br/>30d retention]
@@ -153,8 +157,8 @@ Gateway Tailscale exposes three ports on the tailnet: `:9090` (Prometheus), `:31
         ML --> G
     ```
 
-    !!! warning "Loki limitation"
-        Prometheus has `/federate` for pulling metrics. Loki has no equivalent. Workaround: Master Alloy tails pod logs on each cluster via the K8s API, exposed through Gateway Tailscale. Logs are tailed twice (once locally, once by master) — acceptable for resilience.
+    !!! warning "Why logs are tailed twice"
+        Loki has no `/federate` equivalent — master can't pull from Gateway Loki. Instead, master tails the same pods independently via K8s API. Each cluster's Gateway Alloy also tails the same pods for local buffering. The two collectors are unaware of each other. Acceptable: clusters remain self-contained, master is independently resilient, K8s API log endpoint is lightweight.
 
 ## Key Principles
 
