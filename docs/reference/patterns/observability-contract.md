@@ -14,8 +14,7 @@ flowchart TB
         P1 ~~~ P2 ~~~ PN ~~~ VIT
     end
 
-    P1 & P2 & PN -->|/metrics| AL
-    P1 & P2 & PN -.->|K8s API| AL
+    P1 & P2 & PN -->|/metrics + logs| AL
     VIT -->|health metrics| AL
     PR -.->|app metrics query| VIT
 
@@ -25,7 +24,7 @@ flowchart TB
 ```
 
 !!! tip ""
-    All pods — including vitals — share the `app` label. Alloy uses this label to group metrics and logs by application. Solid arrows = Alloy scrapes `/metrics`. Dotted arrows = Alloy tails stdout via K8s API.
+    All pods — including vitals — share the `app` label. Alloy uses this label to group metrics and logs by application.
 
 | Concern | Owner | Interface | Consumer |
 |---------|-------|-----------|----------|
