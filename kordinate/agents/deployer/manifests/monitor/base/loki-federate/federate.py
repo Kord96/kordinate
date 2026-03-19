@@ -38,7 +38,7 @@ def _query_loki(window: int) -> list[dict]:
     now = time.time()
     start = now - window
     params = urllib.parse.urlencode({
-        "query": '{__name__=~".+"}',
+        "query": '{job!=""}',
         "start": _ns(start),
         "end": _ns(now),
         "direction": "forward",
