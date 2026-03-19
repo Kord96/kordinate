@@ -114,6 +114,7 @@ spec:
               mountPath: /data/loki
         - name: federate
           image: 10.95.43.66:5000/loki-federate:latest
+          imagePullPolicy: Never
           args:
             - --interval=60
             - --retention=3600
