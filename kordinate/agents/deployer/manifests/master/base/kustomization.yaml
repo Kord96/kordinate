@@ -6,5 +6,6 @@ resources:
   - prometheus.yaml
   - loki.yaml
   - grafana.yaml
+  - gateway-registry.yaml
 # Note: datasources.yaml and dashboards/ are Grafana provisioning files,
 # deployed as ConfigMaps by the deployer (not via kustomize).

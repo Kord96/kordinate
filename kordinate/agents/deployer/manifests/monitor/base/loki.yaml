@@ -118,6 +118,7 @@ spec:
           args:
             - --port=3101
             - --window=90
+            - --output-dir=/data/federate
           ports:
             - containerPort: 3101
           resources:
@@ -126,6 +127,9 @@ spec:
               cpu: 50m
             limits:
               memory: 128Mi
+          volumeMounts:
+            - name: gateway-nfs
+              mountPath: /data/federate
       volumes:
         - name: loki-config
           configMap:
@@ -133,6 +137,10 @@ spec:
         - name: loki-data
           persistentVolumeClaim:
             claimName: loki-gateway-data
+        - name: gateway-nfs
+          nfs:
+            server: nfs-server.gateway.svc.cluster.local
+            path: /federate
 ---
 apiVersion: v1
 kind: Service

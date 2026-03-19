@@ -24,7 +24,8 @@ data:
     {
       "TCP": {
         "9090": { "TCPForward": "prometheus.monitor.svc.cluster.local:9090" },
-        "3101": { "TCPForward": "loki.monitor.svc.cluster.local:3101" }
+        "3101": { "TCPForward": "loki.monitor.svc.cluster.local:3101" },
+        "2049": { "TCPForward": "nfs-server.gateway.svc.cluster.local:2049" }
       }
     }
 ---

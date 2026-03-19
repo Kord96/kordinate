@@ -73,10 +73,12 @@ fi
 matched=false
 for dir in "${cache_dirs[@]}"; do
   # Handle relative paths like ../../profile/config.yaml
-  if [[ "$dir" == ../../* ]]; then
-    # Resolve relative to agents/<agent>/instructions/
-    resolved=$(cd "$AGENTS_DIR/$agent/instructions" 2>/dev/null && cd "$(dirname "$dir")" 2>/dev/null && pwd)/$(basename "$dir")
-    if [[ "$FILE" == "$resolved"* ]] || [[ "$FILE" == *"$(basename "$(dirname "$resolved")")/$(basename "$resolved")"* ]]; then
+  if [[ "$dir" == ../* ]]; then
+    # Resolve relative to agents/<agent>/ (the agent root), canonicalize to real path
+    resolved_dir=$(cd "$AGENTS_DIR/$agent" 2>/dev/null && cd "$(dirname "$dir")" 2>/dev/null && pwd -P)
+    resolved="$resolved_dir/$(basename "$dir")"
+    canon_file=$(readlink -f "$FILE" 2>/dev/null || echo "$FILE")
+    if [ -n "$resolved" ] && [[ "$canon_file" == *"$resolved"* ]]; then
       matched=true
       break
     fi
