@@ -6,23 +6,24 @@ How apps expose telemetry to the platform. Three concerns — logs, metrics, hea
 
 ```mermaid
 flowchart TB
-    subgraph ns[dev/test/prod namespace]
-        subgraph pods["App Pods (share app label)"]
-            P1[pod 1<br/>/metrics]
-            P2[pod 2<br/>/metrics]
-            PN[pod N<br/>/metrics]
-            VIT[Vitals<br/>/metrics :9131]
-        end
+    subgraph app["app: my-app"]
+        P1[pod 1<br/>/metrics]
+        P2[pod 2<br/>/metrics]
+        PN[pod N<br/>/metrics]
+        VIT[Vitals<br/>/metrics :9131]
     end
 
     subgraph gw[monitor namespace]
         AL[Alloy] --> LK[Loki] & PR[Prom]
     end
 
-    pods -->|metrics + logs| AL
+    app -->|metrics + logs| AL
     VIT -->|vitals_* health| AL
     PR -.->|app metrics query| VIT
 ```
+
+!!! tip ""
+    All pods — including vitals — share the `app` label. Alloy uses this label to group metrics and logs by application.
 
 | Concern | Owner | Interface | Consumer |
 |---------|-------|-----------|----------|
