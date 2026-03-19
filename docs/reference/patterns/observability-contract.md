@@ -16,7 +16,7 @@ flowchart TB
     end
 
     subgraph gw[Gateway Namespace]
-        AL[Alloy] --> PR[Prom] & LK[Loki]
+        AL[Alloy] --> LK[Loki] & PR[Prom]
     end
 
     pods -->|metrics + logs| AL
@@ -155,7 +155,7 @@ flowchart TB
     end
 
     subgraph gw[Gateway Namespace]
-        AL[Alloy] --> PR[Prom<br/>3h] & LK[Loki<br/>3h]
+        AL[Alloy] --> LK[Loki<br/>3h] & PR[Prom<br/>3h]
     end
 
     pods -->|metrics + logs| AL
