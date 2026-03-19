@@ -104,7 +104,9 @@
 }
 
 .md-nav__title {
-  background-color: transparent;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
   font-family: "IBM Plex Mono", monospace;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
@@ -113,7 +115,21 @@
 }
 
 .md-nav__title[for] {
-  background-color: transparent;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Kill dark rectangle in secondary sidebar */
+.md-sidebar--secondary .md-nav__title {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-md-component="sidebar"] .md-nav__title,
+[data-md-type="toc"] .md-nav__title {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .md-nav__link {
