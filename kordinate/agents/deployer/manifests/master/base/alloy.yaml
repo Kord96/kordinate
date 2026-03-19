@@ -3,80 +3,9 @@
 ##
 ## Master Alloy — pulls metrics and logs from all cluster gateways.
 ## Metrics: pulls /federate from each gateway's Prom via Tailscale (:9090).
-## Logs: tails JSON Lines files from each gateway's NFS share via Tailscale (:2049).
-## Writes metrics to Master Prometheus, logs to Master Loki.
+## Logs: puller sidecar fetches JSON Lines from gateway MinIO (:9000),
+##        writes to shared volume, alloy tails with loki.source.file.
 ##
-## NFS PV/PVCs for gateway log federation (NFSv4-only servers)
-## home cluster NFS — disabled (nfs_enabled: false in gateway-ips.yaml)
-# apiVersion: v1
-# kind: PersistentVolume
-# metadata:
-#   name: alloy-nfs-home
-#   labels:
-#     app: monitoring
-#     component: alloy
-# spec:
-#   capacity:
-#     storage: 1Gi
-#   accessModes:
-#     - ReadOnlyMany
-#   mountOptions:
-#     - nfsvers=4
-#     - ro
-#   nfs:
-#     server: "100.79.204.119"
-#     path: /federate
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: alloy-nfs-home
-#   labels:
-#     app: monitoring
-#     component: alloy
-# spec:
-#   accessModes:
-#     - ReadOnlyMany
-#   resources:
-#     requests:
-#       storage: 1Gi
-#   volumeName: alloy-nfs-home
-#   storageClassName: ""
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: alloy-nfs-vandc
-  labels:
-    app: monitoring
-    component: alloy
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadOnlyMany
-  mountOptions:
-    - nfsvers=4
-    - ro
-  nfs:
-    server: "100.93.174.24"
-    path: /federate
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: alloy-nfs-vandc
-  labels:
-    app: monitoring
-    component: alloy
-spec:
-  accessModes:
-    - ReadOnlyMany
-  resources:
-    requests:
-      storage: 1Gi
-  volumeName: alloy-nfs-vandc
-  storageClassName: ""
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -121,28 +50,26 @@ data:
     }
 
     // ===================================================
-    // LOGS — tail JSON Lines files from gateway NFS shares
-    // Sidecar on each cluster writes files to /data/federate/
-    // Master mounts via NFS over Tailscale, tails with loki.source.file
+    // LOGS — tail files written by the puller sidecar
+    // Puller fetches from each gateway's MinIO (:9000)
+    // and writes JSON Lines to /data/federate/<cluster>/
     // ===================================================
 
-    // -- home cluster logs -- (disabled: NFS not deployed)
-    // local.file_match "logs_home" {
-    //   path_targets = [{
-    //     __path__ = "/data/federate/home/*.json",
-    //     cluster  = "home",
-    //   }]
-    // }
-    //
-    // loki.source.file "logs_home" {
-    //   targets    = local.file_match.logs_home.targets
-    //   forward_to = [loki.process.federate.receiver]
-    // }
+    local.file_match "logs_home" {
+      path_targets = [{
+        __path__ = "/data/federate/home/*.jsonl",
+        cluster  = "home",
+      }]
+    }
 
-    // -- vandc cluster logs --
+    loki.source.file "logs_home" {
+      targets    = local.file_match.logs_home.targets
+      forward_to = [loki.process.federate.receiver]
+    }
+
     local.file_match "logs_vandc" {
       path_targets = [{
-        __path__ = "/data/federate/vandc/*.json",
+        __path__ = "/data/federate/vandc/*.jsonl",
         cluster  = "vandc",
       }]
     }
@@ -155,7 +82,6 @@ data:
     // -- Parse federated log lines --
     // Each line: {"stream": {labels}, "ts": "...", "line": "..."}
     loki.process "federate" {
-      // Extract the embedded stream labels and original log line
       stage.json {
         expressions = {
           stream_app       = "stream.app",
@@ -171,7 +97,6 @@ data:
         }
       }
 
-      // Apply the original labels
       stage.labels {
         values = {
           app       = "stream_app",
@@ -186,7 +111,6 @@ data:
         }
       }
 
-      // Replace the log line with the original content
       stage.output {
         source = "original_line"
       }
@@ -194,7 +118,6 @@ data:
       forward_to = [loki.write.master.receiver]
     }
 
-    // Write to Master Loki in master namespace
     loki.write "master" {
       endpoint {
         url = "http://loki.master.svc.cluster.local:3100/loki/api/v1/push"
@@ -238,16 +161,34 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/alloy
-            # home: NFS not deployed — mount skipped
-            - name: logs-vandc
-              mountPath: /data/federate/vandc
+            - name: federate-logs
+              mountPath: /data/federate
               readOnly: true
+        - name: log-puller
+          image: 10.95.43.66:5000/log-puller:latest
+          args:
+            - --registry=/etc/gateway-registry/gateways.yaml
+            - --output-dir=/data/federate
+            - --interval=60
+            - --retention=7200
+          volumeMounts:
+            - name: federate-logs
+              mountPath: /data/federate
+            - name: gateway-registry
+              mountPath: /etc/gateway-registry
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
       volumes:
         - name: config
           configMap:
             name: alloy-config
-        # home: NFS not deployed — volume skipped
-        - name: logs-vandc
-          persistentVolumeClaim:
-            claimName: alloy-nfs-vandc
-            readOnly: true
+        - name: federate-logs
+          emptyDir: {}
+        - name: gateway-registry
+          configMap:
+            name: gateway-registry

@@ -3,6 +3,6 @@ kind: Kustomization
 namespace: gateway
 resources:
   - gateway.yaml
-  - nfs.yaml
+  - minio.yaml
   - workstation.yaml
   - ingress.yaml

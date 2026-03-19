@@ -1,47 +1,8 @@
 ## Gateway Loki — local log store (30d retention)
-## Includes a federation sidecar on :3101 that exposes /federate for master
-## Alloy to scrape, replacing the K8s API log tailing approach.
+## Includes a federation sidecar that pushes logs to MinIO for master to pull.
 ## Receives logs from Alloy via push API.
 ## Exposed on tailnet via Tailscale for master to federate.
 ##
-## NFS PV/PVC for federation output directory (NFSv4-only server)
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: gateway-nfs-federate
-  labels:
-    app: monitoring
-    component: loki
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  mountOptions:
-    - nfsvers=4
-  nfs:
-    server: nfs-server.gateway.svc.cluster.local
-    path: /federate
-    # NOTE: kubelet mounts NFS from the host, which cannot resolve cluster DNS.
-    # On vandc, apply with: kubectl get svc -n gateway nfs-server -o jsonpath='{.spec.clusterIP}'
-    # and patch the PV server field to the ClusterIP if DNS resolution fails.
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gateway-nfs-federate
-  labels:
-    app: monitoring
-    component: loki
-spec:
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 1Gi
-  volumeName: gateway-nfs-federate
-  storageClassName: ""
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -154,20 +115,17 @@ spec:
         - name: federate
           image: 10.95.43.66:5000/loki-federate:latest
           args:
-            - --port=3101
-            - --window=90
-            - --output-dir=/data/federate
-          ports:
-            - containerPort: 3101
+            - --interval=60
+            - --retention=3600
+          env:
+            - name: MINIO_ENDPOINT
+              value: "http://minio.gateway.svc.cluster.local:9000"
           resources:
             requests:
               memory: 32Mi
               cpu: 50m
             limits:
               memory: 128Mi
-          volumeMounts:
-            - name: gateway-nfs
-              mountPath: /data/federate
       volumes:
         - name: loki-config
           configMap:
@@ -175,9 +133,6 @@ spec:
         - name: loki-data
           persistentVolumeClaim:
             claimName: loki-gateway-data
-        - name: gateway-nfs
-          persistentVolumeClaim:
-            claimName: gateway-nfs-federate
 ---
 apiVersion: v1
 kind: Service
@@ -195,6 +150,3 @@ spec:
     - name: http
       port: 3100
       targetPort: 3100
-    - name: federate
-      port: 3101
-      targetPort: 3101
