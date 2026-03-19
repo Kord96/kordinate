@@ -29,8 +29,10 @@
     | **Authority** | kubectl writes, container registry, Redis |
     | **Exclusive Tools** | postgres.py, Redis MCP |
     | **Commands** | `/deployer:roll` (roll between envs), `/deployer:stop` (scale down), `/deployer:clean` (clean env data), `/deployer:diff` (stage incremental changes), `/deployer:bootstrap` (bootstrap cluster) |
-    | **Memory Owns** | infra.md, migration.md, troubleshooting.md |
-    | **Project Files** | `deployer/static/` — k8s manifests. `deployer/dynamic/` — operational notes. |
+    | **Global Static** | infra.md, migration.md, troubleshooting.md |
+    | **Global Dynamic** | auto-managed notes |
+    | **Project Static** | `deployer/static/` — k8s manifests |
+    | **Project Dynamic** | `deployer/dynamic/` — operational notes |
     | **Style** | Reactive — executes on request |
 
 === "Sauron"
@@ -40,8 +42,10 @@
     | **Authority** | Grafana, code fixes, standards testing |
     | **Exclusive Tools** | nokrashi-tools, klog, Grafana MCP |
     | **Commands** | `/sauron:scan` (scan for monitoring gaps), `/sauron:diagnose` (diagnose issue) |
-    | **Memory Owns** | monitoring.md, logging.md, dashboards/ |
-    | **Project Files** | `sauron/static/` — dashboards, alert rules. `sauron/dynamic/` — monitoring notes. |
+    | **Global Static** | monitoring.md, logging.md, dashboards/ |
+    | **Global Dynamic** | auto-managed notes |
+    | **Project Static** | `sauron/static/` — dashboards, alert rules |
+    | **Project Dynamic** | `sauron/dynamic/` — monitoring notes, findings |
     | **Style** | Act first, report after |
 
 === "Designer"
@@ -51,8 +55,10 @@
     | **Authority** | Pattern definitions, architecture review |
     | **Exclusive Tools** | Gemini (design validation) |
     | **Commands** | `/designer:detect-patterns` (scan for recognized patterns) |
-    | **Memory Owns** | patterns/\*.md, libraries/\*.md |
-    | **Project Files** | None — consultation only, no project artifacts |
+    | **Global Static** | patterns/\*.md, libraries/\*.md |
+    | **Global Dynamic** | auto-managed notes |
+    | **Project Static** | — |
+    | **Project Dynamic** | — |
     | **Style** | Analytical — validates against patterns |
 
 === "Scribe"
@@ -62,6 +68,8 @@
     | **Authority** | All `.md` file edits |
     | **Exclusive Tools** | Gemini (doc review) |
     | **Commands** | `/scribe:add-mcp` (add MCP entry), `/scribe:update-agent-docs` (update agent docs), `/scribe:update-project-docs` (update project docs), `/scribe:update-subagent-memory` (update agent memory) |
-    | **Memory Owns** | templates/ |
-    | **Project Files** | None — edits project `.md` files but doesn't own a project directory |
+    | **Global Static** | templates/ |
+    | **Global Dynamic** | auto-managed notes |
+    | **Project Static** | — |
+    | **Project Dynamic** | — |
     | **Style** | Coordinate — write-gate for all docs |
