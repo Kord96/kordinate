@@ -1,4 +1,5 @@
 site_name: Kordinate
+site_url: https://kord96.github.io/kordinate/
 site_description: Multi-cluster k8s infrastructure managed by specialized agents
 repo_url: https://github.com/Kord96/kordinate
 
