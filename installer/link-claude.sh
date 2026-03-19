@@ -1,15 +1,11 @@
 #!/bin/bash
-# Link kordinate framework into paths that Claude Code and other tools expect.
+# Link/unlink kordinate framework into Claude Code's expected paths.
 #
 # Usage:
-#   ./installer/link.sh          # deploy: repo → ~/.claude/
-#   ./installer/link.sh sync     # sync: ~/.claude/ → repo (renamed files only)
-#
-# Directories are symlinked (Claude reads/writes through them).
-# Renamed files (AGENT.md → CLAUDE.md) are copied. Run "sync" to
-# copy changes back before committing.
-#
-# See installer/LINKS.md for the full mapping.
+#   ./installer/link-claude.sh              # link: repo → ~/.claude/
+#   ./installer/link-claude.sh sync         # sync: ~/.claude/ → repo (renamed files only)
+#   ./installer/link-claude.sh unlink       # remove all kordinate symlinks/copies from ~/.claude/
+#   ./installer/link-claude.sh link-project # link project-level agent dirs
 
 set -euo pipefail
 
@@ -248,12 +244,54 @@ cmd_deploy() {
 }
 
 # ═══════════════════════════════════════════════════════════════
+# UNLINK: remove all kordinate symlinks and copies from ~/.claude/
+# ═══════════════════════════════════════════════════════════════
+
+cmd_unlink() {
+  echo "=== Unlink: removing kordinate from ~/.claude/ ==="
+
+  # Remove symlinks
+  for mapping in "${CLAUDE_SYMLINKS[@]}" "${KORDINATE_SYMLINKS[@]}"; do
+    local name="${mapping%%:*}"
+    local dest="$TARGET/$name"
+    if [ -L "$dest" ]; then
+      rm "$dest"
+      echo "  -   $name"
+    fi
+  done
+
+  # Remove copied files
+  for mapping in "${CLAUDE_COPIES[@]}"; do
+    local claude_path="${mapping%%:*}"
+    local dest="$TARGET/$claude_path"
+    if [ -f "$dest" ] && [ ! -L "$dest" ]; then
+      rm "$dest"
+      echo "  -   $claude_path"
+    fi
+  done
+
+  # Remove external links
+  for mapping in "${EXTERNAL_LINKS[@]}"; do
+    local link_path="${mapping%%:*}"
+    local dest="$REPO_ROOT/$link_path"
+    if [ -L "$dest" ]; then
+      rm "$dest"
+      echo "  -   $link_path"
+    fi
+  done
+
+  echo ""
+  echo "Done. Kordinate unlinked from Claude Code."
+}
+
+# ═══════════════════════════════════════════════════════════════
 # MAIN
 # ═══════════════════════════════════════════════════════════════
 
-case "${1:-deploy}" in
+case "${1:-link}" in
+  link)         cmd_deploy ;;
   sync)         cmd_sync ;;
-  deploy)       cmd_deploy ;;
+  unlink)       cmd_unlink ;;
   link-project) cmd_link_project ;;
-  *)            echo "Usage: $0 [deploy|sync|link-project]"; exit 1 ;;
+  *)            echo "Usage: $0 [link|unlink|sync|link-project]"; exit 1 ;;
 esac

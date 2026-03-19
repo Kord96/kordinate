@@ -14,7 +14,7 @@ flowchart LR
     end
 
     P[Profile<br/>config · keys · locks] --> kordinate
-    kordinate -->|link.sh| R[AI Runtime]
+    kordinate -->|link-claude.sh| R[AI Runtime]
 ```
 
 | Component | Role |
@@ -32,7 +32,7 @@ flowchart LR
         ```bash
         git clone <repo-url> ~/kordinate
         cd ~/kordinate
-        ./installer/link.sh              # link framework into ~/.claude/
+        ./installer/link-claude.sh              # link framework into ~/.claude/
         ./installer/kordinate-cli init   # bootstrap k8s + workstation
         ```
 
@@ -42,7 +42,7 @@ flowchart LR
         git clone <repo-url> ~/kordinate
         cd ~/kordinate
         git-crypt unlock                 # decrypt profile/
-        ./installer/link.sh
+        ./installer/link-claude.sh
         ./installer/kordinate-cli hydrate
         ```
 

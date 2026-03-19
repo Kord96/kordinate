@@ -25,7 +25,7 @@ agent-state/
 # Secrets and credentials
 .credentials.json
 
-# Symlinks and copies (created by link.sh)
+# Symlinks and copies (created by link-claude.sh)
 /CLAUDE.md
 /settings.json
 /keybindings.json
@@ -39,7 +39,7 @@ agent-state/
 # Agent runtime state
 kordinate/agents/*/deploys/
 
-# CLAUDE.md copies (created by link.sh deploy, not tracked)
+# CLAUDE.md copies (created by link-claude.sh deploy, not tracked)
 kordinate/agents/*/CLAUDE.md
 
 

@@ -4,7 +4,7 @@
 index.md:
   - kordinate/agents/AGENT.md
   - kordinate/agents/shared/MEMORY.md
-  - installer/link.sh
+  - installer/link-claude.sh
 
 infrastructure.md:
   - bin/claude-session
@@ -43,10 +43,10 @@ memory.md:
   - kordinate/hooks/agent-memory.sh
   - kordinate/agents/shared/MEMORY.md
   - kordinate/lib/cache.sh
-  - installer/link.sh
+  - installer/link-claude.sh
 
 reference/link-mapping.md:
-  - installer/link.sh
+  - installer/link-claude.sh
 
 reference/patterns/index.md:
   - kordinate/agents/designer/memory/static/patterns.md

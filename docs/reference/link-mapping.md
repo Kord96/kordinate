@@ -1,6 +1,6 @@
 # Link Mapping
 
-Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its files at `~/.claude/`. The linking layer (`installer/link.sh`) bridges them.
+Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its files at `~/.claude/`. The linking layer (`installer/link-claude.sh`) bridges them.
 
 ## Direct (same structure)
 
@@ -20,7 +20,7 @@ Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its
 
 ## Renamed (different filename)
 
-Kordinate uses `AGENT.md`, Claude Code expects `CLAUDE.md`. Copied on `link.sh deploy`, synced back on `link.sh sync`:
+Kordinate uses `AGENT.md`, Claude Code expects `CLAUDE.md`. Copied on `link-claude.sh deploy`, synced back on `link-claude.sh sync`:
 
 | Claude Code | Kordinate |
 |-------------|-----------|

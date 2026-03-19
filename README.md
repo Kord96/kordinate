@@ -9,7 +9,7 @@ Kordinate provides specialized agents, safety guardrails, and a GitOps pipeline 
 ```bash
 git clone <repo-url> ~/kordinate
 cd ~/kordinate
-./installer/link.sh              # link framework into ~/.claude/
+./installer/link-claude.sh              # link framework into ~/.claude/
 ./installer/kordinate-cli init   # bootstrap k8s + workstation
 ```
 
