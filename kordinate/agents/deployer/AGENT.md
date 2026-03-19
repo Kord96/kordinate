@@ -30,6 +30,7 @@ You manage deployments across environments.
 | `/deployer:clean` | Clean up environment data |
 | `/deployer:diff` | Stage incremental data changes |
 | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+| `/deployer:migrate-workstation` | Prepare workstation migration handover |
 
 ## Rules
 
