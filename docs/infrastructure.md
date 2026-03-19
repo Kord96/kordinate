@@ -6,51 +6,41 @@ How the system is deployed, accessed, and observed.
 
 You connect to a workstation pod running inside Kubernetes via Tailscale SSH. Claude Code runs inside tmux with agents as subprocesses.
 
-```
-              ┌────────┐
-              │  You   │
-              └───┬────┘
-                  │ Tailscale SSH
-    ┌─────────────▼──────────────────┐
-    │        Workstation Pod         │
-    │                                │
-    │  tmux ─► Claude Code           │
-    │               │                │
-    │        ┌──────┴──────┐         │
-    │        │   Agents    │         │
-    │        │  deployer   │────┐    │
-    │        │  sauron     │    │    │
-    │        │  designer   │  hooks  │
-    │        │  scribe     │  check  │
-    │        └─────────────┘  every  │
-    │                         tool   │
-    │                         call   │
-    └─────────────────────────┼──────┘
-                              │
-                      SSH + kubectl
-                 ┌────────┼────────┐
-                 │        │        │
-           ┌─────▼──┐ ┌──▼─────┐  │
-           │cluster-a│ │cluster-b│ ...
-           │ dev     │ │ dev     │
-           │ test    │ │ test    │
-           │ prod    │ │ prod    │
-           └─────────┘ └────────┘
+```mermaid
+flowchart TB
+    U([You]) -->|Tailscale SSH| WP
+
+    subgraph WP[Workstation Pod]
+        T[tmux] --> CC[Claude Code]
+        CC --> AG[Agents<br/>deployer · sauron · designer · scribe]
+        AG <-->|every tool call| HK[Hooks]
+    end
+
+    WP -->|SSH + kubectl| C1
+    WP -->|SSH + kubectl| C2
+
+    subgraph C1[cluster-a]
+        D1[dev] ~~~ T1[test] ~~~ P1[prod]
+    end
+
+    subgraph C2[cluster-b]
+        D2[dev] ~~~ T2[test] ~~~ P2[prod]
+    end
 ```
 
 ## Worktree Sessions
 
 Each tmux window creates an isolated git worktree + branch. On exit: push + PR if changes, cleanup if not.
 
-```
-tmux
-├── kordinate (session)
-│   ├── window 0 → main branch (no worktree)
-│   ├── window 1 → session/w1-kordinate (worktree)
-│   └── window 2 → session/w2-kordinate (worktree)
-└── your-project (session)
-    ├── window 0 → main branch
-    └── window 1 → session/w1-your-project (worktree)
+```mermaid
+flowchart LR
+    subgraph kordinate[kordinate session]
+        W0[window 0<br/>main branch] ~~~ W1[window 1<br/>session/w1] ~~~ W2[window 2<br/>session/w2]
+    end
+
+    subgraph project[your-project session]
+        PW0[window 0<br/>main branch] ~~~ PW1[window 1<br/>session/w1]
+    end
 ```
 
 Branch flow: `session/*` → `main` → `test` → `prod`
@@ -61,36 +51,31 @@ Each k3s cluster is standalone with its own control plane, worker nodes, and obs
 
 The `master` namespace provides a unified cross-cluster view. It lives on one cluster but is logically separate — it pulls data from clusters, clusters don't push to it.
 
-```
-┌─ cluster-a ─────────────────────────────────┐
-│                                              │
-│  Apps ──▶ Gateway Alloy ──▶ Gateway Prom/Loki│
-│   │           ▲                              │
-│   └─ stdout ──┘ via K8s API                  │
-│                                              │
-└──────────────────────────────────────────────┘
-                   ▲
-                   │ pull (via Gateway Tailscale)
-                   │
-┌──────────────────┴───────────────────────────┐
-│                                     master   │
-│                                              │
-│  Master Alloy ──▶ Master Prom/Loki           │
-│                          │                   │
-│                          ▼                   │
-│                       Grafana                │
-│                                              │
-└──────────────────┬───────────────────────────┘
-                   │ pull (via Gateway Tailscale)
-                   ▼
-┌──────────────────────────────────────────────┐
-│                             cluster-b        │
-│                                              │
-│  Apps ──▶ Gateway Alloy ──▶ Gateway Prom/Loki│
-│   │           ▲                              │
-│   └─ stdout ──┘ via K8s API                  │
-│                                              │
-└──────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph CA[cluster-a]
+        A1[Apps] -->|stdout + /metrics| GA1[Gateway Alloy]
+        GA1 --> GP1[Gateway Prom<br/>3h buffer]
+        GA1 --> GL1[Gateway Loki<br/>3h buffer]
+    end
+
+    subgraph M[master namespace]
+        MA[Master Alloy] --> MP[Master Prom<br/>30d retention]
+        MA --> ML[Master Loki<br/>30d retention]
+        MP --> G[Grafana]
+        ML --> G
+    end
+
+    subgraph CB[cluster-b]
+        A2[Apps] -->|stdout + /metrics| GA2[Gateway Alloy]
+        GA2 --> GP2[Gateway Prom<br/>3h buffer]
+        GA2 --> GL2[Gateway Loki<br/>3h buffer]
+    end
+
+    GP1 -->|"/federate (pull)"| MA
+    GL1 -.->|"K8s API (pull)"| MA
+    GP2 -->|"/federate (pull)"| MA
+    GL2 -.->|"K8s API (pull)"| MA
 ```
 
 ## Data Flow
@@ -99,47 +84,38 @@ All observability is **pull-based**. The gateway is the cluster's single externa
 
 ??? abstract "Inside each cluster"
 
-    ```
-    ┌────────────────────────────── inside each cluster ──────────────────────────────┐
-    │                                                                                 │
-    │  ┌── App pods ──────┐  ┌── Kubelet ─────────┐  ┌── KSM ──────────┐             │
-    │  │ stdout (JSON)    │  │ /metrics/cadvisor   │  │ :8080/metrics   │             │
-    │  │ /metrics         │  │ volume stats        │  │                 │             │
-    │  └────────┬─────────┘  └─────────┬───────────┘  └────────┬────────┘             │
-    │           │ pull                 │ pull                   │ pull                 │
-    │           ▼                      ▼                       ▼                      │
-    │  ┌─────────────────────────────────────────────────────────────────────────┐     │
-    │  │ Gateway Alloy                                                          │     │
-    │  │  metrics ◀── scrapes /metrics from pods, kubelet, KSM                  │     │
-    │  │  logs    ◀── tails pod stdout via K8s API                              │     │
-    │  │  normalize ── drops raw kube_*/kafka_*, keeps pipeline_* + app metrics │     │
-    │  └──────────┬──────────────────────┬──────────────────────────────────────┘     │
-    │             ▼                      ▼                                            │
-    │  ┌──────────────────┐  ┌──────────────────┐                                     │
-    │  │ Gateway Prom     │  │ Gateway Loki     │                                     │
-    │  │ (3h buffer)      │  │ (3h buffer)      │                                     │
-    │  └──────────────────┘  └──────────────────┘                                     │
-    └─────────────────────────────────────────────────────────────────────────────────┘
+    ```mermaid
+    flowchart TB
+        subgraph sources[Data Sources]
+            AP[App pods<br/>stdout JSON + /metrics]
+            KU[Kubelet<br/>/metrics/cadvisor]
+            KSM[KSM<br/>:8080/metrics]
+        end
+
+        sources -->|pull| GA
+
+        subgraph GA[Gateway Alloy]
+            SM[scrape metrics]
+            TL[tail logs via K8s API]
+            NM[normalize — drop raw kube_*/kafka_*<br/>keep pipeline_* + app metrics]
+        end
+
+        GA --> GP[Gateway Prom<br/>3h buffer]
+        GA --> GL[Gateway Loki<br/>3h buffer]
     ```
 
 ??? abstract "Master federation"
 
-    ```
-    ┌──────────────────────────────────────────────────────────────────────┐
-    │ Master Alloy                                                        │
-    │  metrics ◀── pulls Gateway Prom /federate (all series)              │
-    │  logs    ◀── tails pods via K8s API (through Gateway Tailscale)     │
-    └──────────┬──────────────────────┬───────────────────────────────────┘
-               ▼                      ▼
-    ┌──────────────────┐  ┌──────────────────┐
-    │ Master Prom      │  │ Master Loki      │
-    │ (30d retention)  │  │ (30d retention)  │
-    └────────┬─────────┘  └────────┬─────────┘
-             └────────────┬────────┘
-                          ▼
-                   ┌───────────┐
-                   │  Grafana  │
-                   └───────────┘
+    ```mermaid
+    flowchart TB
+        MA[Master Alloy] -->|pull /federate| GP[Gateway Prom]
+        MA -.->|tail via K8s API| GL[Gateway Loki]
+
+        MA --> MP[Master Prom<br/>30d retention]
+        MA --> ML[Master Loki<br/>30d retention]
+
+        MP --> G[Grafana]
+        ML --> G
     ```
 
 ## Key Principles

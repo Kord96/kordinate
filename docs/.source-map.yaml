@@ -1,0 +1,54 @@
+# Maps each doc page to its implementation sources.
+# Used by /scribe:audit-docs to detect documentation drift.
+
+index.md:
+  - kordinate/agents/AGENT.md
+  - kordinate/agents/shared/MEMORY.md
+  - installer/link.sh
+
+infrastructure.md:
+  - bin/claude-session
+  - kordinate/agents/deployer/memory/static/infra.md
+  - kordinate/agents/deployer/manifests/master/base/alloy.yaml
+  - kordinate/agents/deployer/manifests/monitor/base/alloy.yaml
+
+agents.md:
+  - kordinate/agents/deployer/AGENT.md
+  - kordinate/agents/sauron/AGENT.md
+  - kordinate/agents/designer/AGENT.md
+  - kordinate/agents/scribe/AGENT.md
+  - kordinate/agents/shared/MEMORY.md
+
+hooks.md:
+  - kordinate/hooks/guard-kubectl.sh
+  - kordinate/hooks/guard-git.sh
+  - kordinate/hooks/guard-redis.sh
+  - kordinate/hooks/guard-grafana.sh
+  - kordinate/hooks/guard-md.sh
+  - kordinate/hooks/auto-merge-to-dev.sh
+  - kordinate/hooks/agent-memory.sh
+  - kordinate/lib/cache.sh
+  - kordinate/settings.json
+
+consultation.md:
+  - kordinate/commands/consult.md
+  - kordinate/commands/invalidate.md
+  - kordinate/lib/cache.sh
+  - kordinate/agents/deployer/instructions/consultation.md
+  - kordinate/agents/sauron/instructions/consultation.md
+  - kordinate/agents/designer/instructions/consultation.md
+  - kordinate/agents/scribe/instructions/consultation.md
+
+memory.md:
+  - kordinate/hooks/agent-memory.sh
+  - kordinate/agents/shared/MEMORY.md
+  - kordinate/lib/cache.sh
+
+reference/link-mapping.md:
+  - installer/link.sh
+
+reference/patterns/index.md:
+  - kordinate/agents/designer/memory/static/patterns.md
+
+reference/libraries/index.md:
+  - kordinate/agents/designer/memory/static/libraries.md
