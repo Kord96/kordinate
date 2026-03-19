@@ -142,7 +142,25 @@ flowchart TB
     end
 ```
 
-Gateway Tailscale exposes `:9090` (Prom), `:3100` (Loki), `:6443` (K8s API) on the tailnet. Master pulls metrics via `/federate` from `:9090` and tails pod logs via K8s API from `:6443`. Master never reads from Gateway Loki — `:3100` is for direct cluster debugging only.
+**Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki with 3h retention.
+
+**Federation:** Gateway Tailscale exposes `:9090` (Prom), `:3100` (Loki), `:6443` (K8s API) on the tailnet. Master pulls metrics via `/federate` from `:9090` and tails pod logs via K8s API from `:6443`. Master never reads from Gateway Loki — `:3100` is for direct cluster debugging only.
+
+??? abstract "What Alloy normalizes"
+
+    Alloy drops raw infrastructure metric prefixes and re-exports them under `pipeline_*` so dashboards and vitals use a consistent namespace.
+
+    | Source | Raw metric | Normalized to |
+    |--------|-----------|---------------|
+    | Kubelet | `kubelet_volume_stats_used_bytes` | `pipeline_pvc_used_bytes` |
+    | Kubelet | `kubelet_volume_stats_capacity_bytes` | `pipeline_pvc_capacity_bytes` |
+    | KSM | `kube_pod_container_status_restarts_total` | `pipeline_container_restarts_total` |
+    | KSM | `kube_cronjob_spec_suspend` | `pipeline_cronjob_suspended` |
+    | KSM | `kube_cronjob_next_schedule_time` | `pipeline_cronjob_next_schedule_time` |
+    | KSM | `kube_pod_container_resource_limits` | `pipeline_container_resource_limits` |
+    | Kafka JMX | `kafka_log_log_size` | `pipeline_kafka_topic_size_bytes` |
+
+    All other `kube_*` and `kafka_*` metrics are dropped. App metrics and `node_*` metrics pass through unchanged.
 
 !!! warning "Why logs are tailed twice"
     Loki has no `/federate` equivalent. Master tails the same pods independently via K8s API. Each cluster's Gateway Alloy also tails locally. The two collectors are unaware of each other. Acceptable: clusters remain self-contained, master is independently resilient, K8s API log endpoint is lightweight.
