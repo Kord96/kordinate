@@ -147,6 +147,10 @@ Multi-cluster k8s infrastructure managed by specialized agents.
 
 <div class="grid cards" markdown>
 
+-   **[Infrastructure](infrastructure.md)**
+
+    Client→workstation flow, worktree sessions, cluster architecture, observability.
+
 -   **[Agents](agents.md)**
 
     Who does what, shared rules, per-agent specifics, and commands.
@@ -165,6 +169,6 @@ Multi-cluster k8s infrastructure managed by specialized agents.
 
 -   **[Reference](reference/patterns/index.md)**
 
-    Design patterns, shared libraries, link mapping, and infrastructure.
+    Design patterns, shared libraries, and link mapping.
 
 </div>
