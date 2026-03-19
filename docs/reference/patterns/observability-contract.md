@@ -15,7 +15,7 @@ flowchart TB
         VIT[Vitals<br/>/metrics :9131]
     end
 
-    subgraph gw[Gateway Namespace]
+    subgraph gw[monitor namespace]
         AL[Alloy] --> LK[Loki] & PR[Prom]
     end
 
