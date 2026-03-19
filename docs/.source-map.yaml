@@ -51,5 +51,9 @@ reference/link-mapping.md:
 reference/patterns/index.md:
   - kordinate/agents/designer/memory/static/patterns.md
 
+reference/observability-contract.md:
+  - kordinate/agents/designer/memory/static/app-contract.md
+  - kordinate/agents/deployer/memory/static/infra.md
+
 reference/libraries/index.md:
   - kordinate/agents/designer/memory/static/libraries.md

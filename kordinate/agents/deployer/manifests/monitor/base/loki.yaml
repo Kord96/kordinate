@@ -1,8 +1,6 @@
-## TODO: Add a federation sidecar container on :3101 to this pod.
-## The sidecar will expose a /federate endpoint for master Alloy to scrape,
-## replacing the current K8s API log tailing approach.
-##
 ## Gateway Loki — local log store (30d retention)
+## Includes a federation sidecar on :3101 that exposes /federate for master
+## Alloy to scrape, replacing the K8s API log tailing approach.
 ## Receives logs from Alloy via push API.
 ## Exposed on tailnet via Tailscale for master to federate.
 ##
@@ -115,6 +113,19 @@ spec:
               mountPath: /etc/loki
             - name: loki-data
               mountPath: /data/loki
+        - name: federate
+          image: registry.kordinate.io/loki-federate:latest
+          args:
+            - --port=3101
+            - --window=90
+          ports:
+            - containerPort: 3101
+          resources:
+            requests:
+              memory: 32Mi
+              cpu: 50m
+            limits:
+              memory: 128Mi
       volumes:
         - name: loki-config
           configMap:
@@ -139,3 +150,6 @@ spec:
     - name: http
       port: 3100
       targetPort: 3100
+    - name: federate
+      port: 3101
+      targetPort: 3101

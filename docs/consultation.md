@@ -63,3 +63,19 @@ Results are cached per consulter-consultant pair at `agents/shared/memory/dynami
 
 !!! note ""
     The matrix is bidirectional — designer can ground architecture reviews in live cluster state from deployer, sauron can discover monitoring targets from deployer, etc.
+
+## Cache Invalidation
+
+Each consultant declares its **cache source directories** in the `## Cache Sources` section of its `instructions/consultation.md`. These are the directories whose content determines whether a cached consultation answer is still valid.
+
+A PostToolUse hook automatically invalidates cached answers when the consultant's source files change. The hook hashes the declared source directories after each tool use — if the hash differs from the stored hash, the cache entry is marked stale and the next `/consult` call will re-invoke the agent instead of returning the cached answer.
+
+| Agent | Cache Sources |
+|-------|---------------|
+| deployer | `instructions/`, `memory/`, `manifests/`, `profile/config.yaml` |
+| sauron | `instructions/`, `memory/` |
+| designer | `instructions/`, `memory/` |
+| scribe | `instructions/`, `memory/static/` |
+
+!!! tip "Manual invalidation"
+    Use `/invalidate <agent>` to force-clear a specific agent's cached answers without waiting for source changes.

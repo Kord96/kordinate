@@ -48,8 +48,12 @@ data:
     }
 
     // ═══════════════════════════════════════════════
-    // LOGS — TODO: replace with :3101/federate scraping
-    // when the Loki federation sidecar is built on each gateway.
+    // LOGS — pull from both Gateway Loki federation sidecars
+    // The federation sidecar at :3101/federate returns recent logs.
+    // Alloy periodically fetches and forwards to the local Loki pipeline.
+    // Integration requires a custom scrape component or external script.
+    // Gateway IPs: 100.113.48.89 (home), 100.107.8.117 (vandc)
+    // TODO: implement once federation sidecar format is finalized
     // ═══════════════════════════════════════════════
 
     // ── Shared log processing pipeline ──
