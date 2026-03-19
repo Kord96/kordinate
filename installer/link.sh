@@ -244,23 +244,6 @@ cmd_deploy() {
 
 
   echo ""
-  echo "=== PATH ==="
-  SHELL_RC="$HOME/.bashrc"
-  [ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"
-  MARKER="# kordinate"
-  if ! grep -q "$MARKER" "$SHELL_RC" 2>/dev/null; then
-    cat >> "$SHELL_RC" <<EOF
-
-$MARKER
-export KORDINATE_HOME="$REPO_ROOT"
-export PATH="$REPO_ROOT/bin:\$PATH"
-EOF
-    echo "  +   Added $REPO_ROOT/bin to PATH in $SHELL_RC"
-  else
-    echo "  ok  PATH already configured"
-  fi
-
-  echo ""
   echo "Done."
 }
 

@@ -1,7 +1,7 @@
 #!/bin/bash
-# Set up tmux configuration: .tmux.conf, shell integration, and helper scripts.
+# Set up shell environment: PATH, KORDINATE_HOME, tmux config.
 #
-# Usage: ./installer/setup-tmux.sh
+# Usage: ./installer/setup-shell.sh
 #
 # Idempotent — safe to run repeatedly.
 
@@ -9,14 +9,31 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-BIN_DIR="$REPO_ROOT/bin"
 
 SHELL_RC="$HOME/.bashrc"
 [ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"
 
-echo "=== tmux setup ==="
+# ── PATH + KORDINATE_HOME ───────────────────────────────────
 
-# ── .tmux.conf ──────────────────────────────────────────────
+echo "=== Shell environment ==="
+
+MARKER="# kordinate"
+if ! grep -q "$MARKER" "$SHELL_RC" 2>/dev/null; then
+  cat >> "$SHELL_RC" <<EOF
+
+$MARKER
+export KORDINATE_HOME="$REPO_ROOT"
+export PATH="$REPO_ROOT/bin:\$PATH"
+EOF
+  echo "  +   PATH + KORDINATE_HOME added to $SHELL_RC"
+else
+  echo "  ok  PATH already configured"
+fi
+
+# ── tmux: .tmux.conf ────────────────────────────────────────
+
+echo ""
+echo "=== tmux ==="
 
 TMUX_CONF="$HOME/.tmux.conf"
 cat > "$TMUX_CONF" << 'EOF'
@@ -37,7 +54,7 @@ bind-key c run-shell '$HOME/.claude/bin/tmux-new-window "#{pane_current_path}"'
 EOF
 echo "  +   $TMUX_CONF"
 
-# ── tmux-new-window helper ──────────────────────────────────
+# ── tmux: new-window helper ─────────────────────────────────
 
 HELPER_DIR="$HOME/.claude/bin"
 mkdir -p "$HELPER_DIR"
@@ -71,7 +88,7 @@ EOF
 chmod +x "$HELPER_DIR/tmux-new-window"
 echo "  +   $HELPER_DIR/tmux-new-window"
 
-# ── Shell integration (auto-attach + wrapper) ──────────────
+# ── tmux: shell integration (auto-attach + wrapper) ─────────
 
 TMUX_MARKER="# kordinate-tmux"
 if ! grep -q "$TMUX_MARKER" "$SHELL_RC" 2>/dev/null; then
@@ -98,4 +115,4 @@ else
 fi
 
 echo ""
-echo "Done. New SSH sessions will auto-attach to tmux 0-general."
+echo "Done."
