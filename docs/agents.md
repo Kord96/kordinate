@@ -4,8 +4,8 @@
 
 | Agent | Triggers | What it does |
 |-------|----------|-------------|
-| deployer | `roll`, `migrate`, `stop`, `clean`, `diff` | Rolls deployments between environments, manages infrastructure |
-| sauron | `add monitoring`, `health check`, `dashboard`, `run tests`, ... | Adds monitoring, validates code, manages dashboards |
+| deployer | `roll`, `roll forward`, `roll backward`, `publish`, `migrate` | Rolls deployments between environments, manages infrastructure |
+| sauron | `add monitoring`, `add metrics`, `health check`, `prometheus`, `dashboard`, `set up logging`, `add logging`, `review logs`, `run tests`, `code validation`, `validate code` | Adds monitoring, validates code, manages dashboards |
 | designer | `review architecture`, `design review` | Reviews architecture, owns design patterns |
 | scribe | `update docs`, `add api key`, `add mcp`, ... | Sole editor of `.md` files |
 
