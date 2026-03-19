@@ -97,21 +97,40 @@ All observability is **pull-based**. Apps follow the [observability contract](re
 ```mermaid
 flowchart TB
     subgraph cluster[Each cluster]
-        subgraph app["app: my-app"]
-            PODS[pods + vitals]
+        subgraph env[env namespace — dev/test/prod]
+            subgraph myapp["app: my-app"]
+                P1[pod 1]
+                PN[pod N]
+                VIT[Vitals]
+                P1 ~~~ PN ~~~ VIT
+            end
+            subgraph infra["app: infra"]
+                KF[Kafka]
+                RD[Redis]
+                PG[Postgres]
+                KF ~~~ RD ~~~ PG
+            end
+        end
+
+        subgraph nodes[per-node]
+            NE[node-exporter]
+            CA[cAdvisor]
+            KL[kubelet]
+            NE ~~~ CA ~~~ KL
         end
 
         subgraph mon[monitor]
-            AL[Alloy] --> L[Loki<br/>3h] & P[Prom<br/>3h]
+            AL[Alloy] --> LK[Loki<br/>3h] & PR[Prom<br/>3h]
         end
 
         subgraph gw[gateway]
             GWT[TS sidecar<br/>or workstation]
         end
 
-        PODS -->|/metrics + logs| AL
-        P --- GWT
-        PODS -.->|K8s API| GWT
+        myapp & infra -->|/metrics + logs| AL
+        nodes -->|host + container metrics| AL
+        PR --- GWT
+        env -.->|K8s API| GWT
     end
 
     GWT -->|:9090 /federate| MA
