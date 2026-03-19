@@ -49,17 +49,9 @@ flowchart TB
 
     PA -->|pull via tailscale| MA
 
-    subgraph CB[cluster-b]
-        B1[dev apps] & B2[prod apps]
+    CB[cluster-b<br/>same structure]
 
-        subgraph gw-b[gateway namespace]
-            GB[gateway alloy<br/>scrapes all namespaces] --> PB[prom + loki<br/>3h buffer]
-        end
-
-        B1 & B2 -.->|/metrics + stdout| GB
-    end
-
-    PB -->|pull via tailscale| MA
+    CB -->|pull via tailscale| MA
 ```
 
 !!! note "Namespace model"
