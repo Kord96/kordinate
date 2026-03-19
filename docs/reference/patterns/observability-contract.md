@@ -15,7 +15,6 @@ flowchart LR
     APP -->|:app-port| GA[Gateway Alloy]
     VIT -->|:9131| GA
     GA --> P[Prom] & L[Loki]
-    P --> RR[recording rules<br/>vitals_status]
 ```
 
 | Concern | Owner | Interface | Consumer |
@@ -23,7 +22,6 @@ flowchart LR
 | **Logs** | app container | structured JSON → stdout | Gateway Alloy (tails via K8s API) |
 | **Metrics** | app container | `/metrics` on app port | Gateway Alloy (scrapes) |
 | **Health** | vitals sidecar | `/metrics` on `:9131` | Gateway Alloy (scrapes) |
-| **Composite** | platform | `vitals_status` recording rule | Grafana |
 
 ## Logs
 
@@ -73,8 +71,6 @@ All gauges use **0 = FAIL, 1 = WARNING, 2 = OK**.
 |--------|----------------|
 | `vitals_process{process}` | Is this process alive? |
 | `vitals_<section>{check}` | Is this concern healthy? |
-| `vitals_status` | Overall health (platform recording rule) |
-
 **Recommended sections** — use these when the concern fits, extend with app-specific sections as needed:
 
 | Section | What it covers |
@@ -111,20 +107,6 @@ The vitals sidecar must handle the app container not being ready yet:
 - Retry with backoff until app is reachable
 - Set a timeout (5s) on localhost scrape — treat timeout as a health signal
 
-### Composite health
-
-`vitals_status` is a **platform-owned recording rule** in Gateway Prom, not app code:
-
-```yaml
-groups:
-  - name: vitals
-    rules:
-      - record: vitals_status
-        expr: min(vitals_process)
-```
-
-Apps emit `vitals_process` and `vitals_<section>` gauges. The platform computes the composite. This keeps composite semantics consistent across all apps.
-
 ### Meta-alerting
 
 The platform should detect silent sidecar failures:
@@ -149,7 +131,6 @@ flowchart TB
 
     subgraph gw[Gateway Namespace]
         AL[Alloy] --> P[Prom<br/>3h] & L[Loki<br/>3h]
-        P --> RR[recording rules]
     end
 
     A -->|logs via K8s API| AL
