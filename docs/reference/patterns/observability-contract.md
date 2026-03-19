@@ -1,6 +1,6 @@
 # Observability Contract
 
-How apps expose telemetry to the platform. Three concerns — logs, metrics, health — with clear ownership boundaries.
+How apps expose telemetry to the platform. Three concerns — logs, metrics, health — with clear ownership boundaries. All pods belonging to an app share the `app` label — this is how Gateway Alloy, Vitals, and Grafana identify which metrics and logs belong together.
 
 ## Overview
 
