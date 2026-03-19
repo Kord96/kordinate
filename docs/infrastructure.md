@@ -130,7 +130,6 @@ flowchart TB
         myapp & infra -->|/metrics + logs| AL
         nodes -->|host + container metrics| AL
         PR --- GWT
-        env -.->|K8s API| GWT
     end
 
     GWT -->|:9090 /federate| MA
