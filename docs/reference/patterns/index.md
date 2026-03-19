@@ -54,3 +54,4 @@ Recognized architectural patterns used across our projects. Each pattern page ex
     |---------|-------------|
     | [Service Manager](service-manager.md) | Startup, shutdown, health, graceful degradation |
     | [Sidecar](sidecar.md) | Auxiliary container for cross-cutting concerns |
+    | [Observability Contract](observability-contract.md) | Logs, metrics, and health — the app-to-platform interface |

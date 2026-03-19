@@ -69,6 +69,7 @@ nav:
           - Service Manager: reference/patterns/service-manager.md
           - Sidecar: reference/patterns/sidecar.md
           - Stream to Store: reference/patterns/stream-to-store.md
+          - Observability Contract: reference/patterns/observability-contract.md
       - Libraries:
           - Index: reference/libraries/index.md
           - klog: reference/libraries/klog.md
