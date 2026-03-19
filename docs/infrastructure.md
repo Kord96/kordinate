@@ -84,41 +84,26 @@ flowchart LR
 
 ## Data Flow
 
-All observability is **pull-based**. Each cluster's gateway namespace is the single collection and federation point.
+All observability is **pull-based**. Apps follow the [observability contract](reference/patterns/observability-contract.md) — Gateway Alloy collects everything into local Prom + Loki. Gateway Tailscale federates to master.
 
 ```mermaid
-flowchart TB
-    subgraph sources[Data Sources]
-        AP[App pods<br/>/metrics + stdout]
-        KU[Kubelet<br/>cAdvisor]
-        KSM[KSM]
-    end
-
-    subgraph gw[Gateway Namespace]
-        subgraph AL[Alloy]
-            SM[scrape metrics]
-            TL[tail logs]
-            NM[normalize]
-        end
-        AL --> L[Loki<br/>3h] & P[Prom<br/>3h]
-        P --- GWT[Gateway Tailscale]
+flowchart LR
+    subgraph gw[Each cluster — gateway namespace]
+        AL[Alloy<br/>collects] --> L[Loki<br/>3h] & P[Prom<br/>3h]
+        P --- GWT[Gateway<br/>Tailscale]
         K8S[K8s API] --- GWT
     end
 
-    sources -->|pull| AL
+    GWT -->|:9090 /federate| MA
+    GWT -->|:6443 pod logs| MA
 
     subgraph master[Master Namespace]
         MA[Master Alloy] --> ML[Loki<br/>30d] & MP[Prom<br/>30d]
         MP & ML --> G[Grafana]
     end
-
-    GWT -->|:9090 /federate| MA
-    GWT -->|:6443 pod logs| MA
 ```
 
-**Collection:** Gateway Alloy scrapes `/metrics` from app pods (via annotations), kubelet (cAdvisor), and KSM. Tails pod stdout via K8s API. Normalizes metrics (drops raw `kube_*`/`kafka_*`, keeps app metrics). Writes to local Prom + Loki with 3h retention.
-
-**Federation:** Gateway Tailscale exposes `:9090` (Prom), `:3100` (Loki), `:6443` (K8s API) on the tailnet. Master Alloy pulls metrics via `/federate` from `:9090` and tails pod logs via K8s API from `:6443`. Master never reads from Gateway Loki — the `:3100` port is for direct cluster debugging only.
+Gateway Tailscale exposes `:9090` (Prom), `:3100` (Loki), `:6443` (K8s API) on the tailnet. Master pulls metrics via `/federate` from `:9090` and tails pod logs via K8s API from `:6443`. Master never reads from Gateway Loki — `:3100` is for direct cluster debugging only.
 
 !!! warning "Why logs are tailed twice"
     Loki has no `/federate` equivalent. Master tails the same pods independently via K8s API. Each cluster's Gateway Alloy also tails locally. The two collectors are unaware of each other. Acceptable: clusters remain self-contained, master is independently resilient, K8s API log endpoint is lightweight.
