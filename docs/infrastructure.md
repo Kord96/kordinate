@@ -40,7 +40,7 @@ flowchart TB
         A1 & A2 & A3 -.->|/metrics + stdout| GA
     end
 
-    subgraph M[master namespace — one cluster only]
+    subgraph M[master namespace]
         MA[master alloy] --> MP[master prom<br/>30d retention]
         MA --> ML[master loki<br/>30d retention]
         MP --> G[Grafana]
