@@ -4,6 +4,78 @@
 ## Logs: tails JSON Lines files from each gateway's NFS share via Tailscale (:2049).
 ## Writes metrics to Master Prometheus, logs to Master Loki.
 ##
+## NFS PV/PVCs for gateway log federation (NFSv4-only servers)
+## Home cluster NFS — commented out until gateway-home NFS is deployed
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: alloy-nfs-home
+#   labels:
+#     app: monitoring
+#     component: alloy
+# spec:
+#   capacity:
+#     storage: 1Gi
+#   accessModes:
+#     - ReadOnlyMany
+#   mountOptions:
+#     - nfsvers=4
+#     - ro
+#   nfs:
+#     server: "100.113.48.89"
+#     path: /federate
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: alloy-nfs-home
+#   labels:
+#     app: monitoring
+#     component: alloy
+# spec:
+#   accessModes:
+#     - ReadOnlyMany
+#   resources:
+#     requests:
+#       storage: 1Gi
+#   volumeName: alloy-nfs-home
+#   storageClassName: ""
+# ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: alloy-nfs-vandc
+  labels:
+    app: monitoring
+    component: alloy
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadOnlyMany
+  mountOptions:
+    - nfsvers=4
+    - ro
+  nfs:
+    server: "100.107.8.117"
+    path: /federate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alloy-nfs-vandc
+  labels:
+    app: monitoring
+    component: alloy
+spec:
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: alloy-nfs-vandc
+  storageClassName: ""
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -54,17 +126,18 @@ data:
     // ═══════════════════════════════════════════════
 
     // ── Home cluster logs ──
-    local.file_match "logs_home" {
-      path_targets = [{
-        __path__ = "/data/federate/home/*.json",
-        cluster  = "home",
-      }]
-    }
-
-    loki.source.file "logs_home" {
-      targets    = local.file_match.logs_home.targets
-      forward_to = [loki.process.federate.receiver]
-    }
+    // TODO: enable when NFS gateway is deployed on home cluster
+    // local.file_match "logs_home" {
+    //   path_targets = [{
+    //     __path__ = "/data/federate/home/*.json",
+    //     cluster  = "home",
+    //   }]
+    // }
+    //
+    // loki.source.file "logs_home" {
+    //   targets    = local.file_match.logs_home.targets
+    //   forward_to = [loki.process.federate.receiver]
+    // }
 
     // ── Vandc cluster logs ──
     local.file_match "logs_vandc" {
@@ -165,9 +238,10 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /etc/alloy
-            - name: logs-home
-              mountPath: /data/federate/home
-              readOnly: true
+            # TODO: enable when NFS gateway is deployed on home cluster
+            # - name: logs-home
+            #   mountPath: /data/federate/home
+            #   readOnly: true
             - name: logs-vandc
               mountPath: /data/federate/vandc
               readOnly: true
@@ -175,13 +249,13 @@ spec:
         - name: config
           configMap:
             name: alloy-config
-        - name: logs-home
-          nfs:
-            server: "100.113.48.89"
-            path: /federate
-            readOnly: true
+        # TODO: enable when NFS gateway is deployed on home cluster
+        # - name: logs-home
+        #   nfs:
+        #     server: "100.113.48.89"
+        #     path: /federate
+        #     readOnly: true
         - name: logs-vandc
-          nfs:
-            server: "100.107.8.117"
-            path: /federate
+          persistentVolumeClaim:
+            claimName: alloy-nfs-vandc
             readOnly: true

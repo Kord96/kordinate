@@ -4,6 +4,44 @@
 ## Receives logs from Alloy via push API.
 ## Exposed on tailnet via Tailscale for master to federate.
 ##
+## NFS PV/PVC for federation output directory (NFSv4-only server)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gateway-nfs-federate
+  labels:
+    app: monitoring
+    component: loki
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  mountOptions:
+    - nfsvers=4
+  nfs:
+    server: nfs-server.gateway.svc.cluster.local
+    path: /federate
+    # NOTE: kubelet mounts NFS from the host, which cannot resolve cluster DNS.
+    # On vandc, apply with: kubectl get svc -n gateway nfs-server -o jsonpath='{.spec.clusterIP}'
+    # and patch the PV server field to the ClusterIP if DNS resolution fails.
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gateway-nfs-federate
+  labels:
+    app: monitoring
+    component: loki
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  volumeName: gateway-nfs-federate
+  storageClassName: ""
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -138,9 +176,8 @@ spec:
           persistentVolumeClaim:
             claimName: loki-gateway-data
         - name: gateway-nfs
-          nfs:
-            server: nfs-server.gateway.svc.cluster.local
-            path: /federate
+          persistentVolumeClaim:
+            claimName: gateway-nfs-federate
 ---
 apiVersion: v1
 kind: Service
