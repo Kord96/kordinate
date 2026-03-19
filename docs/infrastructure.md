@@ -51,36 +51,44 @@ flowchart LR
 
     Each k3s cluster is standalone with its own control plane, worker nodes, and observability stack. Clusters connect over Tailscale but operate independently.
 
-    App namespaces (`dev`, `test`, `prod`) run workloads only. The `gateway` namespace (called `monitor` in k8s) runs a single Alloy instance that scrapes all namespaces, with local Prom + Loki buffers. The `master` namespace pulls from all gateways. In practice, master runs on one of the clusters but is logically independent.
+    App namespaces (`dev`, `test`, `prod`) run workloads only. Each cluster has three infrastructure namespaces:
+
+    | Namespace | What runs there |
+    |-----------|----------------|
+    | `gateway` | Gateway Tailscale (cluster's external interface) + Workstation (if interactive cluster) |
+    | `monitor` | Alloy, Prom (3h), Loki (3h), KSM, node-exporter |
+    | `master` | Master Alloy, Prom (30d), Loki (30d), Grafana — one cluster only |
 
     ```mermaid
     flowchart TB
         subgraph CA[cluster-a]
             A1[dev apps] & A2[test apps] & A3[prod apps]
 
-            subgraph gw-a[gateway namespace]
-                GA[gateway alloy<br/>scrapes all namespaces] --> PA[prom + loki<br/>3h buffer]
+            subgraph mon-a[monitor]
+                GA[alloy] --> PA[prom + loki<br/>3h]
+            end
+
+            subgraph gw-a[gateway]
+                GWT[tailscale]
+                WS[workstation]
             end
 
             A1 & A2 & A3 -.->|/metrics + stdout| GA
         end
 
-        subgraph M[master namespace]
-            MA[master alloy] --> MP[master prom<br/>30d retention]
-            MA --> ML[master loki<br/>30d retention]
-            MP --> G[Grafana]
-            ML --> G
+        subgraph M[master]
+            MA[master alloy] --> MP[prom<br/>30d] & ML[loki<br/>30d]
+            MP & ML --> G[Grafana]
         end
 
-        PA -->|pull via tailscale| MA
+        GWT -->|tailnet| MA
 
         CB[cluster-b<br/>same structure]
 
-        CB -->|pull via tailscale| MA
+        CB -->|tailnet| MA
     ```
 
-    !!! note "Namespace model"
-        App namespaces run workloads only — no observability components. Apps emit structured JSON to stdout and expose `/metrics`. The gateway namespace runs a single Alloy that scrapes all app pods (via annotations), kubelet (cAdvisor), KSM, and tails logs via K8s API. It writes to namespace-local Prom + Loki with 3h retention. Master pulls from each cluster's gateway.
+    The `gateway` namespace is the cluster's front door — either a full workstation (for interactive clusters) or just the Tailscale pod (for headless clusters). Master runs on one cluster but is logically independent.
 
 ## Data Flow
 
@@ -88,16 +96,21 @@ All observability is **pull-based**. Apps follow the [observability contract](re
 
 ```mermaid
 flowchart LR
-    subgraph gw[Each cluster — gateway namespace]
-        AL[Alloy<br/>collects] --> L[Loki<br/>3h] & P[Prom<br/>3h]
-        P --- GWT[Gateway<br/>Tailscale]
+    subgraph cluster[Each cluster]
+        subgraph mon[monitor]
+            AL[Alloy] --> L[Loki<br/>3h] & P[Prom<br/>3h]
+        end
+        subgraph gw[gateway]
+            GWT[Tailscale]
+        end
+        P --- GWT
         K8S[K8s API] --- GWT
     end
 
     GWT -->|:9090 /federate| MA
     GWT -->|:6443 pod logs| MA
 
-    subgraph master[Master Namespace]
+    subgraph master[master]
         MA[Master Alloy] --> ML[Loki<br/>30d] & MP[Prom<br/>30d]
         MP & ML --> G[Grafana]
     end
@@ -112,7 +125,8 @@ Gateway Tailscale exposes `:9090` (Prom), `:3100` (Loki), `:6443` (K8s API) on t
 
 !!! info "Collection"
     - App namespaces run workloads only — no observability components
-    - One gateway namespace per cluster collects all signals (metrics, logs, cluster state)
+    - `monitor` namespace collects all signals (metrics, logs, cluster state)
+    - `gateway` namespace exposes the cluster on the tailnet (Tailscale + workstation)
     - Apps follow the [observability contract](reference/patterns/observability-contract.md) — JSON stdout, `/metrics` endpoint, vitals health pod
 
 !!! info "Federation"

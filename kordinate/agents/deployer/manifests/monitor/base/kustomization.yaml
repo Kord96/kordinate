@@ -6,6 +6,5 @@ resources:
   - alloy-config.yaml
   - prometheus.yaml
   - loki.yaml
-  - gateway.yaml
   - kube-state-metrics.yaml
   - node-exporter.yaml

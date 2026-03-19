@@ -13,8 +13,9 @@ For cluster-specific details, see `profile/config.yaml` and `profile/topology.ya
 
 | Namespace | What runs there | Scope |
 |-----------|----------------|-------|
-| `gateway` (monitor) | Alloy, Prometheus (3h), Loki (3h), KSM, node-exporter, Tailscale | Every cluster |
-| `master` | Master Alloy, Prometheus (30d), Loki (30d), Grafana, Workstation | One cluster |
+| `gateway` | Gateway Tailscale, Workstation (if interactive cluster), Ingress | Every cluster |
+| `monitor` | Alloy, Prometheus (3h), Loki (3h), KSM, node-exporter | Every cluster |
+| `master` | Master Alloy, Prometheus (30d), Loki (30d), Grafana | One cluster |
 | `dev`, `test`, `prod` | Application workloads | Every cluster |
 
 ## Data Flow
