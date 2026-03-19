@@ -249,15 +249,53 @@ cmd_deploy() {
   [ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"
   MARKER="# kordinate"
   if ! grep -q "$MARKER" "$SHELL_RC" 2>/dev/null; then
-    cat >> "$SHELL_RC" <<EOF
+    cat >> "$SHELL_RC" <<'RCEOF'
 
-$MARKER
-export KORDINATE_HOME="$REPO_ROOT"
-export PATH="$REPO_ROOT/bin:\$PATH"
-EOF
-    echo "  +   Added $REPO_ROOT/bin to PATH in $SHELL_RC"
+# kordinate
+export KORDINATE_HOME="REPO_ROOT_PLACEHOLDER"
+export PATH="REPO_ROOT_PLACEHOLDER/bin:$PATH"
+
+# tmux: auto-attach to 0-general on SSH login
+if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then
+  tmux new-session -A -s 0-general
+fi
+
+# tmux wrapper: bare 'tmux' attaches to 0-general
+tmux() {
+  if [ $# -eq 0 ]; then
+    command tmux new-session -A -s 0-general
+  else
+    command tmux "$@"
+  fi
+}
+RCEOF
+    # Replace placeholder with actual repo root
+    sed -i "s|REPO_ROOT_PLACEHOLDER|$REPO_ROOT|g" "$SHELL_RC"
+    echo "  +   Added PATH + tmux auto-attach to $SHELL_RC"
   else
     echo "  ok  PATH already configured"
+  fi
+
+  # Ensure tmux block exists even if kordinate marker was already present
+  TMUX_MARKER="# tmux: auto-attach"
+  if ! grep -q "$TMUX_MARKER" "$SHELL_RC" 2>/dev/null; then
+    cat >> "$SHELL_RC" <<'RCEOF'
+
+# tmux: auto-attach to 0-general on SSH login
+if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then
+  tmux new-session -A -s 0-general
+fi
+
+# tmux wrapper: bare 'tmux' attaches to 0-general
+tmux() {
+  if [ $# -eq 0 ]; then
+    command tmux new-session -A -s 0-general
+  else
+    command tmux "$@"
+  fi
+}
+RCEOF
+    echo "  +   Added tmux auto-attach to $SHELL_RC"
   fi
 
   echo ""
