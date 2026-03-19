@@ -13,24 +13,61 @@
 
 All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
 
-- Credentials live in `pass` under `kordinate/`. Auth locks in `profile/locks/`.
-- Follow existing patterns — no new libraries, frameworks, or conventions
-- All `.md` files protected — only scribe may edit (hook-enforced)
-- Commit with `[<agent-name>]` in message
-- Project artifacts go in the project repo, not kordinate
-- Tool exclusivity: only deployer may kubectl write, only sauron may use Grafana MCP, only deployer may use Redis MCP
-- Memory: generic knowledge → `memory/static/`, site-specific → `memory/dynamic/`, project-specific → `<repo>/.claude/agent-memory/<agent>/`
-- Agent resumption: check `.claude/agent-state/<name>.json` for `agent_id`
-- Never invoke an agent's operational commands directly — spawn the owning agent
+!!! info "Permissions"
+    - Only **deployer** may kubectl write and use Redis MCP
+    - Only **sauron** may use Grafana MCP
+    - Only **scribe** may edit `.md` files (hook-enforced)
+    - Never invoke an agent's operational commands directly — spawn the owning agent
+
+!!! note "Conventions"
+    - Credentials live in `pass` under `kordinate/`. Auth locks in `profile/locks/`.
+    - Follow existing patterns — no new libraries, frameworks, or conventions
+    - Commit with `[<agent-name>]` in message
+    - Project artifacts go in the project repo, not kordinate
+
+!!! tip "Memory"
+    - Generic knowledge → `memory/static/`
+    - Site-specific notes → `memory/dynamic/`
+    - Project-specific → `<repo>/.claude/agent-memory/<agent>/`
+    - Agent resumption: check `.claude/agent-state/<name>.json` for `agent_id`
 
 ## Agent Specifics
 
-| Dimension | Deployer | Sauron | Designer | Scribe |
-|-----------|----------|--------|----------|--------|
-| **Authority** | kubectl writes, container registry, Redis | Grafana, code fixes, standards testing | Pattern definitions, architecture review | All `.md` file edits |
-| **Exclusive Tools** | postgres.py, Redis MCP | nokrashi-tools, klog, Grafana MCP | Gemini (design validation) | Gemini (doc review) |
-| **Memory Owns** | infra.md, migration.md, troubleshooting.md | monitoring.md, logging.md, dashboards/ | patterns/\*.md, libraries/\*.md | templates/ |
-| **Operational Style** | Reactive — executes on request | Act first, report after | Analytical — validates against patterns | Coordinate — write-gate for all docs |
+=== "Deployer"
+
+    | | |
+    |---|---|
+    | **Authority** | kubectl writes, container registry, Redis |
+    | **Exclusive Tools** | postgres.py, Redis MCP |
+    | **Memory Owns** | infra.md, migration.md, troubleshooting.md |
+    | **Style** | Reactive — executes on request |
+
+=== "Sauron"
+
+    | | |
+    |---|---|
+    | **Authority** | Grafana, code fixes, standards testing |
+    | **Exclusive Tools** | nokrashi-tools, klog, Grafana MCP |
+    | **Memory Owns** | monitoring.md, logging.md, dashboards/ |
+    | **Style** | Act first, report after |
+
+=== "Designer"
+
+    | | |
+    |---|---|
+    | **Authority** | Pattern definitions, architecture review |
+    | **Exclusive Tools** | Gemini (design validation) |
+    | **Memory Owns** | patterns/\*.md, libraries/\*.md |
+    | **Style** | Analytical — validates against patterns |
+
+=== "Scribe"
+
+    | | |
+    |---|---|
+    | **Authority** | All `.md` file edits |
+    | **Exclusive Tools** | Gemini (doc review) |
+    | **Memory Owns** | templates/ |
+    | **Style** | Coordinate — write-gate for all docs |
 
 ## How Requests Flow
 
