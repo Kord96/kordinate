@@ -2,12 +2,12 @@
 
 ## Overview
 
-| Agent | Triggers | What it does |
-|-------|----------|-------------|
-| deployer | `roll`, `roll forward`, `roll backward`, `publish`, `migrate` | Rolls deployments between environments, manages infrastructure |
-| sauron | `add monitoring`, `add metrics`, `health check`, `prometheus`, `dashboard`, `set up logging`, `add logging`, `review logs`, `run tests`, `code validation`, `validate code` | Adds monitoring, validates code, manages dashboards |
-| designer | `review architecture`, `design review` | Reviews architecture, owns design patterns |
-| scribe | `update docs`, `update profile docs`, `update project docs`, `add api key`, `store api key`, `add mcp`, `update agent docs`, `write readme`, `update readme` | Sole editor of `.md` files |
+| Agent | What it does |
+|-------|-------------|
+| **deployer** | Rolls deployments between environments, manages infrastructure |
+| **sauron** | Adds monitoring, validates code, manages dashboards |
+| **designer** | Reviews architecture, owns design patterns |
+| **scribe** | Sole editor of `.md` files |
 
 ## Shared
 
@@ -39,56 +39,126 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
 | `/merge` | Merge current session branch |
 | `/invalidate` | Force re-consultation for an agent |
 
-## Agent Specifics
+## Agents
 
 === "Deployer"
 
-    | | |
-    |---|---|
-    | **Authority** | kubectl writes, container registry, Redis |
-    | **Exclusive Tools** | postgres.py, Redis MCP |
-    | **Commands** | `/deployer:roll` (roll between envs), `/deployer:stop` (scale down), `/deployer:clean` (clean env data), `/deployer:diff` (stage incremental changes), `/deployer:bootstrap` (bootstrap cluster) |
-    | **Global Static** | infra.md, migration.md, troubleshooting.md |
-    | **Global Dynamic** | auto-managed notes |
-    | **Project Static** | `deployer/static/` — k8s manifests |
-    | **Project Dynamic** | `deployer/dynamic/` — operational notes |
-    | **Style** | Reactive — executes on request |
+    Triggers: `roll`, `roll forward`, `roll backward`, `publish`, `migrate`
+
+    Authority
+    :   kubectl writes, container registry, Redis
+
+    Exclusive Tools
+    :   postgres.py, Redis MCP
+
+    Style
+    :   Reactive — executes on request
+
+    Consults
+    :   [designer](consultation.md) (pattern perspective), [sauron](consultation.md) (monitoring impact)
+
+    **Commands**
+
+    | Command | Description |
+    |---------|-------------|
+    | `/deployer:roll` | Roll between environments |
+    | `/deployer:stop` | Scale down an environment |
+    | `/deployer:clean` | Clean up environment data |
+    | `/deployer:diff` | Stage incremental data changes |
+    | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+
+    **Memory**
+
+    | | Static | Dynamic |
+    |---|---|---|
+    | **Global** | infra.md, migration.md, troubleshooting.md | auto-managed |
+    | **Project** | `deployer/static/` — k8s manifests | `deployer/dynamic/` — operational notes |
 
 === "Sauron"
 
-    | | |
-    |---|---|
-    | **Authority** | Grafana, code fixes, standards testing |
-    | **Exclusive Tools** | nokrashi-tools, klog, Grafana MCP |
-    | **Commands** | `/sauron:scan` (scan for monitoring gaps), `/sauron:diagnose` (diagnose issue) |
-    | **Global Static** | monitoring.md, logging.md, dashboards/ |
-    | **Global Dynamic** | auto-managed notes |
-    | **Project Static** | `sauron/static/` — dashboards, alert rules |
-    | **Project Dynamic** | `sauron/dynamic/` — monitoring notes, findings |
-    | **Style** | Act first, report after |
+    Triggers: `add monitoring`, `add metrics`, `health check`, `prometheus`, `dashboard`, `set up logging`, `add logging`, `review logs`, `run tests`, `code validation`, `validate code`
+
+    Authority
+    :   Grafana, code fixes, standards testing
+
+    Exclusive Tools
+    :   nokrashi-tools, klog, Grafana MCP
+
+    Style
+    :   Act first, report after
+
+    Consults
+    :   [designer](consultation.md) (pattern monitoring perspective), [deployer](consultation.md) (cluster state)
+
+    **Commands**
+
+    | Command | Description |
+    |---------|-------------|
+    | `/sauron:scan` | Scan a project for monitoring gaps |
+    | `/sauron:diagnose` | Diagnose a specific issue |
+
+    **Memory**
+
+    | | Static | Dynamic |
+    |---|---|---|
+    | **Global** | monitoring.md, logging.md, dashboards/ | auto-managed |
+    | **Project** | `sauron/static/` — dashboards, alert rules | `sauron/dynamic/` — monitoring notes |
 
 === "Designer"
 
-    | | |
-    |---|---|
-    | **Authority** | Pattern definitions, architecture review |
-    | **Exclusive Tools** | Gemini (design validation) |
-    | **Commands** | `/designer:detect-patterns` (scan for recognized patterns) |
-    | **Global Static** | patterns/\*.md, libraries/\*.md |
-    | **Global Dynamic** | auto-managed notes |
-    | **Project Static** | — |
-    | **Project Dynamic** | — |
-    | **Style** | Analytical — validates against patterns |
+    Triggers: `review architecture`, `design review`
+
+    Authority
+    :   Pattern definitions, architecture review
+
+    Exclusive Tools
+    :   Gemini (design validation)
+
+    Style
+    :   Analytical — validates against patterns
+
+    Consults
+    :   [deployer](consultation.md) (infrastructure reality), [sauron](consultation.md) (observability gaps)
+
+    **Commands**
+
+    | Command | Description |
+    |---------|-------------|
+    | `/designer:detect-patterns` | Scan a project for recognized patterns |
+
+    **Memory**
+
+    | | Static | Dynamic |
+    |---|---|---|
+    | **Global** | patterns/\*.md, libraries/\*.md | auto-managed |
 
 === "Scribe"
 
-    | | |
-    |---|---|
-    | **Authority** | All `.md` file edits |
-    | **Exclusive Tools** | Gemini (doc review) |
-    | **Commands** | `/scribe:add-mcp` (add MCP entry), `/scribe:update-agent-docs` (update agent docs), `/scribe:update-project-docs` (update project docs), `/scribe:update-subagent-memory` (update agent memory) |
-    | **Global Static** | templates/ |
-    | **Global Dynamic** | auto-managed notes |
-    | **Project Static** | — |
-    | **Project Dynamic** | — |
-    | **Style** | Coordinate — write-gate for all docs |
+    Triggers: `update docs`, `update profile docs`, `update project docs`, `add api key`, `store api key`, `add mcp`, `update agent docs`, `write readme`, `update readme`
+
+    Authority
+    :   All `.md` file edits
+
+    Exclusive Tools
+    :   Gemini (doc review)
+
+    Style
+    :   Coordinate — write-gate for all docs
+
+    Consults
+    :   [designer](consultation.md) (architecture context), [sauron](consultation.md) (monitoring context), [deployer](consultation.md) (infrastructure context)
+
+    **Commands**
+
+    | Command | Description |
+    |---------|-------------|
+    | `/scribe:add-mcp` | Add a new MCP server entry |
+    | `/scribe:update-agent-docs` | Update an agent's documentation |
+    | `/scribe:update-project-docs` | Update project-level docs |
+    | `/scribe:update-subagent-memory` | Update agent memory files |
+
+    **Memory**
+
+    | | Static | Dynamic |
+    |---|---|---|
+    | **Global** | templates/ | auto-managed |
