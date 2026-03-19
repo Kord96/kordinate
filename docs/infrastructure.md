@@ -106,7 +106,7 @@ flowchart TB
         end
 
         subgraph gw[gateway]
-            GWT[Tailscale]
+            GWT[TS sidecar<br/>or workstation]
         end
 
         PODS -->|/metrics + logs| AL
