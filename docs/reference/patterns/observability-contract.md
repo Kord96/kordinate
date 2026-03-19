@@ -14,17 +14,31 @@ flowchart TB
         P1 ~~~ P2 ~~~ PN ~~~ VIT
     end
 
-    P1 & P2 & PN -->|/metrics + logs| AL
+    P1 & P2 & PN -->|/metrics| AL
     VIT -->|health metrics| AL
     PR -.->|app metrics query| VIT
 
     subgraph mon[monitor namespace]
-        AL[Alloy] --> PR[Prom] & LK[Loki]
+        AL[Alloy] --> PR[Prom]
     end
 ```
 
 !!! tip ""
     All pods — including vitals — share the `app` label. Alloy uses this label to group metrics and logs by application.
+
+### Log shipping
+
+```mermaid
+flowchart LR
+    subgraph app["app: my-app"]
+        P[pods — stdout JSON]
+    end
+
+    P -->|stdout| K8S[K8s API]
+    K8S -->|tail| AL[Alloy] --> LK[Loki]
+```
+
+Apps write structured JSON to stdout. Alloy tails pod logs via the K8s API — apps don't push to Loki directly. Log delivery is best-effort.
 
 | Concern | Owner | Interface | Consumer |
 |---------|-------|-----------|----------|
