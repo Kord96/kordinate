@@ -22,18 +22,13 @@ flowchart TD
     W --> RR[return result]
 ```
 
-Results are cached per consulter-consultant pair:
-
-- **Cache file**: `agents/shared/memory/dynamic/<consulter>-<consultant>.cache` — the answer
-- **Hash file**: `agents/shared/memory/dynamic/.<consulter>-<consultant>.hash` — MD5 of the consultant's source dirs (`instructions/`, `memory/static/`, `memory/dynamic/`)
-
-Staleness is detected by `cache_check` comparing the stored hash against current source files — if sources changed, the cache is stale and the agent is re-consulted.
+Results are cached per consulter-consultant pair at `agents/shared/memory/dynamic/`. The cache uses the framework's [hash-based invalidation](memory.md#cache-system) — if the consultant's source files change, the cache goes stale automatically.
 
 !!! tip "Force re-consultation"
     ```bash
     /invalidate deployer
     ```
-    Removes the `.hash` files where the given agent is the consultant. Cache content files are preserved as fallback — they'll be refreshed on next `/consult`.
+    Removes hash files where the given agent is the consultant. Cache content is preserved as fallback — refreshed on next `/consult`.
 
 ## Consultation Matrix
 

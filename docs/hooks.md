@@ -45,21 +45,4 @@ Each guard enforces that only the authorized agent can perform certain operation
 
 ## Cache Library
 
-Both `agent-memory.sh` and the consultation cache use the shared `lib/cache.sh` library for hash-based invalidation:
-
-```mermaid
-flowchart LR
-    H[hash source files] --> C{changed?}
-    C -->|no| S[skip — use cached output]
-    C -->|yes| R[regenerate]
-    R --> W[store new hash]
-```
-
-??? info "Functions in `lib/cache.sh`"
-
-    | Function | Purpose |
-    |----------|---------|
-    | `cache_hash <dirs...>` | Compute hash of all files in given directories |
-    | `cache_check <hash_file> <dirs...>` | Returns 0 if fresh, 1 if stale |
-    | `cache_store <hash_file> <dirs...>` | Store current hash |
-    | `cache_invalidate <hash_file>` | Remove hash to force regeneration |
+Both hooks use the shared `lib/cache.sh` library for hash-based invalidation — hashing source files and skipping regeneration if unchanged. The cache system is also used by consultation and doc audit. See [Memory — Cache System](memory.md#cache-system) for full documentation.
