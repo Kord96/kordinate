@@ -92,7 +92,7 @@ flowchart LR
 
 ## Data Flow
 
-All observability is **pull-based**. Apps follow the [observability contract](reference/patterns/observability-contract.md) — Gateway Alloy collects everything into local Prom + Loki. Gateway Tailscale federates to master.
+All observability is **pull-based**. Apps follow the [observability contract](reference/observability-contract.md) — Gateway Alloy collects everything into local Prom + Loki. Gateway Tailscale federates to master.
 
 ```mermaid
 flowchart TB
@@ -174,7 +174,7 @@ flowchart TB
     - App namespaces run workloads only — no observability components
     - `monitor` namespace collects all signals (metrics, logs, cluster state)
     - `gateway` namespace exposes the cluster on the tailnet (Tailscale + workstation)
-    - Apps follow the [observability contract](reference/patterns/observability-contract.md) — JSON stdout, `/metrics` endpoint, vitals health pod
+    - Apps follow the [observability contract](reference/observability-contract.md) — JSON stdout, `/metrics` endpoint, vitals health pod
 
 !!! info "Federation"
     - Master pulls from each cluster's gateway — clusters are unaware of master

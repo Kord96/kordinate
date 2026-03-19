@@ -156,4 +156,4 @@ The platform should detect silent vitals failures:
 
 ## Related patterns
 
-- [Service Manager](service-manager.md) — managed processes should comply with this contract
+- [Service Manager](patterns/service-manager.md) — managed processes should comply with this contract

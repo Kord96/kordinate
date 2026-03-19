@@ -1,4 +1,4 @@
-# <Project> — Sentinel
+# <Project> — Vitals
 
 > **Maintain this document when health checks are added or modified.**
 
@@ -23,7 +23,7 @@ Document how to address components in Loki queries for this project.
 
 ## Start Here
 
-The first query to run when debugging — typically the sentinel's own transition logs.
+The first query to run when debugging — typically the vitals's own transition logs.
 
 ## Sections
 

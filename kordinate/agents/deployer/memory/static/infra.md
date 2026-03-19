@@ -20,9 +20,9 @@ For cluster-specific details, see `profile/config.yaml` and `profile/topology.ya
 
 ## Data Flow
 
-Inside each cluster: Gateway Alloy scrapes app pods (/metrics), kubelet (cAdvisor), KSM, and tails pod stdout via K8s API. Writes to Gateway Prom and Gateway Loki.
+Inside each cluster: Gateway Alloy scrapes app pods (/metrics), kubelet (cAdvisor), KSM, and tails pod stdout via K8s API locally. Writes to Gateway Prom and Gateway Loki.
 
-Master: Master Alloy pulls Gateway Prom via /federate (:9090) and Gateway Loki via :3100 through Gateway Tailscale. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
+Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) and Gateway Loki via :3101 /federate (logs) through Gateway Tailscale — symmetric pull, no K8s API from master. Writes to Master Prom and Master Loki (30d retention). Grafana queries only master's local stores. Logs are collected once by Gateway Alloy — master reads from Gateway Loki, no duplicate tailing.
 
 ## Pod Labels
 
@@ -46,7 +46,7 @@ Master: Master Alloy pulls Gateway Prom via /federate (:9090) and Gateway Loki v
 | Signal | Source | Collection |
 |--------|--------|------------|
 | App metrics | Pod /metrics | Pull, annotation-based discovery |
-| App logs | Pod stdout (JSON) | Pull, K8s API tail |
+| App logs | Pod stdout (JSON) | Pull, K8s API tail locally |
 | Container resources | Kubelet cAdvisor | Pull, all nodes |
 | PVC storage | Kubelet metrics | Pull, normalized as pipeline_pvc_* |
 | Cluster state | KSM :8080/metrics | Pull, normalized as pipeline_* |
@@ -55,7 +55,7 @@ Master: Master Alloy pulls Gateway Prom via /federate (:9090) and Gateway Loki v
 
 ## Log Shipping
 
-Prometheus: /federate for metrics pull (:9090). Loki: Master Alloy reads from Gateway Loki via :3100. Logs are collected once by Gateway Alloy and stored in Gateway Loki — master reads from there. No duplicate tailing.
+Prometheus: /federate for metrics pull (:9090). Loki: Master Alloy pulls from Gateway Loki via :3101 /federate. Logs are collected once by Gateway Alloy and stored in Gateway Loki — master pulls from there via federation. No duplicate tailing, no K8s API from master.
 
 ## Manifests
 

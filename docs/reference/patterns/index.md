@@ -4,14 +4,6 @@ Recognized architectural patterns used across our projects. Each pattern page ex
 
 ## By Category
 
-=== "Platform"
-
-    How apps connect to infrastructure. Enforced by deployer at deploy time.
-
-    | Pattern | What it does |
-    |---------|-------------|
-    | [Observability Contract](observability-contract.md) | Logs, metrics, and health — the app-to-platform interface |
-
 === "Resilience"
 
     How the system handles failure.

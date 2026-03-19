@@ -5,4 +5,4 @@
 # Dashboards are discovered at <project-repo>/monitoring/dashboards/
 project_files:
   - metrics.md
-  - sentinel.md
+  - vitals.md

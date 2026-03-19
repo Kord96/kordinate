@@ -51,6 +51,7 @@ nav:
   - Reference:
       - Link Mapping: reference/link-mapping.md
       - Source Map: reference/source-map.md
+      - Observability Contract: reference/observability-contract.md
       - Patterns:
           - Index: reference/patterns/index.md
           - API Gateway: reference/patterns/api-gateway.md
@@ -69,7 +70,6 @@ nav:
           - Service Manager: reference/patterns/service-manager.md
           - Sidecar: reference/patterns/sidecar.md
           - Stream to Store: reference/patterns/stream-to-store.md
-          - Observability Contract: reference/patterns/observability-contract.md
       - Libraries:
           - Index: reference/libraries/index.md
           - klog: reference/libraries/klog.md
