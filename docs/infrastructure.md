@@ -11,15 +11,24 @@ flowchart TB
     U([You]) -->|Tailscale SSH| T
 
     subgraph WP[Workstation Pod]
-        T[tmux] -->|window 0| CC0[Claude Code<br/>main branch]
-        T -->|window 1| CC1[Claude Code<br/>worktree]
-        T -->|window 2| CC2[Claude Code<br/>worktree]
-        CC1 --> AG[Agents]
-        AG <-->|every tool call| HK[Hooks]
+        T[tmux]
+        T --- W0 & W1 & W2
+
+        subgraph W0[window 0 — main branch]
+            CC0[Claude Code] --> A0[agents] <--> H0[hooks]
+        end
+
+        subgraph W1[window 1 — worktree]
+            CC1[Claude Code] --> A1[agents] <--> H1[hooks]
+        end
+
+        subgraph W2[window 2 — worktree]
+            CC2[Claude Code] --> A2[agents] <--> H2[hooks]
+        end
     end
 
-    AG -->|SSH + kubectl| C1[cluster-a]
-    AG -->|SSH + kubectl| C2[cluster-b]
+    WP -->|SSH + kubectl| C1[cluster-a]
+    WP -->|SSH + kubectl| C2[cluster-b]
 ```
 
 ## Cluster Architecture
