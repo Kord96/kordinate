@@ -141,34 +141,6 @@ The platform should detect silent vitals failures:
     severity: warning
 ```
 
-## Data flow
-
-```mermaid
-flowchart TB
-    subgraph ns[App Namespace]
-        subgraph pods[App Pods]
-            P1[pod 1] & P2[pod 2] & PN[pod N]
-        end
-        VIT[Vitals]
-    end
-
-    subgraph gw[Gateway Namespace]
-        AL[Alloy] --> LK[Loki<br/>3h] & PR[Prom<br/>3h]
-    end
-
-    pods -->|metrics + logs| AL
-    VIT -->|vitals_* health| AL
-    PR -.->|app metrics query| VIT
-
-    subgraph master[Master Namespace]
-        MA[Master Alloy] --> MP[Prom<br/>30d] & ML[Loki<br/>30d]
-        MP & ML --> G[Grafana]
-    end
-
-    PR -->|/federate| MA
-    gw -->|K8s API logs| MA
-```
-
 ## When to use
 
 - Every app deployed to the cluster

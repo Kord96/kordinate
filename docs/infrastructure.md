@@ -165,8 +165,7 @@ Gateway Tailscale exposes three ports on the tailnet: `:9090` (Prometheus), `:31
 !!! info "Collection"
     - App namespaces run workloads only — no observability components
     - One gateway namespace per cluster collects all signals (metrics, logs, cluster state)
-    - Apps write structured JSON to stdout — gateway tails via K8s API
-    - Apps expose `/metrics` — gateway discovers and scrapes via pod annotations
+    - Apps follow the [observability contract](reference/patterns/observability-contract.md) — JSON stdout, `/metrics` endpoint, vitals health pod
 
 !!! info "Federation"
     - Master pulls from each cluster's gateway — clusters are unaware of master
