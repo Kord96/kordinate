@@ -7,8 +7,6 @@
 
 gateways:
   home:
-    tailscale_ip: "100.79.204.119"
-    nfs_enabled: false    # NFS not yet deployed on home gateway
+    tailscale_ip: "100.113.48.89"
   vandc:
-    tailscale_ip: "100.93.174.24"
-    nfs_enabled: true
+    tailscale_ip: "100.107.8.117"
