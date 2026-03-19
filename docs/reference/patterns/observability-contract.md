@@ -11,8 +11,8 @@ flowchart TB
             P1[pod 1<br/>/metrics]
             P2[pod 2<br/>/metrics]
             PN[pod N<br/>/metrics]
+            VIT[Vitals<br/>/metrics :9131]
         end
-        VIT[Vitals<br/>/metrics :9131]
     end
 
     subgraph gw[monitor namespace]
