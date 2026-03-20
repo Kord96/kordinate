@@ -25,16 +25,20 @@ A framework for kording specialized agents into a team. Each agent owns a domain
 
 <div class="grid cards" markdown>
 
--   **[Framework](framework/root.md)**
+-   **[Root Agent](framework/root.md)**
 
-    Core agents, memory model, consultation, and the infra team example.
+    The orchestrator — routing, hooks, and team rules.
 
--   **[Kord your own](framework/scribe.md#kording-an-agent)**
+-   **[Scribe](framework/scribe.md)**
 
-    Add a new agent with `/scribe:kord` — see how designer was built.
+    Documentation gate + `/scribe:kord` to add new agents.
 
--   **[Resources](reference/index.md)**
+-   **[2D Memory](framework/memory.md)**
 
-    Design patterns, shared libraries, and source mapping.
+    How agents store and discover knowledge.
+
+-   **[Example: Infra Team](infra/infrastructure.md)**
+
+    Deployer + Sauron managing multi-cluster k8s.
 
 </div>
