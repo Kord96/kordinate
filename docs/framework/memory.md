@@ -1,20 +1,6 @@
 # 2D Memory
 
-How agents store and discover knowledge.
-
-## Shared Memory
-
-Common rules and the consultation directory, injected into every agent's memory at spawn:
-
-```
-agents/shared/
-├── MEMORY.md                    # rules, conventions, consultation directory
-└── memory/dynamic/              # consultation cache files
-```
-
-## Per-Agent Memory
-
-Each agent's own knowledge is organized on two axes — **scope** and **mutability**:
+Each agent's knowledge is organized on two axes — **scope** and **mutability**:
 
 | | Static (pre-defined structure) | Dynamic (free-form) |
 |---|---|---|
@@ -65,7 +51,10 @@ flowchart LR
 
 ??? abstract "How memory is assembled at spawn"
 
-    `agent-memory.sh` combines shared + per-agent into a single `MEMORY.md`:
+    At spawn, `agent-memory.sh` assembles a single `MEMORY.md` from the agent's 2D memory plus two additional sources:
+
+    - **Shared memory** (`agents/shared/MEMORY.md`) — common rules and consultation directory, injected into every agent
+    - **Instructions** (`agents/<agent>/instructions/*.md`) — agent-specific procedures
 
     ```mermaid
     flowchart TD
