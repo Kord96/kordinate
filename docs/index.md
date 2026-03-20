@@ -2,8 +2,6 @@
 
 A framework for kording specialized agents into a team.
 
-Kordinate gives each agent a role, memory, commands, and safety hooks -- then links them into an AI runtime so they can work together. You define the agents; kordinate handles the coordination.
-
 ```mermaid
 flowchart TB
     RT[Agent Runtime<br/>Claude Code · Codex · ...] -->|linking layer| team
