@@ -12,9 +12,9 @@ flowchart TB
         A1 <-.->|consult| A3
     end
 
-    ROOT <-.->|consult| A1
-    ROOT <-.->|consult| A2
-    ROOT <-.->|consult| A3
+    ROOT -.->|consult| A1
+    ROOT -.->|consult| A2
+    ROOT -.->|consult| A3
 ```
 
 </div>
