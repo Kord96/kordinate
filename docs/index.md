@@ -14,7 +14,7 @@ Coordinate specialized AI agents into a team — with shared memory, cross-agent
 
     ---
 
-    Root (the orchestrator) and Scribe (documentation gate + kording).
+    Root (the orchestrator) and Scribe (documentation gate + onboarding).
 
 -   :material-database-outline:{ .lg .middle } **[2D Memory](framework/memory.md)**
 

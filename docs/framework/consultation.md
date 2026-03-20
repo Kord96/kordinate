@@ -22,40 +22,17 @@ flowchart TB
 
 **[Root](root.md)** is the user's existing agent (Claude, Codex, Cursor). The [linking layer](../reference/linking.md) enhances it with kordinate's coordination capabilities.
 
-**[Scribe](scribe.md)** ships with the framework — it guards all `.md` edits and handles [kording new agents](scribe.md#kording-an-agent). Always part of the team.
+**[Scribe](scribe.md)** ships with the framework — it guards all `.md` edits and handles [onboarding new agents](scribe.md#onboarding-an-agent). Always part of the team.
 
 Kordinate adds:
 
 - **[Memory](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Hooks](#guarded-hooks)** — enforce that only the right agent performs protected operations
-- **[Consultation](#consultation)** — agents query each other for expertise they lack
+- **[Kords](#kords)** — defined protocols between agents for sharing expertise
 
 ## Agent Structure
 
-Every agent follows the same layout. `KORD.md` defines identity, `memory/` holds knowledge.
-
-### KORD.md
-
-| Section | What it contains |
-|---------|-----------------|
-| **Description** | One-line role definition |
-| **Commands** | Slash commands the agent owns |
-| **Rules** | Behavioral constraints |
-| **Consultation** | What it answers when consulted |
-| **Cache Sources** | What files define this agent's knowledge freshness |
-
-### Directory skeleton
-
-```
-agents/<agent>/
-├── KORD.md                        # identity + cache sources
-├── memory/
-│   ├── static/
-│   │   ├── instructions/          # procedures (consultation, workflow, auth)
-│   │   └── ...                    # domain knowledge
-│   └── dynamic/                   # auto-managed (operational notes, caches)
-└── commands/                      # slash command definitions
-```
+Every agent follows the same layout: `KORD.md` defines identity, `memory/` holds knowledge, `commands/` holds slash commands. See [Onboarding an Agent](scribe.md#onboarding-an-agent) for the full structure and how new agents are created.
 
 ## Guarded Hooks
 
@@ -63,7 +40,7 @@ A guarded hook only lets a specific agent through.
 
 ```mermaid
 flowchart LR
-    A[Any agent] -->|action| G{Guard}
+    A[Any agent] -->|action| G{Root Guard}
     G -->|key matches| OK[allowed]
     G -->|no key| BLOCK[blocked — delegate<br/>to key holder]
 ```
@@ -80,17 +57,33 @@ flowchart LR
 
 Teams can add their own (e.g., kubectl writes → deployer agent, Grafana MCP calls → sauron agent).
 
-## Consultation
+## Kords
+
+A **kord** is a defined protocol between two agents — what one agent can ask another and what it will get back. Kords are what make agents a team rather than isolated specialists.
+
+```
+/scribe:kord deployer designer
+```
+
+This establishes what deployer can ask designer (architecture constraints, pattern perspectives) and what designer will provide. Without a kord, agents don't know each other exist.
+
+### Why kords?
+
+Each agent has specialized knowledge in its memory. Deployer knows cluster state. Designer knows architecture patterns. Sauron knows metrics. A kord defines the interface for sharing that knowledge — what questions are valid and what expertise is available.
+
+### Consulting a kord
 
 ```
 /consult <agent> "<question>"
 ```
 
-An agent answers using its memory without taking over the conversation. Results are [cached](memory.md#cache) — `/invalidate <agent>` forces a fresh answer.
+Executes a kord — the consulted agent answers using its memory without taking over the conversation. The caller keeps control. Results are [cached](memory.md#cache) — `/invalidate <agent>` forces a fresh answer.
 
-### Consultation Matrix
+This differs from **delegation**, where the caller hands off work entirely and the delegated agent takes action (writes files, runs commands, etc.).
 
-Owned by [root](root.md) — defines who consults whom and for what. Lives in root's `KORD.md`.
+### Kord Map
+
+Owned by [root](root.md) — defines all kords in the team. Lives in root's `KORD.md`.
 
 ??? abstract "Example: infra team"
 

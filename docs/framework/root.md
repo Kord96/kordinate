@@ -4,7 +4,7 @@ The orchestrator. Routes user messages to the right agent. Root's `KORD.md` defi
 
 Mapped to the runtime's main agent by the [linking layer](../reference/linking.md) (e.g. Claude Code's `CLAUDE.md`).
 
-**Contains:** agent routing table, [consultation matrix](consultation.md#consultation-matrix), team rules.
+**Contains:** agent routing table, [kord map](consultation.md#kord-map), team rules.
 
 ```
 agents/root/
@@ -13,7 +13,7 @@ agents/root/
 │   ├── static/
 │   │   └── team/              # team rules inherited by all subagents
 │   └── dynamic/
-│       └── team/              # consultation cache
+│       └── team/              # kord cache
 └── commands/
 ```
 

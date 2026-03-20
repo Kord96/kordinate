@@ -10,18 +10,19 @@ Enforced by `guard-md.sh`: the hook blocks Edit/Write on `.md` files unless scri
 
 | Command | Description |
 |---------|-------------|
-| `/scribe:kord` | Kord a new agent into the team |
+| `/scribe:onboard` | Add a new agent to the team |
+| `/scribe:kord` | Define a kord between two agents |
 | `/scribe:add-mcp` | Add a new MCP server entry |
 | `/scribe:update-agent-docs` | Update an agent's documentation |
 | `/scribe:update-project-docs` | Update project-level docs |
 | `/scribe:update-subagent-memory` | Update agent memory files |
 
-## Kording an Agent
+## Onboarding an Agent
 
-Use `/scribe:kord` to add a new agent interactively. Example — adding the **designer** agent:
+Use `/scribe:onboard` to add a new agent interactively. Example — adding the **designer** agent:
 
 ```bash
-/scribe:kord designer "reviews architecture and owns design patterns"
+/scribe:onboard designer "reviews architecture and owns design patterns"
 ```
 
 Scribe asks for anything missing:
