@@ -133,7 +133,7 @@ These agents consult each other automatically -- the deployer asks sauron about 
 
 <div class="grid cards" markdown>
 
--   **[Framework](agents.md)**
+-   **[Framework](framework/agents.md)**
 
     The agent protocol -- roles, commands, memory model, hooks, and consultation.
 
