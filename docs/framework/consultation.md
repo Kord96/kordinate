@@ -28,7 +28,6 @@ Kordinate adds:
 
 - **[Memory](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Hooks](#guarded-hooks)** — enforce that only the right agent performs protected operations
-- **Routing** — trigger words automatically spawn the right specialist
 - **[Consultation](#consultation)** — agents query each other for expertise they lack
 
 ## Agent Structure
