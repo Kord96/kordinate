@@ -50,7 +50,6 @@ Each `kord.md` contains:
 | **Consultant** | Agent answering |
 | **Provides** | What this kord delivers |
 | **Guidelines** | How to answer — sources, format, constraints |
-| **Rules** | Deeper freshness logic, cross-kord invalidation |
 
 ??? example "deployer → designer: pattern review"
 
@@ -69,11 +68,6 @@ Each `kord.md` contains:
     `agents/designer/patterns/`. Report violations by severity
     (blocking, warning, info). Keep response under 40 lines.
 
-    ## Rules
-
-    Stale when any file in `agents/designer/patterns/` changes.
-    Invalidates `deployer-designer-architecture-constraints` if
-    a blocking violation is found.
     ```
 
 ## Freshness
@@ -99,12 +93,11 @@ flowchart TB
 
 ### Layers
 
-The guard is the first check, but freshness has three layers:
+Freshness has two layers:
 
 | Layer | Who runs it | When |
 |-------|-------------|------|
 | **Freshness Guard** | Pre-hook on `/consult` | Every consultation — runs `freshness.sh`, blocks if fresh |
-| **Rules** (in `kord.md`) | Consultant | When already spawned — evaluates deeper freshness |
 | **Event-driven** | Hooks | On events (e.g. post-deploy) invalidate specific kords |
 
 ## Kord Discovery
