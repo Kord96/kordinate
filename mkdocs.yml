@@ -43,9 +43,6 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - Installation:
-      - Linking: reference/linking.md
-      - Sessions & Branches: installation/sessions.md
   - Core Agents:
       - Root: framework/root.md
       - Scribe: framework/scribe.md
@@ -54,3 +51,6 @@ nav:
   - "Example: Infra Team":
       - Deployer: infra/infrastructure.md
       - Sauron: infra/monitoring.md
+  - Installation:
+      - Linking: reference/linking.md
+      - Sessions & Branches: installation/sessions.md
