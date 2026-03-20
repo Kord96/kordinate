@@ -5,9 +5,9 @@ A **kord** is a single consultation link between two agents — a template that 
 | Concept | What it is | Where it lives | Nature |
 |---------|-----------|----------------|--------|
 | **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned |
-| **Consultation result** | Actual knowledge | `agents/<consulter>/memory/dynamic/consultations/<result>.md` | Dynamic, consulter-owned |
+| **Consultation** | Actual knowledge | `agents/<consulter>/memory/dynamic/consultations/<result>.md` | Dynamic, consulter-owned |
 
-The kord is the template (like a class). The consultation result is the actual knowledge (like an instance).
+The kord is the template (like a class). The consultation is the actual knowledge (like an instance).
 
 ## Structure
 
@@ -58,7 +58,7 @@ agents/root/kords/
     └── freshness.sh
 ```
 
-Consultation results live in the consulter's dynamic memory:
+Consultations live in the consulter's dynamic memory:
 
 ```
 agents/deployer/memory/dynamic/
@@ -69,14 +69,14 @@ agents/deployer/memory/dynamic/
 
 These are real knowledge — accessible anytime without `/consult`.
 
-## Freshness
+## Consultation Freshness
 
 Each kord directory contains a `.valid` marker and a `freshness.sh` script. Freshness is controlled by two hooks, each owned by a different side:
 
 - **Pre-consult hook** (consulter) — runs `freshness.sh` before every consultation. The script checks `.valid` and any other criteria. Returns fresh or stale.
 - **Post-event hook** (consultant) — runs after events the consultant cares about (e.g. post-deploy, config change). Deletes `.valid` to signal staleness.
 
-The kord directory is the neutral ground — root-owned, both sides can touch it. The consultation result stays in the consulter's memory.
+The kord directory is the neutral ground — root-owned, both sides can touch it. The consultation stays in the consulter's memory.
 
 ```mermaid
 flowchart TB
