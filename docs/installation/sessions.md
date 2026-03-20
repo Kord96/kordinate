@@ -18,11 +18,11 @@ flowchart TB
     end
 
     W1 & W2 & PW1 -->|on exit| PR{changes?}
-    PR -->|yes| PUSH[push + create PR]
+    PR -->|yes| PUSH[auto-push + PR created]
     PR -->|no| CLEAN[cleanup worktree]
-    PUSH --> FF{fast-forward main?}
-    FF -->|yes| CLOSE[close PR]
-    FF -->|no| MERGE[run /merge]
+    PUSH --> FF{conflicts?}
+    FF -->|no| CLOSE[merged to main, PR closed]
+    FF -->|yes| MERGE[/merge triggered]
 ```
 
 ## Branch Model
