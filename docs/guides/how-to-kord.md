@@ -18,7 +18,7 @@ Scribe asks for anything missing:
 
 ```
 agents/designer/
-├── AGENT.md                    # identity — role, triggers, commands, rules
+├── KORD.md                    # identity — role, triggers, commands, rules
 ├── instructions/
 │   └── consultation.md         # what to answer when consulted, cache sources
 ├── memory/
@@ -30,7 +30,7 @@ agents/designer/
 
 ## 3. What gets updated
 
-- **Root AGENT.md** — designer added to the routing table and consultation directory
+- **Root KORD.md** — designer added to the routing table and consultation directory
 - **settings.json** — guard hook registered (if exclusive tools specified)
 - **link-claude.sh** — run to register the new agent with the runtime
 

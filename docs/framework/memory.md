@@ -1,10 +1,10 @@
 # 2D Memory
 
-Every agent has two layers: **identity** (AGENT.md) and **knowledge** (2D memory).
+Every agent has two layers: **identity** (KORD.md) and **knowledge** (2D memory).
 
-## AGENT.md — Identity
+## KORD.md — Identity
 
-Each agent's `AGENT.md` defines who it is. Read once, rarely changes.
+Each agent's `KORD.md` defines who it is. Read once, rarely changes.
 
 | Section | What it contains |
 |---------|-----------------|
@@ -13,7 +13,7 @@ Each agent's `AGENT.md` defines who it is. Read once, rarely changes.
 | **Rules** | Behavioral constraints |
 | **Consultation** | What it answers when consulted |
 
-Root agent's `AGENT.md` additionally contains the team routing table (which agents exist, their triggers) and team-wide rules inherited by all subagents.
+Root agent's `KORD.md` additionally contains the team routing table (which agents exist, their triggers) and team-wide rules inherited by all subagents.
 
 ## Per-Agent Knowledge
 
@@ -50,7 +50,7 @@ flowchart LR
 
     ```
     agents/<agent>/
-    ├── AGENT.md              # role, commands, rules
+    ├── KORD.md              # role, commands, rules
     ├── instructions/         # procedures (workflow, auth, tools)
     ├── memory/
     │   ├── static/           # pre-defined structure

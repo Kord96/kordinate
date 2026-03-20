@@ -20,12 +20,12 @@ Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its
 
 ## Renamed (different filename)
 
-Kordinate uses `AGENT.md`, Claude Code expects `CLAUDE.md`. Copied on `link-claude.sh deploy`, synced back on `link-claude.sh sync`:
+Kordinate uses `KORD.md`, Claude Code expects `CLAUDE.md`. Copied on `link-claude.sh deploy`, synced back on `link-claude.sh sync`:
 
 | Claude Code | Kordinate |
 |-------------|-----------|
-| `CLAUDE.md` | `agents/AGENT.md` |
-| `agents/<agent>/CLAUDE.md` | `agents/<agent>/AGENT.md` |
+| `CLAUDE.md` | `agents/KORD.md` |
+| `agents/<agent>/CLAUDE.md` | `agents/<agent>/KORD.md` |
 
 ## Kordinate-specific links
 

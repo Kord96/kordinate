@@ -19,9 +19,9 @@ The source map lives at `docs/.source-map.yaml`. Run `/scribe:audit-docs` to che
 
 | Doc Page | Implementation Sources |
 |----------|----------------------|
-| **index.md** | `agents/AGENT.md`, `agents/shared/MEMORY.md`, `installer/link-claude.sh` |
+| **index.md** | `agents/KORD.md`, `agents/shared/MEMORY.md`, `installer/link-claude.sh` |
 | **infrastructure.md** | `bin/claude-session`, `deployer/memory/static/infra.md`, deployer manifests |
-| **agents.md** | `agents/*/AGENT.md`, `agents/shared/MEMORY.md` |
+| **agents.md** | `agents/*/KORD.md`, `agents/shared/MEMORY.md` |
 | **hooks.md** | `hooks/*.sh`, `lib/cache.sh`, `settings.json` |
 | **consultation.md** | `commands/consult.md`, `commands/invalidate.md`, `agents/*/instructions/consultation.md` |
 | **memory.md** | `hooks/agent-memory.sh`, `agents/shared/MEMORY.md`, `lib/cache.sh` |
