@@ -7,16 +7,20 @@ Kordinate gives each agent a role, memory, commands, and safety hooks -- then li
 ## The Protocol
 
 ```mermaid
-flowchart LR
-    subgraph kordinate[kordinate framework]
-        direction TB
-        A[Agents] <-->|guarded by| H[Hooks]
-        A --- C[Commands]
-        A --- M[Memory]
+flowchart TB
+    subgraph core[Core Framework]
+        direction LR
+        AG[Agents] <-->|guarded by| HK[Hooks]
+        AG --- MEM[Memory]
+        AG <-.->|consult| AG
     end
 
-    P[Profile<br/>config · keys · locks] --> kordinate
-    kordinate -->|link-claude.sh| R[AI Runtime]
+    subgraph team[Your Team]
+        D[deployer] ~~~ S[sauron] ~~~ X[...]
+    end
+
+    team -->|kord'd into| core
+    core -->|linking layer| RT[AI Runtime]
 ```
 
 | Component | Role |
