@@ -33,6 +33,33 @@ Owns all infrastructure operations — the only agent authorized to write to clu
 | `guard-kubectl.sh` | kubectl writes via SSH + `docker build/push/tag`. Hard-blocks workstation resources. Master namespace writes require bootstrap auth. |
 | `guard-redis.sh` | Redis MCP access |
 
+??? abstract "config.yaml reference"
+
+    ```yaml
+    clusters:
+      mycluster:
+        name: mycluster
+        tailscale_ip: 100.x.x.x
+        gateway_tailscale_ip: 100.x.x.x
+        lan_network: 10.0.0.0/24
+        gateway_lan_ip: 10.0.0.1
+        nodes: [10.0.0.1, 10.0.0.2]
+        namespaces: [gateway, dev, test, prod, monitor]
+        manifests:
+          gateway: agents/deployer/manifests/gateway
+          monitor: agents/deployer/manifests/monitor
+          master: agents/deployer/manifests/master
+          bootstrap: agents/deployer/manifests/bootstrap
+        services:
+          postgres: { port: 30632, user: myuser, database: mydb }
+          redis: { port: 30379 }
+          registry: { port: 5000, host: 10.0.0.1 }
+
+    network:
+      tailnet: tailXXXXXX.ts.net
+      grafana_public: grafana.example.com
+    ```
+
 ---
 
 ??? abstract "Cluster architecture"

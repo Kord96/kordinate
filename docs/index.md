@@ -40,73 +40,6 @@ Teams are composed by defining agents and connecting them through consultation m
     ./installer/kordinate-cli hydrate
     ```
 
-??? note "Profile layout"
-
-    ```
-    profile/
-    ├── config.yaml             # Cluster IPs, ports, services, registry
-    ├── topology.yaml           # App definitions, monitoring, health thresholds
-    ├── mcp.json                # MCP server config
-    ├── keybindings.json        # Keyboard shortcuts
-    ├── locks/                  # Agent auth locks (deployer, sauron, scribe)
-    ├── keystore/               # Symlink → ~/.password-store/kordinate/
-    ├── additions/              # Extra k8s manifests applied to clusters
-    └── overlays/               # Kustomize overlays per cluster/environment
-    ```
-
-??? note "config.yaml reference"
-
-    ```yaml
-    clusters:
-      mycluster:
-        name: mycluster
-        tailscale_ip: 100.x.x.x
-        lan_network: 10.0.0.0/24
-        gateway_lan_ip: 10.0.0.1
-        nodes: [10.0.0.1, 10.0.0.2]
-        namespaces: [dev, test, prod, monitor]
-        manifests:
-          master: agents/deployer/manifests/master
-          monitor: agents/deployer/manifests/monitor
-          bootstrap: agents/deployer/manifests/bootstrap
-          platform: profile/additions
-        services:
-          postgres: { port: 30632, user: myuser, database: mydb }
-          redis: { port: 30379 }
-          metrics: { port: 30091 }
-          grafana: { port: 30300, namespace: master }
-          registry: { port: 5000, host: 10.0.0.1 }
-
-    network:
-      tailnet: tailXXXXXX.ts.net
-      grafana_public: grafana.example.com
-    ```
-
-??? note "topology.yaml reference"
-
-    ```yaml
-    apps:
-      your-app:
-        label: your-app
-        namespaces: [dev, test, prod]
-        consumers:
-          component-a: { port: 9100 }
-
-    monitoring:
-      retention:
-        gateway: 3h
-        master: 30d
-
-    health:
-      vitals:
-        port: 9131
-        interval: 30s
-
-    logging:
-      suppress: [kafka, urllib3]
-      format: json
-    ```
-
 ## Explore
 
 <div class="grid cards" markdown>
@@ -123,8 +56,8 @@ Teams are composed by defining agents and connecting them through consultation m
 
     Add a new agent with `/scribe:kord` — or see how designer was built.
 
--   **[Reference](reference/patterns/index.md)**
+-   **[Resources](reference/index.md)**
 
-    Design patterns, shared libraries, observability contract, and link mapping.
+    Design patterns, shared libraries, and source mapping.
 
 </div>
