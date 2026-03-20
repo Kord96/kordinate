@@ -32,6 +32,7 @@ You are the sole agent authorized to edit `.md` files. All other agents delegate
 | `/scribe:update-agent-docs` | Update an agent's documentation |
 | `/scribe:update-project-docs` | Update project-level docs |
 | `/scribe:update-subagent-memory` | Update agent memory files |
+| `/scribe:kord` | Kord a new agent into the team |
 
 ## Rules
 

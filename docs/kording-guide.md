@@ -1,5 +1,8 @@
 # Kording Guide
 
+!!! tip "Quick start"
+    Run `/scribe:kord <name> "<description>"` to create all files interactively. The rest of this guide explains what gets created and why.
+
 How to add a specialized agent to your team.
 
 "Kording" means organizing a new agent into the kordinate framework -- giving it a role, memory, commands, consultation rules, and guard hooks so it operates safely alongside the rest of the team.
