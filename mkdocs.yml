@@ -43,9 +43,6 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - Installation:
-      - Linking: reference/linking.md
-      - Sessions & Branches: installation/sessions.md
   - Framework:
       - Core Agents: framework/agents.md
       - 2D Memory: framework/memory.md
@@ -55,6 +52,9 @@ nav:
           - Sauron: infra/monitoring.md
       - Guides:
           - How to Kord?: guides/how-to-kord.md
+      - Installation:
+          - Linking: reference/linking.md
+          - Sessions & Branches: installation/sessions.md
   - Resources:
       - Overview: reference/index.md
       - Source Map: reference/source-map.md
