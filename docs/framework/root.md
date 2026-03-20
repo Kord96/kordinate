@@ -1,6 +1,6 @@
 # Root
 
-The orchestrator. Routes user messages to the right agent. Root's `KORD.md` defines the team — all subagents inherit its rules, commands, and hooks.
+The orchestrator. Routes user messages to the right agent. Root's `IDENTITY.md` defines the team — all subagents inherit its rules, commands, and hooks.
 
 Mapped to the runtime's main agent by the [linking layer](../reference/linking.md) (e.g. Claude Code's `CLAUDE.md`).
 
@@ -8,7 +8,7 @@ Mapped to the runtime's main agent by the [linking layer](../reference/linking.m
 
 ```
 agents/root/
-├── KORD.md                    # routing table, triggers, team rules
+├── IDENTITY.md                    # routing table, triggers, team rules
 ├── memory/
 │   ├── static/
 │   │   └── team/              # team rules inherited by all subagents

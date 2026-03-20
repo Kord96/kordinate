@@ -6,7 +6,7 @@ The linking layer maps kordinate's file structure to what the agent runtime expe
 
 | Kordinate | Purpose |
 |-----------|---------|
-| `KORD.md` | Agent identity — mapped to runtime's agent config |
+| `IDENTITY.md` | Agent identity — mapped to runtime's agent config |
 | `memory/static/` | Curated knowledge — made accessible to the agent |
 | `memory/dynamic/` | Auto-managed state — writable by the agent |
 | `commands/` | Slash command definitions |
@@ -55,8 +55,8 @@ The current linking implementation targets Claude Code. Run `installer/link-clau
 
 | Claude Code | Kordinate |
 |-------------|-----------|
-| `CLAUDE.md` | `agents/root/KORD.md` |
-| `agents/<agent>/CLAUDE.md` | `agents/<agent>/KORD.md` |
+| `CLAUDE.md` | `agents/root/IDENTITY.md` |
+| `agents/<agent>/CLAUDE.md` | `agents/<agent>/IDENTITY.md` |
 
 ### Symlinks
 

@@ -2,7 +2,7 @@
 
 A **kord** is a consultation protocol between two agents. It has two parts:
 
-- **Kord Contract** — the interface. What can be asked, what's provided, in what format. Owned by [root](root.md), defined in `KORD.md`.
+- **Kord Contract** — the interface. What can be asked, what's provided, in what format. Owned by [root](root.md), defined in `IDENTITY.md`.
 - **Kord Guidelines** — the implementation. How the consultant answers, freshness rules, response procedures. Owned by each consultant agent.
 
 Without kords, agents are isolated specialists. Kords are what make them a team.
@@ -17,7 +17,7 @@ flowchart LR
 
 ## Contract
 
-The shared interface between two agents. Lives in root's `KORD.md`.
+The shared interface between two agents. Lives in root's `IDENTITY.md`.
 
 | Field | Description |
 |-------|-------------|

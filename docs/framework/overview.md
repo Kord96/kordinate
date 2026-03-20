@@ -32,4 +32,4 @@ Kordinate adds:
 
 ## Agent Structure
 
-Every agent follows the same layout: `KORD.md` defines identity, `memory/` holds knowledge, `commands/` holds slash commands. See [Onboarding an Agent](scribe.md#onboarding-an-agent) for the full structure and how new agents are created.
+Every agent follows the same layout: `IDENTITY.md` defines identity, `memory/` holds knowledge, `commands/` holds slash commands. See [Onboarding an Agent](scribe.md#onboarding-an-agent) for the full structure and how new agents are created.

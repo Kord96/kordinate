@@ -1,6 +1,6 @@
 # Recall System
 
-How agents store and discover knowledge. See [Overview](overview.md#agent-structure) for KORD.md identity and the directory skeleton.
+How agents store and discover knowledge. See [Overview](overview.md#agent-structure) for IDENTITY.md identity and the directory skeleton.
 
 ## Knowledge Model
 
@@ -25,7 +25,7 @@ Project-level memory follows the same model:
 
 ## Cache
 
-Each agent declares its cache in `KORD.md`:
+Each agent declares its cache in `IDENTITY.md`:
 
 ```
 ## Cache
