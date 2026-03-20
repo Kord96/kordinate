@@ -1,25 +1,31 @@
 # Kordinate
 
-A framework for kording specialized agents into a team.
-
-## Explore
+Coordinate specialized AI agents into a team — with shared memory, cross-agent consultation, and enforced boundaries.
 
 <div class="grid cards" markdown>
 
--   **[Root Agent](framework/root.md)**
+-   :material-robot-outline:{ .lg .middle } **[Architecture Overview](framework/consultation.md)**
 
-    The orchestrator — routing, hooks, and team rules.
+    ---
 
--   **[Scribe](framework/scribe.md)**
+    How agents consult each other, the consultation matrix, and the team diagram.
 
-    Documentation gate + `/scribe:kord` to add new agents.
+-   :material-account-group-outline:{ .lg .middle } **[Core Agents](framework/root.md)**
 
--   **[2D Memory](framework/memory.md)**
+    ---
 
-    How agents store and discover knowledge.
+    Root (the orchestrator) and Scribe (documentation gate + kording).
 
--   **[Example: Infra Team](infra/infrastructure.md)**
+-   :material-database-outline:{ .lg .middle } **[2D Memory](framework/memory.md)**
 
-    Deployer + Sauron managing multi-cluster k8s.
+    ---
+
+    Static + dynamic knowledge at global and project scope. Caching and refresh.
+
+-   :material-server-network-outline:{ .lg .middle } **[Infra Team Example](infra/infrastructure.md)**
+
+    ---
+
+    Deployer + Sauron managing multi-cluster k8s infrastructure.
 
 </div>
