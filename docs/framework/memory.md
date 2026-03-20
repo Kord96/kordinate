@@ -63,6 +63,26 @@ flowchart LR
     └── dynamic/              # free-form (operational notes, findings)
     ```
 
+??? abstract "How memory is assembled at spawn"
+
+    `agent-memory.sh` combines shared + per-agent into a single `MEMORY.md`:
+
+    ```mermaid
+    flowchart TD
+        SP[agent spawn] --> HC{sources changed?}
+        HC -->|no| SK[skip — cached MEMORY.md is fresh]
+        HC -->|yes| GEN[regenerate MEMORY.md]
+        GEN --> ST[store new hash]
+        ST --> SK
+    ```
+
+    | Source | How it's included |
+    |--------|------------------|
+    | `shared/MEMORY.md` | Always inlined — shared rules for all agents |
+    | `instructions/*.md` | Always inlined — agent-specific procedures |
+    | `memory/static/*.md` | Inlined if ≤500 lines, indexed if larger |
+    | Previous `## Notes` | Preserved — Claude's auto-managed section |
+
 ## Cache System
 
 The `lib/cache.sh` library provides hash-based invalidation — used by memory regeneration, consultation, and doc audit to detect when source files have changed.
