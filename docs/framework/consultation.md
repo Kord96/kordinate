@@ -15,7 +15,12 @@ flowchart TB
     ROOT -.->|consult| A3
 ```
 
-[Root](root.md) routes requests. Agents consult each other. [Hooks](root.md) enforce boundaries. Knowledge lives in [2D memory](memory.md).
+The root agent is the user's existing agent (Claude, Codex, Cursor). The [linking layer](../reference/linking.md) enhances it with kordinate's coordination capabilities:
+
+- **[Memory](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
+- **[Hooks](root.md)** — enforce that only the right agent performs protected operations
+- **Routing** — trigger words automatically spawn the right specialist
+- **Consultation** — agents query each other for expertise they lack
 
 ## Consultation
 

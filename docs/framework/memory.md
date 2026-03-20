@@ -1,6 +1,6 @@
-# 2D Memory
+# Memory & Cache
 
-Every agent has two layers: **identity** (KORD.md) and **knowledge** (2D memory).
+Every agent has two layers: **identity** (KORD.md) and **knowledge** (structured memory with caching).
 
 ## KORD.md — Identity
 
