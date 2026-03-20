@@ -6,29 +6,39 @@ A kord defines the **template** of a response (like a class). The cache file hol
 
 ## Ownership & Structure
 
-Root owns all kord definitions centrally in `agents/root/kords/`. Each kord is its own file. A registry file lists all agents with brief descriptions.
+Root owns all kord definitions centrally in `agents/root/kords/`. Each kord is its own directory. A registry file lists all agents with brief descriptions.
 
-**Naming:** `<consulter>-<consultant>-<topic>.md` — Default kords: `default-<consultant>.md`
+**Naming:** directories named `<consulter>-<consultant>-<topic>/` — Default kords: `default-<consultant>/`. Each directory contains `kord.md` (definition), `freshness.sh` (script called directly by `/consult`), and `cache` (the cached response).
 
 ```
 agents/root/kords/
 ├── registry.md
-├── deployer-designer-pattern-review.md
-├── deployer-designer-architecture-constraints.md
-├── deployer-sauron-monitoring-impact.md
-├── sauron-designer-monitoring-perspective.md
-└── default-designer.md
+├── deployer-designer-pattern-review/
+│   ├── kord.md          # definition (template, guidelines, rules)
+│   ├── freshness.sh     # script, called directly by /consult
+│   └── cache            # the cached response
+├── deployer-designer-architecture-constraints/
+│   ├── kord.md
+│   ├── freshness.sh
+│   └── cache
+└── default-designer/
+    ├── kord.md
+    ├── freshness.sh
+    └── cache
 ```
 
 ## Kord as Multi-Reader Source of Truth
 
-A kord file is read by different agents who extract different sections:
+A kord directory contains files read by different agents at different times:
 
 | Reader | Extracts | Purpose |
 |--------|----------|---------|
-| Consulter | Template, Script | Know what to expect, check cache cheaply |
-| Consultant | Guidelines, Rules | Know how to answer, evaluate deeper freshness |
-| `/scribe:kord` | All fields | Create/edit the full definition |
+| `/consult` | `freshness.sh` | Check cache cheaply — no need to read `kord.md` |
+| Consulter | Template from `kord.md` | Know what shape of response to expect (only when needed) |
+| Consultant | Guidelines, Rules from `kord.md` | Know how to answer, evaluate deeper freshness |
+| `/scribe:kord` | All fields in `kord.md` | Create/edit the full definition |
+
+The primary cheap check is `freshness.sh` directly — the kord definition (`kord.md`) is only read when the consultant is actually spawned.
 
 ## Definition Fields
 
@@ -38,7 +48,6 @@ A kord file is read by different agents who extract different sections:
 | **Consultant** | Both | Agent answering |
 | **Provides** | Both | What this kord delivers |
 | **Template** | Consulter | Shape of the expected response |
-| **Script** | Consulter | Cheap local freshness check (file hashes, timestamps, etc.) |
 | **Guidelines** | Consultant | How to answer — sources, format, constraints |
 | **Rules** | Consultant | Deeper freshness logic, cross-kord invalidation |
 
@@ -59,10 +68,6 @@ A kord file is read by different agents who extract different sections:
     - **Violations:** list with severity
     - **Suggestions:** optional remediation steps
 
-    ## Script
-
-    sha256sum agents/designer/patterns/*.md
-
     ## Guidelines
 
     Check the deployment manifest against the pattern library in
@@ -78,16 +83,16 @@ A kord file is read by different agents who extract different sections:
 
 ## Flow
 
-1. Agent wants to consult.
-2. Check cache for this specific kord.
-3. Fresh → read cache. Stale or missing → spawn consultant, cache result.
+1. `/consult` calls `freshness.sh` directly — no need to read `kord.md` first.
+2. Fresh → read cache. Stale or missing → spawn consultant.
+3. Consultant reads `kord.md` for guidelines and rules, produces response, writes cache.
 
 ```mermaid
-flowchart LR
-    C[Consulter] -->|/consult| K[Kord]
-    K -->|fresh| CA[Cache]
-    CA --> C
-    K -->|stale or missing| A[Consultant]
+flowchart TB
+    C[/consult] --> F[freshness.sh]
+    F -->|fresh| CA[cache]
+    F -->|stale| A[Consultant]
+    A -->|reads| K[kord.md]
     A --> CA
 ```
 
@@ -97,7 +102,7 @@ Four layers, from cheapest to most disruptive:
 
 | Layer | Trigger | Who runs it |
 |-------|---------|-------------|
-| **Script** | On read — consulter runs locally, no spawn needed | Consulter (passive) |
+| **`freshness.sh`** | On consult — called directly, no spawn needed | `/consult` (passive) |
 | **Rules** | When consultant is already spawned for another reason | Consultant (opportunistic) |
 | **`/invalidate`** | User manually forces stale | User |
 | **Event-driven** | Hooks (e.g., post-deploy) invalidate specific kords | System |
@@ -120,7 +125,7 @@ Four layers, from cheapest to most disruptive:
     /consult designer "free-form question"
     ```
 
-    Uses `default-designer.md`.
+    Uses `default-designer/`.
 
 ## Agent Awareness
 
