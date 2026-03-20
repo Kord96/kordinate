@@ -49,15 +49,19 @@ agents/<agent>/
 └── commands/                      # slash command definitions
 ```
 
-## Role Enforcement
+## Guard Hooks
 
-Protected operations are restricted to specific agents via guard hooks. Each guard uses a lock-file handshake:
+Each agent can have exclusive access to specific tools. Guard hooks intercept tool calls and block them unless the owning agent is the caller.
 
-1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
-2. Hook reads both files, allows if they match
-3. Agent removes `/tmp/.<agent>-auth` after completing work
+| Guard | Protects | Owner |
+|-------|----------|-------|
+| `guard-md.sh` | `.md` file edits | scribe |
+| `guard-git.sh` | push to `test`/`prod` branches | deployer |
+| `guard-kubectl.sh` | kubectl writes | deployer |
+| `guard-grafana.sh` | Grafana operations | sauron |
+| `guard-redis.sh` | Redis MCP | deployer |
 
-Only the owning agent can perform its exclusive operations — even if another agent attempts to, the hook blocks it.
+Framework guards (guard-md, guard-git) are defined by [root](root.md). Team guards (guard-kubectl, guard-grafana, guard-redis) are defined per team.
 
 ## Consultation
 
