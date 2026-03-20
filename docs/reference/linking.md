@@ -1,83 +1,78 @@
 # Linking
 
-Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its files at `~/.claude/`. The linking layer (`installer/link-claude.sh`) bridges them.
+The linking layer maps kordinate's file structure to what the agent runtime expects. Kordinate is runtime-agnostic — the linking layer is the only part that changes when switching runtimes.
 
-## Direct (same structure)
+## What Gets Linked
 
-| Claude Code | Kordinate |
-|-------------|-----------|
-| `agents/` | `agents/` |
-| `commands/` | `commands/` |
+| Kordinate | Purpose |
+|-----------|---------|
+| `KORD.md` | Agent identity — mapped to runtime's agent config |
+| `memory/static/` | Curated knowledge — made accessible to the agent |
+| `memory/dynamic/` | Auto-managed state — writable by the agent |
+| `commands/` | Slash command definitions |
+| `hooks/` | Guard and automation scripts |
 
-## Remapped (different location)
-
-| Claude Code | Kordinate | Why different |
-|-------------|-----------|---------------|
-| `settings.json` | `settings.json` (framework root) | Framework config, not inside agents/ |
-| `keybindings.json` | `profile/keybindings.json` | Site-specific |
-| `.mcp.json` | `profile/mcp.json` | Site-specific, encrypted |
-| `agent-memory/<agent>/` | `agents/<agent>/memory/dynamic/` | Memory colocated with agent, not separate tree |
-
-## Renamed (different filename)
-
-Kordinate uses `KORD.md`, Claude Code expects `CLAUDE.md`. Copied on `link-claude.sh deploy`, synced back on `link-claude.sh sync`:
-
-| Claude Code | Kordinate |
-|-------------|-----------|
-| `CLAUDE.md` | `agents/KORD.md` |
-| `agents/<agent>/CLAUDE.md` | `agents/<agent>/KORD.md` |
-
-## Kordinate-specific links
-
-Not Claude Code conventions — linked so hooks and scripts resolve at stable paths:
-
-| At `~/.claude/` | Kordinate | Used by |
-|------------------|-----------|---------|
-| `hooks/` | `hooks/` | `settings.json` references `$HOME/.claude/hooks/` |
-| `profile/` | `profile/` | Hooks read locks at `profile/locks/` |
-
-## External
-
-| Link | Target | Purpose |
-|------|--------|---------|
-| `profile/keystore/` | `~/.password-store/kordinate/` | GPG credential store (`pass`) |
+The linking layer creates symlinks, copies, and renames as needed to make these available at the paths the runtime expects.
 
 ## Memory Mapping
 
-The linking layer maps kordinate's [2D memory](../framework/memory.md) into the runtime's expected paths:
+The linking layer maps kordinate's [2D memory](../framework/memory.md) into the runtime:
 
 ```mermaid
 flowchart LR
-    subgraph global[Global]
-        GS[agents/sauron/memory/static]
-        GD[agents/sauron/memory/dynamic]
+    subgraph kordinate[Kordinate]
+        KS[agents/sauron/memory/static]
+        KD[agents/sauron/memory/dynamic]
     end
 
-    subgraph project[Project]
-        PS[sauron/static]
-        PD[sauron/dynamic]
+    subgraph runtime[Runtime]
+        RS[agent static knowledge]
+        RD[agent writable memory]
     end
 
-    GD -.-|symlink| GAM["~/.claude/agent-memory/sauron"]
-    PD -.-|symlink| PAM[".claude/agent-memory/sauron"]
+    KS -.-|linked| RS
+    KD -.-|linked| RD
 ```
 
 ??? abstract "How memory is assembled at spawn"
 
-    `agent-memory.sh` assembles a single `MEMORY.md` in the agent's dynamic dir from:
+    A hook assembles a single file from static memory that the runtime auto-loads:
 
     | Source | How it's included |
     |--------|------------------|
-    | `shared/MEMORY.md` | Always inlined — team rules for all agents |
-    | `instructions/*.md` | Always inlined — agent-specific procedures |
-    | `memory/static/*.md` | Inlined if ≤500 lines, indexed if larger |
-    | Previous `## Notes` | Preserved — Claude's auto-managed section |
+    | Root's `static/team/` | Always inlined — team rules for all agents |
+    | `memory/static/instructions/` | Always inlined — agent procedures |
+    | `memory/static/*.md` | Inlined if small, indexed if large |
+    | Previous agent notes | Preserved across spawns |
 
-    ```mermaid
-    flowchart TD
-        SP[agent spawn] --> HC{sources changed?}
-        HC -->|no| SK[skip — cached MEMORY.md is fresh]
-        HC -->|yes| GEN[regenerate MEMORY.md]
-        GEN --> ST[store new hash]
-        ST --> SK
-    ```
+---
+
+## Claude Code
+
+The current linking implementation targets Claude Code. Run `installer/link-claude.sh` to apply.
+
+### Identity
+
+| Claude Code | Kordinate |
+|-------------|-----------|
+| `CLAUDE.md` | `agents/root/KORD.md` |
+| `agents/<agent>/CLAUDE.md` | `agents/<agent>/KORD.md` |
+
+### Symlinks
+
+| At `~/.claude/` | Kordinate |
+|------------------|-----------|
+| `agents/` | `agents/` |
+| `commands/` | `commands/` |
+| `hooks/` | `hooks/` |
+| `agent-memory/<agent>/` | `agents/<agent>/memory/dynamic/` |
+| `settings.json` | `settings.json` |
+| `keybindings.json` | `profile/keybindings.json` |
+| `.mcp.json` | `profile/mcp.json` |
+| `profile/` | `profile/` |
+
+### External
+
+| Link | Target | Purpose |
+|------|--------|---------|
+| `profile/keystore/` | `~/.password-store/kordinate/` | GPG credential store (`pass`) |

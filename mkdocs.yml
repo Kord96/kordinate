@@ -52,8 +52,8 @@ nav:
           - Sauron: infra/monitoring.md
       - Guides:
           - How to Kord?: guides/how-to-kord.md
-  - Installation:
-      - Linking: reference/linking.md
+      - Installation:
+          - Linking: reference/linking.md
   - Resources:
       - Overview: reference/index.md
       - Source Map: reference/source-map.md
