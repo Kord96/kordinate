@@ -5,14 +5,14 @@ flowchart TB
     ROOT[Root Agent]
 
     subgraph team[Team]
-        SC[Scribe] <-.->|consult| A1[Agent A]
-        A1 <-.->|consult| A2[Agent B]
-        SC <-.->|consult| A2
+        A1[Agent A] <-.->|consult| A2[Agent B]
+        A1 -->|delegate| SC[Scribe]
+        A2 -->|delegate| SC
     end
 
-    ROOT -.->|consult| SC
     ROOT -.->|consult| A1
     ROOT -.->|consult| A2
+    ROOT -->|delegate| SC
 ```
 
 **[Root](root.md)** is the user's existing agent (Claude, Codex, Cursor). The [linking layer](../reference/linking.md) enhances it with kordinate's coordination capabilities.
