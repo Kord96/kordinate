@@ -4,13 +4,13 @@ A framework for kording specialized agents into a team.
 
 ```mermaid
 flowchart TB
-    RT[Agent Runtime<br/>Claude Code · Codex · ...] -->|linking layer| team
-
-    subgraph team[Your Team]
-        A1[Agent A] <-.->|consult| A2[Agent B]
-        A2 <-.->|consult| A3[Agent C]
-        A1 <-.->|consult| A3
-    end
+    RT[Agent Runtime<br/>Claude Code · Codex · ...] -->|linking layer| ROOT[Root]
+    ROOT -->|spawn| A1[Agent A]
+    ROOT -->|spawn| A2[Agent B]
+    ROOT -->|spawn| A3[Agent C]
+    A1 <-.->|consult| A2
+    A2 <-.->|consult| A3
+    A1 <-.->|consult| A3
 ```
 
 Agents are wired into a team: they share a [consultation protocol](framework/consultation.md) and a [2D memory model](framework/memory.md), but each has exclusive authority over its own tools and resources.
