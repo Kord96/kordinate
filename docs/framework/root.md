@@ -1,6 +1,4 @@
-# Core Agents
-
-## Root
+# Root
 
 The orchestrator. Routes user messages to the right agent. Root's `KORD.md` defines the team — all subagents inherit its rules, commands, and hooks.
 
@@ -45,20 +43,3 @@ agents/root/
     3. Agent removes `/tmp/.<agent>-auth` after completing work
 
     This ensures only the owning agent can perform its exclusive operations — even if another agent attempts to, the hook blocks it.
-
-## Scribe
-
-Documentation gate — present in every team. Only agent authorized to edit `.md` files. All other agents delegate markdown edits to scribe.
-
-Enforced by `guard-md.sh`: the hook blocks Edit/Write on `.md` files unless scribe's auth token is present.
-
-**Triggers:** `update docs`, `update project docs`, `add api key`, `add mcp`, `update agent docs`, `write readme`
-
-**Commands**
-
-| Command | Description |
-|---------|-------------|
-| `/scribe:add-mcp` | Add a new MCP server entry |
-| `/scribe:update-agent-docs` | Update an agent's documentation |
-| `/scribe:update-project-docs` | Update project-level docs |
-| `/scribe:update-subagent-memory` | Update agent memory files |

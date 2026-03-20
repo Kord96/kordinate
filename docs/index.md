@@ -19,23 +19,19 @@ flowchart TB
 
 </div>
 
-A framework for kording specialized agents into a team. Each agent owns a domain with exclusive tools, shares a [consultation protocol](framework/consultation.md) and [2D memory](framework/memory.md) with the team, and is kept in its lane by [hooks](framework/agents.md#root). Run `/scribe:kord` to add your own.
+A framework for kording specialized agents into a team. Each agent owns a domain with exclusive tools, shares a [consultation protocol](framework/consultation.md) and [2D memory](framework/memory.md) with the team, and is kept in its lane by [hooks](framework/root.md). Run `/scribe:kord` to add your own.
 
 ## Explore
 
 <div class="grid cards" markdown>
 
--   **[Framework](framework/agents.md)**
+-   **[Framework](framework/root.md)**
 
-    The agent protocol -- roles, commands, memory model, hooks, and consultation.
+    Core agents, memory model, consultation, and the infra team example.
 
--   **[Example: Infra Team](infra/infrastructure.md)**
+-   **[Kord your own](framework/scribe.md#kording-an-agent)**
 
-    Deployer, sauron, and designer managing multi-cluster k8s infrastructure.
-
--   **[Kord your own](guides/how-to-kord.md)**
-
-    Add a new agent with `/scribe:kord` — or see how designer was built.
+    Add a new agent with `/scribe:kord` — see how designer was built.
 
 -   **[Resources](reference/index.md)**
 
