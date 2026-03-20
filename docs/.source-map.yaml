@@ -45,13 +45,13 @@ memory.md:
   - kordinate/lib/cache.sh
   - installer/link-claude.sh
 
-reference/link-mapping.md:
+framework/linking.md:
   - installer/link-claude.sh
 
 reference/patterns/index.md:
   - kordinate/agents/designer/memory/static/patterns.md
 
-reference/observability-contract.md:
+infra/monitoring.md:
   - kordinate/agents/designer/memory/static/app-contract.md
   - kordinate/agents/deployer/memory/static/infra.md
 

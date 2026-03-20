@@ -120,7 +120,7 @@ These agents consult each other automatically -- the deployer asks sauron about 
         master: 30d
 
     health:
-      sentinel:
+      vitals:
         port: 9131
         interval: 30s
 

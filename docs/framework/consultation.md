@@ -31,7 +31,7 @@ Results are cached per consulter-consultant pair at `agents/shared/memory/dynami
     Removes hash files where the given agent is the consultant. Cache content is preserved as fallback — refreshed on next `/consult`.
 
 !!! note "Consultation Matrix"
-    The consultation matrix — which agents can consult which, and what each provides — is defined by each team's agent configuration. See your team's agents page for the specific matrix.
+    The consultation matrix — which agents can consult which, and what each provides — is defined by each team's agent configuration. See your team's agents page for the specific matrix. For the infra team's matrix, see [Infrastructure — Consultation Matrix](../infra/infrastructure.md#consultation-matrix).
 
 ## Cache Invalidation
 

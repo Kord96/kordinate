@@ -213,7 +213,7 @@ The linking script maps the agent into the AI runtime:
 ./installer/link-claude.sh
 ```
 
-This creates the symlinks, registers hooks, and makes the agent available to the orchestrator.
+This creates the symlinks, registers hooks, and makes the agent available to the orchestrator. See [Linking](framework/linking.md) for the full mapping.
 
 ## Designer Reference
 
@@ -245,3 +245,13 @@ When you are done, verify:
 - [ ] Guard hooks created and registered (if the agent has exclusive tools)
 - [ ] `link-claude.sh` run successfully
 - [ ] Another agent can `/consult <name> "test question"` and get an answer
+
+??? abstract "Troubleshooting"
+
+    | Problem | Check |
+    |---------|-------|
+    | Agent not spawning on trigger | Verify triggers in AGENT.md frontmatter match your words |
+    | `/consult` returns nothing | Check `.claude/agent-state/<name>.json` exists. Verify `instructions/consultation.md` is present |
+    | Guard hook blocking unexpectedly | Check `/tmp/.<agent>-auth` exists during the operation. Verify lock secret matches |
+    | Memory not regenerating | Run `/invalidate <agent>`. Check `agent-memory.sh` hook is registered in settings.json |
+    | Agent can't find static memory | Verify `link-claude.sh` was run. Check symlinks in `~/.claude/agents/<name>/` |
