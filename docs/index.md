@@ -4,8 +4,6 @@ A framework for kording specialized agents into a team.
 
 Kordinate gives each agent a role, memory, commands, and safety hooks -- then links them into an AI runtime so they can work together. You define the agents; kordinate handles the coordination.
 
-## The Protocol
-
 ```mermaid
 flowchart TB
     RT[Agent Runtime<br/>Claude Code · Codex · ...] -->|linking layer| team
@@ -15,38 +13,7 @@ flowchart TB
         A2 <-.->|consult| A3[Agent C]
         A1 <-.->|consult| A3
     end
-
-    subgraph core[Core Framework]
-        direction LR
-        AG[Agents] <-->|guarded by| HK[Hooks]
-        AG --- MEM[Memory]
-        AG --- CMD[Commands]
-    end
-
-    team --- core
 ```
-
-| Component | Role |
-|-----------|------|
-| **Agents** | Do the work -- each has a role, triggers, commands, and memory. Spawned on trigger words. |
-| **Memory** | What agents know -- static (curated), dynamic (auto-managed), project-specific. |
-| **Consultation** | Cross-agent queries -- agents ask each other for expertise they lack. Cached and hash-invalidated. |
-| **Hooks** | Enforce safety -- every tool call passes through guards. Only the owning agent can use protected resources. |
-| **Linking** | Maps kordinate to the AI runtime (currently Claude Code). Agent-agnostic. |
-| **Profile** | Site-specific config -- cluster IPs, credentials, MCP servers. Encrypted with git-crypt. |
-
-## The Team
-
-Kordinate ships with an infrastructure team as a working example -- two operational agents (deployer + sauron), an architecture reviewer (designer), and a documentation gate (scribe):
-
-| Agent | What it does | Exclusive access |
-|-------|-------------|-----------------|
-| **deployer** | Rolls deployments, manages clusters, bootstraps infrastructure | kubectl writes, Redis |
-| **sauron** | Adds monitoring, validates code, manages dashboards | Grafana |
-| **designer** | Reviews architecture, owns design patterns | -- |
-| **scribe** | Sole editor of `.md` files | all `.md` edits |
-
-These agents consult each other automatically -- the deployer asks sauron about monitoring impact before rolling, sauron asks the deployer about cluster state before diagnosing, and the designer grounds architecture reviews in live infrastructure reality.
 
 ## Quick Start
 
