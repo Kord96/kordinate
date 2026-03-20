@@ -1,6 +1,6 @@
 # Kordinate
 
-Coordinate specialized AI agents into a team — with shared memory, cross-agent consultation, and enforced boundaries.
+Coordinate specialized AI agents into a team — with kords, guards, and a recall system.
 
 <div class="grid cards" markdown>
 
@@ -20,7 +20,7 @@ Coordinate specialized AI agents into a team — with shared memory, cross-agent
 
     ---
 
-    Static + dynamic knowledge at global and project scope. Caching and refresh.
+    2D knowledge model (static/dynamic × global/project) with caching and refresh.
 
 -   :material-server-network-outline:{ .lg .middle } **[Infra Team Example](infra/infrastructure.md)**
 
