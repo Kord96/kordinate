@@ -1,5 +1,22 @@
 # 2D Memory
 
+Every agent has two layers: **identity** (AGENT.md) and **knowledge** (2D memory).
+
+## AGENT.md — Identity
+
+Each agent's `AGENT.md` defines who it is. Read once, rarely changes.
+
+| Section | What it contains |
+|---------|-----------------|
+| **Description** | One-line role definition |
+| **Commands** | Slash commands the agent owns |
+| **Rules** | Behavioral constraints |
+| **Consultation** | What it answers when consulted |
+
+Root agent's `AGENT.md` additionally contains the team routing table (which agents exist, their triggers) and team-wide rules inherited by all subagents.
+
+## Per-Agent Knowledge
+
 Each agent's knowledge is organized on two axes — **scope** and **mutability**:
 
 | | Static (pre-defined structure) | Dynamic (free-form) |
