@@ -11,34 +11,6 @@ The kord is the template (like a class). The consultation is the actual knowledg
 
 ## Structure
 
-Each `kord.md` contains:
-
-| Field | Description |
-|-------|-------------|
-| **Consulter** | Agent asking |
-| **Consultant** | Agent answering |
-| **Provides** | What this kord delivers |
-| **Guidelines** | How to answer — sources, format, constraints |
-
-??? example "deployer → designer: pattern review"
-
-    ```markdown
-    # Kord: deployer → designer (pattern review)
-
-    | Field | Value |
-    |-------|-------|
-    | **Consulter** | deployer |
-    | **Consultant** | designer |
-    | **Provides** | Pattern compliance review for a proposed deployment |
-
-    ## Guidelines
-
-    Check the deployment manifest against the pattern library in
-    `agents/designer/patterns/`. Report violations by severity
-    (blocking, warning, info). Keep response under 40 lines.
-
-    ```
-
 Root owns all kord definitions. Each kord is a directory containing the definition and a freshness script. A registry file lists all agents with brief descriptions.
 
 **Naming:** kord directories are named by topic. Default kords: `default-<consultant>/`
@@ -67,7 +39,33 @@ agents/deployer/memory/dynamic/
     └── monitoring-impact.md
 ```
 
-These are real knowledge — accessible anytime without `/consult`.
+Each `kord.md` contains:
+
+| Field | Description |
+|-------|-------------|
+| **Consulter** | Agent asking |
+| **Consultant** | Agent answering |
+| **Provides** | What this kord delivers |
+| **Guidelines** | How to answer — sources, format, constraints |
+
+??? example "deployer → designer: pattern review"
+
+    ```markdown
+    # Kord: deployer → designer (pattern review)
+
+    | Field | Value |
+    |-------|-------|
+    | **Consulter** | deployer |
+    | **Consultant** | designer |
+    | **Provides** | Pattern compliance review for a proposed deployment |
+
+    ## Guidelines
+
+    Check the deployment manifest against the pattern library in
+    `agents/designer/patterns/`. Report violations by severity
+    (blocking, warning, info). Keep response under 40 lines.
+
+    ```
 
 ## Consultation Freshness
 
@@ -94,7 +92,7 @@ flowchart TB
 
 ## Kord Discovery
 
-Agents know their kords without reading them on every action.
+When kord files change, agents are automatically notified.
 
 ```mermaid
 flowchart TB
