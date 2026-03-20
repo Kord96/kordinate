@@ -1,22 +1,8 @@
 # Memory & Cache
 
-Every agent has two layers: **identity** (KORD.md) and **knowledge** (structured memory with caching).
+How agents store and discover knowledge. See [Architecture Overview](consultation.md#agent-structure) for KORD.md identity and the directory skeleton.
 
-## KORD.md — Identity
-
-Each agent's `KORD.md` defines who it is. Read once, rarely changes.
-
-| Section | What it contains |
-|---------|-----------------|
-| **Description** | One-line role definition |
-| **Commands** | Slash commands the agent owns |
-| **Rules** | Behavioral constraints |
-| **Consultation** | What it answers when consulted |
-| **Cache Sources** | What files define this agent's knowledge freshness |
-
-Root agent's `KORD.md` additionally contains the team routing table and team-wide rules inherited by all subagents.
-
-## Per-Agent Knowledge
+## Knowledge Model
 
 Each agent's knowledge is organized on two axes — **scope** and **mutability**:
 
@@ -29,28 +15,13 @@ Each agent's knowledge is organized on two axes — **scope** and **mutability**
 
 **Dynamic** — free-form, auto-managed. Operational notes, consultation caches, session findings.
 
-### Agent skeleton
-
-```
-agents/<agent>/
-├── KORD.md                        # identity + cache sources
-├── memory/
-│   ├── static/
-│   │   ├── instructions/          # procedures (consultation, workflow, auth, tools)
-│   │   └── ...                    # domain knowledge (infra.md, patterns/, etc.)
-│   └── dynamic/                   # auto-managed (operational notes, caches)
-└── commands/                      # slash command definitions
-```
-
-Project-level:
+Project-level memory follows the same model:
 
 ```
 <project>/<agent>/
 ├── static/                        # project artifacts (manifests, dashboards)
 └── dynamic/                       # project notes (operational findings)
 ```
-
-How these files are loaded into the runtime is handled by the [linking layer](../reference/linking.md#memory-mapping).
 
 ## Cache
 

@@ -35,11 +35,4 @@ agents/root/
 | `auto-merge-to-dev.sh` | After push: creates PR, tries fast-forward main |
 | `agent-memory.sh` | Before spawn: regenerates MEMORY.md if sources changed |
 
-??? abstract "Hook-based role enforcement"
-    Protected operations (kubectl, Grafana, `.md` edits) are restricted to specific agents via guard hooks. Each guard uses a lock-file handshake to verify the calling agent is authorized:
-
-    1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
-    2. Hook reads both files, allows if they match
-    3. Agent removes `/tmp/.<agent>-auth` after completing work
-
-    This ensures only the owning agent can perform its exclusive operations — even if another agent attempts to, the hook blocks it.
+See [Architecture Overview — Role Enforcement](consultation.md#role-enforcement) for how hooks enforce exclusive access.
