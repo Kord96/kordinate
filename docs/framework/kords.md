@@ -111,6 +111,5 @@ Agents know their kords without reading them on every action:
     | Command | Purpose |
     |---------|---------|
     | `/scribe:kord deployer designer` | Create a new kord |
-    | `/scribe:onboard designer` | Onboard a new agent |
     | `/consult pattern-review "question"` | Consult via explicit kord |
     | `/consult designer "question"` | Consult via default kord |
