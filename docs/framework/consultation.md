@@ -49,17 +49,25 @@ agents/<agent>/
 └── commands/                      # slash command definitions
 ```
 
-## Hooks
+## Guarded Hooks
 
-Three types of hooks fire on tool calls:
+A guarded hook is a hook that only lets a specific agent through. The mechanism:
 
-| Type | Purpose | Example |
-|------|---------|---------|
-| **Guard** | Blocks operations unless the key-holding agent is the caller | guard-md.sh (scribe holds the key) |
-| **Automation** | Runs after events — housekeeping | auto-merge-to-dev.sh, agent-memory.sh |
-| **Refresh** | Per-agent cache invalidation decisions | agent's refresh hook |
+1. Root defines the trigger — when the guarded hook fires (e.g., on every `.md` edit)
+2. Every agent has a secret key. Before performing a guarded action, the authorized agent writes its key to a temp location
+3. The guard script compares the key against what it expects — passes if they match, blocks otherwise
 
-Guards are owned by [root](root.md) (framework-level) or defined per team. The key holder is the agent authorized to pass through — not the script owner. See [Root](root.md) for specific guard assignments.
+### Framework guarded hooks
+
+**Documentation guard** — `.md` file edits must go through scribe.
+
+Root registers a hook on Edit/Write of `.md` files. If any agent other than scribe attempts the edit, the hook blocks it and the fail message asks to delegate to scribe.
+
+**Cache refresh guard** — only the cache owner can refresh its cache.
+
+When an agent's knowledge changes, only that agent's refresh hook decides whether to invalidate. Other agents cannot trigger a refresh on behalf of someone else.
+
+Teams can define additional guarded hooks for their agents (e.g., kubectl writes → deployer only, Grafana → sauron only).
 
 ## Consultation
 
