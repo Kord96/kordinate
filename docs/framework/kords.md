@@ -48,7 +48,8 @@ agents/root/kords/
 ├── registry.md
 ├── pattern-review/
 │   ├── kord.md                              # template definition
-│   └── freshness.sh                         # owned by consultant
+│   ├── freshness.sh                         # owned by consultant
+│   └── .valid                               # marker — deleted to invalidate
 ├── monitoring-impact/
 │   ├── kord.md
 │   └── freshness.sh
@@ -70,33 +71,32 @@ These are real knowledge — accessible anytime without `/consult`.
 
 ## Freshness
 
-Each kord includes a freshness script owned by the consultant. It returns a simple boolean — is the consultation result still fresh? The consultant decides what criteria make a result stale (file changes, time, external state). The consulter just runs it to decide whether to use the existing result or spawn the consultant for a new one.
+Each kord directory contains a `.valid` marker and a `freshness.sh` script. Freshness is controlled by two hooks, each owned by a different side:
+
+- **Pre-consult hook** (consulter) — runs `freshness.sh` before every consultation. The script checks `.valid` and any other criteria. Returns fresh or stale.
+- **Post-event hook** (consultant) — runs after events the consultant cares about (e.g. post-deploy, config change). Deletes `.valid` to signal staleness.
+
+The kord directory is the neutral ground — root-owned, both sides can touch it. The consultation result stays in the consulter's memory.
 
 ```mermaid
 flowchart TB
-    C["/consult"] --> G{Freshness Guard}
-    G -->|fresh| M[Read from memory]
-    G -->|stale| K[Read guidelines from kord.md]
+    C["/consult"] --> G{"Pre-consult hook<br/>freshness.sh"}
+    G -->|.valid exists + fresh| M[Read from memory]
+    G -->|stale or missing| K[Read guidelines from kord.md]
     K --> A[Spawn consultant with guidelines]
-    A -->|response| W[Write result to memory]
+    A -->|response| W[Write result to memory + create .valid]
+
+    E[Event] --> P["Post-event hook<br/>(consultant)"]
+    P -->|deletes| V[.valid]
 ```
 
 1. Agent calls `/consult pattern-review "question"` (or `/consult designer "question"` for default kord)
-2. **Freshness Guard** fires as a pre-hook — runs `freshness.sh` from the kord directory
-3. **Fresh** → guard blocks, agent reads the result from its own dynamic memory. No spawn.
-4. **Stale** → guard allows `/consult` to proceed
+2. Pre-consult hook fires — runs `freshness.sh`, which checks `.valid` and any additional criteria
+3. **Fresh** → hook blocks, agent reads the result from its own dynamic memory. No spawn.
+4. **Stale** → hook allows `/consult` to proceed
 5. `/consult` reads the Guidelines section from `kord.md` and spawns the consultant, passing the guidelines
 6. Consultant follows the guidelines, produces result
-7. Result written to consulter's `consultations/` directory
-
-### Layers
-
-Freshness has two layers:
-
-| Layer | Who runs it | When |
-|-------|-------------|------|
-| **Freshness Guard** | Pre-hook on `/consult` | Every consultation — runs `freshness.sh`, blocks if fresh |
-| **Event-driven** | Hooks | On events (e.g. post-deploy) invalidate specific kords |
+7. Result written to consulter's `consultations/` directory, `.valid` marker created
 
 ## Kord Discovery
 
