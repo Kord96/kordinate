@@ -1,8 +1,8 @@
 # Root
 
-The orchestrator. Routes user messages to the right agent. Root's `IDENTITY.md` defines the team — all subagents inherit its rules, commands, and hooks.
+The orchestrator. Root's `IDENTITY.md` defines the team — all subagents inherit its rules, commands, and hooks.
 
-Mapped to the runtime's main agent by the [linking layer](../reference/linking.md) (e.g. Claude Code's `CLAUDE.md`).
+Mapped to the runtime's main agent (e.g. Claude Code's `CLAUDE.md`) via the [linking layer](../reference/linking.md).
 
 **Contains:** agent routing table, [kords](kords.md), team rules.
 
@@ -13,7 +13,7 @@ agents/root/
 │   ├── static/
 │   │   └── team/              # team rules inherited by all subagents
 │   └── dynamic/
-│       └── team/              # kord cache
+│       └── team/              # team-level dynamic knowledge
 └── commands/
 ```
 
@@ -24,7 +24,6 @@ agents/root/
 | `/boot` | Initialize the workstation environment |
 | `/consult` | Query an agent without full handoff |
 | `/merge` | Merge current session branch |
-| `/invalidate` | Force re-consultation for an agent |
 
 **Hooks** (inherited by all)
 
@@ -33,6 +32,6 @@ agents/root/
 | `guard-git.sh` | Branch model — `main` and `session/*` allowed, `test`/`prod` require auth |
 | `guard-md.sh` | `.md` file edits — scribe only |
 | `auto-merge-to-dev.sh` | After push: creates PR, tries fast-forward main |
-| `agent-memory.sh` | Before spawn: regenerates MEMORY.md if sources changed |
+| `agent-memory.sh` | Before spawn: regenerates agent's dynamic memory summary |
 
 See [Guards](guards.md) for how exclusive access is enforced.

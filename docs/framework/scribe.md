@@ -29,7 +29,7 @@ Scribe asks for anything missing:
 
 - **Triggers?** → `review architecture`, `design review`, `check design consistency`
 - **Exclusive tools?** → Gemini (design validation)
-- **Consultation expertise?** → Component topology, design patterns, data flow, failure modes, dependencies
+- **Kords?** → What this agent provides to others (e.g. component topology, design patterns, data flow)
 
 ### What gets created
 
@@ -38,14 +38,14 @@ agents/designer/
 ├── IDENTITY.md                    # identity — role, triggers, commands, rules
 ├── memory/
 │   └── static/
-│       └── instructions/      # consultation behavior, cache sources
+│       └── instructions/      # kord guidelines, workflow
 ├── commands/
 │   └── detect-patterns.md     # /designer:detect-patterns skill
 ```
 
 ### What gets updated
 
-- **Root IDENTITY.md** — designer added to the routing table and consultation directory
+- **Root IDENTITY.md** — designer added to the routing table, kords created
 - **settings.json** — guard hook registered (if exclusive tools specified)
 - **link-claude.sh** — run to register the new agent with the runtime
 
