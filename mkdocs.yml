@@ -13,8 +13,8 @@ theme:
     accent: indigo
   features:
     - navigation.sections
-    - navigation.expand
     - navigation.top
+    - navigation.indexes
     - search.suggest
     - content.code.copy
 
@@ -53,8 +53,10 @@ nav:
       - Sauron: infra/monitoring.md
   - Guides:
       - How to Kord?: guides/how-to-kord.md
-  - Reference:
+  - Installation:
       - Linking: reference/linking.md
+  - Resources:
+      - Overview: reference/index.md
       - Source Map: reference/source-map.md
       - Patterns:
           - Index: reference/patterns/index.md
