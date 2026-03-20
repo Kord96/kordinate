@@ -41,15 +41,15 @@ Each `kord.md` contains:
 
 Root owns all kord definitions. Each kord is a directory containing the definition and a freshness script. A registry file lists all agents with brief descriptions.
 
-**Naming:** `<consulter>-<consultant>-<topic>/` — Default kords: `default-<consultant>/`
+**Naming:** kord directories are named by topic. Default kords: `default-<consultant>/`
 
 ```
 agents/root/kords/
 ├── registry.md
-├── deployer-designer-pattern-review/
+├── pattern-review/
 │   ├── kord.md                              # template definition
 │   └── freshness.sh                         # owned by consultant
-├── deployer-sauron-monitoring-impact/
+├── monitoring-impact/
 │   ├── kord.md
 │   └── freshness.sh
 └── default-designer/
@@ -62,8 +62,8 @@ Consultation results live in the consulter's dynamic memory:
 ```
 agents/deployer/memory/dynamic/
 └── consultations/
-    ├── designer-pattern-review.md
-    └── sauron-monitoring-impact.md
+    ├── pattern-review.md
+    └── monitoring-impact.md
 ```
 
 These are real knowledge — accessible anytime without `/consult`.
@@ -81,7 +81,7 @@ flowchart TB
     A -->|response| W[Write result to memory]
 ```
 
-1. Agent calls `/consult designer:pattern-review "question"` (or `/consult designer "question"` for default kord)
+1. Agent calls `/consult pattern-review "question"` (or `/consult designer "question"` for default kord)
 2. **Freshness Guard** fires as a pre-hook — runs `freshness.sh` from the kord directory
 3. **Fresh** → guard blocks, agent reads the result from its own dynamic memory. No spawn.
 4. **Stale** → guard allows `/consult` to proceed
@@ -112,5 +112,5 @@ Agents know their kords without reading them on every action:
     |---------|---------|
     | `/scribe:kord deployer designer` | Create a new kord |
     | `/scribe:onboard designer` | Onboard a new agent |
-    | `/consult designer:pattern-review "question"` | Consult via explicit kord |
+    | `/consult pattern-review "question"` | Consult via explicit kord |
     | `/consult designer "question"` | Consult via default kord |
