@@ -11,12 +11,6 @@ The kord is the template (like a class). The consultation result is the actual k
 
 ## Structure
 
-### Freshness
-
-Each kord includes a freshness script owned by the consultant. It returns a simple boolean — is the consultation result still fresh? The consultant decides what criteria make a result stale (file changes, time, external state). The consulter just runs it to decide whether to use the existing result or spawn the consultant for a new one.
-
-### Storage
-
 Root owns all kord definitions. Each kord is a directory containing the definition and a freshness script. A registry file lists all agents with brief descriptions.
 
 **Naming:** `<consulter>-<consultant>-<topic>/` — Default kords: `default-<consultant>/`
@@ -82,7 +76,9 @@ Each `kord.md` contains:
     a blocking violation is found.
     ```
 
-## Flow
+## Freshness
+
+Each kord includes a freshness script owned by the consultant. It returns a simple boolean — is the consultation result still fresh? The consultant decides what criteria make a result stale (file changes, time, external state). The consulter just runs it to decide whether to use the existing result or spawn the consultant for a new one.
 
 ```mermaid
 flowchart TB
@@ -101,7 +97,7 @@ flowchart TB
 6. Consultant follows the guidelines, produces result
 7. Result written to consulter's `consultations/` directory
 
-### Freshness layers
+### Layers
 
 The guard is the first check, but freshness has three layers:
 
