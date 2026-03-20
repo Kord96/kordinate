@@ -17,7 +17,7 @@ Agents are wired into a team: they share a [consultation protocol](framework/con
 
 [Hooks](framework/agents.md#root) enforce boundaries — agents cannot step outside their domain.
 
-Teams are composed by defining agents and connecting them through consultation matrices and hook guards. See the [Kording Guide](kording-guide.md) to add your own.
+Teams are composed by defining agents and connecting them through consultation matrices and hook guards. Run `/scribe:kord` to add your own.
 
 ## Quick Start
 
