@@ -213,7 +213,7 @@ The linking script maps the agent into the AI runtime:
 ./installer/link-claude.sh
 ```
 
-This creates the symlinks, registers hooks, and makes the agent available to the orchestrator. See [Linking](framework/linking.md) for the full mapping.
+This creates the symlinks, registers hooks, and makes the agent available to the orchestrator. See [Linking](reference/linking.md) for the full mapping.
 
 ## Designer Reference
 
