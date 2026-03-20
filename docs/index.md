@@ -117,11 +117,11 @@ Teams are composed by defining agents and connecting them through consultation m
 
 -   **[Example: Infra Team](infra/infrastructure.md)**
 
-    The deployer + sauron agents managing multi-cluster k8s infrastructure.
+    Deployer, sauron, and designer managing multi-cluster k8s infrastructure.
 
--   **[Kording Guide](kording-guide.md)**
+-   **[Kord your own](infra/designer.md)**
 
-    Step-by-step: how to add a new specialized agent to your team.
+    Add a new agent with `/scribe:kord` — or see how designer was built.
 
 -   **[Reference](reference/patterns/index.md)**
 
