@@ -8,19 +8,22 @@ Kordinate gives each agent a role, memory, commands, and safety hooks -- then li
 
 ```mermaid
 flowchart TB
+    RT[Agent Runtime<br/>Claude Code · Codex · ...] -->|linking layer| team
+
+    subgraph team[Your Team]
+        A1[Agent A] <-.->|consult| A2[Agent B]
+        A2 <-.->|consult| A3[Agent C]
+        A1 <-.->|consult| A3
+    end
+
     subgraph core[Core Framework]
         direction LR
         AG[Agents] <-->|guarded by| HK[Hooks]
         AG --- MEM[Memory]
-        AG <-.->|consult| AG
+        AG --- CMD[Commands]
     end
 
-    subgraph team[Your Team]
-        D[deployer] ~~~ S[sauron] ~~~ X[...]
-    end
-
-    team -->|kord'd into| core
-    core -->|linking layer| RT[AI Runtime]
+    team --- core
 ```
 
 | Component | Role |
