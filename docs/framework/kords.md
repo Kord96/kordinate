@@ -94,11 +94,15 @@ flowchart TB
 
 ## Kord Discovery
 
-Agents know their kords without reading them on every action:
+Agents know their kords without reading them on every action.
 
-1. **Consulter Awareness Script** — scans `agents/root/kords/` for kords involving this agent, extracts Consulter/Consultant/Provides fields, generates a summary in dynamic memory
-2. **Hook on kord directory** — fires when kord files change, regenerates the summary
-3. **Guard** — blocks agent until it re-reads the updated summary
+```mermaid
+flowchart TB
+    K[Kord files change] --> H[Hook regenerates summary<br/>in agent's dynamic memory]
+    H --> G{Guard}
+    G -->|summary outdated| B[Agent blocked]
+    B -->|re-reads summary| U[Agent unblocked]
+```
 
 ---
 
