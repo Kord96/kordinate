@@ -20,7 +20,7 @@ flowchart TB
     ROOT -->|delegate| SC
 ```
 
-**[Root](root.md)** is the user's existing agent (Claude, Codex, Cursor). The [linking layer](../reference/linking.md) enhances it with kordinate's coordination capabilities.
+**[Root](root.md)** is the user's existing agent (Claude, Codex, Cursor).
 
 **[Scribe](scribe.md)** ships with the framework — it guards all `.md` edits and handles [onboarding new agents](scribe.md#onboarding-an-agent). Always part of the team.
 
