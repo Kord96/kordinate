@@ -1,23 +1,31 @@
 # Core Agents
 
-## Base Agent
+## Root Agent
 
-Every agent inherits these rules, commands, and hooks.
+The orchestrator — receives user messages, matches triggers, spawns the right agent. Root agent's `AGENT.md` defines the team: which agents exist, their triggers, and team-wide rules that all subagents inherit.
 
-### Rules
+Every team has exactly one root agent. The [linking layer](../reference/linking.md) maps it to the runtime's main agent configuration.
 
-!!! info "Permissions"
-    - Only the owning agent can use its exclusive tools (hook-enforced)
-    - Never invoke an agent's operational commands directly — spawn the owning agent
+Root agent's `AGENT.md` contains:
 
-!!! note "Conventions"
-    - Credentials live in `pass` under `kordinate/`
-    - Follow existing patterns — no new libraries, frameworks, or conventions
-    - Commit with `[<agent-name>]` in message
-    - Project artifacts go in the project repo, not kordinate
+- **Agent routing table** — triggers → which agent to spawn
+- **Consultation directory** — who to consult for what
+- **Team rules** — conventions and permissions inherited by all subagents
 
-!!! tip "Memory"
-    Every agent receives team memory at spawn — common rules and the consultation directory. On top of that, each agent has its own [2D memory](memory.md): `static/` + `dynamic/` at both global and project scope.
+## Scribe
+
+Present in every team. Manages all `.md` file edits so documentation stays consistent and protected.
+
+Triggered by: `update docs`, `update project docs`, `add api key`, `add mcp`, `update agent docs`, `write readme`
+
+| Command | Description |
+|---------|-------------|
+| `/scribe:add-mcp` | Add a new MCP server entry |
+| `/scribe:update-agent-docs` | Update an agent's documentation |
+| `/scribe:update-project-docs` | Update project-level docs |
+| `/scribe:update-subagent-memory` | Update agent memory files |
+
+## Every Agent Gets
 
 ### Commands
 
@@ -30,30 +38,14 @@ Every agent inherits these rules, commands, and hooks.
 
 ### Hooks
 
-Hooks fire on every tool call. They enforce safety and automate housekeeping.
+Hooks fire on every tool call — enforcing safety and automating housekeeping.
 
-```mermaid
-flowchart TD
-    U[User message] --> T{matches trigger?}
-    T -->|yes| S[spawn agent]
-    T -->|/consult| C[agent reads memory → returns answer]
-    S --> H{hooks check every tool call}
-    H --> SC["scribe → .md file edits"]
-    H --> GIT["guard-git → branch model"]
-    H --> AM["agent-memory → context assembly"]
-```
-
-**Guards** — each guard enforces that only the authorized agent can perform certain operations.
+**Guards**
 
 | Hook | What it guards |
 |------|---------------|
 | `guard-git.sh` | git push — `main` and `session/*` allowed, `test`/`prod` require auth |
 | `guard-md.sh` | All `.md` file edits (scribe only) |
-
-??? abstract "Authentication flow"
-    1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
-    2. Hook reads both files, allows if they match
-    3. Agent removes `/tmp/.<agent>-auth` after completing work
 
 **Automation**
 
@@ -62,17 +54,9 @@ flowchart TD
 | `auto-merge-to-dev.sh` | After git push | Creates PR, tries fast-forward main. On failure, signals `/merge`. |
 | `agent-memory.sh` | Before agent spawn | Regenerates agent's MEMORY.md if source files changed |
 
-Cache system: both hooks use `lib/cache.sh` for hash-based invalidation. See [Memory — Cache System](memory.md#cache-system).
+??? abstract "Authentication flow"
+    1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
+    2. Hook reads both files, allows if they match
+    3. Agent removes `/tmp/.<agent>-auth` after completing work
 
-## Scribe
-
-The only framework-provided agent — present in every team. Manages all `.md` file edits so documentation stays consistent and protected.
-
-Triggered by: `update docs`, `update project docs`, `add api key`, `add mcp`, `update agent docs`, `write readme`
-
-| Command | Description |
-|---------|-------------|
-| `/scribe:add-mcp` | Add a new MCP server entry |
-| `/scribe:update-agent-docs` | Update an agent's documentation |
-| `/scribe:update-project-docs` | Update project-level docs |
-| `/scribe:update-subagent-memory` | Update agent memory files |
+Cache system: hooks use `lib/cache.sh` for hash-based invalidation. See [2D Memory — Cache System](memory.md#cache-system).
