@@ -13,7 +13,7 @@ flowchart TB
     end
 ```
 
-Agents consult each other for expertise they lack — cached and hash-invalidated. [Hooks](framework/hooks.md) enforce boundaries so agents can't use each other's tools. The **scribe** agent ships with the framework and is present in every team. All other agents are team-specific — see the [Kording Guide](kording-guide.md) to add your own.
+Agents are kord'd into a team: they share common rules, a consultation protocol, and a memory model, but each has exclusive authority over its own tools and resources. [Hooks](framework/hooks.md) enforce boundaries so agents cannot step outside their domain. Teams are composed by defining agents and wiring them together through shared rules, consultation matrices, and hook guards. See the [Kording Guide](kording-guide.md) to kord your own.
 
 ## Quick Start
 
