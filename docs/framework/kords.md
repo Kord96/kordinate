@@ -145,11 +145,11 @@ Agents know their kords without reading them on every action:
 
 No staleness. The guard ensures agents never act on outdated kord knowledge.
 
-## Commands
+??? note "Related commands"
 
-| Command | Purpose |
-|---------|---------|
-| `/scribe:kord deployer designer` | Create a new kord |
-| `/scribe:onboard designer` | Onboard a new agent |
-| `/consult designer:pattern-review "question"` | Consult via explicit kord |
-| `/consult designer "question"` | Consult via default kord |
+    | Command | Purpose |
+    |---------|---------|
+    | `/scribe:kord deployer designer` | Create a new kord |
+    | `/scribe:onboard designer` | Onboard a new agent |
+    | `/consult designer:pattern-review "question"` | Consult via explicit kord |
+    | `/consult designer "question"` | Consult via default kord |
