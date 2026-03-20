@@ -1,7 +1,5 @@
 # Kordinate
 
-A framework for kording specialized agents into a team.
-
 ```mermaid
 flowchart TB
     ROOT[Root Agent] <-.->|consult| A1[Agent A]
@@ -12,11 +10,7 @@ flowchart TB
     A1 <-.->|consult| A3
 ```
 
-Agents are wired into a team: they share a [consultation protocol](framework/consultation.md) and a [2D memory model](framework/memory.md), but each has exclusive authority over its own tools and resources.
-
-[Hooks](framework/agents.md#root) enforce boundaries — agents cannot step outside their domain.
-
-Teams are composed by defining agents and connecting them through consultation matrices and hook guards. Run `/scribe:kord` to add your own.
+A framework for kording specialized agents into a team. Each agent owns a domain with exclusive tools, shares a [consultation protocol](framework/consultation.md) and [2D memory](framework/memory.md) with the team, and is kept in its lane by [hooks](framework/agents.md#root). Run `/scribe:kord` to add your own.
 
 ## Explore
 
