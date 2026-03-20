@@ -18,7 +18,7 @@ flowchart TB
 The root agent is the user's existing agent (Claude, Codex, Cursor). The [linking layer](../reference/linking.md) enhances it with kordinate's coordination capabilities:
 
 - **[Memory](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
-- **[Hooks](#role-enforcement)** — enforce that only the right agent performs protected operations
+- **[Hooks](#guarded-hooks)** — enforce that only the right agent performs protected operations
 - **Routing** — trigger words automatically spawn the right specialist
 - **[Consultation](#consultation)** — agents query each other for expertise they lack
 

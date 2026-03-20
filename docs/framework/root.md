@@ -35,4 +35,4 @@ agents/root/
 | `auto-merge-to-dev.sh` | After push: creates PR, tries fast-forward main |
 | `agent-memory.sh` | Before spawn: regenerates MEMORY.md if sources changed |
 
-See [Architecture Overview — Guard Hooks](consultation.md#guard-hooks) for how exclusive access is enforced.
+See [Architecture Overview — Guard Hooks](consultation.md#guarded-hooks) for how exclusive access is enforced.
