@@ -119,7 +119,7 @@ Teams are composed by defining agents and connecting them through consultation m
 
     Deployer, sauron, and designer managing multi-cluster k8s infrastructure.
 
--   **[Kord your own](infra/designer.md)**
+-   **[Kord your own](guides/how-to-kord.md)**
 
     Add a new agent with `/scribe:kord` — or see how designer was built.
 
