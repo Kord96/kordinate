@@ -13,7 +13,7 @@ flowchart TB
     end
 ```
 
-Agents are kord'd into a team: they share common rules, a consultation protocol, and a memory model, but each has exclusive authority over its own tools and resources. [Hooks](framework/hooks.md) enforce boundaries so agents cannot step outside their domain. Teams are composed by defining agents and wiring them together through shared rules, consultation matrices, and hook guards. See the [Kording Guide](kording-guide.md) to kord your own.
+Agents are wired into a team: they share a consultation protocol and a [2D memory model](framework/memory.md), but each has exclusive authority over its own tools and resources. [Hooks](framework/hooks.md) enforce boundaries so agents cannot step outside their domain. Teams are composed by defining agents and wiring them together through consultation matrices and hook guards. See the [Kording Guide](kording-guide.md) to kord your own.
 
 ## Quick Start
 
