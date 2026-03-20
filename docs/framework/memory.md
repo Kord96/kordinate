@@ -28,66 +28,30 @@ Each agent's knowledge is organized on two axes — **scope** and **mutability**
 
 **Dynamic** holds free-form agent notes — operational findings, session state, consultation caches. Auto-managed by agents.
 
-The linking layer maps dynamic dirs into the runtime's expected paths:
+### Agent skeleton
 
-```mermaid
-flowchart LR
-    subgraph global[Global]
-        GS[agents/sauron/memory/static]
-        GD[agents/sauron/memory/dynamic]
-    end
+Every agent has this structure. Static and dynamic dirs may be empty for new agents.
 
-    subgraph project[Project]
-        PS[sauron/static]
-        PD[sauron/dynamic]
-    end
-
-    GD -.-|symlink| GAM["~/.claude/agent-memory/sauron"]
-    PD -.-|symlink| PAM[".claude/agent-memory/sauron"]
+```
+agents/<agent>/
+├── KORD.md               # identity
+├── instructions/
+│   └── consultation.md   # consultation behavior + cache sources
+├── memory/
+│   ├── static/           # pre-defined structure
+│   └── dynamic/          # free-form
+└── commands/             # slash command definitions
 ```
 
-=== "Global"
+Project-level memory follows the same split:
 
-    ```
-    agents/<agent>/
-    ├── KORD.md              # role, commands, rules
-    ├── instructions/         # procedures (workflow, auth, tools)
-    ├── memory/
-    │   ├── static/           # pre-defined structure
-    │   └── dynamic/          # free-form (auto-generated MEMORY.md, notes)
-    └── commands/             # slash command definitions
-    ```
+```
+<project>/<agent>/
+├── static/               # pre-defined structure (manifests, dashboards)
+└── dynamic/              # free-form (operational notes, findings)
+```
 
-=== "Project"
-
-    ```
-    <project>/<agent>/
-    ├── static/               # pre-defined structure (manifests, dashboards)
-    └── dynamic/              # free-form (operational notes, findings)
-    ```
-
-??? abstract "How memory is assembled at spawn"
-
-    At spawn, `agent-memory.sh` assembles a single `MEMORY.md` from the agent's 2D memory plus two additional sources:
-
-    - **Team memory** (`agents/shared/MEMORY.md`) — common rules and consultation directory, injected into every agent
-    - **Instructions** (`agents/<agent>/instructions/*.md`) — agent-specific procedures
-
-    ```mermaid
-    flowchart TD
-        SP[agent spawn] --> HC{sources changed?}
-        HC -->|no| SK[skip — cached MEMORY.md is fresh]
-        HC -->|yes| GEN[regenerate MEMORY.md]
-        GEN --> ST[store new hash]
-        ST --> SK
-    ```
-
-    | Source | How it's included |
-    |--------|------------------|
-    | `shared/MEMORY.md` | Always inlined — team rules for all agents |
-    | `instructions/*.md` | Always inlined — agent-specific procedures |
-    | `memory/static/*.md` | Inlined if ≤500 lines, indexed if larger |
-    | Previous `## Notes` | Preserved — Claude's auto-managed section |
+How these files are loaded into the runtime is handled by the [linking layer](../reference/linking.md#memory-mapping).
 
 ## Cache System
 
@@ -102,23 +66,9 @@ flowchart LR
     R --> W[store new hash]
 ```
 
-### What's cached
+Used by memory regeneration, consultation caching, and doc audit.
 
-| Consumer | What it caches | Hash stored at |
-|----------|---------------|----------------|
-| `agent-memory.sh` | Generated MEMORY.md per agent | `memory/dynamic/.hash` |
-| `/consult` | Consultation answers per agent pair | `agents/shared/memory/dynamic/.<consulter>-<consultant>.hash` |
-| `/scribe:audit-docs` | Doc freshness per page | `docs/.source-hashes/` |
-
-### Invalidation
-
-Each agent (consultant) declares which directories to hash in `## Cache Sources` of its `instructions/consultation.md`. When those files change, cached answers become stale.
-
-A `PostToolUse` hook (`invalidate-consultation.sh`) auto-invalidates: after any Edit/Write, it checks if the modified file falls within an agent's declared cache sources and removes the corresponding hash files.
-
-Manual: `/invalidate <agent>` force-clears all cached answers from that agent.
-
-### Functions
+Each agent declares which directories matter for its cache in `## Cache Sources` of `instructions/consultation.md`. A hook auto-invalidates when those files change. Manual override: `/invalidate <agent>`.
 
 | Function | Purpose |
 |----------|---------|
