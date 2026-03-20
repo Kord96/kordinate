@@ -1,30 +1,58 @@
 # Kords
 
-A **kord** is a defined protocol between two agents — what one agent can ask another and what it will get back. Kords are what make agents a team rather than isolated specialists.
+A **kord** is a consultation protocol between two agents — a contract that defines what one agent can ask another and what it will get back. Each kord connects a **consulter** (the agent asking) to a **consultant** (the agent answering).
+
+Without kords, agents are isolated specialists. Kords are what make them a team.
+
+## Format
+
+Every kord follows the same structure:
+
+| Field | Description |
+|-------|-------------|
+| **Consulter** | The agent asking |
+| **Consultant** | The agent answering |
+| **Provides** | What the consultant offers — specific items with expected format |
+| **Additional Notes** | Open-ended guidance for queries outside the structured list |
+
+??? abstract "Example: deployer → designer"
+
+    | Field | Value |
+    |-------|-------|
+    | **Consulter** | deployer |
+    | **Consultant** | designer |
+
+    **Provides:**
+
+    - Pattern deployment perspective — checklist of pattern compliance
+    - Architecture constraints — list of violations or concerns
+    - Data flow impact — affected components and connections
+
+    **Additional Notes:**
+
+    Any architecture question related to a deployment change. Designer answers from its pattern library and project architecture knowledge.
+
+## Defining a kord
 
 ```
 /scribe:kord deployer designer
 ```
 
-This establishes what deployer can ask designer (architecture constraints, pattern perspectives) and what designer will provide. Without a kord, agents don't know each other exist.
+Scribe walks through the format interactively — who provides what, in what format, and any additional notes. The resulting kord is stored in root's `KORD.md`.
 
-## Why kords?
-
-Each agent has specialized knowledge in its memory. Deployer knows cluster state. Designer knows architecture patterns. Sauron knows metrics. A kord defines the interface for sharing that knowledge — what questions are valid and what expertise is available.
-
-## Consulting a kord
+## Using a kord
 
 ```
 /consult <agent> "<question>"
 ```
 
-Executes a kord — the consulted agent answers using its memory without taking over the conversation. The caller keeps control. Results are [cached](memory.md#cache) — `/invalidate <agent>` forces a fresh answer.
+Consults an agent — the consultant answers using its memory without taking over the conversation. The consulter keeps control. Results are [cached](memory.md#cache) — `/invalidate <agent>` forces a fresh answer.
 
-This differs from **delegation**, where the caller hands off work entirely and the delegated agent takes action (writes files, runs commands, etc.).
+This differs from **delegation**, where the consulter hands off work entirely and the delegated agent takes action (writes files, runs commands, etc.).
 
 ## Kord Map
 
-Owned by [root](root.md) — defines all kords in the team. Lives in root's `KORD.md`.
+The full set of kords in a team. Owned by [root](root.md), lives in root's `KORD.md`.
 
 ??? abstract "Example: infra team"
 
