@@ -82,27 +82,27 @@ Each `kord.md` contains:
 
 | File | Who reads it | When |
 |------|-------------|------|
-| `freshness.sh` | `/consult` | Every consultation |
+| `freshness.sh` | Freshness Guard | Every consultation (pre-hook on `/consult`) |
 | Consultation result | Consulter | Anytime (it's in its memory) |
 | `kord.md` (Guidelines, Rules) | Consultant | When consulted for this kord |
 | `kord.md` | Consulter Awareness Script | When generating dynamic memory summary |
 
 ## Flow
 
-1. `/consult` runs `freshness.sh` against the consultation result file
-2. Fresh → result already in consulter's dynamic memory, done
-3. Stale → spawn consultant
-4. Consultant reads `kord.md`, follows guidelines, produces result
-5. Result written to consulter's `consultations/` directory
+1. Agent runs `/consult`
+2. Freshness guard fires — runs `freshness.sh` from the kord directory
+3. Fresh → guard blocks, agent reads result from its own dynamic memory
+4. Stale → guard allows `/consult` to proceed, spawns consultant
+5. Consultant reads `kord.md`, follows guidelines, produces result
+6. Result written to consulter's `consultations/` directory
 
 ```mermaid
 flowchart TB
-    C[/consult] --> F[freshness.sh]
-    F -->|fresh| R[Consultation Result]
-    R --> M[Consulter Memory]
-    F -->|stale| A[Consultant]
+    C[/consult] --> G{Freshness Guard}
+    G -->|fresh — blocked| M[Read from memory]
+    G -->|stale — allowed| A[Consultant]
     A -->|reads| K[kord.md]
-    A -->|writes| R
+    A -->|writes result| R[consultations/]
 ```
 
 ## Freshness & Invalidation
@@ -111,7 +111,7 @@ Four layers:
 
 | Layer | Who runs it | When |
 |-------|-------------|------|
-| **`freshness.sh`** | `/consult` | Every consultation — cheap local check, no spawn |
+| **Freshness Guard** | Pre-hook on `/consult` | Every consultation — runs `freshness.sh`, blocks if fresh |
 | **Rules** (in `kord.md`) | Consultant | When already spawned — evaluates deeper freshness |
 | **Event-driven** | Hooks | On events (e.g. post-deploy) invalidate specific kords |
 
