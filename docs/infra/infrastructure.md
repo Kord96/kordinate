@@ -1,4 +1,4 @@
-# Infra Team: Infrastructure
+# Deployer
 
 How the system is deployed, accessed, and observed -- plus the deployer agent that manages it all.
 
@@ -242,37 +242,3 @@ Three guard hooks enforce agent-exclusive access to protected resources:
 
 All hooks use the profile lock authentication flow: the agent copies `profile/locks/<agent>` to `/tmp/.<agent>-auth`, the hook compares the files, and the agent removes the temp file when done.
 
----
-
-## Consultation Matrix
-
-When agents need information outside their domain, they consult other agents. The matrix is bidirectional -- designer can ground architecture reviews in live cluster state from deployer, sauron can discover monitoring targets from deployer, etc.
-
-=== "Deployer asks"
-
-    | Consultant | Provides |
-    |-----------|----------|
-    | designer | Pattern deployment perspective, architecture constraints |
-    | sauron | Monitoring impact of infra changes, metric dependencies |
-
-=== "Sauron asks"
-
-    | Consultant | Provides |
-    |-----------|----------|
-    | designer | Pattern monitoring perspective -- what to observe |
-    | deployer | Live cluster state, pod health, resource usage |
-
-=== "Designer asks"
-
-    | Consultant | Provides |
-    |-----------|----------|
-    | deployer | Infrastructure reality -- live cluster state, resource usage, deployment topology |
-    | sauron | Observability gaps -- what is and isn't being monitored |
-
-=== "Scribe asks"
-
-    | Consultant | Provides |
-    |-----------|----------|
-    | designer | Architecture context -- component topology, design patterns |
-    | sauron | Monitoring context -- metrics, dashboards, health checks |
-    | deployer | Infrastructure context -- cluster state, deployment details |

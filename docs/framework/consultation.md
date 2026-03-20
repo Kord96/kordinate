@@ -30,8 +30,38 @@ Results are cached per consulter-consultant pair at `agents/shared/memory/dynami
     ```
     Removes hash files where the given agent is the consultant. Cache content is preserved as fallback — refreshed on next `/consult`.
 
-!!! note "Consultation Matrix"
-    The consultation matrix — which agents can consult which, and what each provides — is defined by each team's agent configuration. See your team's agents page for the specific matrix. For the infra team's matrix, see [Infrastructure — Consultation Matrix](../infra/infrastructure.md#consultation-matrix).
+## Consultation Matrix
+
+Which agents consult which, and what each provides. The matrix is bidirectional — designer can ground architecture reviews in live cluster state from deployer, sauron can discover monitoring targets from deployer, etc.
+
+=== "Deployer asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | designer | Pattern deployment perspective, architecture constraints |
+    | sauron | Monitoring impact of infra changes, metric dependencies |
+
+=== "Sauron asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | designer | Pattern monitoring perspective — what to observe |
+    | deployer | Live cluster state, pod health, resource usage |
+
+=== "Designer asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | deployer | Infrastructure reality — live cluster state, resource usage, deployment topology |
+    | sauron | Observability gaps — what is and isn't being monitored |
+
+=== "Scribe asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | designer | Architecture context — component topology, design patterns |
+    | sauron | Monitoring context — metrics, dashboards, health checks |
+    | deployer | Infrastructure context — cluster state, deployment details |
 
 ## Cache Invalidation
 

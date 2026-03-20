@@ -1,6 +1,6 @@
-# Infra Team: Monitoring
+# Sauron
 
-How apps expose telemetry to the platform, and the sauron agent that watches over it all.
+Monitoring, observability, and code validation.
 
 ## Sauron
 
