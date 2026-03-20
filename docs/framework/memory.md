@@ -72,7 +72,7 @@ What gets cached:
 | What | Where |
 |------|-------|
 | Assembled memory (static → MEMORY.md) | `memory/dynamic/` |
-| Consultation answers | consultation cache |
+| Consultation answers | root's `memory/dynamic/team/` |
 
 Manual override: `/invalidate <agent>` forces refresh regardless of hook decision.
 

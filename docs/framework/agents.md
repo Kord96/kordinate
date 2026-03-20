@@ -8,6 +8,17 @@ Mapped to the runtime's main agent by the [linking layer](../reference/linking.m
 
 **Contains:** agent routing table, consultation directory, team rules.
 
+```
+agents/root/
+├── KORD.md                    # routing table, triggers, team rules
+├── memory/
+│   ├── static/
+│   │   └── team/              # team rules inherited by all subagents
+│   └── dynamic/
+│       └── team/              # consultation cache
+└── commands/
+```
+
 **Commands** (inherited by all)
 
 | Command | Description |
