@@ -5,7 +5,7 @@ A **kord** is a single consultation link between two agents — a template that 
 | Concept | What it is | Where it lives | Nature |
 |---------|-----------|----------------|--------|
 | **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned |
-| **Consultation** | Actual knowledge | `agents/<consulter>/memory/dynamic/consultations/<result>.md` | Dynamic, consulter-owned |
+| **Consultation** | Actual knowledge | `agents/<requester>/memory/dynamic/consultations/<result>.md` | Dynamic, requester-owned |
 
 The kord is the template (like a class). The consultation is the actual knowledge (like an instance).
 
@@ -13,14 +13,14 @@ The kord is the template (like a class). The consultation is the actual knowledg
 
 Root owns all kord definitions. Each kord is a directory containing the definition and a freshness script. A registry file lists all agents with brief descriptions.
 
-**Naming:** kord directories are named by topic. Default kords: `default-<consultant>/`
+**Naming:** kord directories are named by topic. Default kords: `default-<provider>/`
 
 ```
 agents/root/kords/
 ├── registry.md
 ├── pattern-review/
 │   ├── kord.md                              # template definition
-│   ├── freshness.sh                         # owned by consultant
+│   ├── freshness.sh                         # owned by provider
 │   └── .valid                               # marker — deleted to invalidate
 ├── monitoring-impact/
 │   ├── kord.md
@@ -30,7 +30,7 @@ agents/root/kords/
     └── freshness.sh
 ```
 
-Consultations live in the consulter's dynamic memory:
+Consultations live in the requester's dynamic memory:
 
 ```
 agents/deployer/memory/dynamic/
@@ -43,8 +43,8 @@ Each `kord.md` contains:
 
 | Field | Description |
 |-------|-------------|
-| **Consulter** | Agent asking |
-| **Consultant** | Agent answering |
+| **Requester** | Agent asking |
+| **Provider** | Agent answering |
 | **Provides** | What this kord delivers |
 | **Guidelines** | How to answer — sources, format, constraints |
 
@@ -55,8 +55,8 @@ Each `kord.md` contains:
 
     | Field | Value |
     |-------|-------|
-    | **Consulter** | deployer |
-    | **Consultant** | designer |
+    | **Requester** | deployer |
+    | **Provider** | designer |
     | **Provides** | Pattern compliance review for a proposed deployment |
 
     ## Guidelines
@@ -71,20 +71,20 @@ Each `kord.md` contains:
 
 Each kord directory contains a `.valid` marker and a `freshness.sh` script. Freshness is controlled by two hooks, each owned by a different side:
 
-- **Pre-consult hook** (consulter) — runs `freshness.sh` before every consultation. The script checks `.valid` and any other criteria. Returns fresh or stale.
-- **Post-event hook** (consultant) — runs after events the consultant cares about (e.g. post-deploy, config change). Deletes `.valid` to signal staleness.
+- **Pre-consult hook** (requester) — runs `freshness.sh` before every consultation. The script checks `.valid` and any other criteria. Returns fresh or stale.
+- **Post-event hook** (provider) — runs after events the provider cares about (e.g. post-deploy, config change). Deletes `.valid` to signal staleness.
 
-The kord directory is the neutral ground — root-owned, both sides can touch it. The consultation stays in the consulter's memory.
+The kord directory is the neutral ground — root-owned, both sides can touch it. The consultation stays in the requester's memory.
 
 ```mermaid
 flowchart TB
     C["/consult"] --> G{"Pre-consult hook<br/>freshness.sh"}
     G -->|.valid exists + fresh| M[Read from memory]
     G -->|stale or missing| K[Read guidelines from kord.md]
-    K --> A[Spawn consultant with guidelines]
+    K --> A[Spawn provider with guidelines]
     A -->|response| W[Write result to memory + create .valid]
 
-    E[Event] --> P["Post-event hook<br/>(consultant)"]
+    E[Event] --> P["Post-event hook<br/>(provider)"]
     P -->|deletes| V[.valid]
 ```
 
