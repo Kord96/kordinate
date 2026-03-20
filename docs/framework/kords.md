@@ -86,7 +86,7 @@ Each `kord.md` contains:
 
 ```mermaid
 flowchart TB
-    C[/consult] --> G{Freshness Guard}
+    C["/consult"] --> G{Freshness Guard}
     G -->|fresh — blocked| M[Read from memory]
     G -->|stale — allowed| A[Consultant]
     A -->|reads| K[kord.md]
