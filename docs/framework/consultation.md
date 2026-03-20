@@ -1,4 +1,23 @@
-# Consultation
+# Architecture Overview
+
+```mermaid
+flowchart TB
+    ROOT[Root Agent]
+
+    subgraph team[Team]
+        A1[Agent A] <-.->|consult| A2[Agent B]
+        A2 <-.->|consult| A3[Agent C]
+        A1 <-.->|consult| A3
+    end
+
+    ROOT -.->|consult| A1
+    ROOT -.->|consult| A2
+    ROOT -.->|consult| A3
+```
+
+A framework for kording specialized agents into a team. Each agent owns a domain with exclusive tools, shares a [consultation protocol](#consultation) and [2D memory](memory.md) with the team, and is kept in its lane by [hooks](root.md). Run `/scribe:kord` to add your own.
+
+## Consultation
 
 Ask an agent a question without transferring full control.
 
