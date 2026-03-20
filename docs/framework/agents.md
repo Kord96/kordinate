@@ -1,66 +1,52 @@
 # Agents
 
-## Overview
+Every agent has a role, triggers, commands, memory, and exclusive tool access. The framework enforces these boundaries — agents can't step outside their domain.
 
-See [home](../index.md) for what agents are and how they're kord'd into a team.
+## Shared Rules
 
-| Agent | What it does |
-|-------|-------------|
-| **scribe** | Sole editor of `.md` files (core framework agent) |
-| *team agents* | Defined per team — e.g., deployer, sauron, designer |
-
-## Rules
-
-All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
+All agents inherit these rules (source: `agents/shared/MEMORY.md`).
 
 !!! info "Permissions"
-    - Only **scribe** may edit `.md` files (hook-enforced)
+    - Only the owning agent can use its exclusive tools (hook-enforced)
     - Never invoke an agent's operational commands directly — spawn the owning agent
-    - Each team defines additional exclusive permissions per agent
-
-    Permissions are per-agent and enforced by guard hooks. For instance, in the infra team: deployer has exclusive kubectl and Redis MCP access, sauron has exclusive Grafana MCP access.
+    - Only **scribe** may edit `.md` files (core framework rule)
 
 !!! note "Conventions"
-    - Credentials live in `pass` under `kordinate/`. Auth locks in `profile/locks/`.
+    - Credentials live in `pass` under `kordinate/`
     - Follow existing patterns — no new libraries, frameworks, or conventions
     - Commit with `[<agent-name>]` in message
     - Project artifacts go in the project repo, not kordinate
 
 !!! tip "Memory"
-    `static/` (pre-defined structure) + `dynamic/` (free-form) — same model at [global and project scope](memory.md#memory-model). Agent resumption: check `.claude/agent-state/<name>.json` for `agent_id`.
+    Each agent has `static/` (pre-defined structure) + `dynamic/` (free-form) at both global and project scope. See [Memory](memory.md).
 
-## Commands
+## Shared Commands
 
-=== "Shared"
+| Command | Description |
+|---------|-------------|
+| `/boot` | Initialize the workstation environment |
+| `/consult` | Query an agent without full handoff |
+| `/merge` | Merge current session branch |
+| `/invalidate` | Force re-consultation for an agent |
 
-    | Command | Description |
-    |---------|-------------|
-    | `/boot` | Initialize the workstation environment |
-    | `/consult` | Query an agent without full handoff |
-    | `/merge` | Merge current session branch |
-    | `/invalidate` | Force re-consultation for an agent |
+## Scribe (Core Agent)
 
-=== "Scribe"
+Scribe is the only framework-provided agent — present in every team. It manages all `.md` file edits so documentation stays consistent and protected.
 
-    | Command | Description |
-    |---------|-------------|
-    | `/scribe:add-mcp` | Add a new MCP server entry |
-    | `/scribe:update-agent-docs` | Update an agent's documentation |
-    | `/scribe:update-project-docs` | Update project-level docs |
-    | `/scribe:update-subagent-memory` | Update agent memory files |
+Triggers
+:   `update docs`, `update profile docs`, `update project docs`, `add api key`, `add mcp`, `update agent docs`, `write readme`, `update readme`
 
-## Scribe Details
+Authority
+:   All `.md` file edits
 
-| | |
-|---|---|
-| **Triggers** | `update docs`, `update profile docs`, `update project docs`, `add api key`, `store api key`, `add mcp`, `update agent docs`, `write readme`, `update readme` |
-| **Authority** | All `.md` file edits |
-| **Exclusive Tools** | Gemini (doc review) |
-| **Style** | Coordinate — write-gate for all docs |
-| **Consults** | [designer](consultation.md) (architecture context), [sauron](consultation.md) (monitoring context), [deployer](consultation.md) (infrastructure context) |
+Style
+:   Coordinate — write-gate for all docs
 
-**Memory**
+**Commands**
 
-| | Static | Dynamic |
-|---|---|---|
-| **Global** | templates/ | auto-managed |
+| Command | Description |
+|---------|-------------|
+| `/scribe:add-mcp` | Add a new MCP server entry |
+| `/scribe:update-agent-docs` | Update an agent's documentation |
+| `/scribe:update-project-docs` | Update project-level docs |
+| `/scribe:update-subagent-memory` | Update agent memory files |

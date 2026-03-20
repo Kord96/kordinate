@@ -1,4 +1,4 @@
-# Link Mapping
+# Linking
 
 Kordinate's framework lives in `~/kordinate/kordinate/`. Claude Code expects its files at `~/.claude/`. The linking layer (`installer/link-claude.sh`) bridges them.
 
