@@ -186,7 +186,7 @@ Three things connect the new agent to the rest of the team:
 
 ### 5a. Add to the shared consultation directory
 
-Edit `agents/shared/MEMORY.md` to add a row to the consultation directory so other agents know when to consult your agent:
+Edit `agents/shared/MEMORY.md` (team memory) to add a row to the consultation directory so other agents know when to consult your agent:
 
 ```markdown
 | Need to know about | Consult |
@@ -241,7 +241,7 @@ When you are done, verify:
 - [ ] `agents/<name>/instructions/consultation.md` has Cache Sources + answer scope
 - [ ] `agents/<name>/memory/static/` has the knowledge the agent needs
 - [ ] `agents/<name>/commands/` has one `.md` per slash command
-- [ ] `agents/shared/MEMORY.md` consultation directory includes the new agent
+- [ ] Team memory (`agents/shared/MEMORY.md`) consultation directory includes the new agent
 - [ ] Guard hooks created and registered (if the agent has exclusive tools)
 - [ ] `link-claude.sh` run successfully
 - [ ] Another agent can `/consult <name> "test question"` and get an answer

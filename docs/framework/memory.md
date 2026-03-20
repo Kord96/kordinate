@@ -53,7 +53,7 @@ flowchart LR
 
     At spawn, `agent-memory.sh` assembles a single `MEMORY.md` from the agent's 2D memory plus two additional sources:
 
-    - **Shared memory** (`agents/shared/MEMORY.md`) — common rules and consultation directory, injected into every agent
+    - **Team memory** (`agents/shared/MEMORY.md`) — common rules and consultation directory, injected into every agent
     - **Instructions** (`agents/<agent>/instructions/*.md`) — agent-specific procedures
 
     ```mermaid
@@ -67,7 +67,7 @@ flowchart LR
 
     | Source | How it's included |
     |--------|------------------|
-    | `shared/MEMORY.md` | Always inlined — shared rules for all agents |
+    | `shared/MEMORY.md` | Always inlined — team rules for all agents |
     | `instructions/*.md` | Always inlined — agent-specific procedures |
     | `memory/static/*.md` | Inlined if ≤500 lines, indexed if larger |
     | Previous `## Notes` | Preserved — Claude's auto-managed section |
