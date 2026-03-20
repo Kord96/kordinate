@@ -9,7 +9,7 @@ A **kord** is a single consultation link between two agents — a template that 
 | **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned |
 | **Consultation result** | Actual knowledge from a consultation | `agents/<consulter>/memory/dynamic/consultations/<result>.md` | Dynamic, consulter-owned |
 
-The kord is the template (like a class). The consultation result is the actual knowledge (like an instance). `freshness.sh` decides when the result needs regenerating.
+The kord is the template (like a class). The consultation result is the actual knowledge (like an instance).
 
 ## Structure
 
@@ -84,7 +84,7 @@ Each `kord.md` contains:
 |------|-------------|------|
 | `freshness.sh` | `/consult` | Every consultation |
 | Consultation result | Consulter | Anytime (it's in its memory) |
-| `kord.md` | Consultant | When consulted for this kord (stale) |
+| `kord.md` (Guidelines, Rules) | Consultant | When consulted for this kord |
 | `kord.md` | Consulter Awareness Script | When generating dynamic memory summary |
 
 ## Flow
