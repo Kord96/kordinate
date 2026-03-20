@@ -45,7 +45,7 @@ nav:
   - Home: index.md
   - Framework:
       - Core Agents: framework/agents.md
-      - Memory: framework/memory.md
+      - 2D Memory: framework/memory.md
       - Consultation: framework/consultation.md
   - "Example: Infra Team":
       - Infrastructure: infra/infrastructure.md
