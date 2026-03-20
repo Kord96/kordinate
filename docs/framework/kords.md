@@ -1,55 +1,59 @@
 # Kords
 
-A **kord** is a single consultation link between two agents — not the entire relationship, but one specific thing one agent provides to another. Two agents can be linked by multiple kords, each addressing a different need.
+A **kord** is a single consultation link between two agents — a template that defines one specific thing one agent provides to another. Two agents can be linked by multiple kords. A default kord exists for free-form queries.
 
-A kord defines the **template** of a response (like a class). The cache file holds the **actual response** (like an instance). A default kord exists for free-form inquiries that don't fit a specific template.
+## Three Concepts
 
-## Ownership & Structure
+| Concept | What it is | Where it lives | Nature |
+|---------|-----------|----------------|--------|
+| **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned |
+| **Consultation result** | Actual knowledge from a consultation | `agents/<consulter>/memory/dynamic/consultations/<result>.md` | Dynamic, consulter-owned |
+| **Cache artifact** | Freshness tracking | Whatever `freshness.sh` checks against | Ephemeral |
 
-Root owns all kord definitions centrally in `agents/root/kords/`. Each kord is its own directory. A registry file lists all agents with brief descriptions.
+The kord is the template (like a class). The consultation result is the actual knowledge (like an instance). The cache artifact just tracks whether the result needs regenerating.
 
-**Naming:** directories named `<consulter>-<consultant>-<topic>/` — Default kords: `default-<consultant>/`. Each directory contains `kord.md` (definition), `freshness.sh` (script called directly by `/consult`), and `cache` (the cached response).
+## Structure
+
+Root owns all kord definitions centrally. Each kord is a directory. A registry file lists all agents with brief descriptions.
+
+**Naming:** `<consulter>-<consultant>-<topic>/` — Default kords: `default-<consultant>/`
 
 ```
 agents/root/kords/
 ├── registry.md
 ├── deployer-designer-pattern-review/
-│   ├── kord.md          # definition (template, guidelines, rules)
-│   ├── freshness.sh     # script, called directly by /consult
-│   └── cache            # the cached response
-├── deployer-designer-architecture-constraints/
+│   ├── kord.md                              # template definition
+│   └── freshness.sh                         # cheap freshness check
+├── deployer-sauron-monitoring-impact/
 │   ├── kord.md
-│   ├── freshness.sh
-│   └── cache
+│   └── freshness.sh
 └── default-designer/
     ├── kord.md
-    ├── freshness.sh
-    └── cache
+    └── freshness.sh
 ```
 
-## Kord as Multi-Reader Source of Truth
+Consultation results live in the consulter's dynamic memory:
 
-A kord directory contains files read by different agents at different times:
+```
+agents/deployer/memory/dynamic/
+└── consultations/
+    ├── designer-pattern-review.md
+    └── sauron-monitoring-impact.md
+```
 
-| Reader | Extracts | Purpose |
-|--------|----------|---------|
-| `/consult` | `freshness.sh` | Check cache cheaply — no need to read `kord.md` |
-| Consulter | Template from `kord.md` | Know what shape of response to expect (only when needed) |
-| Consultant | Guidelines, Rules from `kord.md` | Know how to answer, evaluate deeper freshness |
-| `/scribe:kord` | All fields in `kord.md` | Create/edit the full definition |
+These are real knowledge — accessible anytime without `/consult`.
 
-The primary cheap check is `freshness.sh` directly — the kord definition (`kord.md`) is only read when the consultant is actually spawned.
+## Kord Definition
 
-## Definition Fields
+Each `kord.md` contains:
 
-| Field | Reader | Description |
-|-------|--------|-------------|
-| **Consulter** | Both | Agent asking |
-| **Consultant** | Both | Agent answering |
-| **Provides** | Both | What this kord delivers |
-| **Template** | Consulter | Shape of the expected response |
-| **Guidelines** | Consultant | How to answer — sources, format, constraints |
-| **Rules** | Consultant | Deeper freshness logic, cross-kord invalidation |
+| Field | Description |
+|-------|-------------|
+| **Consulter** | Agent asking |
+| **Consultant** | Agent answering |
+| **Provides** | What this kord delivers |
+| **Guidelines** | How to answer — sources, format, constraints |
+| **Rules** | Deeper freshness logic, cross-kord invalidation |
 
 ??? example "deployer → designer: pattern review"
 
@@ -61,12 +65,6 @@ The primary cheap check is `freshness.sh` directly — the kord definition (`kor
     | **Consulter** | deployer |
     | **Consultant** | designer |
     | **Provides** | Pattern compliance review for a proposed deployment |
-
-    ## Template
-
-    - **Compliant patterns:** list
-    - **Violations:** list with severity
-    - **Suggestions:** optional remediation steps
 
     ## Guidelines
 
@@ -81,31 +79,43 @@ The primary cheap check is `freshness.sh` directly — the kord definition (`kor
     a blocking violation is found.
     ```
 
+## Who Reads What
+
+| File | Who reads it | When |
+|------|-------------|------|
+| `freshness.sh` | `/consult` | Every consultation |
+| Consultation result | Consulter | Anytime (it's in its memory) |
+| `kord.md` | Consultant | When consulted for this kord (stale) |
+| `kord.md` | Consulter Awareness Script | When generating dynamic memory summary |
+
 ## Flow
 
-1. `/consult` calls `freshness.sh` directly — no need to read `kord.md` first.
-2. Fresh → read cache. Stale or missing → spawn consultant.
-3. Consultant reads `kord.md` for guidelines and rules, produces response, writes cache.
+1. `/consult` runs `freshness.sh` against the consultation result file
+2. Fresh → result already in consulter's dynamic memory, done
+3. Stale → spawn consultant
+4. Consultant reads `kord.md`, follows guidelines, produces result
+5. Result written to consulter's `consultations/` directory
 
 ```mermaid
 flowchart TB
     C[/consult] --> F[freshness.sh]
-    F -->|fresh| CA[cache]
+    F -->|fresh| R[Consultation Result]
+    R --> M[Consulter Memory]
     F -->|stale| A[Consultant]
     A -->|reads| K[kord.md]
-    A --> CA
+    A -->|writes| R
 ```
 
 ## Freshness & Invalidation
 
-Four layers, from cheapest to most disruptive:
+Four layers:
 
-| Layer | Trigger | Who runs it |
-|-------|---------|-------------|
-| **`freshness.sh`** | On consult — called directly, no spawn needed | `/consult` (passive) |
-| **Rules** | When consultant is already spawned for another reason | Consultant (opportunistic) |
-| **`/invalidate`** | User manually forces stale | User |
-| **Event-driven** | Hooks (e.g., post-deploy) invalidate specific kords | System |
+| Layer | Who runs it | When |
+|-------|-------------|------|
+| **`freshness.sh`** | `/consult` | Every consultation — cheap local check, no spawn |
+| **Rules** (in `kord.md`) | Consultant | When already spawned — evaluates deeper freshness |
+| **`/invalidate`** | User | Manual override |
+| **Event-driven** | Hooks | On events (e.g. post-deploy) invalidate specific kords |
 
 ## Using a Kord
 
@@ -129,10 +139,20 @@ Four layers, from cheapest to most disruptive:
 
 ## Agent Awareness
 
-Agents discover their kords through three mechanisms:
+Agents know their kords without reading them on every action:
 
-1. **Dynamic memory file** — a script scans `agents/root/kords/` for kords involving the agent and generates a summary of available kords and connected agents.
-2. **Hook on kord directory** — fires when any file in `agents/root/kords/` changes, regenerating the dynamic memory file.
-3. **Guard** — blocks the agent from acting until it re-reads the updated memory file.
+1. **Consulter Awareness Script** — scans `agents/root/kords/` for kords involving this agent, generates a summary in the agent's dynamic memory
+2. **Hook on kord directory** — fires when any file in `agents/root/kords/` changes, regenerates the summary
+3. **Guard** — blocks the agent from acting until it re-reads the updated summary
 
-No staleness, no injection timing issues. The guard ensures agents never act on outdated kord knowledge.
+No staleness. The guard ensures agents never act on outdated kord knowledge.
+
+## Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/scribe:kord deployer designer` | Create a new kord |
+| `/scribe:onboard designer` | Onboard a new agent |
+| `/consult designer:pattern-review "question"` | Consult via explicit kord |
+| `/consult designer "question"` | Consult via default kord |
+| `/invalidate designer` | Force all designer kords stale |
