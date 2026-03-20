@@ -24,6 +24,8 @@ All agents inherit these rules (source: `agents/shared/MEMORY.md` + `AGENT.md`).
     - Never invoke an agent's operational commands directly — spawn the owning agent
     - Each team defines additional exclusive permissions per agent
 
+    Permissions are per-agent and enforced by guard hooks. For instance, in the infra team: deployer has exclusive kubectl and Redis MCP access, sauron has exclusive Grafana MCP access.
+
 !!! note "Conventions"
     - Credentials live in `pass` under `kordinate/`. Auth locks in `profile/locks/`.
     - Follow existing patterns — no new libraries, frameworks, or conventions

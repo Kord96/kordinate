@@ -215,6 +215,24 @@ The linking script maps the agent into the AI runtime:
 
 This creates the symlinks, registers hooks, and makes the agent available to the orchestrator.
 
+## Designer Reference
+
+The designer agent, used as the worked example above, has the following complete specification:
+
+| | |
+|---|---|
+| **Triggers** | `review architecture`, `design review` |
+| **Authority** | Pattern definitions, architecture review |
+| **Exclusive Tools** | Gemini (design validation) |
+| **Commands** | `/designer:detect-patterns` -- scan a project for recognized patterns |
+| **Consults** | [deployer](infra/infrastructure.md) (infrastructure reality), [sauron](infra/infrastructure.md) (observability gaps) |
+
+**Memory**
+
+| | Static | Dynamic |
+|---|---|---|
+| **Global** | patterns/*.md, libraries/*.md | auto-managed |
+
 ## Checklist
 
 When you are done, verify:

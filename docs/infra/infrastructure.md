@@ -230,9 +230,23 @@ flowchart TB
 
 ---
 
+## Team Hooks
+
+Three guard hooks enforce agent-exclusive access to protected resources:
+
+| Hook | Agent | What it guards |
+|------|-------|---------------|
+| `guard-kubectl.sh` | deployer | kubectl writes, docker build/push. Hard-blocks workstation resources. Master namespace writes require bootstrap auth. |
+| `guard-redis.sh` | deployer | Redis MCP access |
+| `guard-grafana.sh` | sauron | Grafana MCP and dashboard edits (registered in 3 contexts: Edit/Write, Bash, mcp__grafana) |
+
+All hooks use the profile lock authentication flow: the agent copies `profile/locks/<agent>` to `/tmp/.<agent>-auth`, the hook compares the files, and the agent removes the temp file when done.
+
+---
+
 ## Consultation Matrix
 
-When the deployer or sauron need information outside their domain, they consult other agents.
+When agents need information outside their domain, they consult other agents. The matrix is bidirectional -- designer can ground architecture reviews in live cluster state from deployer, sauron can discover monitoring targets from deployer, etc.
 
 === "Deployer asks"
 
@@ -247,3 +261,18 @@ When the deployer or sauron need information outside their domain, they consult 
     |-----------|----------|
     | designer | Pattern monitoring perspective -- what to observe |
     | deployer | Live cluster state, pod health, resource usage |
+
+=== "Designer asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | deployer | Infrastructure reality -- live cluster state, resource usage, deployment topology |
+    | sauron | Observability gaps -- what is and isn't being monitored |
+
+=== "Scribe asks"
+
+    | Consultant | Provides |
+    |-----------|----------|
+    | designer | Architecture context -- component topology, design patterns |
+    | sauron | Monitoring context -- metrics, dashboards, health checks |
+    | deployer | Infrastructure context -- cluster state, deployment details |
