@@ -87,18 +87,19 @@ Each `kord.md` contains:
 ```mermaid
 flowchart TB
     C["/consult"] --> G{Freshness Guard}
-    G -->|fresh — blocked| M[Read from memory]
-    G -->|stale — allowed| A[Consultant]
-    A -->|reads| K[kord.md]
-    A -->|writes result| R[consultations/]
+    G -->|fresh| M[Read from memory]
+    G -->|stale| K[Read guidelines from kord.md]
+    K --> A[Spawn consultant with guidelines]
+    A -->|response| W[Write result to memory]
 ```
 
-1. Agent runs `/consult designer:pattern-review "question"` (or `/consult designer "question"` for default kord)
+1. Agent calls `/consult designer:pattern-review "question"` (or `/consult designer "question"` for default kord)
 2. **Freshness Guard** fires as a pre-hook — runs `freshness.sh` from the kord directory
-3. **Fresh** → guard blocks `/consult`, agent reads the result from its own dynamic memory. No spawn.
-4. **Stale** → guard allows `/consult` to proceed, spawns the consultant
-5. Consultant reads Guidelines and Rules from `kord.md`, produces result
-6. Result written to consulter's `consultations/` directory
+3. **Fresh** → guard blocks, agent reads the result from its own dynamic memory. No spawn.
+4. **Stale** → guard allows `/consult` to proceed
+5. `/consult` reads the Guidelines section from `kord.md` and spawns the consultant, passing the guidelines
+6. Consultant follows the guidelines, produces result
+7. Result written to consulter's `consultations/` directory
 
 ### Freshness layers
 
