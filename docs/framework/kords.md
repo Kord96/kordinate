@@ -90,13 +90,7 @@ flowchart TB
     P -->|deletes| V[.valid]
 ```
 
-1. Agent calls `/consult pattern-review "question"` (or `/consult designer "question"` for default kord)
-2. Pre-consult hook fires — runs `freshness.sh`, which checks `.valid` and any additional criteria
-3. **Fresh** → hook blocks, agent reads the result from its own dynamic memory. No spawn.
-4. **Stale** → hook allows `/consult` to proceed
-5. `/consult` reads the Guidelines section from `kord.md` and spawns the consultant, passing the guidelines
-6. Consultant follows the guidelines, produces result
-7. Result written to consulter's `consultations/` directory, `.valid` marker created
+
 
 ## Kord Discovery
 
