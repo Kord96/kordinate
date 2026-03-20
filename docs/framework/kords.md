@@ -8,32 +8,11 @@ A **kord** is a consultation protocol between two agents. It has two parts:
 Without kords, agents are isolated specialists. Kords are what make them a team.
 
 ```mermaid
-sequenceDiagram
-    participant C as Consulter
-    participant R as Root Hook
-    participant CA as Cache
-    participant F as Freshness Script
-    participant A as Consultant
-
-    C->>R: /consult agent "question"
-    R->>R: Check contract in KORD.md
-    R->>CA: Cache exists?
-    alt cached
-        CA->>F: Run consultant's freshness script
-        alt fresh
-            F-->>C: Return cached result
-        else stale
-            F->>A: Re-consult
-            A->>A: Follow kord guidelines
-            A-->>CA: Cache result
-            A-->>C: Return result
-        end
-    else no cache
-        R->>A: Consult
-        A->>A: Follow kord guidelines
-        A-->>CA: Cache result
-        A-->>C: Return result
-    end
+flowchart LR
+    C[Consulter] -->|/consult| R{Contract}
+    R -->|cache fresh| C
+    R -->|cache stale or missing| A[Consultant]
+    A -->|follows guidelines| R
 ```
 
 ## Contract
