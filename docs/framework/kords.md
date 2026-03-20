@@ -2,15 +2,14 @@
 
 A **kord** is a single consultation link between two agents — a template that defines one specific thing one agent provides to another. Two agents can be linked by multiple kords. A default kord exists for free-form queries.
 
-## Three Concepts
+## Two Concepts
 
 | Concept | What it is | Where it lives | Nature |
 |---------|-----------|----------------|--------|
 | **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned |
 | **Consultation result** | Actual knowledge from a consultation | `agents/<consulter>/memory/dynamic/consultations/<result>.md` | Dynamic, consulter-owned |
-| **Cache artifact** | Freshness tracking | Whatever `freshness.sh` checks against | Ephemeral |
 
-The kord is the template (like a class). The consultation result is the actual knowledge (like an instance). The cache artifact just tracks whether the result needs regenerating.
+The kord is the template (like a class). The consultation result is the actual knowledge (like an instance). `freshness.sh` decides when the result needs regenerating.
 
 ## Structure
 
@@ -114,7 +113,6 @@ Four layers:
 |-------|-------------|------|
 | **`freshness.sh`** | `/consult` | Every consultation — cheap local check, no spawn |
 | **Rules** (in `kord.md`) | Consultant | When already spawned — evaluates deeper freshness |
-| **`/invalidate`** | User | Manual override |
 | **Event-driven** | Hooks | On events (e.g. post-deploy) invalidate specific kords |
 
 ## Using a Kord
@@ -155,4 +153,3 @@ No staleness. The guard ensures agents never act on outdated kord knowledge.
 | `/scribe:onboard designer` | Onboard a new agent |
 | `/consult designer:pattern-review "question"` | Consult via explicit kord |
 | `/consult designer "question"` | Consult via default kord |
-| `/invalidate designer` | Force all designer kords stale |
