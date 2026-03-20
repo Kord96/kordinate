@@ -26,6 +26,34 @@ Mapped to the runtime's main agent by the [linking layer](../reference/linking.m
 | `auto-merge-to-dev.sh` | After push: creates PR, tries fast-forward main |
 | `agent-memory.sh` | Before spawn: regenerates MEMORY.md if sources changed |
 
+??? abstract "Worktree sessions & branch model"
+    Each tmux window runs its own Claude Code instance with isolated agents and hooks. Windows create isolated git worktrees + branches via `bin/claude-session`. On exit: push + PR if changes, cleanup if not.
+
+    ```mermaid
+    flowchart TB
+        subgraph tmux
+            direction TB
+            subgraph ks[kordinate session]
+                W0[window 0 — main branch<br/>no worktree]
+                W1[window 1 — session/w1-kordinate<br/>isolated worktree]
+                W2[window 2 — session/w2-kordinate<br/>isolated worktree]
+            end
+            subgraph ps[your-project session]
+                PW0[window 0 — main branch]
+                PW1[window 1 — session/w1-project<br/>isolated worktree]
+            end
+        end
+
+        W1 & W2 & PW1 -->|on exit| PR{changes?}
+        PR -->|yes| PUSH[push + create PR]
+        PR -->|no| CLEAN[cleanup worktree]
+        PUSH --> FF{fast-forward main?}
+        FF -->|yes| CLOSE[close PR]
+        FF -->|no| MERGE[run /merge]
+    ```
+
+    Branch flow: `session/*` → `main` → `test` → `prod`. The `auto-merge-to-dev.sh` hook tries to fast-forward main after each push. If it fails, run `/merge`.
+
 ??? abstract "Hook-based role enforcement"
     Protected operations (kubectl, Grafana, `.md` edits) are restricted to specific agents via guard hooks. Each guard uses a lock-file handshake to verify the calling agent is authorized:
 
