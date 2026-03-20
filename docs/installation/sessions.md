@@ -22,7 +22,7 @@ flowchart TB
     PR -->|no| CLEAN[cleanup worktree]
     PUSH --> FF{conflicts?}
     FF -->|no| DONE[merged to main]
-    FF -->|yes| MERGE[PR created · /merge triggered]
+    FF -->|yes| MERGE[PR created + /merge]
 ```
 
 ## Branch Model
