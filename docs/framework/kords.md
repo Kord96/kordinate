@@ -50,37 +50,4 @@ Consults an agent — the consultant answers using its memory without taking ove
 
 This differs from **delegation**, where the consulter hands off work entirely and the delegated agent takes action (writes files, runs commands, etc.).
 
-## Kord Map
-
-The full set of kords in a team. Owned by [root](root.md), lives in root's `KORD.md`.
-
-??? abstract "Example: infra team"
-
-    === "Deployer asks"
-
-        | Consultant | Provides |
-        |-----------|----------|
-        | designer | Pattern deployment perspective, architecture constraints |
-        | sauron | Monitoring impact of infra changes, metric dependencies |
-
-    === "Sauron asks"
-
-        | Consultant | Provides |
-        |-----------|----------|
-        | designer | Pattern monitoring perspective — what to observe |
-        | deployer | Live cluster state, pod health, resource usage |
-
-    === "Designer asks"
-
-        | Consultant | Provides |
-        |-----------|----------|
-        | deployer | Infrastructure reality — live cluster state, resource usage |
-        | sauron | Observability gaps — what is and isn't being monitored |
-
-    === "Scribe asks"
-
-        | Consultant | Provides |
-        |-----------|----------|
-        | designer | Architecture context — component topology, design patterns |
-        | sauron | Monitoring context — metrics, dashboards, health checks |
-        | deployer | Infrastructure context — cluster state, deployment details |
+All kords for a team are defined in [root](root.md)'s `KORD.md`.
