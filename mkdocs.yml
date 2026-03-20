@@ -44,7 +44,7 @@ extra_javascript:
 nav:
   - Home: index.md
   - Framework:
-      - Agents: framework/agents.md
+      - Scribe: framework/agents.md
       - Memory: framework/memory.md
       - Consultation: framework/consultation.md
       - Hooks: framework/hooks.md
