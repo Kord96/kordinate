@@ -85,7 +85,7 @@ Each `kord.md` contains:
 | `freshness.sh` | Freshness Guard | Every consultation (pre-hook on `/consult`) |
 | Consultation result | Consulter | Anytime (it's in its memory) |
 | `kord.md` (Guidelines, Rules) | Consultant | When consulted for this kord |
-| `kord.md` | Consulter Awareness Script | When generating dynamic memory summary |
+| `kord.md` (Consulter, Consultant, Provides) | Consulter Awareness Script | When generating dynamic memory summary |
 
 ## Flow
 
