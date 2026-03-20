@@ -5,17 +5,21 @@ flowchart TB
     ROOT[Root Agent]
 
     subgraph team[Team]
-        A1[Agent A] <-.->|consult| A2[Agent B]
-        A2 <-.->|consult| A3[Agent C]
-        A1 <-.->|consult| A3
+        SC[Scribe] <-.->|consult| A1[Agent A]
+        A1 <-.->|consult| A2[Agent B]
+        SC <-.->|consult| A2
     end
 
+    ROOT -.->|consult| SC
     ROOT -.->|consult| A1
     ROOT -.->|consult| A2
-    ROOT -.->|consult| A3
 ```
 
-The root agent is the user's existing agent (Claude, Codex, Cursor). The [linking layer](../reference/linking.md) enhances it with kordinate's coordination capabilities:
+**[Root](root.md)** is the user's existing agent (Claude, Codex, Cursor). The [linking layer](../reference/linking.md) enhances it with kordinate's coordination capabilities.
+
+**[Scribe](scribe.md)** ships with the framework — it guards all `.md` edits and handles [kording new agents](scribe.md#kording-an-agent). Always part of the team.
+
+Kordinate adds:
 
 - **[Memory](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Hooks](#guarded-hooks)** — enforce that only the right agent performs protected operations
