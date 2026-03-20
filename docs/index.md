@@ -15,6 +15,10 @@ flowchart TB
     end
 ```
 
+Each agent is a specialized subagent with its own role, memory, tools, and permissions. Agents are **kord'd into a team** — they share common rules, a consultation protocol, and a memory model, but each has exclusive authority over its own domain. The framework enforces boundaries via [hooks](framework/hooks.md) so agents cannot step outside their role.
+
+The **scribe** agent is part of the core framework — it manages all `.md` file edits and is present in every team. All other agents are team-specific. See the [Kording Guide](kording-guide.md) to add your own.
+
 ## Quick Start
 
 === "New installation"

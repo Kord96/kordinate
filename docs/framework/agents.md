@@ -1,14 +1,8 @@
 # Agents
 
-## What is an Agent?
-
-In Kordinate, an **agent** is a specialized Claude Code subagent with its own role, memory, tools, and permissions. Each agent owns a narrow domain — deployments, monitoring, architecture, documentation — and operates independently within that domain.
-
-Agents are **kord'd into a team**: they share common rules, a consultation protocol, and a memory model, but each has exclusive authority over its own tools and resources. The framework enforces boundaries via [hooks](hooks.md) so agents cannot step outside their domain. Teams are composed by defining agents and wiring them together through shared rules, consultation matrices, and hook guards.
-
-The scribe agent is a **core framework agent** — it manages all `.md` file edits and is present in every Kordinate team. Other agents are team-specific and defined per deployment.
-
 ## Overview
+
+See [home](../index.md) for what agents are and how they're kord'd into a team.
 
 | Agent | What it does |
 |-------|-------------|
