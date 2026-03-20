@@ -1,71 +1,85 @@
 # Kords
 
-A **kord** is a consultation protocol between two agents. It has two parts:
+A **kord** is a single consultation link between two agents — not the entire relationship, but one specific thing one agent provides to another. Two agents can be linked by multiple kords, each addressing a different need.
 
-- **Kord Contract** — the interface. What can be asked, what's provided, in what format. Owned by [root](root.md), defined in `IDENTITY.md`.
-- **Kord Guidelines** — the implementation. How the consultant answers, freshness rules, response procedures. Owned by each consultant agent.
-
-Without kords, agents are isolated specialists. Kords are what make them a team.
+A kord defines the **template** of a response (like a class). The cache file holds the **actual response** (like an instance). There is also a default kord for free-form inquiries that don't fit a specific template.
 
 ```mermaid
 flowchart LR
-    C[Consulter] -->|/consult| R{Contract}
-    R -->|cache fresh| C
-    R -->|cache stale or missing| A[Consultant]
-    A -->|follows guidelines| R
+    C[Consulter] -->|/consult| K[Kord]
+    K -->|fresh| CA[Cache]
+    CA --> C
+    K -->|stale or missing| A[Consultant]
+    A --> CA
 ```
 
-## Contract
+## Definition
 
-The shared interface between two agents. Lives in root's `IDENTITY.md`.
+Each kord is a self-contained file with these fields:
 
 | Field | Description |
 |-------|-------------|
-| **Consulter** | The agent asking |
-| **Consultant** | The agent answering |
-| **Provides** | What the consultant offers — specific items with expected format |
-| **Additional Notes** | Open-ended guidance for queries outside the structured list |
+| **Consulter** | Agent asking |
+| **Consultant** | Agent answering |
+| **Provides** | What this kord delivers |
+| **Template** | Shape of the response |
+| **Guidelines** | How to answer — sources to check, format, constraints |
+| **Freshness** | Script or rules for cache validity |
 
-??? abstract "Example: deployer → designer"
+??? example "deployer → designer: pattern review"
+
+    ```markdown
+    # Kord: deployer → designer (pattern review)
 
     | Field | Value |
     |-------|-------|
     | **Consulter** | deployer |
     | **Consultant** | designer |
+    | **Provides** | Pattern compliance review for a proposed deployment |
 
-    **Provides:**
+    ## Template
 
-    - Pattern deployment perspective — checklist of pattern compliance
-    - Architecture constraints — list of violations or concerns
-    - Data flow impact — affected components and connections
+    - **Compliant patterns:** list
+    - **Violations:** list with severity
+    - **Suggestions:** optional remediation steps
 
-    **Additional Notes:**
+    ## Guidelines
 
-    Any architecture question related to a deployment change. Designer answers from its pattern library and project architecture knowledge.
+    Check the deployment manifest against the pattern library in
+    `agents/designer/patterns/`. Report violations by severity
+    (blocking, warning, info). Keep response under 40 lines.
 
-Define a new contract:
+    ## Freshness
 
-```
-/scribe:kord deployer designer
-```
+    Stale when any file in `agents/designer/patterns/` changes
+    or the deployment manifest is modified.
+    ```
 
-Scribe walks through the format interactively — who provides what, in what format, and any additional notes.
+## Ownership
 
-## Guidelines
+Root owns all kord definitions centrally in `agents/root/kords/`. Each kord is its own file.
 
-The consultant's implementation. Lives in the agent's own files (e.g. `instructions/consultation.md`). The consultant decides:
+**Naming convention:** `<consulter>-<consultant>-<topic>.md`
 
-- **How to answer** — what sources to check, response format, line limits
-- **Freshness** — a standard script (`hooks/freshness.sh`) that runs when a cached result is read. Returns fresh or stale based on whatever criteria the consultant defines (file hashes, time, external state).
-
-The consulter never sees the guidelines — it only interacts with the contract.
-
-## Using a kord
+**Default kords:** `default-<consultant>.md` — handles free-form questions.
 
 ```
-/consult <agent> "<question>"
+agents/root/kords/
+├── deployer-designer-pattern-review.md
+├── deployer-designer-architecture-constraints.md
+├── deployer-sauron-monitoring-impact.md
+├── sauron-designer-monitoring-perspective.md
+└── default-designer.md
 ```
 
-Consults an agent — the consultant answers using its memory without taking over the conversation. The consulter keeps control. Results are cached — `/invalidate <agent>` forces a fresh answer regardless of the freshness script.
+## Flow
 
-This differs from **delegation**, where the consulter hands off work entirely and the delegated agent takes action (writes files, runs commands, etc.).
+1. Agent wants to consult.
+2. Check cache for this specific kord.
+3. Fresh → read cache. Stale or missing → spawn consultant, cache result.
+
+## Commands
+
+`/scribe:kord` creates a new kord definition file.
+
+`/consult` executes a kord — the consultant answers using its memory without taking over the conversation. Results are cached.
