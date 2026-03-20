@@ -54,31 +54,25 @@ How these files are loaded into the runtime is handled by the [linking layer](..
 
 ## Cache
 
-Each agent declares its cache sources in `KORD.md` — the files that define its knowledge freshness. When these change, the agent's cached outputs (memory, consultation answers) need refreshing.
-
-Each agent owns a **refresh hook** (`hooks/refresh.sh`) that receives the changed file path and decides whether the change warrants a cache refresh. The framework calls this hook after edits; the agent's logic determines significance.
+Each agent declares its cache in `KORD.md`:
 
 ```
-KORD.md:
-  ## Cache Sources
-  - memory/static/
-  - manifests/
+## Cache
+- memory/static/
+- manifests/
 
-  Refresh: hooks/refresh.sh
+Refresh: hooks/refresh.sh
 ```
 
-What gets cached:
+**Sources** — the dirs whose content defines the agent's knowledge. Rarely change.
 
-| What | Where |
-|------|-------|
-| Assembled memory (static → MEMORY.md) | `memory/dynamic/` |
+**Refresh hook** — called with the changed file path after edits. The hook decides: is this change significant? Config tweak → skip. Infrastructure redesign → refresh.
+
+If the hook says "refresh," **all** cached outputs from that agent are cleared: its assembled MEMORY.md and all consultation answers it previously gave. This is intentional — if an agent's knowledge changed significantly, every answer it gave is potentially stale.
+
+| Cached output | Where it lives |
+|---------------|---------------|
+| Assembled memory | agent's `memory/dynamic/` |
 | Consultation answers | root's `memory/dynamic/team/` |
 
 Manual override: `/invalidate <agent>` forces refresh regardless of hook decision.
-
-| Function | Purpose |
-|----------|---------|
-| `cache_hash <dirs...>` | Compute MD5 of all files in given directories |
-| `cache_check <hash_file> <dirs...>` | Returns 0 if fresh, 1 if stale |
-| `cache_store <hash_file> <dirs...>` | Store current hash |
-| `cache_invalidate <hash_file>` | Remove hash to force refresh |
