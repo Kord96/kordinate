@@ -26,6 +26,15 @@ Mapped to the runtime's main agent by the [linking layer](../reference/linking.m
 | `auto-merge-to-dev.sh` | After push: creates PR, tries fast-forward main |
 | `agent-memory.sh` | Before spawn: regenerates MEMORY.md if sources changed |
 
+??? abstract "Hook-based role enforcement"
+    Protected operations (kubectl, Grafana, `.md` edits) are restricted to specific agents via guard hooks. Each guard uses a lock-file handshake to verify the calling agent is authorized:
+
+    1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
+    2. Hook reads both files, allows if they match
+    3. Agent removes `/tmp/.<agent>-auth` after completing work
+
+    This ensures only the owning agent can perform its exclusive operations — even if another agent attempts to, the hook blocks it.
+
 ## Scribe
 
 Documentation gate — present in every team. Only agent authorized to edit `.md` files. All other agents delegate markdown edits to scribe.
@@ -42,8 +51,3 @@ Enforced by `guard-md.sh`: the hook blocks Edit/Write on `.md` files unless scri
 | `/scribe:update-agent-docs` | Update an agent's documentation |
 | `/scribe:update-project-docs` | Update project-level docs |
 | `/scribe:update-subagent-memory` | Update agent memory files |
-
-??? abstract "Authentication flow"
-    1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
-    2. Hook reads both files, allows if they match
-    3. Agent removes `/tmp/.<agent>-auth` after completing work
