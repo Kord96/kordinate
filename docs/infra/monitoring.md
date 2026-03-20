@@ -2,8 +2,6 @@
 
 Monitoring, observability, and code validation.
 
-## Sauron
-
 The sauron agent owns all monitoring, observability, and code validation. It is the only agent authorized to use Grafana.
 
 | | |
@@ -11,7 +9,6 @@ The sauron agent owns all monitoring, observability, and code validation. It is 
 | **Triggers** | `add monitoring`, `add metrics`, `health check`, `prometheus`, `dashboard`, `set up logging`, `add logging`, `review logs`, `run tests`, `code validation`, `validate code` |
 | **Authority** | Grafana, code fixes, standards testing |
 | **Exclusive Tools** | nokrashi-tools, klog, Grafana MCP |
-| **Style** | Act first, report after |
 
 ### Commands
 
@@ -27,7 +24,7 @@ The sauron agent owns all monitoring, observability, and code validation. It is 
 | **Global** | monitoring.md, logging.md, dashboards/ | auto-managed |
 | **Project** | `sauron/static/` -- dashboards, alert rules | `sauron/dynamic/` -- monitoring notes |
 
-### Hook
+### Hooks
 
 | Hook | What it guards |
 |------|---------------|
