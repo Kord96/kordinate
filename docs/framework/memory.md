@@ -91,7 +91,7 @@ flowchart LR
 
 ## Cache System
 
-The `lib/cache.sh` library provides hash-based invalidation — used by memory regeneration, consultation, and doc audit to detect when source files have changed.
+The `lib/cache.sh` library provides hash-based invalidation — hashes source directories and skips regeneration if unchanged.
 
 ```mermaid
 flowchart LR
@@ -101,6 +101,24 @@ flowchart LR
     C -->|no| R[stale — regenerate]
     R --> W[store new hash]
 ```
+
+### What's cached
+
+| Consumer | What it caches | Hash stored at |
+|----------|---------------|----------------|
+| `agent-memory.sh` | Generated MEMORY.md per agent | `memory/dynamic/.hash` |
+| `/consult` | Consultation answers per agent pair | `agents/shared/memory/dynamic/.<consulter>-<consultant>.hash` |
+| `/scribe:audit-docs` | Doc freshness per page | `docs/.source-hashes/` |
+
+### Invalidation
+
+Each agent (consultant) declares which directories to hash in `## Cache Sources` of its `instructions/consultation.md`. When those files change, cached answers become stale.
+
+A `PostToolUse` hook (`invalidate-consultation.sh`) auto-invalidates: after any Edit/Write, it checks if the modified file falls within an agent's declared cache sources and removes the corresponding hash files.
+
+Manual: `/invalidate <agent>` force-clears all cached answers from that agent.
+
+### Functions
 
 | Function | Purpose |
 |----------|---------|
