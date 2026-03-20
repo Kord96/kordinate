@@ -19,27 +19,6 @@ Agents are wired into a team: they share a [consultation protocol](framework/con
 
 Teams are composed by defining agents and connecting them through consultation matrices and hook guards. Run `/scribe:kord` to add your own.
 
-## Quick Start
-
-=== "New installation"
-
-    ```bash
-    git clone <repo-url> ~/kordinate
-    cd ~/kordinate
-    ./installer/link-claude.sh              # link framework into ~/.claude/
-    ./installer/kordinate-cli init           # bootstrap k8s + workstation
-    ```
-
-=== "Joining existing cluster"
-
-    ```bash
-    git clone <repo-url> ~/kordinate
-    cd ~/kordinate
-    git-crypt unlock                         # decrypt profile/
-    ./installer/link-claude.sh
-    ./installer/kordinate-cli hydrate
-    ```
-
 ## Explore
 
 <div class="grid cards" markdown>
