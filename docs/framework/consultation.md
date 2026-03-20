@@ -49,19 +49,17 @@ agents/<agent>/
 └── commands/                      # slash command definitions
 ```
 
-## Guard Hooks
+## Hooks
 
-Each agent can have exclusive access to specific tools. Guard hooks intercept tool calls and block them unless the owning agent is the caller.
+Three types of hooks fire on tool calls:
 
-| Guard | Protects | Owner |
-|-------|----------|-------|
-| `guard-md.sh` | `.md` file edits | scribe |
-| `guard-git.sh` | push to `test`/`prod` branches | deployer |
-| `guard-kubectl.sh` | kubectl writes | deployer |
-| `guard-grafana.sh` | Grafana operations | sauron |
-| `guard-redis.sh` | Redis MCP | deployer |
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Guard** | Blocks operations unless the key-holding agent is the caller | guard-md.sh (scribe holds the key) |
+| **Automation** | Runs after events — housekeeping | auto-merge-to-dev.sh, agent-memory.sh |
+| **Refresh** | Per-agent cache invalidation decisions | agent's refresh hook |
 
-Framework guards (guard-md, guard-git) are defined by [root](root.md). Team guards (guard-kubectl, guard-grafana, guard-redis) are defined per team.
+Guards are owned by [root](root.md) (framework-level) or defined per team. The key holder is the agent authorized to pass through — not the script owner. See [Root](root.md) for specific guard assignments.
 
 ## Consultation
 
