@@ -100,6 +100,8 @@ Agents know their kords without reading them on every action:
 2. **Hook on kord directory** — fires when kord files change, regenerates the summary
 3. **Guard** — blocks agent until it re-reads the updated summary
 
+---
+
 ??? note "Related commands"
 
     | Command | Purpose |
