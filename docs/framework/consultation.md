@@ -67,7 +67,7 @@ Root registers a hook on Edit/Write of `.md` files. If any agent other than scri
 
 When an agent's knowledge changes, only that agent's refresh hook decides whether to invalidate. Other agents cannot trigger a refresh on behalf of someone else.
 
-Teams can define additional guarded hooks for their agents (e.g., kubectl writes → deployer only, Grafana → sauron only).
+Teams can define additional guarded hooks (e.g., kubectl writes → deployer agent, Grafana MCP calls → sauron agent).
 
 ## Consultation
 
