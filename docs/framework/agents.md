@@ -17,7 +17,7 @@ Every agent inherits these rules, commands, and hooks.
     - Project artifacts go in the project repo, not kordinate
 
 !!! tip "Memory"
-    Each agent has `static/` (pre-defined structure) + `dynamic/` (free-form) at both global and project scope. See [Memory](memory.md).
+    Every agent receives [shared memory](memory.md#shared-memory) at spawn — common rules and the consultation directory. On top of that, each agent has its own [2D memory](memory.md#per-agent-memory): `static/` + `dynamic/` at both global and project scope.
 
 ### Commands
 
