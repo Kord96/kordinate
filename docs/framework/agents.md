@@ -2,7 +2,7 @@
 
 ## Base Agent
 
-Every agent inherits these rules and commands.
+Every agent inherits these rules, commands, and hooks.
 
 ### Rules
 
@@ -27,6 +27,42 @@ Every agent inherits these rules and commands.
 | `/consult` | Query an agent without full handoff |
 | `/merge` | Merge current session branch |
 | `/invalidate` | Force re-consultation for an agent |
+
+### Hooks
+
+Hooks fire on every tool call. They enforce safety and automate housekeeping.
+
+```mermaid
+flowchart TD
+    U[User message] --> T{matches trigger?}
+    T -->|yes| S[spawn agent]
+    T -->|/consult| C[agent reads memory → returns answer]
+    S --> H{hooks check every tool call}
+    H --> SC["scribe → .md file edits"]
+    H --> GIT["guard-git → branch model"]
+    H --> AM["agent-memory → context assembly"]
+```
+
+**Guards** — each guard enforces that only the authorized agent can perform certain operations.
+
+| Hook | What it guards |
+|------|---------------|
+| `guard-git.sh` | git push — `main` and `session/*` allowed, `test`/`prod` require auth |
+| `guard-md.sh` | All `.md` file edits (scribe only) |
+
+??? abstract "Authentication flow"
+    1. Agent copies `profile/locks/<agent>` → `/tmp/.<agent>-auth`
+    2. Hook reads both files, allows if they match
+    3. Agent removes `/tmp/.<agent>-auth` after completing work
+
+**Automation**
+
+| Hook | When | What it does |
+|------|------|-------------|
+| `auto-merge-to-dev.sh` | After git push | Creates PR, tries fast-forward main. On failure, signals `/merge`. |
+| `agent-memory.sh` | Before agent spawn | Regenerates agent's MEMORY.md if source files changed |
+
+Cache system: both hooks use `lib/cache.sh` for hash-based invalidation. See [Memory — Cache System](memory.md#cache-system).
 
 ## Scribe
 

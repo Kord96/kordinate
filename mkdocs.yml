@@ -47,13 +47,12 @@ nav:
       - Core Agents: framework/agents.md
       - Memory: framework/memory.md
       - Consultation: framework/consultation.md
-      - Hooks: framework/hooks.md
-      - Linking: framework/linking.md
   - "Example: Infra Team":
       - Infrastructure: infra/infrastructure.md
       - Monitoring: infra/monitoring.md
   - Kording Guide: kording-guide.md
   - Reference:
+      - Linking: reference/linking.md
       - Source Map: reference/source-map.md
       - Patterns:
           - Index: reference/patterns/index.md
