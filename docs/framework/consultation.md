@@ -22,7 +22,7 @@ flowchart TD
     W --> RR[return result]
 ```
 
-Results are cached per consulter-consultant pair at `agents/shared/memory/dynamic/` (team memory). The cache uses the framework's [hash-based invalidation](memory.md#cache-system) — if the consultant's source files change, the cache goes stale automatically.
+Results are cached per consulter-consultant pair at `agents/shared/memory/dynamic/` (team memory). The cache uses the framework's [hash-based invalidation](memory.md#cache) — if the consultant's source files change, the cache goes stale automatically.
 
 !!! tip "Force re-consultation"
     ```bash
