@@ -51,7 +51,8 @@ nav:
   - "Example: Infra Team":
       - Deployer: infra/infrastructure.md
       - Sauron: infra/monitoring.md
-      - Designer: infra/designer.md
+  - Guides:
+      - How to Kord?: guides/how-to-kord.md
   - Reference:
       - Linking: reference/linking.md
       - Source Map: reference/source-map.md
