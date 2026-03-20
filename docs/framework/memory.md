@@ -1,4 +1,4 @@
-# Memory & Cache
+# Recall System
 
 How agents store and discover knowledge. See [Architecture Overview](consultation.md#agent-structure) for KORD.md identity and the directory skeleton.
 

@@ -49,7 +49,7 @@ nav:
   - Core Agents:
       - Root: framework/root.md
       - Scribe: framework/scribe.md
-  - "Memory & Cache": framework/memory.md
+  - Recall System: framework/memory.md
   - "Example: Infra Team":
       - Deployer: infra/infrastructure.md
       - Sauron: infra/monitoring.md

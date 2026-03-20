@@ -26,7 +26,7 @@ flowchart TB
 
 Kordinate adds:
 
-- **[Memory](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
+- **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Hooks](#guarded-hooks)** — enforce that only the right agent performs protected operations
 - **[Kords](#kords)** — defined protocols between agents for sharing expertise
 
