@@ -1,10 +1,10 @@
 # Core Agents
 
-## Root Agent
+## Root
 
-The orchestrator — receives user messages, matches triggers, spawns the right agent. Root agent's `AGENT.md` defines the team and everything subagents inherit.
+The orchestrator — receives user messages, matches triggers, spawns the right agent. Root's `AGENT.md` defines the team and everything subagents inherit.
 
-Every team has exactly one root agent. The [linking layer](../reference/linking.md) maps it to the runtime's main agent configuration.
+Every team has exactly one root. The [linking layer](../reference/linking.md) maps root to the runtime's main agent (e.g. Claude Code's `CLAUDE.md`, Codex's config, Cursor's rules).
 
 ### Identity
 
