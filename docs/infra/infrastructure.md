@@ -183,17 +183,5 @@ flowchart TB
     - If master goes down, clusters keep collecting locally
     - If a cluster goes down, master retains historical data (30d)
 
----
 
-## Team Hooks
-
-Three guard hooks enforce agent-exclusive access to protected resources:
-
-| Hook | Agent | What it guards |
-|------|-------|---------------|
-| `guard-kubectl.sh` | deployer | kubectl writes, docker build/push. Hard-blocks workstation resources. Master namespace writes require bootstrap auth. |
-| `guard-redis.sh` | deployer | Redis MCP access |
-| `guard-grafana.sh` | sauron | Grafana MCP and dashboard edits (registered in 3 contexts: Edit/Write, Bash, mcp__grafana) |
-
-All hooks use the profile lock authentication flow: the agent copies `profile/locks/<agent>` to `/tmp/.<agent>-auth`, the hook compares the files, and the agent removes the temp file when done.
 
