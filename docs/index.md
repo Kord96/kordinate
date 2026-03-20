@@ -4,8 +4,7 @@ A framework for kording specialized agents into a team.
 
 ```mermaid
 flowchart TB
-    RT[Agent Runtime<br/>Claude Code · Codex · ...] -->|linking layer| ROOT[Root]
-    ROOT -->|spawn| A1[Agent A]
+    ROOT[Root Agent<br/>Claude · Codex · Cursor · ...] -->|spawn| A1[Agent A]
     ROOT -->|spawn| A2[Agent B]
     ROOT -->|spawn| A3[Agent C]
     A1 <-.->|consult| A2
