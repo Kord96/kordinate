@@ -4,11 +4,11 @@ Coordinate specialized AI agents into a team — with shared memory, cross-agent
 
 <div class="grid cards" markdown>
 
--   :material-robot-outline:{ .lg .middle } **[Architecture Overview](framework/consultation.md)**
+-   :material-robot-outline:{ .lg .middle } **[Architecture Overview](framework/overview.md)**
 
     ---
 
-    How agents consult each other, the consultation matrix, and the team diagram.
+    Team diagram, guards, kords, and agent structure.
 
 -   :material-account-group-outline:{ .lg .middle } **[Core Agents](framework/root.md)**
 

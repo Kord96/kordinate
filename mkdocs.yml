@@ -45,7 +45,10 @@ extra_javascript:
 
 nav:
   - Home: index.md
-  - Architecture Overview: framework/consultation.md
+  - Architecture:
+      - Overview: framework/overview.md
+      - Guards: framework/guards.md
+      - Kords: framework/kords.md
   - Core Agents:
       - Root: framework/root.md
       - Scribe: framework/scribe.md

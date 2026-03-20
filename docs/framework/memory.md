@@ -1,6 +1,6 @@
 # Recall System
 
-How agents store and discover knowledge. See [Architecture Overview](consultation.md#agent-structure) for KORD.md identity and the directory skeleton.
+How agents store and discover knowledge. See [Overview](overview.md#agent-structure) for KORD.md identity and the directory skeleton.
 
 ## Knowledge Model
 

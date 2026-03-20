@@ -4,7 +4,7 @@ The orchestrator. Routes user messages to the right agent. Root's `KORD.md` defi
 
 Mapped to the runtime's main agent by the [linking layer](../reference/linking.md) (e.g. Claude Code's `CLAUDE.md`).
 
-**Contains:** agent routing table, [kord map](consultation.md#kord-map), team rules.
+**Contains:** agent routing table, [kord map](kords.md#kord-map), team rules.
 
 ```
 agents/root/
@@ -35,4 +35,4 @@ agents/root/
 | `auto-merge-to-dev.sh` | After push: creates PR, tries fast-forward main |
 | `agent-memory.sh` | Before spawn: regenerates MEMORY.md if sources changed |
 
-See [Architecture Overview — Guard Hooks](consultation.md#guarded-hooks) for how exclusive access is enforced.
+See [Guards](guards.md) for how exclusive access is enforced.
