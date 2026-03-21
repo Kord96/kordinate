@@ -9,13 +9,31 @@ A **kord** is a single consultation link between two agents — a template that 
 
 ### Example
 
-A deployer agent needs a design review before applying a manifest change:
+Deployer is about to roll a new service version. Before applying, it needs to know whether monitoring is ready — are dashboards, alerts, and health checks in place? This is Sauron's domain, not Deployer's.
 
 ```
-/consult pattern-review "review the beorn deployment manifest for pattern violations"
+/consult monitoring-impact "rolling enricher v2.3 to prod — is monitoring ready?"
 ```
 
-`/consult` resolves the `pattern-review` kord, checks freshness, invokes the designer with the kord's guidelines, caches the response, and returns it. Next time the same question is asked with a fresh cache, the cached answer is returned instantly.
+`/consult` resolves the `monitoring-impact` kord, checks freshness, invokes Sauron with the kord's guidelines, caches the response, and returns it. The cached result is reused until Sauron's knowledge changes.
+
+??? example "monitoring-impact kord"
+
+    ```markdown
+    # monitoring-impact
+
+    | Field | Value |
+    |-------|-------|
+    | **Requester** | deployer |
+    | **Provider** | sauron |
+    | **Provides** | Monitoring readiness assessment for infrastructure changes |
+
+    ## Guidelines
+
+    Check dashboards, alert rules, and health checks for the affected
+    service. Report gaps by severity (blocking, warning, info).
+    Include specific dashboard names and missing metrics.
+    ```
 
 ## Structure
 
