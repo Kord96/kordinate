@@ -10,11 +10,11 @@ Coordinate specialized AI agents into a team — with kords, guards, and a recal
 
     Team diagram, guards, kords, and agent structure.
 
--   :material-account-group-outline:{ .lg .middle } **[Core Agents](framework/agents.md)**
+-   :material-account-group-outline:{ .lg .middle } **[Core Agents](framework/overview.md#core-agents)**
 
     ---
 
-    Root (the orchestrator) and Scribe (documentation gate + onboarding).
+    Root (orchestrator) and Scribe (documentation gate).
 
 -   :material-database-outline:{ .lg .middle } **[Recall System](framework/memory.md)**
 

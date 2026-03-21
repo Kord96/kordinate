@@ -15,7 +15,7 @@ flowchart LR
 
 ## Core guards
 
-**Documentation guard** — `.md` edits must go through [scribe](agents.md#scribe). Any other agent is blocked and told to delegate.
+**Documentation guard** — `.md` edits must go through [scribe](overview.md#scribe). Any other agent is blocked and told to delegate.
 
 **Cache refresh guard** — only the cache owner can refresh its own cache.
 
