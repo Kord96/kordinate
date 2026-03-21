@@ -16,18 +16,18 @@ Dividing work across specialized agents keeps each one focused — but an agent'
     - Stream-to-store pattern — reads from Kafka, writes to S3
     - Typical metrics: message throughput, storage growth
 
-Answering these questions requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine?
+Answering these questions requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine? This is what a **kord** solves.
 
 ## What is a Kord
 
-**Sauron** delegates these questions to specialized agents (**Deployer**, **Designer**). Each relationship is defined by a **kord** — a contract that specifies the provider, the requester, and the expected response format.
+A **kord** is a contract between two agents. It defines who provides what, the expected response format, and the criteria for cache invalidation. When an agent needs another agent's knowledge, it consults through a kord — the result is cached and reused until the provider's state changes.
 
-| Concept | What it is | Where it lives | Analogy |
-|---------|-----------|----------------|---------|
-| **Kord** | Contract definition | `agents/root/kords/<name>/kord.md` | class |
-| **Consultation** | Cached result | `agents/<requester>/memory/dynamic/consultations/<kord>.md` | instance |
+| Concept | What it is | Analogy |
+|---------|-----------|---------|
+| **Kord** | Contract definition | class |
+| **Cached result** | Stored response from provider | instance |
 
-??? example "deployer-default kord (sauron asking deployer about infrastructure)"
+??? example "deployer-default kord"
 
     ```markdown
     ---
@@ -69,8 +69,6 @@ flowchart TB
     K --> W[Cache result + store provider state]
 ```
 
-No external invalidation hooks or markers. The provider's script checks whatever it cares about — file hashes, timestamps, external state — and returns fresh or stale.
-
 ### Creating Kords
 
 Just describe what you need. The `.md` guard delegates kord creation to scribe, which asks for any missing details (name, requester, provider) and enforces the standard structure.
@@ -81,13 +79,13 @@ Just describe what you need. The `.md` guard delegates kord creation to scribe, 
 
 ### Structure
 
-Root owns all kord definitions. Each kord is a directory containing the contract and a freshness script.
+Each kord is a directory containing the contract and a freshness script. Root owns all definitions.
 
 ```
 agents/root/kords/
 ├── pattern-review/
-│   ├── kord.md           # contract: requester, provider, guidelines, format
-│   └── pre-consult.sh      # provider-maintained freshness check
+│   ├── kord.md             # contract
+│   └── pre-consult.sh      # freshness check
 ├── monitoring-impact/
 │   ├── kord.md
 │   └── pre-consult.sh
