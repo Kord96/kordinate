@@ -61,10 +61,6 @@ Answering these questions requires scanning the repo and the deployment pipeline
 
 Each kord has a `pre-consult.sh` script maintained by the provider. It runs before every consultation and decides whether the cache is still valid.
 
-| Hook | Triggered by | Implemented by | Purpose |
-|------|-------------|----------------|---------|
-| `pre-consult.sh` | requester | provider | Is the cache still fresh? |
-
 ```mermaid
 flowchart TB
     C["/consult"] --> G{"pre-consult.sh"}
