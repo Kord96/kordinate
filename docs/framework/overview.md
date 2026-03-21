@@ -20,16 +20,14 @@ flowchart TB
 
 ## What Kordinate Adds
 
-**[Root](#root)** is the user's existing agent (Claude, Codex, Cursor). **[Scribe](#scribe)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
-
-**[Beorn](#beorn)** is the transport layer — a shape-shifting server that any agent calls to reach any other agent via `/consult`. Beorn loads the target agent's identity, invokes it, and returns the response.
-
-Agents consult each other through **[kords](kords.md)** — defined protocols that specify what one agent provides to another. A single pair of agents can have multiple kords for different topics (shown as separate arrows in the diagram). All consultations flow through beorn.
-
 - **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
 - **[Kords](kords.md)** — defined protocols between agents for sharing expertise
-- **[Beorn](beorn.md)** — MCP agent server for inter-agent communication
+- **[Nesting Agents](beorn.md)** — agents can consult other agents at any depth, powered by [beorn](beorn.md)
+
+**[Root](#root)** is the user's existing agent (Claude, Codex, Cursor). **[Scribe](#scribe)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
+
+Agents consult each other through **[kords](kords.md)** — defined protocols that specify what one agent provides to another. A single pair of agents can have multiple kords for different topics (shown as separate arrows in the diagram). All consultations flow through **[beorn](beorn.md)**, a shape-shifting server that loads the target agent's identity, invokes it, and returns the response.
 
 ## Agent Structure
 
