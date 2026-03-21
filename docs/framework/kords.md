@@ -16,7 +16,9 @@ To recommend the right metrics and wire them into the existing stack, Sauron nee
         ← grafana at 226.247.55.77:8080, access token: xxxx
 ```
 
-Each consultation invokes an agent. Sauron will need this same information next time it sets up monitoring — the design pattern won't change, the Grafana endpoint rarely moves. But when they do change, stale answers lead to wrong configurations.
+Behind each short answer is a full agent invocation — designer scanned the codebase to identify the pattern, deployer queried the cluster for the Grafana endpoint. Sauron doesn't need to know any of that. But it will need the same answers next time it sets up monitoring for another service. The design pattern won't change, the Grafana endpoint rarely moves. And when they do change, stale answers lead to wrong configurations.
+
+Sauron should focus on monitoring, not re-discovering infrastructure and architecture every time.
 
 ## Solution
 
