@@ -70,8 +70,6 @@ Protected by `guard-md.sh` — see [Guards](guards.md).
 
 ### Beorn
 
-A beorn is a short-lived agent clone. It assumes a **skin** — another agent's identity (IDENTITY.md + memory) — handles a single request, and exits. The **beorn server** is the MCP factory that spawns beorns on demand.
-
-**Tools** — `mcp__beorn__delegate` (spawn a beorn with any agent's skin), `mcp__beorn__status` (server health).
+A beorn is a short-lived agent clone. It assumes a **skin** — another agent's identity and memories. When a subagent invokes another, the beorn server creates a beorn with the target subagent's skin, handles the request, and returns the result.
 
 `/consult` uses the beorn server as its transport layer. See [Beorn](beorn.md) for architecture details.
