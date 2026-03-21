@@ -16,7 +16,7 @@ Dividing work across specialized agents keeps each one focused — but an agent'
     - Stream-to-store pattern — reads from Kafka, writes to S3
     - Typical metrics: message throughput, storage growth
 
-Answering these questions requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine? This is what a **kord** solves.
+Answering these questions requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine? Enter **kords**.
 
 ## What is a Kord
 
