@@ -22,7 +22,7 @@ Acquiring these answers requires scanning the repo and the deployment pipeline. 
 
 ## What is a Kord
 
-A **kord** is a single cached link between two agents — a protocol definition that specifies the provider, the requester, and the expected response format.
+A **kord** is a contract between two agents — it defines the provider, the requester, and the expected response format. The contract enables caching: because the response structure is defined, results can be stored and reused.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
