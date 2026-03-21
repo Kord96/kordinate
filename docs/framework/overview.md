@@ -6,8 +6,8 @@ flowchart TB
 
     subgraph team[Team]
         A1[Agent A] <-.->|consult| A2[Agent B]
-        A1 <-.->|consult| A3[Agent C]
-        A3 <-.->|consult| A1
+        A1 -.->|consult| A3["Agent C\n(beorn)"]
+        A3 -.->|consult| A1
         A2 <-.->|consult| A3
         A1 -->|consult| SC[Scribe]
         A2 -->|consult| SC
@@ -18,15 +18,13 @@ flowchart TB
     ROOT -->|consult| SC
 ```
 
-**[Root](#root)** is the user's existing agent (Claude, Codex, Cursor).
-
-**[Scribe](#scribe)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
-
-**[Beorn](#beorn)** is the MCP transport layer — a shape-shifting server that any agent calls to reach any other agent via `/consult`.
-
-Agents consult each other through **[kords](kords.md)** — defined protocols that specify what one agent provides to another. A single pair of agents can have multiple kords for different topics. All consultations flow through beorn.
-
 ## What Kordinate Adds
+
+**[Root](#root)** is the user's existing agent (Claude, Codex, Cursor). **[Scribe](#scribe)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
+
+**[Beorn](#beorn)** is the transport layer — a shape-shifting server that any agent calls to reach any other agent via `/consult`. Beorn loads the target agent's identity, invokes it, and returns the response.
+
+Agents consult each other through **[kords](kords.md)** — defined protocols that specify what one agent provides to another. A single pair of agents can have multiple kords for different topics (shown as separate arrows in the diagram). All consultations flow through beorn.
 
 - **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
