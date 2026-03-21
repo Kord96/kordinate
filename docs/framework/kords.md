@@ -22,17 +22,30 @@ Deployer is about to roll a new service version. Before applying, it needs to kn
     ```markdown
     # monitoring-impact
 
-    | Field | Value |
-    |-------|-------|
-    | **Requester** | deployer |
-    | **Provider** | sauron |
-    | **Provides** | Monitoring readiness assessment for infrastructure changes |
+    Monitoring impact assessment for infrastructure changes.
+
+    ## Requester
+
+    deployer
+
+    ## Provider
+
+    sauron
 
     ## Provider Guidelines
 
-    Check dashboards, alert rules, and health checks for the affected
-    service. Report gaps by severity (blocking, warning, info).
-    Include specific dashboard names and missing metrics.
+    Assess monitoring coverage for the affected service.
+    Report gaps, not what's already working.
+    Keep under 50 lines.
+
+    ### Response Format
+
+    | Field | Required |
+    |-------|----------|
+    | Gaps by severity (blocking, warning, info) | yes |
+    | Missing dashboards or metrics | yes |
+    | Missing alerts | yes |
+    | Summary | no |
     ```
 
 ## Structure
@@ -72,25 +85,36 @@ Each `kord.md` contains:
 | **Requester** | Agent asking |
 | **Provider** | Agent answering |
 | **Provides** | What this kord delivers |
-| **Provider Guidelines** | How to answer — sources, format, constraints |
+| **Provider Guidelines** | Behavioral instructions + response format |
 
 ??? example "pattern-review kord"
 
     ```markdown
-    # Kord: deployer → designer (pattern review)
+    # pattern-review
 
-    | Field | Value |
-    |-------|-------|
-    | **Requester** | deployer |
-    | **Provider** | designer |
-    | **Provides** | Pattern compliance review for a proposed deployment |
+    Architecture review for deployment and monitoring changes.
+
+    ## Requester
+
+    deployer, sauron
+
+    ## Provider
+
+    designer
 
     ## Provider Guidelines
 
-    Check the deployment manifest against the pattern library in
-    `agents/designer/patterns/`. Report violations by severity
-    (blocking, warning, info). Keep response under 40 lines.
+    Review the proposed change against established patterns.
+    Include specific file paths and what should change.
+    Keep under 50 lines.
 
+    ### Response Format
+
+    | Field | Required |
+    |-------|----------|
+    | Violations by severity (blocking, warning, info) | yes |
+    | Affected files + suggested changes | yes |
+    | Summary | no |
     ```
 
 ## Consultation Freshness

@@ -1,0 +1,26 @@
+# default-designer
+
+General architecture and design questions.
+
+## Requester
+
+any
+
+## Provider
+
+designer
+
+## Provider Guidelines
+
+Answer concisely — the caller needs facts, not explanations.
+Include specific file paths when referencing components.
+Keep under 50 lines.
+
+### Response Format
+
+| Field | Required |
+|-------|----------|
+| Component topology | if applicable |
+| Design patterns in use | if applicable |
+| Data flow | if applicable |
+| Failure modes | if applicable |

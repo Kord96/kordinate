@@ -1,114 +1,84 @@
-Kord a new agent into the team — create all required files interactively.
+Define a new kord — a coordination agreement between agents.
 
-**Input**: $ARGUMENTS (optional: `<agent-name> "<description>"`)
+**Input**: $ARGUMENTS (optional: `<kord-name> "<description>"`)
 
 ## Usage
 
 ```
 /scribe:kord
-/scribe:kord myagent
-/scribe:kord myagent "manages database migrations"
+/scribe:kord pattern-review
+/scribe:kord pattern-review "architecture review for deployment changes"
 ```
 
 ## Procedure
 
-1. **Gather information** — parse agent name and description from arguments. If missing, ask:
-   - Agent name (required)
+1. **Gather information** — parse kord name and description from arguments. If missing, ask:
+   - Kord name (required, kebab-case)
    - One-line description (required)
-   - Triggers — what words spawn this agent (required)
-   - Exclusive tools — what tools only this agent can use (optional, default: none)
-   - Consultation expertise — what this agent answers when consulted (required)
+   - Requester — which agents can invoke this kord (required, or "any")
+   - Provider — which agent answers (required, exactly one)
 
-   Use the AskUserQuestion tool for any missing information. If the description provides enough detail, extract triggers/tools/expertise from it without asking.
+   Use the AskUserQuestion tool for any missing information.
 
-2. **Create agent directory structure:**
+2. **Create kord directory structure:**
    ```
-   agents/<name>/
-   ├── AGENT.md
-   ├── instructions/
-   │   └── consultation.md
-   ├── memory/
-   │   ├── static/
-   │   └── dynamic/
-   └── commands/
+   agents/root/kords/<name>/
+   ├── kord.md
+   └── freshness.sh
    ```
 
-3. **Generate AGENT.md** from template:
+3. **Generate kord.md** from this template:
    ```markdown
-   ---
-   name: <name>
-   model: inherit
-   memory: user
-   tools:
-     - Read
-     - Edit
-     - Write
-     - Bash
-     - Glob
-     - Grep
-   triggers:
-     - "<trigger1>"
-     - "<trigger2>"
-   ---
-
-   # <Name>
+   # <name>
 
    <description>
 
-   ## Commands
+   ## Requester
 
-   | Command | Purpose |
-   |---------|---------|
+   <requester agents, comma-separated>
 
-   ## Rules
+   ## Provider
 
-   - <any rules inferred from description>
+   <provider agent>
 
-   ## Consultation
+   ## Provider Guidelines
 
-   <expertise>. See `memory/consultation.md`.
+   <brief behavioral instructions — how to approach the answer, not how to do the job>
+   <the provider already knows its domain — guidelines shape the output, not the process>
+
+   ### Response Format
+
+   | Field | Required |
+   |-------|----------|
+   | <field> | yes/no |
+
    ```
 
-4. **Generate instructions/consultation.md:**
-   ```markdown
-   # Consultation
+   **Template rules:**
+   - Provider Guidelines tell the provider how to behave (concise, specific, severity-based), not how to do its job
+   - Response Format defines the expected output structure so requesters can rely on it
+   - Never include procedure ("check this file", "run this command") — the provider knows its domain
 
-   ## Cache Sources
-
-   Directories to hash for cache invalidation:
-
-   - `instructions/`
-   - `memory/static/`
-   - `memory/dynamic/`
-
-   When consulted, answer about:
-   - <expertise items>
-
-   ## How to answer
-
-   1. Use project memory as primary source
-   2. Scan project source if needed
-   3. Answer with specific facts
-   4. Keep responses under 50 lines
+4. **Generate freshness.sh:**
+   ```bash
+   #!/bin/bash
+   KORDINATE_HOME="${KORDINATE_HOME:-$(cd "$(dirname "$0")/../../.." && pwd)}"
+   KORD_NAME="<name>"
+   VALID_MARKER="$KORDINATE_HOME/agents/root/kords/$KORD_NAME/.valid"
+   if [ -f "$VALID_MARKER" ]; then
+     exit 0  # fresh
+   fi
+   exit 1  # stale
    ```
+   Make it executable: `chmod +x freshness.sh`
 
-5. **Update root AGENT.md** — read agents/AGENT.md (the root agent). Add the new agent to:
-   - The agents table (name, triggers, purpose)
-   - The consultation table (name, expertise)
+5. **Update registry.md** — add the new kord to `agents/root/kords/registry.md`.
 
-6. **Create guard hook** (if exclusive tools specified):
-   - Generate `hooks/guard-<name>.sh` following the same pattern as guard-kubectl.sh
-   - The hook should check for `/tmp/.<name>-auth`
-   - Add the hook to settings.json
-
-7. **Run link-claude.sh** to register the new agent.
-
-8. **Report** what was created and what the user should do next:
-   - "Agent <name> kord'd. Files created: ..."
-   - "Next: add domain knowledge to memory/static/, define commands in commands/"
+6. **Report** what was created:
+   - "Kord `<name>` defined. Files: kords/<name>/kord.md, kords/<name>/freshness.sh"
 
 ## Notes
 
 - Use scribe auth for all .md file edits
-- Follow the exact AGENT.md frontmatter format (Claude Code requires it)
-- The generated files are starting points — the user customizes them
+- Kords live under `agents/root/kords/` — each is a directory
+- The `.valid` marker is created by `/consult` and deleted by the invalidation hook
