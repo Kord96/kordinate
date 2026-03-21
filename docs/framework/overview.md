@@ -33,7 +33,7 @@ flowchart TB
 
 Agents consult each other through **[kords](kords.md)** — defined protocols that specify what one agent provides to another. A single pair of agents can have multiple kords for different topics. All consultations flow through beorn.
 
-Kordinate adds:
+## What Kordinate Adds
 
 - **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
