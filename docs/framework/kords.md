@@ -1,6 +1,6 @@
 # Kords
 
-A **kord** caches information one agent repeatedly needs from another, with automatic rehydration when the provider's domain changes.
+A **kord** is a protocol that caches information one agent repeatedly needs from another. Cache invalidation is triggered by rules maintained by the provider agent.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
