@@ -12,11 +12,11 @@ The linking layer maps kordinate's file structure to what the agent runtime expe
 | `commands/` | Slash command definitions |
 | `hooks/` | Guard and automation scripts |
 
-The linking layer creates symlinks, copies, and renames as needed to make these available at the paths the runtime expects.
+The linking layer creates symlinks and copies as needed to make these available at the paths the runtime expects.
 
 ## Memory Mapping
 
-The linking layer maps kordinate's [2D memory](../framework/memory.md) into the runtime:
+The linking layer maps kordinate's [Recall System](../framework/memory.md) into the runtime:
 
 ```mermaid
 flowchart LR
@@ -34,22 +34,16 @@ flowchart LR
     KD -.-|linked| RD
 ```
 
-??? abstract "How memory is assembled at spawn"
-
-    A hook assembles a single file from static memory that the runtime auto-loads:
-
-    | Source | How it's included |
-    |--------|------------------|
-    | Root's `static/team/` | Always inlined — team rules for all agents |
-    | `memory/static/instructions/` | Always inlined — agent procedures |
-    | `memory/static/*.md` | Inlined if small, indexed if large |
-    | Previous agent notes | Preserved across spawns |
-
----
-
 ## Claude Code
 
 The current linking implementation targets Claude Code. Run `installer/link-claude.sh` to apply.
+
+In a pre-built container image, the Dockerfile runs the link script at build time:
+
+```dockerfile
+COPY kordinate/ /opt/kordinate/
+RUN /opt/kordinate/installer/link-claude.sh
+```
 
 ### Identity
 
@@ -65,14 +59,12 @@ The current linking implementation targets Claude Code. Run `installer/link-clau
 | `agents/` | `agents/` |
 | `commands/` | `commands/` |
 | `hooks/` | `hooks/` |
-| `agent-memory/<agent>/` | `agents/<agent>/memory/dynamic/` |
+| `profile/` | `profile/` |
 | `settings.json` | `settings.json` |
 | `keybindings.json` | `profile/keybindings.json` |
 | `.mcp.json` | `profile/mcp.json` |
-| `profile/` | `profile/` |
+| `agent-memory/<agent>/` | `agents/<agent>/memory/dynamic/` |
 
-### External
+### Adding a Runtime
 
-| Link | Target | Purpose |
-|------|--------|---------|
-| `profile/keystore/` | `~/.password-store/kordinate/` | GPG credential store (`pass`) |
+To support a new runtime (Codex, Cursor, etc.), create a new link script that maps kordinate's structure to that runtime's expected paths. The framework files stay the same — only the linking changes.

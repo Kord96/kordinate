@@ -20,13 +20,35 @@ if [ ! -d "$FRAMEWORK" ]; then
 fi
 
 # ═══════════════════════════════════════════════════════════════
+# AGENT DISCOVERY
+#
+# Discovers agents dynamically from agents/ directory.
+# Core agents (root, scribe) are always linked.
+# Team agents are linked if their directories exist.
+# ═══════════════════════════════════════════════════════════════
+
+discover_agents() {
+  local agents=()
+  for dir in "$FRAMEWORK"/agents/*/; do
+    [ -d "$dir" ] || continue
+    local name
+    name=$(basename "$dir")
+    # Skip non-agent dirs
+    [ "$name" = "shared" ] && continue
+    [ "$name" = "root" ] && continue
+    agents+=("$name")
+  done
+  echo "${agents[@]}"
+}
+
+# ═══════════════════════════════════════════════════════════════
 # MAPPING
 #
 # Symlinks: "link_name:target_path" — directories and files that
 #   don't need renaming. Target paths relative to repo root.
 #
 # Copies: "dest_name:source_path" — files that need renaming
-#   (AGENT.md → CLAUDE.md). Copied on deploy, synced back on sync.
+#   (IDENTITY.md → CLAUDE.md). Copied on deploy, synced back on sync.
 # ═══════════════════════════════════════════════════════════════
 
 # Claude Code conventions — symlinked
@@ -39,26 +61,39 @@ CLAUDE_SYMLINKS=(
 )
 
 # Claude Code conventions — copied (renamed files)
-# Format: "claude_path:kordinate_path"
-# claude_path is relative to ~/.claude/
-# kordinate_path is relative to repo root
-CLAUDE_COPIES=(
-  "CLAUDE.md:kordinate/agents/AGENT.md"
-  "agents/deployer/CLAUDE.md:kordinate/agents/deployer/AGENT.md"
-  "agents/sauron/CLAUDE.md:kordinate/agents/sauron/AGENT.md"
-  "agents/designer/CLAUDE.md:kordinate/agents/designer/AGENT.md"
-  "agents/scribe/CLAUDE.md:kordinate/agents/scribe/AGENT.md"
-)
+# IDENTITY.md → CLAUDE.md (Claude Code expects CLAUDE.md)
+build_copies() {
+  local copies=()
+  # Root agent
+  copies+=("CLAUDE.md:kordinate/agents/IDENTITY.md")
+  # Discovered agents
+  local agents
+  agents=$(discover_agents)
+  for agent in $agents; do
+    if [ -f "$FRAMEWORK/agents/$agent/IDENTITY.md" ]; then
+      copies+=("agents/$agent/CLAUDE.md:kordinate/agents/$agent/IDENTITY.md")
+    elif [ -f "$FRAMEWORK/agents/$agent/AGENT.md" ]; then
+      # Fallback for agents not yet renamed
+      copies+=("agents/$agent/CLAUDE.md:kordinate/agents/$agent/AGENT.md")
+    fi
+  done
+  echo "${copies[@]}"
+}
 
 # Kordinate internal — symlinked
-KORDINATE_SYMLINKS=(
-  "hooks:kordinate/hooks"
-  "profile:kordinate/profile"
-  "agent-memory/deployer:kordinate/agents/deployer/memory/dynamic"
-  "agent-memory/sauron:kordinate/agents/sauron/memory/dynamic"
-  "agent-memory/designer:kordinate/agents/designer/memory/dynamic"
-  "agent-memory/scribe:kordinate/agents/scribe/memory/dynamic"
-)
+build_kordinate_symlinks() {
+  local links=(
+    "hooks:kordinate/hooks"
+    "profile:kordinate/profile"
+  )
+  # Agent memory links
+  local agents
+  agents=$(discover_agents)
+  for agent in $agents; do
+    links+=("agent-memory/$agent:kordinate/agents/$agent/memory/dynamic")
+  done
+  echo "${links[@]}"
+}
 
 # External resources — symlinked with absolute targets
 EXTERNAL_LINKS=(
@@ -79,8 +114,6 @@ EXTERNAL_LINKS=(
 # Only agents with existing project dirs get linked.
 # ═══════════════════════════════════════════════════════════════
 
-KNOWN_AGENTS=(deployer sauron designer scribe)
-
 cmd_link_project() {
   local project_root
   project_root=$(git rev-parse --show-toplevel 2>/dev/null) || {
@@ -90,8 +123,10 @@ cmd_link_project() {
 
   echo "=== Project agent linking ==="
 
+  local agents
+  agents=$(discover_agents)
   local linked=0
-  for agent in "${KNOWN_AGENTS[@]}"; do
+  for agent in $agents; do
     local agent_dir="$project_root/$agent"
     [ -d "$agent_dir" ] || continue
 
@@ -131,12 +166,14 @@ cmd_link_project() {
 }
 
 # ═══════════════════════════════════════════════════════════════
-# SYNC: copy modified CLAUDE.md files back to repo as AGENT.md
+# SYNC: copy modified CLAUDE.md files back to repo as IDENTITY.md
 # ═══════════════════════════════════════════════════════════════
 
 cmd_sync() {
   echo "=== Sync: ~/.claude/ → repo ==="
-  for mapping in "${CLAUDE_COPIES[@]}"; do
+  local copies
+  read -ra copies <<< "$(build_copies)"
+  for mapping in "${copies[@]}"; do
     local claude_path="${mapping%%:*}"
     local repo_path="${mapping#*:}"
     local src="$TARGET/$claude_path"
@@ -170,8 +207,8 @@ create_link() {
   fi
 }
 
-apply_symlinks() {
-  local -n arr=$1
+apply_symlinks_from_array() {
+  local -a arr=("$@")
   for mapping in "${arr[@]}"; do
     local name="${mapping%%:*}"
     local source="${mapping#*:}"
@@ -184,7 +221,9 @@ apply_symlinks() {
 }
 
 deploy_copies() {
-  for mapping in "${CLAUDE_COPIES[@]}"; do
+  local copies
+  read -ra copies <<< "$(build_copies)"
+  for mapping in "${copies[@]}"; do
     local claude_path="${mapping%%:*}"
     local repo_path="${mapping#*:}"
     local dest="$TARGET/$claude_path"
@@ -212,15 +251,17 @@ cmd_deploy() {
   fi
 
   echo "=== Claude Code symlinks ==="
-  apply_symlinks CLAUDE_SYMLINKS
+  apply_symlinks_from_array "${CLAUDE_SYMLINKS[@]}"
 
   echo ""
-  echo "=== Claude Code copies (renamed) ==="
+  echo "=== Claude Code copies (IDENTITY.md → CLAUDE.md) ==="
   deploy_copies
 
   echo ""
   echo "=== Kordinate internal ==="
-  apply_symlinks KORDINATE_SYMLINKS
+  local kord_links
+  read -ra kord_links <<< "$(build_kordinate_symlinks)"
+  apply_symlinks_from_array "${kord_links[@]}"
 
   echo ""
   echo "=== External resource links ==="
@@ -238,7 +279,6 @@ cmd_deploy() {
     fi
   done
 
-
   echo ""
   echo "Done."
 }
@@ -251,7 +291,18 @@ cmd_unlink() {
   echo "=== Unlink: removing kordinate from ~/.claude/ ==="
 
   # Remove symlinks
-  for mapping in "${CLAUDE_SYMLINKS[@]}" "${KORDINATE_SYMLINKS[@]}"; do
+  for mapping in "${CLAUDE_SYMLINKS[@]}"; do
+    local name="${mapping%%:*}"
+    local dest="$TARGET/$name"
+    if [ -L "$dest" ]; then
+      rm "$dest"
+      echo "  -   $name"
+    fi
+  done
+
+  local kord_links
+  read -ra kord_links <<< "$(build_kordinate_symlinks)"
+  for mapping in "${kord_links[@]}"; do
     local name="${mapping%%:*}"
     local dest="$TARGET/$name"
     if [ -L "$dest" ]; then
@@ -261,7 +312,9 @@ cmd_unlink() {
   done
 
   # Remove copied files
-  for mapping in "${CLAUDE_COPIES[@]}"; do
+  local copies
+  read -ra copies <<< "$(build_copies)"
+  for mapping in "${copies[@]}"; do
     local claude_path="${mapping%%:*}"
     local dest="$TARGET/$claude_path"
     if [ -f "$dest" ] && [ ! -L "$dest" ]; then
