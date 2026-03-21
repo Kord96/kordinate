@@ -18,7 +18,7 @@ Keep under 50 lines.
 | Affected files + suggested changes | yes |
 | Summary | no |
 
-## Cache Invalidation
+## Provider State Invalidation
 
 Invalidate when:
 - Pattern library is updated

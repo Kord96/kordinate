@@ -49,7 +49,7 @@ Answering these questions requires scanning the repo and the deployment pipeline
     | Relevant configuration (services, ingresses) | if applicable |
     | Recent changes | if applicable |
 
-    ## Cache Invalidation
+    ## Provider State Invalidation
 
     Invalidate when:
     - Cluster manifests are modified

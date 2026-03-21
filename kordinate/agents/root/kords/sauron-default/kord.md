@@ -18,7 +18,7 @@ Keep under 50 lines.
 | Dashboards (names, what they show) | if applicable |
 | Alerts (conditions, severity) | if applicable |
 
-## Cache Invalidation
+## Provider State Invalidation
 
 Invalidate when:
 - Dashboard definitions are modified

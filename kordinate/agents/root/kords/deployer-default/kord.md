@@ -17,7 +17,7 @@ Keep under 50 lines.
 | Relevant configuration (services, ingresses) | if applicable |
 | Recent changes | if applicable |
 
-## Cache Invalidation
+## Provider State Invalidation
 
 Invalidate when:
 - Cluster manifests are modified

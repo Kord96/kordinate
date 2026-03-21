@@ -19,7 +19,7 @@ Keep under 50 lines.
 | Data flow | if applicable |
 | Failure modes | if applicable |
 
-## Cache Invalidation
+## Provider State Invalidation
 
 Invalidate when:
 - Architecture documentation is updated

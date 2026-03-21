@@ -46,7 +46,7 @@ Define a new kord — a coordination agreement between agents.
    |-------|----------|
    | <field> | yes/no |
 
-   ## Cache Invalidation
+   ## Provider State Invalidation
 
    Invalidate when:
    - <condition>

@@ -19,7 +19,7 @@ Keep under 50 lines.
 | Missing alerts | yes |
 | Summary | no |
 
-## Cache Invalidation
+## Provider State Invalidation
 
 Invalidate when:
 - Dashboard definitions are modified
