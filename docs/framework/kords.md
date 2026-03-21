@@ -18,7 +18,7 @@ Dividing work across specialized agents keeps each one focused — but an agent'
 
 Answering these questions requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine?
 
-**Sauron** delegates these questions to specialized agents (**Deployer**, **Designer**) via kords. Results are cached in a standard format defined by the kord. The provider agent maintains the invalidation rules — when its domain changes, the kordinate protocol automatically refreshes the cache.
+**Sauron** delegates these questions to specialized agents (**Deployer**, **Designer**). Each relationship is defined by a kord. Results are cached in a standard format defined by the kord. The provider agent maintains the invalidation rules — when its domain changes, the kordinate protocol automatically refreshes the cache.
 
 ## What is a Kord
 
