@@ -27,7 +27,7 @@ flowchart TB
 
 **[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and commands.
 
-Most agent runtimes don't allow subagents to spawn other subagents — inter-agent communication requires round-tripping through root. Kordinate removes this limitation. Any subagent, at any depth, can invoke another by spawning a **skin** — a short-lived clone that assumes the target agent's identity, handles the request, and exits. From the calling agent's perspective, it just runs `/consult`. The [beorn server](beorn.md) is the factory that manages skin lifecycle.
+Current agent runtimes don't allow subagents to spawn other subagents. Kordinate removes this limitation by introducing [beorn](beorn.md) — any subagent, at any depth, can invoke another agent.
 
 Agents define what they provide to each other through **[kords](kords.md)** — protocols that specify the topic, format, and guidelines for each consultation. A pair of agents can have multiple kords for different topics (shown as separate arrows above).
 
