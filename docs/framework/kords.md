@@ -1,23 +1,33 @@
 # Kords
 
-A **kord** is a protocol that caches information one agent repeatedly needs from another. Cache invalidation is triggered by rules maintained by the provider agent.
+## Problem
+
+Khaled is building a stock prediction engine — twenty microservices reading financial APIs into Kafka, ETL consumers writing to S3, and an ML model on top. He's deploying a new service that integrates yfinance as a data source, but monitoring is missing. He asks Sauron to set it up.
+
+To recommend the right metrics and wire them into the existing stack, Sauron needs information from other agents:
+
+```
+[sauron] → consult designer "what design pattern does the yfinance service use?"
+        ← stream-to-store
+
+[sauron] good — that means we monitor message throughput and storage growth
+
+[sauron] → consult deployer "where is our monitoring stack?"
+        ← grafana at 226.247.55.77:8080, access token: xxxx
+```
+
+Each consultation invokes an agent — an API round trip that takes 10-15 seconds. Sauron will need this same information again next time it sets up monitoring for another service. And if the underlying data changes — Grafana moves to a new server, a service switches its design pattern — Sauron's cached knowledge silently goes stale.
+
+---
+
+A **kord** is a protocol that solves this. It caches information one agent repeatedly needs from another, with invalidation rules maintained by the provider agent.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
 | **Kord** | Protocol definition | `agents/root/kords/<name>/kord.md` | class |
 | **Consultation** | Cached result | `agents/<requester>/memory/dynamic/consultations/<kord>.md` | instance |
 
-## Example
-
-Deployer regularly needs to know whether monitoring is in place before rolling services. This information lives in Sauron's domain — dashboards, alerts, health checks.
-
-Without a kord, every rollout invokes Sauron from scratch. With the `monitoring-impact` kord, the answer is cached after the first consultation:
-
-```
-/consult monitoring-impact "is monitoring ready for enricher?"
-```
-
-Sauron is only re-invoked when its domain actually changes — new dashboards deployed, alert rules updated. Otherwise, the cached result is returned instantly.
+With the `monitoring-impact` kord in place, Sauron's consultations are cached after the first call. The design pattern and Grafana credentials are returned instantly on subsequent requests — no agent invocation needed. When deployer's infrastructure changes, the cache invalidates automatically and Sauron gets fresh data on the next consultation.
 
 ??? example "monitoring-impact kord"
 
