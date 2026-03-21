@@ -2,20 +2,27 @@
 
 ## Problem
 
-**Developer Khaled** is deploying a new service in a complex multi-service system, but monitoring is missing. He prompts agent **Sauron** to set it up.
+Dividing work across specialized agents keeps each one focused — but an agent's work can depend on another agent's domain knowledge.
 
-To recommend the right metrics and wire them into the existing stack, **Sauron** needs to know:
+**Sauron** is responsible for monitoring. When invoked on a new repo, it needs answers to key questions:
 
-- What **design pattern** does the service use? (stream-to-store → monitor throughput and storage growth)
-- Where is the **monitoring stack**? (Grafana endpoint, access credentials)
+1. **What infrastructure do we have?**
+    - System runs on Kubernetes
+    - Grafana at `198.128.3.100:9000`, credentials: xxx
+    - Loki at `198.128.3.100:9001`, Prometheus at `198.128.3.100:9002`
+    - Shipping via Alloy, configured at `master-alloy.yml`
 
-Figuring this out is expensive — scanning the codebase for patterns, querying the cluster for endpoints. **Sauron** will need the same answers next time it sets up monitoring for another service. The design pattern won't change, the Grafana endpoint rarely moves. And when they do change, stale answers lead to wrong configurations.
+2. **What design patterns does this app use?**
+    - Stream-to-store pattern — reads from Kafka, writes to S3
+    - Typical metrics: message throughput, storage growth
 
-**Sauron** should focus on monitoring, not re-discovering infrastructure and architecture every time.
+Acquiring these answers requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine?
+
+**Sauron** delegates these questions to specialized agents (**Deployer**, **Designer**) via kords. Each kord caches the result in a standard format. The provider agent maintains the invalidation rules — when its domain changes, the kordinate protocol automatically refreshes the cache.
 
 ## What is a Kord
 
-A **kord** caches information one agent repeatedly needs from another, with invalidation rules maintained by the provider.
+A **kord** is a single cached link between two agents — a protocol definition that specifies the provider, the requester, and the expected response format.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
