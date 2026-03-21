@@ -16,7 +16,9 @@ Dividing work across specialized agents keeps each one focused — but an agent'
     - Stream-to-store pattern — reads from Kafka, writes to S3
     - Typical metrics: message throughput, storage growth
 
-Answering these questions requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine? Enter **kords**.
+These are **Deployer's** and **Designer's** domains, not **Sauron's**. Without delegation, **Sauron** would have to maintain its own infrastructure scanning and pattern detection skills — duplicating work and expanding beyond its scope.
+
+The alternative is re-invoking **Deployer** and **Designer** every time, but that's expensive. The natural solution is to cache their answers — but how does **Sauron** detect a stale cache when Grafana moves to a new machine? Enter **kords**.
 
 ## What is a Kord
 
