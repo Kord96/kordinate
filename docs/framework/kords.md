@@ -15,7 +15,7 @@ Deployer is about to roll a new service version. Before applying, it needs to kn
 /consult monitoring-impact "rolling enricher v2.3 to prod — is monitoring ready?"
 ```
 
-`/consult` resolves the `monitoring-impact` kord, checks freshness, invokes Sauron with the kord's guidelines, caches the response, and returns it. The cached result is reused until Sauron's knowledge changes.
+`/consult` resolves the `monitoring-impact` kord, checks freshness, invokes Sauron with the kord's provider guidelines, caches the response, and returns it. The cached result is reused until Sauron's knowledge changes.
 
 ??? example "monitoring-impact kord"
 
@@ -28,7 +28,7 @@ Deployer is about to roll a new service version. Before applying, it needs to kn
     | **Provider** | sauron |
     | **Provides** | Monitoring readiness assessment for infrastructure changes |
 
-    ## Guidelines
+    ## Provider Guidelines
 
     Check dashboards, alert rules, and health checks for the affected
     service. Report gaps by severity (blocking, warning, info).
@@ -72,7 +72,7 @@ Each `kord.md` contains:
 | **Requester** | Agent asking |
 | **Provider** | Agent answering |
 | **Provides** | What this kord delivers |
-| **Guidelines** | How to answer — sources, format, constraints |
+| **Provider Guidelines** | How to answer — sources, format, constraints |
 
 ??? example "pattern-review kord"
 
@@ -85,7 +85,7 @@ Each `kord.md` contains:
     | **Provider** | designer |
     | **Provides** | Pattern compliance review for a proposed deployment |
 
-    ## Guidelines
+    ## Provider Guidelines
 
     Check the deployment manifest against the pattern library in
     `agents/designer/patterns/`. Report violations by severity
