@@ -20,10 +20,10 @@ flowchart TB
 
 ## What Kordinate Adds
 
-- **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
 - **[Kords](kords.md)** — defined protocols between agents for sharing expertise
 - **[Subagent P2P](beorn.md)** — subagents can invoke other subagents at any depth
+- **[Recall System](memory.md)** — caching and structured knowledge on top of the runtime's native memory
 
 **[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and commands.
 
