@@ -52,7 +52,7 @@ nav:
       - Kords: framework/kords.md
       - Subagent P2P: framework/beorn.md
       - Recall System: framework/memory.md
-  - "Example: Infra Team":
+  - Default Team:
       - Deployer: infra/infrastructure.md
       - Sauron: infra/monitoring.md
   - Reference:
