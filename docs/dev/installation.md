@@ -1,68 +1,58 @@
 # Installation
 
-Kordinate runs on k3s. The installer pulls a pre-built workstation image and deploys it.
-
-## Requirements
-
-- A machine (local or remote) with SSH access
-- A [Tailscale auth key](https://login.tailscale.com/admin/settings/keys) (for remote access, optional for local)
-- An Anthropic API key
+Kordinate runs on k3s with self-hosted networking via headscale. One command, no keys, no tokens.
 
 ## Quick Start
 
 ```bash
-# Local — no remote access
-curl -sL https://kordinate.dev/install | bash -s -- --anthropic-key=sk-xxx
+curl -sL https://kordinate.dev/install | bash
+```
 
-# With remote access
-curl -sL https://kordinate.dev/install | bash -s -- --anthropic-key=sk-xxx --ts-key=tskey-xxx
+```
+Kordinate installed. Connect:
+  ssh claude@workstation
+```
 
-# Remote target
-curl -sL https://kordinate.dev/install | bash -s -- --remote user@server --anthropic-key=sk-xxx --ts-key=tskey-xxx
+First login, authenticate from inside the workstation:
+
+```bash
+claude auth login
 ```
 
 ## What the Installer Does
 
 1. Installs k3s (if not present)
-2. Creates a Secret with provided keys
-3. Applies the workstation manifest — pulls pre-built image from registry
-4. Installs Tailscale client and connects (if `--ts-key` provided)
+2. Deploys headscale pod (self-hosted Tailscale coordination)
+3. Deploys workstation pod — pre-built image with Claude Code, root, scribe, framework machinery
+4. Workstation auto-registers with headscale
+5. Installs Tailscale client on the user's machine and connects to headscale
+6. SSH is ready — `ssh claude@workstation`
 
-The workstation image contains:
+No manual tokens. The installer generates auth keys via headscale's API automatically.
 
-- Claude Code
-- Root + Scribe
-- Framework machinery (guards, kords, recall system)
-- Tailscale client
+## Remote Target
+
+To install on a remote machine instead of locally:
+
+```bash
+curl -sL https://kordinate.dev/install | bash -s -- --remote user@server
+```
+
+SSHs into the server, sets up k3s + headscale + workstation there, installs Tailscale locally, connects them.
 
 ## After Install
 
-```bash
-# Local access
-kubectl exec -it workstation -- bash
+From the workstation, build your team:
 
-# Remote access (if Tailscale configured)
-ssh claude@workstation
-```
-
-From the workstation, use `/scribe:onboard` to add agents and `/scribe:kord` to define kords between them.
-
-## Tiers
-
-| Tier | What it adds | Requires |
-|------|-------------|----------|
-| **Local** | k3s + workstation + core framework | A machine |
-| **Remote** | Tailscale SSH access | Auth key (one-time) |
-| **Team** | Additional agents, kords, guards | `/scribe:onboard` |
+- `/scribe:onboard` — add agents
+- `/scribe:kord` — define kords between agents
 
 ## Networking
 
-Default networking is Tailscale cloud. To switch to self-hosted headscale:
+Default networking is self-hosted headscale — zero-friction, no external accounts needed. To switch to Tailscale cloud:
 
 ```bash
-kordinate network switch headscale
+kordinate network switch tailscale --ts-key=tskey-xxx
 ```
-
-Headscale runs as a pod in the cluster. No external tokens needed after switching, but you own the maintenance.
 
 The networking layer is pluggable — workstation and agents don't care what provides connectivity.
