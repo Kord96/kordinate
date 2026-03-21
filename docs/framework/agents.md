@@ -18,29 +18,13 @@ agents/root/
 └── commands/
 ```
 
-**Commands** (inherited by all)
+All inherited by subagents:
 
-| Command | Description |
-|---------|-------------|
-| `/boot` | Initialize the workstation environment |
-| `/consult` | Query an agent without full handoff |
-| `/merge` | Merge current session branch |
+**Commands** — `/boot` (init workstation), `/consult` (query agent), `/merge` (merge session branch).
 
-**Guards** (inherited by all)
+**Guards** — `guard-git.sh` (branch protection), `guard-md.sh` (scribe-only `.md` edits). See [Guards](guards.md).
 
-| Guard | What it does |
-|-------|-------------|
-| `guard-git.sh` | Branch model — `main` and `session/*` allowed, `test`/`prod` require auth |
-| `guard-md.sh` | `.md` file edits — scribe only |
-
-**Hooks** (inherited by all)
-
-| Hook | What it does |
-|------|-------------|
-| `auto-merge-to-dev.sh` | After push: creates PR, tries fast-forward main |
-| `agent-memory.sh` | Before spawn: regenerates agent's dynamic memory summary |
-
-See [Guards](guards.md) for how exclusive access is enforced.
+**Hooks** — `auto-merge-to-dev.sh` (post-push PR + fast-forward), `agent-memory.sh` (pre-spawn memory refresh).
 
 ## Scribe
 
@@ -48,11 +32,4 @@ Documentation gate — present in every team. Only agent authorized to edit `.md
 
 Protected by `guard-md.sh` — see [Guards](guards.md).
 
-**Commands**
-
-| Command | Description |
-|---------|-------------|
-| `/scribe:onboard` | Add a new agent to the team |
-| `/scribe:kord` | Define a kord between two agents |
-| `/scribe:update-agent-docs` | Update an agent's documentation |
-| `/scribe:update-project-docs` | Update project-level docs |
+**Commands** — `/scribe:onboard` (add agent), `/scribe:kord` (define kord), `/scribe:update-agent-docs`, `/scribe:update-project-docs`.
