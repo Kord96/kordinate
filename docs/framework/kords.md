@@ -52,7 +52,7 @@ When Sauron's domain changes (new dashboards deployed, alert rules updated): the
     | Summary | no |
     ```
 
-## Freshness
+## Cache Rehydration
 
 Each kord has a `.valid` marker. Two hooks control it:
 
