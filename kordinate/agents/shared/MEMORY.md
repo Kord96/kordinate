@@ -12,7 +12,7 @@ Common rules for all agents.
 - Only the deployer may run kubectl write operations
 - Only the sauron may use Grafana MCP tools
 - Only the deployer may use Redis MCP tools
-- `mcp__beorn__delegate` is available for inter-agent communication — delegates a prompt to any agent without spawning a subagent
+- `mcp__beorn__delegate` spawns a beorn with any agent's skin — use for inter-agent communication at any depth
 
 ## Kords
 

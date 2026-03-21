@@ -10,18 +10,18 @@ Multi-cluster k8s infrastructure managed by specialized agents.
 | sauron | "add monitoring", "add metrics", "health check", "dashboard", "run tests", ... | Monitoring & validation |
 | designer | "review architecture", "design review" | Architecture review + pattern authority |
 | scribe | "update docs", "add api key", "add mcp", "write readme", ... | Documentation (sole .md editor) |
-| beorn | (MCP — always on) | Shape-shifting agent server — delegates prompts to any agent via `mcp__beorn__delegate` |
+| beorn | (MCP — always on) | Shape-shifting agent clone — delegates prompts to any agent via `mcp__beorn__delegate` |
 
 ## Beorn (MCP)
 
-Shape-shifting agent server. Always-on service that invokes any agent's identity on demand.
+Shape-shifting agent clone. A beorn assumes a **skin** (target agent's identity and memory), handles a request, and exits. The beorn server is the always-on MCP factory that spawns beorns on demand.
 
 | Tool | Purpose |
 |------|---------|
-| `mcp__beorn__delegate` | Invoke an agent: `{ agent: "deployer", prompt: "..." }` |
-| `mcp__beorn__status` | Check beorn uptime, known agents, active requests |
+| `mcp__beorn__delegate` | Spawn a beorn with any agent's skin: `{ agent: "deployer", prompt: "..." }` |
+| `mcp__beorn__status` | Check beorn server uptime, known agents, active requests |
 
-Use `mcp__beorn__delegate` for inter-agent communication without spawning subagents. Beorn loads the target agent's identity and memory, runs `claude --print`, and returns the response.
+Use `mcp__beorn__delegate` for inter-agent communication without spawning subagents.
 
 ## Kords
 

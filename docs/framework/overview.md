@@ -29,6 +29,8 @@ flowchart TB
 
 Current agent runtimes don't allow subagents to spawn other subagents. Kordinate removes this limitation by introducing [beorn](beorn.md) — any subagent, at any depth, can invoke another agent.
 
+A **beorn** is a short-lived agent clone spawned on demand. It assumes a **skin** — the target agent's identity and memory — handles the request, and exits. The [beorn server](beorn.md) is the MCP factory that manages this lifecycle.
+
 Agents define what they provide to each other through **[kords](kords.md)** — protocols that specify the topic, format, and guidelines for each consultation. A pair of agents can have multiple kords for different topics (shown as separate arrows above).
 
 ## Agent Structure
@@ -68,8 +70,8 @@ Protected by `guard-md.sh` — see [Guards](guards.md).
 
 ### Beorn
 
-The skin-changer. Beorn is an MCP server that spawns **skins** — short-lived clones that assume another agent's identity (IDENTITY.md + memory), handle a single request, and exit.
+A beorn is a short-lived agent clone. It assumes a **skin** — another agent's identity (IDENTITY.md + memory) — handles a single request, and exits. The **beorn server** is the MCP factory that spawns beorns on demand.
 
-**Tools** — `mcp__beorn__delegate` (spawn a skin as any agent), `mcp__beorn__status` (server health).
+**Tools** — `mcp__beorn__delegate` (spawn a beorn with any agent's skin), `mcp__beorn__status` (server health).
 
-`/consult` uses beorn as its transport layer. See [Beorn](beorn.md) for architecture details.
+`/consult` uses the beorn server as its transport layer. See [Beorn](beorn.md) for architecture details.
