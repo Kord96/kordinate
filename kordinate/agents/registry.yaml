@@ -1,0 +1,22 @@
+# Agent registry — machine-readable list of all kordinate agents.
+# Used by delegate.sh, beorn server, and cmd_hydrate().
+
+agents:
+  deployer:
+    description: GitOps deployments, cluster state, pod management
+    triggers: [roll, migrate, stop, clean, diff]
+  sauron:
+    description: Monitoring, metrics, health checks, dashboards
+    triggers: [add monitoring, add metrics, health check, dashboard, run tests]
+  designer:
+    description: Architecture review, pattern authority
+    triggers: [review architecture, design review]
+  scribe:
+    description: Documentation, sole .md editor
+    triggers: [update docs, add api key, add mcp, write readme]
+
+beorn:
+  port: 3100
+  namespace: gateway
+  service: agent-pool
+  description: Shape-shifting agent server — becomes any agent on demand

@@ -580,6 +580,15 @@ for name, cl in clusters.items():
         }
         grafana_added = True
 
+# Beorn — shape-shifting agent pool (in-cluster only)
+# Uses the K8s Service DNS name, so only works from within the cluster.
+beorn_svc = 'agent-pool.gateway.svc.cluster.local'
+mcp['mcpServers']['beorn'] = {
+    'type': 'http',
+    'url': f'http://{beorn_svc}:3100/delegate',
+    '_note': 'Shape-shifting agent server. Use delegate.sh for scale-up/down orchestration.'
+}
+
 print(json.dumps(mcp, indent=2))
 " > "$OUTPUT_DIR/mcp.json"
 
