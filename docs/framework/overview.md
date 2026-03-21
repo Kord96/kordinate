@@ -6,7 +6,7 @@ flowchart TB
 
     subgraph team[Team]
         A1[Agent A] <-.->|consult| A2[Agent B]
-        A1 -.->|consult| A3["Agent C\n(skin)"]
+        A1 -.->|consult| A3["Agent C\n(beorn skin)"]
         A3 -.->|consult| A1
         A2 <-.->|consult| A3
         A1 -->|consult| SC[Scribe]
