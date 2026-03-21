@@ -17,3 +17,10 @@ Keep under 50 lines.
 | Health checks (endpoints, thresholds) | if applicable |
 | Dashboards (names, what they show) | if applicable |
 | Alerts (conditions, severity) | if applicable |
+
+## Cache Invalidation
+
+Invalidate when:
+- Dashboard definitions are modified
+- Alert rules are updated
+- Monitoring stack configuration changes

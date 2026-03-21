@@ -16,3 +16,9 @@ Keep under 50 lines.
 |-------|----------|
 | Template content | yes |
 | Usage notes | if applicable |
+
+## Cache Invalidation
+
+Invalidate when:
+- Templates are modified
+- Documentation conventions change

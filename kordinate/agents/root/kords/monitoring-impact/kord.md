@@ -18,3 +18,10 @@ Keep under 50 lines.
 | Missing dashboards or metrics | yes |
 | Missing alerts | yes |
 | Summary | no |
+
+## Cache Invalidation
+
+Invalidate when:
+- Dashboard definitions are modified
+- Alert rules are updated
+- Monitoring stack configuration changes

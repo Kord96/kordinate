@@ -16,3 +16,10 @@ Keep under 50 lines.
 | Current state (pods, versions, resources) | yes |
 | Relevant configuration (services, ingresses) | if applicable |
 | Recent changes | if applicable |
+
+## Cache Invalidation
+
+Invalidate when:
+- Cluster manifests are modified
+- New deployments are applied
+- Service endpoints or configuration changes

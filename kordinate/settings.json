@@ -74,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/invalidate-consultation.sh"
+            "command": "$HOME/.claude/hooks/invalidate-cache.sh"
           }
         ]
       }

@@ -18,3 +18,10 @@ Keep under 50 lines.
 | Design patterns in use | if applicable |
 | Data flow | if applicable |
 | Failure modes | if applicable |
+
+## Cache Invalidation
+
+Invalidate when:
+- Architecture documentation is updated
+- Pattern library changes
+- Project structure changes

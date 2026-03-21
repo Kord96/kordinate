@@ -1,6 +1,6 @@
 Consult an agent — resolve a kord, check freshness, delegate via beorn, cache the result.
 
-Results are cached per kord. Cached results are served if the kord's `.valid` marker exists (freshness check). The invalidation hook deletes `.valid` when provider knowledge changes.
+Results are cached per kord. `hydrate-cache.sh` checks freshness pre-consult and resets state post-consult. `invalidate-cache.sh` deletes cache markers when provider knowledge changes.
 
 **Input**: $ARGUMENTS (required: `<agent-or-kord> "<prompt>"`, e.g. `deployer "what pods are running in prod?"`)
 
@@ -25,9 +25,9 @@ Results are cached per kord. Cached results are served if the kord's `.valid` ma
    d. Read `kord.md` from the resolved kord directory to get provider and guidelines.
 
 3. **Freshness check**:
-   a. Run the kord's `freshness.sh`:
+   a. Run the kord's `hydrate-cache.sh`:
       ```bash
-      bash "$KORDINATE_HOME/agents/root/kords/<kord>/freshness.sh"
+      bash "$KORDINATE_HOME/agents/root/kords/<kord>/hydrate-cache.sh"
       echo $?
       ```
    b. If exit code is 0 (fresh), check for cached result:
@@ -48,9 +48,9 @@ Results are cached per kord. Cached results are served if the kord's `.valid` ma
       <agent's response>
       ```
       File: `$KORDINATE_HOME/agents/root/memory/dynamic/consultations/<kord>.md`
-   b. Create the `.valid` marker:
+   b. Run the post-consult hook to reset freshness state:
       ```bash
-      touch "$KORDINATE_HOME/agents/root/kords/<kord>/.valid"
+      bash "$KORDINATE_HOME/agents/root/kords/<kord>/hydrate-cache.sh" store
       ```
 
 6. Return the agent's response to the user.

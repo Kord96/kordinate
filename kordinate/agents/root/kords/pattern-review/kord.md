@@ -17,3 +17,10 @@ Keep under 50 lines.
 | Violations by severity (blocking, warning, info) | yes |
 | Affected files + suggested changes | yes |
 | Summary | no |
+
+## Cache Invalidation
+
+Invalidate when:
+- Pattern library is updated
+- Architecture documentation changes
+- New patterns are added

@@ -48,14 +48,24 @@ Answering these questions requires scanning the repo and the deployment pipeline
     | Current state (pods, versions, resources) | yes |
     | Relevant configuration (services, ingresses) | if applicable |
     | Recent changes | if applicable |
+
+    ## Cache Invalidation
+
+    Invalidate when:
+    - Cluster manifests are modified
+    - New deployments are applied
+    - Service endpoints or configuration changes
     ```
 
 ### Cache Rehydration
 
 Each kord has a `.valid` marker. Two hooks control it:
 
-- **Before consulting** — if `.valid` exists, return the cached result. Otherwise invoke the provider.
-- **After provider changes** — when the provider's domain changes (files edited, deployments applied), delete `.valid` to force a fresh invocation next time.
+| Hook | Triggered by | Implemented by | Purpose |
+|------|-------------|----------------|---------|
+| `hydrate-cache.sh` (pre-consult) | requester | provider | Is the cache still fresh? |
+| `hydrate-cache.sh store` (post-consult) | requester | provider | Reset freshness state after caching |
+| `invalidate-cache.sh` (post-event) | system hook | provider | Invalidate when provider's files change |
 
 ```mermaid
 flowchart TB
@@ -84,14 +94,14 @@ Root owns all kord definitions. Each kord is a directory containing the contract
 agents/root/kords/
 ├── pattern-review/
 │   ├── kord.md           # contract: requester, provider, guidelines, format
-│   ├── freshness.sh      # checks .valid marker
+│   ├── hydrate-cache.sh      # pre/post-consult: check + reset freshness
 │   └── .valid            # present = cache is fresh
 ├── monitoring-impact/
 │   ├── kord.md
-│   └── freshness.sh
+│   └── hydrate-cache.sh
 └── default-deployer/
     ├── kord.md
-    └── freshness.sh
+    └── hydrate-cache.sh
 ```
 
 ---
