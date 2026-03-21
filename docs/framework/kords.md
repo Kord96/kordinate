@@ -2,16 +2,16 @@
 
 ## Problem
 
-Khaled is deploying a new service in a complex multi-service system, but monitoring is missing. He prompts agent Sauron to set it up.
+**Khaled** is deploying a new service in a complex multi-service system, but monitoring is missing. He prompts agent **Sauron** to set it up.
 
-To recommend the right metrics and wire them into the existing stack, Sauron needs to know:
+To recommend the right metrics and wire them into the existing stack, **Sauron** needs to know:
 
 - What **design pattern** does the service use? (stream-to-store → monitor throughput and storage growth)
 - Where is the **monitoring stack**? (Grafana endpoint, access credentials)
 
-Figuring this out is expensive — scanning the codebase for patterns, querying the cluster for endpoints. Sauron will need the same answers next time it sets up monitoring for another service. The design pattern won't change, the Grafana endpoint rarely moves. And when they do change, stale answers lead to wrong configurations.
+Figuring this out is expensive — scanning the codebase for patterns, querying the cluster for endpoints. **Sauron** will need the same answers next time it sets up monitoring for another service. The design pattern won't change, the Grafana endpoint rarely moves. And when they do change, stale answers lead to wrong configurations.
 
-Sauron should focus on monitoring, not re-discovering infrastructure and architecture every time.
+**Sauron** should focus on monitoring, not re-discovering infrastructure and architecture every time.
 
 ## Solution
 
