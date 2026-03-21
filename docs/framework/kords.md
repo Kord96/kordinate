@@ -2,12 +2,10 @@
 
 A **kord** is a single consultation link between two agents — a template that defines one specific thing one agent provides to another. Two agents can be linked by multiple kords. A default kord exists for free-form queries.
 
-| Concept | What it is | Where it lives | Nature |
-|---------|-----------|----------------|--------|
-| **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned |
-| **Consultation** | Actual knowledge | `agents/<requester>/memory/dynamic/consultations/<result>.md` | Dynamic, requester-owned |
-
-The kord is the template (like a class). The consultation is the actual knowledge (like an instance).
+| Concept | What it is | Where it lives | Nature | Analogy |
+|---------|-----------|----------------|--------|---------|
+| **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned | class |
+| **Consultation** | Actual knowledge | `agents/<requester>/memory/dynamic/consultations/<result>.md` | Dynamic, requester-owned | instance |
 
 ### Example
 
