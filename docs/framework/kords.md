@@ -1,21 +1,27 @@
 # Kords
 
-A **kord** is a consultation protocol between two agents — it defines what one agent provides as a service to another, how to respond, and what format to use. Two agents can be linked by multiple kords. A default kord exists for free-form queries.
+A **kord** is a protocol that caches responses from specialized agents. It provides automatic stale detection so agents are only invoked when their knowledge has changed.
 
-| Concept | What it is | Where it lives | Nature | Analogy |
-|---------|-----------|----------------|--------|---------|
-| **Kord** | Template/protocol | `agents/root/kords/<name>/kord.md` | Static, root-owned | class |
-| **Consultation** | Actual knowledge | `agents/<requester>/memory/dynamic/consultations/<result>.md` | Dynamic, requester-owned | instance |
+Invoking a subagent is expensive — each call takes 10-15 seconds and an API round trip. Without kords, repeated questions to the same agent repeat that cost every time. With kords, the first invocation is cached and reused until the provider's domain changes.
+
+| Concept | What it is | Where it lives | Analogy |
+|---------|-----------|----------------|---------|
+| **Kord** | Protocol definition | `agents/root/kords/<name>/kord.md` | class |
+| **Consultation** | Cached result | `agents/<requester>/memory/dynamic/consultations/<kord>.md` | instance |
 
 ## Example
 
-Deployer is about to roll a new service version. Before applying, it needs to know whether monitoring is ready — are dashboards, alerts, and health checks in place? This is Sauron's domain, not Deployer's.
+Deployer is about to roll enricher v2.3. Before applying, it needs to know whether monitoring is ready. This is Sauron's domain.
 
 ```
 /consult monitoring-impact "rolling enricher v2.3 to prod — is monitoring ready?"
 ```
 
-`/consult` resolves the `monitoring-impact` kord, checks freshness, invokes Sauron with the kord's provider guidelines, caches the response, and returns it. The cached result is reused until Sauron's knowledge changes.
+First time: `/consult` invokes Sauron with the kord's provider guidelines, caches the response. Takes ~15 seconds.
+
+Next time (same question, nothing changed): returns the cached result instantly.
+
+When Sauron's domain changes (new dashboards deployed, alert rules updated): the cache is automatically invalidated. Next `/consult` invokes Sauron again.
 
 ??? example "monitoring-impact kord"
 
@@ -48,6 +54,24 @@ Deployer is about to roll a new service version. Before applying, it needs to kn
     | Summary | no |
     ```
 
+## Freshness
+
+Each kord has a `.valid` marker. Two hooks control it:
+
+- **Before consulting** — if `.valid` exists, return the cached result. Otherwise invoke the provider.
+- **After provider changes** — when the provider's domain changes (files edited, deployments applied), delete `.valid` to force a fresh invocation next time.
+
+```mermaid
+flowchart TB
+    C["/consult"] --> G{".valid exists?"}
+    G -->|yes| M[Return cached result]
+    G -->|no| K[Invoke provider with guidelines]
+    K --> W[Cache result + create .valid]
+
+    E[Provider's domain changes] --> P["Invalidation hook"]
+    P -->|deletes| V[.valid]
+```
+
 ## Creating Kords
 
 You don't need to remember the kord template. Just describe what you need — the `.md` guard automatically delegates kord creation to scribe, which enforces the standard structure (Provider Guidelines + Response Format).
@@ -60,30 +84,18 @@ You don't need to remember the kord template. Just describe what you need — th
 
 Root owns all kord definitions. Each kord is a directory containing the protocol and a freshness script.
 
-**Naming:** kord directories are named by topic. Default kords: `default-<provider>/`
-
 ```
 agents/root/kords/
-├── registry.md
 ├── pattern-review/
-│   ├── kord.md                              # protocol definition
-│   ├── freshness.sh                         # checks .valid marker
-│   └── .valid                               # marker — deleted to invalidate
+│   ├── kord.md           # protocol: requester, provider, guidelines, format
+│   ├── freshness.sh      # checks .valid marker
+│   └── .valid            # present = cache is fresh
 ├── monitoring-impact/
 │   ├── kord.md
 │   └── freshness.sh
-└── default-designer/
+└── default-deployer/
     ├── kord.md
     └── freshness.sh
-```
-
-Consultations live in the requester's dynamic memory:
-
-```
-agents/deployer/memory/dynamic/
-└── consultations/
-    ├── pattern-review.md
-    └── monitoring-impact.md
 ```
 
 Each `kord.md` contains:
@@ -92,26 +104,7 @@ Each `kord.md` contains:
 |-------|-------------|
 | **Requester** | Agent(s) that can invoke this kord |
 | **Provider** | Agent that answers |
-| **Provider Guidelines** | Behavioral instructions + response format |
-
-## Consultation Freshness
-
-Each kord directory contains a `.valid` marker and a `freshness.sh` script. Freshness is controlled by two hooks:
-
-- **Pre-consult** (requester side) — runs `freshness.sh` before every consultation. If `.valid` exists, returns the cached result. Otherwise invokes the provider.
-- **Post-event** (provider side) — runs after changes that affect the provider's domain (e.g. post-deploy, config change). Deletes `.valid` to force a fresh consultation next time.
-
-```mermaid
-flowchart TB
-    C["/consult"] --> G{"freshness.sh"}
-    G -->|.valid exists| M[Return cached result]
-    G -->|stale or missing| K[Read provider guidelines from kord.md]
-    K --> A[Invoke provider]
-    A -->|response| W[Cache result + create .valid]
-
-    E[Provider's domain changes] --> P["Invalidation hook"]
-    P -->|deletes| V[.valid]
-```
+| **Provider Guidelines** | How to respond + response format |
 
 ---
 
@@ -119,5 +112,5 @@ flowchart TB
 
     | Command | Purpose |
     |---------|---------|
-    | `/consult pattern-review "question"` | Consult via explicit kord |
-    | `/consult designer "question"` | Consult via default kord |
+    | `/consult pattern-review "prompt"` | Consult via explicit kord |
+    | `/consult designer "prompt"` | Consult via default kord |
