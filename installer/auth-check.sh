@@ -109,10 +109,28 @@ if [ -n "$TS_KEY" ] && [ "$TS_KEY" != "PLACEHOLDER" ]; then
 fi
 
 # ─── Claude ───
-if [ -f "$HOME/.config/claude/credentials.json" ]; then
+CLAUDE_CREDS="$HOME/.claude/.credentials.json"
+if [ -f "$CLAUDE_CREDS" ]; then
   ok "Claude"
+  # Sync to pass if not already stored
+  if ! pass show kordinate/claude/credentials &>/dev/null 2>&1; then
+    cat "$CLAUDE_CREDS" | pass insert -m kordinate/claude/credentials 2>/dev/null
+    ok "Claude credentials saved to pass"
+  fi
+elif pass show kordinate/claude/credentials &>/dev/null 2>&1; then
+  # Restore from pass
+  mkdir -p "$(dirname "$CLAUDE_CREDS")"
+  pass show kordinate/claude/credentials > "$CLAUDE_CREDS"
+  ok "Claude (restored from pass)"
 else
-  miss "Claude — run 'claude login' after setup"
+  miss "Claude — running login..."
+  claude login 2>/dev/null || true
+  if [ -f "$CLAUDE_CREDS" ]; then
+    cat "$CLAUDE_CREDS" | pass insert -m kordinate/claude/credentials 2>/dev/null
+    ok "Claude credentials saved to pass"
+  else
+    miss "Claude login failed — run 'claude login' manually"
+  fi
 fi
 
 # ─── Optional keys (check but don't block) ───

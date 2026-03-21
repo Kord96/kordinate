@@ -30,6 +30,20 @@ if [ -d ~/kordinate/.git ]; then
   git -C ~/kordinate pull --ff-only 2>/dev/null || true
 fi
 
+# ─── Claude credentials (restore from pass on first boot) ───
+CLAUDE_CREDS="$HOME/.claude/.credentials.json"
+if [ ! -f "$CLAUDE_CREDS" ]; then
+  if command -v pass &>/dev/null && pass show kordinate/claude/credentials &>/dev/null 2>&1; then
+    mkdir -p "$(dirname "$CLAUDE_CREDS")"
+    pass show kordinate/claude/credentials > "$CLAUDE_CREDS"
+    echo "[beorn] Claude credentials restored from pass"
+  else
+    echo "[beorn] WARNING: no Claude credentials — run 'claude login' or seed pass"
+  fi
+else
+  echo "[beorn] Claude credentials present"
+fi
+
 # ─── Link framework (ensure agent identities are current) ───
 LINK_SCRIPT="$HOME/kordinate/installer/link-claude.sh"
 if [ -x "$LINK_SCRIPT" ]; then
