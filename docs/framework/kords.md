@@ -16,18 +16,16 @@ To recommend the right metrics and wire them into the existing stack, Sauron nee
         ← grafana at 226.247.55.77:8080, access token: xxxx
 ```
 
-Each consultation invokes an agent — an API round trip that takes 10-15 seconds. Sauron will need this same information again next time it sets up monitoring for another service. And if the underlying data changes — Grafana moves to a new server, a service switches its design pattern — Sauron's cached knowledge silently goes stale.
+Each consultation invokes an agent. Sauron will need this same information next time it sets up monitoring — the design pattern won't change, the Grafana endpoint rarely moves. But when they do change, stale answers lead to wrong configurations.
 
----
+## Solution
 
-A **kord** is a protocol that solves this. It caches information one agent repeatedly needs from another, with invalidation rules maintained by the provider agent.
+A **kord** caches information one agent repeatedly needs from another, with invalidation rules maintained by the provider.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
 | **Kord** | Protocol definition | `agents/root/kords/<name>/kord.md` | class |
 | **Consultation** | Cached result | `agents/<requester>/memory/dynamic/consultations/<kord>.md` | instance |
-
-With the `monitoring-impact` kord in place, Sauron's consultations are cached after the first call. The design pattern and Grafana credentials are returned instantly on subsequent requests — no agent invocation needed. When deployer's infrastructure changes, the cache invalidates automatically and Sauron gets fresh data on the next consultation.
 
 ??? example "monitoring-impact kord"
 
