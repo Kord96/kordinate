@@ -29,14 +29,14 @@ Agent coordination agreements. Use `/consult <agent-or-kord> "<question>"` to in
 
 | Kord | Requester | Provider |
 |------|-----------|----------|
-| `default-deployer` | any | deployer |
-| `default-sauron` | any | sauron |
-| `default-designer` | any | designer |
-| `default-scribe` | any | scribe |
+| `deployer-default` | any | deployer |
+| `sauron-default` | any | sauron |
+| `designer-default` | any | designer |
+| `scribe-default` | any | scribe |
 | `pattern-review` | deployer, sauron | designer |
 | `monitoring-impact` | deployer | sauron |
 
-Shorthand: `/consult deployer "..."` resolves to the `default-deployer` kord.
+Shorthand: `/consult deployer "..."` resolves to the `deployer-default` kord.
 
 ## Rules
 

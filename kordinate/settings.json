@@ -68,15 +68,6 @@
             "command": "$HOME/.claude/hooks/auto-merge-to-dev.sh"
           }
         ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/invalidate-cache.sh"
-          }
-        ]
       }
     ]
   },

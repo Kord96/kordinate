@@ -1,6 +1,6 @@
 Consult an agent — resolve a kord, check freshness, delegate via beorn, cache the result.
 
-Results are cached per kord. `hydrate-cache.sh` checks freshness pre-consult and resets state post-consult. `invalidate-cache.sh` deletes cache markers when provider knowledge changes.
+Results are cached per kord. `pre-consult.sh` checks freshness pre-consult and resets state post-consult. `invalidate-cache.sh` deletes cache markers when provider knowledge changes.
 
 **Input**: $ARGUMENTS (required: `<agent-or-kord> "<prompt>"`, e.g. `deployer "what pods are running in prod?"`)
 
@@ -21,13 +21,13 @@ Results are cached per kord. `hydrate-cache.sh` checks freshness pre-consult and
 2. **Resolve kord**:
    a. Resolve `KORDINATE_HOME` from the kordinate repo root (`git rev-parse --show-toplevel` + `/kordinate`).
    b. If target matches a kord directory name under `$KORDINATE_HOME/agents/root/kords/<target>/`, use that kord directly.
-   c. Otherwise, treat target as an agent name and use `default-<target>` as the kord.
+   c. Otherwise, treat target as an agent name and use `<target>-default` as the kord.
    d. Read `kord.md` from the resolved kord directory to get provider and guidelines.
 
 3. **Freshness check**:
-   a. Run the kord's `hydrate-cache.sh`:
+   a. Run the kord's `pre-consult.sh`:
       ```bash
-      bash "$KORDINATE_HOME/agents/root/kords/<kord>/hydrate-cache.sh"
+      bash "$KORDINATE_HOME/agents/root/kords/<kord>/pre-consult.sh"
       echo $?
       ```
    b. If exit code is 0 (fresh), check for cached result:
@@ -50,7 +50,7 @@ Results are cached per kord. `hydrate-cache.sh` checks freshness pre-consult and
       File: `$KORDINATE_HOME/agents/root/memory/dynamic/consultations/<kord>.md`
    b. Run the post-consult hook to reset freshness state:
       ```bash
-      bash "$KORDINATE_HOME/agents/root/kords/<kord>/hydrate-cache.sh" store
+      bash "$KORDINATE_HOME/agents/root/kords/<kord>/pre-consult.sh" store
       ```
 
 6. Return the agent's response to the user.

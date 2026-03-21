@@ -27,7 +27,7 @@ Answering these questions requires scanning the repo and the deployment pipeline
 | **Kord** | Contract definition | `agents/root/kords/<name>/kord.md` | class |
 | **Consultation** | Cached result | `agents/<requester>/memory/dynamic/consultations/<kord>.md` | instance |
 
-??? example "default-deployer kord (sauron asking deployer about infrastructure)"
+??? example "deployer-default kord (sauron asking deployer about infrastructure)"
 
     ```markdown
     ---
@@ -57,26 +57,23 @@ Answering these questions requires scanning the repo and the deployment pipeline
     - Service endpoints or configuration changes
     ```
 
-### Cache Rehydration
+### Cache Freshness
 
-Each kord has a `.valid` marker. Two hooks control it:
+Each kord has a `pre-consult.sh` script maintained by the provider. It runs before every consultation and decides whether the cache is still valid.
 
 | Hook | Triggered by | Implemented by | Purpose |
 |------|-------------|----------------|---------|
-| `hydrate-cache.sh` (pre-consult) | requester | provider | Is the cache still fresh? |
-| `hydrate-cache.sh store` (post-consult) | requester | provider | Reset freshness state after caching |
-| `invalidate-cache.sh` (post-event) | system hook | provider | Invalidate when provider's files change |
+| `pre-consult.sh` | requester | provider | Is the cache still fresh? |
 
 ```mermaid
 flowchart TB
-    C["/consult"] --> G{".valid exists?"}
-    G -->|yes| M[Return cached result]
-    G -->|no| K[Invoke provider with guidelines]
-    K --> W[Cache result + create .valid]
-
-    E[Provider's domain changes] --> P["Invalidation hook"]
-    P -->|deletes| V[.valid]
+    C["/consult"] --> G{"pre-consult.sh"}
+    G -->|fresh| M[Return cached result]
+    G -->|stale| K[Invoke provider with guidelines]
+    K --> W[Cache result + store provider state]
 ```
+
+No external invalidation hooks or markers. The provider's script checks whatever it cares about — file hashes, timestamps, external state — and returns fresh or stale.
 
 ### Creating Kords
 
@@ -94,14 +91,13 @@ Root owns all kord definitions. Each kord is a directory containing the contract
 agents/root/kords/
 ├── pattern-review/
 │   ├── kord.md           # contract: requester, provider, guidelines, format
-│   ├── hydrate-cache.sh      # pre/post-consult: check + reset freshness
-│   └── .valid            # present = cache is fresh
+│   └── pre-consult.sh      # provider-maintained freshness check
 ├── monitoring-impact/
 │   ├── kord.md
-│   └── hydrate-cache.sh
-└── default-deployer/
+│   └── pre-consult.sh
+└── deployer-default/
     ├── kord.md
-    └── hydrate-cache.sh
+    └── pre-consult.sh
 ```
 
 ---

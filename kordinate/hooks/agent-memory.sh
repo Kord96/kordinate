@@ -1,7 +1,7 @@
 #!/bin/bash
 # PreToolUse hook: regenerates agent MEMORY.md before spawning a subagent.
-# Combines shared memory + instructions + static knowledge into a single
-# file that Claude auto-loads from agent-memory/<agent>/.
+# Combines shared memory + instructions + static knowledge + kord discovery
+# into a single file that Claude auto-loads from agent-memory/<agent>/.
 #
 # Only regenerates if source files have changed (hash-based).
 
@@ -31,14 +31,15 @@ SHARED="$KORDINATE_HOME/agents/shared/MEMORY.md"
 STATIC="$AGENT_DIR/memory/static"
 INSTRUCTIONS="$AGENT_DIR/instructions"
 DYNAMIC="$AGENT_DIR/memory/dynamic"
+KORDS_DIR="$KORDINATE_HOME/agents/root/kords"
 MEMORY_FILE="$DYNAMIC/MEMORY.md"
 HASH_FILE="$DYNAMIC/.hash"
 
 # Ensure dynamic dir exists
 mkdir -p "$DYNAMIC"
 
-# Skip if unchanged
-if cache_check "$HASH_FILE" "$SHARED" "$STATIC" "$INSTRUCTIONS" && [ -f "$MEMORY_FILE" ]; then
+# Skip if unchanged (include kords dir in hash check)
+if cache_check "$HASH_FILE" "$SHARED" "$STATIC" "$INSTRUCTIONS" "$KORDS_DIR" && [ -f "$MEMORY_FILE" ]; then
   echo '{}'; exit 0
 fi
 
@@ -104,6 +105,45 @@ STATIC_LINES=${STATIC_LINES:-0}
     fi
   fi
 
+  # Kord discovery — find kords where this agent is requester or provider
+  if [ -d "$KORDS_DIR" ]; then
+    requester_kords=()
+    provider_kords=()
+    for kord_dir in "$KORDS_DIR"/*/; do
+      [ -d "$kord_dir" ] || continue
+      kord_md="$kord_dir/kord.md"
+      [ -f "$kord_md" ] || continue
+      kord_name=$(basename "$kord_dir")
+
+      # Check provider
+      provider=$(sed -n '/^## Provider$/,/^##/{/^## Provider$/d;/^##/d;/^$/d;p;}' "$kord_md" | head -1 | tr -d '[:space:]')
+      if [ "$provider" = "$AGENT" ]; then
+        provider_kords+=("$kord_name")
+      fi
+
+      # Check requester
+      requester_line=$(sed -n '/^## Requester$/,/^##/{/^## Requester$/d;/^##/d;/^$/d;p;}' "$kord_md" | head -1)
+      if [[ "$requester_line" == *"any"* ]] || [[ "$requester_line" == *"$AGENT"* ]]; then
+        requester_kords+=("$kord_name")
+      fi
+    done
+
+    if [ ${#requester_kords[@]} -gt 0 ] || [ ${#provider_kords[@]} -gt 0 ]; then
+      echo "## Kords"
+      echo ""
+      if [ ${#provider_kords[@]} -gt 0 ]; then
+        echo "You are **provider** for: ${provider_kords[*]}"
+        echo ""
+      fi
+      if [ ${#requester_kords[@]} -gt 0 ]; then
+        echo "You can **request** via: ${requester_kords[*]}"
+        echo ""
+      fi
+      echo "Use \`/consult <kord-or-agent> \"<question>\"\` to invoke."
+      echo ""
+    fi
+  fi
+
   # Notes section
   echo "## Notes"
   if [ -n "$NOTES" ]; then
@@ -114,8 +154,8 @@ STATIC_LINES=${STATIC_LINES:-0}
   fi
 } > "$MEMORY_FILE"
 
-# Store hash
-cache_store "$HASH_FILE" "$SHARED" "$STATIC" "$INSTRUCTIONS"
+# Store hash (include kords dir)
+cache_store "$HASH_FILE" "$SHARED" "$STATIC" "$INSTRUCTIONS" "$KORDS_DIR"
 
 # Allow agent to spawn
 echo '{}'

@@ -24,7 +24,7 @@ Define a new kord — a coordination agreement between agents.
    ```
    agents/root/kords/<name>/
    ├── kord.md
-   └── hydrate-cache.sh
+   └── pre-consult.sh
    ```
 
 3. **Generate kord.md** from this template:
@@ -57,7 +57,7 @@ Define a new kord — a coordination agreement between agents.
    - Response Format defines the expected output structure so requesters can rely on it
    - Never include procedure ("check this file", "run this command") — the provider knows its domain
 
-4. **Generate hydrate-cache.sh:**
+4. **Generate pre-consult.sh:**
    ```bash
    #!/bin/bash
    KORDINATE_HOME="${KORDINATE_HOME:-$(cd "$(dirname "$0")/../../.." && pwd)}"
@@ -68,12 +68,12 @@ Define a new kord — a coordination agreement between agents.
    fi
    exit 1  # stale
    ```
-   Make it executable: `chmod +x hydrate-cache.sh`
+   Make it executable: `chmod +x pre-consult.sh`
 
 5. **Update registry.md** — add the new kord to `agents/root/kords/registry.md`.
 
 6. **Report** what was created:
-   - "Kord `<name>` defined. Files: kords/<name>/kord.md, kords/<name>/hydrate-cache.sh"
+   - "Kord `<name>` defined. Files: kords/<name>/kord.md, kords/<name>/pre-consult.sh"
 
 ## Notes
 
