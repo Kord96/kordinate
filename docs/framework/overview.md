@@ -52,24 +52,16 @@ agents/<name>/
 
 The orchestrator. Root's `IDENTITY.md` defines the team — all subagents inherit its rules, commands, and hooks. Mapped to the runtime's main agent (e.g. Claude Code's `CLAUDE.md`) via the [linking layer](../dev/linking.md).
 
-All inherited by subagents:
-
-**Commands** — `/boot` (catch up on context), `/consult` (invoke an agent), `/merge` (merge session branch).
-
-**Guards** — `guard-git.sh` (branch protection), `guard-md.sh` (scribe-only `.md` edits). See [Guards](guards.md).
-
-**Hooks** — `auto-merge-to-dev.sh` (post-push PR + fast-forward), `agent-memory.sh` (pre-spawn memory refresh).
-
 ### Scribe
 
 Documentation gate. Only agent authorized to edit `.md` files — all other agents delegate markdown edits to scribe.
-
-Protected by `guard-md.sh` — see [Guards](guards.md).
-
-**Commands** — `/scribe:onboard` (add agent), `/scribe:kord` (define kord), `/scribe:update-agent-docs`, `/scribe:update-project-docs`.
 
 ### Beorn
 
 A beorn is a short-lived agent clone. It assumes a **skin** — another agent's identity and memories. When a subagent invokes another, the beorn server creates a beorn with the target subagent's skin, handles the request, and returns the result.
 
 `/consult` uses the beorn server as its transport layer. See [Beorn](beorn.md) for architecture details.
+
+---
+
+For a full listing of commands, guards, hooks, and tools across all agents, see the [Agent Reference](../reference/agents.md).
