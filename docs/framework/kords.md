@@ -67,7 +67,7 @@ Each `kord.md` contains:
 | **Provides** | What this kord delivers |
 | **Guidelines** | How to answer — sources, format, constraints |
 
-??? example "deployer → designer: pattern review"
+??? example "pattern-review kord"
 
     ```markdown
     # Kord: deployer → designer (pattern review)
