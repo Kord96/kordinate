@@ -1,8 +1,6 @@
 # Kords
 
-A **kord** is a protocol that caches responses from specialized agents. It provides automatic stale detection so agents are only invoked when their knowledge has changed.
-
-Invoking a subagent is expensive — each call takes 10-15 seconds and an API round trip. Without kords, repeated questions to the same agent repeat that cost every time. With kords, the first invocation is cached and reused until the provider's domain changes.
+A **kord** caches information one agent repeatedly needs from another. The first consultation invokes the provider agent. Subsequent ones return the cached result until the provider's domain changes — then the cache is automatically invalidated and the next consultation is fresh.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
