@@ -6,7 +6,7 @@ flowchart TB
 
     subgraph team[Team]
         A1[Agent A] <-.->|consult| A2[Agent B]
-        A1 -.->|consult| A3["Agent C\n(beorn)"]
+        A1 -.->|consult| A3["Agent C\n(skin)"]
         A3 -.->|consult| A1
         A2 <-.->|consult| A3
         A1 -->|consult| SC[Scribe]
@@ -23,11 +23,15 @@ flowchart TB
 - **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
 - **[Kords](kords.md)** — defined protocols between agents for sharing expertise
-- **[Nesting Agents](beorn.md)** — subagents can consult other subagents at any depth
+- **[Nesting Agents](beorn.md)** — subagents can invoke other subagents at any depth
 
-**[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. Root orchestrates a team of subagents, each with its own identity, memory, and commands. **[Scribe](#scribe)** guards all `.md` edits and handles onboarding. Both are always present.
+Most agent runtimes don't allow subagents to spawn other subagents. A deployer agent can't ask a designer agent for a review — only root can spawn agents, so inter-agent communication requires round-tripping through the user's session.
 
-Subagents communicate through **[kords](kords.md)** — protocols that define what one agent provides to another. A pair of agents can have multiple kords for different topics (shown as separate arrows above). When a subagent needs to consult another, a **beorn** — a short-lived clone that assumes the target agent's identity — is spawned to handle the request and return the result. The [beorn MCP server](beorn.md) manages this lifecycle.
+Kordinate solves this with **skins**. Any subagent, at any depth, can invoke another agent by spawning a **skin** — a short-lived clone that assumes the target agent's identity, handles the request, and exits. The [beorn server](beorn.md) is the factory that manages this. From the calling agent's perspective, it just runs `/consult`.
+
+**[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and commands. **[Scribe](#scribe)** guards all `.md` edits and handles onboarding. Both are always present.
+
+Agents define what they provide to each other through **[kords](kords.md)** — protocols that specify the topic, format, and guidelines for a consultation. A pair of agents can have multiple kords for different topics (shown as separate arrows above).
 
 ## Agent Structure
 
@@ -50,7 +54,7 @@ The orchestrator. Root's `IDENTITY.md` defines the team — all subagents inheri
 
 All inherited by subagents:
 
-**Commands** — `/boot` (catch up on context), `/consult` (query or delegate to an agent), `/merge` (merge session branch).
+**Commands** — `/boot` (catch up on context), `/consult` (invoke an agent), `/merge` (merge session branch).
 
 **Guards** — `guard-git.sh` (branch protection), `guard-md.sh` (scribe-only `.md` edits). See [Guards](guards.md).
 
@@ -66,8 +70,8 @@ Protected by `guard-md.sh` — see [Guards](guards.md).
 
 ### Beorn
 
-A beorn is a short-lived agent clone — it assumes another agent's identity (IDENTITY.md + memory), handles a single consultation, and exits. The [beorn MCP server](beorn.md) is the factory that spawns these clones on demand.
+The skin-changer. Beorn is an MCP server that spawns **skins** — short-lived clones that assume another agent's identity (IDENTITY.md + memory), handle a single request, and exit.
 
-**Tools** — `mcp__beorn__delegate` (spawn a beorn as any agent), `mcp__beorn__status` (server health).
+**Tools** — `mcp__beorn__delegate` (spawn a skin as any agent), `mcp__beorn__status` (server health).
 
-`/consult` uses the beorn server as its transport layer. See [Beorn](beorn.md) for architecture details.
+`/consult` uses beorn as its transport layer. See [Beorn](beorn.md) for architecture details.
