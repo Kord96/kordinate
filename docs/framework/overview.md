@@ -23,11 +23,11 @@ flowchart TB
 - **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
 - **[Kords](kords.md)** — defined protocols between agents for sharing expertise
-- **[Nesting Agents](beorn.md)** — agents can consult other agents at any depth, powered by [beorn](beorn.md)
+- **[Nesting Agents](beorn.md)** — subagents can consult other subagents at any depth
 
-**[Root](#root)** is the user's existing agent (Claude, Codex, Cursor). **[Scribe](#scribe)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
+**[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. Root orchestrates a team of subagents, each with its own identity, memory, and commands. **[Scribe](#scribe)** guards all `.md` edits and handles onboarding. Both are always present.
 
-Agents consult each other through **[kords](kords.md)** — defined protocols that specify what one agent provides to another. A single pair of agents can have multiple kords for different topics (shown as separate arrows in the diagram). All consultations flow through **[beorn](beorn.md)**, a shape-shifting server that loads the target agent's identity, invokes it, and returns the response.
+Subagents communicate through **[kords](kords.md)** — protocols that define what one agent provides to another. A pair of agents can have multiple kords for different topics (shown as separate arrows above). When a subagent needs to consult another, a **beorn** — a short-lived clone that assumes the target agent's identity — is spawned to handle the request and return the result. The [beorn MCP server](beorn.md) manages this lifecycle.
 
 ## Agent Structure
 
@@ -58,7 +58,7 @@ All inherited by subagents:
 
 ### Scribe
 
-Documentation gate — present in every team. Only agent authorized to edit `.md` files. All other agents delegate markdown edits to scribe.
+Documentation gate. Only agent authorized to edit `.md` files — all other agents delegate markdown edits to scribe.
 
 Protected by `guard-md.sh` — see [Guards](guards.md).
 
@@ -66,8 +66,8 @@ Protected by `guard-md.sh` — see [Guards](guards.md).
 
 ### Beorn
 
-Shape-shifting MCP agent server. Always-on service that any agent can call to reach any other agent. Beorn loads the target agent's identity and memory, invokes Claude Code as that agent, and returns the response.
+A beorn is a short-lived agent clone — it assumes another agent's identity (IDENTITY.md + memory), handles a single consultation, and exits. The [beorn MCP server](beorn.md) is the factory that spawns these clones on demand.
 
-**Tools** — `mcp__beorn__delegate` (invoke an agent), `mcp__beorn__status` (server health).
+**Tools** — `mcp__beorn__delegate` (spawn a beorn as any agent), `mcp__beorn__status` (server health).
 
-`/consult` uses beorn as its transport layer. See [Beorn](beorn.md) for architecture details.
+`/consult` uses the beorn server as its transport layer. See [Beorn](beorn.md) for architecture details.
