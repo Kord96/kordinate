@@ -1,6 +1,6 @@
 # Kords
 
-A **kord** caches information one agent repeatedly needs from another. The first consultation invokes the provider agent. Subsequent ones return the cached result until the provider's domain changes — then the cache is automatically invalidated and the next consultation is fresh.
+A **kord** caches information one agent repeatedly needs from another, with automatic rehydration when the provider's domain changes.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
