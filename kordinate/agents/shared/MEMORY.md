@@ -12,17 +12,20 @@ Common rules for all agents.
 - Only the deployer may run kubectl write operations
 - Only the sauron may use Grafana MCP tools
 - Only the deployer may use Redis MCP tools
+- `mcp__beorn__delegate` is available for inter-agent communication — delegates a prompt to any agent without spawning a subagent
 
-## Consultation Directory
+## Kords
 
-When you need information outside your expertise, consult the right agent:
+When you need information outside your expertise, use kords (coordination agreements):
 
-| Need to know about | Consult |
+| Need to know about | Kord |
 |---|---|
-| Cluster state, deployments, networking, infrastructure architecture | **deployer** |
-| Metrics, health checks, dashboards, log events, alerting | **sauron** |
-| Design patterns, component topology, data flow, failure modes | **designer** |
-| Document templates, formatting conventions | **scribe** |
+| Cluster state, deployments, networking, infrastructure architecture | `/consult deployer` (default-deployer) |
+| Metrics, health checks, dashboards, log events, alerting | `/consult sauron` (default-sauron) |
+| Design patterns, component topology, data flow, failure modes | `/consult designer` (default-designer) |
+| Document templates, formatting conventions | `/consult scribe` (default-scribe) |
+| Architecture review for deployment/monitoring changes | `/consult pattern-review` |
+| Monitoring impact of infrastructure changes | `/consult monitoring-impact` |
 
 ## Memory
 
