@@ -7,14 +7,16 @@ Dividing work across specialized agents keeps each one focused — but an agent'
 **Sauron** is responsible for monitoring. When invoked on a new repo, it needs answers to key questions:
 
 1. **What infrastructure do we have?**
-    - System runs on Kubernetes
-    - Grafana at `198.128.3.100:9000`, credentials: xxx
-    - Loki at `198.128.3.100:9001`, Prometheus at `198.128.3.100:9002`
-    - Shipping via Alloy, configured at `master-alloy.yml`
+
+        System runs on Kubernetes.
+        Grafana at 198.128.3.100:9000, credentials: xxx
+        Loki at 198.128.3.100:9001, Prometheus at 198.128.3.100:9002
+        Shipping via Alloy, configured at master-alloy.yml
 
 2. **What design patterns does this app use?**
-    - Stream-to-store pattern — reads from Kafka, writes to S3
-    - Typical metrics: message throughput, storage growth
+
+        Stream-to-store pattern — reads from Kafka, writes to S3.
+        Typical metrics: message throughput, storage growth.
 
 These are **Deployer's** and **Designer's** domains, not **Sauron's**. Without delegation, **Sauron** would have to maintain its own infrastructure scanning and pattern detection skills — duplicating work and expanding beyond its scope.
 
