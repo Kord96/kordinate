@@ -72,7 +72,7 @@ flowchart TB
 
 ## Creating Kords
 
-You don't need to remember the kord template. Just describe what you need — the `.md` guard automatically delegates kord creation to scribe, which enforces the standard structure (Provider Guidelines + Response Format).
+Just describe what you need. The `.md` guard delegates kord creation to scribe, which asks for any missing details (name, requester, provider) and enforces the standard structure.
 
 ```
 "create a kord between deployer and sauron for pre-deployment health checks"
