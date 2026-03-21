@@ -1,14 +1,8 @@
-# pattern-review
-
-Architecture review for deployment and monitoring changes.
-
-## Requester
-
-deployer, sauron
-
-## Provider
-
-designer
+---
+description: Architecture review for deployment and monitoring changes
+requester: deployer, sauron
+provider: designer
+---
 
 ## Provider Guidelines
 

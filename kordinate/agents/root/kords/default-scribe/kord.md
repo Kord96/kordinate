@@ -1,14 +1,8 @@
-# default-scribe
-
-General documentation and template questions.
-
-## Requester
-
-any
-
-## Provider
-
-scribe
+---
+description: General documentation and template questions
+requester: any
+provider: scribe
+---
 
 ## Provider Guidelines
 

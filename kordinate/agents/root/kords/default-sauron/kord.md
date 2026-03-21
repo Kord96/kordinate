@@ -1,14 +1,8 @@
-# default-sauron
-
-General monitoring and observability questions.
-
-## Requester
-
-any
-
-## Provider
-
-sauron
+---
+description: General monitoring and observability questions
+requester: any
+provider: sauron
+---
 
 ## Provider Guidelines
 

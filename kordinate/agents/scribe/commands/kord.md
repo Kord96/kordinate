@@ -29,17 +29,11 @@ Define a new kord — a coordination agreement between agents.
 
 3. **Generate kord.md** from this template:
    ```markdown
-   # <name>
-
-   <description>
-
-   ## Requester
-
-   <requester agents, comma-separated>
-
-   ## Provider
-
-   <provider agent>
+   ---
+   description: <one-line description>
+   requester: <agent(s), comma-separated, or "any">
+   provider: <agent>
+   ---
 
    ## Provider Guidelines
 

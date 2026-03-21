@@ -1,14 +1,8 @@
-# default-designer
-
-General architecture and design questions.
-
-## Requester
-
-any
-
-## Provider
-
-designer
+---
+description: General architecture and design questions
+requester: any
+provider: designer
+---
 
 ## Provider Guidelines
 

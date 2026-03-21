@@ -1,18 +1,12 @@
-# default-deployer
-
-General deployment and cluster questions.
-
-## Requester
-
-any
-
-## Provider
-
-deployer
+---
+description: General deployment and cluster questions
+requester: any
+provider: deployer
+---
 
 ## Provider Guidelines
 
-Answer with specific names, versions, and states — the caller needs facts, not explanations.
+Answer with specific names, versions, and states.
 Keep under 50 lines.
 
 ### Response Format

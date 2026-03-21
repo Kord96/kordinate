@@ -30,17 +30,11 @@ Answering these questions requires scanning the repo and the deployment pipeline
 ??? example "default-deployer kord (sauron asking deployer about infrastructure)"
 
     ```markdown
-    # default-deployer
-
-    General deployment and cluster questions.
-
-    ## Requester
-
-    any
-
-    ## Provider
-
-    deployer
+    ---
+    description: General deployment and cluster questions
+    requester: any
+    provider: deployer
+    ---
 
     ## Provider Guidelines
 
