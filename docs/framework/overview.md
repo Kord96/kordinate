@@ -22,7 +22,7 @@ flowchart TB
 
 **[Root](root.md)** is the user's existing agent (Claude, Codex, Cursor).
 
-**[Scribe](scribe.md)** ships with the framework — it guards all `.md` edits and handles [onboarding new agents](scribe.md#onboarding-an-agent). Always part of the team.
+**[Scribe](scribe.md)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
 
 Kordinate adds:
 
@@ -32,4 +32,4 @@ Kordinate adds:
 
 ## Agent Structure
 
-Every agent follows the same layout: `IDENTITY.md` defines identity, `memory/` holds knowledge, `commands/` holds slash commands. See [Onboarding an Agent](scribe.md#onboarding-an-agent) for the full structure and how new agents are created.
+Every agent follows the same layout: `IDENTITY.md` defines identity, `memory/` holds knowledge, `commands/` holds slash commands. Use `/scribe:onboard` to add new agents to the team.
