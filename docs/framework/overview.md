@@ -23,7 +23,7 @@ flowchart TB
 - **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
 - **[Kords](kords.md)** — defined protocols between agents for sharing expertise
-- **[Nesting Agents](beorn.md)** — subagents can invoke other subagents at any depth
+- **[Subagent P2P](beorn.md)** — subagents can invoke other subagents at any depth
 
 **[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and commands.
 
@@ -60,7 +60,7 @@ Documentation gate. Only agent authorized to edit `.md` files — all other agen
 
 A beorn is a short-lived agent clone. It assumes a **skin** — another agent's identity and memories. When a subagent invokes another, the beorn server creates a beorn with the target subagent's skin, handles the request, and returns the result.
 
-`/consult` uses the beorn server as its transport layer. See [Beorn](beorn.md) for architecture details.
+`/consult` uses the beorn server as its transport layer. See [Subagent P2P](beorn.md) for architecture details.
 
 ---
 

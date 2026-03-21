@@ -1,6 +1,6 @@
-# Beorn
+# Subagent P2P
 
-A **beorn** is a short-lived agent clone spawned on demand. It assumes a **skin** — the target agent's identity and memory — handles a single request, and exits. The **beorn server** is the MCP factory that manages this lifecycle.
+Current agent runtimes don't allow subagents to spawn other subagents. Kordinate removes this limitation by introducing **beorn** — a short-lived agent clone spawned on demand. It assumes a **skin** — the target agent's identity and memory — handles a single request, and exits. The **beorn server** is the MCP factory that manages this lifecycle.
 
 ```mermaid
 flowchart LR
@@ -14,7 +14,7 @@ flowchart LR
 
 ## Why
 
-Current agent runtimes don't allow subagents to spawn other subagents. A deployer agent can't ask a designer agent for a review — only root can spawn agents. The beorn server removes this limitation by providing agent invocation as an MCP tool. Any agent, at any depth, can spawn a beorn with another agent's skin.
+Without P2P, a deployer agent can't ask a designer agent for a review — only root can spawn agents. The beorn server provides agent invocation as an MCP tool, so any agent at any depth can spawn a beorn with another agent's skin.
 
 ## Tools
 
