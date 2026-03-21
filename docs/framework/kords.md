@@ -4,7 +4,7 @@
 
 Dividing work across specialized agents keeps each one focused — but an agent's work can depend on another agent's domain knowledge.
 
-**Sauron** is responsible for monitoring. When invoked on a new repo, it needs answers to key questions:
+**Sauron** is responsible for monitoring. Each time it sets up monitoring, it needs answers to key questions:
 
 1. **What infrastructure do we have?**
 
@@ -25,11 +25,6 @@ The alternative is re-invoking **Deployer** and **Designer** every time, but tha
 ## What is a Kord
 
 A **kord** is a contract between two agents. It defines who provides what, the expected response format, and the criteria for cache invalidation. When an agent needs another agent's knowledge, it consults through a kord — the result is cached and reused until the provider's state changes.
-
-| Concept | What it is | Analogy |
-|---------|-----------|---------|
-| **Kord** | Contract definition | class |
-| **Cached result** | Stored response from provider | instance |
 
 ??? example "designer-default kord"
 
