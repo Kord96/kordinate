@@ -5,30 +5,40 @@ flowchart TB
     ROOT[Root Agent]
 
     subgraph team[Team]
-        A1[Agent A] <-.->|consult| A2[Agent B]
-        A1 <-.->|consult| A3[Agent C]
-        A2 <-.->|consult| A3
-        A1 <-->|delegate| A2
-        A1 -->|delegate| SC[Scribe]
-        A2 -->|delegate| SC
-        A3 -->|delegate| SC
+        A1[Agent A] -.->|consult| A2[Agent B]
+        A1 -.->|consult\nconsult| A3[Agent C]
+        A2 -.->|consult| A3
+        A1 -->|consult| SC[Scribe]
+        A2 -->|consult| SC
     end
 
     ROOT -.->|consult| A1
     ROOT -.->|consult| A2
     ROOT -.->|consult| A3
-    ROOT -->|delegate| SC
+    ROOT -->|consult| SC
+
+    B[Beorn] ~~~ team
+    ROOT -.-|MCP| B
+    A1 -.-|MCP| B
+    A2 -.-|MCP| B
+
+    style B fill:#4a4,stroke:#333
 ```
 
 **[Root](#root)** is the user's existing agent (Claude, Codex, Cursor).
 
 **[Scribe](#scribe)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
 
+**[Beorn](#beorn)** is the MCP transport layer — a shape-shifting server that any agent calls to reach any other agent via `/consult`.
+
+Agents consult each other through **[kords](kords.md)** — defined protocols that specify what one agent provides to another. A single pair of agents can have multiple kords for different topics. All consultations flow through beorn.
+
 Kordinate adds:
 
 - **[Recall System](memory.md)** — structured knowledge (static/dynamic × global/project) with caching and refresh
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
 - **[Kords](kords.md)** — defined protocols between agents for sharing expertise
+- **[Beorn](beorn.md)** — MCP agent server for inter-agent communication
 
 ## Agent Structure
 
@@ -51,7 +61,7 @@ The orchestrator. Root's `IDENTITY.md` defines the team — all subagents inheri
 
 All inherited by subagents:
 
-**Commands** — `/boot` (init workstation), `/consult` (query agent), `/merge` (merge session branch).
+**Commands** — `/boot` (catch up on context), `/consult` (query or delegate to an agent), `/merge` (merge session branch).
 
 **Guards** — `guard-git.sh` (branch protection), `guard-md.sh` (scribe-only `.md` edits). See [Guards](guards.md).
 
@@ -64,3 +74,11 @@ Documentation gate — present in every team. Only agent authorized to edit `.md
 Protected by `guard-md.sh` — see [Guards](guards.md).
 
 **Commands** — `/scribe:onboard` (add agent), `/scribe:kord` (define kord), `/scribe:update-agent-docs`, `/scribe:update-project-docs`.
+
+### Beorn
+
+Shape-shifting MCP agent server. Always-on service that any agent can call to reach any other agent. Beorn loads the target agent's identity and memory, invokes Claude Code as that agent, and returns the response.
+
+**Tools** — `mcp__beorn__delegate` (invoke an agent), `mcp__beorn__status` (server health).
+
+`/consult` uses beorn as its transport layer. See [Beorn](beorn.md) for architecture details.
