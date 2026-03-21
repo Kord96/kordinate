@@ -25,13 +25,11 @@ flowchart TB
 - **[Kords](kords.md)** — defined protocols between agents for sharing expertise
 - **[Nesting Agents](beorn.md)** — subagents can invoke other subagents at any depth
 
-Most agent runtimes don't allow subagents to spawn other subagents. A deployer agent can't ask a designer agent for a review — only root can spawn agents, so inter-agent communication requires round-tripping through the user's session.
+**[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and commands.
 
-Kordinate solves this with **skins**. Any subagent, at any depth, can invoke another agent by spawning a **skin** — a short-lived clone that assumes the target agent's identity, handles the request, and exits. The [beorn server](beorn.md) is the factory that manages this. From the calling agent's perspective, it just runs `/consult`.
+Most agent runtimes don't allow subagents to spawn other subagents — inter-agent communication requires round-tripping through root. Kordinate removes this limitation. Any subagent, at any depth, can invoke another by spawning a **skin** — a short-lived clone that assumes the target agent's identity, handles the request, and exits. From the calling agent's perspective, it just runs `/consult`. The [beorn server](beorn.md) is the factory that manages skin lifecycle.
 
-**[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and commands. **[Scribe](#scribe)** guards all `.md` edits and handles onboarding. Both are always present.
-
-Agents define what they provide to each other through **[kords](kords.md)** — protocols that specify the topic, format, and guidelines for a consultation. A pair of agents can have multiple kords for different topics (shown as separate arrows above).
+Agents define what they provide to each other through **[kords](kords.md)** — protocols that specify the topic, format, and guidelines for each consultation. A pair of agents can have multiple kords for different topics (shown as separate arrows above).
 
 ## Agent Structure
 
