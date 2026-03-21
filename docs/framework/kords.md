@@ -152,12 +152,19 @@ flowchart TB
     B -->|re-reads summary| U[Agent unblocked]
 ```
 
+## Creating Kords
+
+You don't need to remember the kord template. Just describe what you need — the `.md` guard automatically delegates kord creation to scribe, which enforces the standard structure (Provider Guidelines + Response Format).
+
+```
+"create a kord between deployer and sauron for pre-deployment health checks"
+```
+
 ---
 
 ??? note "Related commands"
 
     | Command | Purpose |
     |---------|---------|
-    | `/scribe:kord deployer designer` | Create a new kord |
     | `/consult pattern-review "question"` | Consult via explicit kord |
     | `/consult designer "question"` | Consult via default kord |
