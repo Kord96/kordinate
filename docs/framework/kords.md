@@ -9,22 +9,13 @@ A **kord** is a single consultation link between two agents — a template that 
 
 ### Example
 
-A deployer agent is about to change a Kubernetes manifest. Before applying, it needs a design review. Instead of asking root to relay the question, the deployer runs:
+A deployer agent needs a design review before applying a manifest change:
 
 ```
 /consult pattern-review "review the beorn deployment manifest for pattern violations"
 ```
 
-Behind the scenes:
-
-1. `/consult` resolves `pattern-review` → finds `kord.md` (requester: deployer, provider: designer)
-2. Checks the `.valid` marker — stale, so it proceeds
-3. Reads the guidelines: *"Check against the pattern library. Report violations by severity."*
-4. Spawns a beorn with the designer's skin, passes the question + guidelines
-5. Caches the designer's response in `deployer/memory/dynamic/consultations/pattern-review.md`
-6. Creates `.valid` — next time the deployer asks the same question, the cached answer is returned instantly
-
-The deployer didn't need to know how to reach the designer. The kord defined the protocol. Beorn handled the transport. The cache avoids redundant calls.
+`/consult` resolves the `pattern-review` kord, checks freshness, invokes the designer with the kord's guidelines, caches the response, and returns it. Next time the same question is asked with a fresh cache, the cached answer is returned instantly.
 
 ## Structure
 
