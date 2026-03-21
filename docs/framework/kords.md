@@ -2,7 +2,7 @@
 
 ## Problem
 
-**Khaled** is deploying a new service in a complex multi-service system, but monitoring is missing. He prompts agent **Sauron** to set it up.
+**Developer Khaled** is deploying a new service in a complex multi-service system, but monitoring is missing. He prompts agent **Sauron** to set it up.
 
 To recommend the right metrics and wire them into the existing stack, **Sauron** needs to know:
 
@@ -13,7 +13,7 @@ Figuring this out is expensive — scanning the codebase for patterns, querying 
 
 **Sauron** should focus on monitoring, not re-discovering infrastructure and architecture every time.
 
-## Solution
+## What is a Kord
 
 A **kord** caches information one agent repeatedly needs from another, with invalidation rules maintained by the provider.
 
@@ -53,7 +53,7 @@ A **kord** caches information one agent repeatedly needs from another, with inva
     | Summary | no |
     ```
 
-## Cache Rehydration
+### Cache Rehydration
 
 Each kord has a `.valid` marker. Two hooks control it:
 
@@ -71,7 +71,7 @@ flowchart TB
     P -->|deletes| V[.valid]
 ```
 
-## Creating Kords
+### Creating Kords
 
 Just describe what you need. The `.md` guard delegates kord creation to scribe, which asks for any missing details (name, requester, provider) and enforces the standard structure.
 
@@ -79,7 +79,7 @@ Just describe what you need. The `.md` guard delegates kord creation to scribe, 
 "create a kord between deployer and sauron for pre-deployment health checks"
 ```
 
-## Structure
+### Structure
 
 Root owns all kord definitions. Each kord is a directory containing the protocol and a freshness script.
 
