@@ -9,17 +9,15 @@ A **kord** is a protocol that caches information one agent repeatedly needs from
 
 ## Example
 
-Deployer is about to roll enricher v2.3. Before applying, it needs to know whether monitoring is ready. This is Sauron's domain.
+Deployer regularly needs to know whether monitoring is in place before rolling services. This information lives in Sauron's domain — dashboards, alerts, health checks.
+
+Without a kord, every rollout invokes Sauron from scratch. With the `monitoring-impact` kord, the answer is cached after the first consultation:
 
 ```
-/consult monitoring-impact "rolling enricher v2.3 to prod — is monitoring ready?"
+/consult monitoring-impact "is monitoring ready for enricher?"
 ```
 
-First time: `/consult` invokes Sauron with the kord's provider guidelines, caches the response. Takes ~15 seconds.
-
-Next time (same question, nothing changed): returns the cached result instantly.
-
-When Sauron's domain changes (new dashboards deployed, alert rules updated): the cache is automatically invalidated. Next `/consult` invokes Sauron again.
+Sauron is only re-invoked when its domain actually changes — new dashboards deployed, alert rules updated. Otherwise, the cached result is returned instantly.
 
 ??? example "monitoring-impact kord"
 
