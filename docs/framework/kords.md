@@ -1,6 +1,6 @@
 # Kords
 
-A **kord** is a consultation protocol between two agents — it defines what one agent provides to another, how to respond, and what format to use. Two agents can be linked by multiple kords. A default kord exists for free-form queries.
+A **kord** is a consultation protocol between two agents — it defines what one agent provides as a service to another, how to respond, and what format to use. Two agents can be linked by multiple kords. A default kord exists for free-form queries.
 
 | Concept | What it is | Where it lives | Nature | Analogy |
 |---------|-----------|----------------|--------|---------|
