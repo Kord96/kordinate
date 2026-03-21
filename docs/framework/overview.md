@@ -20,9 +20,9 @@ flowchart TB
     ROOT -->|delegate| SC
 ```
 
-**[Root](root.md)** is the user's existing agent (Claude, Codex, Cursor).
+**[Root](agents.md#root)** is the user's existing agent (Claude, Codex, Cursor).
 
-**[Scribe](scribe.md)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
+**[Scribe](agents.md#scribe)** ships with the framework — it guards all `.md` edits and handles onboarding new agents. Always part of the team.
 
 Kordinate adds:
 

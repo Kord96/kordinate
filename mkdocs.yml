@@ -49,9 +49,7 @@ nav:
       - Overview: framework/overview.md
       - Guards: framework/guards.md
       - Kords: framework/kords.md
-  - Core Agents:
-      - Root: framework/root.md
-      - Scribe: framework/scribe.md
+  - Core Agents: framework/agents.md
   - Recall System: framework/memory.md
   - "Example: Infra Team":
       - Deployer: infra/infrastructure.md
