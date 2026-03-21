@@ -38,23 +38,23 @@ A **kord** is a contract between two agents. It defines who provides what, the e
 
     ## Provider Guidelines
 
-    Answer with specific names, versions, and states.
+    Answer with specific endpoints, credentials, and configuration paths.
     Keep under 50 lines.
 
     ### Response Format
 
     | Field | Required |
     |-------|----------|
-    | Current state (pods, versions, resources) | yes |
-    | Relevant configuration (services, ingresses) | if applicable |
-    | Recent changes | if applicable |
+    | Service endpoints (host, port) | yes |
+    | Access credentials | if applicable |
+    | Configuration file paths | if applicable |
 
     ## Provider State Invalidation
 
     Invalidate when:
     - Cluster manifests are modified
-    - New deployments are applied
-    - Service endpoints or configuration changes
+    - Services are redeployed to new endpoints
+    - Credentials are rotated
     ```
 
 ### Cache Freshness
