@@ -1,59 +1,72 @@
-Consult an agent — spawn it and ask a question.
+Consult an agent — resolve a kord, check freshness, delegate via beorn, cache the result.
 
-Results are cached per consulter-consultant pair. Cached results are served if the consultant's knowledge hasn't changed. Use `/invalidate <agent>` to force re-consultation.
+Results are cached per kord. Cached results are served if the kord's `.valid` marker exists (freshness check). The invalidation hook deletes `.valid` when provider knowledge changes.
 
-**Input**: $ARGUMENTS (required: `<agent> "<question>"`, e.g. `deployer "what pods are running in prod?"`)
+**Input**: $ARGUMENTS (required: `<agent-or-kord> "<prompt>"`, e.g. `deployer "what pods are running in prod?"`)
 
 ## Usage
 
 ```
 /consult deployer "what's running in prod?"
 /consult sauron "what metrics does the enricher expose?"
-/consult designer "what are logbd's main components?"
+/consult designer "review the beorn deployment manifest"
+/consult deployer "deploy the new gateway config"
+/consult pattern-review "review the deployment changes for design impact"
 ```
 
 ## Procedure
 
-1. Parse the agent name (consultant) and question from the arguments.
+1. Parse the target and prompt from the arguments.
 
-2. **Check consultation cache**:
-   a. Resolve paths:
-      - `KORDINATE_HOME` from the kordinate repo root (find it via `git rev-parse --show-toplevel` + `/kordinate`)
-      - Cache file: `$KORDINATE_HOME/agents/shared/memory/dynamic/<your-agent-name>-<consultant>.cache`
-      - Hash file: `$KORDINATE_HOME/agents/shared/memory/dynamic/.<your-agent-name>-<consultant>.hash`
-      - Source dirs: read from `$KORDINATE_HOME/agents/<consultant>/instructions/consultation.md` under `## Cache Sources`. Each listed path is relative to the agent's directory (`$KORDINATE_HOME/agents/<consultant>/`). Resolve to absolute paths.
-   b. If cache file exists and has content, run:
+2. **Resolve kord**:
+   a. Resolve `KORDINATE_HOME` from the kordinate repo root (`git rev-parse --show-toplevel` + `/kordinate`).
+   b. If target matches a kord directory name under `$KORDINATE_HOME/agents/root/kords/<target>/`, use that kord directly.
+   c. Otherwise, treat target as an agent name and use `default-<target>` as the kord.
+   d. Read `kord.md` from the resolved kord directory to get provider and guidelines.
+
+3. **Freshness check**:
+   a. Run the kord's `freshness.sh`:
       ```bash
-      source "$KORDINATE_HOME/lib/cache.sh"
-      cache_check "<hash_file>" <resolved_source_dirs...>
+      bash "$KORDINATE_HOME/agents/root/kords/<kord>/freshness.sh"
       echo $?
       ```
-   c. If exit code is 0 (fresh), read the first line of the cache file. If it starts with `<!-- cache:question:` and the question inside matches the current question — read the rest of the file and return it to the user. Done.
-   d. Otherwise (stale, missing, or different question): proceed to step 3.
+   b. If exit code is 0 (fresh), check for cached result:
+      - Cache file: `$KORDINATE_HOME/agents/root/memory/dynamic/consultations/<kord>.md`
+      - If it exists and the first line matches `<!-- kord:<kord> prompt: <exact prompt> -->`, return the cached content. Done.
+   c. Otherwise (stale or no cache): proceed to step 4.
 
-3. Spawn the agent using the Agent tool:
-   - Check `.claude/agent-state/<name>.json` for the agent's `agent_id`. If one exists, pass it as the `resume` parameter; if not, omit `resume` to start fresh.
-   - Instruct the agent: "You are being consulted. Answer the following question using your Consultation guidelines from your CLAUDE.md: <question>"
+4. **Delegate via beorn**:
+   a. Read the provider name from the kord's `kord.md` (under `## Provider`).
+   b. Read the `## Guidelines` section from `kord.md`.
+   c. Build the delegation prompt: "You are being consulted via the `<kord>` kord. Follow these guidelines:\n\n<guidelines>\n\nPrompt: <prompt>"
+   d. Call `mcp__beorn__delegate` with `agent=<provider>` and `prompt=<delegation prompt>`.
 
-4. **Cache the result**:
-   a. Write the agent's response to the cache file, with a question header on the first line:
+5. **Cache the result**:
+   a. Write the agent's response to the consultation cache:
       ```
-      <!-- cache:question: <the exact question> -->
+      <!-- kord:<kord> prompt: <the exact prompt> -->
       <agent's response>
       ```
-   b. Store the hash (using the same source dirs resolved in step 2a):
+      File: `$KORDINATE_HOME/agents/root/memory/dynamic/consultations/<kord>.md`
+   b. Create the `.valid` marker:
       ```bash
-      source "$KORDINATE_HOME/lib/cache.sh"
-      cache_store "<hash_file>" <resolved_source_dirs...>
+      touch "$KORDINATE_HOME/agents/root/kords/<kord>/.valid"
       ```
 
-5. Return the agent's response to the user.
-6. Store the returned agent ID via `/scribe:update-subagent-memory`.
+6. Return the agent's response to the user.
 
 ## Available agents
 
-| Agent | Expertise |
-|-------|-----------|
-| deployer | Cluster state, pod status, deployment status, versions, networking |
-| sauron | Metrics, health checks, log events, dashboards, alerting |
-| designer | Architecture, components, failure modes, data flow, dependencies |
+| Agent | Default Kord | Expertise |
+|-------|-------------|-----------|
+| deployer | `default-deployer` | Cluster state, pod status, deployment status, versions, networking |
+| sauron | `default-sauron` | Metrics, health checks, log events, dashboards, alerting |
+| designer | `default-designer` | Architecture, components, failure modes, data flow, dependencies |
+| scribe | `default-scribe` | Templates, document formats, formatting conventions |
+
+## Named kords
+
+| Kord | Requester → Provider |
+|------|---------------------|
+| `pattern-review` | deployer, sauron → designer |
+| `monitoring-impact` | deployer → sauron |
