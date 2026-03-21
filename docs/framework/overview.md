@@ -32,4 +32,13 @@ Kordinate adds:
 
 ## Agent Structure
 
-Every agent follows the same layout: `IDENTITY.md` defines identity, `memory/` holds knowledge, `commands/` holds slash commands. Use `/scribe:onboard` to add new agents to the team.
+Every agent follows the same layout. Use `/scribe:onboard` to add new agents to the team.
+
+```
+agents/<name>/
+├── IDENTITY.md              # role, triggers, commands, rules
+├── memory/
+│   ├── static/              # curated domain knowledge
+│   └── dynamic/             # auto-managed (consultations, operational notes)
+└── commands/                # slash command definitions
+```

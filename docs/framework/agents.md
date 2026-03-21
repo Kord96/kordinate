@@ -4,20 +4,6 @@
 
 The orchestrator. Root's `IDENTITY.md` defines the team — all subagents inherit its rules, commands, and hooks. Mapped to the runtime's main agent (e.g. Claude Code's `CLAUDE.md`) via the [linking layer](../reference/linking.md).
 
-**Contains:** agent routing table, [kords](kords.md), team rules.
-
-```
-agents/root/
-├── IDENTITY.md                    # routing table, triggers, team rules
-├── kords/                         # kord definitions
-├── memory/
-│   ├── static/
-│   │   └── team/                  # team rules inherited by all subagents
-│   └── dynamic/
-│       └── team/                  # team-level dynamic knowledge
-└── commands/
-```
-
 All inherited by subagents:
 
 **Commands** — `/boot` (init workstation), `/consult` (query agent), `/merge` (merge session branch).
