@@ -6,16 +6,15 @@ flowchart TB
 
     subgraph team[Team]
         A1[Agent A] <-.->|consult| A2[Agent B]
-        A1 <-.->|consult\nconsult| A3[Agent C]
+        A1 <-.->|consult| A3[Agent C]
+        A3 <-.->|consult| A1
         A2 <-.->|consult| A3
         A1 -->|consult| SC[Scribe]
         A2 -->|consult| SC
-        A3 -->|consult| SC
     end
 
     ROOT -.->|consult| A1
     ROOT -.->|consult| A2
-    ROOT -.->|consult| A3
     ROOT -->|consult| SC
 ```
 
