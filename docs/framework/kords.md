@@ -18,46 +18,42 @@ Dividing work across specialized agents keeps each one focused — but an agent'
 
 Answering these questions requires scanning the repo and the deployment pipeline. The natural solution is to cache them — but how does **Sauron** detect a stale cache when Grafana moves to a new machine?
 
-**Sauron** delegates these questions to specialized agents (**Deployer**, **Designer**). Each relationship is defined by a kord. Results are cached in a standard format defined by the kord. The provider agent maintains the invalidation rules — when its domain changes, the kordinate protocol automatically refreshes the cache.
-
 ## What is a Kord
 
-A **kord** is a contract between two agents — it defines the provider, the requester, and the expected response format. The contract enables caching: because the response structure is defined, results can be stored and reused.
+**Sauron** delegates these questions to specialized agents (**Deployer**, **Designer**). Each relationship is defined by a **kord** — a contract that specifies the provider, the requester, and the expected response format.
 
 | Concept | What it is | Where it lives | Analogy |
 |---------|-----------|----------------|---------|
-| **Kord** | Protocol definition | `agents/root/kords/<name>/kord.md` | class |
+| **Kord** | Contract definition | `agents/root/kords/<name>/kord.md` | class |
 | **Consultation** | Cached result | `agents/<requester>/memory/dynamic/consultations/<kord>.md` | instance |
 
-??? example "monitoring-impact kord"
+??? example "default-deployer kord (sauron asking deployer about infrastructure)"
 
     ```markdown
-    # monitoring-impact
+    # default-deployer
 
-    Monitoring impact assessment for infrastructure changes.
+    General deployment and cluster questions.
 
     ## Requester
 
-    deployer
+    any
 
     ## Provider
 
-    sauron
+    deployer
 
     ## Provider Guidelines
 
-    Assess monitoring coverage for the affected service.
-    Report gaps, not what's already working.
+    Answer with specific names, versions, and states.
     Keep under 50 lines.
 
     ### Response Format
 
     | Field | Required |
     |-------|----------|
-    | Gaps by severity (blocking, warning, info) | yes |
-    | Missing dashboards or metrics | yes |
-    | Missing alerts | yes |
-    | Summary | no |
+    | Current state (pods, versions, resources) | yes |
+    | Relevant configuration (services, ingresses) | if applicable |
+    | Recent changes | if applicable |
     ```
 
 ### Cache Rehydration
@@ -88,12 +84,12 @@ Just describe what you need. The `.md` guard delegates kord creation to scribe, 
 
 ### Structure
 
-Root owns all kord definitions. Each kord is a directory containing the protocol and a freshness script.
+Root owns all kord definitions. Each kord is a directory containing the contract and a freshness script.
 
 ```
 agents/root/kords/
 ├── pattern-review/
-│   ├── kord.md           # protocol: requester, provider, guidelines, format
+│   ├── kord.md           # contract: requester, provider, guidelines, format
 │   ├── freshness.sh      # checks .valid marker
 │   └── .valid            # present = cache is fresh
 ├── monitoring-impact/
@@ -103,14 +99,6 @@ agents/root/kords/
     ├── kord.md
     └── freshness.sh
 ```
-
-Each `kord.md` contains:
-
-| Field | Description |
-|-------|-------------|
-| **Requester** | Agent(s) that can invoke this kord |
-| **Provider** | Agent that answers |
-| **Provider Guidelines** | How to respond + response format |
 
 ---
 
