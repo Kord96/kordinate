@@ -2,7 +2,7 @@
 
 ## Problem
 
-Khaled is building a stock prediction engine — twenty microservices reading financial APIs into Kafka, ETL consumers writing to S3, and an ML model on top. He's deploying a new service that integrates yfinance as a data source, but monitoring is missing. He asks Sauron to set it up.
+Khaled is deploying a new service in a complex multi-service system, but monitoring is missing. He asks Sauron to set it up.
 
 To recommend the right metrics and wire them into the existing stack, Sauron needs information from other agents:
 
