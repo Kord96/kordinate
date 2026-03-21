@@ -65,7 +65,7 @@ CLAUDE_SYMLINKS=(
 build_copies() {
   local copies=()
   # Root agent
-  copies+=("CLAUDE.md:kordinate/agents/IDENTITY.md")
+  copies+=("CLAUDE.md:kordinate/agents/root/IDENTITY.md")
   # Discovered agents
   local agents
   agents=$(discover_agents)
@@ -280,7 +280,58 @@ cmd_deploy() {
   done
 
   echo ""
+  echo "=== Beorn MCP agent server ==="
+  setup_beorn
+
+  echo ""
   echo "Done."
+}
+
+# ═══════════════════════════════════════════════════════════════
+# BEORN: install deps, register MCP, start server
+# ═══════════════════════════════════════════════════════════════
+
+setup_beorn() {
+  local BEORN_DIR="$FRAMEWORK/lib/mcp-agent-server"
+  [ -d "$BEORN_DIR" ] || { echo "  SKIP beorn (not found)"; return; }
+
+  # Install dependencies
+  if [ ! -d "$BEORN_DIR/node_modules" ]; then
+    echo "  +   installing beorn dependencies..."
+    (cd "$BEORN_DIR" && npm install --production 2>/dev/null) || {
+      echo "  WARN npm install failed — beorn won't start"; return
+    }
+  else
+    echo "  ok  beorn dependencies"
+  fi
+
+  # Register MCP server (idempotent — claude mcp add errors if exists)
+  local BEORN_URL="http://localhost:3100/mcp"
+  if claude mcp get beorn &>/dev/null; then
+    echo "  ok  beorn MCP registered"
+  else
+    claude mcp add --transport http --scope local beorn "$BEORN_URL" &>/dev/null && \
+      echo "  +   beorn MCP registered at $BEORN_URL" || \
+      echo "  WARN failed to register beorn MCP"
+  fi
+
+  # Start server if not already running
+  if curl -sf http://localhost:3100/health &>/dev/null; then
+    echo "  ok  beorn running"
+  else
+    echo "  +   starting beorn..."
+    setsid node "$BEORN_DIR/server.js" >> /tmp/beorn.log 2>&1 &
+    # Wait for health
+    for i in $(seq 1 10); do
+      curl -sf http://localhost:3100/health &>/dev/null && break
+      sleep 1
+    done
+    if curl -sf http://localhost:3100/health &>/dev/null; then
+      echo "  +   beorn started (http://localhost:3100)"
+    else
+      echo "  WARN beorn failed to start — check /tmp/beorn.log"
+    fi
+  fi
 }
 
 # ═══════════════════════════════════════════════════════════════
