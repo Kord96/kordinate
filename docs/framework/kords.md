@@ -27,6 +27,37 @@ A **kord** is a contract between two agents. It defines who provides what, the e
 | **Kord** | Contract definition | class |
 | **Cached result** | Stored response from provider | instance |
 
+??? example "designer-default kord"
+
+    ```markdown
+    ---
+    description: General architecture and design questions
+    requester: any
+    provider: designer
+    ---
+
+    ## Provider Guidelines
+
+    Answer concisely — the caller needs facts, not explanations.
+    Include specific file paths when referencing components.
+    Keep under 50 lines.
+
+    ### Response Format
+
+    | Field | Required |
+    |-------|----------|
+    | Design pattern identified | yes |
+    | Application data flow (inputs → processing → outputs) | yes |
+    | Recommended metrics for this pattern | yes |
+
+    ## Provider State Invalidation
+
+    Invalidate when:
+    - Application architecture changes
+    - New components or services are added
+    - Pattern library is updated
+    ```
+
 ??? example "deployer-default kord"
 
     ```markdown
@@ -38,23 +69,23 @@ A **kord** is a contract between two agents. It defines who provides what, the e
 
     ## Provider Guidelines
 
-    Answer with specific endpoints, credentials, and configuration paths.
+    Answer with specific names, endpoints, and configuration paths.
     Keep under 50 lines.
 
     ### Response Format
 
     | Field | Required |
     |-------|----------|
-    | Service endpoints (host, port) | yes |
-    | Access credentials | if applicable |
-    | Configuration file paths | if applicable |
+    | Infrastructure topology (services, namespaces, dependencies) | yes |
+    | Monitoring pipeline (collection → storage → visualization) | yes |
+    | Configuration sources (files, ConfigMaps) | if applicable |
 
     ## Provider State Invalidation
 
     Invalidate when:
     - Cluster manifests are modified
-    - Services are redeployed to new endpoints
-    - Credentials are rotated
+    - Services are redeployed
+    - Monitoring stack configuration changes
     ```
 
 ### Cache Freshness
