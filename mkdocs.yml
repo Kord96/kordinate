@@ -16,6 +16,7 @@ theme:
     - navigation.indexes
     - search.suggest
     - content.code.copy
+    - navigation.expand
 
 markdown_extensions:
   - tables
