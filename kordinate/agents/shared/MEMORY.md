@@ -11,7 +11,6 @@ Common rules for all agents.
 - Project-specific artifacts go in the project repo, not kordinate
 - Only the deployer may run kubectl write operations
 - Only the sauron may use Grafana MCP tools
-- Only the deployer may use Redis MCP tools
 - `mcp__beorn__delegate` spawns a beorn with any agent's skin — use for inter-agent communication at any depth
 
 ## Kords
