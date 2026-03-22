@@ -26,25 +26,25 @@ Files that ship with kordinate and their properties:
 
 ### Team
 
-| File | Purpose | Structured | On-demand | Owner | Scope | Expiry |
-|------|---------|:----------:|:---------:|:-----:|:-----:|:------:|
-| team identity | Shared rules inherited by all agents | yes | no | team | global | — |
-| kord contract (`kord.md`) | Defines consultation protocol between agents | yes | yes | team | global | — |
-| kord cache | Cached result of a consultation | yes | yes | team | global | `pre-consult.sh` |
-| kord registry | Lists all available kords | yes | no | team | global | — |
+| File | Path | Purpose | Structured | On-demand | Expiry |
+|------|------|---------|:----------:|:---------:|:------:|
+| team identity | `team/identity.md` | Shared rules inherited by all agents | yes | no | — |
+| kord contract | `team/kords/<name>/kord.md` | Consultation protocol between agents | yes | yes | — |
+| kord cache | `team/kords/<name>/cache.md` | Cached result of a consultation | yes | yes | `pre-consult.sh` |
+| kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
 
 ### Agent
 
-| File | Purpose | Structured | On-demand | Owner | Scope | Expiry |
-|------|---------|:----------:|:---------:|:-----:|:-----:|:------:|
-| `identity.md` | Who the agent is — role, triggers, rules | yes | no | agent | global | — |
-| `index.md` | Lists available on-demand files | yes | no | agent | global | — |
-| `commands/*.md` | Skill definitions — invoked by name | yes | yes | agent | global | — |
-| `instructions/*.md` | Auth rules, workflow, tool usage | no | yes | agent | global | — |
-| `memory/static/*.md` | Curated domain knowledge | no | yes | agent | global | — |
-| `memory/dynamic/*.md` | Auto-managed notes and findings | no | yes | agent | global | — |
-| consultation cache | Cached kord result | yes | yes | agent | global | `pre-consult.sh` |
-| operational notes | Free-form agent observations | no | yes | agent | global | — |
+| File | Path | Purpose | Structured | On-demand | Expiry |
+|------|------|---------|:----------:|:---------:|:------:|
+| identity | `<agent>/identity.md` | Who the agent is — role, triggers, rules | yes | no | — |
+| index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
+| commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
+| instructions | `<agent>/instructions/*.md` | Auth rules, workflow, tool usage | no | yes | — |
+| static knowledge | `<agent>/memory/static/*.md` | Curated domain knowledge | no | yes | — |
+| dynamic memory | `<agent>/memory/dynamic/*.md` | Auto-managed notes and findings | no | yes | — |
+| consultation cache | `<agent>/consultations/<kord>.md` | Cached kord result | yes | yes | `pre-consult.sh` |
+| operational notes | `<agent>/memory/dynamic/notes.md` | Free-form agent observations | no | yes | — |
 
 ### Project Level
 
