@@ -27,7 +27,7 @@ Scribe maintains a registry of structured patterns and on-demand indexes. The gu
 | Pattern | Template | Required Sections |
 |---------|----------|-------------------|
 | `*/identity.md` | identity | frontmatter (name, model, tools, triggers), Auth, Workflow, Rules, Consultation |
-| `*/commands/*.md` | command | description, Input, Procedure |
+| `*/commands/*/SKILL.md` | command | frontmatter (name, description), free-form procedure |
 | `*/index.md` | index | File + Description table |
 | `team/index.md` | team-index | Agents table, Shared Rules, Kords table |
 | `team/kords/*/contract.md` | kord-contract | frontmatter (description, requester, provider), Provider Guidelines, Response Format, Provider State Invalidation |
@@ -97,14 +97,17 @@ Any file with `structured: true` in frontmatter that doesn't match a registered 
         Cluster state, versions, configuration, networking.
         ```
 
-    ??? example "commands/*.md"
+    ??? example "commands/*/SKILL.md"
 
         ```markdown
-        Roll deployments between environments.
+        ---
+        name: roll
+        description: Roll deployments between environments
+        argument-hint: [source] [target]
+        allowed-tools: Read, Edit, Bash, Glob
+        ---
 
-        **Input**: $ARGUMENTS (required: `<source> <target>`)
-
-        ## Procedure
+        Roll $ARGUMENTS between environments:
 
         1. Verify source environment health
         2. Apply manifests to target
@@ -169,7 +172,7 @@ Memories that ship with kordinate and their properties:
 |------|------|---------|:----------:|:---------:|:------:|
 | identity | `<agent>/identity.md` | Who the agent is — role, tools, auth, workflow, rules | yes | no | — |
 | index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
-| commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
+| commands | `<agent>/commands/*/SKILL.md` | Skill definitions — invoked by name | yes | yes | — |
 | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
 
 ### Project Level
