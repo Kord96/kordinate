@@ -60,111 +60,113 @@ Every structured file follows a template. Scribe validates on write.
 | `data.md` | follows contract's Response Format |
 | `index.md` | File + Description table |
 
-??? example "team/index.md"
+??? note "Template examples"
 
-    ```markdown
-    ## Agents
+    ??? example "team/index.md"
 
-    | Agent | Role |
-    |-------|------|
-    | deployer | Infrastructure operations |
+        ```markdown
+        ## Agents
 
-    ## Shared Rules
+        | Agent | Role |
+        |-------|------|
+        | deployer | Infrastructure operations |
 
-    - All .md files protected — only scribe may edit
+        ## Shared Rules
 
-    ## Kords
+        - All .md files protected — only scribe may edit
 
-    | Kord | Provider |
-    |------|----------|
-    | deployer-default | deployer |
-    ```
+        ## Kords
 
-??? example "identity.md"
+        | Kord | Provider |
+        |------|----------|
+        | deployer-default | deployer |
+        ```
 
-    ```markdown
-    ---
-    name: deployer
-    model: inherit
-    tools: [Read, Edit, Write, Bash, Glob]
-    triggers: ["roll", "migrate"]
-    ---
+    ??? example "identity.md"
 
-    # Deployer
+        ```markdown
+        ---
+        name: deployer
+        model: inherit
+        tools: [Read, Edit, Write, Bash, Glob]
+        triggers: ["roll", "migrate"]
+        ---
 
-    Infrastructure operations.
+        # Deployer
 
-    ## Auth
+        Infrastructure operations.
 
-    Copy profile/locks/deployer to /tmp/.deployer-auth before writes.
+        ## Auth
 
-    ## Workflow
+        Copy profile/locks/deployer to /tmp/.deployer-auth before writes.
 
-    1. Verify source health
-    2. Apply manifests
-    3. Verify target health
+        ## Workflow
 
-    ## Rules
+        1. Verify source health
+        2. Apply manifests
+        3. Verify target health
 
-    - Never patch a project's Dockerfile
-    - Use cluster registry
+        ## Rules
 
-    ## Consultation
+        - Never patch a project's Dockerfile
+        - Use cluster registry
 
-    Cluster state, versions, configuration, networking.
-    ```
+        ## Consultation
 
-??? example "commands/*.md"
+        Cluster state, versions, configuration, networking.
+        ```
 
-    ```markdown
-    Roll deployments between environments.
+    ??? example "commands/*.md"
 
-    **Input**: $ARGUMENTS (required: `<source> <target>`)
+        ```markdown
+        Roll deployments between environments.
 
-    ## Procedure
+        **Input**: $ARGUMENTS (required: `<source> <target>`)
 
-    1. Verify source environment health
-    2. Apply manifests to target
-    3. Verify target health
-    ```
+        ## Procedure
 
-??? example "contract.md"
+        1. Verify source environment health
+        2. Apply manifests to target
+        3. Verify target health
+        ```
 
-    ```markdown
-    ---
-    description: General deployment and cluster questions
-    requester: any
-    provider: deployer
-    ---
+    ??? example "contract.md"
 
-    ## Provider Guidelines
+        ```markdown
+        ---
+        description: General deployment and cluster questions
+        requester: any
+        provider: deployer
+        ---
 
-    Answer with specific names, endpoints, and configuration paths.
-    Keep under 50 lines.
+        ## Provider Guidelines
 
-    ### Response Format
+        Answer with specific names, endpoints, and configuration paths.
+        Keep under 50 lines.
 
-    | Field | Required |
-    |-------|----------|
-    | Infrastructure topology | yes |
-    | Monitoring pipeline | yes |
-    | Configuration sources | if applicable |
+        ### Response Format
 
-    ## Provider State Invalidation
+        | Field | Required |
+        |-------|----------|
+        | Infrastructure topology | yes |
+        | Monitoring pipeline | yes |
+        | Configuration sources | if applicable |
 
-    Invalidate when:
-    - Cluster manifests are modified
-    - Services are redeployed
-    ```
+        ## Provider State Invalidation
 
-??? example "index.md"
+        Invalidate when:
+        - Cluster manifests are modified
+        - Services are redeployed
+        ```
 
-    ```markdown
-    | File | Description |
-    |------|-------------|
-    | memory/static/infra.md | Infrastructure reference |
-    | memory/static/migration.md | Migration procedures |
-    ```
+    ??? example "index.md"
+
+        ```markdown
+        | File | Description |
+        |------|-------------|
+        | memory/static/infra.md | Infrastructure reference |
+        | memory/static/migration.md | Migration procedures |
+        ```
 
 ## Index
 
