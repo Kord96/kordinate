@@ -36,6 +36,7 @@ Scribe maintains a registry of structured patterns and on-demand indexes. The gu
 **On-demand patterns** — files matching these must appear in an `index.md`:
 
 - `*/memory/*.md`
+- `team/memory/*.md`
 - `team/kords/*/contract.md`
 
 Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
@@ -157,6 +158,7 @@ Memories that ship with kordinate and their properties:
 | File | Path | Purpose | Structured | On-demand | Expiry |
 |------|------|---------|:----------:|:---------:|:------:|
 | team index | `team/index.md` | Team roster — agents, shared rules, available kords | yes | no | — |
+| shared knowledge | `team/memory/*.md` | Team-wide reference — conventions, standards, architecture | no | yes | — |
 | kord contract | `team/kords/<name>/contract.md` | Consultation protocol between agents | yes | yes | — |
 | kord data | `team/kords/<name>/data.md` | Cached result of a consultation | yes | yes | `expiry.sh` |
 | kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
