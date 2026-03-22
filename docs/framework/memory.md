@@ -16,7 +16,7 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ### Constraints
 
-- **On-demand files must be indexed** in the owner's `index.md`. Orphaned on-demand files are dead knowledge.
+- **On-demand files must be indexed** in the owner's `index.md`. Orphaned on-demand files are dead knowledge. Dead-end detection: scan on-demand files, compare to index, flag anything missing.
 - **Structured files** are validated on write. The template defines what valid content looks like.
 - **`index.md`** is auto-generated per owner (team and each agent). Lists all on-demand files. Preloaded so the agent knows what to look for.
 
@@ -168,10 +168,3 @@ Every structured file follows a template. Scribe validates on write.
         | memory/static/migration.md | Migration procedures |
         ```
 
-## Index
-
-Each owner (team and each agent) has an `index.md` — auto-generated, preloaded, structured. Lists all on-demand files available.
-
-The agent sees this on spawn, knows what's available, reads specific files when needed.
-
-**Dead-end detection**: scan on-demand files, compare to index, flag anything missing.
