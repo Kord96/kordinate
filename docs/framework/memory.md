@@ -51,106 +51,120 @@ Any file can have `scope: project` in frontmatter. Project-scoped files follow t
 
 Every structured file follows a template. Scribe validates on write.
 
-### team/index.md
+| File | Required Sections |
+|------|-------------------|
+| `team/index.md` | Agents table, Shared Rules, Kords table |
+| `identity.md` | frontmatter (name, model, tools, triggers), Auth, Workflow, Rules, Consultation |
+| `commands/*.md` | description, Input, Procedure |
+| `contract.md` | frontmatter (description, requester, provider), Provider Guidelines, Response Format, Provider State Invalidation |
+| `data.md` | follows contract's Response Format |
+| `index.md` | File + Description table |
 
-```markdown
-## Agents
+??? example "team/index.md"
 
-| Agent | Role |
-|-------|------|
-| <name> | <one-line role> |
+    ```markdown
+    ## Agents
 
-## Shared Rules
+    | Agent | Role |
+    |-------|------|
+    | deployer | Infrastructure operations |
 
-- <rule>
+    ## Shared Rules
 
-## Kords
+    - All .md files protected — only scribe may edit
 
-| Kord | Provider |
-|------|----------|
-| <name> | <agent> |
-```
+    ## Kords
 
-### identity.md
+    | Kord | Provider |
+    |------|----------|
+    | deployer-default | deployer |
+    ```
 
-```markdown
----
-name: <name>
-model: <model>
-tools: [<tool>, ...]
-triggers: ["<trigger>", ...]
----
+??? example "identity.md"
 
-# <Name>
+    ```markdown
+    ---
+    name: deployer
+    model: inherit
+    tools: [Read, Edit, Write, Bash, Glob]
+    triggers: ["roll", "migrate"]
+    ---
 
-<one-line description>
+    # Deployer
 
-## Auth
+    Infrastructure operations.
 
-<authentication procedures for protected operations>
+    ## Auth
 
-## Workflow
+    Copy profile/locks/deployer to /tmp/.deployer-auth before writes.
 
-<step-by-step procedure when triggered>
+    ## Workflow
 
-## Rules
+    1. Verify source health
+    2. Apply manifests
+    3. Verify target health
 
-- <rule>
+    ## Rules
 
-## Consultation
+    - Never patch a project's Dockerfile
+    - Use cluster registry
 
-<what this agent answers when consulted>
-```
+    ## Consultation
 
-### commands/*.md
+    Cluster state, versions, configuration, networking.
+    ```
 
-```markdown
-<one-line description>
+??? example "commands/*.md"
 
-**Input**: $ARGUMENTS (<usage>)
+    ```markdown
+    Roll deployments between environments.
 
-## Procedure
+    **Input**: $ARGUMENTS (required: `<source> <target>`)
 
-1. <step>
-2. <step>
-```
+    ## Procedure
 
-### kord contract.md
+    1. Verify source environment health
+    2. Apply manifests to target
+    3. Verify target health
+    ```
 
-```markdown
----
-description: <one-line>
-requester: <agent(s)>
-provider: <agent>
----
+??? example "contract.md"
 
-## Provider Guidelines
+    ```markdown
+    ---
+    description: General deployment and cluster questions
+    requester: any
+    provider: deployer
+    ---
 
-<behavioral instructions>
+    ## Provider Guidelines
 
-### Response Format
+    Answer with specific names, endpoints, and configuration paths.
+    Keep under 50 lines.
 
-| Field | Required |
-|-------|----------|
-| <field> | yes/no |
+    ### Response Format
 
-## Provider State Invalidation
+    | Field | Required |
+    |-------|----------|
+    | Infrastructure topology | yes |
+    | Monitoring pipeline | yes |
+    | Configuration sources | if applicable |
 
-Invalidate when:
-- <condition>
-```
+    ## Provider State Invalidation
 
-### kord data.md
+    Invalidate when:
+    - Cluster manifests are modified
+    - Services are redeployed
+    ```
 
-Follows the Response Format defined in the kord's `contract.md`.
+??? example "index.md"
 
-### index.md (agent)
-
-```markdown
-| File | Description |
-|------|-------------|
-| <path> | <one-line purpose> |
-```
+    ```markdown
+    | File | Description |
+    |------|-------------|
+    | memory/static/infra.md | Infrastructure reference |
+    | memory/static/migration.md | Migration procedures |
+    ```
 
 ## Index
 
