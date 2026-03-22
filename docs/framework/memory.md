@@ -41,9 +41,9 @@ Scribe maintains a registry of structured patterns and on-demand indexes. The gu
 
 Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
 
-??? note "Template examples"
+??? note "Templates"
 
-    ??? example "team/index.md"
+    === "team/index.md"
 
         ```markdown
         ## Agents
@@ -63,7 +63,7 @@ Any file with `structured: true` in frontmatter that doesn't match a registered 
         | deployer-default | deployer |
         ```
 
-    ??? example "identity.md"
+    === "identity.md"
 
         ```markdown
         ---
@@ -97,7 +97,7 @@ Any file with `structured: true` in frontmatter that doesn't match a registered 
         Cluster state, versions, configuration, networking.
         ```
 
-    ??? example "commands/*/SKILL.md"
+    === "SKILL.md"
 
         ```markdown
         ---
@@ -114,7 +114,7 @@ Any file with `structured: true` in frontmatter that doesn't match a registered 
         3. Verify target health
         ```
 
-    ??? example "contract.md"
+    === "contract.md"
 
         ```markdown
         ---
@@ -143,7 +143,17 @@ Any file with `structured: true` in frontmatter that doesn't match a registered 
         - Services are redeployed
         ```
 
-    ??? example "index.md"
+    === "data.md"
+
+        Follows the Response Format from the kord's `contract.md`:
+
+        ```markdown
+        Infrastructure topology: k3s cluster, gateway + monitor + master namespaces
+        Monitoring pipeline: Alloy → Prometheus + Loki → Grafana
+        Configuration sources: manifests/gateway/base/, master-alloy.yml
+        ```
+
+    === "index.md"
 
         ```markdown
         | File | Description |
