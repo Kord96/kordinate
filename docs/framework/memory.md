@@ -16,8 +16,8 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ### Constraints
 
-- **On-demand files must be indexed** in the owner's index (`<agent>/memory/index.md` or `team/kords/index.md`). Orphaned on-demand files are dead knowledge.
-- **Structured files** are owned by scribe. A guard hook validates writes against the template — only scribe can create or modify structured files. Unstructured files are writable by any agent. Users extend structured patterns via scribe. Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
+- **On-demand** files must be indexed in the owner's index. Orphaned on-demand files are dead knowledge.
+- **Structured** files can only be written by scribe. See [Guards](guards.md) for enforcement details.
 
 ## Framework Memories
 
