@@ -12,34 +12,61 @@ Every piece of knowledge in kordinate is described by five properties:
 | **Scope** | Where does it apply? | `global` |
 | **Expiry** | Does it expire? | — (`<script>` or `<.md>`) |
 
+Files with no frontmatter use the defaults. Override any property in YAML frontmatter.
+
 ### Constraints
 
-- **On-demand files must be referenced** by at least one preloaded document (identity, kord, command, etc.). Orphaned on-demand files are dead knowledge — no agent will ever find them.
+- **On-demand files must be indexed** in the agent's `index.md`. Orphaned on-demand files are dead knowledge.
 - **Structured files** are validated on write. The template defines what valid content looks like.
+- **`index.md`** is auto-generated per agent. Lists all on-demand files available. Preloaded so the agent knows what to look for.
 
-### Always Structured
+## Framework Files
 
-These always follow a template — kordinate enforces this:
+Files that ship with kordinate and their properties:
 
-- **Identity** (agent or team)
-- **Kords** (both contract and cached result)
+### Team
 
-Everything else: the user decides whether to make it structured or free-form.
+| File | Structured | On-demand | Owner | Scope | Expiry |
+|------|:----------:|:---------:|:-----:|:-----:|:------:|
+| team identity | yes | no | team | global | — |
+| kord contract (`kord.md`) | yes | yes | team | global | — |
+| kord cache (consultation result) | yes | yes | team | global | `pre-consult.sh` |
+| kord registry | yes | no | team | global | — |
 
+### Agent
+
+| File | Structured | On-demand | Owner | Scope | Expiry |
+|------|:----------:|:---------:|:-----:|:-----:|:------:|
+| `identity.md` | yes | no | agent | global | — |
+| `index.md` | yes | no | agent | global | — |
+| `commands/*.md` | yes | yes | agent | global | — |
+| `instructions/*.md` | no | yes | agent | global | — |
+| `memory/static/*.md` | no | yes | agent | global | — |
+| `memory/dynamic/*.md` | no | yes | agent | global | — |
+| consultation cache | yes | yes | agent | global | `pre-consult.sh` |
+| operational notes | no | yes | agent | global | — |
+
+### Project Level
+
+Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
+
+## Index
+
+Each agent has an `index.md` — auto-generated, preloaded, structured. It lists all on-demand files the agent has access to:
+
+```markdown
+---
+structured: true
+on-demand: false
 ---
 
-!!! warning "Work in progress"
-    The knowledge model below is stale and being redesigned around the five properties above.
+| File | Description |
+|------|-------------|
+| memory/static/infra.md | Infrastructure reference |
+| memory/static/migration.md | Migration procedures |
+| instructions/auth.md | Authentication rules |
+```
 
-## Knowledge Model (legacy)
+The agent sees this on spawn, knows what's available, reads specific files when needed.
 
-Each agent's knowledge is organized on two axes — **scope** and **mutability**:
-
-| | Static | Dynamic |
-|---|---|---|
-| **Global** | `agents/<agent>/memory/static/` | `agents/<agent>/memory/dynamic/` |
-| **Project** | `<project>/<agent>/static/` | `<project>/<agent>/dynamic/` |
-
-**Static** — curated, committed. Includes both domain knowledge (patterns, infra docs) and procedures (instructions for consultation, workflow, auth). Pre-defined structure.
-
-**Dynamic** — free-form, auto-managed. Operational notes, consultation caches, session findings.
+**Dead-end detection**: scan on-demand files, compare to index, flag anything missing.
