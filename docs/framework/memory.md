@@ -10,7 +10,7 @@ Every piece of knowledge in kordinate is described by five properties:
 | **On-demand** | `true` |
 | **Owner** | `agent` |
 | **Scope** | `global` |
-| **Expiry** | — |
+| **Expiry** | — (`<script>` or `<.md>`) |
 
 ### Constraints
 
