@@ -19,10 +19,10 @@ When you need information outside your expertise, use kords (coordination agreem
 
 | Need to know about | Kord |
 |---|---|
-| Cluster state, deployments, networking, infrastructure architecture | `/consult deployer` (default-deployer) |
-| Metrics, health checks, dashboards, log events, alerting | `/consult sauron` (default-sauron) |
-| Design patterns, component topology, data flow, failure modes | `/consult designer` (default-designer) |
-| Document templates, formatting conventions | `/consult scribe` (default-scribe) |
+| Cluster state, deployments, networking, infrastructure architecture | `/consult deployer` (deployer-default) |
+| Metrics, health checks, dashboards, log events, alerting | `/consult sauron` (sauron-default) |
+| Design patterns, component topology, data flow, failure modes | `/consult designer` (designer-default) |
+| Document templates, formatting conventions | `/consult scribe` (scribe-default) |
 | Architecture review for deployment/monitoring changes | `/consult pattern-review` |
 | Monitoring impact of infrastructure changes | `/consult monitoring-impact` |
 

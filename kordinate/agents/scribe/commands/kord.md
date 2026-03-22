@@ -23,11 +23,11 @@ Define a new kord — a coordination agreement between agents.
 2. **Create kord directory structure:**
    ```
    agents/root/kords/<name>/
-   ├── kord.md
-   └── pre-consult.sh
+   ├── contract.md
+   └── expiry.sh
    ```
 
-3. **Generate kord.md** from this template:
+3. **Generate contract.md** from this template:
    ```markdown
    ---
    description: <one-line description>
@@ -57,7 +57,7 @@ Define a new kord — a coordination agreement between agents.
    - Response Format defines the expected output structure so requesters can rely on it
    - Never include procedure ("check this file", "run this command") — the provider knows its domain
 
-4. **Generate pre-consult.sh:**
+4. **Generate expiry.sh:**
    ```bash
    #!/bin/bash
    KORDINATE_HOME="${KORDINATE_HOME:-$(cd "$(dirname "$0")/../../.." && pwd)}"
@@ -68,12 +68,12 @@ Define a new kord — a coordination agreement between agents.
    fi
    exit 1  # stale
    ```
-   Make it executable: `chmod +x pre-consult.sh`
+   Make it executable: `chmod +x expiry.sh`
 
 5. **Update registry.md** — add the new kord to `agents/root/kords/registry.md`.
 
 6. **Report** what was created:
-   - "Kord `<name>` defined. Files: kords/<name>/kord.md, kords/<name>/pre-consult.sh"
+   - "Kord `<name>` defined. Files: kords/<name>/contract.md, kords/<name>/expiry.sh"
 
 ## Notes
 

@@ -15,7 +15,7 @@ All agents in the kordinate system.
 |------|-----------|----------|---------|
 | `pattern-review` | deployer, sauron | designer | Architecture review for deployment/monitoring changes |
 | `monitoring-impact` | deployer | sauron | Monitoring impact assessment for infrastructure changes |
-| `default-deployer` | any | deployer | General deployment/cluster questions |
-| `default-designer` | any | designer | General architecture/design questions |
-| `default-sauron` | any | sauron | General monitoring/observability questions |
-| `default-scribe` | any | scribe | General documentation/template questions |
+| `deployer-default` | any | deployer | General deployment/cluster questions |
+| `designer-default` | any | designer | General architecture/design questions |
+| `sauron-default` | any | sauron | General monitoring/observability questions |
+| `scribe-default` | any | scribe | General documentation/template questions |

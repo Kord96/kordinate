@@ -111,7 +111,7 @@ STATIC_LINES=${STATIC_LINES:-0}
     provider_kords=()
     for kord_dir in "$KORDS_DIR"/*/; do
       [ -d "$kord_dir" ] || continue
-      kord_md="$kord_dir/kord.md"
+      kord_md="$kord_dir/contract.md"
       [ -f "$kord_md" ] || continue
       kord_name=$(basename "$kord_dir")
 
