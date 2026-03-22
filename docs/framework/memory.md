@@ -22,12 +22,29 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ## Framework Memories
 
-| File | Pattern | Purpose | Structured | On-demand | Expiry |
-|------|---------|---------|:----------:|:---------:|:------:|
-| **manifest** | `team/manifest.md` | Team roster — agents, rules, kords | yes | no | — |
-| **shared knowledge** | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies |
-| **kord** | `team/kords/<name>/`<br>`├── contract.md`<br>`├── data.md`<br>`└── expiry.sh` | Consultation protocol + cached result | yes | yes | `expiry.sh` |
-| **agent** | `<agent>/`<br>`├── identity.md`<br>`├── index.md`<br>`├── commands/*/SKILL.md`<br>`└── memory/*.md` | Identity, file index, skills, knowledge | varies | varies | varies |
+=== "Team"
+
+    | File | Path | Purpose | Structured | On-demand | Expiry |
+    |------|------|---------|:----------:|:---------:|:------:|
+    | manifest | `team/manifest.md` | Team roster — agents, rules, kords | yes | no | — |
+    | shared knowledge | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies |
+
+=== "Agent"
+
+    | File | Path | Purpose | Structured | On-demand | Expiry |
+    |------|------|---------|:----------:|:---------:|:------:|
+    | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | no | — |
+    | index | `<agent>/index.md` | On-demand file listing | yes | no | — |
+    | commands | `<agent>/commands/*/SKILL.md` | Skill definitions | yes | yes | — |
+    | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
+
+=== "Kord"
+
+    | File | Path | Purpose | Structured | On-demand | Expiry |
+    |------|------|---------|:----------:|:---------:|:------:|
+    | contract | `team/kords/<name>/contract.md` | Consultation protocol | yes | yes | — |
+    | data | `team/kords/<name>/data.md` | Cached result | yes | yes | `expiry.sh` |
+    | expiry | `team/kords/<name>/expiry.sh` | Staleness check script | — | — | — |
 
 Users extend the structured patterns via scribe. Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
 
