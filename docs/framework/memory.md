@@ -20,9 +20,9 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 - **Structured files** are validated on write. The template defines what valid content looks like.
 - **`index.md`** is auto-generated per agent. Lists all on-demand files available. Preloaded so the agent knows what to look for.
 
-## Framework Files
+## Framework Memories
 
-Files that ship with kordinate and their properties:
+Memories that ship with kordinate and their properties:
 
 ### Team
 
