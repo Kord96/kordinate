@@ -16,9 +16,9 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ### Constraints
 
-- **On-demand files must be indexed** in the owner's `index.md`. Orphaned on-demand files are dead knowledge.
-- **Structured files** are owned by scribe. A guard hook validates writes against the template — only scribe can create or modify structured files. Unstructured files are writable by any agent.
-- **`index.md`** is auto-generated per owner (team and each agent). Preloaded so the agent knows what on-demand files are available.
+- **On-demand files must be indexed** in the owner's index (`<agent>/memory/index.md` or `team/kords/index.md`). Orphaned on-demand files are dead knowledge.
+- **Structured files** are owned by scribe. A guard hook validates writes against the template — only scribe can create or modify structured files. Unstructured files are writable by any agent. Users extend structured patterns via scribe. Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
+- **Index files** are auto-generated per owner. Preloaded so the agent knows what on-demand files are available.
 
 ## Framework Memories
 
@@ -43,17 +43,13 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
     | File | Path | Purpose | Structured | On-demand | Expiry |
     |------|------|---------|:----------:|:---------:|:------:|
     | contract | `team/kords/<name>/contract.md` | Consultation protocol | yes | yes | — |
-    | data | `team/kords/<name>/data.md` | Cached result | yes | yes | `expiry.sh` |
-    | expiry | `team/kords/<name>/expiry.sh` | Staleness check script | — | — | — |
+    | data | `team/kords/<name>/data.md` | Cached result | yes | yes | `team/kords/<name>/expiry.sh` |
     | index | `team/kords/index.md` | Lists all available kords and their descriptions | yes | no | — |
 
-Users extend the structured patterns via scribe. Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
 
 ### Project Level
 
 Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
-
-### Templates
 
 ??? note "Templates"
 
@@ -111,7 +107,7 @@ Any file can have `scope: project` in frontmatter. Project-scoped files follow t
         Cluster state, versions, configuration, networking.
         ```
 
-    === "SKILL.md"
+    === "command"
 
         ```markdown
         ---
