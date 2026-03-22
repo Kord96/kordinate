@@ -89,11 +89,11 @@ A **kord** is a contract between two agents. It defines who provides what, the e
 
 ### Cache Freshness
 
-Each kord has a `pre-consult.sh` script maintained by the provider. It runs before every consultation and decides whether the cache is still valid.
+Each kord has a `expiry.sh` script maintained by the provider. It runs before every consultation and decides whether the cache is still valid.
 
 ```mermaid
 flowchart TB
-    C["/consult"] --> G{"pre-consult.sh"}
+    C["/consult"] --> G{"expiry.sh"}
     G -->|fresh| M[Return data.md]
     G -->|stale| K[Invoke provider with guidelines]
     K --> W[Write data.md + store provider state]
@@ -116,15 +116,15 @@ team/kords/
 ├── pattern-review/
 │   ├── contract.md        # protocol definition
 │   ├── data.md            # cached result
-│   └── pre-consult.sh     # expiry check
+│   └── expiry.sh     # expiry check
 ├── monitoring-impact/
 │   ├── contract.md
 │   ├── data.md
-│   └── pre-consult.sh
+│   └── expiry.sh
 └── deployer-default/
     ├── contract.md
     ├── data.md
-    └── pre-consult.sh
+    └── expiry.sh
 ```
 
 ---

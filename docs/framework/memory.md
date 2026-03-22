@@ -30,7 +30,7 @@ Files that ship with kordinate and their properties:
 |------|------|---------|:----------:|:---------:|:------:|
 | team identity | `team/identity.md` | Shared rules inherited by all agents | yes | no | — |
 | kord contract | `team/kords/<name>/contract.md` | Consultation protocol between agents | yes | yes | — |
-| kord data | `team/kords/<name>/data.md` | Cached result of a consultation | yes | yes | `pre-consult.sh` |
+| kord data | `team/kords/<name>/data.md` | Cached result of a consultation | yes | yes | `expiry.sh` |
 | kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
 
 ### Agent
