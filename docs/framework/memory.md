@@ -20,6 +20,31 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 - **Structured files** are owned by scribe. A guard hook validates writes against the template — only scribe can create or modify structured files. Unstructured files are writable by any agent.
 - **`index.md`** is auto-generated per owner (team and each agent). Lists all on-demand files. Preloaded so the agent knows what to look for.
 
+## Scribe Registry
+
+Scribe maintains a registry of all structured files and on-demand indexes. The guard hook reads this to decide what to protect.
+
+**Structured** — patterns and paths for files that must follow a template. Only scribe can write.
+
+| Type | Entry | Template |
+|------|-------|----------|
+| pattern | `*/identity.md` | identity |
+| pattern | `*/commands/*.md` | command |
+| pattern | `*/index.md` | index |
+| pattern | `team/kords/*/contract.md` | kord-contract |
+| pattern | `team/kords/*/data.md` | kord-data |
+| path | `team/index.md` | team-index |
+
+**On-demand** — patterns and paths for files that must be indexed. Any file matching these must appear in an `index.md` or it's dead knowledge.
+
+| Type | Entry |
+|------|-------|
+| pattern | `*/memory/static/*.md` |
+| pattern | `*/memory/dynamic/*.md` |
+| pattern | `team/kords/*/contract.md` |
+
+Users extend both lists via scribe. Any file with `structured: true` in frontmatter that isn't registered is drift — blocked by the guard.
+
 ## Framework Memories
 
 Memories that ship with kordinate and their properties:
