@@ -40,7 +40,6 @@ Memories that ship with kordinate and their properties:
 | identity | `<agent>/identity.md` | Who the agent is — role, triggers, rules | yes | no | — |
 | index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
 | commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
-| instructions | `<agent>/instructions/*.md` | Auth rules, workflow, tool usage | no | yes | — |
 | static knowledge | `<agent>/memory/static/*.md` | Curated domain knowledge | no | yes | — |
 | dynamic memory | `<agent>/memory/dynamic/*.md` | Auto-managed notes and findings | no | yes | — |
 | operational notes | `<agent>/memory/dynamic/notes.md` | Free-form agent observations | no | yes | — |
