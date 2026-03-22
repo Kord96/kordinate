@@ -29,8 +29,8 @@ Files that ship with kordinate and their properties:
 | File | Path | Purpose | Structured | On-demand | Expiry |
 |------|------|---------|:----------:|:---------:|:------:|
 | team identity | `team/identity.md` | Shared rules inherited by all agents | yes | no | — |
-| kord contract | `team/kords/<name>/kord.md` | Consultation protocol between agents | yes | yes | — |
-| kord cache | `team/kords/<name>/cache.md` | Cached result of a consultation | yes | yes | `pre-consult.sh` |
+| kord contract | `team/kords/<name>/contract.md` | Consultation protocol between agents | yes | yes | — |
+| kord data | `team/kords/<name>/data.md` | Cached result of a consultation | yes | yes | `pre-consult.sh` |
 | kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
 
 ### Agent
@@ -43,7 +43,6 @@ Files that ship with kordinate and their properties:
 | instructions | `<agent>/instructions/*.md` | Auth rules, workflow, tool usage | no | yes | — |
 | static knowledge | `<agent>/memory/static/*.md` | Curated domain knowledge | no | yes | — |
 | dynamic memory | `<agent>/memory/dynamic/*.md` | Auto-managed notes and findings | no | yes | — |
-| consultation cache | `<agent>/consultations/<kord>.md` | Cached kord result | yes | yes | `pre-consult.sh` |
 | operational notes | `<agent>/memory/dynamic/notes.md` | Free-form agent observations | no | yes | — |
 
 ### Project Level

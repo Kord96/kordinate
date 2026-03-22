@@ -94,9 +94,9 @@ Each kord has a `pre-consult.sh` script maintained by the provider. It runs befo
 ```mermaid
 flowchart TB
     C["/consult"] --> G{"pre-consult.sh"}
-    G -->|fresh| M[Return cached result]
+    G -->|fresh| M[Return data.md]
     G -->|stale| K[Invoke provider with guidelines]
-    K --> W[Cache result + store provider state]
+    K --> W[Write data.md + store provider state]
 ```
 
 ### Creating Kords
@@ -109,18 +109,21 @@ Just describe what you need. The `.md` guard delegates kord creation to scribe, 
 
 ### Structure
 
-Each kord is a directory containing the contract and a freshness script. Root owns all definitions.
+Each kord is a directory containing the contract, cached data, and a freshness script.
 
 ```
-agents/root/kords/
+team/kords/
 ├── pattern-review/
-│   ├── kord.md             # contract
-│   └── pre-consult.sh      # freshness check
+│   ├── contract.md        # protocol definition
+│   ├── data.md            # cached result
+│   └── pre-consult.sh     # expiry check
 ├── monitoring-impact/
-│   ├── kord.md
+│   ├── contract.md
+│   ├── data.md
 │   └── pre-consult.sh
 └── deployer-default/
-    ├── kord.md
+    ├── contract.md
+    ├── data.md
     └── pre-consult.sh
 ```
 
