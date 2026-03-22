@@ -16,9 +16,9 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ### Constraints
 
-- **On-demand files must be indexed** in the agent's `index.md`. Orphaned on-demand files are dead knowledge.
+- **On-demand files must be indexed** in the owner's `index.md`. Orphaned on-demand files are dead knowledge.
 - **Structured files** are validated on write. The template defines what valid content looks like.
-- **`index.md`** is auto-generated per agent. Lists all on-demand files available. Preloaded so the agent knows what to look for.
+- **`index.md`** is auto-generated per owner (team and each agent). Lists all on-demand files. Preloaded so the agent knows what to look for.
 
 ## Framework Memories
 
@@ -37,33 +37,124 @@ Memories that ship with kordinate and their properties:
 
 | File | Path | Purpose | Structured | On-demand | Expiry |
 |------|------|---------|:----------:|:---------:|:------:|
-| identity | `<agent>/identity.md` | Who the agent is — role, triggers, rules | yes | no | — |
+| identity | `<agent>/identity.md` | Who the agent is — role, tools, auth, workflow, rules | yes | no | — |
 | index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
 | commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
 | static knowledge | `<agent>/memory/static/*.md` | Curated domain knowledge | no | yes | — |
 | dynamic memory | `<agent>/memory/dynamic/*.md` | Auto-managed notes and findings | no | yes | — |
-| operational notes | `<agent>/memory/dynamic/notes.md` | Free-form agent observations | no | yes | — |
 
 ### Project Level
 
 Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
 
-## Index
+## Structured Templates
 
-Each agent has an `index.md` — auto-generated, preloaded, structured. It lists all on-demand files the agent has access to:
+Every structured file follows a template. Scribe validates on write.
+
+### team/index.md
+
+```markdown
+## Agents
+
+| Agent | Role |
+|-------|------|
+| <name> | <one-line role> |
+
+## Shared Rules
+
+- <rule>
+
+## Kords
+
+| Kord | Provider |
+|------|----------|
+| <name> | <agent> |
+```
+
+### identity.md
 
 ```markdown
 ---
-structured: true
-on-demand: false
+name: <name>
+model: <model>
+tools: [<tool>, ...]
+triggers: ["<trigger>", ...]
 ---
 
+# <Name>
+
+<one-line description>
+
+## Auth
+
+<authentication procedures for protected operations>
+
+## Workflow
+
+<step-by-step procedure when triggered>
+
+## Rules
+
+- <rule>
+
+## Consultation
+
+<what this agent answers when consulted>
+```
+
+### commands/*.md
+
+```markdown
+<one-line description>
+
+**Input**: $ARGUMENTS (<usage>)
+
+## Procedure
+
+1. <step>
+2. <step>
+```
+
+### kord contract.md
+
+```markdown
+---
+description: <one-line>
+requester: <agent(s)>
+provider: <agent>
+---
+
+## Provider Guidelines
+
+<behavioral instructions>
+
+### Response Format
+
+| Field | Required |
+|-------|----------|
+| <field> | yes/no |
+
+## Provider State Invalidation
+
+Invalidate when:
+- <condition>
+```
+
+### kord data.md
+
+Follows the Response Format defined in the kord's `contract.md`.
+
+### index.md (agent)
+
+```markdown
 | File | Description |
 |------|-------------|
-| memory/static/infra.md | Infrastructure reference |
-| memory/static/migration.md | Migration procedures |
-| instructions/auth.md | Authentication rules |
+| <path> | <one-line purpose> |
 ```
+
+## Index
+
+Each owner (team and each agent) has an `index.md` — auto-generated, preloaded, structured. Lists all on-demand files available.
 
 The agent sees this on spawn, knows what's available, reads specific files when needed.
 
