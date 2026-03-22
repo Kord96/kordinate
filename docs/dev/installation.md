@@ -44,11 +44,12 @@ Welcome to Kordinate. Run 'claude login' to get started.
 Behind the scenes:
 
 1. Installs k3s
-2. Deploys headscale pod (self-hosted Tailscale coordination)
-3. Pulls pre-built workstation image
-4. Deploys workstation pod (20Gi PVC, auto-registers with headscale)
-5. Installs Tailscale on the user's machine and connects to headscale
-6. SSH access ready: `ssh claude@workstation`
+2. Creates `master` namespace
+3. Deploys headscale pod (self-hosted Tailscale coordination)
+4. Pulls pre-built workstation image
+5. Deploys workstation pod (20Gi PVC, auto-registers with headscale)
+6. Installs Tailscale on the user's machine and connects to headscale
+7. SSH access ready: `ssh claude@workstation`
 
 The user runs `claude login`. Done.
 
