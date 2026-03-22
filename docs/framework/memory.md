@@ -158,7 +158,7 @@ Memories that ship with kordinate and their properties:
 | File | Path | Purpose | Structured | On-demand | Expiry |
 |------|------|---------|:----------:|:---------:|:------:|
 | team index | `team/index.md` | Team roster — agents, shared rules, available kords | yes | no | — |
-| shared knowledge | `team/memory/*.md` | Team-wide reference — conventions, standards, architecture | no | yes | — |
+| shared knowledge | `team/memory/*.md` | Team-wide reference — conventions, standards | varies | varies | varies |
 | kord contract | `team/kords/<name>/contract.md` | Consultation protocol between agents | yes | yes | — |
 | kord data | `team/kords/<name>/data.md` | Cached result of a consultation | yes | yes | `expiry.sh` |
 | kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
@@ -170,7 +170,7 @@ Memories that ship with kordinate and their properties:
 | identity | `<agent>/identity.md` | Who the agent is — role, tools, auth, workflow, rules | yes | no | — |
 | index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
 | commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
-| memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | no | yes | — |
+| memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
 
 ### Project Level
 
