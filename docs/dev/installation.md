@@ -1,69 +1,77 @@
 # Installation
 
-## Prerequisites
+## Architecture
 
-- A Linux machine (bare metal or VM) with root access
-- Git, curl, Python 3
+Kordinate installs in three tiers. Each tier builds on the previous.
 
-## Quick Start
+### Tier 1: Bare Minimum
 
-```bash
-git clone https://github.com/kord96/kordinate.git
-cd kordinate
-sudo ./installer/kordinate-cli init
-```
+A workstation with the kordinate framework. No infrastructure agents, no monitoring, no networking. Enough to run Claude Code with guards, kords, and beorn.
 
-This installs k3s, builds and deploys the workstation pod, sets up credentials, and generates a cluster config. Once complete:
+**Pre-built image contains:**
 
-```bash
-# From the same machine:
-kubectl -n master exec -it deploy/workstation -c workstation -- bash
+- Ubuntu 24.04
+- Git
+- Claude Code
+- pass + GPG
+- Kordinate framework (pre-linked)
 
-# Or via SSH (after Tailscale connects):
-ssh claude@workstation
-```
+**Deployed:**
 
-Then link the framework and log in:
+- k3s
+- Workstation pod (pre-built image, 20Gi PVC)
+- Core agents: root, scribe
+- Core guards: guard-md.sh, guard-git.sh
+- Core commands: /consult, /boot, /merge
+- Beorn server (part of framework)
 
-```bash
-./installer/link-claude.sh
-claude login
-```
+**Boot → `claude login` → working.**
 
-## What `init` Does
+### Tier 2: Default Team
 
-1. **Kubernetes** — installs k3s (or joins an existing cluster if detected)
-2. **Namespace** — creates the `master` namespace
-3. **Workstation image** — builds multi-arch Docker image (Ubuntu 24.04 + Claude Code + Tailscale + tools)
-4. **Workstation pod** — deploys to the cluster with a 20Gi persistent volume
-5. **Repo link** — clones the kordinate repo into the workstation (auto-creates a private GitHub repo if needed)
-6. **Credentials** — imports GPG key and pass store if provided
-7. **Auth** — runs `auth-check.sh` to verify GitHub, Tailscale, Claude credentials
-8. **Config** — generates `profile/config.yaml` for the cluster
+Adds the infra team — specialized agents with their infrastructure dependencies.
 
-## What `link-claude.sh` Does
+- Deployer + sauron + designer agents
+- Headscale (SSH access: `ssh claude@workstation`)
+- Container registry (image builds and storage)
+- Monitoring stack: Grafana, Prometheus, Loki, Alloy
+- Infrastructure guards: guard-kubectl.sh, guard-grafana.sh, guard-redis.sh
+- Infrastructure kords: pattern-review, monitoring-impact, defaults
 
-Links the kordinate framework into Claude Code's expected paths:
+### Tier 3: Addons
 
-- Copies `IDENTITY.md` → `CLAUDE.md` for root and all agents
-- Symlinks settings, commands, hooks, profiles, agent memory
-- Installs and starts the [beorn server](../framework/beorn.md)
-- Registers beorn as an MCP server
+Project-specific services, deployed when needed.
 
-See [Linking](linking.md) for details.
+- Postgres — project database
+- Redis — project cache/queue
+- Cloudflare Tunnel + DNS — public routing
+
+## File Layout
+
+Kordinate uses two directories:
+
+| Path | Purpose |
+|------|---------|
+| `~/.kord/` | Portable kordinate format — the source of truth |
+| `~/.claude/` | Runtime format — what Claude Code reads |
+
+On install, the framework is copied from `~/.kord/` to `~/.claude/` in the format Claude Code expects. No symlinks. Claude Code works natively with real files.
+
+Export (future): convert `~/.claude/` back to `~/.kord/` for backup, git, or sharing.
 
 ## Credentials
 
-All credentials live in the `pass` store under `kordinate/`. `auth-check.sh` handles setup:
+All credentials live in the `pass` store under `kordinate/`. `auth-check.sh` manages setup:
 
-| Credential | How it's set up |
-|-----------|----------------|
-| GPG key | Auto-generated if missing |
-| Pass store | Auto-initialized |
-| GitHub | Interactive `gh auth login`, token saved to pass |
-| Tailscale | User provides auth key, saved to pass |
-| Claude | `claude login`, credentials saved to pass |
-| Grafana, Cloudflare | Optional, prompted during auth-check |
+| Credential | Tier | Setup |
+|-----------|------|-------|
+| Claude | 1 | `claude login`, saved to pass |
+| GPG key | 1 | Auto-generated if missing |
+| Pass store | 1 | Auto-initialized |
+| GitHub | 2 | `gh auth login`, token saved to pass |
+| Tailscale/Headscale | 2 | Auth key saved to pass |
+| Grafana | 2 | API key saved to pass |
+| Cloudflare | 3 | API token saved to pass |
 
 Credentials are portable via `kordinate export` / `kordinate import`:
 
@@ -75,43 +83,64 @@ Credentials are portable via `kordinate export` / `kordinate import`:
 ./installer/kordinate-cli import backup.gpg
 ```
 
-## Multi-Node
+## Current Implementation
 
-To add a node to an existing cluster:
+!!! warning "Work in progress"
+    The tier system is the target architecture. The current `kordinate-cli init` installs everything together (tiers 1+2). Tier separation is planned.
+
+### Quick Start
+
+```bash
+git clone https://github.com/kord96/kordinate.git
+cd kordinate
+sudo ./installer/kordinate-cli init
+```
+
+After init:
+
+```bash
+# Access the workstation
+kubectl -n master exec -it deploy/workstation -c workstation -- bash
+# Or via SSH (after headscale connects):
+ssh claude@workstation
+
+# Log in to Claude
+claude login
+```
+
+### Multi-Node
 
 ```bash
 sudo ./installer/kordinate-cli join
 ```
 
-Discovers reachable clusters from `config.yaml`, fetches the node token via SSH, installs k3s agent.
+Discovers reachable clusters from `config.yaml`, installs k3s agent.
 
-## MCP Hydration
-
-Generates `mcp.json` from `profile/config.yaml` and the pass store:
+### MCP Hydration
 
 ```bash
 ./installer/kordinate-cli hydrate
 ```
 
-Creates MCP server entries for Postgres, Redis, Grafana, and beorn based on cluster services.
+Generates `mcp.json` from `profile/config.yaml` and the pass store.
 
-## After Install
+### After Install
 
-From the workstation, bootstrap the infrastructure:
+Build your team:
+
+```bash
+# Add agents
+/scribe:onboard myagent "manages database migrations"
+
+# Define kords
+/scribe:kord migration-review "architecture review for migration changes"
+```
+
+Or use the default team:
 
 ```bash
 /deployer:bootstrap setup-namespaces
 /deployer:bootstrap setup-storage
 /deployer:bootstrap deploy-master <cluster>
 /deployer:bootstrap deploy-gateway <cluster>
-```
-
-Or build your own team:
-
-```bash
-# Add agents
-/scribe:onboard myagent "manages database migrations"
-
-# Define kords between agents
-/scribe:kord migration-review "architecture review for migration changes"
 ```
