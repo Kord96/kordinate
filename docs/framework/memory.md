@@ -26,25 +26,25 @@ Files that ship with kordinate and their properties:
 
 ### Team
 
-| File | Structured | On-demand | Owner | Scope | Expiry |
-|------|:----------:|:---------:|:-----:|:-----:|:------:|
-| team identity | yes | no | team | global | — |
-| kord contract (`kord.md`) | yes | yes | team | global | — |
-| kord cache (consultation result) | yes | yes | team | global | `pre-consult.sh` |
-| kord registry | yes | no | team | global | — |
+| File | Purpose | Structured | On-demand | Owner | Scope | Expiry |
+|------|---------|:----------:|:---------:|:-----:|:-----:|:------:|
+| team identity | Shared rules inherited by all agents | yes | no | team | global | — |
+| kord contract (`kord.md`) | Defines consultation protocol between agents | yes | yes | team | global | — |
+| kord cache | Cached result of a consultation | yes | yes | team | global | `pre-consult.sh` |
+| kord registry | Lists all available kords | yes | no | team | global | — |
 
 ### Agent
 
-| File | Structured | On-demand | Owner | Scope | Expiry |
-|------|:----------:|:---------:|:-----:|:-----:|:------:|
-| `identity.md` | yes | no | agent | global | — |
-| `index.md` | yes | no | agent | global | — |
-| `commands/*.md` | yes | yes | agent | global | — |
-| `instructions/*.md` | no | yes | agent | global | — |
-| `memory/static/*.md` | no | yes | agent | global | — |
-| `memory/dynamic/*.md` | no | yes | agent | global | — |
-| consultation cache | yes | yes | agent | global | `pre-consult.sh` |
-| operational notes | no | yes | agent | global | — |
+| File | Purpose | Structured | On-demand | Owner | Scope | Expiry |
+|------|---------|:----------:|:---------:|:-----:|:-----:|:------:|
+| `identity.md` | Who the agent is — role, triggers, rules | yes | no | agent | global | — |
+| `index.md` | Lists available on-demand files | yes | no | agent | global | — |
+| `commands/*.md` | Skill definitions — invoked by name | yes | yes | agent | global | — |
+| `instructions/*.md` | Auth rules, workflow, tool usage | no | yes | agent | global | — |
+| `memory/static/*.md` | Curated domain knowledge | no | yes | agent | global | — |
+| `memory/dynamic/*.md` | Auto-managed notes and findings | no | yes | agent | global | — |
+| consultation cache | Cached kord result | yes | yes | agent | global | `pre-consult.sh` |
+| operational notes | Free-form agent observations | no | yes | agent | global | — |
 
 ### Project Level
 
