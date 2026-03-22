@@ -49,14 +49,9 @@ Documentation gate — sole `.md` editor.
 
 ## Beorn
 
-Agent clone factory — spawns skins on demand.
+A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
 
-### Tools (MCP)
-
-| Tool | Input | Purpose |
-|------|-------|---------|
-| `mcp__beorn__delegate` | `{ agent, prompt }` | Spawn a beorn with the target agent's skin |
-| `mcp__beorn__status` | `{}` | Server uptime, known agents, active requests |
+See [Subagent P2P](../framework/beorn.md) for the beorn server (MCP factory) architecture.
 
 ## Deployer
 
