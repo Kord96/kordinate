@@ -4,13 +4,13 @@
 
 Every piece of knowledge in kordinate is described by five properties:
 
-| Property | Question | Default | Override |
-|----------|----------|---------|----------|
-| **Structured** | Does it follow a template? | no | `structured: true` |
-| **On-demand** | Preloaded or read when needed? | yes (on-demand) | `on-demand: false` → preloaded |
-| **Owner** | Who owns it? | agent | `owner: team` |
-| **Scope** | Where does it apply? | global | `scope: project` |
-| **Expiry** | Does it expire? | no (always valid) | `expiry: <script>` |
+| Property | Default |
+|----------|---------|
+| **Structured** | `false` |
+| **On-demand** | `true` |
+| **Owner** | `agent` |
+| **Scope** | `global` |
+| **Expiry** | — |
 
 ### Constraints
 
