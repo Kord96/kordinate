@@ -10,6 +10,7 @@ What's baked into the workstation image. Built once, never seen by the user.
 - Git
 - Claude Code
 - pass + GPG
+- Tailscale client
 - tmux (auto-attach to `0-general` on login)
 - Shell configured (PATH, KORDINATE_HOME, .bashrc)
 - Kordinate framework pre-linked to `~/.claude/`
@@ -19,10 +20,11 @@ What's baked into the workstation image. Built once, never seen by the user.
 - Core commands: /consult, /boot, /merge
 - Recall system (static/dynamic memory structure)
 - Kord protocol (pre-consult.sh, /consult)
+- Worktree sessions (claude-session, tmux-new-window)
 
 ### Tier 1: Install
 
-What the user runs. One command, lands inside the workstation.
+What the user runs. One command, SSH access ready.
 
 ```bash
 curl -sL kordinate.dev/install | sudo bash
@@ -30,19 +32,23 @@ curl -sL kordinate.dev/install | sudo bash
 
 ```
 Installing k3s... done
+Deploying headscale... done
 Deploying workstation... done
-Waiting for pod... ready
+Installing Tailscale... done
+Connecting... done
 
 Welcome to Kordinate. Run 'claude login' to get started.
-claude@workstation:~$
+  ssh claude@workstation
 ```
 
 Behind the scenes:
 
 1. Installs k3s
-2. Pulls pre-built workstation image
-3. Deploys workstation pod (20Gi PVC)
-4. Drops the user into the workstation (kubectl exec, inside tmux)
+2. Deploys headscale pod (self-hosted Tailscale coordination)
+3. Pulls pre-built workstation image
+4. Deploys workstation pod (20Gi PVC, auto-registers with headscale)
+5. Installs Tailscale on the user's machine and connects to headscale
+6. SSH access ready: `ssh claude@workstation`
 
 The user runs `claude login`. Done.
 
@@ -54,14 +60,12 @@ From inside the workstation. Installs the infra team and its dependencies.
 "install the default team"
 ```
 
-1. Deploys headscale → `ssh claude@workstation` becomes available
-2. Deploys container registry
-3. Deploys monitoring stack (Grafana, Prometheus, Loki, Alloy)
-4. Enables deployer, sauron, designer agents
-5. Enables infrastructure guards (guard-kubectl.sh, guard-grafana.sh, guard-redis.sh)
-6. Enables infrastructure kords (pattern-review, monitoring-impact, defaults)
-7. Credential setup (GitHub, Tailscale, Grafana)
-8. Worktree sessions (claude-session) become available
+1. Deploys container registry
+2. Deploys monitoring stack (Grafana, Prometheus, Loki, Alloy)
+3. Enables deployer, sauron, designer agents
+4. Enables infrastructure guards (guard-kubectl.sh, guard-grafana.sh, guard-redis.sh)
+5. Enables infrastructure kords (pattern-review, monitoring-impact, defaults)
+6. Credential setup (GitHub, Grafana)
 
 ### Tier 3: Addons
 
@@ -99,8 +103,8 @@ All credentials live in the `pass` store under `kordinate/`.
 | Claude | 1 | `claude login`, saved to pass |
 | GPG key | 0 | Pre-installed in image |
 | Pass store | 0 | Pre-initialized in image |
+| Headscale | 1 | Auto-configured during install |
 | GitHub | 2 | `gh auth login`, token saved to pass |
-| Headscale | 2 | Auto-configured during team install |
 | Grafana | 2 | API key saved to pass |
 | Cloudflare | 3 | API token saved to pass |
 
