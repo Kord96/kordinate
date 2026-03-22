@@ -34,10 +34,10 @@ curl -sL kordinate.dev/install | sudo bash
 Installing k3s... done
 Deploying headscale... done
 Deploying workstation... done
+Copying Claude credentials... done
 Installing Tailscale... done
-Connecting... done
 
-Welcome to Kordinate. Run 'claude login' to get started.
+Welcome to Kordinate.
   ssh claude@workstation
 ```
 
@@ -48,10 +48,11 @@ Behind the scenes:
 3. Deploys headscale pod (self-hosted Tailscale coordination)
 4. Pulls pre-built workstation image
 5. Deploys workstation pod (20Gi PVC, auto-registers with headscale)
-6. Installs Tailscale on the user's machine and connects to headscale
-7. SSH access ready: `ssh claude@workstation`
+6. Copies Claude credentials from host if `~/.claude/.credentials.json` exists (skips `claude login`)
+7. Installs Tailscale on the user's machine and connects to headscale
+8. SSH access ready: `ssh claude@workstation`
 
-The user runs `claude login`. Done.
+If the host already has Claude Code authenticated, the workstation inherits the credentials automatically — no `claude login` needed. Otherwise, the user logs in inside the workstation.
 
 ### Tier 2: Default Team
 
@@ -101,7 +102,7 @@ All credentials live in the `pass` store under `kordinate/`.
 
 | Credential | Tier | Setup |
 |-----------|------|-------|
-| Claude | 1 | `claude login`, saved to pass |
+| Claude | 1 | Auto-copied from host, or `claude login` inside workstation |
 | GPG key | 0 | Pre-installed in image |
 | Pass store | 0 | Pre-initialized in image |
 | Headscale | 1 | Auto-configured during install |
