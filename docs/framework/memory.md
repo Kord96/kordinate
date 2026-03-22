@@ -22,21 +22,21 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ## Framework Memories
 
+=== "Agent"
+
+    | File | Path | Purpose | Structured | On-demand | Expiry |
+    |------|------|---------|:----------:|:---------:|:------:|
+    | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | no | — |
+    | index | `<agent>/memory/index.md` | On-demand file listing | yes | no | — |
+    | commands | `<agent>/commands/*/SKILL.md` | Skill definitions | yes | yes | — |
+    | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
+
 === "Team"
 
     | File | Path | Purpose | Structured | On-demand | Expiry |
     |------|------|---------|:----------:|:---------:|:------:|
     | manifest | `team/manifest.md` | Team roster — agents, rules, kords | yes | no | — |
     | shared knowledge | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies |
-
-=== "Agent"
-
-    | File | Path | Purpose | Structured | On-demand | Expiry |
-    |------|------|---------|:----------:|:---------:|:------:|
-    | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | no | — |
-    | index | `<agent>/index.md` | On-demand file listing | yes | no | — |
-    | commands | `<agent>/commands/*/SKILL.md` | Skill definitions | yes | yes | — |
-    | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
 
 === "Kord"
 
