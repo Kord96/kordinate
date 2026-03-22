@@ -4,13 +4,13 @@
 
 Every piece of knowledge in kordinate is described by five properties:
 
-| Property | Question | Default |
-|----------|----------|---------|
-| **Structured** | Does it follow a template? | `false` |
-| **On-demand** | Preloaded or read when needed? | `true` |
-| **Owner** | Who owns it? | `agent` |
-| **Scope** | Where does it apply? | `global` |
-| **Expiry** | Does it expire? | — (`<script>` or `<.md>`) |
+| Property | Question | Values | Default |
+|----------|----------|--------|---------|
+| **Structured** | Does it follow a template? | `true` / `false` | `false` |
+| **On-demand** | Preloaded or read when needed? | `true` / `false` | `true` |
+| **Owner** | Who owns it? | `team` / `agent` | `agent` |
+| **Scope** | Where does it apply? | `global` / `project` | `global` |
+| **Expiry** | Does it expire? | `none` / `<script>` / `<.md>` | `none` |
 
 Files with no frontmatter use the defaults. Override any property in YAML frontmatter.
 
