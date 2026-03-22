@@ -20,68 +20,25 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 - **Structured files** are owned by scribe. A guard hook validates writes against the template — only scribe can create or modify structured files. Unstructured files are writable by any agent.
 - **`index.md`** is auto-generated per owner (team and each agent). Lists all on-demand files. Preloaded so the agent knows what to look for.
 
-## Scribe Registry
+## Templates
 
-Scribe maintains a registry of all structured files and on-demand indexes. The guard hook reads this to decide what to protect.
+Scribe maintains a registry of structured patterns and on-demand indexes. The guard hook reads this to decide what to protect. Users extend via scribe.
 
-**Structured** — patterns and paths for files that must follow a template. Only scribe can write.
+| Pattern | Template | Required Sections |
+|---------|----------|-------------------|
+| `*/identity.md` | identity | frontmatter (name, model, tools, triggers), Auth, Workflow, Rules, Consultation |
+| `*/commands/*.md` | command | description, Input, Procedure |
+| `*/index.md` | index | File + Description table |
+| `team/index.md` | team-index | Agents table, Shared Rules, Kords table |
+| `team/kords/*/contract.md` | kord-contract | frontmatter (description, requester, provider), Provider Guidelines, Response Format, Provider State Invalidation |
+| `team/kords/*/data.md` | kord-data | follows contract's Response Format |
 
-| Type | Entry | Template |
-|------|-------|----------|
-| pattern | `*/identity.md` | identity |
-| pattern | `*/commands/*.md` | command |
-| pattern | `*/index.md` | index |
-| pattern | `team/kords/*/contract.md` | kord-contract |
-| pattern | `team/kords/*/data.md` | kord-data |
-| path | `team/index.md` | team-index |
+**On-demand patterns** — files matching these must appear in an `index.md`:
 
-**On-demand** — patterns and paths for files that must be indexed. Any file matching these must appear in an `index.md` or it's dead knowledge.
+- `*/memory/*.md`
+- `team/kords/*/contract.md`
 
-| Type | Entry |
-|------|-------|
-| pattern | `*/memory/*.md` |
-| pattern | `team/kords/*/contract.md` |
-
-Users extend both lists via scribe. Any file with `structured: true` in frontmatter that isn't registered is drift — blocked by the guard.
-
-## Framework Memories
-
-Memories that ship with kordinate and their properties:
-
-### Team
-
-| File | Path | Purpose | Structured | On-demand | Expiry |
-|------|------|---------|:----------:|:---------:|:------:|
-| team index | `team/index.md` | Team roster — agents, shared rules, available kords | yes | no | — |
-| kord contract | `team/kords/<name>/contract.md` | Consultation protocol between agents | yes | yes | — |
-| kord data | `team/kords/<name>/data.md` | Cached result of a consultation | yes | yes | `expiry.sh` |
-| kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
-
-### Agent
-
-| File | Path | Purpose | Structured | On-demand | Expiry |
-|------|------|---------|:----------:|:---------:|:------:|
-| identity | `<agent>/identity.md` | Who the agent is — role, tools, auth, workflow, rules | yes | no | — |
-| index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
-| commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
-| memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | no | yes | — |
-
-### Project Level
-
-Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
-
-## Structured Templates
-
-Every structured file follows a template. Scribe validates on write.
-
-| File | Required Sections |
-|------|-------------------|
-| `team/index.md` | Agents table, Shared Rules, Kords table |
-| `identity.md` | frontmatter (name, model, tools, triggers), Auth, Workflow, Rules, Consultation |
-| `commands/*.md` | description, Input, Procedure |
-| `contract.md` | frontmatter (description, requester, provider), Provider Guidelines, Response Format, Provider State Invalidation |
-| `data.md` | follows contract's Response Format |
-| `index.md` | File + Description table |
+Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
 
 ??? note "Template examples"
 
@@ -191,3 +148,28 @@ Every structured file follows a template. Scribe validates on write.
         | memory/migration.md | Migration procedures |
         ```
 
+## Framework Memories
+
+Memories that ship with kordinate and their properties:
+
+### Team
+
+| File | Path | Purpose | Structured | On-demand | Expiry |
+|------|------|---------|:----------:|:---------:|:------:|
+| team index | `team/index.md` | Team roster — agents, shared rules, available kords | yes | no | — |
+| kord contract | `team/kords/<name>/contract.md` | Consultation protocol between agents | yes | yes | — |
+| kord data | `team/kords/<name>/data.md` | Cached result of a consultation | yes | yes | `expiry.sh` |
+| kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
+
+### Agent
+
+| File | Path | Purpose | Structured | On-demand | Expiry |
+|------|------|---------|:----------:|:---------:|:------:|
+| identity | `<agent>/identity.md` | Who the agent is — role, tools, auth, workflow, rules | yes | no | — |
+| index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
+| commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
+| memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | no | yes | — |
+
+### Project Level
+
+Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
