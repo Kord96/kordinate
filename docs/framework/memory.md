@@ -17,7 +17,7 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 ### Constraints
 
 - **On-demand files must be indexed** in the owner's `index.md`. Orphaned on-demand files are dead knowledge. Dead-end detection: scan on-demand files, compare to index, flag anything missing.
-- **Structured files** are validated on write. The template defines what valid content looks like.
+- **Structured files** are owned by scribe. A guard hook validates writes against the template — only scribe can create or modify structured files. Unstructured files are writable by any agent.
 - **`index.md`** is auto-generated per owner (team and each agent). Lists all on-demand files. Preloaded so the agent knows what to look for.
 
 ## Framework Memories
