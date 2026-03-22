@@ -142,11 +142,15 @@ kordinate import backup.gpg    # restore on another machine
 
 ## Adding Machines
 
-From the workstation, generate a one-time join code:
+Requires Tier 2 (default team). Adding nodes is an infrastructure operation owned by the deployer agent.
 
-```bash
-kordinate invite
+From the workstation:
+
 ```
+"invite a new machine"
+```
+
+Or explicitly: `/deployer:invite`
 
 ```
 Join code: ABCD-1234
