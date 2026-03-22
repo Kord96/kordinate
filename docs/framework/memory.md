@@ -39,8 +39,7 @@ Scribe maintains a registry of all structured files and on-demand indexes. The g
 
 | Type | Entry |
 |------|-------|
-| pattern | `*/memory/static/*.md` |
-| pattern | `*/memory/dynamic/*.md` |
+| pattern | `*/memory/*.md` |
 | pattern | `team/kords/*/contract.md` |
 
 Users extend both lists via scribe. Any file with `structured: true` in frontmatter that isn't registered is drift — blocked by the guard.
