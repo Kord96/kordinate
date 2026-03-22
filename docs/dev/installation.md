@@ -34,7 +34,16 @@ curl -sL kordinate.dev/install | sudo bash
 Installing k3s... done
 Deploying headscale... done
 Deploying workstation... done
-Copying Claude credentials... done
+
+Found on host:
+  ✓ Claude credentials
+  ✓ GPG keys
+  ✓ SSH keys
+  ✓ Git config (Khaled <khaled@example.com>)
+  ✓ GitHub CLI
+Copy to workstation? [Y/n] y
+Copying credentials... done
+
 Installing Tailscale... done
 
 Welcome to Kordinate.
@@ -48,11 +57,24 @@ Behind the scenes:
 3. Deploys headscale pod (self-hosted Tailscale coordination)
 4. Pulls pre-built workstation image
 5. Deploys workstation pod (20Gi PVC, auto-registers with headscale)
-6. Copies Claude credentials from host if `~/.claude/.credentials.json` exists (skips `claude login`)
+6. Copies host credentials into the workstation (if found)
 7. Installs Tailscale on the user's machine and connects to headscale
 8. SSH access ready: `ssh claude@workstation`
 
-If the host already has Claude Code authenticated, the workstation inherits the credentials automatically — no `claude login` needed. Otherwise, the user logs in inside the workstation.
+Step 6 scans the host for existing credentials and offers to copy them:
+
+```
+Found on host:
+  ✓ Claude credentials
+  ✓ GPG keys
+  ✓ SSH keys
+  ✓ Git config (Khaled <khaled@example.com>)
+  ✓ GitHub CLI
+
+Copy to workstation? [Y/n]
+```
+
+The workstation inherits your identity — git commits have your name, SSH works with your keys, Claude is logged in, GitHub is authenticated. No re-setup needed.
 
 ### Tier 2: Default Team
 
@@ -103,10 +125,12 @@ All credentials live in the `pass` store under `kordinate/`.
 | Credential | Tier | Setup |
 |-----------|------|-------|
 | Claude | 1 | Auto-copied from host, or `claude login` inside workstation |
-| GPG key | 0 | Pre-installed in image |
+| GPG keys | 1 | Auto-copied from host, or generated inside workstation |
+| SSH keys | 1 | Auto-copied from host (prompted) |
+| Git config | 1 | Auto-copied from host |
+| GitHub | 1 | Auto-copied from host (gh CLI or SSH key), or `gh auth login` inside workstation |
 | Pass store | 0 | Pre-initialized in image |
 | Headscale | 1 | Auto-configured during install |
-| GitHub | 2 | `gh auth login`, token saved to pass |
 | Grafana | 2 | API key saved to pass |
 | Cloudflare | 3 | API token saved to pass |
 
