@@ -87,7 +87,7 @@ From inside the workstation. Installs the infra team and its dependencies.
 1. Deploys container registry
 2. Deploys monitoring stack (Grafana, Prometheus, Loki, Alloy)
 3. Enables deployer, sauron, designer agents
-4. Enables infrastructure guards (guard-kubectl.sh, guard-grafana.sh, guard-redis.sh)
+4. Enables infrastructure guards (guard-kubectl.sh, guard-grafana.sh)
 5. Enables infrastructure kords (pattern-review, monitoring-impact, defaults)
 6. Credential setup (GitHub, Grafana)
 
@@ -141,6 +141,47 @@ kordinate export backup.gpg    # bundle to encrypted archive
 kordinate import backup.gpg    # restore on another machine
 ```
 
+## Adding Machines
+
+From the workstation, generate a one-time join code:
+
+```bash
+kordinate invite
+```
+
+```
+Join code: ABCD-1234
+Expires in 10 minutes. One-time use.
+
+Run on the new machine:
+  curl -sL kordinate.dev/install | bash -s -- join ABCD-1234
+```
+
+On the new machine:
+
+```bash
+curl -sL kordinate.dev/install | bash -s -- join ABCD-1234
+```
+
+1. Installs Tailscale
+2. Connects to headscale using the join code
+3. Fetches k3s node token over the private network
+4. Installs k3s agent
+5. Machine is a worker node
+
+```
+claude@workstation:~$ kubectl get nodes
+NAME          STATUS   ROLES
+server-1      Ready    control-plane
+new-machine   Ready    <none>
+```
+
+### Security
+
+- Join codes are **one-time use** — expire after first use
+- Join codes have a **10-minute TTL** — expire if unused
+- Joining gives the machine **network access only** — cluster admin is separate (k8s RBAC)
+
 ## Current Implementation
 
 !!! warning "Work in progress"
@@ -157,12 +198,6 @@ sudo ./installer/kordinate-cli init
 ```bash
 kubectl -n master exec -it deploy/workstation -c workstation -- bash
 claude login
-```
-
-### Multi-Node
-
-```bash
-sudo ./installer/kordinate-cli join
 ```
 
 ### After Install
