@@ -27,7 +27,7 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
     | File | Path | Purpose | Structured | On-demand | Expiry |
     |------|------|---------|:----------:|:---------:|:------:|
     | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | no | — |
-    | index | `<agent>/memory/index.md` | On-demand file listing | yes | no | — |
+    | index | `<agent>/memory/index.md` | Lists all on-demand files and their descriptions | yes | no | — |
     | commands | `<agent>/commands/*/SKILL.md` | Skill definitions | yes | yes | — |
     | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
 
