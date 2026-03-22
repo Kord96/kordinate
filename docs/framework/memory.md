@@ -24,15 +24,10 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 | File | Pattern | Purpose | Structured | On-demand | Expiry |
 |------|---------|---------|:----------:|:---------:|:------:|
-| team index | `team/index.md` | Team roster — agents, shared rules, kords | yes | no | — |
-| shared knowledge | `team/memory/*.md` | Team-wide reference — conventions, standards | varies | varies | varies |
-| kord contract | `team/kords/*/contract.md` | Consultation protocol between agents | yes | yes | — |
-| kord data | `team/kords/*/data.md` | Cached result of a consultation | yes | yes | `expiry.sh` |
-| kord registry | `team/kords/index.md` | Lists all available kords | yes | no | — |
-| identity | `*/identity.md` | Who the agent is — role, tools, auth, workflow, rules | yes | no | — |
-| agent index | `<agent>/index.md` | Lists agent's on-demand files | yes | no | — |
-| commands | `*/commands/*/SKILL.md` | Skill definitions — invoked by name | yes | yes | — |
-| memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
+| **manifest** | `team/manifest.md` | Team roster — agents, rules, kords | yes | no | — |
+| **shared knowledge** | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies |
+| **kord** | `team/kords/<name>/`<br>`├── contract.md`<br>`├── data.md`<br>`└── expiry.sh` | Consultation protocol + cached result | yes | yes | `expiry.sh` |
+| **agent** | `<agent>/`<br>`├── identity.md`<br>`├── index.md`<br>`├── commands/*/SKILL.md`<br>`└── memory/*.md` | Identity, file index, skills, knowledge | varies | varies | varies |
 
 Users extend the structured patterns via scribe. Any file with `structured: true` in frontmatter that doesn't match a registered pattern is drift — blocked by the guard.
 
@@ -44,7 +39,7 @@ Any file can have `scope: project` in frontmatter. Project-scoped files follow t
 
 ??? note "Templates"
 
-    === "team/index.md"
+    === "manifest.md"
 
         ```markdown
         ## Agents
