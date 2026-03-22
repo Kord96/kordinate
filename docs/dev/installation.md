@@ -89,7 +89,6 @@ From inside the workstation. Installs the infra team and its dependencies.
 3. Enables deployer, sauron, designer agents
 4. Enables infrastructure guards (guard-kubectl.sh, guard-grafana.sh)
 5. Enables infrastructure kords (pattern-review, monitoring-impact, defaults)
-6. Credential setup (GitHub, Grafana)
 
 ### Tier 3: Addons
 
