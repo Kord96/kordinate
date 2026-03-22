@@ -10,7 +10,7 @@ Every piece of knowledge in kordinate is described by five properties:
 | **On-demand** | Is it loaded into context or read when needed? | yes → ignored until referenced by a preloaded document. no → preloaded into agent context on spawn. |
 | **Owner** | Who owns it? | team → shared across all agents. agent → belongs to a specific agent. |
 | **Scope** | Where does it apply? | global → all projects. project → specific project. |
-| **Fresh** | Does it have staleness detection? | yes → has a mechanism to detect when it's outdated. no → assumed always valid. |
+| **Expiry** | Does it expire? | `expiry: <script>` → checked before use. no field → assumed always valid. |
 
 ### Constraints
 
