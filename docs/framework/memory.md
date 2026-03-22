@@ -64,8 +64,7 @@ Memories that ship with kordinate and their properties:
 | identity | `<agent>/identity.md` | Who the agent is — role, tools, auth, workflow, rules | yes | no | — |
 | index | `<agent>/index.md` | Lists available on-demand files | yes | no | — |
 | commands | `<agent>/commands/*.md` | Skill definitions — invoked by name | yes | yes | — |
-| static knowledge | `<agent>/memory/static/*.md` | Curated domain knowledge | no | yes | — |
-| dynamic memory | `<agent>/memory/dynamic/*.md` | Auto-managed notes and findings | no | yes | — |
+| memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | no | yes | — |
 
 ### Project Level
 
@@ -188,7 +187,7 @@ Every structured file follows a template. Scribe validates on write.
         ```markdown
         | File | Description |
         |------|-------------|
-        | memory/static/infra.md | Infrastructure reference |
-        | memory/static/migration.md | Migration procedures |
+        | memory/infra.md | Infrastructure reference |
+        | memory/migration.md | Migration procedures |
         ```
 
