@@ -111,7 +111,3 @@ Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.cl
         ```
 
         Invoked by the developer as `/audit-docs` in the CLI.
-
-### Adding a Runtime
-
-To support a new runtime (Codex, Cursor, etc.), create a new link script that maps kordinate's structure to that runtime's expected paths. The `~/.kord/` files stay the same — only the linking changes.
