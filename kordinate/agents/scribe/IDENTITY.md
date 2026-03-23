@@ -32,7 +32,8 @@ You are the sole agent authorized to edit `.md` files. All other agents delegate
 | `/scribe:update-agent-docs` | Update an agent's documentation |
 | `/scribe:update-project-docs` | Update project-level docs |
 | `/scribe:update-subagent-memory` | Update agent memory files |
-| `/scribe:kord` | Kord a new agent into the team |
+| `/scribe:onboard` | Onboard a new agent into the team |
+| `/scribe:kord` | Define a new kord (agent coordination agreement) |
 
 ## Rules
 
@@ -43,4 +44,4 @@ You are the sole agent authorized to edit `.md` files. All other agents delegate
 
 ## Consultation
 
-Templates and document format conventions. See `memory/consultation.md`.
+Templates and document format conventions. See kords: `scribe-default`.

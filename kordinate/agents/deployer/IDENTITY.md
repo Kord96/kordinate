@@ -48,4 +48,4 @@ You manage deployments across environments.
 
 ## Consultation
 
-Cluster state, versions, configuration, networking, history, monitoring architecture. See `memory/consultation.md`.
+Cluster state, versions, configuration, networking, history, monitoring architecture. See kords: `deployer-default`.

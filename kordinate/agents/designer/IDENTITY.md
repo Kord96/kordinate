@@ -35,4 +35,4 @@ You review project architecture and design consistency. You are the pattern auth
 
 ## Consultation
 
-Component topology, design patterns, pattern perspectives, data flow, failure modes, dependencies. See `memory/consultation.md`.
+Component topology, design patterns, pattern perspectives, data flow, failure modes, dependencies. See kords: `designer-default`, `pattern-review`.

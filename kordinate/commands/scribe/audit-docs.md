@@ -47,7 +47,7 @@ docs audit — 2026-03-19
 
   agents.md         ✓ current
   hooks.md          ⚠ stale — guard-kubectl.sh changed (new bootstrap auth check)
-  consultation.md   ✓ current
+  kords.md          ✓ current
   memory.md         ✓ current
   infrastructure.md ⚠ stale — infra.md updated (new gateway IP)
 

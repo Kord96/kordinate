@@ -43,4 +43,4 @@ You ensure projects are observable and correct. Act first, report after.
 
 ## Consultation
 
-Metrics, health checks, log events, dashboards, alerting. See `memory/consultation.md`.
+Metrics, health checks, log events, dashboards, alerting. See kords: `sauron-default`, `monitoring-impact`.
