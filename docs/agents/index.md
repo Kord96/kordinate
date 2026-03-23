@@ -1,8 +1,25 @@
 # Agent Reference
 
-=== "Root"
+## Agent Structure
 
-    The orchestrator. All items below are inherited by every subagent.
+Every agent follows the same layout. Use `/scribe:onboard` to add new agents to the team.
+
+```
+<agent>/
+├── identity.md          # role, tools, auth, workflow, rules
+├── commands/*.md         # skill definitions
+└── memory/
+    ├── index.md          # on-demand file listing
+    └── *.md              # domain knowledge, notes
+```
+
+Any agent can be invoked as root (the main session) or as a subagent through [beorn](beorn.md). The structure is the same either way — identity, commands, and memory travel with the agent regardless of how it's invoked.
+
+## Roster
+
+=== "General"
+
+    The default agent. Provides shared commands, guards, and hooks inherited by every subagent.
 
     **Requirements:** none
 

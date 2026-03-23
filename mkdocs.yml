@@ -51,9 +51,10 @@ nav:
       - Guards: framework/guards.md
       - Kords: framework/kords.md
       - Recall System: framework/memory.md
+      - Linking: framework/linking.md
   - Default Team:
       - agents/index.md
-      - Root: agents/root.md
+      - General: agents/general.md
       - Scribe: agents/scribe.md
       - Beorn: agents/beorn.md
       - Deployer: infra/infrastructure.md

@@ -31,17 +31,4 @@ Current agent runtimes don't allow subagents to spawn other subagents. Kordinate
 
 Agents define what they provide to each other through **[kords](kords.md)** — protocols that specify the topic, format, and guidelines for each consultation. A pair of agents can have multiple kords for different topics (shown as separate arrows above).
 
-## Agent Structure
-
-Every agent follows the same layout. Use `/scribe:onboard` to add new agents to the team.
-
-```
-<agent>/
-├── identity.md          # role, tools, auth, workflow, rules
-├── commands/*.md         # skill definitions
-└── memory/
-    ├── index.md          # on-demand file listing
-    └── *.md              # domain knowledge, notes
-```
-
-See the [Default Team](../agents/index.md) for all agents.
+See the [Default Team](../agents/index.md) for agent structure and roster.
