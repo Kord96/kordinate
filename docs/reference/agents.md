@@ -1,118 +1,108 @@
 # Agent Reference
 
-Commands, guards, hooks, and tools across all agents.
+=== "Root"
 
-## Root
+    The orchestrator. All items below are inherited by every subagent.
 
-The orchestrator. All items below are inherited by every subagent.
+    ### Commands
 
-### Commands
+    | Command | Purpose |
+    |---------|---------|
+    | `/boot` | Catch up on parent context and code changes |
+    | `/consult` | Invoke an agent via kord protocol |
+    | `/merge` | Merge session branch forward |
 
-| Command | Purpose |
-|---------|---------|
-| `/boot` | Catch up on parent context and code changes |
-| `/consult` | Invoke an agent via kord protocol |
-| `/merge` | Merge session branch forward |
+    ### Guards
 
-### Guards
+    | Guard | Protects |
+    |-------|----------|
+    | `guard-git.sh` | Branch protection |
+    | `guard-md.sh` | Structured files — scribe only |
 
-| Guard | Protects |
-|-------|----------|
-| `guard-git.sh` | Branch protection |
-| `guard-md.sh` | `.md` files — scribe only |
+    ### Hooks
 
-### Hooks
+    | Hook | Trigger | Purpose |
+    |------|---------|---------|
+    | `auto-merge-to-dev.sh` | PostToolUse (Bash) | Fast-forward main after push |
+    | `agent-memory.sh` | PreToolUse (Agent) | Regenerate agent MEMORY.md before spawn |
 
-| Hook | Trigger | Purpose |
-|------|---------|---------|
-| `auto-merge-to-dev.sh` | PostToolUse (Bash) | Fast-forward main after push |
-| `agent-memory.sh` | PreToolUse (Agent) | Regenerate agent MEMORY.md before spawn |
+=== "Scribe"
 
-## Scribe
+    Documentation gate — sole structured file editor.
 
-Documentation gate — sole `.md` editor.
+    ### Commands
 
-### Commands
+    | Command | Purpose |
+    |---------|---------|
+    | `/scribe:onboard` | Add a new agent to the team |
+    | `/scribe:kord` | Define a new kord |
+    | `/scribe:update-agent-docs` | Update agent documentation |
+    | `/scribe:update-project-docs` | Update project documentation |
 
-| Command | Purpose |
-|---------|---------|
-| `/scribe:onboard` | Add a new agent to the team |
-| `/scribe:kord` | Define a new kord |
-| `/scribe:update-agent-docs` | Update agent documentation |
-| `/scribe:update-project-docs` | Update project documentation |
+=== "Beorn"
 
-### Guards
+    A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
 
-| Guard | Protects |
-|-------|----------|
-| `guard-md.sh` | Authorizes scribe for `.md` edits |
+    See [Subagent P2P](../framework/beorn.md) for the beorn server (MCP factory) architecture.
 
-## Beorn
+=== "Deployer"
 
-A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
+    Infrastructure operations — sole kubectl write authority.
 
-See [Subagent P2P](../framework/beorn.md) for the beorn server (MCP factory) architecture.
+    ### Commands
 
-## Deployer
+    | Command | Purpose |
+    |---------|---------|
+    | `/deployer:roll` | Roll between environments |
+    | `/deployer:stop` | Scale down an environment |
+    | `/deployer:clean` | Clean up environment data |
+    | `/deployer:diff` | Stage incremental data changes |
+    | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+    | `/deployer:migrate-workstation` | Prepare workstation migration handover |
 
-Infrastructure operations — sole kubectl write authority.
+    ### Guards
 
-### Commands
+    | Guard | Protects |
+    |-------|----------|
+    | `guard-kubectl.sh` | kubectl write operations — deployer only |
 
-| Command | Purpose |
-|---------|---------|
-| `/deployer:roll` | Roll between environments |
-| `/deployer:stop` | Scale down an environment |
-| `/deployer:clean` | Clean up environment data |
-| `/deployer:diff` | Stage incremental data changes |
-| `/deployer:bootstrap` | Bootstrap cluster infrastructure |
-| `/deployer:migrate-workstation` | Prepare workstation migration handover |
+    ### Tools
 
-### Guards
+    | Tool | Purpose |
+    |------|---------|
+    | postgres.py | Local database operations |
 
-| Guard | Protects |
-|-------|----------|
-| `guard-kubectl.sh` | kubectl write operations — deployer only |
-| `guard-redis.sh` | Redis MCP tools — deployer only |
+=== "Sauron"
 
-### Tools
+    Monitoring, observability, and code validation.
 
-| Tool | Purpose |
-|------|---------|
-| postgres.py | Local database operations |
-| Redis MCP | Cluster Redis access |
+    ### Commands
 
-## Sauron
+    | Command | Purpose |
+    |---------|---------|
+    | `/sauron:scan` | Scan a project for monitoring gaps |
+    | `/sauron:diagnose` | Diagnose a specific issue |
 
-Monitoring, observability, and code validation.
+    ### Guards
 
-### Commands
+    | Guard | Protects |
+    |-------|----------|
+    | `guard-grafana.sh` | Grafana MCP tools — sauron only |
 
-| Command | Purpose |
-|---------|---------|
-| `/sauron:scan` | Scan a project for monitoring gaps |
-| `/sauron:diagnose` | Diagnose a specific issue |
+    ### Tools
 
-### Guards
+    | Tool | Purpose |
+    |------|---------|
+    | Grafana MCP | Dashboard management |
+    | nokrashi-tools | Code analysis |
+    | klog | Log analysis |
 
-| Guard | Protects |
-|-------|----------|
-| `guard-grafana.sh` | Grafana MCP tools — sauron only |
+=== "Designer"
 
-### Tools
+    Architecture review and pattern authority.
 
-| Tool | Purpose |
-|------|---------|
-| Grafana MCP | Dashboard management |
-| nokrashi-tools | Code analysis |
-| klog | Log analysis |
+    ### Commands
 
-## Designer
-
-Architecture review and pattern authority.
-
-### Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/designer:detect-patterns` | Scan a project for recognized patterns |
+    | Command | Purpose |
+    |---------|---------|
+    | `/designer:detect-patterns` | Scan a project for recognized patterns |
