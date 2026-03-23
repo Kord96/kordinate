@@ -40,19 +40,6 @@ Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.cl
 | `~/.claude/.mcp.json` | MCP server configuration |
 | `~/.claude/keybindings.json` | Keyboard shortcuts |
 
-### Differences
-
-| | Kordinate | Claude Code |
-|---|---|---|
-| **Hierarchy** | No hierarchy — any agent can be root or subagent | Fixed hierarchy — one main session, subagents below it |
-| **Identity** | Every agent has `<agent>/identity.md`, same format whether root or sub | Main session has no identity file; subagents defined at `agents/<name>.md` |
-| **Shared context** | `team/manifest.md` — explicit team-level file, independent of any agent | `CLAUDE.md` — inherited from main session to all subagents |
-| **Memory model** | Agent-owned folders with explicit `index.md`, per-file properties (structured, on-demand, expiry) via frontmatter | Main session: auto memory (Claude writes for itself). Subagents: single `MEMORY.md`, 200-line preload, no index, no expiry |
-| **Memory lifecycle** | Expiry property — files can declare staleness via scripts or markdown | No expiry — memory grows indefinitely, agent nudged to curate at 200 lines |
-| **Structure enforcement** | `structured` property + guards restrict who can write structured files | No enforcement — all memory is freeform markdown |
-| **Skills** | Per-agent: `<agent>/skills/*.md` — scoped to the owning agent | Global: `skills/<name>/SKILL.md` — available to all agents by name reference |
-| **Rules** | No separate concept — instructions live in identity or team manifest | `rules/*.md` — path-scoped, load conditionally on file glob match |
-
 ??? example "Examples"
 
     ??? example "Agent file — `~/.claude/agents/scribe.md`"
@@ -106,3 +93,16 @@ Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.cl
         ```
 
         Referenced by name in agent frontmatter (`skills: [docs-style]`). Content injected at startup. Also invocable as `/docs-style`.
+
+### Differences
+
+| | Kordinate | Claude Code |
+|---|---|---|
+| **Hierarchy** | No hierarchy — any agent can be root or subagent | Fixed hierarchy — one main session, subagents below it |
+| **Identity** | Every agent has `<agent>/identity.md`, same format whether root or sub | Main session has no identity file; subagents defined at `agents/<name>.md` |
+| **Shared context** | `team/manifest.md` — explicit team-level file, independent of any agent | `CLAUDE.md` — inherited from main session to all subagents |
+| **Memory model** | Agent-owned folders with explicit `index.md`, per-file properties (structured, on-demand, expiry) via frontmatter | Main session: auto memory (Claude writes for itself). Subagents: single `MEMORY.md`, 200-line preload, no index, no expiry |
+| **Memory lifecycle** | Expiry property — files can declare staleness via scripts or markdown | No expiry — memory grows indefinitely, agent nudged to curate at 200 lines |
+| **Structure enforcement** | `structured` property + guards restrict who can write structured files | No enforcement — all memory is freeform markdown |
+| **Skills** | Per-agent: `<agent>/skills/*.md` — scoped to the owning agent | Global: `skills/<name>/SKILL.md` — available to all agents by name reference |
+| **Rules** | No separate concept — instructions live in identity or team manifest | `rules/*.md` — path-scoped, load conditionally on file glob match |
