@@ -4,6 +4,8 @@
 
     The orchestrator. All items below are inherited by every subagent.
 
+    **Requirements:** none
+
     ### Commands
 
     | Command | Purpose |
@@ -30,6 +32,8 @@
 
     Documentation gate — sole structured file editor.
 
+    **Requirements:** none
+
     ### Commands
 
     | Command | Purpose |
@@ -41,6 +45,8 @@
 
 === "Beorn"
 
+    **Requirements:** beorn server (Node.js MCP server)
+
     A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
 
     See [Subagent P2P](../framework/beorn.md) for the beorn server (MCP factory) architecture.
@@ -48,6 +54,8 @@
 === "Deployer"
 
     Infrastructure operations — sole kubectl write authority.
+
+    **Requirements:** container registry, kubectl access
 
     ### Commands
 
@@ -76,6 +84,8 @@
 
     Monitoring, observability, and code validation.
 
+    **Requirements:** Grafana, Prometheus, Loki, Alloy (deployed on demand)
+
     ### Commands
 
     | Command | Purpose |
@@ -100,6 +110,8 @@
 === "Designer"
 
     Architecture review and pattern authority.
+
+    **Requirements:** none
 
     ### Commands
 
