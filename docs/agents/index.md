@@ -1,0 +1,80 @@
+# Agent Reference
+
+=== "Root"
+
+    The orchestrator. All items below are inherited by every subagent.
+
+    **Requirements:** none
+
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/boot` | Catch up on parent context and code changes |
+    | command | `/consult` | Invoke an agent via kord protocol |
+    | command | `/merge` | Merge session branch forward |
+    | guard | `guard-git.sh` | Branch protection |
+    | guard | `guard-md.sh` | Structured files — scribe only |
+    | hook | `auto-merge-to-dev.sh` | Fast-forward main after push |
+    | hook | `agent-memory.sh` | Regenerate agent MEMORY.md before spawn |
+
+=== "Scribe"
+
+    Documentation gate — sole structured file editor.
+
+    **Requirements:** none
+
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/scribe:onboard` | Add a new agent to the team |
+    | command | `/scribe:kord` | Define a new kord |
+    | command | `/scribe:update-agent-docs` | Update agent documentation |
+    | command | `/scribe:update-project-docs` | Update project documentation |
+
+=== "Beorn"
+
+    A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
+
+    **Requirements:** beorn server (Node.js MCP server)
+
+    See [Subagent P2P](../framework/beorn.md) for the beorn server (MCP factory) architecture.
+
+=== "Deployer"
+
+    Infrastructure operations — sole kubectl write authority.
+
+    **Requirements:** container registry, kubectl access
+
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/deployer:roll` | Roll between environments |
+    | command | `/deployer:stop` | Scale down an environment |
+    | command | `/deployer:clean` | Clean up environment data |
+    | command | `/deployer:diff` | Stage incremental data changes |
+    | command | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+    | command | `/deployer:migrate-workstation` | Prepare workstation migration handover |
+    | guard | `guard-kubectl.sh` | kubectl write operations — deployer only |
+    | tool | `postgres.py` | Local database operations |
+
+=== "Sauron"
+
+    Monitoring, observability, and code validation.
+
+    **Requirements:** Grafana, Prometheus, Loki, Alloy (deployed on demand)
+
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/sauron:scan` | Scan a project for monitoring gaps |
+    | command | `/sauron:diagnose` | Diagnose a specific issue |
+    | guard | `guard-grafana.sh` | Grafana MCP tools — sauron only |
+    | tool | Grafana MCP | Dashboard management |
+    | tool | nokrashi-tools | Code analysis |
+    | tool | klog | Log analysis |
+
+=== "Designer"
+
+    Architecture review and pattern authority.
+
+    **Requirements:** none
+
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/designer:detect-patterns` | Scan a project for recognized patterns |

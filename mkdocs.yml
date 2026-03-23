@@ -50,13 +50,14 @@ nav:
       - Overview: framework/overview.md
       - Guards: framework/guards.md
       - Kords: framework/kords.md
-      - Subagent P2P: framework/beorn.md
       - Recall System: framework/memory.md
   - Default Team:
+      - agents/index.md
+      - Root: agents/root.md
+      - Scribe: agents/scribe.md
+      - Beorn: agents/beorn.md
       - Deployer: infra/infrastructure.md
       - Sauron: infra/monitoring.md
-  - Reference:
-      - Agents: reference/agents.md
   - Dev Only:
       - Installation: dev/installation.md
       - Linking: dev/linking.md
