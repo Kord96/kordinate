@@ -60,6 +60,5 @@ nav:
       - Sauron: infra/monitoring.md
   - Dev Only:
       - Installation: dev/installation.md
-      - Linking: dev/linking.md
       - Sessions & Branches: dev/sessions.md
       - Feature Inventory: dev/features.md
