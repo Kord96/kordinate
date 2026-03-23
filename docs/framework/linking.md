@@ -2,6 +2,28 @@
 
 Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in a portable format. The **linking layer** converts them to whatever the runtime expects — it's the only part that changes when switching runtimes.
 
+## Kordinate
+
+Every agent follows the same layout:
+
+```
+~/.kord/
+├── team/
+│   └── manifest.md              # agent roster and shared rules
+├── <agent>/
+│   ├── identity.md              # role, tools, auth, workflow, rules
+│   ├── commands/*.md            # skill definitions
+│   └── memory/
+│       ├── index.md             # on-demand file listing
+│       └── *.md                 # domain knowledge, notes
+├── kords/
+│   ├── index.md                 # available kords directory
+│   ├── <kord>/contract.md       # consultation protocol
+│   └── <kord>/data.md           # cached results with expiry
+├── settings.json                # permissions, hooks, env vars
+└── mcp.json                     # MCP server configuration
+```
+
 ## Claude Code
 
 Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.claude/` (project — committed to repo). The linker targets user scope.
@@ -19,74 +41,76 @@ Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.cl
 | `~/.claude/.mcp.json` | MCP server configuration |
 | `~/.claude/keybindings.json` | Keyboard shortcuts |
 
-??? example "Agent file — `~/.claude/agents/scribe.md`"
+??? example "Examples"
 
-    ```markdown
-    ---
-    name: scribe
-    description: Documentation specialist. Use for docs audits, page creation, and style enforcement.
-    tools: Read, Write, Edit, Grep, Glob, Bash
-    model: sonnet
-    memory: project
-    skills:
-      - docs-style
-    hooks:
-      PostToolUse:
-        - matcher: "Write|Edit"
-          hooks:
-            - type: command
-              command: "./scripts/lint-docs.sh"
-    ---
+    ??? example "Agent file — `~/.claude/agents/scribe.md`"
 
-    You are the scribe — the team's documentation agent.
-    Maintain docs accuracy, enforce style, and keep pages current.
-    ```
+        ```markdown
+        ---
+        name: scribe
+        description: Documentation specialist. Use for docs audits, page creation, and style enforcement.
+        tools: Read, Write, Edit, Grep, Glob, Bash
+        model: sonnet
+        memory: project
+        skills:
+          - docs-style
+        hooks:
+          PostToolUse:
+            - matcher: "Write|Edit"
+              hooks:
+                - type: command
+                  command: "./scripts/lint-docs.sh"
+        ---
 
-??? example "Agent memory — `~/.claude/agent-memory/scribe/MEMORY.md`"
+        You are the scribe — the team's documentation agent.
+        Maintain docs accuracy, enforce style, and keep pages current.
+        ```
 
-    ```markdown
-    # Scribe Memory
+    ??? example "Agent memory — `~/.claude/agent-memory/scribe/MEMORY.md`"
 
-    - Docs site uses MkDocs Material with slate theme
-    - Navigation defined in mkdocs.yml, not auto-generated
-    - Admonitions and collapsibles are enabled
-    - Keep pages concise — no verbose explanations
-    ```
+        ```markdown
+        # Scribe Memory
 
-    First 200 lines are auto-injected. Beyond that, the agent is nudged to curate.
+        - Docs site uses MkDocs Material with slate theme
+        - Navigation defined in mkdocs.yml, not auto-generated
+        - Admonitions and collapsibles are enabled
+        - Keep pages concise — no verbose explanations
+        ```
 
-??? example "Skill — `~/.claude/skills/docs-style/SKILL.md`"
+        First 200 lines are auto-injected. Beyond that, the agent is nudged to curate.
 
-    ```markdown
-    ---
-    name: docs-style
-    description: Documentation style conventions for the project
-    ---
+    ??? example "Skill — `~/.claude/skills/docs-style/SKILL.md`"
 
-    - Use sentence case for headings
-    - No emoji unless requested
-    - Tables over bullet lists for structured data
-    - Code blocks must specify language
-    ```
+        ```markdown
+        ---
+        name: docs-style
+        description: Documentation style conventions for the project
+        ---
 
-    Referenced by name in agent frontmatter (`skills: [docs-style]`). Content injected at startup.
+        - Use sentence case for headings
+        - No emoji unless requested
+        - Tables over bullet lists for structured data
+        - Code blocks must specify language
+        ```
 
-??? example "Slash command — `~/.claude/commands/audit-docs.md`"
+        Referenced by name in agent frontmatter (`skills: [docs-style]`). Content injected at startup.
 
-    ```markdown
-    ---
-    description: Audit docs for broken links and stale content
-    ---
+    ??? example "Slash command — `~/.claude/commands/audit-docs.md`"
 
-    Scan all markdown files in docs/ for:
-    1. Broken internal links
-    2. References to removed features
-    3. Outdated code examples
+        ```markdown
+        ---
+        description: Audit docs for broken links and stale content
+        ---
 
-    Report findings as a table.
-    ```
+        Scan all markdown files in docs/ for:
+        1. Broken internal links
+        2. References to removed features
+        3. Outdated code examples
 
-    Invoked by the developer as `/audit-docs` in the CLI.
+        Report findings as a table.
+        ```
+
+        Invoked by the developer as `/audit-docs` in the CLI.
 
 ### Adding a Runtime
 

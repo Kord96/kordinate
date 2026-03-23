@@ -48,11 +48,9 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
 
 === "Beorn"
 
-    A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
+    MCP server that enables any subagent to invoke any other subagent. Spawns short-lived clones that inherit the target agent's identity, memory, and commands. See [Beorn](beorn.md) for details.
 
     **Requirements:** beorn server (Node.js MCP server)
-
-    See [Subagent P2P](../framework/beorn.md) for the beorn server (MCP factory) architecture.
 
 === "Deployer"
 
