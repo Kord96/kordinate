@@ -2,20 +2,20 @@
 
 The orchestrator. Root is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It defines the team, and all subagents inherit its rules, commands, and hooks.
 
-## Claude Code Filesystem
+## Claude Code
 
-Claude Code reads from two locations: `~/.claude/` (user scope) and `.claude/` (project scope). Project scope takes precedence when names collide.
+Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.claude/` (project — committed to repo). Project takes precedence when names collide.
 
 ### Agents
 
 Flat markdown files with YAML frontmatter. No nested directories — each agent is a single file.
 
-```
-~/.claude/agents/agent-name.md        # user scope (all projects)
-.claude/agents/agent-name.md          # project scope (committed to repo)
-```
+| Claude Code path | Scope | Git |
+|-----------------|-------|-----|
+| `~/.claude/agents/<name>.md` | user | outside repo |
+| `.claude/agents/<name>.md` | project | committed |
 
-The filename must match the `name` frontmatter field. Example:
+The filename must match the `name` frontmatter field. The markdown body becomes the agent's system prompt.
 
 ```markdown
 ---
@@ -58,96 +58,68 @@ Supported frontmatter fields:
 
 ### Agent Memory
 
-Each agent with a `memory` field gets its own `MEMORY.md`. The first 200 lines are auto-injected into the agent's context at startup.
+Each agent with a `memory` field gets its own `MEMORY.md`. The first 200 lines are auto-injected into the agent's context at startup. `Read`, `Write`, and `Edit` tools are auto-enabled when memory is set.
 
-| Scope | Path | Git |
-|-------|------|-----|
-| `user` | `~/.claude/agent-memory/<name>/MEMORY.md` | Outside repo |
-| `project` | `.claude/agent-memory/<name>/MEMORY.md` | Committed — shared with developer team |
-| `local` | `.claude/agent-memory-local/<name>/MEMORY.md` | Gitignored — personal to developer |
-
-`Read`, `Write`, and `Edit` tools are auto-enabled when memory is set, even if not listed in `tools`.
+| Claude Code path | Scope | Git |
+|-----------------|-------|-----|
+| `~/.claude/agent-memory/<name>/MEMORY.md` | user | outside repo |
+| `.claude/agent-memory/<name>/MEMORY.md` | project | committed — shared with developer team |
+| `.claude/agent-memory-local/<name>/MEMORY.md` | local | gitignored — personal to developer |
 
 ### Skills
 
-Skills are global — not agent-scoped. Agents reference them by name; the content is injected at startup.
+Global, not agent-scoped. Agents reference them by name in frontmatter; content is injected at startup. Skills support nested directories (unlike agents).
 
-```
-~/.claude/skills/<name>/SKILL.md      # user scope
-.claude/skills/<name>/SKILL.md        # project scope
-```
-
-Skills support nested directories (unlike agents).
+| Claude Code path | Scope |
+|-----------------|-------|
+| `~/.claude/skills/<name>/SKILL.md` | user |
+| `.claude/skills/<name>/SKILL.md` | project |
 
 ### Hooks
 
-Two kinds:
+1. **Inline** — defined in agent frontmatter, scoped to agent lifetime
+2. **Global** — defined in `settings.json`, run for the entire session
 
-1. **Inline hooks** — defined in agent frontmatter, scoped to agent lifetime
-2. **Global hooks** — defined in `settings.json`, run for the entire session
-
-Global hooks also support `SubagentStart` and `SubagentStop` events for reacting to subagent lifecycle.
-
-### Other Definition Methods
-
-Agents can also be defined via:
-
-- `claude --agent <name>` — run a session as a specific agent
-- `claude --agents '<json>'` — inline JSON definitions (session only, not persisted)
-- `"agent"` field in `settings.json` — set a default agent for a project
-- `/agents` interactive UI — create/manage agents
+Global hooks support `SubagentStart` and `SubagentStop` events for reacting to subagent lifecycle.
 
 ### Invocation
 
 | Method | Who | When |
 |--------|-----|------|
 | `claude --agent name` | Developer (CLI) | Session start — becomes the root agent |
-| `@agent-name` in prompt | Developer (interactive) | Mid-session — forces delegation to named agent |
+| `@agent-name` in prompt | Developer (interactive) | Mid-session — forces delegation |
 | Agent tool (`subagent_type`) | Agent (programmatic) | Mid-session — one agent spawns another |
 | Natural language | Developer or agent | Mid-session — Claude auto-delegates |
 
-Subagents cannot spawn other subagents (no recursive Agent tool).
+Subagents cannot spawn other subagents (no recursive Agent tool). Priority when names collide: `--agents` CLI flag > `.claude/agents/` > `~/.claude/agents/` > plugin agents.
 
-### Priority
+### Other Config
 
-When multiple scopes define the same agent name:
+Direct copies between kordinate and Claude Code:
 
-1. `--agents` CLI flag (highest)
-2. `.claude/agents/` (project)
-3. `~/.claude/agents/` (user)
-4. Plugin agents (lowest)
+| Claude Code path | Purpose |
+|-----------------|---------|
+| `settings.json` | Permissions, hooks, env vars |
+| `.mcp.json` | MCP server configuration |
+| `keybindings.json` | Keyboard shortcuts |
+| `CLAUDE.md` | Root system prompt — inherited by all subagents |
+| `commands/*.md` | Slash commands |
 
 ## Linking
 
-Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in kordinate's format. The **linking layer** converts them to whatever the runtime expects — it's the only part that changes when switching runtimes.
+Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in a portable format. The **linking layer** converts them to whatever the runtime expects — it's the only part that changes when switching runtimes.
 
-### Claude Code
-
-Claude Code reads from `~/.claude/`. Some files are direct copies:
-
-| `~/.claude/` | `~/.kord/` | Transform |
-|-------------|-----------|-----------|
+| `~/.claude/` | `~/.kord/` source | Transform |
+|-------------|-------------------|-----------|
 | `settings.json` | `settings.json` | copy |
 | `.mcp.json` | `mcp.json` | rename |
 | `keybindings.json` | `keybindings.json` | copy |
-
-These require linking:
-
-| `~/.claude/` | Purpose | `~/.kord/` source | Transform |
-|-------------|---------|-------------------|-----------|
-| `CLAUDE.md` | Root system prompt — inherited by all subagents | `root/identity.md` + `team/manifest.md` | rename + merge |
-| `agents/<name>.md` | Subagent identity | `<agent>/identity.md` | rename, generate frontmatter |
-| `commands/*.md` | Slash commands | `root/commands/*.md` | copy |
-| `agent-memory/<name>/` | Agent writable memory | `<agent>/memory/` | restructure |
+| `CLAUDE.md` | `root/identity.md` + `team/manifest.md` | merge |
+| `agents/<name>.md` | `<agent>/identity.md` | rename, generate frontmatter |
+| `commands/*.md` | `root/commands/*.md` | copy |
+| `agent-memory/<name>/` | `<agent>/memory/` | restructure |
 
 No symlinks. Claude Code works with real files. `~/.kord/` is the portable format.
-
-### How Linking Works
-
-1. Read each file in `~/.kord/`
-2. Check frontmatter for memory properties (structured, on-demand, owner, scope, expiry)
-3. Apply defaults where no frontmatter exists
-4. Transform and copy to the paths the runtime expects
 
 ### Adding a Runtime
 
