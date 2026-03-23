@@ -6,27 +6,15 @@
 
     **Requirements:** none
 
-    ### Commands
-
-    | Command | Purpose |
-    |---------|---------|
-    | `/boot` | Catch up on parent context and code changes |
-    | `/consult` | Invoke an agent via kord protocol |
-    | `/merge` | Merge session branch forward |
-
-    ### Guards
-
-    | Guard | Protects |
-    |-------|----------|
-    | `guard-git.sh` | Branch protection |
-    | `guard-md.sh` | Structured files — scribe only |
-
-    ### Hooks
-
-    | Hook | Trigger | Purpose |
-    |------|---------|---------|
-    | `auto-merge-to-dev.sh` | PostToolUse (Bash) | Fast-forward main after push |
-    | `agent-memory.sh` | PreToolUse (Agent) | Regenerate agent MEMORY.md before spawn |
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/boot` | Catch up on parent context and code changes |
+    | command | `/consult` | Invoke an agent via kord protocol |
+    | command | `/merge` | Merge session branch forward |
+    | guard | `guard-git.sh` | Branch protection |
+    | guard | `guard-md.sh` | Structured files — scribe only |
+    | hook | `auto-merge-to-dev.sh` | Fast-forward main after push |
+    | hook | `agent-memory.sh` | Regenerate agent MEMORY.md before spawn |
 
 === "Scribe"
 
@@ -34,20 +22,18 @@
 
     **Requirements:** none
 
-    ### Commands
-
-    | Command | Purpose |
-    |---------|---------|
-    | `/scribe:onboard` | Add a new agent to the team |
-    | `/scribe:kord` | Define a new kord |
-    | `/scribe:update-agent-docs` | Update agent documentation |
-    | `/scribe:update-project-docs` | Update project documentation |
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/scribe:onboard` | Add a new agent to the team |
+    | command | `/scribe:kord` | Define a new kord |
+    | command | `/scribe:update-agent-docs` | Update agent documentation |
+    | command | `/scribe:update-project-docs` | Update project documentation |
 
 === "Beorn"
 
-    **Requirements:** beorn server (Node.js MCP server)
-
     A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
+
+    **Requirements:** beorn server (Node.js MCP server)
 
     See [Subagent P2P](../framework/beorn.md) for the beorn server (MCP factory) architecture.
 
@@ -57,28 +43,16 @@
 
     **Requirements:** container registry, kubectl access
 
-    ### Commands
-
-    | Command | Purpose |
-    |---------|---------|
-    | `/deployer:roll` | Roll between environments |
-    | `/deployer:stop` | Scale down an environment |
-    | `/deployer:clean` | Clean up environment data |
-    | `/deployer:diff` | Stage incremental data changes |
-    | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
-    | `/deployer:migrate-workstation` | Prepare workstation migration handover |
-
-    ### Guards
-
-    | Guard | Protects |
-    |-------|----------|
-    | `guard-kubectl.sh` | kubectl write operations — deployer only |
-
-    ### Tools
-
-    | Tool | Purpose |
-    |------|---------|
-    | postgres.py | Local database operations |
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/deployer:roll` | Roll between environments |
+    | command | `/deployer:stop` | Scale down an environment |
+    | command | `/deployer:clean` | Clean up environment data |
+    | command | `/deployer:diff` | Stage incremental data changes |
+    | command | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+    | command | `/deployer:migrate-workstation` | Prepare workstation migration handover |
+    | guard | `guard-kubectl.sh` | kubectl write operations — deployer only |
+    | tool | `postgres.py` | Local database operations |
 
 === "Sauron"
 
@@ -86,26 +60,14 @@
 
     **Requirements:** Grafana, Prometheus, Loki, Alloy (deployed on demand)
 
-    ### Commands
-
-    | Command | Purpose |
-    |---------|---------|
-    | `/sauron:scan` | Scan a project for monitoring gaps |
-    | `/sauron:diagnose` | Diagnose a specific issue |
-
-    ### Guards
-
-    | Guard | Protects |
-    |-------|----------|
-    | `guard-grafana.sh` | Grafana MCP tools — sauron only |
-
-    ### Tools
-
-    | Tool | Purpose |
-    |------|---------|
-    | Grafana MCP | Dashboard management |
-    | nokrashi-tools | Code analysis |
-    | klog | Log analysis |
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/sauron:scan` | Scan a project for monitoring gaps |
+    | command | `/sauron:diagnose` | Diagnose a specific issue |
+    | guard | `guard-grafana.sh` | Grafana MCP tools — sauron only |
+    | tool | Grafana MCP | Dashboard management |
+    | tool | nokrashi-tools | Code analysis |
+    | tool | klog | Log analysis |
 
 === "Designer"
 
@@ -113,8 +75,6 @@
 
     **Requirements:** none
 
-    ### Commands
-
-    | Command | Purpose |
-    |---------|---------|
-    | `/designer:detect-patterns` | Scan a project for recognized patterns |
+    | Type | Name | Purpose |
+    |------|------|---------|
+    | command | `/designer:detect-patterns` | Scan a project for recognized patterns |
