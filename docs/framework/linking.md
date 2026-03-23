@@ -12,7 +12,7 @@ Every agent follows the same layout:
 │   └── manifest.md              # agent roster and shared rules
 ├── <agent>/
 │   ├── identity.md              # role, tools, auth, workflow, rules
-│   ├── commands/*.md            # skill definitions
+│   ├── skills/*.md              # per-agent skill definitions
 │   └── memory/
 │       ├── index.md             # on-demand file listing
 │       └── *.md                 # domain knowledge, notes
@@ -35,8 +35,7 @@ Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.cl
 | `~/.claude/agent-memory/<name>/MEMORY.md` | Agent memory — first 200 lines auto-injected at startup; beyond 200, agent is nudged to curate but lines are not loaded unless explicitly instructed |
 | `~/.claude/projects/<project>/memory/MEMORY.md` | Auto memory — Claude writes this itself; main session's accumulated knowledge. First 200 lines auto-loaded, topic files on-demand |
 | `~/.claude/rules/*.md` | Path-scoped rules — conditional instructions that load when Claude works with matching file globs |
-| `~/.claude/skills/<name>/SKILL.md` | Skills — injected into agent context by name reference |
-| `~/.claude/commands/*.md` | Slash commands |
+| `~/.claude/skills/<name>/SKILL.md` | Skills — injected into agent context by name reference. Also invocable as `/name` slash commands |
 | `~/.claude/settings.json` | Permissions, hooks, env vars |
 | `~/.claude/.mcp.json` | MCP server configuration |
 | `~/.claude/keybindings.json` | Keyboard shortcuts |
@@ -51,7 +50,7 @@ Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.cl
 | **Memory model** | Agent-owned folders with explicit `index.md`, per-file properties (structured, on-demand, expiry) via frontmatter | Main session: auto memory (Claude writes for itself). Subagents: single `MEMORY.md`, 200-line preload, no index, no expiry |
 | **Memory lifecycle** | Expiry property — files can declare staleness via scripts or markdown | No expiry — memory grows indefinitely, agent nudged to curate at 200 lines |
 | **Structure enforcement** | `structured` property + guards restrict who can write structured files | No enforcement — all memory is freeform markdown |
-| **Skills** | No separate concept — agent commands serve this role | `skills/<name>/SKILL.md` — injected into agent context by name |
+| **Skills** | Per-agent: `<agent>/skills/*.md` — scoped to the owning agent | Global: `skills/<name>/SKILL.md` — available to all agents by name reference |
 | **Rules** | No separate concept — instructions live in identity or team manifest | `rules/*.md` — path-scoped, load conditionally on file glob match |
 
 ??? example "Examples"
@@ -106,21 +105,4 @@ Claude Code reads from two scopes: `~/.claude/` (user — all projects) and `.cl
         - Code blocks must specify language
         ```
 
-        Referenced by name in agent frontmatter (`skills: [docs-style]`). Content injected at startup.
-
-    ??? example "Slash command — `~/.claude/commands/audit-docs.md`"
-
-        ```markdown
-        ---
-        description: Audit docs for broken links and stale content
-        ---
-
-        Scan all markdown files in docs/ for:
-        1. Broken internal links
-        2. References to removed features
-        3. Outdated code examples
-
-        Report findings as a table.
-        ```
-
-        Invoked by the developer as `/audit-docs` in the CLI.
+        Referenced by name in agent frontmatter (`skills: [docs-style]`). Content injected at startup. Also invocable as `/docs-style`.

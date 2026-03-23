@@ -25,7 +25,7 @@ flowchart TB
 - **[Subagent P2P](../agents/beorn.md)** — subagents can invoke other subagents at any depth
 - **[Recall System](memory.md)** — caching and structured knowledge on top of the runtime's native memory
 
-**[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and commands.
+**[Root](#root)** is the user's existing agent — Claude Code, Codex, Cursor, or any compatible runtime. It orchestrates a team of subagents, each with its own identity, memory, and skills.
 
 Current agent runtimes don't allow subagents to spawn other subagents. Kordinate removes this limitation — any subagent, at any depth, can [invoke another agent](../agents/beorn.md).
 
