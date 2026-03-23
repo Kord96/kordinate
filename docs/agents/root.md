@@ -8,31 +8,22 @@ Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in kordinate's for
 
 ### Claude Code
 
-Claude Code reads these files from `~/.claude/`:
+Claude Code reads from `~/.claude/`. Some files are direct copies:
 
-| `~/.claude/` path | Purpose | Writable by Claude? |
-|-------------------|---------|:-------------------:|
-| `CLAUDE.md` | Root system prompt — inherited by all subagents | no |
-| `agents/<name>.md` | Subagent identity | no |
-| `commands/*.md` | Slash commands | no |
-| `settings.json` | Hooks, permissions, plugins | yes |
-| `.mcp.json` | MCP server configuration | yes |
-| `keybindings.json` | Key bindings | yes |
-| `agent-memory/<name>/` | Agent writable memory | yes |
-
-Claude Code also manages its own files (`.credentials.json`, `projects/`, `sessions/`, `history.jsonl`, etc.) — the linker never touches these.
-
-**Kordinate fills these from `~/.kord/`:**
-
-| `~/.claude/` | `~/.kord/` source | Transform |
-|-------------|-------------------|-----------|
-| `CLAUDE.md` | `root/identity.md` + `team/manifest.md` | rename + merge |
-| `agents/<name>.md` | `<agent>/identity.md` | rename, generate frontmatter |
-| `commands/*.md` | `root/commands/*.md` | copy |
+| `~/.claude/` | `~/.kord/` | Transform |
+|-------------|-----------|-----------|
 | `settings.json` | `settings.json` | copy |
 | `.mcp.json` | `mcp.json` | rename |
 | `keybindings.json` | `keybindings.json` | copy |
-| `agent-memory/<name>/` | `<agent>/memory/` | restructure |
+
+These require linking:
+
+| `~/.claude/` | Purpose | `~/.kord/` source | Transform |
+|-------------|---------|-------------------|-----------|
+| `CLAUDE.md` | Root system prompt — inherited by all subagents | `root/identity.md` + `team/manifest.md` | rename + merge |
+| `agents/<name>.md` | Subagent identity | `<agent>/identity.md` | rename, generate frontmatter |
+| `commands/*.md` | Slash commands | `root/commands/*.md` | copy |
+| `agent-memory/<name>/` | Agent writable memory | `<agent>/memory/` | restructure |
 
 No symlinks. Claude Code works with real files. `~/.kord/` is the portable format.
 
