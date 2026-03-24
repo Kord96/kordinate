@@ -24,7 +24,7 @@ Every piece of knowledge is described by eight properties:
 
 ## KORD.md
 
-`KORD.md` is the human-readable registry of all knowledge — maintained by scribe. `KORD.json` is auto-generated from it by a validation script. If KORD.md is malformed, KORD.json isn't generated, and the guard blocks writes.
+`KORD.md` is the human-readable registry of all knowledge — maintained by scribe. A validation script parses it for the guard. If KORD.md is malformed, the guard blocks writes.
 
 Only non-default values need to be specified.
 

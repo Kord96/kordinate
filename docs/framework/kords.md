@@ -113,8 +113,7 @@ Each kord is a directory inside `kord/` containing the contract, cached data, an
 
 ```
 ~/.claude/kord/                     # global scope
-├── KORD.md                         # knowledge registry (source of truth)
-├── KORD.json                       # knowledge registry (generated)
+├── KORD.md                         # knowledge registry
 ├── pattern-review/
 │   ├── contract.md                 # protocol definition
 │   ├── data.md                     # cached result
