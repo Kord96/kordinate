@@ -2,12 +2,13 @@
 
 ## Memory Properties
 
-Every piece of knowledge in kordinate is described by five properties:
+Every piece of knowledge in kordinate is described by six properties:
 
 | Property | Question | Values | Default |
 |----------|----------|--------|---------|
 | **Structured** | Does it follow a template? | `true` / `false` | `false` |
-| **On-demand** | Preloaded or read when needed? | `true` / `false` | `true` |
+| **Readonly** | Static after creation? | `true` / `false` | `false` |
+| **Preloaded** | Loaded at startup? | `true` / `false` | `false` |
 | **Owner** | Who owns it? | `team` / `agent` | `agent` |
 | **Scope** | Where does it apply? | `global` / `project` | `global` |
 | **Expiry** | Does it expire? | `none` / `<script>` / `<.md>` | `none` |
@@ -16,8 +17,9 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ### Constraints
 
-- **Structured** files can only be written by [scribe](../agents/scribe.md). See [Guards](guards.md) for enforcement details.
-- **On-demand** files must be listed in `MAP.md` to be discoverable.
+- **Readonly** files can only be written by [scribe](../agents/scribe.md). See [Guards](guards.md) for enforcement details.
+- **Structured** non-readonly files can be written by their owning agent but must follow the template. Scribe validates.
+- Non-preloaded files must be listed in `MAP.md` to be discoverable.
 
 ## MAP.md
 
@@ -35,19 +37,19 @@ Runs as a hook on structured file writes, or on demand via `/scribe:map`.
 
 === "Agent"
 
-    | File | Path | Purpose | Structured | On-demand | Expiry |
-    |------|------|---------|:----------:|:---------:|:------:|
-    | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | no | — |
-    | skills | `<agent>/skills/<name>/SKILL.md` | Skill definitions | yes | yes | — |
-    | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | yes | varies |
+    | File | Path | Purpose | Structured | Readonly | Preloaded | Expiry |
+    |------|------|---------|:----------:|:--------:|:---------:|:------:|
+    | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | yes | yes | — |
+    | skills | `<agent>/skills/<name>/SKILL.md` | Skill definitions | yes | yes | no | — |
+    | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | no | no | varies |
 
 === "Team"
 
-    | File | Path | Purpose | Structured | On-demand | Expiry |
-    |------|------|---------|:----------:|:---------:|:------:|
-    | shared knowledge | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies |
-    | contract | `team/kords/<name>/contract.md` | Consultation protocol | yes | yes | — |
-    | data | `team/kords/<name>/data.md` | Cached result | yes | yes | `team/kords/<name>/expiry.sh` |
+    | File | Path | Purpose | Structured | Readonly | Preloaded | Expiry |
+    |------|------|---------|:----------:|:--------:|:---------:|:------:|
+    | shared knowledge | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies | varies |
+    | contract | `team/kords/<name>/contract.md` | Consultation protocol | yes | yes | no | — |
+    | data | `team/kords/<name>/data.md` | Cached result | yes | no | no | `team/kords/<name>/expiry.sh` |
 
 ### Project Level
 
