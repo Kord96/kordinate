@@ -22,7 +22,7 @@ Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in a portable form
 │   ├── skills/<name>/SKILL.md      # per-agent skills
 │   └── memory/*.md                 # domain knowledge, notes
 ├── settings.json                   # permissions, hooks, env vars
-└── .mcp.json                        # MCP server configuration
+└── .mcp.json                       # MCP server configuration
 ```
 
 Every agent has the same structure. `general` is the default main session agent.
@@ -30,6 +30,17 @@ Every agent has the same structure. `general` is the default main session agent.
 ## Claude Code
 
 Claude Code reads from `~/.claude/` (user scope) and `.claude/` (project scope). The linker targets user scope.
+
+### Direct Copy
+
+No transformation needed.
+
+| Source | Target |
+|--------|--------|
+| `settings.json` | `~/.claude/settings.json` |
+| `.mcp.json` | `~/.claude/.mcp.json` |
+| `general/skills/` | `~/.claude/skills/general/` |
+| `<agent>/skills/` | `~/.claude/skills/<agent>/` |
 
 ### Main Agent
 
@@ -39,9 +50,6 @@ The general agent becomes the main Claude Code session.
 |--------|--------|-----------|
 | `general/identity.md` body + `MAP.md` | `~/.claude/CLAUDE.md` | merge |
 | `general/memory/` | `~/.claude/projects/<project>/memory/` | copy (`MAP.md` → `MEMORY.md`) |
-| `general/skills/` | `~/.claude/skills/general/` | copy |
-| `settings.json` | `~/.claude/settings.json` | copy |
-| `.mcp.json` | `~/.claude/.mcp.json` | copy |
 
 ### Subagents
 
@@ -51,7 +59,6 @@ Other agents are linked as native Claude Code subagents. [Beorn](../agents/beorn
 |--------|--------|-----------|
 | `<agent>/identity.md` | `~/.claude/agents/<name>.md` | copy (frontmatter already compatible) |
 | `<agent>/memory/MAP.md` | `~/.claude/agent-memory/<name>/MEMORY.md` | rename |
-| `<agent>/skills/` | `~/.claude/skills/<agent>/` | copy |
 
 Subagent memory is a single `MEMORY.md` in Claude (200-line preload). Multi-file memory and kords stay in `~/.kord/` — Beorn reads them directly at runtime.
 
