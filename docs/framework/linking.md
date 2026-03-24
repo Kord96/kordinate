@@ -13,11 +13,7 @@ Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in a portable form
 │       └── <kord>/
 │           ├── contract.md         # consultation protocol
 │           └── data.md             # cached results with expiry
-├── general/
-│   ├── identity.md                 # main agent identity
-│   ├── skills/<name>/SKILL.md      # main agent skills
-│   └── memory/*.md                 # main agent knowledge
-├── <agent>/
+├── <agent>/                            # general, scribe, deployer, etc.
 │   ├── identity.md                 # role, tools, workflow, rules
 │   ├── skills/<name>/SKILL.md      # per-agent skills
 │   └── memory/*.md                 # domain knowledge, notes
@@ -39,7 +35,6 @@ No transformation needed.
 |--------|--------|
 | `settings.json` | `~/.claude/settings.json` |
 | `.mcp.json` | `~/.claude/.mcp.json` |
-| `general/skills/` | `~/.claude/skills/general/` |
 | `<agent>/skills/` | `~/.claude/skills/<agent>/` |
 
 ### Main Agent
