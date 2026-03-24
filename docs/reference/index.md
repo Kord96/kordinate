@@ -8,14 +8,14 @@
 
 Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
 
-=== "Global CLAUDE.md"
+=== "Main Agent"
 
-    `~/.claude/CLAUDE.md`
+    The main Claude Code session — what the developer interacts with directly.
 
-    - Developer-written and curated — Claude does not auto-write to it unless explicitly asked.
-    - Loaded into the main session at startup. Persists across sessions.
-    - Not inherited by subagents — they never see this file.
-    - Acts as the main session's spawn prompt: project instructions, coding standards, behavioral guidance.
+    - **Spawn prompt**: `~/.claude/CLAUDE.md` — developer-written and curated. Claude does not auto-write to it unless explicitly asked. Persists across sessions.
+    - **Auto memory**: `~/.claude/projects/<project>/memory/` — Claude writes this itself. Per-project only. `MEMORY.md` acts as index, topic files hold details.
+    - Has full access to all tools, MCP servers, skills, and rules.
+    - CLAUDE.md is not inherited by subagents — they never see it.
 
 === "Auto Memory"
 
