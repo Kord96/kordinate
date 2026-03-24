@@ -10,7 +10,7 @@
 
     | File | Path | Description |
     |------|------|-------------|
-    | spawn prompt | `~/.claude/CLAUDE.md` | Loaded into every session and inherited by all subagents. Developer-written. |
+    | spawn prompt | `~/.claude/CLAUDE.md` | Loaded into the main session only. Developer-written. Not inherited by subagents. |
     | auto memory index | `~/.claude/projects/<project>/memory/MEMORY.md` | Per-project. Claude writes this itself. First 200 lines auto-loaded at startup. Acts as router to topic files. |
     | auto memory files | `~/.claude/projects/<project>/memory/*.md` | Per-project. Topic files — Claude reads these on-demand when it needs the information. |
 
