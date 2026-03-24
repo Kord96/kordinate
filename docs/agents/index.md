@@ -10,11 +10,14 @@ Every agent follows the same layout. Use `/scribe:onboard` to add new agents to 
 ├── skills/<name>/SKILL.md   # agent's skills (+ optional resources)
 └── memory/*.md              # domain knowledge, notes
 
-skills/                          # global shared skills
-└── shared/<name>/SKILL.md      # inherited by all agents
+skills/                          # global skills
+├── merge/SKILL.md              # available to all agents
+└── subagents/                  # shared by subagents only
+    ├── boot/SKILL.md
+    └── consult/SKILL.md
 ```
 
-Skills are co-located with their agent — they need agent context (memory, kords) to be useful. Shared skills (boot, consult, merge) stay global.
+Skills are co-located with their agent — they need agent context (memory, kords) to be useful. Global skills are either available to everyone (`merge`) or shared by all subagents (`boot`, `consult`).
 
 Any agent can be invoked as root (the main session) or as a subagent through [beorn](beorn.md). The structure is the same either way — identity, skills, and memory travel with the agent regardless of how it's invoked.
 
