@@ -21,13 +21,14 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ## Framework Memories
 
+`MAP.md` lives at `~/.kord/MAP.md` — the single entry point. It lists all agents, team memory, and kords with descriptions. Auto-loaded at startup; linked to `MEMORY.md` in Claude Code.
+
 === "Agent"
 
     | File | Path | Purpose | Structured | On-demand | Expiry |
     |------|------|---------|:----------:|:---------:|:------:|
     | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | no | — |
     | skills | `<agent>/skills/<name>/SKILL.md` | Skill definitions | yes | yes | — |
-    | memory | `<agent>/memory/MEMORY.md` | Agent scratchpad — auto-loaded | no | no | — |
     | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | yes | varies |
 
 === "Team"

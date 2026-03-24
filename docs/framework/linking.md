@@ -8,18 +8,17 @@ Every agent follows the same layout:
 
 ```
 ~/.kord/
+├── MAP.md                       # single router — lists all agents, memory, kords
 ├── team/
-│   └── manifest.md              # agent roster and shared rules
+│   ├── memory/*.md              # shared conventions, standards
+│   └── kords/
+│       └── <kord>/
+│           ├── contract.md      # consultation protocol
+│           └── data.md          # cached results with expiry
 ├── <agent>/
 │   ├── identity.md              # role, tools, auth, workflow, rules
 │   ├── skills/<name>/SKILL.md   # per-agent skill definitions
-│   └── memory/
-│       ├── index.md             # on-demand file listing
-│       └── *.md                 # domain knowledge, notes
-├── kords/
-│   ├── index.md                 # available kords directory
-│   ├── <kord>/contract.md       # consultation protocol
-│   └── <kord>/data.md           # cached results with expiry
+│   └── memory/*.md              # domain knowledge, notes
 ├── settings.json                # permissions, hooks, env vars
 └── mcp.json                     # MCP server configuration
 ```
