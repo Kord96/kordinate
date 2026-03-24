@@ -16,9 +16,8 @@ Every piece of knowledge is described by seven properties:
 | **Scope** | Where does it apply? | `global` / `project` | `global` |
 | **Expiry** | Does it expire? | `none` / `<script>` / `<.md>` | `none` |
 
-- Every file must have a **description** — a one-line summary of its content.
 - **Curated** files are not auto-updated by agents. Changes only happen when a human explicitly requests them.
-- **Templated** non-curated files can be written by their owning agent but must follow the referenced template.
+- **Templated** files must follow the referenced template.
 - Any file can have `scope: project`. Project-scoped files live under `<project>/.kord/` instead of `~/.kord/`.
 
 All properties live in `MAP.md` — the single registry for all knowledge. Not in per-file frontmatter.
