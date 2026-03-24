@@ -6,7 +6,7 @@ Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in a portable form
 
 ```
 ~/.kord/
-├── MAP.md                          # router — auto-generated from frontmatter
+├── MAP.json                          # router — auto-generated from frontmatter
 ├── team/
 │   ├── memory/*.md                 # shared conventions, standards
 │   └── kords/
@@ -46,7 +46,7 @@ These require thoughtful linking — they don't map 1:1 from kordinate.
     | File | Path | Description |
     |------|------|-------------|
     | system prompt | `~/.claude/CLAUDE.md` | Loaded into every session and inherited by all subagents. Developer-written instructions, not agent-generated. |
-    | auto memory | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude writes this itself as it works. First 200 lines auto-loaded at startup. Claude keeps this concise as a router: each line links to a topic file with a one-line description. Detailed notes go into topic files (e.g. `debugging.md`) in the same directory — Claude reads those on-demand. Same pattern as kordinate's `MAP.md`. |
+    | auto memory | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude writes this itself as it works. First 200 lines auto-loaded at startup. Claude keeps this concise as a router: each line links to a topic file with a one-line description. Detailed notes go into topic files (e.g. `debugging.md`) in the same directory — Claude reads those on-demand. Same pattern as kordinate's `MAP.json`. |
 
 === "Subagents"
 
