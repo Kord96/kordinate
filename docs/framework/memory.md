@@ -8,6 +8,7 @@ Every piece of knowledge is described by seven properties:
 
 | Property | Question | Values | Default |
 |----------|----------|--------|---------|
+| **Name** | Short identifier | text | derived from path |
 | **Description** | What is this? | one-line text | required |
 | **Templated** | Does it follow a template? | `none` / `<template>` | `none` |
 | **Curated** | Updated only when explicitly requested? | `true` / `false` | `false` |
