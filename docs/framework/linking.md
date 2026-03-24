@@ -22,7 +22,7 @@ Kordinate is runtime-agnostic. Agent files live at `~/.kord/` in a portable form
 │   ├── skills/<name>/SKILL.md      # per-agent skills
 │   └── memory/*.md                 # domain knowledge, notes
 ├── settings.json                   # permissions, hooks, env vars
-└── mcp.json                        # MCP server configuration
+└── .mcp.json                        # MCP server configuration
 ```
 
 Every agent has the same structure. `general` is the default main session agent.
@@ -41,7 +41,7 @@ The general agent becomes the main Claude Code session.
 | `general/memory/` | `~/.claude/projects/<project>/memory/` | copy (`MAP.md` → `MEMORY.md`) |
 | `general/skills/` | `~/.claude/skills/general/` | copy |
 | `settings.json` | `~/.claude/settings.json` | copy |
-| `mcp.json` | `~/.claude/.mcp.json` | rename |
+| `.mcp.json` | `~/.claude/.mcp.json` | copy |
 
 ### Subagents
 
