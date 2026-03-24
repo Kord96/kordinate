@@ -7,7 +7,7 @@ Every piece of knowledge in kordinate is described by six properties:
 | Property | Question | Values | Default |
 |----------|----------|--------|---------|
 | **Structured** | Does it follow a template? | `true` / `false` | `false` |
-| **Readonly** | Static after creation? | `true` / `false` | `false` |
+| **Curated** | Updated only when explicitly requested? | `true` / `false` | `false` |
 | **Preloaded** | Loaded at startup? | `true` / `false` | `false` |
 | **Owner** | Who owns it? | `team` / `agent` | `agent` |
 | **Scope** | Where does it apply? | `global` / `project` | `global` |
@@ -17,8 +17,8 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ### Constraints
 
-- **Readonly** files can only be written by [scribe](../agents/scribe.md). See [Guards](guards.md) for enforcement details.
-- **Structured** non-readonly files can be written by their owning agent but must follow the template. Scribe validates.
+- **Curated** files are not auto-updated by agents. Changes only happen when a human explicitly requests them.
+- **Structured** non-curated files can be written by their owning agent but must follow the template.
 - Non-preloaded files must have a one-line entry in `MAP.md` (path + description) to be discoverable. If it's not in MAP.md, no agent will know it exists.
 - Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
 
@@ -26,7 +26,7 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 === "Agent"
 
-    | File | Path | Purpose | Structured | Readonly | Preloaded | Expiry |
+    | File | Path | Purpose | Structured | Curated | Preloaded | Expiry |
     |------|------|---------|:----------:|:--------:|:---------:|:------:|
     | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | yes | yes | — |
     | skills | `<agent>/skills/<name>/SKILL.md` | Skill definitions | yes | yes | no | — |
@@ -34,7 +34,7 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 === "Team"
 
-    | File | Path | Purpose | Structured | Readonly | Preloaded | Expiry |
+    | File | Path | Purpose | Structured | Curated | Preloaded | Expiry |
     |------|------|---------|:----------:|:--------:|:---------:|:------:|
     | shared knowledge | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies | varies |
     | contract | `team/kords/<name>/contract.md` | Consultation protocol | yes | yes | no | — |
