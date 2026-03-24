@@ -1,12 +1,5 @@
 # Overview
 
-## What Kordinate Adds
-
-- **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
-- **[Kords](kords.md)** — defined protocols between agents for sharing expertise
-- **[Subagent P2P](../agents/beorn.md)** — subagents can invoke other subagents at any depth
-- **[Recall System](memory.md)** — knowledge properties and registry on top of the runtime's native memory
-
 ## Problem
 
 Dividing work across specialized agents keeps each one focused — but an agent's work can depend on another agent's domain knowledge.
