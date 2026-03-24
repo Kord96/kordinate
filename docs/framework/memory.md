@@ -9,7 +9,7 @@ Every piece of knowledge is described by seven properties:
 | Property | Question | Values | Default |
 |----------|----------|--------|---------|
 | **Description** | What is this? | one-line text | required |
-| **Structured** | Does it follow a template? | `none` / `<template>` | `none` |
+| **Templated** | Does it follow a template? | `none` / `<template>` | `none` |
 | **Curated** | Updated only when explicitly requested? | `true` / `false` | `false` |
 | **Preloaded** | Loaded at startup? | `true` / `false` | `false` |
 | **Owner** | Who owns it? | `team` / `agent` | `agent` |
@@ -18,20 +18,10 @@ Every piece of knowledge is described by seven properties:
 
 - Every file must have a **description** — a one-line summary of its content.
 - **Curated** files are not auto-updated by agents. Changes only happen when a human explicitly requests them.
-- **Structured** non-curated files can be written by their owning agent but must follow the referenced template.
+- **Templated** non-curated files can be written by their owning agent but must follow the referenced template.
 - Any file can have `scope: project`. Project-scoped files live under `<project>/.kord/` instead of `~/.kord/`.
 
 All properties live in `MAP.md` — the single registry for all knowledge. Not in per-file frontmatter.
-
-## Structured Files
-
-| File | Path |
-|------|------|
-| identity | `<agent>/identity.md` |
-| skill | `<agent>/skills/<name>/SKILL.md` |
-| contract | `team/kords/<name>/contract.md` |
-| data | `team/kords/<name>/data.md` |
-| MAP | `MAP.md` |
 
 ??? note "Templates"
 
