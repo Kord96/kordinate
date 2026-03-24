@@ -107,19 +107,9 @@ All properties live in `MAP.json` — the single registry for all knowledge. Onl
         - <rule>
         ```
 
-    === "SKILL.md"
+    === "kord"
 
-        ```markdown
-        ---
-        name: <skill-name>
-        description: <one-line description>
-        allowed-tools: [Read, Edit, Bash, Glob]
-        ---
-
-        <Instructions for the skill.>
-        ```
-
-    === "contract.md"
+        **contract.md** — consultation protocol:
 
         ```markdown
         ---
@@ -144,9 +134,7 @@ All properties live in `MAP.json` — the single registry for all knowledge. Onl
         - <condition>
         ```
 
-    === "data.md"
-
-        Follows the Response Format from the kord's `contract.md`:
+        **data.md** — follows the Response Format from contract.md:
 
         ```markdown
         <field>: <value>
