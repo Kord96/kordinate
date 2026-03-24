@@ -21,10 +21,11 @@
     | system prompt | `~/.claude/agents/<name>.md` | YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`, `skills`) + markdown body as system prompt. |
     | auto memory | `~/.claude/agent-memory/<name>/MEMORY.md` | Only if `memory:` is set in frontmatter. First 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. |
 
-Key behaviors:
+Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
 
 - Auto memory is always per-project. No global auto memory exists.
 - `~/.claude/CLAUDE.md` is developer-written and curated — Claude does not auto-write to it.
-- Subagents do **not** inherit CLAUDE.md, rules, skills, or conversation history from the parent session.
-- Subagents start with only: their own system prompt (markdown body), basic environment details (working directory), inherited MCP servers, and inherited permissions.
-- To give a subagent knowledge, you must: write it in the agent's body, list skills in `skills:` frontmatter, or enable `memory:` for persistent MEMORY.md.
+- "Subagents receive only this system prompt (plus basic environment details like working directory), not the full Claude Code system prompt." — no CLAUDE.md, no conversation history.
+- "Subagents don't inherit skills from the parent conversation; you must list them explicitly" via `skills:` frontmatter.
+- Subagents do inherit MCP servers and permissions from the parent session.
+- To give a subagent knowledge: write it in the agent's body, list skills in `skills:`, or enable `memory:` for persistent MEMORY.md.
