@@ -168,7 +168,8 @@ Everything outside `kord/` is native Claude Code. Everything inside `kord/` is k
     | File | Path | Description |
     |------|------|-------------|
     | system prompt | `~/.claude/CLAUDE.md` | Loaded into every session and inherited by all subagents. Developer-written. |
-    | auto memory | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude writes this itself. First 200 lines auto-loaded at startup. Acts as router to topic files in the same directory. |
+    | auto memory index | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude writes this itself. First 200 lines auto-loaded at startup. Acts as router to topic files. |
+    | auto memory files | `~/.claude/projects/<project>/memory/*.md` | Topic files — Claude reads these on-demand when it needs the information. |
 
 === "Subagents"
 
