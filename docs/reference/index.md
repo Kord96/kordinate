@@ -32,8 +32,6 @@ Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
     - Main agent uses `MEMORY.md` as an index — each line links to a topic file. Detailed notes go into separate `*.md` files in the same directory, read on-demand.
     - Subagents get a single `MEMORY.md` only — no topic files, no index pattern.
 - **Subagents**
-    - Receive only their own system prompt (markdown body) plus basic environment details — no CLAUDE.md, no conversation history, no rules.
-    - Don't inherit skills from the parent conversation. Must be listed explicitly via `skills:` frontmatter.
-    - Do inherit MCP servers and permissions from the parent session.
-    - Can explore dozens of files without any of that content accumulating in the main conversation. The parent receives a concise summary, not every file the subagent read.
-    - To give a subagent knowledge: write it in the agent's body, list skills in `skills:`, or enable `memory:` for persistent MEMORY.md.
+    - Start with only: own system prompt (markdown body), environment details, inherited MCP servers and permissions.
+    - No CLAUDE.md, no conversation history, no rules, no skills unless listed in `skills:` frontmatter.
+    - Context isolation — parent receives a summary, not the subagent's full exploration.
