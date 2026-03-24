@@ -13,4 +13,4 @@ When any agent attempts to write a structured file:
 
 Scribe authenticates once per task, performs all writes, removes auth token.
 
-See [Recall System](../framework/memory.md#structured-files) for the full list of structured files and their templates.
+See [Recall System](../framework/memory.md) for knowledge properties and templates.

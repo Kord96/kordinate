@@ -10,17 +10,17 @@ Coordinate specialized AI agents into a team — with kords, guards, and a recal
 
     Team diagram, guards, kords, and agent structure.
 
--   :material-account-group-outline:{ .lg .middle } **[Core Agents](framework/overview.md#core-agents)**
+-   :material-account-group-outline:{ .lg .middle } **[Default Team](agents/index.md)**
 
     ---
 
-    Root (orchestrator) and Scribe (documentation gate).
+    General (orchestrator) and Scribe (documentation gate).
 
 -   :material-database-outline:{ .lg .middle } **[Recall System](framework/memory.md)**
 
     ---
 
-    2D knowledge model (static/dynamic × global/project) with caching and refresh.
+    Eight knowledge properties, KORD.md registry, and templates.
 
 -   :material-server-network-outline:{ .lg .middle } **[Infra Team Example](infra/infrastructure.md)**
 

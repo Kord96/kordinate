@@ -1,14 +1,14 @@
 # klog
 
-## Designer Perspective
-
 Structured JSON logging with context binding and validation. structlog-based.
-
-## Pattern
 
 `configure once -> log everywhere`
 
-Session IDs, trace context, field filtering, dimension validation, and async batched API log pushing.
+```
+pip install klog
+```
+
+PyPI: `klog`. Deploy method: `git-branch` (trusted publishing via GitHub Actions OIDC).
 
 ## Key Classes
 
@@ -27,77 +27,41 @@ Session IDs, trace context, field filtering, dimension validation, and async bat
 - Adding trace context and correlation IDs
 - Filtering logs by field values at runtime
 - Pushing logs to an HTTP API endpoint
-- Capturing logs in tests for assertions
 
-## Architecture Review Checklist
+??? note "Agent perspectives"
 
-- Is configure_logging called once at startup (not per-module)?
-- Is log_context used for scope binding instead of manual field passing?
-- Are stdlib loggers bridged so library logs are also structured?
-- Is APIPushHandler used only for external API targets (not Loki — Alloy handles that)?
+    === "Designer"
 
-## Install
+        **Architecture Review Checklist:**
 
-```
-pip install klog
-```
+        - Is configure_logging called once at startup (not per-module)?
+        - Is log_context used for scope binding instead of manual field passing?
+        - Are stdlib loggers bridged so library logs are also structured?
+        - Is APIPushHandler used only for external API targets (not Loki — Alloy handles that)?
 
-## Deployer Perspective
+    === "Deployer"
 
-Structured logging library. Dependency for all Python services.
+        **Deployment Notes:**
 
-## Install
+        - klog is a library dependency, not a standalone service — no pods to manage
+        - All Python services should include klog in their requirements
+        - configure_logging must be called at startup for structured JSON output (required for Alloy/Loki ingestion)
+        - APIPushHandler (if used) needs network access to the target API endpoint — check NetworkPolicy
 
-```
-pip install klog
-```
+    === "Sauron"
 
-PyPI: `klog`. Deploy method: `git-branch` (trusted publishing via GitHub Actions OIDC).
+        **What to Validate:**
 
-## Deployment Notes
+        - Is configure_logging called at startup with correct renderer (JSON for prod)?
+        - Are log levels used correctly per logging.md standards?
+        - Are event names snake_case and consistent?
+        - Are dimensions structured (not f-string interpolation)?
+        - Are noisy library loggers (kafka, urllib3) suppressed?
 
-- klog is a library dependency, not a standalone service — no pods to manage
-- All Python services should include klog in their requirements
-- configure_logging must be called at startup for structured JSON output (required for Alloy/Loki ingestion)
-- APIPushHandler (if used) needs network access to the target API endpoint — check NetworkPolicy
+        **Log Review Checklist:**
 
-## Sauron Perspective
-
-Structured JSON logging library. Reference implementation for all project logging.
-
-## Purpose
-
-structlog-based with session IDs, trace context, field filtering, dimension validation, and async batched API log pushing.
-
-## Key Components for Monitoring
-
-| Component | Role |
-|-----------|------|
-| configure_logging | Setup — ensure projects call this once at startup |
-| log_context | Scope binding — verify dimension consistency |
-| log_capture | Test helper — use in tests to assert log output |
-| APIPushHandler | Async HTTP push — monitor for failures/backpressure |
-
-## What to Validate
-
-- Is configure_logging called at startup with correct renderer (JSON for prod)?
-- Are log levels used correctly per logging.md standards?
-- Are event names snake_case and consistent?
-- Are dimensions structured (not f-string interpolation)?
-- Is log_capture used in tests to verify critical log events?
-- Are noisy library loggers (kafka, urllib3) suppressed?
-
-## Log Review Checklist
-
-- Inconsistent event names across components
-- Missing dimensions (consumer, duration_s, count)
-- Wrong log levels (info in hot loops, warning without threshold)
-- Unstructured f-strings instead of dimension kwargs
-- Missing rate limiting on high-frequency warnings
-
-## Install
-
-```
-pip install klog
-```
-
+        - Inconsistent event names across components
+        - Missing dimensions (consumer, duration_s, count)
+        - Wrong log levels (info in hot loops, warning without threshold)
+        - Unstructured f-strings instead of dimension kwargs
+        - Missing rate limiting on high-frequency warnings
