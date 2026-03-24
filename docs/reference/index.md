@@ -8,17 +8,27 @@
 
 Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
 
-=== "Main Session"
+=== "Global CLAUDE.md"
 
-    - **Spawn prompt**: `~/.claude/CLAUDE.md` — developer-written and curated. Claude does not auto-write to it unless explicitly asked.
-    - **Auto memory**: `~/.claude/projects/<project>/memory/` — Claude writes this itself. Per-project only, no global auto memory.
+    `~/.claude/CLAUDE.md`
+
+    - Developer-written and curated — Claude does not auto-write to it unless explicitly asked.
+    - Loaded into the main session only. Not inherited by subagents.
+
+=== "Auto Memory"
+
+    `~/.claude/projects/<project>/memory/`
+
+    - Claude writes this itself as it works — not developer-written.
+    - Per-project only. No global auto memory exists.
     - `MEMORY.md` acts as an index — each line links to a topic file. First 200 lines auto-loaded at startup.
-    - Topic files (`*.md`) in the same directory hold detailed notes, read on-demand.
+    - Topic files (`*.md`) hold detailed notes, read on-demand.
 
 === "Subagents"
 
-    - **Spawn prompt**: `~/.claude/agents/<name>.md` — YAML frontmatter + markdown body.
-    - **Auto memory**: `~/.claude/agent-memory/<name>/MEMORY.md` — only if `memory:` is set. First 200 lines auto-injected. No topic files.
-    - Start with only: own system prompt, environment details, inherited MCP servers and permissions.
+    `~/.claude/agents/<name>.md` + `~/.claude/agent-memory/<name>/MEMORY.md`
+
+    - Start with only: own system prompt (markdown body), environment details, inherited MCP servers and permissions.
     - No CLAUDE.md, no conversation history, no rules, no skills unless listed in `skills:` frontmatter.
+    - Auto memory only if `memory:` is set in frontmatter. First 200 lines auto-injected. No topic files.
     - Context isolation — parent receives a summary, not the subagent's full exploration.
