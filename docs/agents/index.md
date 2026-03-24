@@ -39,9 +39,9 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
 
 ## Roster
 
-=== "General"
+=== "Shared"
 
-    The default agent. Provides shared skills, guards, and hooks inherited by every subagent.
+    Skills, guards, and hooks inherited by every agent.
 
     **Requirements:** none
 

@@ -53,7 +53,6 @@ nav:
       - Recall System: framework/memory.md
   - Default Team:
       - agents/index.md
-      - General: agents/general.md
       - Scribe: agents/scribe.md
       - Beorn: agents/beorn.md
       - Deployer: infra/infrastructure.md
