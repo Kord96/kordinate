@@ -6,7 +6,7 @@
 
 ## Claude Code
 
-Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
+Key behaviors ([agents](https://code.claude.com/docs/en/sub-agents), [skills](https://code.claude.com/docs/en/skills), [memory](https://code.claude.com/docs/en/memory)):
 
 === "Main Agent"
 
@@ -38,3 +38,30 @@ Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
     - Skills must be listed explicitly in `skills:` frontmatter to be injected at startup.
     - Auto memory at `~/.claude/agent-memory/<name>/MEMORY.md` — only if `memory:` is set. First 200 lines auto-injected. No topic files.
     - Context isolation — parent receives a concise summary, not every file the subagent read or explored.
+
+=== "Skills"
+
+    `~/.claude/skills/<name>/SKILL.md`
+
+    - Skills are global — not agent-scoped. Agents reference them by name via `skills:` frontmatter.
+    - Three loading levels:
+        - **Metadata** (always loaded): `name` and `description` from YAML frontmatter. Tells Claude the skill exists.
+        - **Instructions** (loaded when triggered): SKILL.md body. Step-by-step guidance.
+        - **Resources** (loaded as needed): other files in the directory — templates, scripts, reference docs. Claude reads on-demand.
+    - Invocable by user (`/skill-name`) and/or by Claude automatically, controlled by frontmatter.
+
+    ??? note "Frontmatter fields"
+
+        | Field | Required | Purpose |
+        |-------|----------|---------|
+        | `name` | No | Display name, becomes `/slash-command`. Defaults to directory name |
+        | `description` | Recommended | When to use the skill |
+        | `argument-hint` | No | Hint for autocomplete (e.g. `[issue-number]`) |
+        | `disable-model-invocation` | No | `true` = only user can invoke |
+        | `user-invocable` | No | `false` = only Claude can invoke |
+        | `allowed-tools` | No | Tools allowed without permission when skill is active |
+        | `model` | No | Model override |
+        | `effort` | No | Effort level override |
+        | `context` | No | `fork` = run in subagent |
+        | `agent` | No | Which subagent type when `context: fork` |
+        | `hooks` | No | Hooks scoped to this skill |
