@@ -17,7 +17,7 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 ### Constraints
 
 - **Structured** files can only be written by scribe. See [Guards](guards.md) for enforcement details.
-- **On-demand** files are discovered by scanning directories and reading frontmatter. No index files needed.
+- **On-demand** files must be listed in `MAP.md` to be discoverable.
 
 ## Framework Memories
 
