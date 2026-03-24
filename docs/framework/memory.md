@@ -1,8 +1,10 @@
 # Recall System
 
-## Knowledge Properties
+Everything in kordinate — identity, skills, memory, contracts — is knowledge. The recall system defines how knowledge is stored, loaded, and discovered.
 
-Every piece of knowledge in kordinate is described by six properties:
+## Properties
+
+Every piece of knowledge is described by six properties:
 
 | Property | Question | Values | Default |
 |----------|----------|--------|---------|
