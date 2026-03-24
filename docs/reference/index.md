@@ -23,10 +23,14 @@
 
 Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
 
-- Auto memory is always per-project. No global auto memory exists.
-- `~/.claude/CLAUDE.md` is developer-written and curated — Claude does not auto-write to it.
-- "Subagents receive only this system prompt (plus basic environment details like working directory), not the full Claude Code system prompt." — no CLAUDE.md, no conversation history.
-- "Subagents don't inherit skills from the parent conversation; you must list them explicitly" via `skills:` frontmatter.
-- Subagents do inherit MCP servers and permissions from the parent session.
-- Subagent can explore dozens of files without any of that content accumulating in the main conversation. The parent receives a concise summary, not every file the subagent read.
-- To give a subagent knowledge: write it in the agent's body, list skills in `skills:`, or enable `memory:` for persistent MEMORY.md.
+- **Global CLAUDE.md** (`~/.claude/CLAUDE.md`)
+    - Developer-written and curated — Claude does not auto-write to it unless explicitly asked.
+    - Loaded into the main session only. Not inherited by subagents.
+- **Auto memory** (`~/.claude/projects/<project>/memory/`)
+    - Always per-project. No global auto memory exists.
+- **Subagents**
+    - Receive only their own system prompt (markdown body) plus basic environment details — no CLAUDE.md, no conversation history, no rules.
+    - Don't inherit skills from the parent conversation. Must be listed explicitly via `skills:` frontmatter.
+    - Do inherit MCP servers and permissions from the parent session.
+    - Can explore dozens of files without any of that content accumulating in the main conversation. The parent receives a concise summary, not every file the subagent read.
+    - To give a subagent knowledge: write it in the agent's body, list skills in `skills:`, or enable `memory:` for persistent MEMORY.md.
