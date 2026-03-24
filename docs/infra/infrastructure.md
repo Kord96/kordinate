@@ -8,9 +8,9 @@ Owns all infrastructure operations — the only agent authorized to write to clu
 | **Authority** | kubectl writes, container registry, Redis |
 | **Exclusive Tools** | postgres.py, Redis MCP |
 
-### Commands
+### Skills
 
-| Command | Description |
+| Skill | Description |
 |---------|-------------|
 | `/deployer:roll` | Roll between environments |
 | `/deployer:stop` | Scale down an environment |

@@ -108,14 +108,7 @@ Each addon deploys its manifests and configures MCP.
 
 ## File Layout
 
-| Path | Purpose |
-|------|---------|
-| `~/.kord/` | Portable kordinate format — source of truth |
-| `~/.claude/` | Runtime format — what Claude Code reads |
-
-On image build, the framework is copied from `~/.kord/` to `~/.claude/`. No symlinks. Claude Code works natively with real files.
-
-Export (future): convert `~/.claude/` back to `~/.kord/` for backup, git, or sharing.
+Kordinate lives inside the runtime's native structure at `~/.claude/kord/`. No separate filesystem, no linker. Claude Code works natively with real files.
 
 ## Credentials
 

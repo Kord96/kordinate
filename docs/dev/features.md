@@ -179,5 +179,5 @@ klog, orchestrator, stoik, nokrashi-tools
 | Gemini MCP validation | designer IDENTITY.md |
 | Pattern TODOs (examples, implementation guides) | 18 pattern files in designer memory |
 | Project-level agent dirs (`<project>/<agent>/`) | linking docs, shared MEMORY.md |
-| ~/.kord/ portable format | installation docs (planned) |
+| ~/.claude/kord/ registry and kords | installation docs |
 | Tier-based installation | installation docs (planned) |

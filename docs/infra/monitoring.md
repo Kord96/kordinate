@@ -10,9 +10,9 @@ The sauron agent owns all monitoring, observability, and code validation. It is 
 | **Authority** | Grafana, code fixes, standards testing |
 | **Exclusive Tools** | nokrashi-tools, klog, Grafana MCP |
 
-### Commands
+### Skills
 
-| Command | Description |
+| Skill | Description |
 |---------|-------------|
 | `/sauron:scan` | Scan a project for monitoring gaps |
 | `/sauron:diagnose` | Diagnose a specific issue |
