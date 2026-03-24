@@ -45,5 +45,5 @@ These require thoughtful linking — they don't map 1:1 from kordinate.
 |------|-------------|
 | `~/.claude/CLAUDE.md` | Global system prompt — loaded into every session and inherited by all subagents. Developer-written instructions, not agent-generated. |
 | `~/.claude/projects/<project>/memory/MEMORY.md` | Main session auto memory — Claude writes this itself as it works. First 200 lines auto-loaded at startup. Claude keeps this concise as a router: each line links to a topic file with a one-line description. Detailed notes go into topic files (e.g. `debugging.md`) in the same directory — Claude reads those on-demand. Same pattern as kordinate's `MAP.md`. |
-| `~/.claude/agents/<name>.md` | Subagent identity — flat markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`, etc.) and markdown body as system prompt. |
 | `~/.claude/agent-memory/<name>/MEMORY.md` | Subagent memory — single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate but lines are not loaded unless explicitly instructed. No topic files. |
+| `~/.claude/agents/<name>.md` | Subagent identity — flat markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`, etc.) and markdown body as system prompt. |
