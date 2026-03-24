@@ -37,43 +37,13 @@ No transformation needed.
 | `.mcp.json` | `~/.claude/.mcp.json` |
 | `<agent>/skills/` | `~/.claude/skills/<agent>/` |
 
-### Main Agent
+### Remaining
 
-The general agent becomes the main Claude Code session.
+These require thoughtful linking — they don't map 1:1 from kordinate.
 
-| Source | Target | Operation |
-|--------|--------|-----------|
-| `general/identity.md` body + `MAP.md` | `~/.claude/CLAUDE.md` | merge |
-| `general/memory/` | `~/.claude/projects/<project>/memory/` | copy (`MAP.md` → `MEMORY.md`) |
-
-### Subagents
-
-Other agents are linked as native Claude Code subagents. [Beorn](../agents/beorn.md) enables P2P between them.
-
-| Source | Target | Operation |
-|--------|--------|-----------|
-| `<agent>/identity.md` | `~/.claude/agents/<name>.md` | copy (frontmatter already compatible) |
-| `<agent>/memory/MAP.md` | `~/.claude/agent-memory/<name>/MEMORY.md` | rename |
-
-Subagent memory is a single `MEMORY.md` in Claude (200-line preload). Multi-file memory and kords stay in `~/.kord/` — Beorn reads them directly at runtime.
-
-### What Beorn Handles
-
-These don't map to Claude's filesystem. Beorn serves them at runtime:
-
-- Agent multi-file memory beyond `MEMORY.md`
-- Kords (consultation protocols and cached data)
-- Memory properties (expiry, structured enforcement)
-- P2P invocation between subagents
-
-### Differences
-
-| | Kordinate | Claude Code |
-|---|---|---|
-| **Hierarchy** | No hierarchy — any agent can be root or subagent | Fixed — one main session, subagents below it |
-| **Identity** | Every agent has `<agent>/identity.md`, same format | Main session uses `CLAUDE.md`; subagents use `agents/<name>.md` |
-| **Shared context** | `MAP.md` — universal router | `CLAUDE.md` — inherited from main to all subagents |
-| **Memory** | Agent-owned folders, per-file properties via frontmatter | Main: auto memory with topic files. Subagents: single `MEMORY.md` |
-| **Expiry** | Files declare staleness via scripts or markdown | No expiry — memory grows indefinitely |
-| **Structure enforcement** | `structured` property + guards | No enforcement |
-| **Skills** | Per-agent: `<agent>/skills/` | Global: `skills/<name>/SKILL.md` |
+| Path | Description |
+|------|-------------|
+| `~/.claude/CLAUDE.md` | Global system prompt — loaded into every session and inherited by all subagents. Developer-written instructions, not agent-generated. |
+| `~/.claude/projects/<project>/memory/MEMORY.md` | Main session auto memory — Claude writes this itself as it works. First 200 lines auto-loaded at startup. Supports topic files in the same directory, read on-demand. |
+| `~/.claude/agents/<name>.md` | Subagent identity — flat markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`, etc.) and markdown body as system prompt. |
+| `~/.claude/agent-memory/<name>/MEMORY.md` | Subagent memory — single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate but lines are not loaded unless explicitly instructed. No topic files. |
