@@ -20,7 +20,7 @@ Every piece of knowledge is described by eight properties:
 | **Template** | Does it follow a template? | `none` / `<template>` | `none` |
 | **Curated** | Updated only when explicitly requested? | `true` / `false` | `false` |
 | **Preloaded** | Loaded at startup? | `true` / `false` | `false` |
-| **Owner** | Who owns it? | `team` / `agent` | `agent` |
+| **Owner** | Who owns it? | `team` / `<kord>` / `<agent>` | `agent` |
 | **Scope** | Where does it apply? | `global` / `project` | `global` |
 | **Expiry** | Does it expire? | `none` / `<script>` / `<.md>` | `none` |
 
@@ -68,14 +68,14 @@ All properties live in `MAP.json` — the single registry for all knowledge. Onl
         "path": "team/kords/deployer-default/contract.md",
         "description": "General cluster questions",
         "template": "contract",
-        "owner": "team",
+        "owner": "deployer-default",
         "curated": true
       },
       {
         "path": "team/kords/deployer-default/data.md",
         "description": "Cached cluster state",
         "template": "data",
-        "owner": "team",
+        "owner": "deployer-default",
         "expiry": "team/kords/deployer-default/expiry.sh"
       }
     ]
