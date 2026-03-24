@@ -145,7 +145,7 @@ All properties live in `MAP.json` — the single registry for all knowledge. Onl
 
 These files are managed by Claude Code natively. MAP.json tracks them but doesn't create or modify them.
 
-Claude Code has no global auto memory. Auto memory is always per-project. When asked to "remember something globally", Claude writes to `~/.claude/CLAUDE.md` instead — developer-written, curated instructions, not auto-generated.
+Claude Code has no global auto memory. Auto memory is always per-project. There is no mechanism to auto-remember across all projects. `~/.claude/CLAUDE.md` is developer-written and curated — Claude does not auto-write to it.
 
 ```
 ~/.claude/                              # user scope
@@ -178,4 +178,4 @@ Everything outside `kord/` is native Claude Code. Everything inside `kord/` is k
     | File | Path | Description |
     |------|------|-------------|
     | system prompt | `~/.claude/agents/<name>.md` | YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`) + markdown body as system prompt. |
-    | auto memory | `~/.claude/agent-memory/<name>/MEMORY.md` | Single flat file of accumulated notes — not a router. First 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. No topic files, no references to other files. |
+    | auto memory index | `~/.claude/agent-memory/<name>/MEMORY.md` | First 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. May support topic files (same architecture as main session). |
