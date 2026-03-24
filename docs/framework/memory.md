@@ -28,56 +28,6 @@ Every piece of knowledge is described by eight properties:
 
 Only non-default values need to be specified.
 
-??? example "KORD.json"
-
-    ```json
-    [
-      {
-        "path": "general/identity.md",
-        "description": "General agent — default main session",
-        "template": "identity",
-        "curated": true,
-        "preloaded": true
-      },
-      {
-        "path": "scribe/identity.md",
-        "description": "Documentation gate — sole structured file editor",
-        "template": "identity",
-        "curated": true,
-        "preloaded": true
-      },
-      {
-        "path": "scribe/skills/onboard/SKILL.md",
-        "description": "Add a new agent to the team",
-        "template": "skill",
-        "curated": true
-      },
-      {
-        "path": "scribe/memory/docs-patterns.md",
-        "description": "MkDocs patterns and conventions learned"
-      },
-      {
-        "path": "team/memory/coding-standards.md",
-        "description": "Team-wide coding standards",
-        "owner": "team",
-        "curated": true
-      },
-      {
-        "path": "team/kords/deployer-default/contract.md",
-        "description": "General cluster questions",
-        "template": "contract",
-        "owner": "deployer-default",
-        "curated": true
-      },
-      {
-        "path": "team/kords/deployer-default/data.md",
-        "description": "Cached cluster state",
-        "template": "data",
-        "owner": "deployer-default",
-        "expiry": "team/kords/deployer-default/expiry.sh"
-      }
-    ]
-    ```
 
 ??? note "Templates"
 
