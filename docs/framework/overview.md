@@ -1,23 +1,5 @@
 # Overview
 
-```mermaid
-flowchart TB
-    USER[User / Runtime]
-
-    subgraph team[Team]
-        A1[Agent A] <-.->|consult| A2[Agent B]
-        A1 -.->|consult| A3["Agent C\n(beorn skin)"]
-        A3 -.->|consult| A1
-        A2 <-.->|consult| A3
-        A1 -->|consult| SC[Scribe]
-        A2 -->|consult| SC
-    end
-
-    USER -.->|invoke| A1
-    USER -.->|invoke| A2
-    USER -->|invoke| SC
-```
-
 ## What Kordinate Adds
 
 - **[Guards](guards.md)** — hook-based enforcement that only the right agent performs protected operations
@@ -25,8 +7,34 @@ flowchart TB
 - **[Subagent P2P](../agents/beorn.md)** — subagents can invoke other subagents at any depth
 - **[Recall System](memory.md)** — knowledge properties and registry on top of the runtime's native memory
 
-The user's runtime (Claude Code, Codex, Cursor) invokes agents. Current runtimes don't allow subagents to spawn other subagents. Kordinate removes this limitation — any subagent, at any depth, can [invoke another agent](../agents/beorn.md).
+## Problem
 
-Agents define what they provide to each other through **[kords](kords.md)** — protocols that specify the topic, format, and guidelines for each consultation. A pair of agents can have multiple kords for different topics (shown as separate arrows above).
+Dividing work across specialized agents keeps each one focused — but an agent's work can depend on another agent's domain knowledge.
+
+**Sauron** is responsible for monitoring. Each time it sets up monitoring, it needs answers to key questions:
+
+1. **What infrastructure do we have?**
+
+        System runs on Kubernetes.
+        Grafana at 198.128.3.100:9000, credentials: xxx
+        Loki at 198.128.3.100:9001, Prometheus at 198.128.3.100:9002
+        Shipping via Alloy, configured at master-alloy.yml
+
+2. **What design patterns does this app use?**
+
+        Stream-to-store pattern — reads from Kafka, writes to S3.
+        Typical metrics: message throughput, storage growth.
+
+These are **Deployer's** and **Designer's** domains, not **Sauron's**. Without delegation, **Sauron** would have to maintain its own infrastructure scanning and pattern detection skills — duplicating work and expanding beyond its scope.
+
+The alternative is re-invoking **Deployer** and **Designer** every time, but that's expensive. The natural solution is to cache their answers — but how does **Sauron** detect a stale cache when Grafana moves to a new machine? Enter **kords**.
+
+## What is a Kord
+
+A **kord** is a contract between two agents. It defines who provides what, the expected response format, and the criteria for cache invalidation. When an agent needs another agent's knowledge, it consults through a kord — the result is cached and reused until the provider's state changes.
+
+See [Kords](kords.md) for examples, cache freshness, and structure.
+
+The user's runtime (Claude Code, Codex, Cursor) invokes agents. Current runtimes don't allow subagents to spawn other subagents. Kordinate removes this limitation — any subagent, at any depth, can [invoke another agent](../agents/beorn.md).
 
 See the [Default Team](../agents/index.md) for agent structure and roster.
