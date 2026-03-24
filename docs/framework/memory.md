@@ -4,10 +4,11 @@ Everything in kordinate — identity, skills, memory, contracts — is knowledge
 
 ## Properties
 
-Every piece of knowledge is described by six properties:
+Every piece of knowledge is described by seven properties:
 
 | Property | Question | Values | Default |
 |----------|----------|--------|---------|
+| **Description** | What is this? | one-line text | required |
 | **Structured** | Does it follow a template? | `none` / `<path>` | `none` |
 | **Curated** | Updated only when explicitly requested? | `true` / `false` | `false` |
 | **Preloaded** | Loaded at startup? | `true` / `false` | `false` |
@@ -15,24 +16,23 @@ Every piece of knowledge is described by six properties:
 | **Scope** | Where does it apply? | `global` / `project` | `global` |
 | **Expiry** | Does it expire? | `none` / `<script>` / `<.md>` | `none` |
 
+- Every file must have a **description** — a one-line summary of its content.
 - **Curated** files are not auto-updated by agents. Changes only happen when a human explicitly requests them.
 - **Structured** non-curated files can be written by their owning agent but must follow the referenced template.
 - Any file can have `scope: project`. Project-scoped files live under `<project>/.kord/` instead of `~/.kord/`.
 
-Properties are not stored as per-file frontmatter. They live in `MAP.md` — the single registry for all knowledge.
+All properties live in `MAP.md` — the single registry for all knowledge. Not in per-file frontmatter.
 
 ## MAP.md
 
-`MAP.md` lives at `~/.kord/MAP.md` — the single source of truth for every file in the system. Every file gets an entry, whether preloaded or not.
-
-Each row has: path, one-line description, and properties.
+`MAP.md` lives at `~/.kord/MAP.md` — the single source of truth for every file in the system. Every file gets an entry.
 
 ```markdown
 | Path | Description | Structured | Curated | Preloaded | Expiry |
 |------|-------------|-----------|---------|-----------|--------|
 | general/identity.md | General agent — default main session | #identity | yes | yes | — |
 | scribe/identity.md | Documentation gate — sole structured file editor | #identity | yes | yes | — |
-| scribe/skills/onboard/SKILL.md | Add a new agent to the team | #skill | yes | no | — |
+| scribe/skills/onboard/SKILL.md | Add a new agent to the team | #skill | yes | yes | — |
 | scribe/memory/docs-patterns.md | MkDocs patterns and conventions learned | none | no | no | — |
 | team/memory/coding-standards.md | Team-wide coding standards | none | yes | no | — |
 | team/kords/deployer-default/contract.md | General cluster questions | #contract | yes | no | — |
@@ -50,6 +50,7 @@ The linker reads MAP.md to know every file, its purpose, and how to handle it.
     | File | Path | Structured | Curated | Preloaded | Expiry |
     |------|------|:----------:|:-------:|:---------:|:------:|
     | identity | `<agent>/identity.md` | `#identity` | yes | yes | — |
+    | skill | `<agent>/skills/<name>/SKILL.md` | `#skill` | yes | no | — |
     | memory | `<agent>/memory/*.md` | varies | no | no | varies |
 
 === "Team"
@@ -59,26 +60,6 @@ The linker reads MAP.md to know every file, its purpose, and how to handle it.
     | shared knowledge | `team/memory/*.md` | varies | varies | varies | varies |
     | contract | `team/kords/<name>/contract.md` | `#contract` | yes | no | — |
     | data | `team/kords/<name>/data.md` | `#data` | no | no | `expiry.sh` |
-
-## Skills
-
-Skills are actions an agent can perform — procedures, workflows, and automation. Each skill is a directory with progressive disclosure:
-
-| Level | File | Loaded when | Purpose |
-|-------|------|-------------|---------|
-| 1. Metadata | `SKILL.md` frontmatter | Always (at startup) | `name` and `description` — tells the agent this skill exists |
-| 2. Instructions | `SKILL.md` body | When skill is triggered | Step-by-step guidance, workflows, best practices |
-| 3. Resources | Additional files in the directory | As needed | Scripts, templates, reference docs, examples |
-
-```
-<agent>/skills/<name>/
-├── SKILL.md              # metadata (frontmatter) + instructions (body)
-├── REFERENCE.md          # additional guidance (optional)
-└── scripts/
-    └── validate.sh       # executable resource (optional)
-```
-
-Skills are curated and structured — they follow a template and are only updated when explicitly requested.
 
 ## Structured Files
 
