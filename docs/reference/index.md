@@ -28,4 +28,5 @@ Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
 - "Subagents receive only this system prompt (plus basic environment details like working directory), not the full Claude Code system prompt." — no CLAUDE.md, no conversation history.
 - "Subagents don't inherit skills from the parent conversation; you must list them explicitly" via `skills:` frontmatter.
 - Subagents do inherit MCP servers and permissions from the parent session.
+- Subagent can explore dozens of files without any of that content accumulating in the main conversation. The parent receives a concise summary, not every file the subagent read.
 - To give a subagent knowledge: write it in the agent's body, list skills in `skills:`, or enable `memory:` for persistent MEMORY.md.
