@@ -1,16 +1,16 @@
 # Agent Reference
 
-=== "Root"
+=== "General"
 
-    The orchestrator. All items below are inherited by every subagent.
+    The default agent. All items below are inherited by every subagent.
 
     **Requirements:** none
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | command | `/boot` | Catch up on parent context and code changes |
-    | command | `/consult` | Invoke an agent via kord protocol |
-    | command | `/merge` | Merge session branch forward |
+    | skill | `/boot` | Catch up on parent context and code changes |
+    | skill | `/consult` | Invoke an agent via kord protocol |
+    | skill | `/merge` | Merge session branch forward |
     | guard | `guard-git.sh` | Branch protection |
     | guard | `guard-md.sh` | Structured files — scribe only |
     | hook | `auto-merge-to-dev.sh` | Fast-forward main after push |
@@ -24,14 +24,14 @@
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | command | `/scribe:onboard` | Add a new agent to the team |
-    | command | `/scribe:kord` | Define a new kord |
-    | command | `/scribe:update-agent-docs` | Update agent documentation |
-    | command | `/scribe:update-project-docs` | Update project documentation |
+    | skill | `/scribe:onboard` | Add a new agent to the team |
+    | skill | `/scribe:kord` | Define a new kord |
+    | skill | `/scribe:update-agent-docs` | Update agent documentation |
+    | skill | `/scribe:update-project-docs` | Update project documentation |
 
 === "Beorn"
 
-    A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, commands, and rules. Has no tools, commands, or hooks of its own.
+    A short-lived agent clone. Takes the skin of the agent it clones — inheriting its identity, memory, skills, and rules. Has no tools, skills, or hooks of its own.
 
     **Requirements:** beorn server (Node.js MCP server)
 
@@ -45,12 +45,12 @@
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | command | `/deployer:roll` | Roll between environments |
-    | command | `/deployer:stop` | Scale down an environment |
-    | command | `/deployer:clean` | Clean up environment data |
-    | command | `/deployer:diff` | Stage incremental data changes |
-    | command | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
-    | command | `/deployer:migrate-workstation` | Prepare workstation migration handover |
+    | skill | `/deployer:roll` | Roll between environments |
+    | skill | `/deployer:stop` | Scale down an environment |
+    | skill | `/deployer:clean` | Clean up environment data |
+    | skill | `/deployer:diff` | Stage incremental data changes |
+    | skill | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
+    | skill | `/deployer:migrate-workstation` | Prepare workstation migration handover |
     | guard | `guard-kubectl.sh` | kubectl write operations — deployer only |
     | tool | `postgres.py` | Local database operations |
 
@@ -62,8 +62,8 @@
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | command | `/sauron:scan` | Scan a project for monitoring gaps |
-    | command | `/sauron:diagnose` | Diagnose a specific issue |
+    | skill | `/sauron:scan` | Scan a project for monitoring gaps |
+    | skill | `/sauron:diagnose` | Diagnose a specific issue |
     | guard | `guard-grafana.sh` | Grafana MCP tools — sauron only |
     | tool | Grafana MCP | Dashboard management |
     | tool | nokrashi-tools | Code analysis |
@@ -77,4 +77,4 @@
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | command | `/designer:detect-patterns` | Scan a project for recognized patterns |
+    | skill | `/designer:detect-patterns` | Scan a project for recognized patterns |

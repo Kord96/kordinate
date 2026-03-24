@@ -15,9 +15,9 @@ What's baked into the workstation image. Built once, never seen by the user.
 - Shell configured (PATH, KORDINATE_HOME, .bashrc)
 - Kordinate framework pre-linked to `~/.claude/`
 - Beorn server pre-installed
-- Core agents: root, scribe
+- Core agents: general, scribe
 - Core guards: guard-md.sh, guard-git.sh
-- Core commands: /consult, /boot, /merge
+- Core skills: /consult, /boot, /merge
 - Recall system (static/dynamic memory structure)
 - Kord protocol (pre-consult.sh, /consult)
 - Worktree sessions (claude-session, tmux-new-window)

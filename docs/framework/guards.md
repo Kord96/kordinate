@@ -20,7 +20,7 @@ flowchart LR
 **How it works:**
 
 1. Agent attempts to write a file
-2. Guard matches the file path against registered structured patterns (`*/identity.md`, `*/commands/*.md`, `team/kords/*/contract.md`, etc.)
+2. Guard matches the file path against registered structured patterns (`*/identity.md`, `*/skills/*/SKILL.md`, `team/kords/*/contract.md`, etc.)
 3. Match → check for scribe auth token → block or allow
 4. No match → allow (unstructured, any agent can write)
 

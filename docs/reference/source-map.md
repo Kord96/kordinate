@@ -23,7 +23,7 @@ The source map lives at `docs/.source-map.yaml`. Run `/scribe:audit-docs` to che
 | **infrastructure.md** | `bin/claude-session`, `deployer/memory/static/infra.md`, deployer manifests |
 | **agents.md** | `agents/*/IDENTITY.md`, `agents/shared/MEMORY.md` |
 | **hooks.md** | `hooks/*.sh`, `lib/cache.sh`, `settings.json` |
-| **consultation.md** | `commands/consult.md`, `commands/invalidate.md`, `agents/*/instructions/consultation.md` |
+| **consultation.md** | `skills/consult/SKILL.md`, `agents/*/skills/*/SKILL.md` |
 | **memory.md** | `hooks/agent-memory.sh`, `agents/shared/MEMORY.md`, `lib/cache.sh` |
 | **reference/link-mapping.md** | `installer/link-claude.sh` |
 | **reference/patterns/\*.md** | `agents/designer/memory/static/patterns/*.md` |

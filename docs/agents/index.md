@@ -6,11 +6,9 @@ Every agent follows the same layout. Use `/scribe:onboard` to add new agents to 
 
 ```
 <agent>/
-├── identity.md          # role, tools, auth, workflow, rules
-├── skills/<name>/SKILL.md  # skill definitions
-└── memory/
-    ├── index.md          # on-demand file listing
-    └── *.md              # domain knowledge, notes
+├── identity.md              # role, tools, auth, workflow, rules
+├── skills/<name>/SKILL.md   # skill definitions
+└── memory/*.md              # domain knowledge, notes
 ```
 
 Any agent can be invoked as root (the main session) or as a subagent through [beorn](beorn.md). The structure is the same either way — identity, skills, and memory travel with the agent regardless of how it's invoked.

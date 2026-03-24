@@ -129,9 +129,9 @@ team/kords/
 
 ---
 
-??? note "Related commands"
+??? note "Related skills"
 
-    | Command | Purpose |
+    | Skill | Purpose |
     |---------|---------|
     | `/consult pattern-review "prompt"` | Consult via explicit kord |
     | `/consult designer "prompt"` | Consult via default kord |

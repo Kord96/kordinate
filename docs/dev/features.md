@@ -8,7 +8,7 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 
 | Agent | Identity | Commands | Instructions | Memory (static) | Memory (dynamic) |
 |-------|----------|----------|-------------|-----------------|-----------------|
-| root | IDENTITY.md | /boot, /consult, /merge | — | — | consultations/ |
+| general | IDENTITY.md | /boot, /consult, /merge | — | — | consultations/ |
 | scribe | IDENTITY.md | onboard, kord, add-mcp, update-agent-docs, update-project-docs, update-subagent-memory, audit-docs | workflow.md, tools.md | templates/ | MEMORY.md, operational_notes.md |
 | deployer | IDENTITY.md | bootstrap, roll, stop, clean, diff, migrate-workstation | auth.md, tools.md | infra.md, migration.md, troubleshooting.md | operational_notes.md, infra-monitoring.md |
 | sauron | IDENTITY.md | scan, diagnose | auth.md, workflow.md, tools.md | monitoring.md, logging.md, manifest.yaml | grafana_renderer.md, operational_notes.md |
@@ -42,13 +42,13 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 | pattern-review | deployer, sauron | designer |
 | monitoring-impact | deployer | sauron |
 
-### Commands
+### Skills
 
-| Command | Scope | Purpose |
-|---------|-------|---------|
-| /boot | root | Catch up on parent context + code changes |
-| /consult | root | Invoke agent via kord protocol |
-| /merge | root | Merge session branch forward |
+| Skill | Scope | Purpose |
+|-------|-------|---------|
+| /boot | general | Catch up on parent context + code changes |
+| /consult | general | Invoke agent via kord protocol |
+| /merge | general | Merge session branch forward |
 | /scribe:onboard | scribe | Add new agent to team |
 | /scribe:kord | scribe | Define new kord |
 | /scribe:add-mcp | scribe | Add MCP server entry |
@@ -62,7 +62,7 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 | File | Purpose |
 |------|---------|
 | settings.json | Hook configuration (guards, auto-merge, memory regen) |
-| profile/mcp.json | MCP server registration (playwright, beorn) |
+| profile/.mcp.json | MCP server registration (playwright, beorn) |
 | profile/keybindings.json | Claude Code key bindings |
 | profile/config.yaml | Cluster configuration (IPs, namespaces, services) |
 | agents/registry.yaml | Machine-readable agent list for beorn |
