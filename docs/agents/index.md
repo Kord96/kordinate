@@ -7,7 +7,7 @@ Every agent follows the same layout. Use `/scribe:onboard` to add new agents to 
 ```
 <agent>/
 ├── identity.md          # role, tools, auth, workflow, rules
-├── skills/*.md         # skill definitions
+├── skills/<name>/SKILL.md  # skill definitions
 └── memory/
     ├── index.md          # on-demand file listing
     └── *.md              # domain knowledge, notes

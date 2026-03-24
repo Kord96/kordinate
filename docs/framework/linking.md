@@ -12,7 +12,7 @@ Every agent follows the same layout:
 │   └── manifest.md              # agent roster and shared rules
 ├── <agent>/
 │   ├── identity.md              # role, tools, auth, workflow, rules
-│   ├── skills/*.md              # per-agent skill definitions
+│   ├── skills/<name>/SKILL.md   # per-agent skill definitions
 │   └── memory/
 │       ├── index.md             # on-demand file listing
 │       └── *.md                 # domain knowledge, notes
