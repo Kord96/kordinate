@@ -7,17 +7,14 @@ Every agent follows the same layout. Use `/scribe:onboard` to add new agents to 
 ```
 <agent>/
 ├── identity.md              # role, tools, auth, workflow, rules
+├── skills/<name>/SKILL.md   # agent's skills (+ optional resources)
 └── memory/*.md              # domain knowledge, notes
 
-skills/                          # global, organized by domain
-├── deployment/<name>/SKILL.md
-├── monitoring/<name>/SKILL.md
-├── documentation/<name>/SKILL.md
-├── architecture/<name>/SKILL.md
-└── shared/<name>/SKILL.md       # inherited by all agents
+skills/                          # global shared skills
+└── shared/<name>/SKILL.md      # inherited by all agents
 ```
 
-Skills are global — organized by domain, not by agent. Agents reference skills by name in their identity frontmatter.
+Skills are co-located with their agent — they need agent context (memory, kords) to be useful. Shared skills (boot, consult, merge) stay global.
 
 Any agent can be invoked as root (the main session) or as a subagent through [beorn](beorn.md). The structure is the same either way — identity, skills, and memory travel with the agent regardless of how it's invoked.
 
