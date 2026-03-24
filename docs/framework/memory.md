@@ -2,14 +2,6 @@
 
 Everything in kordinate — identity, skills, memory, contracts — is knowledge. The recall system defines how knowledge is stored, loaded, and discovered.
 
-Kordinate lives inside the runtime's native structure — no separate filesystem, no linker. It adds three things:
-
-1. **`kord/KORD.md`** — human-readable registry of all knowledge and its properties, maintained by scribe
-2. **`kord/KORD.json`** — machine-readable registry, auto-generated from KORD.md by a validation script
-3. **A guard** — enforces templates on writes by checking KORD.json
-
-Scribe writes KORD.md → a script validates and generates KORD.json. If KORD.md is malformed, KORD.json isn't generated, and the guard blocks writes.
-
 ## Properties
 
 Every piece of knowledge is described by eight properties:
@@ -30,7 +22,11 @@ Every piece of knowledge is described by eight properties:
 - **Template** files must follow the referenced template.
 - **Scope**: `global` properties live in `~/.claude/kord/`. `project` properties live in `.claude/kord/`.
 
-All properties live in `KORD.md` (source of truth) and `KORD.json` (generated). Only non-default values need to be specified.
+## KORD.md
+
+`KORD.md` is the human-readable registry of all knowledge — maintained by scribe. `KORD.json` is auto-generated from it by a validation script. If KORD.md is malformed, KORD.json isn't generated, and the guard blocks writes.
+
+Only non-default values need to be specified.
 
 ??? example "KORD.json"
 
@@ -144,29 +140,6 @@ All properties live in `KORD.md` (source of truth) and `KORD.json` (generated). 
         ```
 
 ## Claude Code
-
-These files are managed by Claude Code natively. KORD.json tracks them but doesn't create or modify them.
-
-Claude Code has no global auto memory. Auto memory is always per-project. There is no mechanism to auto-remember across all projects. `~/.claude/CLAUDE.md` is developer-written and curated — Claude does not auto-write to it.
-
-```
-~/.claude/                              # user scope
-├── CLAUDE.md                           # system prompt
-├── agents/<name>.md                    # subagent identities
-├── agent-memory/<name>/MEMORY.md       # subagent auto memory
-├── skills/<agent>/<name>/SKILL.md      # agent skills
-├── settings.json                       # permissions, hooks, env vars
-├── .mcp.json                           # MCP server configuration
-├── projects/<project>/memory/          # main session auto memory
-└── kord/
-    ├── KORD.md                         # knowledge registry (source of truth)
-    ├── KORD.json                       # knowledge registry (generated)
-    └── <kord-name>/
-        ├── contract.md                 # consultation protocol
-        └── data.md                     # cached result
-```
-
-Everything outside `kord/` is native Claude Code. Everything inside `kord/` is kordinate. The guard merges both scope-level KORD.json files when checking writes.
 
 === "Main Agent"
 

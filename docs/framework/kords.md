@@ -109,14 +109,16 @@ Just describe what you need. The `.md` guard delegates kord creation to scribe, 
 
 ### Structure
 
-Each kord is a directory containing the contract, cached data, and a freshness script.
+Each kord is a directory inside `kord/` containing the contract, cached data, and a freshness script.
 
 ```
-team/kords/
+~/.claude/kord/                     # global scope
+├── KORD.md                         # knowledge registry (source of truth)
+├── KORD.json                       # knowledge registry (generated)
 ├── pattern-review/
-│   ├── contract.md        # protocol definition
-│   ├── data.md            # cached result
-│   └── expiry.sh     # expiry check
+│   ├── contract.md                 # protocol definition
+│   ├── data.md                     # cached result
+│   └── expiry.sh                   # expiry check
 ├── monitoring-impact/
 │   ├── contract.md
 │   ├── data.md
