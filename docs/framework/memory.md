@@ -1,6 +1,6 @@
 # Recall System
 
-## Memory Properties
+## Knowledge Properties
 
 Every piece of knowledge in kordinate is described by six properties:
 
@@ -20,20 +20,9 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 - **Readonly** files can only be written by [scribe](../agents/scribe.md). See [Guards](guards.md) for enforcement details.
 - **Structured** non-readonly files can be written by their owning agent but must follow the template. Scribe validates.
 - Non-preloaded files must have a one-line entry in `MAP.md` (path + description) to be discoverable. If it's not in MAP.md, no agent will know it exists.
+- Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
 
-## MAP.md
-
-`MAP.md` lives at `~/.kord/MAP.md` — the single entry point. Lists all agents, team memory, and kords with descriptions. Auto-generated, never manually edited.
-
-Generation:
-
-1. Scan `~/.kord/` for known patterns (`*/identity.md`, `*/memory/*.md`, `team/kords/*/contract.md`)
-2. Read `name` and `description` from each file's frontmatter
-3. Write one line per file to `MAP.md`
-
-Runs as a hook on structured file writes, or on demand via `/scribe:map`.
-
-## Framework Memories
+## File Types
 
 === "Agent"
 
@@ -50,10 +39,6 @@ Runs as a hook on structured file writes, or on demand via `/scribe:map`.
     | shared knowledge | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies | varies |
     | contract | `team/kords/<name>/contract.md` | Consultation protocol | yes | yes | no | — |
     | data | `team/kords/<name>/data.md` | Cached result | yes | no | no | `team/kords/<name>/expiry.sh` |
-
-### Project Level
-
-Any file can have `scope: project` in frontmatter. Project-scoped files follow the same structure but live under `<project>/.kord/` instead of `~/.kord/`.
 
 ## Structured Files
 
@@ -144,3 +129,15 @@ Any file can have `scope: project` in frontmatter. Project-scoped files follow t
         - [team/memory/<topic>.md](team/memory/<topic>.md) — <description>
         - [team/kords/<name>/contract.md](team/kords/<name>/contract.md) — <description>
         ```
+
+## MAP.md
+
+`MAP.md` lives at `~/.kord/MAP.md` — the single entry point for discovering non-preloaded knowledge. Auto-generated, never manually edited.
+
+Generation:
+
+1. Scan `~/.kord/` for known patterns (`*/identity.md`, `*/memory/*.md`, `team/kords/*/contract.md`)
+2. Read `name` and `description` from each file's frontmatter
+3. Write one line per file to `MAP.md`
+
+Runs as a hook on structured file writes, or on demand via `/scribe:map`.
