@@ -27,7 +27,10 @@ Key behaviors ([source](https://code.claude.com/docs/en/sub-agents)):
     - Developer-written and curated — Claude does not auto-write to it unless explicitly asked.
     - Loaded into the main session only. Not inherited by subagents.
 - **Auto memory** (`~/.claude/projects/<project>/memory/`)
+    - Claude writes this itself as it works — not developer-written.
     - Always per-project. No global auto memory exists.
+    - Main agent uses `MEMORY.md` as an index — each line links to a topic file. Detailed notes go into separate `*.md` files in the same directory, read on-demand.
+    - Subagents get a single `MEMORY.md` only — no topic files, no index pattern.
 - **Subagents**
     - Receive only their own system prompt (markdown body) plus basic environment details — no CLAUDE.md, no conversation history, no rules.
     - Don't inherit skills from the parent conversation. Must be listed explicitly via `skills:` frontmatter.
