@@ -45,7 +45,7 @@ Key behaviors ([agents](https://code.claude.com/docs/en/sub-agents), [skills](ht
 
     - Skills are global — not agent-scoped. Agents reference them by name via `skills:` frontmatter.
     - Three loading levels:
-        - **Level 1 (Metadata)**: SKILL.md frontmatter — `name` and `description` loaded at startup.
+        - **Level 1 (Metadata)**: SKILL.md frontmatter — all fields (see collapsible below) loaded at startup.
         - **Level 2 (Instructions)**: SKILL.md body — loaded when skill is triggered.
         - **Level 3 (Resources)**: Other files in the directory — loaded on-demand when referenced.
     - Invocable by user (`/skill-name`) and/or by Claude automatically, controlled by frontmatter.
