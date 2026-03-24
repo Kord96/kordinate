@@ -6,7 +6,13 @@
 
 ## Claude Code
 
-Claude Code has no global auto memory. Auto memory is always per-project. `~/.claude/CLAUDE.md` is developer-written and curated — Claude does not auto-write to it.
+Key behaviors:
+
+- Auto memory is always per-project. No global auto memory exists.
+- `~/.claude/CLAUDE.md` is developer-written and curated — Claude does not auto-write to it.
+- Subagents do **not** inherit CLAUDE.md, rules, skills, or conversation history from the parent session.
+- Subagents start with only: their own system prompt (markdown body), basic environment details (working directory), inherited MCP servers, and inherited permissions.
+- To give a subagent knowledge, you must: write it in the agent's body, list skills in `skills:` frontmatter, or enable `memory:` for persistent MEMORY.md.
 
 === "Main Agent"
 
@@ -20,5 +26,5 @@ Claude Code has no global auto memory. Auto memory is always per-project. `~/.cl
 
     | File | Path | Description |
     |------|------|-------------|
-    | system prompt | `~/.claude/agents/<name>.md` | YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`) + markdown body as system prompt. |
-    | auto memory index | `~/.claude/agent-memory/<name>/MEMORY.md` | First 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. May support topic files (same architecture as main session). |
+    | system prompt | `~/.claude/agents/<name>.md` | YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`, `skills`) + markdown body as system prompt. |
+    | auto memory | `~/.claude/agent-memory/<name>/MEMORY.md` | Only if `memory:` is set in frontmatter. First 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. |
