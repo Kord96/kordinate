@@ -50,6 +50,35 @@ Key behaviors ([agents](https://code.claude.com/docs/en/sub-agents), [skills](ht
         - **Level 3 (Resources)**: Other files in the directory — loaded on-demand when referenced.
     - Invocable by user (`/skill-name`) and/or by Claude automatically, controlled by frontmatter.
 
+    ??? example "Skill with resources"
+
+        ```
+        deployment/roll/
+        ├── SKILL.md              # Level 1 (frontmatter) + Level 2 (body)
+        ├── checklist.md          # Level 3 — pre-roll verification steps
+        └── scripts/
+            └── health-check.sh   # Level 3 — executed, only output enters context
+        ```
+
+        `SKILL.md`:
+
+        ```markdown
+        ---
+        name: roll
+        description: Roll deployments between environments
+        argument-hint: [source] [target]
+        allowed-tools: Read, Edit, Bash, Glob
+        disable-model-invocation: true
+        ---
+
+        Roll $ARGUMENTS between environments:
+
+        1. Run pre-roll checks — see [checklist.md](checklist.md)
+        2. Verify source health: `./scripts/health-check.sh $0`
+        3. Apply manifests to target
+        4. Verify target health: `./scripts/health-check.sh $1`
+        ```
+
     ??? note "Frontmatter fields"
 
         | Field | Required | Purpose |
