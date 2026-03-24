@@ -13,6 +13,30 @@ Every agent follows the same layout. Use `/scribe:onboard` to add new agents to 
 
 Any agent can be invoked as root (the main session) or as a subagent through [beorn](beorn.md). The structure is the same either way — identity, skills, and memory travel with the agent regardless of how it's invoked.
 
+??? note "identity.md template"
+
+    ```markdown
+    ---
+    name: <agent-name>
+    description: <one-line role description>
+    tools: [Read, Edit, Write, Bash, Glob, Grep]
+    model: inherit
+    ---
+
+    # <Agent Name>
+
+    <Role description.>
+
+    ## Workflow
+
+    1. <step>
+    2. <step>
+
+    ## Rules
+
+    - <rule>
+    ```
+
 ## Roster
 
 === "General"

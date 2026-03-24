@@ -128,11 +128,36 @@ Each kord is a directory inside `kord/` containing the contract, cached data, an
     └── expiry.sh
 ```
 
----
+??? note "Templates"
 
-??? note "Related skills"
+    **contract.md** — consultation protocol:
 
-    | Skill | Purpose |
-    |---------|---------|
-    | `/consult pattern-review "prompt"` | Consult via explicit kord |
-    | `/consult designer "prompt"` | Consult via default kord |
+    ```markdown
+    ---
+    description: <what this kord provides>
+    requester: <agent or "any">
+    provider: <agent>
+    ---
+
+    ## Provider Guidelines
+
+    <Instructions for how the provider should respond.>
+
+    ### Response Format
+
+    | Field | Required |
+    |-------|----------|
+    | <field> | yes/no |
+
+    ## Provider State Invalidation
+
+    Invalidate when:
+    - <condition>
+    ```
+
+    **data.md** — follows the Response Format from contract.md:
+
+    ```markdown
+    <field>: <value>
+    <field>: <value>
+    ```
