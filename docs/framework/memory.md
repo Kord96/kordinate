@@ -145,6 +145,8 @@ All properties live in `MAP.json` — the single registry for all knowledge. Onl
 
 These files are managed by Claude Code natively. MAP.json tracks them but doesn't create or modify them.
 
+Claude Code has no global auto memory. Auto memory is always per-project. When asked to "remember something globally", Claude writes to `~/.claude/CLAUDE.md` instead — developer-written, curated instructions, not auto-generated.
+
 ```
 ~/.claude/                              # user scope
 ├── CLAUDE.md                           # system prompt
@@ -168,13 +170,12 @@ Everything outside `kord/` is native Claude Code. Everything inside `kord/` is k
     | File | Path | Description |
     |------|------|-------------|
     | system prompt | `~/.claude/CLAUDE.md` | Loaded into every session and inherited by all subagents. Developer-written. |
-    | auto memory index | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude writes this itself. First 200 lines auto-loaded at startup. Acts as router to topic files. |
-    | auto memory files | `~/.claude/projects/<project>/memory/*.md` | Topic files — Claude reads these on-demand when it needs the information. |
+    | auto memory index | `~/.claude/projects/<project>/memory/MEMORY.md` | Per-project. Claude writes this itself. First 200 lines auto-loaded at startup. Acts as router to topic files. |
+    | auto memory files | `~/.claude/projects/<project>/memory/*.md` | Per-project. Topic files — Claude reads these on-demand when it needs the information. |
 
 === "Subagents"
 
     | File | Path | Description |
     |------|------|-------------|
     | system prompt | `~/.claude/agents/<name>.md` | YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`) + markdown body as system prompt. |
-    | auto memory index | `~/.claude/agent-memory/<name>/MEMORY.md` | Single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. |
-    | auto memory files | — | Not supported. Subagents have no topic files. |
+    | auto memory | `~/.claude/agent-memory/<name>/MEMORY.md` | Single flat file of accumulated notes — not a router. First 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. No topic files, no references to other files. |
