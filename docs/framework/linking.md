@@ -43,14 +43,14 @@ These require thoughtful linking — they don't map 1:1 from kordinate.
 
 === "Main Agent"
 
-    | Path | Description |
-    |------|-------------|
-    | `~/.claude/CLAUDE.md` | Global system prompt — loaded into every session and inherited by all subagents. Developer-written instructions, not agent-generated. |
-    | `~/.claude/projects/<project>/memory/MEMORY.md` | Auto memory — Claude writes this itself as it works. First 200 lines auto-loaded at startup. Claude keeps this concise as a router: each line links to a topic file with a one-line description. Detailed notes go into topic files (e.g. `debugging.md`) in the same directory — Claude reads those on-demand. Same pattern as kordinate's `MAP.md`. |
+    | File | Path | Description |
+    |------|------|-------------|
+    | system prompt | `~/.claude/CLAUDE.md` | Loaded into every session and inherited by all subagents. Developer-written instructions, not agent-generated. |
+    | auto memory | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude writes this itself as it works. First 200 lines auto-loaded at startup. Claude keeps this concise as a router: each line links to a topic file with a one-line description. Detailed notes go into topic files (e.g. `debugging.md`) in the same directory — Claude reads those on-demand. Same pattern as kordinate's `MAP.md`. |
 
 === "Subagents"
 
-    | Path | Description |
-    |------|-------------|
-    | `~/.claude/agents/<name>.md` | Subagent identity — flat markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`, etc.) and markdown body as system prompt. |
-    | `~/.claude/agent-memory/<name>/MEMORY.md` | Subagent memory — single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate but lines are not loaded unless explicitly instructed. No topic files. |
+    | File | Path | Description |
+    |------|------|-------------|
+    | system prompt | `~/.claude/agents/<name>.md` | Flat markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`, etc.) and markdown body as system prompt. |
+    | auto memory | `~/.claude/agent-memory/<name>/MEMORY.md` | Single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate but lines are not loaded unless explicitly instructed. No topic files. |
