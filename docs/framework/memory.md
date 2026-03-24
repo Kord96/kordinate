@@ -19,7 +19,7 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 - **Readonly** files can only be written by [scribe](../agents/scribe.md). See [Guards](guards.md) for enforcement details.
 - **Structured** non-readonly files can be written by their owning agent but must follow the template. Scribe validates.
-- Non-preloaded files must be listed in `MAP.md` to be discoverable.
+- Non-preloaded files must have a one-line entry in `MAP.md` (path + description) to be discoverable. If it's not in MAP.md, no agent will know it exists.
 
 ## MAP.md
 
