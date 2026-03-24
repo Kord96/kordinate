@@ -2,6 +2,12 @@
 
 Everything in kordinate — identity, skills, memory, contracts — is knowledge. The recall system defines how knowledge is stored, loaded, and discovered.
 
+Kordinate lives inside the runtime's native structure — no separate filesystem, no linker. It adds three things:
+
+1. **`kord/MAP.json`** — registry of all knowledge and its properties
+2. **A skill** — generates MAP.json by scanning files and reading frontmatter
+3. **A guard** — enforces templates on writes by checking MAP.json
+
 ## Properties
 
 Every piece of knowledge is described by eight properties:
@@ -146,3 +152,39 @@ All properties live in `MAP.json` — the single registry for all knowledge. Onl
         <field>: <value>
         <field>: <value>
         ```
+
+## Claude Code
+
+These files are managed by Claude Code natively. MAP.json tracks them but doesn't create or modify them.
+
+```
+~/.claude/                              # user scope
+├── CLAUDE.md                           # system prompt
+├── agents/<name>.md                    # subagent identities
+├── agent-memory/<name>/MEMORY.md       # subagent auto memory
+├── skills/<agent>/<name>/SKILL.md      # agent skills
+├── settings.json                       # permissions, hooks, env vars
+├── .mcp.json                           # MCP server configuration
+├── projects/<project>/memory/          # main session auto memory
+└── kord/
+    ├── MAP.json                        # global knowledge registry
+    └── <kord-name>/
+        ├── contract.md                 # consultation protocol
+        └── data.md                     # cached result
+```
+
+Everything outside `kord/` is native Claude Code. Everything inside `kord/` is kordinate. The guard merges both scope-level MAP.json files when checking writes.
+
+=== "Main Agent"
+
+    | File | Path | Description |
+    |------|------|-------------|
+    | system prompt | `~/.claude/CLAUDE.md` | Loaded into every session and inherited by all subagents. Developer-written. |
+    | auto memory | `~/.claude/projects/<project>/memory/MEMORY.md` | Claude writes this itself. First 200 lines auto-loaded at startup. Acts as router to topic files in the same directory. |
+
+=== "Subagents"
+
+    | File | Path | Description |
+    |------|------|-------------|
+    | system prompt | `~/.claude/agents/<name>.md` | YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`) + markdown body as system prompt. |
+    | auto memory | `~/.claude/agent-memory/<name>/MEMORY.md` | Single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. No topic files. |
