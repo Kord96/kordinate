@@ -27,7 +27,3 @@ The alternative is re-invoking **Deployer** and **Designer** every time, but tha
 A **kord** is a contract between two agents. It defines who provides what, the expected response format, and the criteria for cache invalidation. When an agent needs another agent's knowledge, it consults through a kord — the result is cached and reused until the provider's state changes.
 
 See [Kords](kords.md) for examples, cache freshness, and structure.
-
-The user's runtime (Claude Code, Codex, Cursor) invokes agents. Current runtimes don't allow subagents to spawn other subagents. Kordinate removes this limitation — any subagent, at any depth, can [invoke another agent](../agents/beorn.md).
-
-See the [Default Team](../agents/index.md) for agent structure and roster.
