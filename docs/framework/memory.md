@@ -176,4 +176,5 @@ Everything outside `kord/` is native Claude Code. Everything inside `kord/` is k
     | File | Path | Description |
     |------|------|-------------|
     | system prompt | `~/.claude/agents/<name>.md` | YAML frontmatter (`name`, `description`, `tools`, `model`, `memory`, `hooks`) + markdown body as system prompt. |
-    | auto memory | `~/.claude/agent-memory/<name>/MEMORY.md` | Single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. No topic files. |
+    | auto memory index | `~/.claude/agent-memory/<name>/MEMORY.md` | Single file, first 200 lines auto-injected at startup. Beyond 200, agent is nudged to curate. |
+    | auto memory files | — | Not supported. Subagents have no topic files. |
