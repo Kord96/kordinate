@@ -22,12 +22,9 @@ Every piece of knowledge is described by eight properties:
 - **Template** files must follow the referenced template.
 - **Scope**: `global` properties live in `~/.claude/kord/`. `project` properties live in `.claude/kord/`.
 
-## KORD.md
+## Registry
 
-`KORD.md` is the human-readable registry of all knowledge — maintained by scribe. A validation script parses it for the guard. If KORD.md is malformed, the guard blocks writes.
-
-Only non-default values need to be specified.
-
+`KORD.md` is the registry of all knowledge. Generated and maintained by scribe.
 
 ??? note "Templates"
 
