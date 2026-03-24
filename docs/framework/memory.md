@@ -16,8 +16,8 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
 
 ### Constraints
 
-- **On-demand** files must be indexed in the owner's index. Orphaned on-demand files are dead knowledge.
 - **Structured** files can only be written by scribe. See [Guards](guards.md) for enforcement details.
+- **On-demand** files are discovered by scanning directories and reading frontmatter. No index files needed.
 
 ## Framework Memories
 
@@ -26,25 +26,17 @@ Files with no frontmatter use the defaults. Override any property in YAML frontm
     | File | Path | Purpose | Structured | On-demand | Expiry |
     |------|------|---------|:----------:|:---------:|:------:|
     | identity | `<agent>/identity.md` | Role, tools, auth, workflow, rules | yes | no | — |
-    | index | `<agent>/memory/index.md` | Lists all on-demand files and their descriptions | yes | no | — |
     | skills | `<agent>/skills/<name>/SKILL.md` | Skill definitions | yes | yes | — |
-    | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | varies | varies |
+    | memory | `<agent>/memory/MEMORY.md` | Agent scratchpad — auto-loaded | no | no | — |
+    | memory | `<agent>/memory/*.md` | Domain knowledge, notes, findings | varies | yes | varies |
 
 === "Team"
 
     | File | Path | Purpose | Structured | On-demand | Expiry |
     |------|------|---------|:----------:|:---------:|:------:|
-    | manifest | `team/manifest.md` | Team roster — agents, rules, kords | yes | no | — |
     | shared knowledge | `team/memory/*.md` | Team-wide conventions, standards | varies | varies | varies |
-
-=== "Kord"
-
-    | File | Path | Purpose | Structured | On-demand | Expiry |
-    |------|------|---------|:----------:|:---------:|:------:|
     | contract | `team/kords/<name>/contract.md` | Consultation protocol | yes | yes | — |
     | data | `team/kords/<name>/data.md` | Cached result | yes | yes | `team/kords/<name>/expiry.sh` |
-    | index | `team/kords/index.md` | Lists all available kords and their descriptions | yes | no | — |
-
 
 ### Project Level
 
@@ -52,34 +44,14 @@ Any file can have `scope: project` in frontmatter. Project-scoped files follow t
 
 ??? note "Templates"
 
-    === "manifest.md"
-
-        ```markdown
-        ## Agents
-
-        | Agent | Role |
-        |-------|------|
-        | deployer | Infrastructure operations |
-
-        ## Shared Rules
-
-        - All .md files protected — only scribe may edit
-
-        ## Kords
-
-        | Kord | Provider |
-        |------|----------|
-        | deployer-default | deployer |
-        ```
-
     === "identity.md"
 
         ```markdown
         ---
         name: deployer
+        description: Infrastructure operations — sole kubectl write authority
         model: inherit
         tools: [Read, Edit, Write, Bash, Glob]
-        triggers: ["roll", "migrate"]
         ---
 
         # Deployer
@@ -100,13 +72,9 @@ Any file can have `scope: project` in frontmatter. Project-scoped files follow t
 
         - Never patch a project's Dockerfile
         - Use cluster registry
-
-        ## Consultation
-
-        Cluster state, versions, configuration, networking.
         ```
 
-    === "command"
+    === "SKILL.md"
 
         ```markdown
         ---
@@ -160,13 +128,4 @@ Any file can have `scope: project` in frontmatter. Project-scoped files follow t
         Infrastructure topology: k3s cluster, gateway + monitor + master namespaces
         Monitoring pipeline: Alloy → Prometheus + Loki → Grafana
         Configuration sources: manifests/gateway/base/, master-alloy.yml
-        ```
-
-    === "index.md"
-
-        ```markdown
-        | File | Description |
-        |------|-------------|
-        | memory/infra.md | Infrastructure reference |
-        | memory/migration.md | Migration procedures |
         ```
