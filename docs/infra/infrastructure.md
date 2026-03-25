@@ -20,22 +20,24 @@ The `gateway` namespace is the cluster's front door — Tailscale, ingress, and 
 All observability is **pull-based**. Apps follow the [observability contract](monitoring.md).
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph CB[cluster-B]
-        subgraph gw-b[gateway]
-            GWT-B[tailscale sidecar + minio]
-        end
+        direction TB
+        ENV-B[dev / test / prod]
         subgraph mon-b[monitor]
             AL-B[alloy] -->|write| PR-B[prom] & LK-B[loki]
         end
-        AL-B -.->|scrape + tail| ENV-B[dev / test / prod]
+        subgraph gw-b[gateway]
+            GWT-B[tailscale sidecar + minio]
+        end
+        AL-B -.->|scrape + tail| ENV-B
         PR-B & LK-B -->|port forward| GWT-B
     end
 
     subgraph CA[cluster-A]
+        direction TB
         subgraph master[master]
-            MA[alloy]
-            MA -->|write| MP[prom 30d] & ML[loki 30d]
+            MA[alloy] -->|write| MP[prom 30d] & ML[loki 30d]
             MP & ML --> G[grafana]
             WS[workstation]
         end
@@ -43,11 +45,18 @@ flowchart TB
     end
 
     subgraph CN[cluster-N]
-        CN-INNER[same structure as cluster-B]
+        CN-INNER[same structure as B]
     end
 
     MA -->|pull metrics + logs| GWT-B
     MA -.->|pull metrics + logs| CN
+
+    style master fill:#2d1f4e,stroke:#7c5cbf,color:#fff
+    style mon-b fill:#1a3a2a,stroke:#4caf50,color:#fff
+    style gw-b fill:#1a2a3a,stroke:#42a5f5,color:#fff
+    style CA fill:#1a1a2e,stroke:#555,color:#fff
+    style CB fill:#1a1a2e,stroke:#555,color:#fff
+    style CN fill:#1a1a2e,stroke:#555,color:#fff
 ```
 
 ??? note "Port details"
@@ -62,28 +71,20 @@ flowchart TB
 ??? abstract "Detailed data flow"
 
     ```mermaid
-    flowchart TB
+    flowchart LR
         subgraph cluster[cluster-B]
+            direction TB
             subgraph env[env namespaces — dev/test/prod]
                 subgraph myapp["app: my-app"]
-                    P1[pod 1]
-                    PN[pod N]
-                    VIT[vitals]
-                    P1 ~~~ PN ~~~ VIT
+                    P1[pod 1] ~~~ PN[pod N] ~~~ VIT[vitals]
                 end
                 subgraph infra-svc["app: infra"]
-                    KF[kafka]
-                    RD[redis]
-                    PG[postgres]
-                    KF ~~~ RD ~~~ PG
+                    KF[kafka] ~~~ RD[redis] ~~~ PG[postgres]
                 end
             end
 
             subgraph nodes[per-node]
-                NE[node-exporter]
-                CA2[cAdvisor]
-                KL[kubelet]
-                NE ~~~ CA2 ~~~ KL
+                NE[node-exporter] ~~~ CA2[cAdvisor] ~~~ KL[kubelet]
             end
 
             subgraph mon[monitor]
@@ -104,9 +105,9 @@ flowchart TB
         end
 
         subgraph master-cluster[cluster-A]
+            direction TB
             subgraph master2[master]
-                MA2[alloy]
-                MA2 -->|write| ML2[loki 30d] & MP2[prom 30d]
+                MA2[alloy] -->|write| ML2[loki 30d] & MP2[prom 30d]
                 MP2 & ML2 --> G2[grafana]
                 WS2[workstation]
             end
@@ -120,12 +121,20 @@ flowchart TB
         end
 
         subgraph CN2[cluster-N]
-            CN2-INNER[same structure as cluster-B]
+            CN2-INNER[same structure as B]
         end
 
         MA2 -->|pull metrics + logs| GWT
         MA2 -->|pull metrics + logs| GWT-A
         MA2 -.->|pull metrics + logs| CN2
+
+        style master2 fill:#2d1f4e,stroke:#7c5cbf,color:#fff
+        style mon fill:#1a3a2a,stroke:#4caf50,color:#fff
+        style ca-mon fill:#1a3a2a,stroke:#4caf50,color:#fff
+        style gw fill:#1a2a3a,stroke:#42a5f5,color:#fff
+        style ca-gw fill:#1a2a3a,stroke:#42a5f5,color:#fff
+        style env fill:#2a2a1a,stroke:#ffa726,color:#fff
+        style nodes fill:#2a1a1a,stroke:#ef5350,color:#fff
     ```
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki.
