@@ -73,9 +73,35 @@ Bootstrap a new k3s cluster on a remote machine.
 4. Apply RBAC
 5. Add new cluster entry to `profile/config.yaml`
 
+## Secrets
+
+Create Kubernetes Secrets from `pass` before deploying. Idempotent:
+
+```bash
+ssh <control-plane> "kubectl create secret generic <name> -n <namespace> \
+  --from-literal=<key>=$(pass show <pass-path>) \
+  --dry-run=client -o yaml | kubectl apply -f -"
+```
+
+| Secret | Namespace | pass path | Keys |
+|--------|-----------|-----------|------|
+| `tailscale-auth` | gateway | `kordinate/tailscale/auth_key_gateway` | `TS_AUTHKEY` |
+| `minio-credentials` | gateway | `kordinate/minio/root_user`, `kordinate/minio/root_password` | `root-user`, `root-password` |
+| `cloudflare-tunnel` | gateway | `kordinate/cloudflare/tunnel_token` | `TUNNEL_TOKEN` |
+| `grafana-admin` | master | `kordinate/grafana_admin/password` | `admin-password` |
+
+## Bootstrap Auth
+
+For master namespace writes, use both auth tokens:
+
+1. `cp profile/locks/deployer /tmp/.deployer-auth`
+2. `cp profile/locks/deployer /tmp/.bootstrap-auth`
+3. Run commands
+4. `rm /tmp/.bootstrap-auth /tmp/.deployer-auth`
+
 ## Notes
 
 - All SSH operations use deployer auth flow
 - All subcommands are idempotent
-- `deploy-master` and `deploy-gateway` automatically run `generate-overlays` and `setup-secrets` if needed
+- `deploy-master` and `deploy-gateway` create secrets and overlays automatically if needed
 - After adding a cluster, deploy gateway and master stacks separately

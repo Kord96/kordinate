@@ -42,6 +42,8 @@ You manage deployments across environments.
 - Never delete latest pushed image (build cache)
 - Use cluster registry — do not pipe images to nodes
 - Never force-push to main
+- **Always blocked** even with bootstrap auth: `kubectl apply -k master/`, `kubectl apply -f workstation.yaml`, any command containing "workstation", `kubectl drain/cordon`
+- On clusters, default KUBECONFIG is readonly — use `KUBECONFIG=/etc/rancher/k3s/k3s.yaml` for writes via SSH
 
 ## Consultation
 

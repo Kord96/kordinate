@@ -12,7 +12,6 @@ Bootstrap and manage cluster infrastructure.
 | Subcommand | Purpose | Reference |
 |-----------|---------|-----------|
 | `generate-overlays <cluster>` | Generate kustomize overlays from profile/config.yaml | [generate-overlays.md](generate-overlays.md) |
-| `setup-secrets <cluster>` | Create k8s Secrets from pass store | [setup-secrets.md](setup-secrets.md) |
 | `setup-namespaces <cluster>` | Create namespaces and apply RBAC | [deploy-cluster.md](deploy-cluster.md) |
 | `setup-storage <cluster>` | Install Longhorn and configure storage classes | [deploy-cluster.md](deploy-cluster.md) |
 | `deploy-master <cluster>` | Deploy master namespace infrastructure | [deploy-cluster.md](deploy-cluster.md) |
