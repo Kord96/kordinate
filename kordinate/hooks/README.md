@@ -12,7 +12,7 @@ Pre/post-tool hooks that enforce domain boundaries and automate workflows. Confi
 |---------|-----------|------|-------------|
 | Write/Edit to `*/.kord/*` | `curated: true` in KORD.json | `/tmp/.scribe-auth` | Use `/kord remember` |
 | Write/Edit to `*/dashboards/*.json` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
-| Bash `git push` to main | fast-forward not possible | — | Use `/merge` to rebase |
+| Bash `git push` to main | branch has diverged | — | Use `/merge` to rebase |
 | Bash `git push` to test/prod | any | `/tmp/.deployer-auth` | Use `/infra roll` |
 | Bash `kubectl` write ops | mutating verbs | `/tmp/.deployer-auth` | Use `/infra` |
 | Bash `kubectl` workstation/master/drain/cordon | any | **always blocked** | Never allowed |
