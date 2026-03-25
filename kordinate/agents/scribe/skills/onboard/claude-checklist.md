@@ -62,10 +62,9 @@ These can be verified immediately — no session restart required.
 - [ ] PreToolUse on `Write|Edit|Bash` → `$KORDINATE_HOME/hooks/guard.sh`
 - [ ] PreToolUse on `mcp__grafana` → `$KORDINATE_HOME/hooks/guard.sh`
 - [ ] PreToolUse on `Agent` → `$KORDINATE_HOME/hooks/agent-memory.sh`
-- [ ] PostToolUse on `Bash` → `$KORDINATE_HOME/hooks/auto-merge-to-dev.sh`
 - [ ] Guard blocks curated `.kord/` writes without scribe auth
 - [ ] Guard allows non-curated, non-templated `.kord/` files without auth
-- [ ] Guard blocks `git push` to main without `.merge-lock`
+- [ ] Guard blocks `git push` to main when fast-forward not possible
 - [ ] Guard blocks `git push` to test/prod without deployer auth
 - [ ] Guard blocks kubectl write ops without deployer auth
 - [ ] Guard blocks Grafana ops without sauron auth

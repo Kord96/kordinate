@@ -56,7 +56,6 @@ Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
 This installs:
 - **Unified guard** (`hooks/guard.sh`) on Write|Edit|Bash and mcp\_\_grafana — enforces scribe, deployer, sauron, and merge rules
 - **Agent memory** (`hooks/agent-memory.sh`) on Agent — regenerates MEMORY.md on spawn
-- **Auto-merge** (`hooks/auto-merge-to-dev.sh`) on Bash (PostToolUse) — fast-forward after push
 
 ### KORD.md
 

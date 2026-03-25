@@ -5,7 +5,7 @@
 #   scribe   → curated .kord/ files
 #   deployer → git push (test/prod), kubectl writes
 #   sauron   → Grafana dashboards, API, MCP
-#   merge    → git push to main (requires /merge lock)
+#   merge    → git push to main (FF check — blocks if rebase needed)
 #
 # Registered in settings.json as PreToolUse on Write|Edit, Bash, mcp__grafana*
 # See README.md for the full rules table.
@@ -94,10 +94,11 @@ guard_bash() {
 
       case "$branch" in
         main)
-          local repo_root
-          repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
-          [ -d "$repo_root/.merge-lock" ] && allow
-          deny "Direct push to main is not allowed. Use /merge."
+          git fetch origin main 2>/dev/null
+          if git merge-base --is-ancestor origin/main HEAD 2>/dev/null; then
+            allow  # FF possible
+          fi
+          deny "Fast-forward to main not possible. Use /merge to rebase and resolve."
           ;;
         session/*|memory/*)
           allow
