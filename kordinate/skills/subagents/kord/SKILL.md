@@ -5,37 +5,42 @@ curated: true
 scope: global
 ---
 
-Consult an agent through a kord contract.
+Send a request to another agent through a kord contract.
 
-**Input**: $ARGUMENTS (required: `<agent-or-kord> "<prompt>"`)
+**Input**: $ARGUMENTS — `[provider] <kord-name> <message>` or `<provider> <message>`
 
 ## Usage
 
 ```
-/consult deployer "what's running in prod?"
-/consult scribe remember deployer "DNS uses .local domains"
-/consult pattern-review "review the deployment changes"
+/kord deployer what's running in prod?
+/kord scribe remember DNS uses .local domains
+/kord scribe create-kord health checks for sauron
+/kord scribe onboard validator for schema validation
+/kord designer pattern-review review the deployment changes
+/kord remember team coding standards updated
+/kord pattern-review review the deployment changes
 ```
 
-## Procedure
+## Resolution
 
-1. **Resolve kord**:
-    - If target matches a kord directory under `$KORDINATE_HOME/kords/<target>/`, use it.
-    - Otherwise, use `<target>-default` as the kord name.
-    - Read `contract.md` to get provider, mode, and guidelines.
+1. If first param matches a kord name under `$KORDINATE_HOME/kords/` → use it. Provider from contract.
+2. If first param matches an agent name → check if second param is a kord name. If yes, use that kord. If no, use `<agent>-default`.
+3. Read `contract.md` to get provider, mode, skill, and guidelines.
 
-2. **Check mode**:
-    - `mode: stateless` → invoke the specified skill directly. No agent spawn. Skip to step 5.
-    - `mode: stateful` → proceed to freshness check and delegation.
+## Execution
 
-3. **Freshness check** (stateful mode only):
+1. **Check mode**:
+    - `mode: stateless` → invoke the specified skill directly. No agent spawn. Skip to step 4.
+    - `mode: stateful` → proceed to freshness check.
+
+2. **Freshness check** (stateful only):
     - Run `$KORDINATE_HOME/kords/<kord>/expiry.sh` if it exists.
-    - Exit 0 = fresh. Check for cached `data.md` — if the prompt matches, return cached result.
+    - Exit 0 = fresh. Return cached `data.md` if prompt matches.
     - Exit 1 = stale. Proceed to delegation.
 
-4. **Delegate**:
-    - Build prompt from contract guidelines + user prompt.
-    - Invoke provider via Beorn (`mcp__beorn__stateful`) or native subagent spawn.
+3. **Spawn provider**:
+    - Build prompt from contract guidelines + message.
+    - Invoke via Beorn or native subagent.
     - Cache result in `$KORDINATE_HOME/kords/<kord>/data.md`.
 
-5. **Return** the result.
+4. **Return** the result.
