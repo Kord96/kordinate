@@ -5,11 +5,11 @@ curated: true
 scope: global
 ---
 
-`/deploy <subcommand> [args]`
+`/infra <subcommand> [args]`
 
 | Subcommand | Purpose | Reference |
 |-----------|---------|-----------|
-| `bootstrap <cluster>` | Setup namespaces, storage, deploy stacks | [bootstrap.md](bootstrap.md) + [deploy-cluster.md](deploy-cluster.md) |
+| `bootstrap <cluster>` | Setup namespaces, storage, deploy stacks | [deploy-cluster.md](deploy-cluster.md) |
 | `generate-overlays <cluster>` | Generate kustomize overlays from config | [generate-overlays.md](generate-overlays.md) |
 | `roll <project> <source> <target>` | Roll between environments | [operations.md](operations.md) |
 | `stop <project> <env>` | Scale down an environment | [operations.md](operations.md) |
@@ -19,4 +19,13 @@ scope: global
 
 Authenticate before any operation: use `/authenticate`.
 
-All subcommands are idempotent. Topology at [topology.yaml](topology.yaml).
+All subcommands are idempotent.
+
+## Key Resources
+
+- [topology.yaml](topology.yaml) — what manifests go to which namespaces
+- [manifests/](manifests/) — flat k8s yaml (namespace-prefixed)
+- [images/](images/) — container build contexts (workstation, beorn, log-puller, loki-federate)
+- [dashboards/](dashboards/) — Grafana dashboard JSON
+- `profile/config.yaml` — cluster IPs, domains, services (source of truth)
+- `profile/overlays/<cluster>/` — generated kustomize overlays (cluster-specific patches)
