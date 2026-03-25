@@ -21,8 +21,8 @@ Merge session branches back into main and garbage-collect stale worktrees left b
 
 ## Rules
 
+- Session branches are local only — never push them to remote.
 - Never force-push to main — `git push origin HEAD:main` only succeeds on fast-forward.
-- Use `--force-with-lease` (not `--force`) when pushing rebased session branches.
 - Always use detached HEAD in the merge workspace — never checkout named branches.
 - Always clean up the merge workspace and release the lock, even on errors.
 - Never touch a worktree with an active `claude` process.
