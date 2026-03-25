@@ -21,57 +21,91 @@ All observability is **pull-based**. Apps follow the [observability contract](mo
 
 ```mermaid
 flowchart TB
-    subgraph cluster[Each cluster]
-        subgraph env[app namespaces — dev/test/prod]
-            subgraph myapp["app: my-app"]
-                P1[pod 1]
-                PN[pod N]
-                VIT[vitals]
-                P1 ~~~ PN ~~~ VIT
-            end
-            subgraph infra-svc["app: infra"]
-                KF[kafka]
-                RD[redis]
-                PG[postgres]
-                KF ~~~ RD ~~~ PG
-            end
+    subgraph CB[cluster-B]
+        subgraph gw-b[gateway]
+            GWT-B[tailscale + minio]
         end
-
-        subgraph nodes[per-node]
-            NE[node-exporter]
-            CA[cAdvisor]
-            KL[kubelet]
-            NE ~~~ CA ~~~ KL
+        subgraph mon-b[monitor]
+            AL-B[alloy] --> PR-B[prom] & LK-B[loki]
         end
-
-        subgraph mon[monitor]
-            AL[alloy] --> LK[loki] & PR[prom]
-        end
-
-        subgraph gw[gateway]
-            GWT[tailscale]
-            MIO[minio]
-        end
-
-        myapp -->|uses| infra-svc
-        myapp & infra-svc -->|/metrics + logs| AL
-        nodes -->|host + container metrics| AL
-        PR -->|:9090| GWT
-        LK -->|sidecar writes JSON Lines| MIO
-        MIO -->|:9000| GWT
+        ENV-B[dev / test / prod] -.->|metrics + logs| AL-B
+        PR-B & LK-B -->|:9090 :9000| GWT-B
     end
 
-    subgraph master-cluster[cluster-A]
+    subgraph CA[cluster-A]
         subgraph master[master]
             MA[alloy]
-            MA -->|write| ML[loki 30d] & MP[prom 30d]
+            MA -->|write| MP[prom 30d] & ML[loki 30d]
             MP & ML --> G[grafana]
+            WS[workstation + beorn]
         end
+        CA-OTHER[gateway, monitor, dev/test/prod ...]
     end
 
-    MA -->|pull :9090 /federate| GWT
-    MA -->|pull :9000 minio| GWT
+    subgraph CN[cluster-N]
+        CN-INNER[same structure as cluster-B]
+    end
+
+    MA -->|pull :9090 /federate| GWT-B
+    MA -->|pull :9000 minio| GWT-B
+    CN -.->|tailnet| MA
 ```
+
+??? abstract "Detailed data flow"
+
+    ```mermaid
+    flowchart TB
+        subgraph cluster[cluster-B]
+            subgraph env[env namespaces — dev/test/prod]
+                subgraph myapp["app: my-app"]
+                    P1[pod 1]
+                    PN[pod N]
+                    VIT[vitals]
+                    P1 ~~~ PN ~~~ VIT
+                end
+                subgraph infra-svc["app: infra"]
+                    KF[kafka]
+                    RD[redis]
+                    PG[postgres]
+                    KF ~~~ RD ~~~ PG
+                end
+            end
+
+            subgraph nodes[per-node]
+                NE[node-exporter]
+                CA2[cAdvisor]
+                KL[kubelet]
+                NE ~~~ CA2 ~~~ KL
+            end
+
+            subgraph mon[monitor]
+                AL[alloy] --> LK[loki] & PR[prom]
+            end
+
+            subgraph gw[gateway]
+                GWT[tailscale]
+                MIO[minio]
+            end
+
+            myapp -->|uses| infra-svc
+            myapp & infra-svc -->|/metrics + logs| AL
+            nodes -->|host + container metrics| AL
+            PR -->|:9090| GWT
+            LK -->|sidecar writes JSON Lines| MIO
+            MIO -->|:9000| GWT
+        end
+
+        subgraph master-cluster[cluster-A]
+            subgraph master2[master]
+                MA2[alloy]
+                MA2 -->|write| ML2[loki 30d] & MP2[prom 30d]
+                MP2 & ML2 --> G2[grafana]
+            end
+        end
+
+        MA2 -->|pull :9090 /federate| GWT
+        MA2 -->|pull :9000 minio| GWT
+    ```
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki.
 
