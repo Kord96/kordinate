@@ -1,6 +1,6 @@
 ---
 name: kord
-description: Invoke a kord — resolves the contract, checks mode (stateless/stateful), handles caching.
+description: Send a request to another agent through a kord contract.
 curated: true
 scope: global
 ---
