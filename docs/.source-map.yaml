@@ -1,59 +1,39 @@
 # Maps each doc page to its implementation sources.
 # Used by /scribe:audit-docs to detect documentation drift.
 
-index.md:
-  - kordinate/agents/AGENT.md
-  - kordinate/agents/shared/MEMORY.md
-  - installer/link-claude.sh
+framework/overview.md:
+  - kordinate/agents/*/IDENTITY.md
 
-infrastructure.md:
-  - bin/claude-session
-  - kordinate/agents/deployer/memory/static/infra.md
-  - kordinate/agents/deployer/manifests/master/base/alloy.yaml
-  - kordinate/agents/deployer/manifests/monitor/base/alloy.yaml
+framework/kords.md:
+  - kordinate/kords/*/contract.md
+  - kordinate/skills/kord/SKILL.md
 
-agents.md:
-  - kordinate/agents/deployer/AGENT.md
-  - kordinate/agents/sauron/AGENT.md
-  - kordinate/agents/designer/AGENT.md
-  - kordinate/agents/scribe/AGENT.md
-  - kordinate/agents/shared/MEMORY.md
+framework/guards.md:
+  - kordinate/agents/scribe/skills/remember/guard.sh
 
-hooks.md:
-  - kordinate/hooks/guard-kubectl.sh
-  - kordinate/hooks/guard-git.sh
-  - kordinate/hooks/guard-redis.sh
-  - kordinate/hooks/guard-grafana.sh
-  - kordinate/hooks/guard-md.sh
-  - kordinate/hooks/auto-merge-to-dev.sh
-  - kordinate/hooks/agent-memory.sh
-  - kordinate/lib/cache.sh
-  - kordinate/settings.json
+framework/memory.md:
+  - kordinate/KORD.md
+  - kordinate/agents/scribe/skills/remember/generate-kord.sh
 
-consultation.md:
-  - kordinate/commands/consult.md
-  - kordinate/commands/invalidate.md
-  - kordinate/lib/cache.sh
-  - kordinate/agents/deployer/instructions/consultation.md
-  - kordinate/agents/sauron/instructions/consultation.md
-  - kordinate/agents/designer/instructions/consultation.md
-  - kordinate/agents/scribe/instructions/consultation.md
+agents/index.md:
+  - kordinate/agents/*/IDENTITY.md
 
-memory.md:
-  - kordinate/hooks/agent-memory.sh
-  - kordinate/agents/shared/MEMORY.md
-  - kordinate/lib/cache.sh
-  - installer/link-claude.sh
+agents/scribe.md:
+  - kordinate/agents/scribe/IDENTITY.md
+  - kordinate/agents/scribe/skills/remember/SKILL.md
 
-framework/linking.md:
-  - installer/link-claude.sh
+agents/beorn.md:
+  - kordinate/lib/mcp-agent-server/server.js
 
-reference/patterns/index.md:
-  - kordinate/agents/designer/memory/static/patterns.md
+infra/infrastructure.md:
+  - kordinate/agents/deployer/IDENTITY.md
+  - kordinate/agents/deployer/skills/bootstrap/manifests/
 
 infra/monitoring.md:
-  - kordinate/agents/designer/memory/static/app-contract.md
-  - kordinate/agents/deployer/memory/static/infra.md
+  - kordinate/agents/sauron/IDENTITY.md
+
+reference/patterns/index.md:
+  - kordinate/agents/designer/memory/patterns.md
 
 reference/libraries/index.md:
-  - kordinate/agents/designer/memory/static/libraries.md
+  - kordinate/agents/designer/memory/libraries.md

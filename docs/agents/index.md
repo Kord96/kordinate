@@ -56,7 +56,7 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
     | Type | Name | Purpose |
     |------|------|---------|
     | skill | `/boot` | Catch up on parent context and code changes |
-    | skill | `/consult` | Invoke an agent via kord protocol |
+    | skill | `/kord` | Invoke an agent via kord protocol |
     | skill | `/merge` | Merge session branch forward |
     | guard | `guard-git.sh` | Branch protection |
     | guard | `guard-md.sh` | Structured files — scribe only |

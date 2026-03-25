@@ -56,11 +56,11 @@ Each kord specifies how the provider fulfills the request:
 
 ### Cache Freshness
 
-Delegate-mode kords cache results. Each kord can have an `expiry.sh` script that checks if the cache is still valid.
+Stateful kords cache results. Each kord can have an `expiry.sh` script that checks if the cache is still valid.
 
 ```mermaid
 flowchart TB
-    C["/consult"] --> M{mode?}
+    C["/kord"] --> M{mode?}
     M -->|stateless| S[Run skill directly]
     M -->|stateful| G{"expiry.sh"}
     G -->|fresh| D[Return data.md]

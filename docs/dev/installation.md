@@ -13,13 +13,13 @@ What's baked into the workstation image. Built once, never seen by the user.
 - Tailscale client
 - tmux (auto-attach to `0-general` on login)
 - Shell configured (PATH, KORDINATE_HOME, .bashrc)
-- Kordinate framework pre-linked to `~/.claude/`
+- Kordinate framework at `~/.kord/`
 - Beorn server pre-installed
 - Core agents: general, scribe
 - Core guards: guard-md.sh, guard-git.sh
-- Core skills: /consult, /boot, /merge
-- Recall system (static/dynamic memory structure)
-- Kord protocol (pre-consult.sh, /consult)
+- Core skills: /kord, /boot, /merge
+- Recall system (8-property knowledge model)
+- Kord protocol (/kord, stateless/stateful)
 - Worktree sessions (claude-session, tmux-new-window)
 
 ### Tier 1: Install

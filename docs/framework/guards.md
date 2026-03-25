@@ -15,7 +15,7 @@ flowchart LR
 
 ## Structured File Guard
 
-[Structured files](memory.md) can only be written by scribe. The guard reads the scribe registry (pattern list) to decide what to protect.
+[Structured files](memory.md) can only be written by scribe. The guard checks file properties in KORD.json to decide what to protect.
 
 **How it works:**
 
