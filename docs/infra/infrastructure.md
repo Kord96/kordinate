@@ -65,13 +65,15 @@ flowchart LR
     ```mermaid
     flowchart TB
         subgraph cluster[cluster-B]
-            subgraph env[env — dev/test/prod]
-                myapp["my-app: pod 1 .. pod N + vitals"]
-                infra-svc["infra: kafka, redis, postgres"]
-            end
-
-            subgraph nodes[per-node]
-                NE["node-exporter, cAdvisor, kubelet"]
+            subgraph sources[" "]
+                direction LR
+                subgraph env[env — dev/test/prod]
+                    myapp["my-app: pod 1 .. pod N + vitals"]
+                    infra-svc["infra: kafka, redis, postgres"]
+                end
+                subgraph nodes[per-node]
+                    NE["node-exporter, cAdvisor, kubelet"]
+                end
             end
 
             subgraph mon[monitor]
@@ -90,13 +92,15 @@ flowchart LR
         end
 
         subgraph master-cluster[cluster-A]
-            subgraph env-a[env — dev/test/prod]
-                myapp-a["my-app: pod 1 .. pod N + vitals"]
-                infra-svc-a["infra: kafka, redis, postgres"]
-            end
-
-            subgraph nodes-a[per-node]
-                NEA["node-exporter, cAdvisor, kubelet"]
+            subgraph sources-a[" "]
+                direction LR
+                subgraph env-a[env — dev/test/prod]
+                    myapp-a["my-app: pod 1 .. pod N + vitals"]
+                    infra-svc-a["infra: kafka, redis, postgres"]
+                end
+                subgraph nodes-a[per-node]
+                    NEA["node-exporter, cAdvisor, kubelet"]
+                end
             end
 
             subgraph mon-a[monitor]
