@@ -24,6 +24,7 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 |-------|---------|-----------|
 | `/remember` | Write a memory for an agent — handles scope, paths, and KORD.md | stateless |
 | `/sanitize` | Classify content as config, credential, or memory — routes correctly | stateless |
+| `/audit` | Read-only health check for the memory and kordinate system | stateless |
 | `/onboard` | Add a new agent or sync existing agents to the runtime | stateful |
 | `/create-kord` | Define a new kord between agents | stateful |
 

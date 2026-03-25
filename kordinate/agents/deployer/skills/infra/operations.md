@@ -29,7 +29,20 @@ The environment order is: `main` (dev) → `test` → `prod`
    - Forward: `git checkout <target-branch> && git merge --ff-only origin/<source-branch> && git push origin <target-branch>`
    - Backward: `git checkout <target-branch> && git reset --hard origin/<source-branch> && git push --force-with-lease origin <target-branch>`
 
-6. **Deploy** (method-specific last mile):
+6. **Record rollback snapshot** — before deploying, capture current state for potential rollback:
+   ```
+   kubectl get deploy,sts -n <namespace> -l app=<project> -o json
+   ```
+   Extract: resource kind, name, namespace, replica count, container images.
+   Hash current ConfigMaps and Secrets:
+   ```
+   kubectl get configmap -n <namespace> -o json | sha256sum
+   kubectl get secret -n <namespace> -o json | sha256sum
+   ```
+   Write snapshot to `~/.kord/agents/deployer/memory/dynamic/rollback/<project>-<env>.json`.
+   Create the directory if it doesn't exist.
+
+7. **Deploy** (method-specific last mile):
 
    ### method: kubectl
    - SSH to the target cluster
@@ -43,7 +56,7 @@ The environment order is: `main` (dev) → `test` → `prod`
    - CI detects the push and handles build + publish automatically
    - Wait for CI to pass on the target branch
 
-7. **Apply staged diffs** (if present):
+8. **Apply staged diffs** (if present):
    After deploying, check each target pod for `/tmp/diff/manifest.json`:
    ```
    kubectl exec <pod> -n <target-ns> -- cat /tmp/diff/manifest.json 2>/dev/null
@@ -72,9 +85,9 @@ The environment order is: `main` (dev) → `test` → `prod`
 
    If any diff apply fails, report the error but continue with remaining diffs. Failed diff files are left in place for retry.
 
-8. **Report tracking**: Log the deployment result (project, environment, commit hash, timestamp).
+9. **Report tracking**: Log the deployment result (project, environment, commit hash, timestamp).
 
-9. Report results: project, direction, source → target, commit hash, health/CI status. Include in report: how many diff files were applied, rows imported, any failures.
+10. Report results: project, direction, source → target, commit hash, health/CI status. Include in report: how many diff files were applied, rows imported, any failures.
 
 ## Rules
 
