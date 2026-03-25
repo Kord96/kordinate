@@ -11,10 +11,16 @@ Read `profile/config.yaml` and generate kustomize overlays for a cluster. Base m
 3. For each namespace (gateway, monitor, master), generate an overlay directory:
 
 ```
-manifests/<namespace>/overlays/<cluster>/
-├── kustomization.yaml
-└── patches/
-    └── values.yaml     # cluster-specific patches
+$KORDINATE_HOME/profile/overlays/<cluster>/
+├── gateway/
+│   ├── kustomization.yaml
+│   └── patches.yaml
+├── monitor/
+│   ├── kustomization.yaml
+│   └── patches.yaml
+└── master/
+    ├── kustomization.yaml
+    └── patches.yaml
 ```
 
 ## Placeholder → Config Mapping
@@ -47,7 +53,7 @@ patches:
 
 ## Notes
 
-- Generated overlays are checked into the repo — they contain cluster-specific but non-secret values
+- Overlays live at `profile/overlays/<cluster>/` — profile-specific, separate from abstract base manifests
 - Secrets (Tailscale auth keys, MinIO credentials) are NOT in overlays — they're created by `setup-secrets`
 - If `profile/config.yaml` changes, re-run `generate-overlays` to update
 - The `generate-config.py` script in `master/` does a subset of this — it can be replaced by this procedure
