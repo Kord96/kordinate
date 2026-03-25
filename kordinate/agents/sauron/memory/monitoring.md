@@ -1,3 +1,8 @@
+---
+description: Monitoring Layers
+curated: true
+scope: global
+---
 # Monitoring Layers
 
 Monitoring has four layers. Sauron handles all four, but with different approaches per layer.

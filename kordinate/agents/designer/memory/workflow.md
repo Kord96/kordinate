@@ -1,3 +1,8 @@
+---
+description: Workflow
+curated: true
+scope: global
+---
 # Workflow
 
 1. **Identify frameworks in use** — check imports, not the project name.

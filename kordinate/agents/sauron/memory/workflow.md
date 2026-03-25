@@ -1,3 +1,8 @@
+---
+description: Workflow
+curated: true
+scope: global
+---
 # Workflow
 
 1. **Understand** — Consult designer for architecture, read project memory for metrics and health checks. Map: components → what can fail → what to measure → what to test.

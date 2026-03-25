@@ -1,3 +1,8 @@
+---
+description: Tools
+curated: true
+scope: global
+---
 # Tools
 
 | Tool | Type | Purpose |

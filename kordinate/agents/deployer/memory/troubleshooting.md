@@ -1,3 +1,8 @@
+---
+description: Troubleshooting
+curated: true
+scope: global
+---
 # Troubleshooting
 
 - **ErrImagePull**: Manifests must use full registry path (`<registry>/<image>:<tag>`), not bare image names

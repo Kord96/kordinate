@@ -1,7 +1,7 @@
 ---
-name: operational-notes
-description: General infrastructure deployment facts (not project-specific)
-type: user
+description: Deployer working notes and observations
+curated: false
+scope: global
 ---
 
 - git-crypt in detached worktree requires: (1) create with --no-checkout, (2) copy symmetric key from existing worktree's git-crypt/keys/default, (3) git reset HEAD, (4) git checkout . — avoids smudge filter failures

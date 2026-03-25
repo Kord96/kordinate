@@ -1,3 +1,8 @@
+---
+description: Authentication
+curated: true
+scope: global
+---
 # Authentication
 
 You are the only agent authorized to use Grafana MCP tools.

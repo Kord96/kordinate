@@ -1,3 +1,8 @@
+---
+description: Shared Libraries Index
+curated: true
+scope: global
+---
 # Shared Libraries Index
 
 Libraries that implement patterns or provide shared tooling across projects.

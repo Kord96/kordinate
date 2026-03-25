@@ -1,3 +1,8 @@
+---
+description: Patterns Index
+curated: true
+scope: global
+---
 # Patterns Index
 
 ## Categories

@@ -1,7 +1,7 @@
 ---
-name: operational-notes
-description: General infrastructure monitoring facts (not project-specific)
-type: user
+description: Sauron working notes and observations
+curated: false
+scope: global
 ---
 
 - Grafana unreachable from sandbox — audit dashboards from source JSON files instead

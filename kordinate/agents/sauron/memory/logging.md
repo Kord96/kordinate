@@ -1,3 +1,8 @@
+---
+description: Logging
+curated: true
+scope: global
+---
 # Logging
 
 Structured logging standards across all projects.
@@ -109,4 +114,3 @@ else:
 - Don't use f-strings in log events — use dimensions instead
 - Don't log stack traces at warning level — use error/exception
 - Don't duplicate metrics as logs — use Prometheus for counters/gauges
-

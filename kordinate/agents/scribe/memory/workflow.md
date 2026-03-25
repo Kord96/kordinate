@@ -1,3 +1,8 @@
+---
+description: Workflow
+curated: true
+scope: global
+---
 # Workflow
 
 1. **Authenticate** — once per invocation, not per file:

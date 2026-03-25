@@ -1,3 +1,8 @@
+---
+description: Migration
+curated: true
+scope: global
+---
 # Migration
 
 Full migration lifecycle for deployments:

@@ -1,3 +1,8 @@
+---
+description: Authentication
+curated: true
+scope: global
+---
 # Authentication
 
 Kubectl write operations and image builds are protected by `guard-kubectl.sh`. Only the deployer can bypass it.
