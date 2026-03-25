@@ -23,12 +23,7 @@ You manage deployments across environments.
 
 | Skill | Purpose |
 |-------|---------|
-| `/deployer:roll` | Roll between environments |
-| `/deployer:stop` | Scale down an environment |
-| `/deployer:clean` | Clean up environment data |
-| `/deployer:diff` | Stage incremental data changes |
-| `/deployer:bootstrap` | Bootstrap cluster infrastructure |
-| `/deployer:migrate-workstation` | Prepare workstation migration handover |
+| `/infra` | All infrastructure operations — bootstrap, roll, stop, clean, diff, migrate |
 
 ## Rules
 
