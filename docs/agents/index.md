@@ -2,7 +2,7 @@
 
 ## Agent Structure
 
-Every agent follows the same layout. Use `/scribe:onboard` to add new agents to the team.
+Every agent follows the same layout. Use `/onboard` to add new agents to the team.
 
 ```
 <agent>/
@@ -71,10 +71,10 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | skill | `/scribe:onboard` | Add a new agent to the team |
-    | skill | `/scribe:kord` | Define a new kord |
-    | skill | `/scribe:update-agent-docs` | Update agent documentation |
-    | skill | `/scribe:update-project-docs` | Update project documentation |
+    | skill | `/onboard` | Add a new agent to the team |
+    | skill | `/create-kord` | Define a new kord |
+    | skill | `/kord scribe update agent docs` | Update agent documentation |
+    | skill | `/kord scribe update project docs` | Update project documentation |
 
 === "Beorn"
 

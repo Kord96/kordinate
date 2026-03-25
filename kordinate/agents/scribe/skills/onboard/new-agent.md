@@ -24,7 +24,7 @@ Level 3 resource for the onboard skill.
 
 4. **Generate scratchpad.md** with empty frontmatter (`curated: false`, `scope: global`).
 
-5. **Create default kord** — use `/scribe:create-kord default-<name>` with the expertise from step 1.
+5. **Create default kord** — use `/create-kord default-<name>` with the expertise from step 1.
 
 6. **Create guard hook** (if exclusive tools specified):
     - Generate `$KORDINATE_HOME/hooks/guard-<name>.sh`:
@@ -40,7 +40,7 @@ Level 3 resource for the onboard skill.
     - Make executable: `chmod +x guard-<name>.sh`
     - Add to settings.json under the appropriate `PreToolUse` matcher
 
-7. **Sync to runtime** — run `/scribe:onboard sync` or follow [sync.md](sync.md) for just this agent.
+7. **Sync to runtime** — run `/onboard sync` or follow [sync.md](sync.md) for just this agent.
 
 8. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh`.
 

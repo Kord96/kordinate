@@ -9,7 +9,7 @@ Each kord specifies how the provider fulfills the request:
 - **`stateless`** — skill instructions are self-contained. Runs without the provider agent's memory or context. The requester executes the skill directly. Fast.
 - **`stateful`** — skill works better with the provider agent's accumulated memory and context. Spawns the full agent (via Beorn or native subagent).
 
-??? example "stateless — scribe:remember"
+??? example "stateless — remember"
 
     ```markdown
     ---
@@ -21,7 +21,7 @@ Each kord specifies how the provider fulfills the request:
     ---
     ```
 
-    The requester invokes `/scribe:remember` directly — no scribe agent spawned.
+    The requester invokes `/remember` directly — no scribe agent spawned.
 
 ??? example "stateful — deployer-default"
 
@@ -73,7 +73,7 @@ flowchart TB
 Describe what you need. Scribe creates the contract:
 
 ```
-/scribe:kord pattern-review "architecture review for deployment changes"
+/create-kord pattern-review "architecture review for deployment changes"
 ```
 
 ### Structure

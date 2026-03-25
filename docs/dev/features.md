@@ -49,13 +49,13 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 | /boot | general | Catch up on parent context + code changes |
 | /kord | general | Invoke agent via kord protocol |
 | /merge | general | Merge session branch forward |
-| /scribe:onboard | scribe | Add new agent to team |
-| /scribe:kord | scribe | Define new kord |
-| /scribe:add-mcp | scribe | Add MCP server entry |
-| /scribe:update-agent-docs | scribe | Update agent documentation |
-| /scribe:update-project-docs | scribe | Update project documentation |
-| /scribe:update-subagent-memory | scribe | Update agent memory |
-| /scribe:audit-docs | scribe | Audit docs for consistency |
+| /onboard | scribe | Add new agent to team |
+| /create-kord | scribe | Define new kord |
+| — removed — | scribe | Add MCP server entry |
+| — removed — | scribe | Update agent documentation |
+| — removed — | scribe | Update project documentation |
+| /remember | scribe | Update agent memory |
+| — removed — | scribe | Audit docs for consistency |
 
 ### Configuration
 

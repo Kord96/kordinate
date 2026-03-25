@@ -1,5 +1,5 @@
 # Maps each doc page to its implementation sources.
-# Used by /scribe:audit-docs to detect documentation drift.
+# Used by audit-docs to detect documentation drift.
 
 framework/overview.md:
   - kordinate/agents/*/IDENTITY.md

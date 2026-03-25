@@ -8,8 +8,8 @@ scope: global
 
 Two modes:
 
-- `/scribe:onboard <name>` — create a new agent. See [new-agent.md](new-agent.md).
-- `/scribe:onboard sync` — sync all existing agents to runtime. See [sync.md](sync.md).
+- `/onboard <name>` — create a new agent. See [new-agent.md](new-agent.md).
+- `/onboard sync` — sync all existing agents to runtime. See [sync.md](sync.md).
 
 Authenticate before writing: use `/authenticate`.
 

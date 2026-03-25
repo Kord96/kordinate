@@ -200,8 +200,8 @@ claude login
 
 ```bash
 # Build your own team:
-/scribe:onboard myagent "manages database migrations"
-/scribe:kord migration-review "architecture review for migration changes"
+/onboard myagent "manages database migrations"
+/create-kord migration-review "architecture review for migration changes"
 
 # Or use the default team:
 /deployer:bootstrap setup-namespaces

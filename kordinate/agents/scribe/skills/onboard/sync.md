@@ -2,7 +2,7 @@
 
 Level 3 resource for the onboard skill.
 
-When invoked with `/scribe:onboard sync`, sync all agents from kordinate to the runtime.
+When invoked with `/onboard sync`, sync all agents from kordinate to the runtime.
 
 Useful after: first install, adding an agent manually, or switching runtimes.
 
