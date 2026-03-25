@@ -100,14 +100,36 @@ flowchart LR
 
         subgraph master-cluster[cluster-A]
             direction TB
+            subgraph env-a[env namespaces — dev/test/prod]
+                subgraph myapp-a["app: my-app"]
+                    PA1[pod 1] ~~~ PAN[pod N] ~~~ VITA[vitals]
+                end
+            end
+
+            subgraph nodes-a[per-node]
+                NEA[node-exporter] ~~~ CA3[cAdvisor] ~~~ KLA[kubelet]
+            end
+
+            subgraph mon-a[monitor]
+                ALA[alloy] -->|write| LKA[loki] & PRA[prom]
+            end
+
+            subgraph gw-a[gateway]
+                GWTA[tailscale sidecar]
+                MIOA[minio]
+            end
+
             subgraph master2[master]
                 MA2[alloy] -->|write| ML2[loki 30d] & MP2[prom 30d]
                 MP2 & ML2 --> G2[grafana]
                 WS2[workstation]
             end
-            CA2-NS1[gateway]
-            CA2-NS2[monitor]
-            CA2-NS3[dev / test / prod]
+
+            ALA -->|scrape /metrics| myapp-a
+            ALA -->|scrape| nodes-a
+            PRA -->|port forward| GWTA
+            LKA -->|sidecar writes JSON Lines| MIOA
+            MIOA -->|port forward| GWTA
         end
 
         subgraph CN2[cluster-N]
@@ -115,13 +137,18 @@ flowchart LR
         end
 
         MA2 -->|pull metrics + logs| GWT
+        MA2 -->|pull metrics + logs| GWTA
         MA2 -.->|pull metrics + logs| CN2
 
         style master2 fill:#2d1f4e,stroke:#7c5cbf,color:#fff
         style mon fill:#1a3a2a,stroke:#4caf50,color:#fff
+        style mon-a fill:#1a3a2a,stroke:#4caf50,color:#fff
         style gw fill:#1a2a3a,stroke:#42a5f5,color:#fff
+        style gw-a fill:#1a2a3a,stroke:#42a5f5,color:#fff
         style env fill:#2a2a1a,stroke:#ffa726,color:#fff
+        style env-a fill:#2a2a1a,stroke:#ffa726,color:#fff
         style nodes fill:#2a1a1a,stroke:#ef5350,color:#fff
+        style nodes-a fill:#2a1a1a,stroke:#ef5350,color:#fff
     ```
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki.
