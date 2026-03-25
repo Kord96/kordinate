@@ -94,11 +94,16 @@ guard_bash() {
 
       case "$branch" in
         main)
+          # Allow if /merge is running (lock exists)
+          local repo_root
+          repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+          [ -d "$repo_root/.merge-lock" ] && allow
+          # Allow if fast-forward is possible
           git fetch origin main 2>/dev/null
           if git merge-base --is-ancestor origin/main HEAD 2>/dev/null; then
-            allow  # FF possible
+            allow
           fi
-          deny "Fast-forward to main not possible. Use /merge to rebase and resolve."
+          deny "Push to main blocked — your branch has diverged from main. Use /merge to rebase and resolve."
           ;;
         session/*|memory/*)
           allow
