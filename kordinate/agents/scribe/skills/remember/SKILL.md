@@ -1,27 +1,40 @@
 ---
 name: remember
-description: Write a memory for an agent. Decides global vs project scope, writes to kordinate and Claude native paths, updates KORD.md.
+description: Write a memory for an agent. Handles scope, frontmatter properties, kordinate and Claude native paths, and KORD.md updates.
 ---
 
-Write a memory on behalf of an agent. $ARGUMENTS should include the agent name and what to remember.
+Write a memory on behalf of an agent. Other agents are blocked from writing to memory/kord paths by [guard.sh](guard.sh) and told to delegate here.
+
+$ARGUMENTS should include the agent name and what to remember.
 
 ## Procedure
 
-1. **Analyze the content** — a single piece of information may contain both global and project-specific parts. Split if needed:
-    - Cluster facts, tool patterns, cross-project knowledge → **global**
-    - References to specific repos, project files, local endpoints → **project**
-    - Some information belongs in both scopes with different detail levels (e.g. "DNS issues with .local domains" is global, "logbd service at 10.0.1.5 affected" is project)
-    - When unclear, ask.
+1. **Classify the content**:
+    - **Scratchpad** — quick observations, operational notes, things the agent noticed while working. Append to the agent's `memory/scratchpad.md`. Not curated — agents accumulate these freely.
+    - **Topic file** — structured knowledge worth keeping as its own file. Create a new file in `memory/` with a descriptive name. Curated — only created or updated when explicitly requested.
+    - When unclear: if it's a one-liner or transient fact, scratchpad. If it's reference material someone would look up later, topic file.
 
-2. **Determine paths** — for each scope, write to both kordinate and Claude native paths.
-    See [kordinate-recall.md](kordinate-recall.md) for kordinate paths and properties.
+2. **Determine scope** — a single piece of information may belong in both:
+    - **Global** (`$KORDINATE_HOME/agents/<name>/memory/`) — useful across projects. Cluster facts, tool patterns, general knowledge.
+    - **Project** (`.kord/agents/<name>/memory/`) — specific to this repo. Local endpoints, project-specific workflows, repo-specific facts.
+    - Some information belongs in both with different detail levels.
+
+3. **Add frontmatter** — every memory file needs kordinate properties:
+    ```yaml
+    ---
+    description: One sentence describing the content
+    curated: false          # scratchpad
+    scope: global           # or project
+    ---
+    ```
+    For topic files, set `curated: true`.
+
+4. **Write to kordinate path** — the source of truth.
+
+5. **Write to Claude native path** — so Claude can auto-load it.
     See [claude-native.md](claude-native.md) for Claude Code paths and behaviors.
+    See [kordinate-recall.md](kordinate-recall.md) for kordinate properties.
 
-3. **Write the memory files** — create or update topic files in the agent's memory directory.
-    - Use descriptive filenames (e.g. `dns-patterns.md`, `cluster-topology.md`)
-    - If the topic already exists, append or update — don't overwrite
-    - A single request may produce files in both global and project scope
+6. **Update KORD.md** — add an entry for any new file. Existing files (like scratchpad) don't need a new entry.
 
-4. **Update KORD.md** — add entries for any new files.
-
-5. **Report** — confirm what was written, where, and the scope(s) chosen.
+7. **Report** — confirm what was written, where, scope, and whether it was scratchpad or topic file.
