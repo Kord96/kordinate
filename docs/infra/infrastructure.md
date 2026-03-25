@@ -13,39 +13,6 @@ Each k3s cluster is standalone with its own control plane, worker nodes, and obs
 | `master` | One globally | Prometheus (30d), Loki (30d), Grafana, Alloy (federation), workstation (with Beorn), kord-storage |
 | `dev/test/prod` | Per cluster | App workloads only — no infra components |
 
-```mermaid
-flowchart TB
-    subgraph CB[cluster-B]
-        B1[dev] & B2[test] & B3[prod]
-
-        subgraph mon-b[monitor]
-            GA[alloy] --> PA[prom 7d + loki]
-        end
-
-        subgraph gw-b[gateway]
-            GWT[tailscale]
-            MIO[minio]
-        end
-
-        B1 & B2 & B3 -.->|/metrics + stdout| GA
-        PA -->|:9090 :3100| GWT
-    end
-
-    subgraph CA[cluster-A]
-        subgraph M[master]
-            MP[prom 30d] & ML[loki 30d] --> G[grafana]
-            MA[alloy]
-            MA -->|write| MP & ML
-            WS[workstation + beorn]
-            KS[kord-storage]
-        end
-    end
-
-    MA -->|pull :9090 :9000| GWT
-
-    CC[cluster-C — same structure] -.->|tailnet| MA
-```
-
 The `gateway` namespace is the cluster's front door — Tailscale, ingress, and MinIO for log federation. The `master` namespace runs on one cluster and aggregates from all others. The workstation (with Beorn running inside as a background process) is the centralized development and agent execution environment.
 
 ## Data Flow
