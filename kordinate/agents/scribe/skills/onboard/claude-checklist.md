@@ -68,6 +68,6 @@ Level 3 resource for the onboard skill. Verify after onboarding or syncing.
 
 - [ ] `/boot` loads shared protocols and agent memory without errors
 - [ ] `/kord deployer what pods are running?` reaches deployer (stateful test)
-- [ ] `/kord remember test: checklist verification note` writes successfully (stateless test)
+- [ ] `/kord remember checklist verification note` writes successfully (stateless test)
 - [ ] Attempt to write directly to `~/.kord/agents/scribe/memory/test.md` — should be blocked by guard
 - [ ] `generate-kord.sh` produces valid KORD.md with all agents and kords listed
