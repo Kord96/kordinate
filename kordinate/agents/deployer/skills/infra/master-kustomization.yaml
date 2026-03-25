@@ -2,10 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: master
 resources:
-  - alloy.yaml
-  - prometheus.yaml
-  - loki.yaml
-  - grafana.yaml
-  - gateway-registry.yaml
+  - manifests/master-alloy.yaml
+  - manifests/master-prometheus.yaml
+  - manifests/master-loki.yaml
+  - manifests/master-grafana.yaml
+  - manifests/master-gateway-registry.yaml
 # Note: datasources.yaml and dashboards/ are Grafana provisioning files,
 # deployed as ConfigMaps by the deployer (not via kustomize).
