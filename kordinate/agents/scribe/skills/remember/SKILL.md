@@ -30,10 +30,10 @@ $ARGUMENTS should include the agent name and what to remember.
     For topic files, set `curated: true`.
 
 4. **Write to kordinate path** — the source of truth.
+    See [kordinate-recall.md](kordinate-recall.md) for paths and properties.
 
-5. **Write to Claude native path** — so Claude can auto-load it.
-    See [claude-native.md](claude-native.md) for Claude Code paths and behaviors.
-    See [kordinate-recall.md](kordinate-recall.md) for kordinate properties.
+5. **Sync to runtime** — write to the runtime's native paths so the agent can auto-load it.
+    See [claude-native.md](claude-native.md) for the current runtime's paths.
 
 6. **Update KORD.md** — add an entry for any new file. Existing files (like scratchpad) don't need a new entry.
 
