@@ -13,7 +13,7 @@ FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
 # Check if path matches memory or kord patterns
 case "$FILE_PATH" in
-  */.kord/*|*/kord/*|*/memory/*|*/agent-memory/*)
+  */.kord/*)
     # Allow if scribe auth token exists
     if [ -f "/tmp/.scribe-auth" ]; then
       exit 0

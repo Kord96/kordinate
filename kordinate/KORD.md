@@ -13,6 +13,7 @@ Auto-generated from frontmatter. Do not edit manually.
 
 - `agents/deployer/memory/infra.md` — Infrastructure Reference
 - `agents/deployer/memory/migration.md` — Full migration lifecycle for deployments
+- `agents/deployer/memory/scratchpad.md` — Deployer working notes and observations
 - `agents/deployer/memory/tools.md` — Deployer tools reference — postgres.py and local utilities
 - `agents/deployer/memory/troubleshooting.md` — Common deployment issues and their fixes
 - `agents/designer/memory/app-contract.md` — App Contract
@@ -43,8 +44,10 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/sauron/memory/grafana_renderer.md` — Prioritize Grafana renderer for visual dashboard auditing over JSON-only analysis
 - `agents/sauron/memory/logging.md` — Structured logging standards across all projects
 - `agents/sauron/memory/monitoring.md` — Four-layer monitoring model — physical, application, business, alerting
+- `agents/sauron/memory/scratchpad.md` — Sauron working notes and observations
 - `agents/sauron/memory/tools.md` — Sauron tools reference — klog, nokrashi-tools, Grafana MCP
 - `agents/sauron/memory/workflow.md` — Sauron workflow — understand, implement, validate, report
+- `agents/scribe/memory/scratchpad.md` — Scribe working notes and observations
 - `agents/scribe/memory/templates/agents/sauron/metrics.md` — <Project> — Metrics
 - `agents/scribe/memory/templates/agents/sauron/vitals.md` — Template for project vitals documentation
 - `agents/scribe/memory/tools.md` — Scribe tools reference — Gemini MCP for doc review
@@ -61,3 +64,8 @@ Auto-generated from frontmatter. Do not edit manually.
 - `kords/remember/contract.md` — Write a memory for an agent — handles scope, paths, and registry updates
 - `kords/sauron-default/contract.md` — General monitoring and observability questions
 - `kords/scribe-default/contract.md` — General documentation and template questions
+
+## Shared
+
+- `shared/auth-protocol.md` — Instructs agents to authenticate before guarded operations
+- `shared/memory-protocol.md` — Instructs agents to save insights via /kord remember before finishing
