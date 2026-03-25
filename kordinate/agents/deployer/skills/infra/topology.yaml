@@ -12,9 +12,9 @@ master:
   - master-prometheus.yaml
   - master-loki.yaml
   - master-grafana.yaml
-  - master-alloy.yaml
+  - master-alloy.yaml         # Deployment only — ConfigMap generated in overlay
   - master-datasources.yaml
-  - master-gateway-registry.yaml
+  # master alloy-config and gateway-registry ConfigMaps are generated per-cluster in profile/overlays/
 
 monitor:
   - monitor-prometheus.yaml
