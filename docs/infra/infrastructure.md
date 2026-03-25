@@ -29,7 +29,7 @@ flowchart TB
             AL-B[alloy] --> PR-B[prom] & LK-B[loki]
         end
         ENV-B[dev / test / prod] -.->|metrics + logs| AL-B
-        PR-B & LK-B -->|:9090 :9000| GWT-B
+        PR-B & LK-B -->|port forward| GWT-B
     end
 
     subgraph CA[cluster-A]
@@ -46,10 +46,18 @@ flowchart TB
         CN-INNER[same structure as cluster-B]
     end
 
-    MA -->|pull :9090 /federate| GWT-B
-    MA -->|pull :9000 minio| GWT-B
-    CN -.->|tailnet| MA
+    MA -->|pull metrics + logs| GWT-B
+    MA -.->|pull metrics + logs| CN
 ```
+
+??? note "Port details"
+
+    | Service | Port | Protocol |
+    |---------|------|----------|
+    | Prometheus /federate | 9090 | HTTP |
+    | MinIO (log federation) | 9000 | S3 API |
+    | Beorn MCP | 3100 | HTTP |
+    | Loki push API | 3100 | HTTP |
 
 ??? abstract "Detailed data flow"
 
@@ -90,9 +98,9 @@ flowchart TB
             myapp -->|uses| infra-svc
             myapp & infra-svc -->|/metrics + logs| AL
             nodes -->|host + container metrics| AL
-            PR -->|:9090| GWT
+            PR -->|port forward| GWT
             LK -->|sidecar writes JSON Lines| MIO
-            MIO -->|:9000| GWT
+            MIO -->|port forward| GWT
         end
 
         subgraph master-cluster[cluster-A]
@@ -115,10 +123,9 @@ flowchart TB
             CN2-INNER[same structure as cluster-B]
         end
 
-        MA2 -->|pull :9090 /federate| GWT
-        MA2 -->|pull :9000 minio| GWT
-        MA2 -->|pull| GWT-A
-        CN2 -.->|tailnet| MA2
+        MA2 -->|pull metrics + logs| GWT
+        MA2 -->|pull metrics + logs| GWT-A
+        MA2 -.->|pull metrics + logs| CN2
     ```
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki.
