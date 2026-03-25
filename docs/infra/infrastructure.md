@@ -26,7 +26,7 @@ flowchart TB
             GWT-B[tailscale sidecar + minio]
         end
         subgraph mon-b[monitor]
-            AL-B[alloy] --> PR-B[prom] & LK-B[loki]
+            AL-B[alloy] -->|write| PR-B[prom] & LK-B[loki]
         end
         ENV-B[dev / test / prod] -.->|metrics + logs| AL-B
         PR-B & LK-B -->|port forward| GWT-B
@@ -87,7 +87,7 @@ flowchart TB
             end
 
             subgraph mon[monitor]
-                AL[alloy] --> LK[loki] & PR[prom]
+                AL[alloy] -->|write| LK[loki] & PR[prom]
             end
 
             subgraph gw[gateway]
@@ -114,7 +114,7 @@ flowchart TB
                 GWT-A[tailscale sidecar + minio]
             end
             subgraph ca-mon[monitor]
-                AL-A[alloy] --> PR-A[prom] & LK-A[loki]
+                AL-A[alloy] -->|write| PR-A[prom] & LK-A[loki]
             end
             CA-ENV[dev / test / prod]
         end
