@@ -1,5 +1,5 @@
 ---
-description: Troubleshooting
+description: Common deployment issues and their fixes
 curated: true
 scope: global
 ---

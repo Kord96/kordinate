@@ -1,5 +1,5 @@
 ---
-description: Patterns Index
+description: Index of recognized architectural patterns by category
 curated: true
 scope: global
 ---

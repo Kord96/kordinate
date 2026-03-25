@@ -1,5 +1,5 @@
 ---
-description: Shared Libraries Index
+description: Index of shared libraries that implement patterns across projects
 curated: true
 scope: global
 ---

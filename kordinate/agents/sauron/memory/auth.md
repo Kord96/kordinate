@@ -1,5 +1,5 @@
 ---
-description: Authentication
+description: Sauron authentication flow and Grafana guard bypass
 curated: true
 scope: global
 ---

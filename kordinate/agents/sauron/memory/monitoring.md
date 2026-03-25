@@ -1,5 +1,5 @@
 ---
-description: Monitoring Layers
+description: Four-layer monitoring model — physical, application, business, alerting
 curated: true
 scope: global
 ---

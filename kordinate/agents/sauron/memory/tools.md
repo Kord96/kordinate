@@ -1,5 +1,5 @@
 ---
-description: Tools
+description: Sauron tools reference — klog, nokrashi-tools, Grafana MCP
 curated: true
 scope: global
 ---

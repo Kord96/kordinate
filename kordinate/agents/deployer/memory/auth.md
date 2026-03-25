@@ -1,5 +1,5 @@
 ---
-description: Authentication
+description: Deployer authentication flow and kubectl guard bypass
 curated: true
 scope: global
 ---

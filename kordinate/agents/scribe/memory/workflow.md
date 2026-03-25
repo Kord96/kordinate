@@ -1,5 +1,5 @@
 ---
-description: Workflow
+description: Scribe authentication and write workflow
 curated: true
 scope: global
 ---

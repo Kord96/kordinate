@@ -1,5 +1,5 @@
 ---
-description: Tools
+description: Deployer tools reference — postgres.py and local utilities
 curated: true
 scope: global
 ---

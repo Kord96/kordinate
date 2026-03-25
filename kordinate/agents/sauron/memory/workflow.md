@@ -1,5 +1,5 @@
 ---
-description: Workflow
+description: Sauron workflow — understand, implement, validate, report
 curated: true
 scope: global
 ---
