@@ -31,17 +31,6 @@
           }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$KORDINATE_HOME/hooks/auto-merge-to-dev.sh"
-          }
-        ]
-      }
     ]
   },
   "effortLevel": "high",
