@@ -42,9 +42,15 @@ spec:
           args: ["server", "/data", "--console-address", ":9001"]
           env:
             - name: MINIO_ROOT_USER
-              value: "kordinate"
+              valueFrom:
+                secretKeyRef:
+                  name: minio-credentials
+                  key: root-user
             - name: MINIO_ROOT_PASSWORD
-              value: "kordinate-minio"
+              valueFrom:
+                secretKeyRef:
+                  name: minio-credentials
+                  key: root-password
           ports:
             - containerPort: 9000
               name: s3

@@ -80,7 +80,7 @@ spec:
       containers:
         - name: beorn
           image: REGISTRY/workstation:latest
-          command: ["/home/claude/kordinate/kordinate/agents/deployer/manifests/gateway/base/beorn/entrypoint.sh"]
+          command: ["/bin/bash", "-c", "$KORDINATE_HOME/agents/deployer/skills/bootstrap/manifests/gateway/base/beorn/entrypoint.sh"]
           env:
             - name: HOME
               value: /home/claude

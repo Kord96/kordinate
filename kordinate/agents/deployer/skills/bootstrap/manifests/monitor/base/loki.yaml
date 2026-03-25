@@ -13,7 +13,7 @@ metadata:
 spec:
   accessModes:
   - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: STORAGE_CLASS
   resources:
     requests:
       storage: 50Gi
@@ -113,7 +113,7 @@ spec:
             - name: loki-data
               mountPath: /data/loki
         - name: federate
-          image: 10.95.43.66:5000/loki-federate:latest
+          image: REGISTRY/loki-federate:latest
           imagePullPolicy: Never
           args:
             - --interval=60
