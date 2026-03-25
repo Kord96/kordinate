@@ -11,6 +11,7 @@ Auto-generated from frontmatter. Do not edit manually.
 
 ## Memory
 
+- `agents/claude/memory/scratchpad.md` — Operational notes and observations
 - `agents/deployer/memory/infra.md` — Infrastructure Reference
 - `agents/deployer/memory/migration.md` — Full migration lifecycle for deployments
 - `agents/deployer/memory/scratchpad.md` — Deployer working notes and observations
@@ -47,6 +48,7 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/sauron/memory/tools.md` — Sauron tools reference — klog, nokrashi-tools, Grafana MCP
 - `agents/sauron/memory/workflow.md` — Sauron workflow — understand, implement, validate, report
 - `agents/scribe/memory/scratchpad.md` — Scribe working notes and observations
+- `agents/scribe/memory/skill-marketplace-evaluation.md` — Evaluation of external skill marketplaces (anthropic-agent-skills, alirezarezvani/claude-skills) for integration into deployer, sauron, designer, scribe — verdicts, priorities, cross-agent dependencies
 - `agents/scribe/memory/templates/agents/sauron/metrics.md` — <Project> — Metrics
 - `agents/scribe/memory/templates/agents/sauron/vitals.md` — Template for project vitals documentation
 - `agents/scribe/memory/tools.md` — Scribe tools reference — Gemini MCP for doc review
@@ -54,11 +56,12 @@ Auto-generated from frontmatter. Do not edit manually.
 
 ## Kords
 
+- `kords/audit/contract.md` — Read-only health check for memory and kordinate system — scan and report issues
 - `kords/create-kord/contract.md` — Define a new kord between agents
 - `kords/deployer-default/contract.md` — General deployment and cluster questions
 - `kords/designer-default/contract.md` — General architecture and design questions
 - `kords/monitoring-impact/contract.md` — Monitoring impact assessment for infrastructure changes
-- `kords/onboard/contract.md` — Onboard a new agent or sync existing agents to the runtime
+- `kords/onboard/contract.md` — Onboard a new agent to the team
 - `kords/pattern-review/contract.md` — Architecture review for deployment and monitoring changes
 - `kords/remember/contract.md` — Write a memory for an agent — handles scope, paths, and registry updates
 - `kords/sanitize/contract.md` — Classify content as config, credential, or memory — routes to correct destination

@@ -23,7 +23,7 @@ You manage deployments across environments.
 
 | Skill | Purpose |
 |-------|---------|
-| `/infra` | All infrastructure operations — bootstrap, roll, stop, clean, diff, migrate |
+| `/infra` | All infrastructure operations — bootstrap, roll, stop, clean, diff, migrate, preflight, rollback |
 
 ## Rules
 

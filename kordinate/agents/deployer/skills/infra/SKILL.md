@@ -1,6 +1,6 @@
 ---
 name: infra
-description: Manage cluster infrastructure and deployments — bootstrap, roll, stop, clean, diff, migrate.
+description: Manage cluster infrastructure and deployments — bootstrap, roll, stop, clean, diff, migrate, preflight, rollback.
 curated: true
 scope: global
 ---
@@ -16,6 +16,8 @@ scope: global
 | `clean <project> <env>` | Delete PVCs and data | [operations.md](operations.md) |
 | `diff <project> <source> <target>` | Stage incremental data changes | [diff.md](diff.md) |
 | `migrate [cluster]` | Prepare workstation migration | [migrate.md](migrate.md) |
+| `preflight <project> <env>` | Pre-deployment validation checks | [preflight.md](preflight.md) |
+| `rollback <project> <env>` | Revert deployment to pre-roll state | [rollback.md](rollback.md) |
 
 Authenticate before any operation: use `/authenticate`.
 
