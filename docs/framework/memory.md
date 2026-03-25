@@ -24,4 +24,13 @@ Every piece of knowledge is described by eight properties:
 
 ## Registry
 
-`KORD.md` is the registry of all knowledge. Generated and maintained by scribe.
+`KORD.md` is the registry of all knowledge. Generated and maintained by [scribe](../agents/scribe.md).
+
+## Enforcement
+
+All writes to kordinate paths (`kord/`) and memory paths go through scribe. A hook on `Write|Edit` blocks unauthorized writes and tells the agent to delegate to scribe. Scribe handles:
+
+- Template validation for templated files
+- Scope decision (global vs project) for memory writes
+- Writing to both kordinate and runtime-native paths (linking)
+- Updating KORD.md with new entries
