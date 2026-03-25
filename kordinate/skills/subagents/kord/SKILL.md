@@ -30,7 +30,7 @@ Send a request to another agent through a kord contract.
 ## Execution
 
 1. **Check mode**:
-    - `mode: stateless` → invoke the specified skill directly. No agent spawn. Skip to step 4.
+    - `mode: stateless` → authenticate as provider (`cp profile/locks/<provider> /tmp/.<provider>-auth`), invoke the skill directly, remove auth. No agent spawn. Skip to step 4.
     - `mode: stateful` → proceed to freshness check.
 
 2. **Freshness check** (stateful only):
