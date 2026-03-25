@@ -1,78 +1,41 @@
-# Sauron
+# Monitoring
 
-Monitoring, observability, and code validation.
-
-The sauron agent owns all monitoring, observability, and code validation. It is the only agent authorized to use Grafana.
-
-| | |
-|---|---|
-| **Triggers** | `add monitoring`, `add metrics`, `health check`, `prometheus`, `dashboard`, `set up logging`, `add logging`, `review logs`, `run tests`, `code validation`, `validate code` |
-| **Authority** | Grafana, code fixes, standards testing |
-| **Exclusive Tools** | nokrashi-tools, klog, Grafana MCP |
-
-### Skills
-
-| Skill | Description |
-|---------|-------------|
-| `/scan` | Scan a project for monitoring gaps |
-| `/diagnose` | Diagnose a specific issue |
-
-### Memory
-
-| | Static | Dynamic |
-|---|---|---|
-| **Global** | monitoring.md, logging.md, dashboards/ | auto-managed |
-| **Project** | `sauron/static/` -- dashboards, alert rules | `sauron/dynamic/` -- monitoring notes |
-
-### Hooks
-
-| Hook | What it guards |
-|------|---------------|
-| `guard-grafana.sh` | Registered in 3 contexts: Edit/Write (dashboard JSON), Bash (grafana CLI), and `mcp__grafana` (Grafana MCP). Only sauron may interact with Grafana. |
-
-Uses the same profile lock authentication flow as all guards: copy lock, hook compares, remove on completion.
-
----
+Observability contract, health evaluation, and the Sauron agent.
 
 ## Observability Contract
 
-How apps expose telemetry to the platform. Three concerns -- logs, metrics, health -- with clear ownership boundaries. All pods belonging to an app share the `app` label -- this is how Gateway Alloy, Vitals, and Grafana identify which metrics and logs belong together.
-
-### Overview
+How apps expose telemetry to the platform. Three concerns — logs, metrics, health — with clear ownership boundaries. All pods belonging to an app share the `app` label — this is how Alloy, Vitals, and Grafana identify which metrics and logs belong together.
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph app["app: my-app"]
-        P1[pod 1 — /metrics]
-        P2[pod 2 — /metrics]
-        PN[pod N — /metrics]
-        VIT[Vitals — /metrics :9131]
-        P1 ~~~ P2 ~~~ PN ~~~ VIT
+        direction TB
+        P1[pod 1 — /metrics] ~~~ P2[pod N — /metrics]
+        VIT[vitals — /metrics :9131]
     end
 
-    P1 & P2 & PN -->|/metrics + logs| AL
-    VIT -->|health metrics| AL
-    PR -.->|app metrics query| VIT
-
-    subgraph mon[monitor namespace]
-        AL[Alloy] --> PR[Prom] & LK[Loki]
+    subgraph mon[monitor]
+        AL[alloy] -->|write| PR[prom] & LK[loki]
     end
+
+    AL -->|scrape /metrics| P1 & P2 & VIT
+    AL -.->|tail stdout| app
+    VIT -->|query app metrics| PR
+
+    style mon fill:#1a3a2a,stroke:#4caf50,color:#fff
 ```
-
-!!! tip ""
-    All pods -- including vitals -- share the `app` label. Alloy uses this label to group metrics and logs by application.
 
 | Concern | Owner | Interface | Consumer |
 |---------|-------|-----------|----------|
-| **Logs** | app pods | structured JSON to stdout | Gateway Alloy (tails via K8s API) |
-| **Metrics** | app pods | `/metrics` on app port | Gateway Alloy (scrapes) |
-| **Health** | vitals pod | `/metrics` on `:9131` | Gateway Alloy (scrapes) |
+| **Logs** | App pods | Structured JSON to stdout | Alloy (tails via K8s API) |
+| **Metrics** | App pods | `/metrics` on app port | Alloy (scrapes) |
+| **Health** | Vitals pod | `/metrics` on `:9131` | Alloy (scrapes) |
 
 ### Logs
 
-Apps write structured JSON to stdout. No special libraries required -- any logger that outputs JSON works.
+Apps write structured JSON to stdout. No special libraries required — any logger that outputs JSON works.
 
-Gateway Alloy tails pod stdout via the K8s API and writes to Loki. Log delivery is **best-effort** -- apps must not block on stdout. Kubernetes buffers stdout in container runtime log files, which rotate.
+Alloy tails pod stdout via the K8s API and writes to Loki. Log delivery is **best-effort** — apps must not block on stdout.
 
 Required fields:
 
@@ -85,7 +48,7 @@ Additional fields are app-defined and become Loki labels automatically via the A
 
 ### Metrics
 
-Apps expose `/metrics` in Prometheus format on their process port. Gateway Alloy discovers and scrapes via pod annotations.
+Apps expose `/metrics` in Prometheus format on their process port. Alloy discovers and scrapes via pod annotations.
 
 Required pod annotations:
 
@@ -95,7 +58,7 @@ annotations:
   prometheus.io/port: "<app-metrics-port>"
 ```
 
-Gateway Alloy normalizes metrics -- drops raw `kube_*`/`kafka_*` prefixes, keeps app-specific metrics. Apps should use descriptive metric names with an app-specific prefix.
+Alloy normalizes metrics — drops raw `kube_*`/`kafka_*` prefixes, keeps app-specific metrics. Apps should use descriptive metric names with an app-specific prefix.
 
 ### Health (Vitals)
 
@@ -103,12 +66,12 @@ Each app deploys **one vitals pod per namespace** that evaluates the app's healt
 
 **How it works:**
 
-1. Vitals queries **Gateway Prom** for app metrics (cross-namespace: `prometheus.monitor.svc.cluster.local:9090`) -- raw metrics, aggregations, liveness (`up{}`)
+1. Vitals queries Prom for app metrics (cross-namespace: `prometheus.monitor.svc.cluster.local:9090`)
 2. Evaluates thresholds and health logic (app-specific domain knowledge)
 3. Exposes `vitals_*` gauges on `:9131/metrics`
-4. Gateway Alloy scrapes vitals like any other pod
+4. Alloy scrapes vitals like any other pod
 
-**Why standalone, not sidecar:** Health evaluation is often **cross-cutting** -- checking Kafka lag across consumer groups, aggregating storage usage across volumes, evaluating pipeline throughput. These require a system-wide view that a per-pod sidecar can't provide. One vitals pod per app keeps the deployment simple and gives the evaluator access to all of the app's metrics in Prom.
+**Why standalone, not sidecar:** Health evaluation is often **cross-cutting** — checking Kafka lag across consumer groups, aggregating storage usage across volumes, evaluating pipeline throughput. These require a system-wide view that a per-pod sidecar can't provide.
 
 **Metric convention:** All gauges use **0 = FAIL, 1 = WARNING, 2 = OK**.
 
@@ -117,7 +80,7 @@ Each app deploys **one vitals pod per namespace** that evaluates the app's healt
 | `vitals_process{process}` | Is this process alive? |
 | `vitals_<section>{check}` | Is this concern healthy? |
 
-**Recommended sections** -- use these when the concern fits, extend with app-specific sections as needed:
+**Recommended sections:**
 
 | Section | What it covers |
 |---------|---------------|
@@ -127,53 +90,51 @@ Each app deploys **one vitals pod per namespace** that evaluates the app's healt
 | `vitals_serving` | Request handling, API readiness |
 | `vitals_queue` | Message queue consumers/producers |
 
-Check labels should be short, specific, snake_case: `vitals_deps{check="postgres_primary"}`, not `vitals_deps{check="pg"}`.
+Check labels should be short, specific, snake_case: `vitals_deps{check="postgres_primary"}`.
 
-### Vitals Deployment
+??? abstract "Vitals deployment example"
 
-One vitals deployment per app, per namespace:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: vitals
-  labels:
-    app: my-app
-    component: vitals
-spec:
-  replicas: 1
-  template:
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
     metadata:
+      name: vitals
       labels:
         app: my-app
         component: vitals
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9131"
     spec:
-      containers:
-        - name: vitals
-          args: ["-m", "monitor.vitals", "--port", "9131"]
-          env:
-            - name: PROMETHEUS_URL
-              value: "http://prometheus.monitor.svc.cluster.local:9090"
-          ports:
-            - containerPort: 9131
-              name: metrics
-```
+      replicas: 1
+      template:
+        metadata:
+          labels:
+            app: my-app
+            component: vitals
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9131"
+        spec:
+          containers:
+            - name: vitals
+              args: ["-m", "monitor.vitals", "--port", "9131"]
+              env:
+                - name: PROMETHEUS_URL
+                  value: "http://prometheus.monitor.svc.cluster.local:9090"
+              ports:
+                - containerPort: 9131
+                  name: metrics
+    ```
 
-### Meta-alerting
+??? abstract "Meta-alerting"
 
-The platform should detect silent vitals failures:
+    Detect silent vitals failures:
 
-```yaml
-- alert: VitalsMissing
-  expr: absent(vitals_process{app="my-app"})
-  for: 5m
-  labels:
-    severity: warning
-```
+    ```yaml
+    - alert: VitalsMissing
+      expr: absent(vitals_process{app="my-app"})
+      for: 5m
+      labels:
+        severity: warning
+    ```
 
 ### When to Use
 
@@ -183,9 +144,35 @@ The platform should detect silent vitals failures:
 
 ### When Not to Use
 
-- Short-lived jobs or CronJobs -- use exit codes and job status metrics instead
-- Platform infrastructure (Alloy, Prom, Loki) -- these have their own health mechanisms
+- Short-lived jobs or CronJobs — use exit codes and job status metrics instead
+- Platform infrastructure (Alloy, Prom, Loki) — these have their own health mechanisms
 
 ### Related Patterns
 
-- [Service Manager](../reference/patterns/service-manager.md) -- managed processes should comply with this contract
+- [Service Manager](../reference/patterns/service-manager.md) — managed processes should comply with this contract
+
+---
+
+## Sauron Agent
+
+Owns monitoring, observability, and code validation — the only agent authorized to use Grafana.
+
+Authority: Grafana, code fixes, standards testing. Exclusive tools: nokrashi-tools, klog, Grafana MCP.
+
+=== "Skills"
+
+    | Skill | Description |
+    |-------|-------------|
+    | `/scan` | Scan a project for monitoring gaps |
+    | `/diagnose` | Diagnose a specific issue |
+
+=== "Memory"
+
+    | File | Content |
+    |------|---------|
+    | `monitoring.md` | Four-layer monitoring model — physical, application, business, alerting |
+    | `logging.md` | Structured logging standards across all projects |
+    | `grafana_renderer.md` | Prioritize visual dashboard auditing over JSON-only |
+    | `tools.md` | nokrashi-tools, klog, Grafana MCP reference |
+    | `workflow.md` | Understand, implement, validate, report |
+    | `scratchpad.md` | Working notes and observations |
