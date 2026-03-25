@@ -20,7 +20,7 @@ Define a new kord. $ARGUMENTS should include the kord name and optionally a desc
     └── data.md (empty, populated on first consult)
     ```
 
-3. **Generate contract.md** — see [contract-template.md](contract-template.md) for the template.
+3. **Generate contract.md** — see [contract-template.md](../remember/contract-template.md) for the template.
 
 4. **Update KORD.md** — add the new kord entry.
 
