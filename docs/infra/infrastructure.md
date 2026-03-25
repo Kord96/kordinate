@@ -41,7 +41,9 @@ flowchart LR
             MP & ML --> G[grafana]
             WS[workstation]
         end
-        CA-OTHER[cluster namespaces]
+        CA-NS1[gateway]
+        CA-NS2[monitor]
+        CA-NS3[dev / test / prod]
     end
 
     subgraph CN[cluster-N]
@@ -103,13 +105,9 @@ flowchart LR
                 MP2 & ML2 --> G2[grafana]
                 WS2[workstation]
             end
-            subgraph ca-gw[gateway]
-                GWT-A[tailscale sidecar + minio]
-            end
-            subgraph ca-mon[monitor]
-                AL-A[alloy] -->|write| PR-A[prom] & LK-A[loki]
-            end
-            CA-ENV[dev / test / prod]
+            CA2-NS1[gateway]
+            CA2-NS2[monitor]
+            CA2-NS3[dev / test / prod]
         end
 
         subgraph CN2[cluster-N]
@@ -117,14 +115,11 @@ flowchart LR
         end
 
         MA2 -->|pull metrics + logs| GWT
-        MA2 -->|pull metrics + logs| GWT-A
         MA2 -.->|pull metrics + logs| CN2
 
         style master2 fill:#2d1f4e,stroke:#7c5cbf,color:#fff
         style mon fill:#1a3a2a,stroke:#4caf50,color:#fff
-        style ca-mon fill:#1a3a2a,stroke:#4caf50,color:#fff
         style gw fill:#1a2a3a,stroke:#42a5f5,color:#fff
-        style ca-gw fill:#1a2a3a,stroke:#42a5f5,color:#fff
         style env fill:#2a2a1a,stroke:#ffa726,color:#fff
         style nodes fill:#2a1a1a,stroke:#ef5350,color:#fff
     ```
