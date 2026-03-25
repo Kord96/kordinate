@@ -202,37 +202,34 @@ Namespace-specific manifests use the `<namespace>-` prefix convention.
 
 The deployer agent owns all infrastructure operations — the only agent authorized to write to clusters.
 
-| | |
-|---|---|
-| **Authority** | kubectl writes, container registry, Redis |
-| **Exclusive Tools** | postgres.py, Redis MCP |
+Authority: kubectl writes, container registry, Redis. Exclusive tools: postgres.py, Redis MCP.
 
-### Skills
+=== "Skills"
 
-All operations go through the single `/infra` skill with subcommands:
+    All operations go through `/infra` with subcommands:
 
-| Subcommand | Description |
-|------------|-------------|
-| `/infra bootstrap` | Bootstrap cluster infrastructure (k3s, namespaces, storage) |
-| `/infra deploy` | Deploy manifests to a cluster |
-| `/infra roll` | Roll between environments (forward or backward) |
-| `/infra stop` | Scale down an environment |
-| `/infra clean` | Clean up environment data |
-| `/infra diff` | Stage incremental data changes |
-| `/infra migrate` | Prepare workstation migration handover |
-| `/infra generate-overlays` | Generate kustomize overlays from config.yaml |
+    | Subcommand | Description |
+    |------------|-------------|
+    | `bootstrap` | Bootstrap cluster infrastructure (k3s, namespaces, storage) |
+    | `deploy` | Deploy manifests to a cluster |
+    | `roll` | Roll between environments (forward or backward) |
+    | `stop` | Scale down an environment |
+    | `clean` | Clean up environment data |
+    | `diff` | Stage incremental data changes |
+    | `migrate` | Prepare workstation migration handover |
+    | `generate-overlays` | Generate kustomize overlays from config.yaml |
 
-### Memory
+=== "Memory"
 
-| File | Content |
-|------|---------|
-| `infra.md` | Infrastructure reference — cluster topology, service endpoints, networking |
-| `migration.md` | Full migration lifecycle for deployments |
-| `troubleshooting.md` | Common deployment issues and fixes |
-| `tools.md` | postgres.py and local utility reference |
-| `scratchpad.md` | Working notes and observations |
+    | File | Content |
+    |------|---------|
+    | `infra.md` | Cluster topology, service endpoints, networking |
+    | `migration.md` | Full migration lifecycle for deployments |
+    | `troubleshooting.md` | Common deployment issues and fixes |
+    | `tools.md` | postgres.py and local utility reference |
+    | `scratchpad.md` | Working notes and observations |
 
-??? abstract "config.yaml reference"
+=== "config.yaml"
 
     ```yaml
     clusters:
