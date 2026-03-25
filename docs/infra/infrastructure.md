@@ -37,9 +37,9 @@ flowchart TB
             MA[alloy]
             MA -->|write| MP[prom 30d] & ML[loki 30d]
             MP & ML --> G[grafana]
-            WS[workstation + beorn]
+            WS[workstation]
         end
-        CA-OTHER[gateway, monitor, dev/test/prod ...]
+        CA-OTHER[cluster namespaces]
     end
 
     subgraph CN[cluster-N]
@@ -100,7 +100,7 @@ flowchart TB
                 MA2[alloy]
                 MA2 -->|write| ML2[loki 30d] & MP2[prom 30d]
                 MP2 & ML2 --> G2[grafana]
-                WS2[workstation + beorn]
+                WS2[workstation]
             end
             subgraph ca-gw[gateway]
                 GWT-A[tailscale sidecar + minio]
