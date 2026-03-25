@@ -1,0 +1,36 @@
+# What goes where — maps manifests to namespaces
+# Read by /infra subcommands to know which manifests apply where
+
+gateway:
+  - gateway-pod.yaml
+  - gateway-beorn.yaml
+  - gateway-workstation.yaml
+  - gateway-minio.yaml
+  - gateway-ingress.yaml
+
+master:
+  - master-prometheus.yaml
+  - master-loki.yaml
+  - master-grafana.yaml
+  - master-alloy.yaml
+  - master-datasources.yaml
+  - master-gateway-registry.yaml
+
+monitor:
+  - monitor-prometheus.yaml
+  - monitor-loki.yaml
+  - monitor-alloy.yaml
+  - monitor-alloy-config.yaml
+  - monitor-node-exporter.yaml
+  - monitor-kube-state-metrics.yaml
+
+shared:
+  - namespaces.yaml
+  - agent-rbac.yaml
+  - agent-scaler-rbac.yaml
+
+images:
+  - workstation
+  - beorn
+  - log-puller
+  - loki-federate
