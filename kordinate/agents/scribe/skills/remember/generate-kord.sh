@@ -21,7 +21,7 @@ echo "" >> "$OUTPUT"
 echo "Auto-generated from frontmatter. Do not edit manually." >> "$OUTPUT"
 
 # Agents
-agents=$(find "$ROOT/agents" -name "identity.md" 2>/dev/null | sort)
+agents=$(find "$ROOT/agents" -iname "identity.md" 2>/dev/null | sort)
 if [ -n "$agents" ]; then
   echo "" >> "$OUTPUT"
   echo "## Agents" >> "$OUTPUT"
