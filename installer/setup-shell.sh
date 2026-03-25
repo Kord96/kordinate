@@ -116,3 +116,37 @@ fi
 
 echo ""
 echo "Done."
+
+# ── git-crypt: worktree compatibility ───────────────────────
+
+echo ""
+echo "=== git-crypt worktree fix ==="
+
+# git-crypt stores its key under .git/git-crypt/keys/ which is only
+# accessible from the main working tree. Worktrees set GIT_DIR to
+# .git/worktrees/<name>/ so git-crypt cannot find the key and the
+# smudge filter fails. These wrappers redirect GIT_DIR to the common
+# dir (--git-common-dir) so worktree checkouts decrypt correctly.
+
+REPO_GIT_DIR="$REPO_ROOT/.git"
+
+if [ -d "$REPO_GIT_DIR/git-crypt" ]; then
+  cat > "$REPO_GIT_DIR/git-crypt-smudge-wrapper.sh" << 'EOF'
+#!/bin/bash
+export GIT_DIR="$(git rev-parse --git-common-dir 2>/dev/null || git rev-parse --git-dir)"
+exec git-crypt smudge "$@"
+EOF
+
+  cat > "$REPO_GIT_DIR/git-crypt-clean-wrapper.sh" << 'EOF'
+#!/bin/bash
+export GIT_DIR="$(git rev-parse --git-common-dir 2>/dev/null || git rev-parse --git-dir)"
+exec git-crypt clean "$@"
+EOF
+
+  chmod +x "$REPO_GIT_DIR/git-crypt-smudge-wrapper.sh" "$REPO_GIT_DIR/git-crypt-clean-wrapper.sh"
+  git -C "$REPO_ROOT" config filter.git-crypt.smudge "\"$REPO_GIT_DIR/git-crypt-smudge-wrapper.sh\""
+  git -C "$REPO_ROOT" config filter.git-crypt.clean "\"$REPO_GIT_DIR/git-crypt-clean-wrapper.sh\""
+  echo "  +   git-crypt worktree wrappers installed"
+else
+  echo "  ok  git-crypt not initialized — skipping"
+fi
