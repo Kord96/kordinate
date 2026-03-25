@@ -1,5 +1,5 @@
 ---
-description: Onboard a new agent or sync existing agents to the runtime
+description: Onboard a new agent to the team
 requester: any
 provider: scribe
 mode: stateful

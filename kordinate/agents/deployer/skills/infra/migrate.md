@@ -7,15 +7,15 @@ Does NOT perform the migration — generates the artifacts for external executio
 ## Procedure
 
 1. Read current workstation config from profile/config.yaml
-2. Read current workstation manifest from agents/deployer/manifests/gateway/base/workstation.yaml
+2. Read current workstation manifest from agents/deployer/skills/infra/manifests/master-workstation.yaml
 3. Generate the migration handover file at agents/deployer/memory/dynamic/workstation-handover.md with:
    - Current workstation state (cluster, namespace, Tailscale hostname)
    - Step-by-step external migration instructions:
-     1. Apply the new workstation manifest: `kubectl apply -n gateway -f workstation.yaml`
-     2. Wait for pod ready: `kubectl wait -n gateway --for=condition=Ready pod -l component=workstation --timeout=300s`
-     3. Verify Tailscale is up: `kubectl logs -n gateway -l component=workstation | grep "Tailscale up"`
+     1. Apply the new workstation manifest: `kubectl apply -n master -f master-workstation.yaml`
+     2. Wait for pod ready: `kubectl wait -n master --for=condition=Ready pod -l app=workstation --timeout=300s`
+     3. Verify Tailscale is up: `kubectl logs -n master -l app=workstation | grep "Tailscale up"`
      4. SSH to new workstation and verify: `ssh workstation`
-     5. On new workstation: `cd ~/kordinate && ./installer/setup-shell.sh` then run `/onboard sync` to link the framework
+     5. On new workstation: `cd ~/kordinate && ./installer/setup-shell.sh` then run `/install` to link the framework
      6. Run `/boot` to pick up handover context
      7. Delete old workstation: `kubectl delete -n <old-namespace> deploy workstation`
    - Post-migration checklist:

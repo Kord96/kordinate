@@ -25,7 +25,7 @@ All subcommands are idempotent.
 
 - [topology.yaml](topology.yaml) — what manifests go to which namespaces
 - [manifests/](manifests/) — flat k8s yaml (namespace-prefixed)
-- [images/](images/) — container build contexts (workstation, beorn, log-puller, loki-federate)
+- [images/](images/) — container build contexts (workstation, log-puller, loki-federate)
 - [dashboards/](dashboards/) — Grafana dashboard JSON
 - `profile/config.yaml` — cluster IPs, domains, services (source of truth)
 - `profile/overlays/<cluster>/` — generated kustomize overlays (cluster-specific patches)

@@ -17,7 +17,7 @@ kordinate/
 ```bash
 git clone <repo-url> ~/kordinate
 cd ~/kordinate
-# Linking is handled by scribe via /onboard sync
+# Install: /install (or /install --local for no infra)
 ```
 
 ## Documentation

@@ -1,5 +1,8 @@
 ##
 ## Workstation — Claude Code interactive agent CLI with tmux.
+## Runs in master namespace. Beorn (MCP agent server) runs as a background
+## process inside this pod on port 3100.
+##
 ## PVC-backed: /home/claude persists across restarts (auth, repos, pass store).
 ## All credentials live in pass store on the PVC.
 ## Tailscale runs inside the container for SSH access.
@@ -31,7 +34,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: workstation
-    namespace: gateway
+    namespace: master
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -72,6 +75,9 @@ spec:
           image: REGISTRY/workstation:latest
           stdin: true
           tty: true
+          ports:
+            - containerPort: 3100
+              name: beorn
           env:
             - name: HOME
               value: /home/claude
@@ -79,6 +85,10 @@ spec:
               value: xterm-256color
             - name: TS_HOSTNAME
               value: workstation
+            - name: KORDINATE_HOME
+              value: /kord-shared
+            - name: KORD_WORKTREE_ROOT
+              value: /kord-shared/.worktrees
           securityContext:
             capabilities:
               add: ["NET_ADMIN", "NET_RAW"]

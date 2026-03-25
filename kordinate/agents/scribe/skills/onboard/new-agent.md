@@ -40,7 +40,7 @@ Level 3 resource for the onboard skill.
     - Make executable: `chmod +x guard-<name>.sh`
     - Add to settings.json under the appropriate `PreToolUse` matcher
 
-7. **Sync to runtime** — write this agent to the runtime's native paths per [claude-native.md](../remember/claude-native.md).
+7. **Link to runtime** — write this agent to the runtime's native paths per [link.md](link.md) (single agent, not full re-link).
 
 8. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh`.
 

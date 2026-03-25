@@ -25,31 +25,32 @@ Install Longhorn and configure storage classes. Idempotent.
 
 ## deploy-master `<cluster>`
 
-Deploy master namespace infrastructure. Does NOT touch workstation.
+Deploy master namespace infrastructure. Includes workstation (with Beorn inside) and kord-shared storage.
 
 1. Parse cluster name. Read `profile/config.yaml` for control plane IP.
 2. **Run `generate-overlays <cluster>`** if overlays don't exist
 3. **Run `setup-secrets <cluster>`** if secrets don't exist
-4. Use bootstrap auth (both `.deployer-auth` and `.bootstrap-auth`)
-5. SSH and apply each manifest individually with `-n master`:
+4. **Run `setup-kord-storage <cluster>`** if kord-shared PVC doesn't exist
+5. Use bootstrap auth (both `.deployer-auth` and `.bootstrap-auth`)
+6. SSH and apply each manifest individually with `-n master`:
    ```
-   kubectl apply -n master -f alloy.yaml -f prometheus.yaml -f loki.yaml -f grafana.yaml -f datasources.yaml
+   kubectl apply -n master -f kord-storage.yaml -f workstation.yaml -f alloy.yaml -f prometheus.yaml -f loki.yaml -f grafana.yaml -f datasources.yaml
    ```
-   Do NOT use `kubectl apply -k` (blocked). Do NOT apply workstation.yaml.
-6. Apply dashboard ConfigMaps
-7. Verify pods running
-8. Remove auth
+   Do NOT use `kubectl apply -k` (blocked).
+7. Apply dashboard ConfigMaps
+8. Verify pods running (including workstation with Beorn on port 3100)
+9. Remove auth
 
 ## setup-kord-storage `<cluster>`
 
-Create the shared kord PVC and initialize the git repo. Must run BEFORE `deploy-gateway`.
+Create the shared kord PVC and initialize the git repo. Must run BEFORE `deploy-master`.
 
 1. Authenticate (`/authenticate`)
 2. SSH to the cluster control plane
-3. Apply `manifests/gateway-kord-storage.yaml` with `-n gateway`
-4. Wait for the `kord-init` Job to complete: `kubectl wait --for=condition=complete job/kord-init -n gateway --timeout=60s`
-5. Verify PVC is Bound: `kubectl get pvc kord-shared -n gateway` — status should be `Bound`
-6. Verify git repo exists: `kubectl exec job/kord-init -n gateway -- ls /kord-shared/.git` (or via a debug pod if the Job has completed)
+3. Apply `manifests/master-kord-storage.yaml` with `-n master`
+4. Wait for the `kord-init` Job to complete: `kubectl wait --for=condition=complete job/kord-init -n master --timeout=60s`
+5. Verify PVC is Bound: `kubectl get pvc kord-shared -n master` — status should be `Bound`
+6. Verify git repo exists: `kubectl exec job/kord-init -n master -- ls /kord-shared/.git` (or via a debug pod if the Job has completed)
 
 ## deploy-gateway `<cluster>`
 

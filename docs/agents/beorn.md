@@ -54,6 +54,6 @@ lib/mcp-agent-server/
 └── .gitignore
 ```
 
-**Local:** `/onboard sync` installs deps, registers the MCP server, and starts the beorn server automatically.
+**Local:** `/install` installs deps, registers the MCP server, and starts the beorn server automatically.
 
-**K8s:** Deployment + Service at `agent-pool.gateway.svc.cluster.local:3100`.
+**K8s:** Beorn runs as a background process inside the workstation pod (master namespace) on port 3100. The workstation entrypoint starts `node server.js &` at boot. Accessed at `http://localhost:3100/mcp` from within the pod. No separate deployment or image needed.

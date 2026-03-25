@@ -67,9 +67,47 @@ else
   echo "Tailscale: no auth key in pass — run auth-check.sh to configure"
 fi
 
+# ─── Initialize kord shared state ───
+if [ -n "${KORDINATE_HOME:-}" ] && [ -d "$KORDINATE_HOME" ]; then
+  # Ensure worktree and lock directories exist
+  mkdir -p "${KORD_WORKTREE_ROOT:-$KORDINATE_HOME/.worktrees}"
+  mkdir -p "$KORDINATE_HOME/.locks"
+
+  # Symlink ~/.kord -> KORDINATE_HOME for tools that expect it
+  if [ ! -L "$HOME/.kord" ]; then
+    rm -rf "$HOME/.kord" 2>/dev/null || true
+    ln -sf "$KORDINATE_HOME" "$HOME/.kord"
+    echo "Symlinked ~/.kord -> $KORDINATE_HOME"
+  fi
+
+  # Prune stale worktrees from previous crashes
+  if [ -d "$KORDINATE_HOME/.git" ]; then
+    git -C "$KORDINATE_HOME" worktree prune 2>/dev/null || true
+  fi
+fi
+
 # ─── Update kordinate (if repo exists) ───
 if [ -d ~/kordinate/.git ]; then
   git -C ~/kordinate pull --ff-only 2>/dev/null || true
+fi
+
+# ─── Start Beorn (MCP agent server) ───
+MCP_SERVER="$HOME/kordinate/kordinate/lib/mcp-agent-server"
+if [ -d "$MCP_SERVER" ]; then
+  echo "Installing Beorn dependencies..."
+  (cd "$MCP_SERVER" && npm install --production 2>/dev/null || npm install 2>/dev/null || true)
+  echo "Starting Beorn MCP agent server on port ${PORT:-3100}..."
+  export PORT="${PORT:-3100}"
+  node "$MCP_SERVER/server.js" &
+  BEORN_PID=$!
+  sleep 2
+  if kill -0 "$BEORN_PID" 2>/dev/null; then
+    echo "Beorn started (PID $BEORN_PID)"
+  else
+    echo "WARNING: Beorn failed to start — workstation continues without MCP agent server"
+  fi
+else
+  echo "WARNING: MCP agent server not found at $MCP_SERVER — Beorn not started"
 fi
 
 echo "Workstation ready."

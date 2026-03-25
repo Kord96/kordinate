@@ -2,14 +2,13 @@
 # Read by /infra subcommands to know which manifests apply where
 
 gateway:
-  - gateway-kord-storage.yaml
   - gateway-pod.yaml
-  - gateway-beorn.yaml
-  - gateway-workstation.yaml
   - gateway-minio.yaml
   - gateway-ingress.yaml
 
 master:
+  - master-kord-storage.yaml
+  - master-workstation.yaml
   - master-prometheus.yaml
   - master-loki.yaml
   - master-grafana.yaml
@@ -32,6 +31,5 @@ shared:
 
 images:
   - workstation
-  - beorn
   - log-puller
   - loki-federate

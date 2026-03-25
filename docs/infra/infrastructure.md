@@ -70,9 +70,9 @@ Owns all infrastructure operations — the only agent authorized to write to clu
 
     | Namespace | What runs there |
     |-----------|----------------|
-    | `gateway` | Gateway Tailscale (cluster's external interface) + Workstation (if interactive cluster) |
+    | `gateway` | Gateway Tailscale (cluster's external interface), ingress, MinIO |
     | `monitor` | Alloy, Prom, Loki, KSM, node-exporter |
-    | `master` | Master Alloy, Prom (30d), Loki (30d), Grafana — one cluster only |
+    | `master` | Master Alloy, Prom (30d), Loki (30d), Grafana, Workstation (with Beorn inside) — one cluster only |
 
     ```mermaid
     flowchart TB
@@ -85,7 +85,6 @@ Owns all infrastructure operations — the only agent authorized to write to clu
 
             subgraph gw-a[gateway]
                 GWT[tailscale]
-                WS[workstation]
             end
 
             A1 & A2 & A3 -.->|/metrics + stdout| GA
@@ -94,6 +93,7 @@ Owns all infrastructure operations — the only agent authorized to write to clu
         subgraph M[master]
             MA[master alloy] --> MP[prom<br/>30d] & ML[loki<br/>30d]
             MP & ML --> G[Grafana]
+            WS[workstation<br/>+ beorn]
         end
 
         GWT -->|tailnet| MA
@@ -103,7 +103,7 @@ Owns all infrastructure operations — the only agent authorized to write to clu
         CB -->|tailnet| MA
     ```
 
-    The `gateway` namespace is the cluster's front door — either a full workstation (for interactive clusters) or just the Tailscale pod (for headless clusters). Master runs on one cluster but is logically independent.
+    The `gateway` namespace is the cluster's front door — Tailscale pod, ingress, and MinIO. The workstation (with Beorn running inside) lives in the `master` namespace as a centralized instance. Master runs on one cluster but is logically independent.
 
 ??? abstract "Data flow"
 
@@ -188,7 +188,7 @@ Owns all infrastructure operations — the only agent authorized to write to clu
 !!! info "Collection"
     - App namespaces run workloads only — no observability components
     - `monitor` namespace collects all signals (metrics, logs, cluster state)
-    - `gateway` namespace exposes the cluster on the tailnet (Tailscale + workstation)
+    - `gateway` namespace exposes the cluster on the tailnet (Tailscale, ingress, MinIO)
     - Apps follow the [observability contract](monitoring.md) — JSON stdout, `/metrics` endpoint, vitals health pod
 
 !!! info "Federation"
