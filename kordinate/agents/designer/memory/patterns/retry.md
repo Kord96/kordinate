@@ -1,3 +1,8 @@
+---
+description: Retry architectural pattern
+curated: true
+scope: global
+---
 # Retry with Backoff
 
 

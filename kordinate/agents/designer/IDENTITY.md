@@ -10,6 +10,9 @@ tools:
   - Grep
   - Glob
   - Bash
+curated: true
+preloaded: true
+scope: global
 ---
 
 # Designer

@@ -1,3 +1,8 @@
+---
+description: klog library reference
+curated: true
+scope: global
+---
 # klog
 
 Structured JSON logging with context binding and validation. structlog-based. `pip install klog`.

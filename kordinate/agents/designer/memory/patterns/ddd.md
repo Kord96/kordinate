@@ -1,3 +1,8 @@
+---
+description: Ddd architectural pattern
+curated: true
+scope: global
+---
 # Domain-Driven Design (DDD)
 
 

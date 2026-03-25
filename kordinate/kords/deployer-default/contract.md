@@ -2,6 +2,8 @@
 description: General deployment and cluster questions
 requester: any
 provider: deployer
+curated: true
+scope: global
 ---
 
 ## Provider Guidelines

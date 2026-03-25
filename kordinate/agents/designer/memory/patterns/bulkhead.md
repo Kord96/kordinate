@@ -1,3 +1,8 @@
+---
+description: Bulkhead architectural pattern
+curated: true
+scope: global
+---
 # Bulkhead
 
 

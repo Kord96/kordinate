@@ -1,3 +1,8 @@
+---
+description: Saga architectural pattern
+curated: true
+scope: global
+---
 # Saga
 
 

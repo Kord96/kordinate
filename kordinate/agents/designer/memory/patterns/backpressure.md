@@ -1,3 +1,8 @@
+---
+description: Backpressure architectural pattern
+curated: true
+scope: global
+---
 # Backpressure
 
 ## Architecture

@@ -1,3 +1,8 @@
+---
+description: <Project> — Metrics
+curated: true
+scope: global
+---
 # <Project> — Metrics
 
 > **Maintain this document when metrics are added, removed, or renamed in the codebase.**

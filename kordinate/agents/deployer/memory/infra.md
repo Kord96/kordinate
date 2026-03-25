@@ -1,3 +1,8 @@
+---
+description: Infrastructure Reference
+curated: true
+scope: global
+---
 # Infrastructure Reference
 
 For cluster-specific details, see `profile/config.yaml` and `profile/topology.yaml`.

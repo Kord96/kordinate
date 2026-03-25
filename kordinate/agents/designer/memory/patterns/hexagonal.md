@@ -1,3 +1,8 @@
+---
+description: Hexagonal architectural pattern
+curated: true
+scope: global
+---
 # Hexagonal (Ports & Adapters)
 
 

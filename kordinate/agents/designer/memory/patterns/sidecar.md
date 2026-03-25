@@ -1,3 +1,8 @@
+---
+description: Sidecar architectural pattern
+curated: true
+scope: global
+---
 # Sidecar
 
 

@@ -1,3 +1,8 @@
+---
+description: orchestrator library reference
+curated: true
+scope: global
+---
 # orchestrator
 
 Service lifecycle framework for k8s. Scheduling, health checks, retry logic, process management. `pip install k8s-orchestrator`.

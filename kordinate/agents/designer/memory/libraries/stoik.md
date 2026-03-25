@@ -1,3 +1,8 @@
+---
+description: stoik library reference
+curated: true
+scope: global
+---
 # stoik
 
 Stream-to-store pipeline framework. Kafka → buffer → batch flush → DuckDB. `pip install stoik` (or `stoik[all]` for FlightSQL).

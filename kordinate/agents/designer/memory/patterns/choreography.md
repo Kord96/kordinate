@@ -1,3 +1,8 @@
+---
+description: Choreography architectural pattern
+curated: true
+scope: global
+---
 # Choreography
 
 

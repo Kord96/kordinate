@@ -2,6 +2,8 @@
 description: General architecture and design questions
 requester: any
 provider: designer
+curated: true
+scope: global
 ---
 
 ## Provider Guidelines

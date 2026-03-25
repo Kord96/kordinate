@@ -1,3 +1,8 @@
+---
+description: App Contract
+curated: true
+scope: global
+---
 # App Contract
 
 > **For your specific app labels and allowed values, see `profile/topology.yaml`.**

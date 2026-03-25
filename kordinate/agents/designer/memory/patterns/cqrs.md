@@ -1,3 +1,8 @@
+---
+description: Cqrs architectural pattern
+curated: true
+scope: global
+---
 # CQRS
 
 

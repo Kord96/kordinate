@@ -1,3 +1,8 @@
+---
+description: Stream To Store architectural pattern
+curated: true
+scope: global
+---
 # Stream-to-Store
 
 

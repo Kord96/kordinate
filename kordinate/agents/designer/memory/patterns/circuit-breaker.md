@@ -1,3 +1,8 @@
+---
+description: Circuit Breaker architectural pattern
+curated: true
+scope: global
+---
 # Circuit Breaker
 
 

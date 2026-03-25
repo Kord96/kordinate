@@ -2,6 +2,8 @@
 description: General monitoring and observability questions
 requester: any
 provider: sauron
+curated: true
+scope: global
 ---
 
 ## Provider Guidelines

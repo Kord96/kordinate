@@ -1,3 +1,8 @@
+---
+description: Etl architectural pattern
+curated: true
+scope: global
+---
 # ETL/ELT
 
 

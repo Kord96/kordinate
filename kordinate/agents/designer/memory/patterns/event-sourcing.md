@@ -1,3 +1,8 @@
+---
+description: Event Sourcing architectural pattern
+curated: true
+scope: global
+---
 # Event Sourcing
 
 

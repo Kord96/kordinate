@@ -1,3 +1,8 @@
+---
+description: Service Manager architectural pattern
+curated: true
+scope: global
+---
 # Service Manager
 
 

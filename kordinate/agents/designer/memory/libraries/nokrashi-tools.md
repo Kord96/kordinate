@@ -1,3 +1,8 @@
+---
+description: nokrashi-tools library reference
+curated: true
+scope: global
+---
 # nokrashi-tools — Testing Perspective
 
 Code quality checks and test analysis toolkit. This IS sauron's primary testing tool.

@@ -1,3 +1,8 @@
+---
+description: Api Gateway architectural pattern
+curated: true
+scope: global
+---
 # API Gateway
 
 

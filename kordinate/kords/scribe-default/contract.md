@@ -2,6 +2,8 @@
 description: General documentation and template questions
 requester: any
 provider: scribe
+curated: true
+scope: global
 ---
 
 ## Provider Guidelines

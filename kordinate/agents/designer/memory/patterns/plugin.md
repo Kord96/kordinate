@@ -1,3 +1,8 @@
+---
+description: Plugin architectural pattern
+curated: true
+scope: global
+---
 # Plugin Architecture
 
 

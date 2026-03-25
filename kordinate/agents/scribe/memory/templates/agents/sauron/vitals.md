@@ -1,3 +1,8 @@
+---
+description: Template for project vitals documentation
+curated: true
+scope: global
+---
 # <Project> — Vitals
 
 > **Maintain this document when health checks are added or modified.**
