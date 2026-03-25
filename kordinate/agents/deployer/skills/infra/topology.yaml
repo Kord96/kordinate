@@ -2,6 +2,7 @@
 # Read by /infra subcommands to know which manifests apply where
 
 gateway:
+  - gateway-kord-storage.yaml
   - gateway-pod.yaml
   - gateway-beorn.yaml
   - gateway-workstation.yaml

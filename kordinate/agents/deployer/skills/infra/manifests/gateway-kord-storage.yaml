@@ -1,0 +1,52 @@
+##
+## Kord shared storage — RWX PVC for shared agent state.
+## Initialized by a one-shot Job that creates an empty git repo.
+## Actual kord content (agents, skills, etc) populated by onboard/bootstrap.
+##
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kord-shared
+  labels:
+    app: kord
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: STORAGE_CLASS
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kord-init
+  labels:
+    app: kord
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: init
+          image: alpine/git
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              if [ -d /kord-shared/.git ]; then
+                echo "kord-shared already initialized, skipping"
+                exit 0
+              fi
+              git init /kord-shared
+              cd /kord-shared
+              git commit --allow-empty -m "init kord shared state"
+              mkdir -p .worktrees .locks
+              echo "kord-shared initialized"
+          volumeMounts:
+            - name: kord-shared
+              mountPath: /kord-shared
+      volumes:
+        - name: kord-shared
+          persistentVolumeClaim:
+            claimName: kord-shared

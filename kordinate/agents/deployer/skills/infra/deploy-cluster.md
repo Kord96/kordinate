@@ -40,6 +40,17 @@ Deploy master namespace infrastructure. Does NOT touch workstation.
 7. Verify pods running
 8. Remove auth
 
+## setup-kord-storage `<cluster>`
+
+Create the shared kord PVC and initialize the git repo. Must run BEFORE `deploy-gateway`.
+
+1. Authenticate (`/authenticate`)
+2. SSH to the cluster control plane
+3. Apply `manifests/gateway-kord-storage.yaml` with `-n gateway`
+4. Wait for the `kord-init` Job to complete: `kubectl wait --for=condition=complete job/kord-init -n gateway --timeout=60s`
+5. Verify PVC is Bound: `kubectl get pvc kord-shared -n gateway` — status should be `Bound`
+6. Verify git repo exists: `kubectl exec job/kord-init -n gateway -- ls /kord-shared/.git` (or via a debug pod if the Job has completed)
+
 ## deploy-gateway `<cluster>`
 
 Deploy the observability gateway stack.

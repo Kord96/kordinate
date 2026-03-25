@@ -52,4 +52,12 @@ $ARGUMENTS should include the agent name and what to remember.
 
 7. **Regenerate KORD.md** — run [generate-kord.sh](generate-kord.sh) to rebuild the index from frontmatter. Never edit KORD.md manually.
 
-8. **Report** — confirm what was written, where, scope, and whether it was scratchpad or topic file.
+8. **Sync to shared store** — if `$KORDINATE_HOME` is a git repo with a remote configured (`git -C "$KORDINATE_HOME" remote` returns output), commit and push so memory written locally (via stateless kord) propagates to the shared PVC:
+    ```bash
+    git -C "$KORDINATE_HOME" add -A
+    git -C "$KORDINATE_HOME" commit -m "memory: <agent> - <description>"
+    git -C "$KORDINATE_HOME" push 2>/dev/null || true
+    ```
+    If no remote is configured (on-cluster PVC), skip — Beorn handles memory isolation via git worktrees and merges on agent completion.
+
+9. **Report** — confirm what was written, where, scope, and whether it was scratchpad or topic file.

@@ -2,7 +2,11 @@
 
 Level 3 resource for the onboard skill. Verify after onboarding or syncing.
 
-## Kordinate Source ($KORDINATE_HOME)
+## Structural Checks
+
+These can be verified immediately — no session restart required.
+
+### Kordinate Source ($KORDINATE_HOME)
 
 - [ ] `agents/<name>/IDENTITY.md` exists with:
     - Kordinate properties: `curated`, `preloaded: <name>`, `scope: global`
@@ -11,63 +15,70 @@ Level 3 resource for the onboard skill. Verify after onboarding or syncing.
 - [ ] `kords/<name>-default/contract.md` exists (if agent has kord expertise)
 - [ ] `shared/memory-protocol.md` exists (`preloaded: all`)
 - [ ] `shared/auth-protocol.md` exists (`preloaded: all`)
+- [ ] `shared/credentials-protocol.md` exists (`preloaded: all`)
 - [ ] `KORD.md` is current — run `generate-kord.sh` if needed
+- [ ] `KORD.json` is valid JSON and lists all agents and kords
 
-## Claude Native (~/.claude/)
+### Claude Native (~/.claude/)
 
-### Per Agent
+**Per Agent:**
 
 - [ ] `~/.claude/agents/<name>.md` exists
-- [ ] Frontmatter: `name`, `description`, `tools`, `model`
+- [ ] Frontmatter has Claude fields (`name`, `description`, `tools`, `model`) — no kordinate properties (`curated`, `preloaded`, `scope`)
 - [ ] Frontmatter: `memory: user` (fallback — boot handles full 2D memory)
 - [ ] Markdown body matches kordinate IDENTITY.md body
-- [ ] Agent skills directory copied to `~/.claude/skills/<name>/` including Level 3 resources (not just SKILL.md)
+- [ ] Agent skills copied to `~/.claude/skills/` (entire directory including Level 3 resources)
 
-### Kords
+**Agent Memory:**
 
-- [ ] Stateless kords: borrowed skills exist in `~/.claude/skills/` (Claude discovers them globally — no `skills:` frontmatter needed)
-- [ ] Stateful kords: Beorn MCP server running and registered in `~/.claude/.mcp.json`
+- [ ] `~/.claude/agent-memory/<name>/MEMORY.md` exists for each agent
+- [ ] MEMORY.md is an **index** — contains links to `$KORDINATE_HOME/agents/<name>/memory/` files, not content copies
+- [ ] Every link in MEMORY.md points to an existing file
+- [ ] MEMORY.md is under 200 lines
 
-### Shared
+**Kords:**
+
+- [ ] Stateless kords: borrowed skills exist in `~/.claude/skills/`
+- [ ] Stateful kords: Beorn MCP server registered in `.mcp.json` (local or project)
+
+**Shared:**
 
 - [ ] `~/.claude/CLAUDE.md` contains `Run /boot before starting work.`
-- [ ] `preloaded: all` files `@imported` in `~/.claude/CLAUDE.md` (survives compaction):
+- [ ] `preloaded: all` files `@imported` in `~/.claude/CLAUDE.md`:
     ```
     @~/.kord/shared/memory-protocol.md
     @~/.kord/shared/auth-protocol.md
+    @~/.kord/shared/credentials-protocol.md
     ```
-- [ ] Global skills copied to `~/.claude/skills/` (with Level 3 resources):
+- [ ] Global skills copied to `~/.claude/skills/`:
     - `boot/` (SKILL.md + claude-session-structure.md)
     - `kord/` (SKILL.md)
     - `authenticate/` (SKILL.md)
     - `merge/` (SKILL.md)
-- [ ] Guard hook in `~/.claude/settings.json` as **PreToolUse**:
-    ```json
-    {
-      "hooks": {
-        "PreToolUse": [
-          {
-            "matcher": "Write|Edit",
-            "hooks": [
-              {
-                "type": "command",
-                "command": "$KORDINATE_HOME/agents/scribe/skills/remember/guard.sh"
-              }
-            ]
-          }
-        ]
-      }
-    }
-    ```
 
-## Project Level
+**Guard:**
+
+- [ ] `~/.claude/settings.json` has PreToolUse hook on `Write|Edit`
+- [ ] Hook command points to `$KORDINATE_HOME/agents/scribe/skills/remember/guard.sh`
+- [ ] Guard blocks writes to `~/.kord/` without scribe auth
+- [ ] Guard allows writes to `~/.kord/` with scribe auth (`/tmp/.scribe-auth`)
+- [ ] Guard allows non-curated, non-templated files without auth
+
+### Project Level
 
 - [ ] `.kord/` exists in project root (if project-scoped memory is needed)
 
-## Quick Test
+## Runtime Checks
 
-- [ ] `/boot` loads shared protocols and agent memory without errors
-- [ ] `/kord deployer what pods are running?` reaches deployer (stateful test)
-- [ ] `/kord remember checklist verification note` writes successfully (stateless test)
-- [ ] Attempt to write directly to `~/.kord/agents/scribe/memory/test.md` — should be blocked by guard
-- [ ] `generate-kord.sh` produces valid KORD.md with all agents and kords listed
+These require a live Claude session. Run [smoke-test.sh](smoke-test.sh) to verify, or test manually in a fresh session.
+
+- [ ] **Subagent spawning** — each agent spawns and responds with correct identity
+- [ ] **Boot** — `/boot` loads shared protocols and agent memory without errors
+- [ ] **Stateless kord** — `/kord remember <note>` writes to correct paths
+- [ ] **Stateful kord** — `/kord deployer <question>` spawns deployer and returns answer
+- [ ] **Cache** — second stateful kord call returns `[cached]` when data is fresh
+- [ ] **Cache invalidation** — removing `.valid` marker causes re-spawn on next call
+- [ ] **Agent memory** — agents can read their own memory from kordinate paths
+- [ ] **Memory index sync** — new memory written via `/remember` appears in both `~/.kord/` and `~/.claude/agent-memory/` MEMORY.md
+- [ ] **Guard enforcement** — direct write to curated kordinate file is blocked
+- [ ] **Template enforcement** — templated files reject edits that remove required sections

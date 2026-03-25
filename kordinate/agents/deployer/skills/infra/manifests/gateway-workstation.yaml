@@ -91,12 +91,17 @@ spec:
           volumeMounts:
             - name: home
               mountPath: /home/claude
+            - name: kord-shared
+              mountPath: /kord-shared
             - name: dev-tun
               mountPath: /dev/net/tun
       volumes:
         - name: home
           persistentVolumeClaim:
             claimName: workstation-home
+        - name: kord-shared
+          persistentVolumeClaim:
+            claimName: kord-shared
         - name: dev-tun
           hostPath:
             path: /dev/net/tun

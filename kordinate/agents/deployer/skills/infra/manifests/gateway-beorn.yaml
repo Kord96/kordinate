@@ -87,7 +87,9 @@ spec:
             - name: TERM
               value: xterm-256color
             - name: KORDINATE_HOME
-              value: /home/claude/kordinate/kordinate
+              value: /kord-shared
+            - name: KORD_WORKTREE_ROOT
+              value: /kord-shared/.worktrees
             - name: PORT
               value: "3100"
           ports:
@@ -116,7 +118,12 @@ spec:
           volumeMounts:
             - name: home
               mountPath: /home/claude
+            - name: kord-shared
+              mountPath: /kord-shared
       volumes:
         - name: home
           persistentVolumeClaim:
             claimName: agent-pool-home
+        - name: kord-shared
+          persistentVolumeClaim:
+            claimName: kord-shared

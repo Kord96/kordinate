@@ -11,6 +11,12 @@ Your agent name is the `name` field from your own frontmatter. Use it wherever `
 
 ## Steps
 
+0. **Sync kord state** — if `$KORDINATE_HOME` is a git repo with a remote configured (`git -C "$KORDINATE_HOME" remote` returns output), pull memory written by Beorn agents since the last session:
+    ```bash
+    git -C "$KORDINATE_HOME" pull --ff-only 2>/dev/null || true
+    ```
+    This only applies to local workstations — the PVC is already current on-cluster. If no remote is configured, skip.
+
 1. **Read shared protocols** — read all files in `$KORDINATE_HOME/shared/` (memory-protocol.md, auth-protocol.md, credentials-protocol.md). These are team-wide instructions.
 
 2. **Read your memory** — load both scopes, reading all `.md` files recursively (some agents have subdirectories):

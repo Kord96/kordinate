@@ -5,42 +5,47 @@ curated: true
 scope: global
 ---
 
-Send a request to another agent through a kord contract.
+Thin wrapper that routes kord requests. Stateless kords run locally, stateful kords go through Beorn.
 
-**Input**: $ARGUMENTS — `[provider] <kord-name> <message>` or `<provider> <message>`
+**Input**: $ARGUMENTS — `<provider> [kord-name] <message>` or `<kord-name> <message>`
 
 ## Usage
 
 ```
 /kord deployer what's running in prod?
 /kord scribe remember DNS uses .local domains
-/kord scribe create-kord health checks for sauron
-/kord scribe onboard validator for schema validation
 /kord designer pattern-review review the deployment changes
 /kord remember team coding standards updated
-/kord pattern-review review the deployment changes
 ```
 
 ## Resolution
 
 1. If first param matches a kord name under `$KORDINATE_HOME/kords/` → use it. Provider from contract.
 2. If first param matches an agent name → check if second param is a kord name. If yes, use that kord. If no, use `<agent>-default`.
-3. Read `contract.md` to get provider, mode, skill, and guidelines.
+3. Read `contract.md` frontmatter to get `provider`, `mode`, `skill`.
 
 ## Execution
 
-1. **Check mode**:
-    - `mode: stateless` → authenticate as provider (`cp profile/locks/<provider> /tmp/.<provider>-auth`), invoke the skill directly, remove auth. No agent spawn. Skip to step 4.
-    - `mode: stateful` → proceed to freshness check.
+### Stateless (`mode: stateless`)
 
-2. **Freshness check** (stateful only):
-    - Run `$KORDINATE_HOME/kords/<kord>/expiry.sh` if it exists.
-    - Exit 0 = fresh. Return cached `data.md` if prompt matches.
-    - Exit 1 = stale. Proceed to delegation.
+Handle locally — no Beorn, no agent spawn:
 
-3. **Spawn provider**:
-    - Build prompt from contract guidelines + message.
-    - Invoke via Beorn or native subagent.
-    - Cache result in `$KORDINATE_HOME/kords/<kord>/data.md`.
+1. Authenticate as provider: `cp $KORDINATE_HOME/profile/locks/<provider> /tmp/.<provider>-auth`
+2. Invoke the skill specified in the contract's `skill:` field (e.g., `/remember`, `/sanitize`)
+3. Remove auth: `rm /tmp/.<provider>-auth`
+4. Return the result.
 
-4. **Return** the result.
+### Stateful (`mode: stateful`)
+
+Delegate to Beorn's `kord` tool:
+
+1. Call Beorn MCP tool `kord` with `kord_name` and `message`.
+2. Beorn handles: contract lookup, expiry/cache check, agent spawning, result caching.
+3. If Beorn returns `[cached]` prefix, the result came from cache.
+4. Return the result.
+
+Beorn is the sole agent host for stateful kords. It creates a git worktree per agent spawn in `$KORDINATE_HOME`, so memory writes are isolated per agent and merged back into main on completion.
+
+**Connection**: on-cluster via cluster DNS (`beorn.kordinate.svc.cluster.local`), off-cluster via Tailscale.
+
+**No fallback**: if Beorn is unreachable, report the error to the caller. Do NOT fall back to native subagent spawning — stateful kords require Beorn's lifecycle management (worktree creation, memory isolation, merge on completion).

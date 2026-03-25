@@ -24,7 +24,8 @@ data:
     {
       "TCP": {
         "9090": { "TCPForward": "prometheus.monitor.svc.cluster.local:9090" },
-        "9000": { "TCPForward": "minio.gateway.svc.cluster.local:9000" }
+        "9000": { "TCPForward": "minio.gateway.svc.cluster.local:9000" },
+        "3100": { "TCPForward": "agent-pool.gateway.svc.cluster.local:3100" }
       }
     }
 ---

@@ -19,6 +19,9 @@ plugins/
 # Agent state is session-ephemeral
 agent-state/
 
+# Claude runtime (populated by /onboard sync, not tracked)
+.claude/
+
 # Session worktrees
 .worktrees/
 
