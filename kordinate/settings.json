@@ -1,33 +1,15 @@
 {
+  "env": {
+    "KORDINATE_HOME": "$HOME/.kord"
+  },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write",
+        "matcher": "Write|Edit|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/guard-md.sh"
-          },
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/guard-grafana.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/guard-kubectl.sh"
-          },
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/guard-git.sh"
-          },
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/guard-grafana.sh"
+            "command": "$KORDINATE_HOME/hooks/guard.sh"
           }
         ]
       },
@@ -36,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/guard-grafana.sh"
+            "command": "$KORDINATE_HOME/hooks/guard.sh"
           }
         ]
       },
@@ -45,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/agent-memory.sh"
+            "command": "$KORDINATE_HOME/hooks/agent-memory.sh"
           }
         ]
       }
@@ -56,15 +38,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/auto-merge-to-dev.sh"
+            "command": "$KORDINATE_HOME/hooks/auto-merge-to-dev.sh"
           }
         ]
       }
     ]
   },
   "effortLevel": "high",
-  "skipDangerousModePermissionPrompt": true,
-  "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true
-  }
+  "skipDangerousModePermissionPrompt": true
 }
