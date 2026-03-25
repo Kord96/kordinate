@@ -20,11 +20,11 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 
 ## Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `/scribe:remember` | Write a memory for an agent — handles scope, paths, and KORD.md (stateless, borrowable via kord) |
-
-Onboarding agents and creating kords are handled via `/kord scribe` — scribe's identity and Level 3 resources (templates, runtime paths) provide all the context needed.
+| Skill | Purpose | Kord mode |
+|-------|---------|-----------|
+| `/scribe:remember` | Write a memory for an agent — handles scope, paths, and KORD.md | stateless |
+| `/scribe:onboard` | Add a new agent or sync existing agents to the runtime | stateful |
+| `/scribe:kord` | Define a new kord between agents | stateful |
 
 ## Rules
 
