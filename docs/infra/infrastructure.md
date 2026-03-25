@@ -28,7 +28,7 @@ flowchart TB
         subgraph mon-b[monitor]
             AL-B[alloy] -->|write| PR-B[prom] & LK-B[loki]
         end
-        ENV-B[dev / test / prod] -.->|metrics + logs| AL-B
+        AL-B -.->|scrape + tail| ENV-B[dev / test / prod]
         PR-B & LK-B -->|port forward| GWT-B
     end
 
@@ -96,8 +96,8 @@ flowchart TB
             end
 
             myapp -->|uses| infra-svc
-            myapp & infra-svc -->|/metrics + logs| AL
-            nodes -->|host + container metrics| AL
+            AL -->|scrape /metrics| myapp & infra-svc
+            AL -->|scrape| nodes
             PR -->|port forward| GWT
             LK -->|sidecar writes JSON Lines| MIO
             MIO -->|port forward| GWT
