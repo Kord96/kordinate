@@ -41,9 +41,7 @@ flowchart LR
             MP & ML --> G[grafana]
             WS[workstation]
         end
-        CA-NS1[gateway]
-        CA-NS2[monitor]
-        CA-NS3[dev / test / prod]
+        CA-OTHER[cluster namespaces]
     end
 
     subgraph CN[cluster-N]
@@ -65,20 +63,15 @@ flowchart LR
 ??? abstract "Detailed data flow"
 
     ```mermaid
-    flowchart LR
+    flowchart TB
         subgraph cluster[cluster-B]
-            direction TB
-            subgraph env[env namespaces — dev/test/prod]
-                subgraph myapp["app: my-app"]
-                    P1[pod 1] ~~~ PN[pod N] ~~~ VIT[vitals]
-                end
-                subgraph infra-svc["app: infra"]
-                    KF[kafka] ~~~ RD[redis] ~~~ PG[postgres]
-                end
+            subgraph env[env — dev/test/prod]
+                myapp["my-app: pod 1 .. pod N + vitals"]
+                infra-svc["infra: kafka, redis, postgres"]
             end
 
             subgraph nodes[per-node]
-                NE[node-exporter] ~~~ CA2[cAdvisor] ~~~ KL[kubelet]
+                NE["node-exporter, cAdvisor, kubelet"]
             end
 
             subgraph mon[monitor]
@@ -86,28 +79,24 @@ flowchart LR
             end
 
             subgraph gw[gateway]
-                GWT[tailscale sidecar]
-                MIO[minio]
+                GWT[tailscale sidecar] ~~~ MIO[minio]
             end
 
-            myapp -->|uses| infra-svc
             AL -->|scrape /metrics| myapp & infra-svc
-            AL -->|scrape| nodes
+            AL -->|scrape| NE
             PR -->|port forward| GWT
             LK -->|sidecar writes JSON Lines| MIO
             MIO -->|port forward| GWT
         end
 
         subgraph master-cluster[cluster-A]
-            direction TB
-            subgraph env-a[env namespaces — dev/test/prod]
-                subgraph myapp-a["app: my-app"]
-                    PA1[pod 1] ~~~ PAN[pod N] ~~~ VITA[vitals]
-                end
+            subgraph env-a[env — dev/test/prod]
+                myapp-a["my-app: pod 1 .. pod N + vitals"]
+                infra-svc-a["infra: kafka, redis, postgres"]
             end
 
             subgraph nodes-a[per-node]
-                NEA[node-exporter] ~~~ CA3[cAdvisor] ~~~ KLA[kubelet]
+                NEA["node-exporter, cAdvisor, kubelet"]
             end
 
             subgraph mon-a[monitor]
@@ -115,8 +104,7 @@ flowchart LR
             end
 
             subgraph gw-a[gateway]
-                GWTA[tailscale sidecar]
-                MIOA[minio]
+                GWTA[tailscale sidecar] ~~~ MIOA[minio]
             end
 
             subgraph master2[master]
@@ -125,15 +113,15 @@ flowchart LR
                 WS2[workstation]
             end
 
-            ALA -->|scrape /metrics| myapp-a
-            ALA -->|scrape| nodes-a
+            ALA -->|scrape /metrics| myapp-a & infra-svc-a
+            ALA -->|scrape| NEA
             PRA -->|port forward| GWTA
             LKA -->|sidecar writes JSON Lines| MIOA
             MIOA -->|port forward| GWTA
         end
 
         subgraph CN2[cluster-N]
-            CN2-INNER[same structure as B]
+            CN2-INNER[same structure as cluster-B]
         end
 
         MA2 -->|pull metrics + logs| GWT
