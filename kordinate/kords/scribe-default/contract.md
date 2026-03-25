@@ -2,6 +2,7 @@
 description: General documentation and template questions
 requester: any
 provider: scribe
+mode: delegate
 curated: true
 scope: global
 ---

@@ -2,6 +2,7 @@
 description: General deployment and cluster questions
 requester: any
 provider: deployer
+mode: delegate
 curated: true
 scope: global
 ---

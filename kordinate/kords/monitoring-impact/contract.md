@@ -2,6 +2,7 @@
 description: Monitoring impact assessment for infrastructure changes
 requester: deployer
 provider: sauron
+mode: delegate
 curated: true
 scope: global
 ---

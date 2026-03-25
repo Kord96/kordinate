@@ -2,44 +2,35 @@
 
 A **kord** is a contract between two agents. See [Overview](overview.md#problem) for why kords exist.
 
-??? example "designer-default kord"
+## Modes
+
+Each kord specifies how the provider fulfills the request:
+
+- **`borrow`** — the requester runs the provider's skill directly. No agent spawn. Fast, stateless. Use for simple actions like writing memory or authenticating.
+- **`delegate`** — the requester hands off to the full provider agent (via Beorn or native subagent). The agent has identity, memory, skills, full context. Use for work requiring domain knowledge.
+
+??? example "borrow — scribe:remember"
 
     ```markdown
     ---
-    description: General architecture and design questions
+    description: Write a memory for an agent
     requester: any
-    provider: designer
+    provider: scribe
+    mode: borrow
+    skill: remember
     ---
-
-    ## Provider Guidelines
-
-    Answer concisely — the caller needs facts, not explanations.
-    Include specific file paths when referencing components.
-    Keep under 50 lines.
-
-    ### Response Format
-
-    | Field | Required |
-    |-------|----------|
-    | Design pattern identified | yes |
-    | Application data flow (inputs → processing → outputs) | yes |
-    | Recommended metrics for this pattern | yes |
-
-    ## Provider State Invalidation
-
-    Invalidate when:
-    - Application architecture changes
-    - New components or services are added
-    - Pattern library is updated
     ```
 
-??? example "deployer-default kord"
+    The requester invokes `/scribe:remember` directly — no scribe agent spawned.
+
+??? example "delegate — deployer-default"
 
     ```markdown
     ---
     description: General deployment and cluster questions
     requester: any
     provider: deployer
+    mode: delegate
     ---
 
     ## Provider Guidelines
@@ -65,54 +56,53 @@ A **kord** is a contract between two agents. See [Overview](overview.md#problem)
 
 ### Cache Freshness
 
-Each kord has a `expiry.sh` script maintained by the provider. It runs before every consultation and decides whether the cache is still valid.
+Delegate-mode kords cache results. Each kord can have an `expiry.sh` script that checks if the cache is still valid.
 
 ```mermaid
 flowchart TB
-    C["/consult"] --> G{"expiry.sh"}
-    G -->|fresh| M[Return data.md]
-    G -->|stale| K[Invoke provider with guidelines]
-    K --> W[Write data.md + store provider state]
+    C["/consult"] --> M{mode?}
+    M -->|borrow| S[Run skill directly]
+    M -->|delegate| G{"expiry.sh"}
+    G -->|fresh| D[Return data.md]
+    G -->|stale| K[Spawn provider agent]
+    K --> W[Write data.md]
 ```
 
 ### Creating Kords
 
-Just describe what you need. The `.md` guard delegates kord creation to scribe, which asks for any missing details (name, requester, provider) and enforces the standard structure.
+Describe what you need. Scribe creates the contract:
 
 ```
-"create a kord between deployer and sauron for pre-deployment health checks"
+/scribe:kord pattern-review "architecture review for deployment changes"
 ```
 
 ### Structure
 
-Each kord is a directory inside `kord/` containing the contract, cached data, and a freshness script.
+Kords live at `$KORDINATE_HOME/kords/`:
 
 ```
-~/.kord/                     # global scope
-├── KORD.md                         # knowledge registry
+$KORDINATE_HOME/kords/
 ├── pattern-review/
-│   ├── contract.md                 # protocol definition
-│   ├── data.md                     # cached result
-│   └── expiry.sh                   # expiry check
-├── monitoring-impact/
-│   ├── contract.md
-│   ├── data.md
-│   └── expiry.sh
+│   ├── contract.md         # protocol definition
+│   ├── data.md             # cached result (delegate mode)
+│   └── expiry.sh           # freshness check (optional)
+├── scribe-remember/
+│   └── contract.md         # borrow mode — no data.md needed
 └── deployer-default/
     ├── contract.md
     ├── data.md
     └── expiry.sh
 ```
 
-??? note "Templates"
-
-    **contract.md** — consultation protocol:
+??? note "Contract template"
 
     ```markdown
     ---
     description: <what this kord provides>
     requester: <agent or "any">
     provider: <agent>
+    mode: <borrow or delegate>
+    skill: <skill-name>          # required if mode is borrow
     ---
 
     ## Provider Guidelines
@@ -129,11 +119,4 @@ Each kord is a directory inside `kord/` containing the contract, cached data, an
 
     Invalidate when:
     - <condition>
-    ```
-
-    **data.md** — follows the Response Format from contract.md:
-
-    ```markdown
-    <field>: <value>
-    <field>: <value>
     ```

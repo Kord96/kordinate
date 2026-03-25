@@ -2,6 +2,7 @@
 description: Architecture review for deployment and monitoring changes
 requester: deployer, sauron
 provider: designer
+mode: delegate
 curated: true
 scope: global
 ---

@@ -2,6 +2,7 @@
 description: General architecture and design questions
 requester: any
 provider: designer
+mode: delegate
 curated: true
 scope: global
 ---

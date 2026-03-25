@@ -1,72 +1,41 @@
-Consult an agent — resolve a kord, check freshness, delegate via beorn, cache the result.
+---
+name: consult
+description: Consult an agent via kord protocol. Resolves the contract, checks mode (borrow/delegate), handles caching.
+curated: true
+scope: global
+---
 
-Results are cached per kord. `expiry.sh` checks freshness pre-consult and resets state post-consult. `invalidate-cache.sh` deletes cache markers when provider knowledge changes.
+Consult an agent through a kord contract.
 
-**Input**: $ARGUMENTS (required: `<agent-or-kord> "<prompt>"`, e.g. `deployer "what pods are running in prod?"`)
+**Input**: $ARGUMENTS (required: `<agent-or-kord> "<prompt>"`)
 
 ## Usage
 
 ```
 /consult deployer "what's running in prod?"
-/consult sauron "what metrics does the enricher expose?"
-/consult designer "review the beorn deployment manifest"
-/consult deployer "deploy the new gateway config"
-/consult pattern-review "review the deployment changes for design impact"
+/consult scribe remember deployer "DNS uses .local domains"
+/consult pattern-review "review the deployment changes"
 ```
 
 ## Procedure
 
-1. Parse the target and prompt from the arguments.
+1. **Resolve kord**:
+    - If target matches a kord directory under `$KORDINATE_HOME/kords/<target>/`, use it.
+    - Otherwise, use `<target>-default` as the kord name.
+    - Read `contract.md` to get provider, mode, and guidelines.
 
-2. **Resolve kord**:
-   a. Resolve `KORDINATE_HOME` from the kordinate repo root (`git rev-parse --show-toplevel` + `/kordinate`).
-   b. If target matches a kord directory name under `$KORDINATE_HOME/agents/root/kords/<target>/`, use that kord directly.
-   c. Otherwise, treat target as an agent name and use `<target>-default` as the kord.
-   d. Read `contract.md` from the resolved kord directory to get provider and guidelines.
+2. **Check mode**:
+    - `mode: borrow` → invoke the specified skill directly. No agent spawn. Skip to step 5.
+    - `mode: delegate` → proceed to freshness check and delegation.
 
-3. **Freshness check**:
-   a. Run the kord's `expiry.sh`:
-      ```bash
-      bash "$KORDINATE_HOME/agents/root/kords/<kord>/expiry.sh"
-      echo $?
-      ```
-   b. If exit code is 0 (fresh), check for cached result:
-      - Cache file: `$KORDINATE_HOME/agents/root/memory/dynamic/consultations/<kord>.md`
-      - If it exists and the first line matches `<!-- kord:<kord> prompt: <exact prompt> -->`, return the cached content. Done.
-   c. Otherwise (stale or no cache): proceed to step 4.
+3. **Freshness check** (delegate mode only):
+    - Run `$KORDINATE_HOME/kords/<kord>/expiry.sh` if it exists.
+    - Exit 0 = fresh. Check for cached `data.md` — if the prompt matches, return cached result.
+    - Exit 1 = stale. Proceed to delegation.
 
-4. **Delegate via beorn**:
-   a. Read the provider name from the kord's `contract.md` (under `## Provider`).
-   b. Read the `## Guidelines` section from `contract.md`.
-   c. Build the delegation prompt: "You are being consulted via the `<kord>` kord. Follow these guidelines:\n\n<guidelines>\n\nPrompt: <prompt>"
-   d. Call `mcp__beorn__delegate` with `agent=<provider>` and `prompt=<delegation prompt>`.
+4. **Delegate**:
+    - Build prompt from contract guidelines + user prompt.
+    - Invoke provider via Beorn (`mcp__beorn__delegate`) or native subagent spawn.
+    - Cache result in `$KORDINATE_HOME/kords/<kord>/data.md`.
 
-5. **Cache the result**:
-   a. Write the agent's response to the consultation cache:
-      ```
-      <!-- kord:<kord> prompt: <the exact prompt> -->
-      <agent's response>
-      ```
-      File: `$KORDINATE_HOME/agents/root/memory/dynamic/consultations/<kord>.md`
-   b. Run the post-consult hook to reset freshness state:
-      ```bash
-      bash "$KORDINATE_HOME/agents/root/kords/<kord>/expiry.sh" store
-      ```
-
-6. Return the agent's response to the user.
-
-## Available agents
-
-| Agent | Default Kord | Expertise |
-|-------|-------------|-----------|
-| deployer | `deployer-default` | Cluster state, pod status, deployment status, versions, networking |
-| sauron | `sauron-default` | Metrics, health checks, log events, dashboards, alerting |
-| designer | `designer-default` | Architecture, components, failure modes, data flow, dependencies |
-| scribe | `scribe-default` | Templates, document formats, formatting conventions |
-
-## Named kords
-
-| Kord | Requester → Provider |
-|------|---------------------|
-| `pattern-review` | deployer, sauron → designer |
-| `monitoring-impact` | deployer → sauron |
+5. **Return** the result.
