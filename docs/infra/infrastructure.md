@@ -59,14 +59,6 @@ flowchart LR
     style CN fill:#1a1a2e,stroke:#555,color:#fff
 ```
 
-??? note "Port details"
-
-    | Service | Port | Protocol |
-    |---------|------|----------|
-    | Prometheus /federate | 9090 | HTTP |
-    | MinIO (log federation) | 9000 | S3 API |
-    | Beorn MCP | 3100 | HTTP |
-    | Loki push API | 3100 | HTTP |
 
 ??? abstract "Detailed data flow"
 
