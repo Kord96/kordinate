@@ -43,6 +43,10 @@ kordinate/agents/*/deploys/
 kordinate/agents/*/CLAUDE.md
 
 
+# Playwright MCP artifacts
+.playwright-mcp/
+*.png
+
 # MkDocs build output
 site/
 
