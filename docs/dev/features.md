@@ -1,69 +1,56 @@
 # Feature Inventory
 
-Complete inventory of everything in kordinate — implemented and planned. Use this to plan installation tiers and identify gaps.
+Complete inventory of everything in kordinate — implemented and planned.
 
 ## Framework Core
 
 ### Agents
 
-| Agent | Identity | Commands | Instructions | Memory (static) | Memory (dynamic) |
-|-------|----------|----------|-------------|-----------------|-----------------|
-| general | IDENTITY.md | /boot, /kord, /merge | — | — | consultations/ |
-| scribe | IDENTITY.md | onboard, kord, add-mcp, update-agent-docs, update-project-docs, update-subagent-memory, audit-docs | workflow.md, tools.md | templates/ | MEMORY.md, operational_notes.md |
-| deployer | IDENTITY.md | bootstrap, roll, stop, clean, diff, migrate-workstation | auth.md, tools.md | infra.md, migration.md, troubleshooting.md | operational_notes.md, infra-monitoring.md |
-| sauron | IDENTITY.md | scan, diagnose | auth.md, workflow.md, tools.md | monitoring.md, logging.md, manifest.yaml | grafana_renderer.md, operational_notes.md |
-| designer | IDENTITY.md | detect-patterns | workflow.md, tools.md | patterns/ (18 patterns), libraries/ (4 libs), app-contract.md | MEMORY.md |
+| Agent | Identity | Skills | Memory |
+|-------|----------|--------|--------|
+| scribe | IDENTITY.md | /remember, /onboard, /create-kord | workflow.md, tools.md, scratchpad.md |
+| deployer | IDENTITY.md | /bootstrap, /roll, /stop, /clean, /diff, /migrate-workstation | infra.md, migration.md, tools.md, troubleshooting.md, scratchpad.md |
+| sauron | IDENTITY.md | /scan, /diagnose | monitoring.md, logging.md, tools.md, workflow.md, scratchpad.md |
+| designer | IDENTITY.md | /detect-patterns | patterns/ (16), libraries/ (4), tools.md, workflow.md, app-contract.md |
+
+### Global Skills
+
+| Skill | Purpose |
+|-------|---------|
+| /boot | Load shared protocols + 2D memory on spawn |
+| /kord | Send a request to another agent through a kord contract |
+| /authenticate | Copy lock file before guarded operations |
+| /merge | Merge session branch forward |
 
 ### Guards
 
 | Guard | Protects | Agent |
 |-------|----------|-------|
-| guard-md.sh | .md file edits | scribe |
+| guard.sh (remember) | Memory and kord path writes | scribe |
 | guard-git.sh | Git operations | all |
 | guard-kubectl.sh | kubectl writes | deployer |
-| guard-grafana.sh | Grafana API (Edit/Write, Bash, MCP) | sauron |
-| guard-redis.sh | Redis MCP | deployer |
-
-### Hooks
-
-| Hook | Trigger | Purpose |
-|------|---------|---------|
-| agent-memory.sh | PreToolUse (Agent) | Regenerate agent MEMORY.md before spawning |
-| auto-merge-to-dev.sh | PostToolUse (Bash) | Fast-forward main after push |
+| guard-grafana.sh | Grafana API | sauron |
 
 ### Kords
 
-| Kord | Requester | Provider |
-|------|-----------|----------|
-| deployer-default | any | deployer |
-| sauron-default | any | sauron |
-| designer-default | any | designer |
-| scribe-default | any | scribe |
-| pattern-review | deployer, sauron | designer |
-| monitoring-impact | deployer | sauron |
-
-### Skills
-
-| Skill | Scope | Purpose |
-|-------|-------|---------|
-| /boot | general | Catch up on parent context + code changes |
-| /kord | general | Invoke agent via kord protocol |
-| /merge | general | Merge session branch forward |
-| /onboard | scribe | Add new agent to team |
-| /create-kord | scribe | Define new kord |
-| — removed — | scribe | Add MCP server entry |
-| — removed — | scribe | Update agent documentation |
-| — removed — | scribe | Update project documentation |
-| /remember | scribe | Update agent memory |
-| — removed — | scribe | Audit docs for consistency |
+| Kord | Mode | Requester | Provider |
+|------|------|-----------|----------|
+| remember | stateless | any | scribe |
+| onboard | stateful | any | scribe |
+| create-kord | stateful | any | scribe |
+| deployer-default | stateful | any | deployer |
+| sauron-default | stateful | any | sauron |
+| designer-default | stateful | any | designer |
+| scribe-default | stateful | any | scribe |
+| pattern-review | stateful | deployer, sauron | designer |
+| monitoring-impact | stateful | deployer | sauron |
 
 ### Configuration
 
 | File | Purpose |
 |------|---------|
-| settings.json | Hook configuration (guards, auto-merge, memory regen) |
+| settings.json | Hook configuration (guards, PreToolUse) |
 | profile/.mcp.json | MCP server registration (playwright, beorn) |
-| profile/keybindings.json | Claude Code key bindings |
 | profile/config.yaml | Cluster configuration (IPs, namespaces, services) |
 | KORD.md | Auto-generated knowledge registry |
 
@@ -71,7 +58,6 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 
 | File | Purpose |
 |------|---------|
-| lib/cache.sh | Hash-based cache check/store/invalidate |
 | lib/mcp-agent-server/server.js | Beorn MCP server (Express + MCP SDK) |
 
 ## Installer
@@ -79,7 +65,7 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 | Script | Purpose |
 |--------|---------|
 | kordinate-cli | Bootstrap CLI (init, join, hydrate, export, import) |
-| link-claude.sh | Copy framework to ~/.claude/, install beorn, register MCP |
+| link-claude.sh | **Stale** — replaced by /onboard sync |
 | setup-shell.sh | PATH, KORDINATE_HOME, tmux config |
 | auth-check.sh | Credential setup (GPG, pass, GitHub, Tailscale, Claude, Grafana) |
 | lib.sh | Shared utilities (logging, kubectl resolution) |
@@ -94,6 +80,8 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 
 ## Kubernetes Manifests
 
+Live at `agents/deployer/skills/bootstrap/manifests/`.
+
 ### Gateway Namespace
 
 | Manifest | Purpose |
@@ -105,7 +93,6 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 | minio.yaml | MinIO object storage |
 | workstation/Dockerfile | Workstation image |
 | workstation/entrypoint.sh | Workstation boot script |
-| beorn/entrypoint.sh | Beorn boot script |
 
 ### Master Namespace
 
@@ -146,15 +133,17 @@ Complete inventory of everything in kordinate — implemented and planned. Use t
 
 ## Agent Utilities
 
-| File | Agent | Purpose |
+Now live as Level 3 resources inside skills:
+
+| File | Skill | Purpose |
 |------|-------|---------|
-| deployer/postgres.py | deployer | PostgreSQL operations |
-| sauron/grafana_api.py | sauron | Grafana dashboard push/pull |
-| sauron/metrics_pusher.py | sauron | Metrics pushing |
+| deployer/skills/diff/postgres.py | /diff | PostgreSQL schema comparison |
+| sauron/skills/scan/grafana_api.py | /scan | Grafana dashboard push/pull |
+| sauron/skills/diagnose/metrics_pusher.py | /diagnose | Metrics pushing |
 
 ## Designer Knowledge Base
 
-### Patterns (18)
+### Patterns (16)
 
 circuit-breaker, sidecar, api-gateway, stream-to-store, event-sourcing, etl, retry, cqrs, hexagonal, service-manager, ddd, bulkhead, choreography, saga, backpressure, plugin
 
@@ -168,15 +157,11 @@ klog, orchestrator, stoik, nokrashi-tools
 |------|---------|
 | .github/workflows/deploy-docs.yml | Deploy mkdocs to GitHub Pages on push to main |
 
-## Documentation Site
-
-37 pages across: framework (5), infra (2), reference (agents, linking, source-map, patterns, libraries), dev (installation, linking, sessions)
-
 ## Referenced but Not Implemented
 
 | Feature | Where Referenced |
 |---------|-----------------|
 | Gemini MCP validation | designer IDENTITY.md |
 | Pattern TODOs (examples, implementation guides) | 18 pattern files in designer memory |
-| Project-level agent dirs (`<project>/<agent>/`) | linking docs, shared MEMORY.md |
 | Tier-based installation | installation docs (planned) |
+| KORD.json generation | guard.sh needs it for property lookup |
