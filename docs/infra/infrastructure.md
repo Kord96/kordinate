@@ -100,11 +100,25 @@ flowchart TB
                 MA2[alloy]
                 MA2 -->|write| ML2[loki 30d] & MP2[prom 30d]
                 MP2 & ML2 --> G2[grafana]
+                WS2[workstation + beorn]
             end
+            subgraph ca-gw[gateway]
+                GWT-A[tailscale + minio]
+            end
+            subgraph ca-mon[monitor]
+                AL-A[alloy] --> PR-A[prom] & LK-A[loki]
+            end
+            CA-ENV[dev / test / prod]
+        end
+
+        subgraph CN2[cluster-N]
+            CN2-INNER[same structure as cluster-B]
         end
 
         MA2 -->|pull :9090 /federate| GWT
         MA2 -->|pull :9000 minio| GWT
+        MA2 -->|pull| GWT-A
+        CN2 -.->|tailnet| MA2
     ```
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki.
