@@ -5,12 +5,13 @@ Level 3 resource for the merge skill.
 ## Session Branch Discovery (default)
 
 ```bash
-git fetch origin
 git worktree prune
-git branch -a --list '*session/*' --format '%(refname:short)'
+git branch --list 'session/*'
 ```
 
 If `$ARGUMENTS` specifies a branch, filter to just that one.
+
+Session branches are local only — they are never pushed to remote.
 
 ## Memory Branch Discovery (`--memory`)
 
@@ -21,7 +22,7 @@ git -C "$KORDINATE_HOME" worktree prune
 git -C "$KORDINATE_HOME" branch --list 'memory/*'
 ```
 
-If `$ARGUMENTS` specifies a branch, filter to just that one. No `git fetch` needed — the shared PVC repo has no GitHub remote.
+If `$ARGUMENTS` specifies a branch, filter to just that one.
 
 ## Classify each branch
 

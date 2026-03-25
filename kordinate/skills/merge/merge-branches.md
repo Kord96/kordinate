@@ -10,7 +10,8 @@ Branch model: `main` (active development) — `test` (staging) — `prod` (produ
 
 1. Acquire lock: `mkdir .merge-lock 2>/dev/null`
    - If it fails, another merge is running — report "merge already active" and stop.
-2. Create merge workspace: `git worktree add /tmp/merge-workspace origin/main --detach`
+2. Fetch latest: `git fetch origin main`
+3. Create merge workspace: `git worktree add /tmp/merge-workspace origin/main --detach`
 
 ## Setup (memory branches — `--memory`)
 
@@ -35,11 +36,11 @@ The workspace is on the PVC (not `/tmp`) so it survives container restarts.
 ### Checkout + rebase
 
 ```bash
-git -C $WORKSPACE checkout origin/<branch> --detach
+git -C $WORKSPACE checkout <branch> --detach
 git -C $WORKSPACE rebase origin/main
 ```
 
-Where `$WORKSPACE` is `/tmp/merge-workspace` for session branches or `$KORDINATE_HOME/.worktrees/merge-workspace` for memory branches.
+Where `$WORKSPACE` is `/tmp/merge-workspace` for session branches or `$KORDINATE_HOME/.worktrees/merge-workspace` for memory branches. Session branches are local — no `origin/` prefix.
 
 ### If rebase succeeds
 
