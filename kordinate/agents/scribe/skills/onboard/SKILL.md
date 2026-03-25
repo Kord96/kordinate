@@ -1,7 +1,7 @@
 ---
 name: onboard
 description: Add a new agent or sync existing agents to the runtime. Creates identity, kord entry, memory, and KORD.md registration.
-argument-hint: [agent-name] or [sync]
+argument-hint: "<agent-name> or sync"
 ---
 
 Onboard agents into the team. Two modes:
