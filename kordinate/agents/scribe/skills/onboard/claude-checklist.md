@@ -2,46 +2,70 @@
 
 Level 3 resource for the onboard skill. Verify after onboarding or syncing.
 
-## Per Agent
+## Kordinate Source (~/.kord/)
 
-- [ ] `~/.claude/agents/<name>.md` exists with correct frontmatter (`name`, `description`, `tools`, `model`, `memory`)
-- [ ] Frontmatter `description` matches kordinate IDENTITY.md description
+- [ ] `$KORDINATE_HOME/agents/<name>/IDENTITY.md` exists with frontmatter (name, description, tools, model, curated, preloaded, scope)
+- [ ] `$KORDINATE_HOME/agents/<name>/memory/scratchpad.md` exists (curated: false, scope: global)
+- [ ] `$KORDINATE_HOME/kords/<name>-default/contract.md` exists for each agent
+- [ ] `$KORDINATE_HOME/shared/memory-protocol.md` exists (preloaded: all)
+- [ ] `$KORDINATE_HOME/shared/auth-protocol.md` exists (preloaded: all)
+- [ ] `$KORDINATE_HOME/KORD.md` is current — run `generate-kord.sh` if needed
+
+## Claude Native (~/.claude/)
+
+### Per Agent
+
+- [ ] `~/.claude/agents/<name>.md` exists
+- [ ] Frontmatter has: `name`, `description`, `tools`, `model`
+- [ ] Frontmatter has `memory: user` (enables native global memory as fallback)
 - [ ] Markdown body matches kordinate IDENTITY.md body
-- [ ] `memory: user` set in frontmatter (for global persistence)
-- [ ] `~/.claude/agent-memory/<name>/` directory exists
 - [ ] Agent skills copied to `~/.claude/skills/<name>/` (if any)
 
-## Kords
+### Kord Wiring
 
-- [ ] Stateless kords: borrowed skills listed in requester agents' `skills:` frontmatter
-- [ ] Stateful kords: Beorn MCP server is running and registered
+- [ ] Stateless kords: borrowed skill listed in each requester agent's `skills:` frontmatter in `~/.claude/agents/<name>.md`
+- [ ] Stateful kords: Beorn MCP server running and registered in `.mcp.json`
 
-## Shared
+### Shared
 
 - [ ] `~/.claude/CLAUDE.md` contains `Run /boot before starting work.`
-- [ ] `preloaded: all` files are `@imported` in `~/.claude/CLAUDE.md`
-- [ ] Global skills (boot, kord, authenticate, merge) copied to `~/.claude/skills/`
-- [ ] Guard hook registered in `~/.claude/settings.json`:
-  ```json
-  {
-    "hooks": {
-      "PostToolUse": [
-        {
-          "matcher": "Write|Edit",
-          "hooks": [
-            {
-              "type": "command",
-              "command": "$KORDINATE_HOME/agents/scribe/skills/remember/guard.sh"
-            }
-          ]
-        }
-      ]
+- [ ] `preloaded: all` files `@imported` in `~/.claude/CLAUDE.md`:
+    ```
+    @~/.kord/shared/memory-protocol.md
+    @~/.kord/shared/auth-protocol.md
+    ```
+- [ ] Global skills copied to `~/.claude/skills/`:
+    - `boot/SKILL.md`
+    - `kord/SKILL.md`
+    - `authenticate/SKILL.md`
+    - `merge/SKILL.md`
+- [ ] Guard hook registered in `~/.claude/settings.json` as **PreToolUse** (not PostToolUse):
+    ```json
+    {
+      "hooks": {
+        "PreToolUse": [
+          {
+            "matcher": "Write|Edit",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "$KORDINATE_HOME/agents/scribe/skills/remember/guard.sh"
+              }
+            ]
+          }
+        ]
+      }
     }
-  }
-  ```
+    ```
+
+## Project Level (.kord/)
+
+- [ ] `.kord/` directory exists in project root (if project-scoped memory is needed)
 
 ## Quick Test
 
-- [ ] `/boot` runs without errors
-- [ ] `/kord <agent> test` spawns the agent or runs borrowed skill
+- [ ] `/boot` loads shared protocols and agent memory without errors
+- [ ] `/kord <agent> test` reaches the agent (stateful) or runs skill (stateless)
 - [ ] Writing to `~/.kord/` without scribe auth is blocked by guard
+- [ ] `/kord remember test note` writes to kordinate + Claude native paths
+- [ ] `generate-kord.sh` produces valid KORD.md

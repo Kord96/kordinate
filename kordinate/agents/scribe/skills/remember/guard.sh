@@ -1,6 +1,6 @@
 #!/bin/bash
 # Guard: memory and kord writes go through scribe (unless non-curated + non-templated)
-# Registered in settings.json as PostToolUse hook on Write|Edit
+# Registered in settings.json as PreToolUse hook on Write|Edit
 # Exit 0 = allow, Exit 2 = block with feedback
 #
 # settings.json reference:
