@@ -11,7 +11,7 @@ tools:
   - Bash
   - Glob
 curated: true
-preloaded: true
+preloaded: deployer
 scope: global
 ---
 

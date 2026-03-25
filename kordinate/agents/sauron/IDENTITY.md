@@ -12,7 +12,7 @@ tools:
   - Grep
   - Glob
 curated: true
-preloaded: true
+preloaded: sauron
 scope: global
 ---
 

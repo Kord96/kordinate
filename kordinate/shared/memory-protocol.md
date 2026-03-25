@@ -1,3 +1,10 @@
+---
+description: Instructs agents to save insights via /kord remember before finishing
+preloaded: all
+curated: true
+scope: global
+---
+
 Before finishing your task, save any new insights worth keeping:
 
 ```

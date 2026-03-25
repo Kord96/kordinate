@@ -11,7 +11,7 @@ tools:
   - Glob
   - Bash
 curated: true
-preloaded: true
+preloaded: designer
 scope: global
 ---
 

@@ -10,7 +10,7 @@ tools:
   - Bash
   - Glob
 curated: true
-preloaded: true
+preloaded: scribe
 scope: global
 ---
 

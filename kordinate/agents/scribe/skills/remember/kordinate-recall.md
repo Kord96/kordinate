@@ -13,7 +13,7 @@ Every piece of knowledge has these properties (tracked in KORD.md):
 | Description | one-line text | required |
 | Template | `none` / `<template>` | `none` |
 | Curated | `true` / `false` | `false` |
-| Preloaded | `true` / `false` | `false` |
+| Preloaded | `none` / `all` / `<agent>` | `none` |
 | Owner | `team` / `<kord>` / `<agent>` | `agent` |
 | Scope | `global` / `project` | `global` |
 | Expiry | `none` / `<script>` / `<.md>` | `none` |
@@ -41,7 +41,7 @@ Example:
 ```markdown
 ## Agents
 
-- `agents/deployer/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded, template: identity)
+- `agents/deployer/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded: deployer, template: identity)
 - `agents/deployer/memory/cluster-topology.md` — Current cluster layout and service endpoints
 
 ## Kords
