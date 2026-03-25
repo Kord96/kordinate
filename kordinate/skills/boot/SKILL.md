@@ -7,13 +7,15 @@ scope: global
 
 Load your context before starting work.
 
+Your agent name is the `name` field from your own frontmatter. Use it wherever `<your-name>` appears below.
+
 ## Steps
 
-1. **Read shared protocols** — read all files in `$KORDINATE_HOME/shared/`. These are team-wide instructions.
+1. **Read shared protocols** — read all files in `$KORDINATE_HOME/shared/` (memory-protocol.md, auth-protocol.md, credentials-protocol.md). These are team-wide instructions.
 
-2. **Read your memory** — load both scopes:
+2. **Read your memory** — load both scopes, reading all `.md` files recursively (some agents have subdirectories):
     - Global: `$KORDINATE_HOME/agents/<your-name>/memory/`
-    - Project: `.kord/agents/<your-name>/memory/` (if it exists)
+    - Project: `<project-root>/.kord/agents/<your-name>/memory/` — relative to the current working directory. Skip if the `.kord/` directory does not exist in the project root.
 
 3. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
 

@@ -18,7 +18,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-source "$SCRIPT_DIR/setup/lib.sh"
+source "$SCRIPT_DIR/lib.sh"
 
 WORKSTATION_DIR="$SCRIPT_DIR/agents/deployer/manifests/master/base/workstation"
 MANIFESTS="$SCRIPT_DIR/agents/deployer/manifests"
@@ -413,7 +413,7 @@ cmd_init() {
   echo ""
   echo -e "${BOLD}Step 9: Auth setup${NC}"
 
-  local AUTH_SCRIPT="$SCRIPT_DIR/setup/auth-check.sh"
+  local AUTH_SCRIPT="$SCRIPT_DIR/auth-check.sh"
   if [ -f "$AUTH_SCRIPT" ]; then
     local POD
     POD=$(ws_pod)

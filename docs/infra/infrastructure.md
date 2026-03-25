@@ -12,19 +12,21 @@ Owns all infrastructure operations — the only agent authorized to write to clu
 
 | Skill | Description |
 |---------|-------------|
-| `/deployer:roll` | Roll between environments |
-| `/deployer:stop` | Scale down an environment |
-| `/deployer:clean` | Clean up environment data |
-| `/deployer:diff` | Stage incremental data changes |
-| `/deployer:bootstrap` | Bootstrap cluster infrastructure |
-| `/deployer:migrate-workstation` | Prepare workstation migration handover |
+| `/infra bootstrap` | Bootstrap cluster infrastructure |
+| `/infra deploy` | Deploy manifests to a cluster |
+| `/infra roll` | Roll between environments |
+| `/infra stop` | Scale down an environment |
+| `/infra clean` | Clean up environment data |
+| `/infra diff` | Stage incremental data changes |
+| `/infra migrate` | Prepare workstation migration handover |
+| `/infra generate-overlays` | Generate Kustomize overlays for a cluster |
 
 ### Memory
 
 | | Static | Dynamic |
 |---|---|---|
 | **Global** | infra.md, migration.md, troubleshooting.md | auto-managed |
-| **Project** | `deployer/static/` — k8s manifests | `deployer/dynamic/` — operational notes |
+| **Project** | `deployer/manifests/` — k8s manifests (namespace-prefixed) | `deployer/dynamic/` — operational notes |
 
 ### Hooks
 
@@ -45,11 +47,9 @@ Owns all infrastructure operations — the only agent authorized to write to clu
         gateway_lan_ip: 10.0.0.1
         nodes: [10.0.0.1, 10.0.0.2]
         namespaces: [gateway, dev, test, prod, monitor]
-        manifests:
-          gateway: agents/deployer/manifests/gateway
-          monitor: agents/deployer/manifests/monitor
-          master: agents/deployer/manifests/master
-          bootstrap: agents/deployer/manifests/bootstrap
+        manifests: agents/deployer/skills/infra/manifests/
+        topology: agents/deployer/skills/infra/topology.yaml
+        overlays: profile/overlays/<cluster>/
         services:
           postgres: { port: 30632, user: myuser, database: mydb }
           redis: { port: 30379 }

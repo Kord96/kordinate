@@ -15,7 +15,7 @@ Does NOT perform the migration — generates the artifacts for external executio
      2. Wait for pod ready: `kubectl wait -n gateway --for=condition=Ready pod -l component=workstation --timeout=300s`
      3. Verify Tailscale is up: `kubectl logs -n gateway -l component=workstation | grep "Tailscale up"`
      4. SSH to new workstation and verify: `ssh workstation`
-     5. On new workstation: `cd ~/kordinate && ./installer/link-claude.sh && ./installer/setup-shell.sh`
+     5. On new workstation: `cd ~/kordinate && ./installer/setup-shell.sh` then run `/onboard sync` to link the framework
      6. Run `/boot` to pick up handover context
      7. Delete old workstation: `kubectl delete -n <old-namespace> deploy workstation`
    - Post-migration checklist:

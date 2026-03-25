@@ -27,7 +27,7 @@ agents/beorn.md:
 
 infra/infrastructure.md:
   - kordinate/agents/deployer/IDENTITY.md
-  - kordinate/agents/deployer/skills/bootstrap/manifests/
+  - kordinate/agents/deployer/skills/infra/manifests/
 
 infra/monitoring.md:
   - kordinate/agents/sauron/IDENTITY.md

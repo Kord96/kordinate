@@ -10,7 +10,7 @@ Current agent runtimes don't allow subagents to spawn other subagents. A deploye
 flowchart LR
     A1[Agent A] -->|mcp__beorn__delegate| BS[Beorn Server]
     BS -->|spawns| B["Beorn\n(designer skin)"]
-    B -->|loads| I["identity.md + memory/"]
+    B -->|loads| I["IDENTITY.md + memory/"]
     B -->|claude --print| C[Claude Code]
     C -->|response| BS
     BS -->|result| A1
@@ -32,15 +32,14 @@ flowchart LR
     })
     ```
 
-    The beorn server spawns a beorn with the designer skin — loads identity.md and memory, runs `claude --print`, and returns the response.
+    The beorn server spawns a beorn with the designer skin — loads IDENTITY.md and memory, runs `claude --print`, and returns the response.
 
 ## How It Works
 
 1. **Request arrives** — an agent calls `mcp__beorn__delegate` with a target agent name and prompt
-2. **Identity loading** — reads the target's `identity.md` (stripped of frontmatter) and memory
+2. **Identity loading** — reads the target's `IDENTITY.md` (stripped of frontmatter) and memory files from `$KORDINATE_HOME/agents/<name>/`
 3. **Beorn spawned** — a new `claude --print` process runs with the skin as its system prompt
-4. **Cleanup** — resets git state to prevent side-effect bleed between skins
-5. **Response** — the beorn server returns the response to the caller
+4. **Response** — the beorn server returns the response to the caller
 
 Each beorn is independent. Concurrent requests spawn separate beorns — each with its own Claude process.
 
@@ -55,6 +54,6 @@ lib/mcp-agent-server/
 └── .gitignore
 ```
 
-**Local:** `link-claude.sh` installs deps, registers the MCP server, and starts the beorn server automatically.
+**Local:** `/onboard sync` installs deps, registers the MCP server, and starts the beorn server automatically.
 
 **K8s:** Deployment + Service at `agent-pool.gateway.svc.cluster.local:3100`.

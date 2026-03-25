@@ -6,7 +6,7 @@ set -euo pipefail
 # ─── Shell config (once) ───
 if ! grep -q 'KORDINATE_HOME' ~/.bashrc 2>/dev/null; then
   cat >> ~/.bashrc <<'BASHRC'
-export KORDINATE_HOME="$HOME/kordinate"
+export KORDINATE_HOME="$HOME/.kord"
 export PATH="$KORDINATE_HOME/bin:$PATH"
 BASHRC
 fi
@@ -17,7 +17,7 @@ if [ ! -f ~/.bash_profile ]; then
 PROF
 fi
 
-export KORDINATE_HOME="${KORDINATE_HOME:-$HOME/kordinate/kordinate}"
+export KORDINATE_HOME="${KORDINATE_HOME:-$HOME/.kord}"
 export PATH="$HOME/kordinate/bin:$PATH"
 
 # ─── SSH ───
@@ -42,13 +42,6 @@ if [ ! -f "$CLAUDE_CREDS" ]; then
   fi
 else
   echo "[beorn] Claude credentials present"
-fi
-
-# ─── Link framework (ensure agent identities are current) ───
-LINK_SCRIPT="$HOME/kordinate/installer/link-claude.sh"
-if [ -x "$LINK_SCRIPT" ]; then
-  echo "[beorn] Running link-claude.sh..."
-  bash "$LINK_SCRIPT" link 2>/dev/null || true
 fi
 
 # ─── Install MCP server deps ───

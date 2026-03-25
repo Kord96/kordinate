@@ -2,7 +2,7 @@
 // Beorn — shape-shifting MCP agent server.
 //
 // A single pod that can become any kordinate agent on demand.
-// Loads the target agent's identity (CLAUDE.md) and memory, invokes
+// Loads the target agent's identity (IDENTITY.md) and memory, invokes
 // Claude Code as that agent via --print, returns the response.
 //
 // MCP tools: delegate, status
@@ -14,7 +14,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
 import { spawn, execSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
@@ -22,20 +22,34 @@ import { randomUUID } from 'node:crypto';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3100');
 const HOME = process.env.HOME || '/home/claude';
-const KORDINATE_HOME = process.env.KORDINATE_HOME || join(HOME, 'kordinate', 'kordinate');
-const REPO_ROOT = join(KORDINATE_HOME, '..');
+const KORDINATE_HOME = process.env.KORDINATE_HOME || join(HOME, '.kord');
+const REPO_ROOT = process.env.REPO_ROOT || join(HOME, 'kordinate');
 const BOOT_TIME = new Date().toISOString();
 
-// ─── Discover agents from registry.yaml ───
+// ─── Discover agents from KORD.json or agents/ directory ───
 
 function loadAgentNames() {
+  // Try KORD.json first — it lists all agents with IDENTITY.md entries
   try {
-    const content = readFileSync(join(KORDINATE_HOME, 'agents', 'registry.yaml'), 'utf8');
-    const agentBlock = content.split(/^beorn:/m)[0];
-    return [...agentBlock.matchAll(/^  (\w+):$/gm)].map(m => m[1]);
-  } catch {
-    return ['deployer', 'sauron', 'designer', 'scribe'];
-  }
+    const kordPath = join(KORDINATE_HOME, 'KORD.json');
+    if (existsSync(kordPath)) {
+      const entries = JSON.parse(readFileSync(kordPath, 'utf8'));
+      const names = entries
+        .filter(e => e.path.match(/^agents\/[^/]+\/IDENTITY\.md$/))
+        .map(e => e.path.split('/')[1]);
+      if (names.length > 0) return names;
+    }
+  } catch { /* fall through */ }
+
+  // Fallback: scan agents/ directory for dirs containing IDENTITY.md
+  try {
+    const agentsDir = join(KORDINATE_HOME, 'agents');
+    return readdirSync(agentsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory() && existsSync(join(agentsDir, d.name, 'IDENTITY.md')))
+      .map(d => d.name);
+  } catch { /* fall through */ }
+
+  return ['deployer', 'sauron', 'designer', 'scribe'];
 }
 
 const KNOWN_AGENTS = loadAgentNames();
@@ -69,27 +83,26 @@ function regenerateMemory(agent) {
 function loadSystemPrompt(agent) {
   const parts = [];
 
-  const claudeMd = join(HOME, '.claude', 'agents', agent, 'CLAUDE.md');
-  if (existsSync(claudeMd)) {
-    const raw = readFileSync(claudeMd, 'utf8');
+  // Load agent identity from $KORDINATE_HOME/agents/<name>/IDENTITY.md
+  const identityMd = join(KORDINATE_HOME, 'agents', agent, 'IDENTITY.md');
+  if (existsSync(identityMd)) {
+    const raw = readFileSync(identityMd, 'utf8');
     parts.push(raw.replace(/^---\n[\s\S]*?\n---\n?/, ''));
   }
 
-  const memoryMd = join(KORDINATE_HOME, 'agents', agent, 'memory', 'dynamic', 'MEMORY.md');
-  if (existsSync(memoryMd)) {
-    parts.push(readFileSync(memoryMd, 'utf8'));
+  // Load all memory files from $KORDINATE_HOME/agents/<name>/memory/
+  const memoryDir = join(KORDINATE_HOME, 'agents', agent, 'memory');
+  if (existsSync(memoryDir)) {
+    try {
+      const files = readdirSync(memoryDir).filter(f => f.endsWith('.md')).sort();
+      for (const file of files) {
+        const content = readFileSync(join(memoryDir, file), 'utf8').trim();
+        if (content) parts.push(content);
+      }
+    } catch { /* best-effort */ }
   }
 
   return parts.join('\n\n');
-}
-
-function cleanGitState() {
-  try {
-    execSync('git checkout . 2>/dev/null; git clean -fd 2>/dev/null', {
-      cwd: REPO_ROOT,
-      timeout: 10000,
-    });
-  } catch { /* best-effort */ }
 }
 
 async function invokeAgent(agent, prompt) {
@@ -161,8 +174,6 @@ async function invokeAgent(agent, prompt) {
     if (e.stderr) log(`INVOKE ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
     if (e.stdout) log(`INVOKE ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
     throw e;
-  } finally {
-    cleanGitState();
   }
 }
 

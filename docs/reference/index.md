@@ -53,7 +53,7 @@ Key behaviors ([agents](https://code.claude.com/docs/en/sub-agents), [skills](ht
     ??? example "Skill with resources"
 
         ```
-        deployment/roll/
+        infra/
         ├── SKILL.md              # Level 1 (frontmatter) + Level 2 (body)
         ├── checklist.md          # Level 3 — pre-roll verification steps
         └── scripts/

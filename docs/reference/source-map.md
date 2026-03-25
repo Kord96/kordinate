@@ -24,7 +24,7 @@ flowchart LR
 | **agents/index.md** | `agents/*/IDENTITY.md` |
 | **agents/scribe.md** | `agents/scribe/IDENTITY.md`, `agents/scribe/skills/remember/SKILL.md` |
 | **agents/beorn.md** | `lib/mcp-agent-server/server.js` |
-| **infra/infrastructure.md** | `agents/deployer/IDENTITY.md`, `agents/deployer/skills/bootstrap/manifests/` |
+| **infra/infrastructure.md** | `agents/deployer/IDENTITY.md`, `agents/deployer/skills/infra/manifests/` |
 | **infra/monitoring.md** | `agents/sauron/IDENTITY.md` |
 | **reference/patterns/** | `agents/designer/memory/patterns/` |
 | **reference/libraries/** | `agents/designer/memory/libraries/` |

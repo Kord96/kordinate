@@ -18,7 +18,7 @@ Every piece of knowledge is described by eight properties:
 | **Scope** | Where does it apply? | `global` / `project` | `global` |
 | **Expiry** | Does it expire? | `none` / `<script>` / `<.md>` | `none` |
 
-- **Preloaded**: `all` = imported into CLAUDE.md, survives compaction, everyone sees it. `<agent>` = loaded into that agent's spawn prompt. `none` = loaded on-demand via boot or explicit read.
+- **Preloaded**: `all` = imported into the main session's spawn prompt, survives compaction, everyone sees it. `<agent>` = loaded into that agent's spawn prompt. `none` = loaded on-demand via boot or explicit read.
 - **Curated** files are not auto-updated by agents. Changes only happen when a human explicitly requests them.
 - **Template** files must follow the referenced template.
 - **Scope**: `global` lives at `~/.kord/`. `project` lives at `.kord/`.

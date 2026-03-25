@@ -16,7 +16,7 @@ For each agent in `$KORDINATE_HOME/agents/`:
 
 1. Read `IDENTITY.md`
 2. Write to `~/.claude/agents/<name>.md` — strip kordinate properties (`curated`, `preloaded`, `scope`) from frontmatter, keep Claude fields (`name`, `description`, `tools`, `model`, `color`, `memory`)
-3. Create `~/.claude/agent-memory/<name>/` directory. If agent has memory files in kordinate, write a condensed summary to `MEMORY.md` (200-line limit)
+3. Create `~/.claude/agent-memory/<name>/MEMORY.md` — an **index** (not a copy) that points to the actual memory files at `$KORDINATE_HOME/agents/<name>/memory/`. For each memory file, read its frontmatter `description` and add an entry: `- [filename](absolute-path) — description`. The 200-line limit applies to this index, not to the underlying files.
 4. Copy agent skills to `~/.claude/skills/<name>/` (entire directory including Level 3 resources)
 
 ### Global Skills

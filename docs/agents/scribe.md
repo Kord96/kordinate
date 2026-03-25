@@ -24,7 +24,7 @@ Scribe writes to `kord/` (kordinate's space) and simultaneously to the runtime's
 
 | Kordinate path | Claude Code native path |
 |---|---|
-| `~/.kord/agents/<name>/identity.md` | `~/.claude/agents/<name>.md` |
+| `~/.kord/agents/<name>/IDENTITY.md` | `~/.claude/agents/<name>.md` |
 | `~/.kord/agents/<name>/memory/` | `~/.claude/agent-memory/<name>/MEMORY.md` |
 | `.kord/agents/<name>/memory/` | `.claude/agent-memory/<name>/MEMORY.md` |
 | `~/.kord/<kord>/contract.md` | — (Beorn reads directly) |

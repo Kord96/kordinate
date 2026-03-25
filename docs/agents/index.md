@@ -6,7 +6,7 @@ Every agent follows the same layout. Use `/onboard` to add new agents to the tea
 
 ```
 <agent>/
-├── identity.md              # role, tools, auth, workflow, rules
+├── IDENTITY.md              # role, tools, auth, workflow, rules
 ├── skills/<name>/SKILL.md   # agent's skills (+ optional resources)
 └── memory/*.md              # domain knowledge, notes
 
@@ -14,14 +14,14 @@ skills/                          # global skills
 ├── merge/SKILL.md              # available to all agents
 └── subagents/                  # shared by subagents only
     ├── boot/SKILL.md
-    └── consult/SKILL.md
+    └── kord/SKILL.md
 ```
 
-Skills are co-located with their agent — they need agent context (memory, kords) to be useful. Global skills are either available to everyone (`merge`) or shared by all subagents (`boot`, `consult`).
+Skills are co-located with their agent — they need agent context (memory, kords) to be useful. Global skills are either available to everyone (`merge`) or shared by all subagents (`boot`, `kord`).
 
 Any agent can be invoked as root (the main session) or as a subagent through [beorn](beorn.md). The structure is the same either way — identity, skills, and memory travel with the agent regardless of how it's invoked.
 
-??? note "identity.md template"
+??? note "IDENTITY.md template"
 
     ```markdown
     ---
@@ -90,12 +90,7 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | skill | `/deployer:roll` | Roll between environments |
-    | skill | `/deployer:stop` | Scale down an environment |
-    | skill | `/deployer:clean` | Clean up environment data |
-    | skill | `/deployer:diff` | Stage incremental data changes |
-    | skill | `/deployer:bootstrap` | Bootstrap cluster infrastructure |
-    | skill | `/deployer:migrate-workstation` | Prepare workstation migration handover |
+    | skill | `/infra` | Infrastructure operations (subcommands: bootstrap, deploy, roll, stop, clean, diff, migrate, generate-overlays) |
     | guard | `guard-kubectl.sh` | kubectl write operations — deployer only |
     | tool | `postgres.py` | Local database operations |
 
@@ -107,8 +102,8 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | skill | `/sauron:scan` | Scan a project for monitoring gaps |
-    | skill | `/sauron:diagnose` | Diagnose a specific issue |
+    | skill | `/scan` | Scan a project for monitoring gaps |
+    | skill | `/diagnose` | Diagnose a specific issue |
     | guard | `guard-grafana.sh` | Grafana MCP tools — sauron only |
     | tool | Grafana MCP | Dashboard management |
     | tool | nokrashi-tools | Code analysis |
@@ -122,4 +117,4 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | skill | `/designer:detect-patterns` | Scan a project for recognized patterns |
+    | skill | `/detect-patterns` | Scan a project for recognized patterns |

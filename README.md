@@ -7,7 +7,7 @@ kordinate/
 ├── core/           # framework — root agent, scribe, hooks, commands, lib
 ├── team/           # your agents — deployer, sauron, designer
 │   └── config.yaml # site-specific configuration
-├── installer/      # link-claude.sh, setup-shell.sh
+├── installer/      # setup-shell.sh, kordinate-cli
 ├── bin/            # claude-session
 └── docs/           # documentation site
 ```
@@ -17,7 +17,7 @@ kordinate/
 ```bash
 git clone <repo-url> ~/kordinate
 cd ~/kordinate
-./installer/link-claude.sh
+# Linking is handled by scribe via /onboard sync
 ```
 
 ## Documentation

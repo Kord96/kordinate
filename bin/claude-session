@@ -9,6 +9,13 @@ set -e
 
 CLAUDE="claude"
 
+# If not in tmux, start/attach to 0-general and re-run inside it
+if [ -z "$TMUX" ]; then
+  TMUX_DEFAULT="0-general"
+  command tmux has-session -t "$TMUX_DEFAULT" 2>/dev/null || command tmux new-session -d -s "$TMUX_DEFAULT"
+  exec command tmux attach-session -t "$TMUX_DEFAULT" \; send-keys "$0 $*" Enter
+fi
+
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
 if [ -z "$repo_root" ]; then
   echo "Not in a git repo — running claude directly"
@@ -43,22 +50,8 @@ fi
 # Create a worktree. All runtime state lives at ~/.claude/ — nothing to copy.
 create_worktree() {
   local wt_path="$1" branch_arg="$2"
-  mkdir -p "$(dirname "$wt_path")"
-  # git-crypt smudge filter fails during normal worktree checkout because
-  # the worktree doesn't have the key yet. Work around by:
-  # 1. Bypass smudge/clean filters during checkout (files land as plaintext)
-  # 2. Symlink git-crypt key from main repo into worktree's git dir
-  # 3. No re-checkout needed — files match the committed (now encrypted) blobs
-  local wt_gitdir
-  wt_gitdir="$repo_root/.git/worktrees/$(basename "$wt_path")"
-  git -c filter.git-crypt.smudge=cat -c filter.git-crypt.clean=cat \
-    -C "$repo_root" worktree add "$wt_path" $branch_arg
-  ln -sf "$repo_root/.git/git-crypt" "$wt_gitdir/git-crypt"
-  # Re-checkout encrypted files with proper smudge filter now that key is available
-  git -C "$wt_path" checkout HEAD -- .
+  git -C "$repo_root" worktree add "$wt_path" $branch_arg
   mkdir -p "$wt_path/.claude/agent-state"
-  # Link project-level agent dirs (sauron/, deployer/, etc.) into .claude/agent-memory/
-  ( cd "$wt_path" && "$repo_root/installer/link-claude.sh" link-project ) 2>/dev/null || true
 }
 
 # Generate session ID: tmux-based (stable) or timestamp (fallback)
@@ -75,7 +68,7 @@ else
 fi
 
 branch="session/${session_id}"
-worktree="${repo_root}/.worktrees/${session_id}"
+worktree="${repo_root}/../${session_id}"
 
 # Try --continue, fall back to fresh start if no conversation exists
 run_claude_continue() {

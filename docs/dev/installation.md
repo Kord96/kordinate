@@ -15,7 +15,7 @@ What's baked into the workstation image. Built once, never seen by the user.
 - Shell configured (PATH, KORDINATE_HOME, .bashrc)
 - Kordinate framework at `~/.kord/`
 - Beorn server pre-installed
-- Core agents: general, scribe
+- Core agents: root, scribe
 - Core guards: guard-md.sh, guard-git.sh
 - Core skills: /kord, /boot, /merge
 - Recall system (8-property knowledge model)
@@ -95,9 +95,9 @@ From inside the workstation. Installs the infra team and its dependencies.
 From inside the workstation. Project-specific services.
 
 ```
-/deployer:bootstrap addon postgres
-/deployer:bootstrap addon redis
-/deployer:bootstrap addon cloudflare
+/infra bootstrap addon postgres
+/infra bootstrap addon redis
+/infra bootstrap addon cloudflare
 ```
 
 Each addon deploys its manifests and configures MCP.
@@ -143,7 +143,7 @@ From the workstation:
 "invite a new machine"
 ```
 
-Or explicitly: `/deployer:invite`
+Or explicitly: `/infra bootstrap invite`
 
 ```
 Join code: ABCD-1234
@@ -204,6 +204,6 @@ claude login
 /create-kord migration-review "architecture review for migration changes"
 
 # Or use the default team:
-/deployer:bootstrap setup-namespaces
-/deployer:bootstrap deploy-master <cluster>
+/infra bootstrap setup-namespaces
+/infra deploy <cluster>
 ```

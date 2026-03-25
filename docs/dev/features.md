@@ -9,7 +9,7 @@ Complete inventory of everything in kordinate — implemented and planned.
 | Agent | Identity | Skills | Memory |
 |-------|----------|--------|--------|
 | scribe | IDENTITY.md | /remember, /onboard, /create-kord | workflow.md, tools.md, scratchpad.md |
-| deployer | IDENTITY.md | /bootstrap, /roll, /stop, /clean, /diff, /migrate-workstation | infra.md, migration.md, tools.md, troubleshooting.md, scratchpad.md |
+| deployer | IDENTITY.md | /infra (bootstrap, deploy, roll, stop, clean, diff, migrate, generate-overlays) | infra.md, migration.md, tools.md, troubleshooting.md, scratchpad.md |
 | sauron | IDENTITY.md | /scan, /diagnose | monitoring.md, logging.md, tools.md, workflow.md, scratchpad.md |
 | designer | IDENTITY.md | /detect-patterns | patterns/ (16), libraries/ (4), tools.md, workflow.md, app-contract.md |
 
@@ -65,7 +65,6 @@ Complete inventory of everything in kordinate — implemented and planned.
 | Script | Purpose |
 |--------|---------|
 | kordinate-cli | Bootstrap CLI (init, join, hydrate, export, import) |
-| link-claude.sh | **Stale** — replaced by /onboard sync |
 | setup-shell.sh | PATH, KORDINATE_HOME, tmux config |
 | auth-check.sh | Credential setup (GPG, pass, GitHub, Tailscale, Claude, Grafana) |
 | lib.sh | Shared utilities (logging, kubectl resolution) |
@@ -80,7 +79,7 @@ Complete inventory of everything in kordinate — implemented and planned.
 
 ## Kubernetes Manifests
 
-Live at `agents/deployer/skills/bootstrap/manifests/`.
+Live at `agents/deployer/skills/infra/manifests/` (namespace-prefixed flat files). Images at `agents/deployer/skills/infra/images/`, dashboards at `agents/deployer/skills/infra/dashboards/`, topology at `agents/deployer/skills/infra/topology.yaml`. Kustomize overlays at `profile/overlays/<cluster>/`.
 
 ### Gateway Namespace
 
@@ -137,7 +136,7 @@ Now live as Level 3 resources inside skills:
 
 | File | Skill | Purpose |
 |------|-------|---------|
-| deployer/skills/diff/postgres.py | /diff | PostgreSQL schema comparison |
+| deployer/skills/infra/postgres.py | /infra diff | PostgreSQL schema comparison |
 | sauron/skills/scan/grafana_api.py | /scan | Grafana dashboard push/pull |
 | sauron/skills/diagnose/metrics_pusher.py | /diagnose | Metrics pushing |
 

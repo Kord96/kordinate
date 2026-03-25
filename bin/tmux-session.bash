@@ -12,7 +12,6 @@ _tmux_bin_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # ─── Generate tmux.conf if missing ───
 if [ ! -f "$HOME/.tmux.conf" ]; then
   cat > "$HOME/.tmux.conf" <<TMUXCONF
-set -g default-terminal "screen-256color"
 set -g mouse on
 set -g set-clipboard on
 set-option -g automatic-rename on

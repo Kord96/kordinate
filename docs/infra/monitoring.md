@@ -14,8 +14,8 @@ The sauron agent owns all monitoring, observability, and code validation. It is 
 
 | Skill | Description |
 |---------|-------------|
-| `/sauron:scan` | Scan a project for monitoring gaps |
-| `/sauron:diagnose` | Diagnose a specific issue |
+| `/scan` | Scan a project for monitoring gaps |
+| `/diagnose` | Diagnose a specific issue |
 
 ### Memory
 
