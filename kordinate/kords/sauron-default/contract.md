@@ -2,7 +2,7 @@
 description: General monitoring and observability questions
 requester: any
 provider: sauron
-mode: delegate
+mode: stateful
 curated: true
 scope: global
 ---

@@ -6,31 +6,31 @@ A **kord** is a contract between two agents. See [Overview](overview.md#problem)
 
 Each kord specifies how the provider fulfills the request:
 
-- **`borrow`** — the requester runs the provider's skill directly. No agent spawn. Fast, stateless. Use for simple actions like writing memory or authenticating.
-- **`delegate`** — the requester hands off to the full provider agent (via Beorn or native subagent). The agent has identity, memory, skills, full context. Use for work requiring domain knowledge.
+- **`stateless`** — skill instructions are self-contained. Runs without the provider agent's memory or context. The requester executes the skill directly. Fast.
+- **`stateful`** — skill works better with the provider agent's accumulated memory and context. Spawns the full agent (via Beorn or native subagent).
 
-??? example "borrow — scribe:remember"
+??? example "stateless — scribe:remember"
 
     ```markdown
     ---
     description: Write a memory for an agent
     requester: any
     provider: scribe
-    mode: borrow
+    mode: stateless
     skill: remember
     ---
     ```
 
     The requester invokes `/scribe:remember` directly — no scribe agent spawned.
 
-??? example "delegate — deployer-default"
+??? example "stateful — deployer-default"
 
     ```markdown
     ---
     description: General deployment and cluster questions
     requester: any
     provider: deployer
-    mode: delegate
+    mode: stateful
     ---
 
     ## Provider Guidelines
@@ -61,8 +61,8 @@ Delegate-mode kords cache results. Each kord can have an `expiry.sh` script that
 ```mermaid
 flowchart TB
     C["/consult"] --> M{mode?}
-    M -->|borrow| S[Run skill directly]
-    M -->|delegate| G{"expiry.sh"}
+    M -->|stateless| S[Run skill directly]
+    M -->|stateful| G{"expiry.sh"}
     G -->|fresh| D[Return data.md]
     G -->|stale| K[Spawn provider agent]
     K --> W[Write data.md]
@@ -84,10 +84,10 @@ Kords live at `$KORDINATE_HOME/kords/`:
 $KORDINATE_HOME/kords/
 ├── pattern-review/
 │   ├── contract.md         # protocol definition
-│   ├── data.md             # cached result (delegate mode)
+│   ├── data.md             # cached result (stateful mode)
 │   └── expiry.sh           # freshness check (optional)
 ├── scribe-remember/
-│   └── contract.md         # borrow mode — no data.md needed
+│   └── contract.md         # stateless mode — no data.md needed
 └── deployer-default/
     ├── contract.md
     ├── data.md
@@ -101,8 +101,8 @@ $KORDINATE_HOME/kords/
     description: <what this kord provides>
     requester: <agent or "any">
     provider: <agent>
-    mode: <borrow or delegate>
-    skill: <skill-name>          # required if mode is borrow
+    mode: <stateless or stateful>
+    skill: <skill-name>          # required if mode is stateless
     ---
 
     ## Provider Guidelines

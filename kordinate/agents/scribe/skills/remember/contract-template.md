@@ -9,8 +9,8 @@ Level 3 resource for the remember skill.
 description: <what this kord provides>
 requester: <agent or "any">
 provider: <agent>
-mode: <borrow or delegate>
-skill: <skill-name>          # required if mode is borrow
+mode: <stateless or stateful>
+skill: <skill-name>          # required if mode is stateless
 ---
 
 ## Provider Guidelines
@@ -32,8 +32,8 @@ Invalidate when:
 
 ## Modes
 
-- **borrow** — the requester runs the provider's skill directly in its own context. No agent spawn. Fast. The `skill` field specifies which skill to borrow. Scribe adds the skill to requester agents during onboard/sync.
-- **delegate** — the requester hands off to the full provider agent (via Beorn or native subagent). The agent has identity, memory, skills, full context.
+- **stateless** — the requester runs the provider's skill directly in its own context. No agent spawn. Fast. The `skill` field specifies which skill to stateless. Scribe adds the skill to requester agents during onboard/sync.
+- **stateful** — the requester hands off to the full provider agent (via Beorn or native subagent). The agent has identity, memory, skills, full context.
 
 ## Template Rules
 
@@ -41,4 +41,4 @@ Invalidate when:
 - Response Format defines expected output structure so requesters can rely on it
 - Never include procedure ("check this file", "run this command") — the provider knows its domain
 - Keep guidelines concise and specific
-- Use `mode: borrow` for stateless actions (remember, authenticate). Use `mode: delegate` for work requiring agent context (deployments, diagnosis).
+- Use `mode: stateless` for stateless actions (remember, authenticate). Use `mode: stateful` for work requiring agent context (deployments, diagnosis).
