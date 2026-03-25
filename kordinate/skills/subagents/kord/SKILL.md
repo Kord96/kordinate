@@ -1,6 +1,6 @@
 ---
-name: consult
-description: Consult an agent via kord protocol. Resolves the contract, checks mode (stateless/stateful), handles caching.
+name: kord
+description: Invoke a kord — resolves the contract, checks mode (stateless/stateful), handles caching.
 curated: true
 scope: global
 ---
