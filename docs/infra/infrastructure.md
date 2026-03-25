@@ -15,31 +15,35 @@ Each k3s cluster is standalone with its own control plane, worker nodes, and obs
 
 ```mermaid
 flowchart TB
-    subgraph CA[cluster-a]
-        A1[dev] & A2[test] & A3[prod]
+    subgraph CB[cluster-B]
+        B1[dev] & B2[test] & B3[prod]
 
-        subgraph mon-a[monitor]
+        subgraph mon-b[monitor]
             GA[alloy] --> PA[prom 7d + loki]
         end
 
-        subgraph gw-a[gateway]
+        subgraph gw-b[gateway]
             GWT[tailscale]
             MIO[minio]
         end
 
-        A1 & A2 & A3 -.->|/metrics + stdout| GA
+        B1 & B2 & B3 -.->|/metrics + stdout| GA
+        PA -->|:9090 :3100| GWT
     end
 
-    subgraph M[master — one cluster]
-        MA[alloy] --> MP[prom 30d] & ML[loki 30d]
-        MP & ML --> G[grafana]
-        WS[workstation + beorn]
-        KS[kord-storage]
+    subgraph CA[cluster-A]
+        subgraph M[master]
+            MP[prom 30d] & ML[loki 30d] --> G[grafana]
+            MA[alloy]
+            MA -->|write| MP & ML
+            WS[workstation + beorn]
+            KS[kord-storage]
+        end
     end
 
-    GWT -->|tailnet :9090 :9000| MA
+    MA -->|pull :9090 :9000| GWT
 
-    CB[cluster-b — same structure] -->|tailnet| MA
+    CC[cluster-C — same structure] -.->|tailnet| MA
 ```
 
 The `gateway` namespace is the cluster's front door — Tailscale, ingress, and MinIO for log federation. The `master` namespace runs on one cluster and aggregates from all others. The workstation (with Beorn running inside as a background process) is the centralized development and agent execution environment.
@@ -90,13 +94,16 @@ flowchart TB
         MIO -->|:9000| GWT
     end
 
-    GWT -->|:9090 /federate| MA
-    GWT -->|:9000 minio| MA
-
-    subgraph master[master]
-        MA[alloy] --> ML[loki 30d] & MP[prom 30d]
-        MP & ML --> G[grafana]
+    subgraph master-cluster[cluster-A]
+        subgraph master[master]
+            MA[alloy]
+            MA -->|write| ML[loki 30d] & MP[prom 30d]
+            MP & ML --> G[grafana]
+        end
     end
+
+    MA -->|pull :9090 /federate| GWT
+    MA -->|pull :9000 minio| GWT
 ```
 
 **Collection:** Alloy scrapes app pods and infra services (via `prometheus.io/scrape` annotations), node-exporter, cAdvisor, kubelet, and KSM. Tails pod stdout via K8s API. Writes to local Prom + Loki.
