@@ -23,7 +23,7 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 | Skill | Purpose | Kord mode |
 |-------|---------|-----------|
 | `/remember` | Write a memory for an agent — handles scope, paths, and KORD.md | stateless |
-| `/classify` | Classify content as config, credential, or memory — routes correctly | stateless |
+| `/sanitize` | Classify content as config, credential, or memory — routes correctly | stateless |
 | `/onboard` | Add a new agent or sync existing agents to the runtime | stateful |
 | `/create-kord` | Define a new kord between agents | stateful |
 

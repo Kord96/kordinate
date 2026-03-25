@@ -11,7 +11,7 @@ $ARGUMENTS should include the agent name and what to remember.
 
 ## Procedure
 
-1. **Classify content** — run `/classify` first. It separates config, credentials, and memory. Only memory proceeds here.
+1. **Classify content** — run `/sanitize` first. It separates config, credentials, and memory. Only memory proceeds here.
 
 2. **Classify memory type**:
     - **Scratchpad** — quick observations, operational notes, things the agent noticed while working. Append to the agent's `memory/scratchpad.md`. Not curated — agents accumulate these freely.
