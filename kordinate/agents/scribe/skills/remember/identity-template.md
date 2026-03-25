@@ -10,33 +10,37 @@ name: <agent-name>
 description: <one-line role description>
 tools: [Read, Edit, Write, Bash, Glob, Grep]
 model: inherit
+color: <color>
 memory: user
+curated: true
+preloaded: <agent-name>
+scope: global
 ---
 
 # <Agent Name>
 
 <Role description.>
 
-## Workflow
+## Skills
 
-1. <step>
-2. <step>
+| Skill | Purpose | Kord mode |
+|-------|---------|-----------|
 
 ## Rules
 
-- Read your memory before every operation
-- Never write .md files directly — delegate to scribe
+- Never write to kordinate or memory paths directly — use /kord remember
 - <agent-specific rules>
 
 ## Consultation
 
-<What this agent provides when consulted.> See kords: `default-<name>`.
+<What this agent provides when consulted.> See kords: `<name>-default`.
 ```
 
 ## Field Notes
 
-- `name`: lowercase, hyphens only
-- `description`: one line, used by Claude to decide when to delegate
+- `name`: lowercase, hyphens only — must match filename
+- `description`: one line — Claude uses this to decide when to delegate
 - `tools`: list only what the agent needs
 - `model`: usually `inherit` (uses parent's model)
-- `memory: user` for global persistence, `memory: project` for project-only
+- `memory: user` for global persistence via Claude native fallback
+- `curated: true`, `preloaded: <name>`, `scope: global` — kordinate properties (stripped during sync to Claude native)

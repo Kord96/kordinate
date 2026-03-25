@@ -15,8 +15,8 @@ See [claude-native.md](../remember/claude-native.md) for the current runtime's p
 For each agent in `$KORDINATE_HOME/agents/`:
 
 1. Read `IDENTITY.md`
-2. Write to `~/.claude/agents/<name>.md` — frontmatter + body
-3. Create `~/.claude/agent-memory/<name>/` directory
+2. Write to `~/.claude/agents/<name>.md` — strip kordinate properties (`curated`, `preloaded`, `scope`) from frontmatter, keep Claude fields (`name`, `description`, `tools`, `model`, `color`, `memory`)
+3. Create `~/.claude/agent-memory/<name>/` directory. If agent has memory files in kordinate, write a condensed summary to `MEMORY.md` (200-line limit)
 4. Copy agent skills to `~/.claude/skills/<name>/` (entire directory including Level 3 resources)
 
 ### Global Skills
