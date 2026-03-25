@@ -23,7 +23,7 @@ All observability is **pull-based**. Apps follow the [observability contract](mo
 flowchart TB
     subgraph CB[cluster-B]
         subgraph gw-b[gateway]
-            GWT-B[tailscale + minio]
+            GWT-B[tailscale sidecar + minio]
         end
         subgraph mon-b[monitor]
             AL-B[alloy] --> PR-B[prom] & LK-B[loki]
@@ -83,7 +83,7 @@ flowchart TB
             end
 
             subgraph gw[gateway]
-                GWT[tailscale]
+                GWT[tailscale sidecar]
                 MIO[minio]
             end
 
@@ -103,7 +103,7 @@ flowchart TB
                 WS2[workstation + beorn]
             end
             subgraph ca-gw[gateway]
-                GWT-A[tailscale + minio]
+                GWT-A[tailscale sidecar + minio]
             end
             subgraph ca-mon[monitor]
                 AL-A[alloy] --> PR-A[prom] & LK-A[loki]
