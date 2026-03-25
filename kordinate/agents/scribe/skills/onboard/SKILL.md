@@ -11,6 +11,8 @@ Onboard agents into the team. Two modes:
 - `/scribe:onboard <name>` — create a new agent from scratch
 - `/scribe:onboard sync` — sync all existing kordinate agents to the current runtime
 
+Authenticate before writing: use `/authenticate`.
+
 ## New Agent
 
 $ARGUMENTS should include the agent name and optionally a description.
@@ -19,6 +21,7 @@ $ARGUMENTS should include the agent name and optionally a description.
     - Agent name (required, kebab-case)
     - One-line description (required)
     - Tools (optional, defaults to standard set)
+    - Exclusive tools (optional) — tools only this agent should use
     - Kord expertise — what this agent provides when consulted (required)
 
 2. **Create agent directory** in kordinate:
@@ -36,12 +39,28 @@ $ARGUMENTS should include the agent name and optionally a description.
 
 5. **Create default kord** — use `/scribe:kord default-<name>` with the expertise from step 1.
 
-6. **Sync to runtime** — write the agent to the runtime's native paths.
+6. **Create guard hook** (if exclusive tools specified):
+    - Generate `$KORDINATE_HOME/hooks/guard-<name>.sh`:
+      ```bash
+      #!/bin/bash
+      INPUT=$(cat)
+      if [ -f "/tmp/.<name>-auth" ]; then
+        exit 0
+      fi
+      echo "Only <name> may perform this operation. Delegate to <name>." >&2
+      exit 2
+      ```
+    - Make executable: `chmod +x guard-<name>.sh`
+    - Add to settings.json under the appropriate `PreToolUse` matcher
+
+7. **Sync to runtime** — write the agent to the runtime's native paths.
     See [claude-native.md](../remember/claude-native.md) for the current runtime.
 
-7. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
+8. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
 
-8. **Report** what was created.
+9. **Report** what was created and next steps:
+    - "Agent `<name>` onboarded. Files: ..."
+    - "Next: add domain knowledge to memory/, define skills in skills/"
 
 ## Sync Existing
 
