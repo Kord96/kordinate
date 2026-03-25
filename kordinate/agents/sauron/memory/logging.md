@@ -2,6 +2,7 @@
 description: Structured logging standards across all projects
 curated: true
 scope: global
+preloaded: sauron
 ---
 # Logging
 

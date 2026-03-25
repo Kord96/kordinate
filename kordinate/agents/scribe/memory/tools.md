@@ -2,6 +2,7 @@
 description: Scribe tools reference — Gemini MCP for doc review
 curated: true
 scope: global
+preloaded: scribe
 ---
 # Tools
 

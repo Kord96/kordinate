@@ -1,0 +1,4 @@
+- [workflow.md](workflow.md) — Designer review workflow
+- [app-contract.md](app-contract.md) — App Contract
+- [tools.md](tools.md) — Designer tools reference
+- [patterns.md](patterns.md) — Index of recognized architectural patterns by category

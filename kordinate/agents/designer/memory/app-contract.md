@@ -2,6 +2,7 @@
 description: App Contract
 curated: true
 scope: global
+preloaded: designer
 ---
 # App Contract
 
