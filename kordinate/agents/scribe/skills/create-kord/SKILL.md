@@ -1,5 +1,5 @@
 ---
-name: kord
+name: create-kord
 description: Define a new kord — a consultation contract between agents. Creates contract, expiry script, and registers in KORD.md.
 curated: true
 scope: global
