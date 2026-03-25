@@ -2,6 +2,7 @@
 description: Deployer tools reference — postgres.py and local utilities
 curated: true
 scope: global
+preloaded: deployer
 ---
 # Tools
 

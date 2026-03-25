@@ -17,28 +17,27 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/deployer/memory/tools.md` — Deployer tools reference — postgres.py and local utilities
 - `agents/deployer/memory/troubleshooting.md` — Common deployment issues and their fixes
 - `agents/designer/memory/app-contract.md` — App Contract
-- `agents/designer/memory/libraries.md` — Index of shared libraries that implement patterns across projects
-- `agents/designer/memory/libraries/klog.md` — klog library reference
-- `agents/designer/memory/libraries/nokrashi-tools.md` — nokrashi-tools library reference
-- `agents/designer/memory/libraries/orchestrator.md` — orchestrator library reference
-- `agents/designer/memory/libraries/stoik.md` — stoik library reference
 - `agents/designer/memory/patterns.md` — Index of recognized architectural patterns by category
-- `agents/designer/memory/patterns/api-gateway.md` — Api Gateway architectural pattern
-- `agents/designer/memory/patterns/backpressure.md` — Backpressure architectural pattern
-- `agents/designer/memory/patterns/bulkhead.md` — Bulkhead architectural pattern
-- `agents/designer/memory/patterns/choreography.md` — Choreography architectural pattern
-- `agents/designer/memory/patterns/circuit-breaker.md` — Circuit Breaker architectural pattern
-- `agents/designer/memory/patterns/cqrs.md` — Cqrs architectural pattern
-- `agents/designer/memory/patterns/ddd.md` — Ddd architectural pattern
-- `agents/designer/memory/patterns/etl.md` — Etl architectural pattern
-- `agents/designer/memory/patterns/event-sourcing.md` — Event Sourcing architectural pattern
-- `agents/designer/memory/patterns/hexagonal.md` — Hexagonal architectural pattern
-- `agents/designer/memory/patterns/plugin.md` — Plugin architectural pattern
-- `agents/designer/memory/patterns/retry.md` — Retry architectural pattern
-- `agents/designer/memory/patterns/saga.md` — Saga architectural pattern
-- `agents/designer/memory/patterns/service-manager.md` — Service Manager architectural pattern
-- `agents/designer/memory/patterns/sidecar.md` — Sidecar architectural pattern
-- `agents/designer/memory/patterns/stream-to-store.md` — Stream To Store architectural pattern
+- `agents/designer/memory/patterns/api-gateway/pattern.md` — Api Gateway architectural pattern
+- `agents/designer/memory/patterns/backpressure/pattern.md` — Backpressure architectural pattern
+- `agents/designer/memory/patterns/bulkhead/pattern.md` — Bulkhead architectural pattern
+- `agents/designer/memory/patterns/choreography/pattern.md` — Choreography architectural pattern
+- `agents/designer/memory/patterns/circuit-breaker/pattern.md` — Circuit Breaker architectural pattern
+- `agents/designer/memory/patterns/cqrs/pattern.md` — Cqrs architectural pattern
+- `agents/designer/memory/patterns/ddd/pattern.md` — Ddd architectural pattern
+- `agents/designer/memory/patterns/etl/pattern.md` — Etl architectural pattern
+- `agents/designer/memory/patterns/event-sourcing/pattern.md` — Event Sourcing architectural pattern
+- `agents/designer/memory/patterns/hexagonal/pattern.md` — Hexagonal architectural pattern
+- `agents/designer/memory/patterns/plugin/pattern.md` — Plugin architectural pattern
+- `agents/designer/memory/patterns/retry/pattern.md` — Retry architectural pattern
+- `agents/designer/memory/patterns/saga/pattern.md` — Saga architectural pattern
+- `agents/designer/memory/patterns/service-manager/orchestrator.md` — orchestrator library reference
+- `agents/designer/memory/patterns/service-manager/pattern.md` — Service Manager architectural pattern
+- `agents/designer/memory/patterns/sidecar/pattern.md` — Sidecar architectural pattern
+- `agents/designer/memory/patterns/stream-to-store/pattern.md` — Stream To Store architectural pattern
+- `agents/designer/memory/patterns/stream-to-store/stoik.md` — stoik library reference
+- `agents/designer/memory/pending/klog.md` — klog library reference
+- `agents/designer/memory/pending/nokrashi-tools.md` — nokrashi-tools library reference
 - `agents/designer/memory/tools.md` — Designer tools reference — Gemini MCP for architecture validation
 - `agents/designer/memory/workflow.md` — Designer review workflow — identify, compare, review, report
 - `agents/sauron/memory/grafana_renderer.md` — Prioritize Grafana renderer for visual dashboard auditing over JSON-only analysis
@@ -62,10 +61,12 @@ Auto-generated from frontmatter. Do not edit manually.
 - `kords/onboard/contract.md` — Onboard a new agent or sync existing agents to the runtime
 - `kords/pattern-review/contract.md` — Architecture review for deployment and monitoring changes
 - `kords/remember/contract.md` — Write a memory for an agent — handles scope, paths, and registry updates
+- `kords/sanitize/contract.md` — Classify content as config, credential, or memory — routes to correct destination
 - `kords/sauron-default/contract.md` — General monitoring and observability questions
 - `kords/scribe-default/contract.md` — General documentation and template questions
 
 ## Shared
 
 - `shared/auth-protocol.md` — Instructs agents to authenticate before guarded operations
+- `shared/credentials-protocol.md` — All credentials managed through pass store — never hardcoded in manifests or config
 - `shared/memory-protocol.md` — Instructs agents to save insights via /kord remember before finishing

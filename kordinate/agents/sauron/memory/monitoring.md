@@ -2,6 +2,7 @@
 description: Four-layer monitoring model — physical, application, business, alerting
 curated: true
 scope: global
+preloaded: sauron
 ---
 # Monitoring Layers
 
