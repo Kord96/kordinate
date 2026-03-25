@@ -29,4 +29,27 @@ Memory files live inside `kord/` in the runtime's directory structure:
 
 ## KORD.md
 
-The registry at `~/.claude/kord/KORD.md` (global) or `.claude/kord/KORD.md` (project) must be updated when adding new files. Each entry has: path, description, and any non-default properties.
+Two registries — one per scope:
+
+- `~/.claude/kord/KORD.md` — global registry
+- `.claude/kord/KORD.md` — project registry
+
+Update when adding new files. Each entry is one line: path + description. Only list non-default properties.
+
+Example:
+
+```markdown
+## Agents
+
+- `agents/deployer/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded, template: identity)
+- `agents/deployer/memory/cluster-topology.md` — Current cluster layout and service endpoints
+
+## Kords
+
+- `kord/deployer-default/contract.md` — General cluster questions (curated, template: contract)
+- `kord/deployer-default/data.md` — Cached cluster state (template: data, expiry: expiry.sh)
+
+## Team
+
+- `team/memory/coding-standards.md` — Team-wide coding standards (curated)
+```
