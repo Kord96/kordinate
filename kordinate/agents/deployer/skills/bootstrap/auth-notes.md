@@ -1,32 +1,17 @@
----
-description: Deployer authentication flow and kubectl guard bypass
-curated: true
-scope: global
----
-# Authentication
+# Bootstrap Authentication
 
-Kubectl write operations and image builds are protected by `guard-kubectl.sh`. Only the deployer can bypass it.
+Level 3 resource for the bootstrap skill.
 
-## Standard auth
-
-For writes to any namespace except master:
-
-1. `cp profile/locks/deployer /tmp/.deployer-auth`
-2. Run SSH + kubectl/docker commands or Redis MCP tools
-3. `rm /tmp/.deployer-auth`
-
-## Bootstrap auth
+## Bootstrap Auth
 
 For writes to master namespace (excluding workstation resources):
 
-1. `cp <lock> /tmp/.deployer-auth`
-2. `cp <lock> /tmp/.bootstrap-auth`
+1. `cp profile/locks/deployer /tmp/.deployer-auth`
+2. `cp profile/locks/deployer /tmp/.bootstrap-auth`
 3. Run SSH + kubectl commands targeting master namespace
 4. `rm /tmp/.bootstrap-auth /tmp/.deployer-auth`
 
-Bootstrap auth is only used by `/deployer:bootstrap deploy-master`.
-
-## Always blocked
+## Always Blocked
 
 Even with bootstrap auth:
 - `kubectl apply -k master/`
