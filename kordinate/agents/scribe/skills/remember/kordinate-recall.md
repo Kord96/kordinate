@@ -24,14 +24,14 @@ Memory files live inside `kord/` in the runtime's directory structure:
 
 | Scope | Path |
 |-------|------|
-| Global | `~/.claude/kord/agents/<name>/memory/*.md` |
+| Global | `$KORDINATE_HOME/agents/<name>/memory/*.md` |
 | Project | `.claude/kord/agents/<name>/memory/*.md` |
 
 ## KORD.md
 
 Two registries — one per scope:
 
-- `~/.claude/kord/KORD.md` — global registry
+- `$KORDINATE_HOME/KORD.md` — global registry
 - `.claude/kord/KORD.md` — project registry
 
 Update when adding new files. Each entry is one line: path + description. Only list non-default properties.
