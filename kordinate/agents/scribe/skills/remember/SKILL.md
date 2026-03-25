@@ -35,6 +35,6 @@ $ARGUMENTS should include the agent name and what to remember.
 5. **Sync to runtime** — write to the runtime's native paths so the agent can auto-load it.
     See [claude-native.md](claude-native.md) for the current runtime's paths.
 
-6. **Update KORD.md** — add an entry for any new file. Existing files (like scratchpad) don't need a new entry.
+6. **Regenerate KORD.md** — run [generate-kord.sh](generate-kord.sh) to rebuild the index from frontmatter. Never edit KORD.md manually.
 
 7. **Report** — confirm what was written, where, scope, and whether it was scratchpad or topic file.

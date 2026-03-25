@@ -22,6 +22,6 @@ Define a new kord. $ARGUMENTS should include the kord name and optionally a desc
 
 3. **Generate contract.md** — see [contract-template.md](../remember/contract-template.md) for the template.
 
-4. **Update KORD.md** — add the new kord entry.
+4. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
 
 5. **Report** what was created.

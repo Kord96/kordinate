@@ -37,7 +37,7 @@ $ARGUMENTS should include the agent name and optionally a description.
 6. **Sync to runtime** — write the agent to the runtime's native paths.
     See [claude-native.md](../remember/claude-native.md) for the current runtime.
 
-7. **Update KORD.md** — add the new agent's files.
+7. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
 
 8. **Report** what was created.
 
