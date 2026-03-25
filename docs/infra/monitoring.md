@@ -19,17 +19,17 @@ flowchart TB
         VIT[vitals]
     end
 
-    KC[kubelet / cAdvisor] -->|infra metrics| AL
-    P1 & P2 -->|/metrics + stdout| AL
-    AL -->|"all tagged app=my-app"| PR[Prometheus] & LK[Loki]
-    PR & LK -.->|queries| VIT
-    VIT -->|health + derived| AL
-
     subgraph mon[monitor namespace]
         AL[Alloy]
-        PR
-        LK
+        PR[Prometheus]
+        LK[Loki]
     end
+
+    AL -->|pulls infra metrics| KC[kubelet / cAdvisor]
+    AL -->|"scrapes /metrics, tails stdout"| P1 & P2
+    AL -->|scrapes /metrics| VIT
+    AL -->|"writes (tagged app=my-app)"| PR & LK
+    VIT -->|pulls metrics + logs| PR & LK
 ```
 
 ## Alloy: Pod-Level Collection
