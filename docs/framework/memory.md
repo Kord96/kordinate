@@ -20,7 +20,7 @@ Every piece of knowledge is described by eight properties:
 
 - **Curated** files are not auto-updated by agents. Changes only happen when a human explicitly requests them.
 - **Template** files must follow the referenced template.
-- **Scope**: `global` knowledge is user-wide. `project` knowledge is project-specific.
+- **Scope**: `global` lives at `~/.kord/`. `project` lives at `.kord/`.
 
 ## Registry
 

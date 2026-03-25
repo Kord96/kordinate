@@ -108,7 +108,7 @@ Each addon deploys its manifests and configures MCP.
 
 ## File Layout
 
-Kordinate lives inside the runtime's native structure at `~/.claude/kord/`. No separate filesystem, no linker. Claude Code works natively with real files.
+Kordinate lives at `~/.kord/` (global) and `.kord/` (per-project). Scribe handles writing to both kordinate and runtime-native paths.
 
 ## Credentials
 

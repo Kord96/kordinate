@@ -24,18 +24,18 @@ Scribe writes to `kord/` (kordinate's space) and simultaneously to the runtime's
 
 | Kordinate path | Claude Code native path |
 |---|---|
-| `~/.claude/kord/agents/<name>/identity.md` | `~/.claude/agents/<name>.md` |
-| `~/.claude/kord/agents/<name>/memory/` | `~/.claude/agent-memory/<name>/MEMORY.md` |
-| `.claude/kord/agents/<name>/memory/` | `.claude/agent-memory/<name>/MEMORY.md` |
-| `~/.claude/kord/<kord>/contract.md` | — (Beorn reads directly) |
-| `~/.claude/kord/<kord>/data.md` | — (Beorn reads directly) |
+| `~/.kord/agents/<name>/identity.md` | `~/.claude/agents/<name>.md` |
+| `~/.kord/agents/<name>/memory/` | `~/.claude/agent-memory/<name>/MEMORY.md` |
+| `.kord/agents/<name>/memory/` | `.claude/agent-memory/<name>/MEMORY.md` |
+| `~/.kord/<kord>/contract.md` | — (Beorn reads directly) |
+| `~/.kord/<kord>/data.md` | — (Beorn reads directly) |
 
 ## Memory Decisions
 
 When an agent delegates a memory write to scribe:
 
-- **Is it project-specific?** → `.claude/kord/agents/<name>/memory/`
-- **Is it useful across projects?** → `~/.claude/kord/agents/<name>/memory/`
+- **Is it project-specific?** → `.kord/agents/<name>/memory/`
+- **Is it useful across projects?** → `~/.kord/agents/<name>/memory/`
 - **Update KORD.md** with the new file entry
 
 See [Recall System](../framework/memory.md) for knowledge properties.

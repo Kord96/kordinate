@@ -15,7 +15,7 @@ Define a new kord. $ARGUMENTS should include the kord name and optionally a desc
 
 2. **Create kord directory:**
     ```
-    ~/.claude/kord/<name>/
+    $KORDINATE_HOME/kords/<name>/
     ├── contract.md
     └── data.md (empty, populated on first consult)
     ```

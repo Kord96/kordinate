@@ -88,7 +88,7 @@ Just describe what you need. The `.md` guard delegates kord creation to scribe, 
 Each kord is a directory inside `kord/` containing the contract, cached data, and a freshness script.
 
 ```
-~/.claude/kord/                     # global scope
+~/.kord/                     # global scope
 ├── KORD.md                         # knowledge registry
 ├── pattern-review/
 │   ├── contract.md                 # protocol definition
