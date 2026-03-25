@@ -23,14 +23,23 @@ All observability is **pull-based**. Apps follow the [observability contract](mo
 flowchart LR
     subgraph CB[cluster-B]
         direction TB
-        ENV-B[dev / test / prod]
+        subgraph sources-b[" "]
+            direction LR
+            subgraph env-b[env — dev/test/prod]
+                myapp-b["my-app: pod 1 .. pod N + vitals"]
+                infra-svc-b["infra: kafka, redis, postgres"]
+            end
+            subgraph nodes-b[per-node]
+                NE-B["node-exporter, cAdvisor, kubelet"]
+            end
+        end
         subgraph mon-b[monitor]
             AL-B[alloy] -->|write| PR-B[prom] & LK-B[loki]
         end
         subgraph gw-b[gateway]
             GWT-B[tailscale sidecar + minio]
         end
-        AL-B -.->|scrape + tail| ENV-B
+        AL-B -.->|scrape + tail| sources-b
         PR-B & LK-B -->|port forward| GWT-B
     end
 
