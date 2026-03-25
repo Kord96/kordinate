@@ -1,0 +1,10 @@
+# Example CLAUDE.md
+
+Add these imports to your ~/.claude/CLAUDE.md to load kordinate shared protocols:
+
+```markdown
+@~/.kord/shared/memory-protocol.md
+@~/.kord/shared/auth-protocol.md
+```
+
+This ensures the main agent follows the same protocols as subagents.
