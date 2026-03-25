@@ -1,5 +1,8 @@
 # What goes where — maps manifests to namespaces
 # Read by /infra subcommands to know which manifests apply where
+#
+# Shared bases (prometheus.yaml, loki.yaml) are used by both monitor and master.
+# Overlays customize per namespace (ports, retention, storage, sidecars).
 
 gateway:
   - gateway-pod.yaml
@@ -9,16 +12,16 @@ gateway:
 master:
   - master-kord-storage.yaml
   - master-workstation.yaml
-  - master-prometheus.yaml
-  - master-loki.yaml
+  - prometheus.yaml            # base — overlay sets: port=9191, retention=30d, PVC
+  - loki.yaml                  # base — overlay sets: PVC name
   - master-grafana.yaml
-  - master-alloy.yaml         # Deployment only — ConfigMap generated in overlay
+  - master-alloy.yaml          # Deployment only — ConfigMap generated in overlay
   - master-datasources.yaml
   # master alloy-config and gateway-registry ConfigMaps are generated per-cluster in profile/overlays/
 
 monitor:
-  - monitor-prometheus.yaml
-  - monitor-loki.yaml
+  - prometheus.yaml            # base — overlay sets: port=9090, retention=7d, emptyDir
+  - loki.yaml                  # base — overlay adds federation sidecar
   - monitor-alloy.yaml
   - monitor-alloy-config.yaml
   - monitor-node-exporter.yaml
