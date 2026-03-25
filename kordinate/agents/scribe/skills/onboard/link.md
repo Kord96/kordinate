@@ -45,9 +45,18 @@ Run /boot before starting work.
 @~/.kord/shared/credentials-protocol.md
 ```
 
-### Guard
+### Guard and Hooks
 
-Ensure `~/.claude/settings.json` has the PreToolUse hook for the memory guard.
+Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
+
+1. Read existing `~/.claude/settings.json` (preserve user-specific settings like `extraKnownMarketplaces`)
+2. Set `env.KORDINATE_HOME` to the absolute path of `$KORDINATE_HOME`
+3. Replace the `hooks` section with the one from `$KORDINATE_HOME/settings.json`, expanding `$KORDINATE_HOME` to the absolute path
+
+This installs:
+- **Unified guard** (`hooks/guard.sh`) on Write|Edit|Bash and mcp\_\_grafana — enforces scribe, deployer, sauron, and merge rules
+- **Agent memory** (`hooks/agent-memory.sh`) on Agent — regenerates MEMORY.md on spawn
+- **Auto-merge** (`hooks/auto-merge-to-dev.sh`) on Bash (PostToolUse) — fast-forward after push
 
 ### KORD.md
 

@@ -56,13 +56,19 @@ These can be verified immediately — no session restart required.
     - `authenticate/` (SKILL.md)
     - `merge/` (SKILL.md)
 
-**Guard:**
+**Hooks:**
 
-- [ ] `~/.claude/settings.json` has PreToolUse hook on `Write|Edit`
-- [ ] Hook command points to `$KORDINATE_HOME/agents/scribe/skills/remember/guard.sh`
-- [ ] Guard blocks writes to `~/.kord/` without scribe auth
-- [ ] Guard allows writes to `~/.kord/` with scribe auth (`/tmp/.scribe-auth`)
-- [ ] Guard allows non-curated, non-templated files without auth
+- [ ] `~/.claude/settings.json` has `env.KORDINATE_HOME` set to absolute path
+- [ ] PreToolUse on `Write|Edit|Bash` → `$KORDINATE_HOME/hooks/guard.sh`
+- [ ] PreToolUse on `mcp__grafana` → `$KORDINATE_HOME/hooks/guard.sh`
+- [ ] PreToolUse on `Agent` → `$KORDINATE_HOME/hooks/agent-memory.sh`
+- [ ] PostToolUse on `Bash` → `$KORDINATE_HOME/hooks/auto-merge-to-dev.sh`
+- [ ] Guard blocks curated `.kord/` writes without scribe auth
+- [ ] Guard allows non-curated, non-templated `.kord/` files without auth
+- [ ] Guard blocks `git push` to main without `.merge-lock`
+- [ ] Guard blocks `git push` to test/prod without deployer auth
+- [ ] Guard blocks kubectl write ops without deployer auth
+- [ ] Guard blocks Grafana ops without sauron auth
 
 ### Project Level
 
