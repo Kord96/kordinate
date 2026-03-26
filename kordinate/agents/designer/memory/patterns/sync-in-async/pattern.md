@@ -1,6 +1,7 @@
 ---
 description: Sync-in-Async anti-pattern
 type: anti-pattern
+testable: true
 curated: true
 scope: global
 preloaded: none

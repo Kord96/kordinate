@@ -1,6 +1,9 @@
 ---
 description: Leader Election architectural pattern
 type: pattern
+testable: true
+observable: true
+distributed: true
 curated: true
 scope: global
 preloaded: none

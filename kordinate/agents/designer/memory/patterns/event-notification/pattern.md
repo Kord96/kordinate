@@ -1,6 +1,8 @@
 ---
 description: Event Notification architectural pattern
 type: pattern
+testable: true
+distributed: true
 curated: true
 scope: global
 preloaded: none

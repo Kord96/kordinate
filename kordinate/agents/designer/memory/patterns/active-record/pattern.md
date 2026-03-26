@@ -1,6 +1,7 @@
 ---
 description: Active Record architectural pattern
 type: pattern
+testable: true
 curated: true
 scope: global
 preloaded: none

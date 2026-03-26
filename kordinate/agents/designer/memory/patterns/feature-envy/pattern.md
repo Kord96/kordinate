@@ -1,6 +1,7 @@
 ---
 description: Feature Envy anti-pattern
 type: anti-pattern
+testable: true
 curated: true
 scope: global
 preloaded: none

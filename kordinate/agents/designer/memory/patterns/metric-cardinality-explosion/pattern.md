@@ -1,6 +1,7 @@
 ---
 description: Metric Cardinality Explosion anti-pattern
 type: anti-pattern
+observable: true
 curated: true
 scope: global
 preloaded: none

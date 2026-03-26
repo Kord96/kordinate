@@ -1,6 +1,8 @@
 ---
 description: Blue-Green Deployment architectural pattern
 type: pattern
+observable: true
+distributed: true
 curated: true
 scope: global
 preloaded: none

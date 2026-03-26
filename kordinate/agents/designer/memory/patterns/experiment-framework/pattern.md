@@ -1,6 +1,8 @@
 ---
 description: A/B Experiment Framework architectural pattern
 type: pattern
+testable: true
+observable: true
 curated: true
 scope: global
 preloaded: none

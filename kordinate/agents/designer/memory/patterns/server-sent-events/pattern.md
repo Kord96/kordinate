@@ -1,6 +1,8 @@
 ---
 description: Server-Sent Events architectural pattern
 type: pattern
+testable: true
+observable: true
 curated: true
 scope: global
 preloaded: none

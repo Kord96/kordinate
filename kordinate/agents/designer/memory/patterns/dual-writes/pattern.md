@@ -1,6 +1,8 @@
 ---
 description: Dual Writes anti-pattern
 type: anti-pattern
+observable: true
+distributed: true
 curated: true
 scope: global
 preloaded: none

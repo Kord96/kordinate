@@ -1,6 +1,8 @@
 ---
 description: Audit Logging architectural pattern
 type: pattern
+testable: true
+observable: true
 curated: true
 scope: global
 preloaded: none

@@ -1,6 +1,8 @@
 ---
 description: Cache-Aside architectural pattern
 type: pattern
+testable: true
+observable: true
 curated: true
 scope: global
 preloaded: none

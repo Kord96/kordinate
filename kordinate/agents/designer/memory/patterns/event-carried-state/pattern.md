@@ -1,6 +1,8 @@
 ---
 description: Event-Carried State Transfer architectural pattern
 type: pattern
+testable: true
+distributed: true
 curated: true
 scope: global
 preloaded: none

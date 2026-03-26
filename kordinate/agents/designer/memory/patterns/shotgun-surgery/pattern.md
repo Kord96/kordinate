@@ -1,6 +1,7 @@
 ---
 description: Shotgun Surgery anti-pattern
 type: anti-pattern
+testable: true
 curated: true
 scope: global
 preloaded: none
