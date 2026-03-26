@@ -5,9 +5,7 @@
 # Usage:
 #   sudo ./kordinate init       # install k3s, deploy workstation, setup auth
 #   sudo ./kordinate join       # join an existing cluster as agent node
-#   ./kordinate hydrate         # generate .mcp.json from profile/config.yaml + pass
-#   ./kordinate export [file]   # bundle GPG key + pass store → encrypted archive
-#   ./kordinate import <file>   # restore GPG key + pass store from archive
+#   ./kordinate connect          # setup SSH to workstation via Cloudflare tunnel
 #
 # After init, SSH into the workstation and use the deployer agent for everything else:
 #   /deployer:bootstrap setup-namespaces
@@ -501,161 +499,105 @@ cmd_join() {
   log "Joined cluster $JOIN_CLUSTER_NAME"
 }
 
+
 # ═══════════════════════════════════════════════════════════════
-# HYDRATE — generate .mcp.json from config.yaml + pass
+# CONNECT — setup SSH to workstation via Cloudflare tunnel
 # ═══════════════════════════════════════════════════════════════
-cmd_hydrate() {
-  local CONFIG
-  if [ -f "$HOME/.claude/profile/config.yaml" ]; then
-    CONFIG="$HOME/.claude/profile/config.yaml"
-  elif [ -f "$SCRIPT_DIR/profile/config.yaml" ]; then
-    CONFIG="$SCRIPT_DIR/profile/config.yaml"
+cmd_connect() {
+  local DOMAIN="${1:-}"
+  local SSH_HOST="workstation"
+  local SSH_USER="claude"
+
+  # ─── Resolve domain ───
+  if [ -z "$DOMAIN" ]; then
+    DOMAIN=$(read_config "cloudflare.domains.0" 2>/dev/null || true)
+  fi
+  if [ -z "$DOMAIN" ]; then
+    err "No domain found. Usage: ./kordinate connect <domain>"
+    err "Or add domains to profile/config.yaml under cloudflare.domains"
+    exit 1
+  fi
+  local SSH_HOSTNAME="ssh.${DOMAIN}"
+  info "Domain: $DOMAIN"
+  info "SSH endpoint: $SSH_HOSTNAME"
+
+  # ─── Check/install cloudflared ───
+  if ! command -v cloudflared &>/dev/null; then
+    echo ""
+    info "Installing cloudflared..."
+    local ARCH
+    ARCH=$(uname -m)
+    case "$ARCH" in
+      x86_64)  ARCH="amd64" ;;
+      aarch64) ARCH="arm64" ;;
+      arm*)    ARCH="arm" ;;
+    esac
+    local OS
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+    curl -sL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-${OS}-${ARCH}" -o /usr/local/bin/cloudflared 2>/dev/null \
+      || curl -sL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-${OS}-${ARCH}" -o "$HOME/.local/bin/cloudflared"
+    chmod +x /usr/local/bin/cloudflared 2>/dev/null || chmod +x "$HOME/.local/bin/cloudflared"
+    log "cloudflared installed"
   else
-    err "config.yaml not found"
-    exit 1
+    log "cloudflared found: $(which cloudflared)"
   fi
 
-  local OUTPUT_DIR
-  if [ -d "$HOME/.claude/profile" ]; then
-    OUTPUT_DIR="$HOME/.claude/profile"
-  elif [ -d "$SCRIPT_DIR/../kordinate/profile" ]; then
-    OUTPUT_DIR="$SCRIPT_DIR/../kordinate/profile"
+  # ─── Write SSH config ───
+  mkdir -p "$HOME/.ssh"
+  chmod 700 "$HOME/.ssh"
+  if grep -q "Host $SSH_HOST" "$HOME/.ssh/config" 2>/dev/null; then
+    warn "SSH config entry '$SSH_HOST' already exists — skipping"
   else
-    echo "ERROR: profile/ not found" >&2
-    exit 1
+    cat >> "$HOME/.ssh/config" <<SSHCONF
+
+# Kordinate workstation via Cloudflare tunnel
+Host $SSH_HOST
+    HostName $SSH_HOSTNAME
+    User $SSH_USER
+    ProxyCommand cloudflared access ssh --hostname %h
+SSHCONF
+    chmod 600 "$HOME/.ssh/config"
+    log "SSH config written: 'ssh $SSH_HOST' → $SSH_USER@$SSH_HOSTNAME"
   fi
 
-  local GRAFANA_TOKEN
-  GRAFANA_TOKEN=$(pass show kordinate/grafana_admin/api_key 2>/dev/null || echo "")
+  # ─── Authenticate with Cloudflare Access ───
+  echo ""
+  info "Authenticating with Cloudflare Access..."
+  info "A browser window will open for SSO login."
+  echo ""
+  cloudflared access login "$SSH_HOSTNAME"
+  log "Authenticated"
 
-  echo "Generating .mcp.json..."
-
-  python3 -c "
-import yaml, json, sys
-
-c = yaml.safe_load(open('$CONFIG'))
-clusters = c.get('clusters', {})
-grafana_token = '''$GRAFANA_TOKEN'''
-grafana_added = False
-
-mcp = {'mcpServers': {}}
-
-for name, cl in clusters.items():
-    ip = cl.get('tailscale_ip', '')
-    if not ip or ip == '100.x.x.x':
-        continue
-    svcs = cl.get('services', {})
-
-    # Postgres
-    pg = svcs.get('postgres', {})
-    if pg.get('port') and pg.get('user') and pg.get('database'):
-        mcp['mcpServers'][f'postgres-{name}'] = {
-            'command': 'npx',
-            'args': ['-y', '@modelcontextprotocol/server-postgres',
-                     f\"postgresql://{pg['user']}@{ip}:{pg['port']}/{pg['database']}\"]
-        }
-
-    # Redis
-    redis = svcs.get('redis', {})
-    if redis.get('port'):
-        mcp['mcpServers'][f'redis-{name}'] = {
-            'command': 'npx',
-            'args': ['-y', '@modelcontextprotocol/server-redis'],
-            'env': {
-                'REDIS_HOST': ip,
-                'REDIS_PORT': str(redis['port'])
-            }
-        }
-
-    # Grafana (singleton)
-    grafana = svcs.get('grafana', {})
-    if grafana.get('port') and not grafana_added:
-        env = {'GRAFANA_URL': f\"http://{ip}:{grafana['port']}\"}
-        if grafana_token:
-            env['GRAFANA_SERVICE_ACCOUNT_TOKEN'] = grafana_token
-        mcp['mcpServers']['grafana-admin'] = {
-            'command': 'uvx',
-            'args': ['mcp-grafana'],
-            'env': env
-        }
-        grafana_added = True
-
-# Beorn — runs as a background process inside the workstation pod.
-# Accessible at localhost:3100 from within the pod.
-mcp['mcpServers']['beorn'] = {
-    'type': 'http',
-    'url': 'http://localhost:3100/mcp',
-    '_note': 'Shape-shifting agent server. Runs inside the workstation pod.'
-}
-
-print(json.dumps(mcp, indent=2))
-" > "$OUTPUT_DIR/mcp.json"
-
-  log "Generated mcp.json at $OUTPUT_DIR/mcp.json"
-}
-
-# ═══════════════════════════════════════════════════════════════
-# EXPORT/IMPORT — credential backup/restore
-# ═══════════════════════════════════════════════════════════════
-cmd_export() {
-  local OUTPUT="${1:-kordinate-export.gpg}"
-  local WORK_DIR
-  WORK_DIR="$(mktemp -d)"
-  trap 'rm -rf "$WORK_DIR"' EXIT
-
-  echo "Exporting GPG key..."
-  local GPG_KEY_ID
-  GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -m1 '^sec' | awk '{print $2}' | cut -d/ -f2 || true)
-  if [ -n "$GPG_KEY_ID" ]; then
-    gpg --export-secret-keys --armor "$GPG_KEY_ID" > "$WORK_DIR/gpg-key.asc"
-    echo "  + gpg-key.asc"
+  # ─── Generate SSH key if needed ───
+  local KEY_FILE="$HOME/.ssh/id_ed25519"
+  if [ ! -f "$KEY_FILE" ]; then
+    echo ""
+    info "Generating SSH key..."
+    ssh-keygen -t ed25519 -f "$KEY_FILE" -N "" -C "$(whoami)@$(hostname)"
+    log "Key generated: $KEY_FILE"
   fi
 
-  echo "Exporting pass store..."
-  if [ -d "$HOME/.password-store/kordinate" ]; then
-    cp -r "$HOME/.password-store" "$WORK_DIR/password-store"
-    echo "  + password-store/"
-  fi
+  # ─── First connection: change password + copy key ───
+  echo ""
+  echo "═══════════════════════════════════════════════════════"
+  echo "  Connecting to workstation for first-time setup."
+  echo "  Default password: kordinate"
+  echo "  You will be asked to change it on first login."
+  echo "═══════════════════════════════════════════════════════"
+  echo ""
+
+  # Copy the public key to the workstation
+  ssh-copy-id -o ProxyCommand="cloudflared access ssh --hostname %h" "$SSH_USER@$SSH_HOSTNAME" 2>/dev/null \
+    && log "SSH key copied to workstation" \
+    || warn "Key copy failed — you can run 'ssh-copy-id $SSH_HOST' manually later"
 
   echo ""
-  echo "Creating encrypted archive..."
-  tar czf "$WORK_DIR/bundle.tar.gz" -C "$WORK_DIR" .
-  gpg --batch --yes --symmetric --cipher-algo AES256 -o "$OUTPUT" "$WORK_DIR/bundle.tar.gz"
-
+  log "Setup complete!"
   echo ""
-  log "Export complete: $OUTPUT"
+  echo "  Connect anytime:  ssh $SSH_HOST"
+  echo ""
 }
 
-cmd_import() {
-  local ARCHIVE="${1:-}"
-  if [ -z "$ARCHIVE" ] || [ ! -f "$ARCHIVE" ]; then
-    err "Usage: ./kordinate import <archive.gpg>"
-    exit 1
-  fi
-
-  local WORK_DIR
-  WORK_DIR="$(mktemp -d)"
-  trap 'rm -rf "$WORK_DIR"' EXIT
-
-  echo "Decrypting archive..."
-  gpg --batch --yes -d "$ARCHIVE" | tar xzf - -C "$WORK_DIR"
-
-  if [ -f "$WORK_DIR/gpg-key.asc" ]; then
-    gpg --batch --import "$WORK_DIR/gpg-key.asc"
-    local GPG_KEY_ID
-    GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -m1 '^sec' | awk '{print $2}' | cut -d/ -f2)
-    echo "${GPG_KEY_ID}:6:" | gpg --import-ownertrust
-    log "GPG key imported: $GPG_KEY_ID"
-  fi
-
-  if [ -d "$WORK_DIR/password-store" ]; then
-    cp -r "$WORK_DIR/password-store" "$HOME/.password-store"
-    log "Pass store restored"
-  fi
-
-  echo ""
-  log "Import complete."
-}
 
 # ═══════════════════════════════════════════════════════════════
 # MAIN
@@ -665,19 +607,16 @@ usage() {
   echo ""
   echo "  init              Install k3s, deploy workstation, setup auth"
   echo "  join              Join an existing cluster as agent node"
-  echo "  hydrate           Generate .mcp.json from config.yaml + pass"
-  echo "  export [file]     Bundle GPG key + pass store to encrypted archive"
-  echo "  import <file>     Restore GPG key + pass store from archive"
+  echo "  connect [domain]  Setup SSH to workstation via Cloudflare tunnel"
   echo ""
   echo "After init, use the deployer agent for all infrastructure setup."
+  echo "Workstation commands (run inside): kord-hydrate, kord-export, kord-import"
 }
 
 case "${1:-}" in
   init)     cmd_init ;;
   join)     cmd_join ;;
-  hydrate)  cmd_hydrate ;;
-  export)   cmd_export "${@:2}" ;;
-  import)   cmd_import "${@:2}" ;;
+  connect)  cmd_connect "${@:2}" ;;
   -h|--help|help) usage ;;
   *)        usage; exit 1 ;;
 esac

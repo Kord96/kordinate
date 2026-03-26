@@ -44,7 +44,11 @@ fi
 SSH_PASS=$(pass show kordinate/ssh/password 2>/dev/null || true)
 if [ -n "$SSH_PASS" ]; then
   echo "claude:$SSH_PASS" | sudo chpasswd
-  echo "SSH password set from pass"
+  # Expire password so first interactive login forces a change.
+  # Once changed, the user's new password persists on the kord PVC.
+  # After key exchange via 'kordinate connect', password is rarely used.
+  sudo passwd --expire claude 2>/dev/null
+  echo "SSH password set from pass (expired — will force change on first login)"
 else
   echo "WARNING: no SSH password in pass (kordinate/ssh/password)"
 fi
@@ -106,6 +110,9 @@ fi
 if [ -d "$KORDINATE_HOME/.git" ]; then
   git -C "$KORDINATE_HOME" pull --ff-only 2>/dev/null || true
 fi
+
+# ─── Hydrate MCP config ───
+kord-hydrate 2>/dev/null || echo "WARNING: kord-hydrate failed — MCP config not generated"
 
 # ─── Start Beorn (MCP agent server) ───
 MCP_SERVER="$KORDINATE_HOME/lib/mcp-agent-server"

@@ -142,9 +142,9 @@ check_pass_key "tailscale/api_key" "Tailscale API key" || true
 
 # ─── Hydrate MCP config ───
 echo ""
-if [ -f "$HOME/.claude/kordinate" ]; then
+if command -v kord-hydrate &>/dev/null; then
   info "Hydrating MCP config..."
-  cd "$HOME/.claude" && ./kordinate hydrate 2>/dev/null && ok "MCP config" || miss "MCP hydrate failed"
+  kord-hydrate 2>/dev/null && ok "MCP config" || miss "MCP hydrate failed"
 fi
 
 echo ""

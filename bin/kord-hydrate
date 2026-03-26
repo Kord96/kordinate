@@ -1,0 +1,81 @@
+#!/bin/bash
+# Generate .mcp.json from config.yaml + pass store.
+# Runs inside the workstation. Called by entrypoint on boot and auth-check.
+set -euo pipefail
+
+KORDINATE_HOME="${KORDINATE_HOME:-$HOME/.kord}"
+CONFIG="$KORDINATE_HOME/profile/config.yaml"
+
+if [ ! -f "$CONFIG" ]; then
+  echo "ERROR: config.yaml not found at $CONFIG" >&2
+  exit 1
+fi
+
+OUTPUT_DIR="$KORDINATE_HOME/profile"
+mkdir -p "$OUTPUT_DIR"
+
+GRAFANA_TOKEN=$(pass show kordinate/grafana_admin/api_key 2>/dev/null || echo "")
+
+echo "Generating .mcp.json..."
+
+python3 -c "
+import yaml, json, sys
+
+c = yaml.safe_load(open('$CONFIG'))
+clusters = c.get('clusters', {})
+grafana_token = '''$GRAFANA_TOKEN'''
+grafana_added = False
+
+mcp = {'mcpServers': {}}
+
+for name, cl in clusters.items():
+    ip = cl.get('tailscale_ip', '')
+    if not ip or ip == '100.x.x.x':
+        continue
+    svcs = cl.get('services', {})
+
+    # Postgres
+    pg = svcs.get('postgres', {})
+    if pg.get('port') and pg.get('user') and pg.get('database'):
+        mcp['mcpServers'][f'postgres-{name}'] = {
+            'command': 'npx',
+            'args': ['-y', '@modelcontextprotocol/server-postgres',
+                     f\"postgresql://{pg['user']}@{ip}:{pg['port']}/{pg['database']}\"]
+        }
+
+    # Redis
+    redis = svcs.get('redis', {})
+    if redis.get('port'):
+        mcp['mcpServers'][f'redis-{name}'] = {
+            'command': 'npx',
+            'args': ['-y', '@modelcontextprotocol/server-redis'],
+            'env': {
+                'REDIS_HOST': ip,
+                'REDIS_PORT': str(redis['port'])
+            }
+        }
+
+    # Grafana (singleton)
+    grafana = svcs.get('grafana', {})
+    if grafana.get('port') and not grafana_added:
+        env = {'GRAFANA_URL': f\"http://{ip}:{grafana['port']}\"}
+        if grafana_token:
+            env['GRAFANA_SERVICE_ACCOUNT_TOKEN'] = grafana_token
+        mcp['mcpServers']['grafana-admin'] = {
+            'command': 'uvx',
+            'args': ['mcp-grafana'],
+            'env': env
+        }
+        grafana_added = True
+
+# Beorn — runs as a background process inside the workstation pod.
+mcp['mcpServers']['beorn'] = {
+    'type': 'http',
+    'url': 'http://localhost:3100/mcp',
+    '_note': 'Shape-shifting agent server. Runs inside the workstation pod.'
+}
+
+print(json.dumps(mcp, indent=2))
+" > "$OUTPUT_DIR/mcp.json"
+
+echo "Generated mcp.json at $OUTPUT_DIR/mcp.json"
