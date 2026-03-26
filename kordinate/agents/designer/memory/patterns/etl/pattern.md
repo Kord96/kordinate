@@ -1,11 +1,31 @@
 ---
-description: Etl architectural pattern
+description: ETL architectural pattern
 curated: true
 scope: global
 preloaded: none
 ---
 # ETL/ELT
 
+
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- Airflow `DAG` definitions with operators (`PythonOperator`, `BashOperator`, `SqlOperator`)
+- dbt project structure with `models/` directory containing SQL transformations
+- Luigi `Task` classes with `requires()` and `output()` methods
+- Prefect `@flow` and `@task` decorators defining pipeline steps
+- Dagster `@op` and `@job` decorators for pipeline operations
+- AWS Glue jobs or crawlers in infrastructure configuration
+- `pandas` pipelines with read/transform/write stages (e.g., `read_csv` -> transformations -> `to_sql`)
+
+### Confidence
+
+- **high** -- dedicated pipeline framework (Airflow, dbt, Dagster) with explicit extract, transform, and load stages, checkpoint tracking, and idempotent loads
+- **medium** -- scheduled scripts performing data extraction and loading with some checkpoint logic but no formal pipeline framework
+- **low** -- ad-hoc data processing scripts that read from one source and write to another without explicit staging, checkpointing, or idempotency guarantees
 
 ## Architecture
 

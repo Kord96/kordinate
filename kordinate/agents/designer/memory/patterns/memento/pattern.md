@@ -12,12 +12,11 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Capturing and restoring object state without exposing internal structure
-- Undo/redo history stacks
-- State snapshots stored as opaque objects
 - `save_state()` / `restore_state()` method pairs
 - `createMemento()` / `setMemento()` on originator objects
-- Editor undo stack implementations
+- `undo_stack` / `redo_stack` data structures
+- `deepcopy()` for state snapshots
+- `Command` + state history in editors
 - Caretaker class managing a list of mementos
 - Serialized state checkpoints for rollback
 

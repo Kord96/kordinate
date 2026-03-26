@@ -16,6 +16,10 @@ How to identify this pattern in code.
 - `put()`/`get()` or `enqueue()`/`dequeue()` calls on a shared data structure
 - Bounded buffers with capacity limits, blocking on full/empty conditions
 - Worker threads or processes consuming items from a queue in a loop
+- Go typed `chan` with `range` over channel for consumer loops
+- Java `BlockingQueue` `put()` / `take()` for bounded producer-consumer
+- Python `multiprocessing.JoinableQueue` for cross-process work queues
+- Rust `crossbeam-channel` for multi-producer multi-consumer channels
 - Libraries: Python `queue.Queue`, `asyncio.Queue`, Java `BlockingQueue`, Go channels
 
 ### Confidence

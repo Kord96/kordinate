@@ -6,6 +6,26 @@ preloaded: none
 ---
 # Stream-to-Store
 
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- Kafka consumer imports (`kafka.KafkaConsumer`, `confluent_kafka.Consumer`)
+- `consumer.poll()` / `consumer.commit()` calls managing offset lifecycle
+- Buffered writes accumulating records before flushing to a store
+- `flush()` callbacks triggered by buffer size or time thresholds
+- `stoik` imports for stream processing integration
+- Consumer group configuration (`group.id`, `auto.offset.reset`, `enable.auto.commit=false`)
+- Offset management logic committing only after successful store writes
+- Flink sink connectors writing stream data to external stores (`SinkFunction`, `RichSinkFunction`)
+
+### Confidence
+
+- **high** -- Kafka consumer with `poll()`/`commit()` and explicit offset management after buffered `flush()` to a store, or Flink sink connectors
+- **medium** -- Consumer group configs with `enable.auto.commit=false` and buffered writes, but without explicit flush callbacks
+- **low** -- Stream consumer reading from a broker without clear buffer-then-flush mechanics or offset commit ordering
 
 ## Architecture
 

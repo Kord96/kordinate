@@ -1,5 +1,5 @@
 ---
-description: Factory Method/Abstract Factory architectural pattern
+description: Factory Method architectural pattern
 curated: true
 scope: global
 preloaded: none
@@ -34,7 +34,6 @@ Look for correct abstraction: callers depend on the factory interface, never on 
 - Factory returns interfaces/protocols, not concrete types
 - Adding a new product type does not require modifying existing factory code (open/closed)
 - Factory creation logic is centralized, not duplicated across callers
-- Product families are consistent (abstract factory produces compatible sets)
 - Error handling for unknown or unsupported product types is explicit
 
 ### Anti-patterns

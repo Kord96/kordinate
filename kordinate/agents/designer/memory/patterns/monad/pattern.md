@@ -12,19 +12,20 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- `bind()`, `flatMap()`, `>>=`, `and_then()`, `chain()` methods for sequencing operations
-- `Maybe` / `Option` / `Optional` types wrapping nullable values
-- `Result` / `Either` / `Try` types representing success-or-failure
-- `map()` and `bind()`/`flatMap()` on container types for chaining transformations
-- `do` notation (Haskell), for-comprehensions (Scala), `?` operator (Rust)
-- Operations that short-circuit on the first failure without explicit try/catch
-- Libraries: `returns` (Python), `fp-ts` (TypeScript), `cats`/`zio` (Scala), `dry-monads` (Ruby)
+- `bind()`, `flatMap()`, `>>=`, `and_then()`, `chain()` methods for monadic composition
+- `do` notation (Haskell), for-comprehensions (Scala)
+- `Maybe` / `Option` chaining with `map()` and `bind()`/`flatMap()`
+- `IO` monad for sequencing side effects
+- `returns` library `flow()` for composing monadic pipelines (Python)
+- Libraries: `fp-ts` (TypeScript), `cats`/`zio` (Scala), `dry-monads` (Ruby)
+
+> For `Result`/`Either` as error handling, see result-type. This pattern focuses on monadic composition (bind/chain) across any monad, not just error types.
 
 ### Confidence
 
-- **high** -- Explicit `Result`/`Either` types with `bind`/`flatMap` chaining, error channel propagated without exceptions, and library usage (returns, fp-ts, cats)
-- **medium** -- `Optional`/`Option` used consistently to avoid nulls with `map` chaining, but error types are not structured
-- **low** -- Functions that return tuples like `(value, error)` or use early returns for error handling without a formal monadic type
+- **high** -- Explicit monadic types composed via `bind`/`flatMap`/`>>=` with `do` notation or for-comprehensions, and library usage (returns, fp-ts, cats)
+- **medium** -- `Option`/`Maybe` used consistently with `map`/`flatMap` chaining but no broader monadic composition
+- **low** -- Container types with `map()` but no `bind`/`flatMap`, or ad-hoc chaining without formal monadic structure
 
 ## Architecture
 

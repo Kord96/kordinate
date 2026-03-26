@@ -6,6 +6,26 @@ preloaded: none
 ---
 # Service Manager
 
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- Signal handlers registering for graceful shutdown (`signal.signal(signal.SIGTERM, handler)`)
+- Health endpoints exposed at `/healthz` and `/readyz` paths
+- `livenessProbe` and `readinessProbe` configuration in Kubernetes pod specs
+- `ServiceManager` class coordinating startup, readiness, and shutdown phases
+- `orchestrator` imports or orchestration-layer integration for lifecycle reporting
+- Process lifecycle management with explicit state transitions (starting, ready, draining, stopped)
+- Graceful shutdown logic draining in-flight requests and flushing buffers before exit
+- `terminationGracePeriodSeconds` configuration in pod specs
+
+### Confidence
+
+- **high** -- `ServiceManager` class with SIGTERM signal handlers, `/healthz`+`/readyz` endpoints, and `livenessProbe`/`readinessProbe` in K8s specs
+- **medium** -- Signal handlers with graceful shutdown drain logic and health endpoints, but without a dedicated manager class
+- **low** -- Health check endpoints or liveness probes present without explicit shutdown handling or lifecycle state management
 
 ## Architecture
 

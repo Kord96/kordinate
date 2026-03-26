@@ -1,11 +1,29 @@
 ---
-description: Ddd architectural pattern
+description: Domain-Driven Design architectural pattern
 curated: true
 scope: global
 preloaded: none
 ---
 # Domain-Driven Design (DDD)
 
+
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- `Entity`, `ValueObject`, or `AggregateRoot` base classes or interfaces in domain layer
+- `DomainEvent` classes published from aggregate operations
+- `Repository` interfaces defined in the domain layer, implemented in infrastructure
+- `domain/` package or directory structure separating domain logic from infrastructure
+- Bounded context directories or modules with explicit boundaries (e.g., `ordering/`, `shipping/`, `inventory/`)
+
+### Confidence
+
+- **high** -- aggregate roots enforcing invariants, domain events published on state changes, repository interfaces in the domain layer, and bounded context boundaries with anti-corruption layers
+- **medium** -- domain layer with entities and value objects but aggregates do not enforce invariants strictly, or bounded contexts share some infrastructure
+- **low** -- `domain/` package exists with entity-like classes but no explicit aggregates, events, or bounded context separation
 
 ## Architecture
 

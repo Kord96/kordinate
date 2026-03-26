@@ -13,7 +13,10 @@ How to identify this pattern in code.
 ### Signatures
 
 - Independently deployable frontend modules owned by separate teams
-- Module federation config (`ModuleFederationPlugin`), import maps, or SystemJS loader
+- Webpack 5 `ModuleFederationPlugin` with `remotes`, `exposes`, `shared` in config
+- `single-spa` `registerApplication()` / `start()` for route-based micro-app loading
+- `import-map-overrides` for local development against deployed micro-frontends
+- `SystemJS` loader for dynamic module loading
 - Shell/host application loading remote micro-apps at runtime
 - Iframe isolation, Web Components, or shadow DOM boundaries between modules
 - Tools: Webpack Module Federation, single-spa, Bit, Piral, import maps

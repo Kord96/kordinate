@@ -6,6 +6,26 @@ preloaded: none
 ---
 # Event Sourcing
 
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- `EventStore` or `EventStream` classes managing append-only event persistence
+- `append_events()` / `load_events()` methods on repositories or stores
+- Axon Framework imports (`org.axonframework.eventsourcing`)
+- EventStoreDB client usage or connection configuration
+- `apply()` methods on aggregate classes that mutate state from events
+- Event upcasting logic that transforms old event versions to new schemas
+- `Snapshot` classes or snapshot repository interfaces for aggregate state caching
+- Events named in past tense (`OrderPlaced`, `PaymentReceived`) as immutable facts
+
+### Confidence
+
+- **high** -- EventStore/EventStream classes with `append_events()` and `load_events()`, or Axon/EventStoreDB imports with aggregate `apply()` methods
+- **medium** -- Snapshot classes alongside event replay logic, or event upcasting transformations
+- **low** -- Past-tense named event classes without clear append-only storage or replay mechanics
 
 ## Architecture
 

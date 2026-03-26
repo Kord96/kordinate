@@ -6,6 +6,26 @@ preloaded: none
 ---
 # Sidecar
 
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- Multi-container pod specs with two or more containers in a single pod definition
+- `sidecar.istio.io/inject` annotation on pods or namespaces
+- `linkerd.io/inject: enabled` annotation for Linkerd proxy injection
+- `emptyDir` shared volumes mounted by both sidecar and main containers
+- Container names like `istio-proxy`, `linkerd-proxy`, `envoy`, or `fluentd`
+- `initContainers` running setup tasks before the main and sidecar containers start
+- Ambassador containers handling outbound proxy or authentication concerns
+- Sidecar resource limits defined separately from the main container
+
+### Confidence
+
+- **high** -- Multi-container pod specs with `istio-proxy`/`linkerd-proxy` containers, or `sidecar.istio.io/inject`/`linkerd.io/inject` annotations
+- **medium** -- `emptyDir` shared volumes between containers in the same pod with `initContainers`, but without service mesh annotations
+- **low** -- Multi-container pod specs where container roles are unclear or all containers appear to run business logic
 
 ## Architecture
 

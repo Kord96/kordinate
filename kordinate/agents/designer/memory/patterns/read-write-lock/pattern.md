@@ -16,7 +16,8 @@ How to identify this pattern in code.
 - Multiple concurrent readers allowed, exclusive access for writers
 - `RLock`, `RWMutex`, `ReadWriteLock`, `shared_lock`/`unique_lock`
 - `acquire_read()`/`acquire_write()` or `r_lock()`/`w_lock()` method pairs
-- Libraries: Python `threading.RLock`, Go `sync.RWMutex`, Java `ReentrantReadWriteLock`, C++ `std::shared_mutex`
+- Libraries: Go `sync.RWMutex`, Java `ReentrantReadWriteLock`, Rust `std::sync::RwLock`, C++ `std::shared_mutex`
+- Python has no stdlib RWLock; use `readerwriterlock` package or custom implementation
 
 ### Confidence
 

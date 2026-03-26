@@ -6,6 +6,26 @@ preloaded: none
 ---
 # Retry with Backoff
 
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- `tenacity` imports and decorators in Python (`@retry`, `wait_exponential`, `stop_after_attempt`)
+- `polly` policies in .NET (`Policy.Handle<Exception>().WaitAndRetryAsync()`)
+- `resilience4j-retry` configuration in Java (`RetryConfig`, `RetryRegistry`)
+- `retry` package usage in Go (`retry.Do()`, `retry.Attempts()`)
+- `backoff` decorator with exponential delay configuration (`@backoff.on_exception`)
+- `max_retries` configuration parameters on client or operation config
+- `retry_on_exception` predicates distinguishing retryable from non-retryable errors
+- Dead letter queue routing on retry exhaustion (`DLQ`, `dead_letter`)
+
+### Confidence
+
+- **high** -- Library-specific imports (`tenacity`, `polly`, `resilience4j-retry`) with exponential backoff configuration and max retry bounds
+- **medium** -- `max_retries` and `retry_on_exception` logic with dead letter queue on exhaustion, but using custom retry loops instead of a library
+- **low** -- Simple retry loops with fixed delays or unbounded retries, without explicit backoff or DLQ handling
 
 ## Architecture
 
