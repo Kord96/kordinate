@@ -33,14 +33,21 @@ RUN curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg \
     && apt-get update && apt-get install -y tailscale \
     && rm -rf /var/lib/apt/lists/*
 
-# Claude Code
+# Create claude user with sudo
+RUN useradd -m -s /bin/bash -d /home/claude claude \
+    && echo "claude ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/claude
+
+# User-local npm prefix — global installs go to ~/.npm-global, no sudo needed
+USER claude
+RUN mkdir -p /home/claude/.npm-global \
+    && npm config set prefix /home/claude/.npm-global
+ENV NPM_CONFIG_PREFIX=/home/claude/.npm-global \
+    PATH="/home/claude/.npm-global/bin:$PATH"
+
+# Claude Code (installed as claude user into user prefix)
 RUN npm install -g @anthropic-ai/claude-code
 
-# Create claude user and give ownership of claude-code install (enables auto-updates)
-RUN useradd -m -s /bin/bash -d /home/claude claude \
-    && echo "claude ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/claude \
-    && chown -R claude:claude /home/claude /usr/lib/node_modules/@anthropic-ai /usr/bin/claude
-
+USER root
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

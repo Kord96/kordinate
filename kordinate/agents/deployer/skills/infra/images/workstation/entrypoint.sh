@@ -7,7 +7,7 @@ if ! grep -q 'KORDINATE_HOME' ~/.bashrc 2>/dev/null; then
   cat >> ~/.bashrc <<'BASHRC'
 export KORD_ROOT="${KORD_ROOT:-/kord}"
 export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
-export PATH="$KORDINATE_HOME/bin:$PATH"
+export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"
 alias claude="claude-session --dangerously-skip-permissions"
 [ -f "$KORDINATE_HOME/bin/tmux-session.bash" ] && source "$KORDINATE_HOME/bin/tmux-session.bash"
 BASHRC
@@ -22,7 +22,7 @@ fi
 
 export KORD_ROOT="${KORD_ROOT:-/kord}"
 export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
-export PATH="$KORDINATE_HOME/bin:$PATH"
+export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"
 
 # ─── Symlink persistent state from /kord into ephemeral home ───
 ln -sfn "$KORD_ROOT/pass" "$HOME/.password-store"
