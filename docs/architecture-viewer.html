@@ -650,11 +650,18 @@
 
   // ── Click group nodes to toggle collapse/expand ─────────────────
   cy.on('tap', 'node[nodeType="group"]', function(e) {
+    e.preventDefault();
     var node = e.target;
     if (ecApi.isCollapsible(node)) {
       ecApi.collapse(node);
-    } else if (ecApi.isExpandable(node)) {
-      ecApi.expand(node);
+    }
+  });
+
+  // Also allow double-click as fallback
+  cy.on('dbltap', 'node[nodeType="group"]', function(e) {
+    var node = e.target;
+    if (ecApi.isCollapsible(node)) {
+      ecApi.collapse(node);
     }
   });
 
@@ -733,6 +740,23 @@
   });
 
   // ── Initial fit with padding for header ────────────────────────────
+  // Disable dragging on group nodes so click registers as tap
+  cy.nodes('[nodeType="group"]').ungrabify();
+
+  // Add cursor hint — group nodes show pointer cursor via CSS on the container
+  cy.on('mouseover', 'node[nodeType="group"]', function() {
+    document.getElementById('cy').style.cursor = 'pointer';
+  });
+  cy.on('mouseout', 'node[nodeType="group"]', function() {
+    document.getElementById('cy').style.cursor = 'default';
+  });
+  cy.on('mouseover', 'node.cy-expand-collapse-collapsed-node', function() {
+    document.getElementById('cy').style.cursor = 'pointer';
+  });
+  cy.on('mouseout', 'node.cy-expand-collapse-collapsed-node', function() {
+    document.getElementById('cy').style.cursor = 'default';
+  });
+
   cy.ready(function() {
     setTimeout(function() {
       cy.fit(undefined, 80);
