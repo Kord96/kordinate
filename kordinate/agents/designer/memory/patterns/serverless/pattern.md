@@ -4,6 +4,7 @@ type: pattern
 curated: true
 scope: global
 preloaded: none
+graphable: true
 ---
 # Serverless / FaaS
 

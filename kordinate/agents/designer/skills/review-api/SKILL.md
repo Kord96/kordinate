@@ -94,6 +94,6 @@ Write the report to `<project-repo>/.claude/agent-memory/designer/api-review.md`
 | Hexagonal | compliant/partial/non-compliant | ... |
 ```
 
-Create the directory `<project-repo>/.claude/agent-memory/designer/` if it doesn't exist. Delegate the `.md` write to scribe if the guard-md hook blocks you.
+Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
 
 13. **Report** — summarize findings to the caller: framework detected, endpoint count, critical findings, and where the full report was written.

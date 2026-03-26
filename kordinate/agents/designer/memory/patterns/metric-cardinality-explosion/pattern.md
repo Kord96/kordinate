@@ -5,6 +5,7 @@ observable: true
 curated: true
 scope: global
 preloaded: none
+graphable: false
 ---
 # Metric Cardinality Explosion
 

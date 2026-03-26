@@ -6,6 +6,7 @@ observable: true
 curated: true
 scope: global
 preloaded: none
+graphable: true
 ---
 # REST API
 

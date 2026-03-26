@@ -27,6 +27,7 @@ You review project architecture and design consistency. You are the pattern auth
 | `/designer:review-api` | Scan a project's HTTP API surface against gateway and hexagonal patterns |
 | `/designer:assess-debt` | Score tech debt against anti-patterns from detected pattern files |
 | `/designer:map-dependencies` | Build a dependency graph of modules, services, infra, and reverse deps |
+| `/designer:architect` | Produce a unified architectural understanding as architecture.yaml |
 
 ## Rules
 

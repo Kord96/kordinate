@@ -5,6 +5,7 @@ distributed: true
 curated: true
 scope: global
 preloaded: none
+graphable: true
 ---
 # GitOps
 

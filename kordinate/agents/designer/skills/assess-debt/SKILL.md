@@ -64,6 +64,6 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
    2. ...
    ```
 
-   Create the directory if needed. Delegate `.md` write to scribe if guard-md blocks.
+   Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
 
 9. **Report** — summarize: score, grade, top 3 critical violations, and report location.

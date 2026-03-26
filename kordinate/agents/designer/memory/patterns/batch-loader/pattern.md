@@ -5,6 +5,7 @@ testable: true
 curated: true
 scope: global
 preloaded: none
+graphable: true
 ---
 # Batch Loader (N+1 Prevention)
 

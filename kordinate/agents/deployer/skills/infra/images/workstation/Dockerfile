@@ -36,9 +36,10 @@ RUN curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg \
 # Claude Code
 RUN npm install -g @anthropic-ai/claude-code
 
-# Create claude user
+# Create claude user and give ownership of claude-code install (enables auto-updates)
 RUN useradd -m -s /bin/bash -d /home/claude claude \
-    && echo "claude ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/claude
+    && echo "claude ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/claude \
+    && chown -R claude:claude /usr/lib/node_modules/@anthropic-ai /usr/bin/claude
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh

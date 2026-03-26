@@ -27,6 +27,7 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 | `/audit` | Read-only health check for the memory and kordinate system | stateless |
 | `/onboard` | Add a new agent or sync existing agents to the runtime | stateful |
 | `/create-kord` | Define a new kord between agents | stateful |
+| `/illustrate` | Generate diagram descriptions and tutorials from architecture.yaml | stateless |
 
 ## Rules
 

@@ -99,6 +99,6 @@ Scan a project's source code to identify which design patterns and anti-patterns
    | ... | reason | what to do |
    ```
 
-   Create the directory `<project-repo>/.claude/agent-memory/designer/` if it doesn't exist. Delegate the `.md` write to scribe if the guard-md hook blocks you.
+   Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
 
 9. **Report** -- summarize findings to the caller: how many patterns detected, how many anti-patterns detected, key gaps, and where the full report was written.

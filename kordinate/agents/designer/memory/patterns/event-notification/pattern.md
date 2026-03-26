@@ -6,6 +6,7 @@ distributed: true
 curated: true
 scope: global
 preloaded: none
+graphable: true
 ---
 # Event Notification (Thin Events)
 

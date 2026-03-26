@@ -5,6 +5,7 @@ testable: true
 curated: true
 scope: global
 preloaded: none
+graphable: true
 ---
 # Pagination
 

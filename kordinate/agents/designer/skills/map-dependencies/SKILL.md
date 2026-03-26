@@ -93,6 +93,6 @@ The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
     - Missing resilience on external calls: ...
     ```
 
-    Create the directory if needed. Delegate `.md` write to scribe if guard-md blocks.
+    Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
 
 11. **Report** — summarize: module count, external service count, circular deps found, hub modules, and report location.

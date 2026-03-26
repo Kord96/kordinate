@@ -4,6 +4,7 @@ type: anti-pattern
 curated: true
 scope: global
 preloaded: none
+graphable: false
 ---
 # Pokemon Exception
 
