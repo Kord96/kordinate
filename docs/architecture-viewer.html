@@ -521,7 +521,7 @@
         selector: 'node[nodeType="group"][!collapsed]',
         style: {
           'shape': 'roundrectangle',
-          'background-color': 'rgba(255,255,255,0.02)',
+          'background-color': 'rgba(123,104,238,0.06)',
           'background-opacity': 1,
           'border-width': 1.5,
           'border-style': 'dashed',
@@ -573,13 +573,12 @@
           'shape': 'roundrectangle',
           'background-color': function(ele) {
             var cfg = getTypeConfig(ele.data('nodeType'));
-            // Darken the background
-            return cfg.bg + '15';
+            return cfg.bg + '22';
           },
           'background-opacity': 1,
           'border-width': 1.5,
           'border-style': 'solid',
-          'border-color': function(ele) { return getTypeConfig(ele.data('nodeType')).bg + '44'; },
+          'border-color': function(ele) { return getTypeConfig(ele.data('nodeType')).bg + '66'; },
           'label': 'data(label)',
           'color': function(ele) { return getTypeConfig(ele.data('nodeType')).bg; },
           'font-size': '12px',
