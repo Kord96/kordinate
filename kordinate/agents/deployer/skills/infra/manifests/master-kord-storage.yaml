@@ -1,6 +1,6 @@
 ##
 ## Kord — persistent system volume for the kordinate platform.
-## RWX so multiple pods (workstation, future agents) can mount it.
+## RWO for local-path provisioners, RWX where Longhorn/NFS is available.
 ##
 ## Layout:
 ##   /kord/pass/        — password store (GPG-encrypted credentials)
@@ -20,7 +20,7 @@ metadata:
     app: kord
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   storageClassName: STORAGE_CLASS
   resources:
     requests:
