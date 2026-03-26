@@ -16,7 +16,7 @@ What's baked into the workstation image. Built once, never seen by the user.
 - Kordinate framework at `~/.kord/`
 - Beorn server pre-installed
 - Core agents: root, scribe
-- Core guards: guard-md.sh, guard-git.sh
+- Core guard: guard.sh
 - Core skills: /kord, /boot, /merge
 - Recall system (8-property knowledge model)
 - Kord protocol (/kord, stateless/stateful)

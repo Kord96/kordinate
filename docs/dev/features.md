@@ -26,10 +26,7 @@ Complete inventory of everything in kordinate — implemented and planned.
 
 | Guard | Protects | Agent |
 |-------|----------|-------|
-| guard.sh (remember) | Memory and kord path writes | scribe |
-| guard-git.sh | Git operations | all |
-| guard-kubectl.sh | kubectl writes | deployer |
-| guard-grafana.sh | Grafana API | sauron |
+| guard.sh (unified domain enforcement) | Memory, kord, kubectl, Grafana path writes | all |
 
 ### Kords
 
@@ -73,7 +70,7 @@ Complete inventory of everything in kordinate — implemented and planned.
 
 | Script | Purpose |
 |--------|---------|
-| claude-session | Worktree-based Claude sessions with auto-PR |
+| claude-session | Worktree-based Claude sessions with auto-commit on exit |
 | tmux-session.bash | Auto-attach on SSH, default session, tmux.conf generation |
 | tmux-new-window | Route new tmux windows to repo-named sessions |
 
@@ -85,23 +82,21 @@ Live at `agents/deployer/skills/infra/manifests/` (namespace-prefixed flat files
 
 | Manifest | Purpose |
 |----------|---------|
-| gateway.yaml | Gateway Tailscale pod (cluster front door) |
-| workstation.yaml | Workstation deployment + PVC |
-| beorn.yaml | Beorn MCP server deployment + service |
-| ingress.yaml | Ingress configuration |
-| minio.yaml | MinIO object storage |
-| workstation/Dockerfile | Workstation image |
-| workstation/entrypoint.sh | Workstation boot script |
+| gateway-pod.yaml | Gateway Tailscale pod (cluster front door) |
+| gateway-ingress.yaml | Ingress configuration |
+| gateway-minio.yaml | MinIO object storage |
 
 ### Master Namespace
 
 | Manifest | Purpose |
 |----------|---------|
-| prometheus.yaml | Master Prometheus (30d retention) |
-| loki.yaml | Master Loki (30d retention) |
-| grafana.yaml | Grafana + datasources |
-| alloy.yaml | Master Alloy collector |
-| gateway-registry.yaml | Container registry |
+| master-prometheus.yaml | Master Prometheus (30d retention) |
+| master-loki.yaml | Master Loki (30d retention) |
+| master-grafana.yaml | Grafana |
+| master-datasources.yaml | Grafana datasources |
+| master-alloy.yaml | Master Alloy collector |
+| master-workstation.yaml | Workstation deployment + PVC (Beorn runs inside) |
+| master-kord-storage.yaml | Shared kord PVC storage |
 | dashboards/ | Dashboard provisioning + JSON definitions |
 | log-puller/ | Loki federation sidecar (Python + Dockerfile) |
 
@@ -109,12 +104,11 @@ Live at `agents/deployer/skills/infra/manifests/` (namespace-prefixed flat files
 
 | Manifest | Purpose |
 |----------|---------|
-| prometheus.yaml | Cluster Prometheus |
-| loki.yaml | Cluster Loki |
-| alloy.yaml + alloy-config.yaml | Cluster Alloy + config |
-| node-exporter.yaml | Host metrics |
-| kube-state-metrics.yaml | K8s state metrics |
-| loki-federate/ | Loki federation script (Python + Dockerfile) |
+| monitor-prometheus.yaml | Cluster Prometheus |
+| monitor-loki.yaml | Cluster Loki |
+| monitor-alloy.yaml + monitor-alloy-config.yaml | Cluster Alloy + config |
+| monitor-node-exporter.yaml | Host metrics |
+| monitor-kube-state-metrics.yaml | K8s state metrics |
 
 ### RBAC
 
