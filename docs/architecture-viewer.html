@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sous-storefront -- Architecture</title>
+<title>sous-storefront -- Deep Architecture</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  .expand-collapse-canvas { pointer-events: none !important; }
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -78,6 +77,80 @@
     color: #fff;
   }
 
+  .btn.active {
+    background: rgba(123,104,238,0.15);
+    border-color: rgba(123,104,238,0.4);
+    color: #b8a9ff;
+  }
+
+  #breadcrumb-bar {
+    position: fixed;
+    top: 62px;
+    left: 0;
+    right: 0;
+    z-index: 1009;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 28px;
+    background: rgba(26,26,46,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  #breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+
+  .bc-crumb {
+    color: #888;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .bc-crumb:hover {
+    color: #b8a9ff;
+    background: rgba(123,104,238,0.1);
+  }
+
+  .bc-crumb.current {
+    color: #e0e0e0;
+    font-weight: 500;
+    cursor: default;
+  }
+
+  .bc-crumb.current:hover {
+    background: none;
+    color: #e0e0e0;
+  }
+
+  .bc-sep {
+    color: #555;
+    margin: 0 2px;
+    font-size: 11px;
+    user-select: none;
+  }
+
+  #node-counter {
+    font-size: 12px;
+    color: #666;
+    white-space: nowrap;
+    margin-left: 16px;
+  }
+
+  #node-counter strong {
+    color: #b8a9ff;
+    font-weight: 600;
+  }
+
   #cy {
     width: 100%;
     height: 100vh;
@@ -96,7 +169,7 @@
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 12px;
     padding: 16px 20px;
-    min-width: 180px;
+    min-width: 200px;
   }
 
   #legend h3 {
@@ -112,18 +185,25 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 8px;
-    font-size: 13px;
+    margin-bottom: 7px;
+    font-size: 12px;
     color: #bbb;
   }
 
   .legend-item:last-child { margin-bottom: 0; }
 
-  .legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 4px;
+  .legend-shape {
+    width: 16px;
+    height: 16px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .legend-shape svg {
+    width: 16px;
+    height: 16px;
   }
 
   #tooltip {
@@ -134,7 +214,7 @@
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 10px;
     padding: 14px 18px;
-    max-width: 320px;
+    max-width: 380px;
     pointer-events: none;
     opacity: 0;
     transform: translateY(4px);
@@ -151,21 +231,70 @@
     font-size: 14px;
     font-weight: 600;
     color: #f0f0f0;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   #tooltip .tt-type {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 600;
+  }
+
+  #tooltip .tt-file {
+    font-size: 11px;
+    color: #7b68ee;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 6px;
   }
 
   #tooltip .tt-desc {
     font-size: 12px;
     color: #aaa;
     line-height: 1.5;
+    margin-bottom: 0;
+  }
+
+  #tooltip .tt-exports {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  #tooltip .tt-exports-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #666;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  #tooltip .tt-export-item {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 3px;
+    line-height: 1.4;
+  }
+
+  #tooltip .tt-export-item .export-name {
+    color: #b8a9ff;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+  }
+
+  #tooltip .tt-export-item .export-kind {
+    color: #666;
+    font-size: 10px;
+    margin-left: 4px;
+  }
+
+  #tooltip .tt-children-hint {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #7b68ee;
+    font-style: italic;
   }
 
   #info-badge {
@@ -182,179 +311,224 @@
     padding: 8px 14px;
   }
 
-  /* Expand/collapse cue styling */
-  .cy-expand-collapse-collapsed-node {
-    border-style: solid;
+  /* Flow filter pills */
+  #flow-filters {
+    position: fixed;
+    top: 102px;
+    right: 24px;
+    z-index: 1008;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .flow-pill {
+    padding: 5px 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    background: rgba(26,26,46,0.85);
+    backdrop-filter: blur(8px);
+    color: #777;
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .flow-pill:hover {
+    background: rgba(123,104,238,0.08);
+    border-color: rgba(123,104,238,0.3);
+    color: #b8a9ff;
+  }
+
+  .flow-pill.active {
+    background: rgba(123,104,238,0.15);
+    border-color: rgba(123,104,238,0.5);
+    color: #d4cbff;
   }
 </style>
 
-<!-- Cytoscape core -->
 <script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
-<!-- Layout engines (load order matters: layout-base -> cose-base -> cose-bilkent) -->
 <script src="https://unpkg.com/layout-base@2.0.1/layout-base.js"></script>
 <script src="https://unpkg.com/cose-base@2.2.0/cose-base.js"></script>
 <script src="https://unpkg.com/cytoscape-cose-bilkent@4.1.0/cytoscape-cose-bilkent.js"></script>
-<!-- Expand/Collapse -->
-<script src="https://unpkg.com/cytoscape-expand-collapse@4.1.0/cytoscape-expand-collapse.js"></script>
 </head>
 <body>
 
 <div id="header">
   <div>
-    <h1><span>sous-storefront</span> &mdash; Architecture</h1>
-    <div class="subtitle">SSR e-commerce storefront &middot; React Router v7 &middot; dummyjson.com API</div>
+    <h1><span>sous-storefront</span> &mdash; Deep Architecture</h1>
+    <div class="subtitle">62 components &middot; 5 depth levels &middot; click nodes to drill down</div>
   </div>
   <div id="controls">
     <button class="btn" id="btn-expand-all">Expand All</button>
     <button class="btn" id="btn-collapse-all">Collapse All</button>
     <button class="btn" id="btn-fit">Fit View</button>
+    <button class="btn" id="btn-reset">Reset</button>
   </div>
+</div>
+
+<div id="breadcrumb-bar">
+  <div id="breadcrumb"></div>
+  <div id="node-counter">Showing <strong>3</strong> of <strong>62</strong> nodes</div>
 </div>
 
 <div id="cy"></div>
 
 <div id="legend">
-  <h3>Component Types</h3>
-  <div class="legend-item"><div class="legend-dot" style="background:#4a90d9"></div>Frontend</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div>Library</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div>Gateway / API</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#1abc9c"></div>Store</div>
-  <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.06); border:1px dashed rgba(255,255,255,0.2)"></div>Group</div>
+  <h3>Node Types</h3>
+  <div class="legend-item">
+    <div class="legend-shape"><svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="3" fill="none" stroke="rgba(255,255,255,0.2)" stroke-dasharray="3 2"/></svg></div>
+    Group
+  </div>
+  <div class="legend-item">
+    <div class="legend-shape"><svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="2" fill="#4a90d9"/></svg></div>
+    Component
+  </div>
+  <div class="legend-item">
+    <div class="legend-shape"><svg viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="#e67e22"/></svg></div>
+    External Service
+  </div>
+  <div class="legend-item">
+    <div class="legend-shape"><svg viewBox="0 0 16 16"><polygon points="4,1 12,1 15,5 15,11 12,15 4,15 1,11 1,5" fill="#1abc9c"/></svg></div>
+    Route
+  </div>
+  <div class="legend-item">
+    <div class="legend-shape"><svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="2" fill="#9b59b6"/></svg></div>
+    Library
+  </div>
+  <div class="legend-item">
+    <div class="legend-shape"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#e74c3c"/></svg></div>
+    Config / Test
+  </div>
+  <div class="legend-item" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
+    <div class="legend-shape" style="opacity: 0.6;"><svg viewBox="0 0 16 16"><text x="3" y="12" font-size="10" fill="#b8a9ff">+</text></svg></div>
+    <span style="color: #888;">Click to expand</span>
+  </div>
 </div>
 
 <div id="tooltip">
   <div class="tt-label"></div>
   <div class="tt-type"></div>
+  <div class="tt-file"></div>
   <div class="tt-desc"></div>
+  <div class="tt-exports"></div>
+  <div class="tt-children-hint"></div>
 </div>
 
-<div id="info-badge">Scroll to zoom &middot; Drag to pan &middot; Click groups to collapse</div>
+<div id="flow-filters"></div>
+
+<div id="info-badge">Scroll to zoom &middot; Drag to pan &middot; Click to expand &middot; Right-click to collapse</div>
 
 <script>
 (function() {
 
-  // ── Architecture Data ──────────────────────────────────────────────
-  var architectureData = {
-    project: "sous-storefront",
-    purpose: "SSR e-commerce storefront consuming dummyjson.com API with client-side cart",
-    components: [
-      { id: "server-group", label: "Server (Node.js SSR)", type: "group" },
-      { id: "browser-group", label: "Browser", type: "group" },
-      { id: "external-group", label: "External", type: "group" },
-      { id: "ssr-server", label: "SSR Server & Router", type: "frontend", parent: "server-group",
-        description: "React Router v7 SSR, route loaders, prerendering" },
-      { id: "query-layer", label: "Data Fetching Layer", type: "library", parent: "server-group",
-        description: "TanStack Query + ky HTTP client + dehydrate/hydrate bridge" },
-      { id: "ui-shell", label: "UI Shell", type: "frontend", parent: "browser-group",
-        description: "Header, nav menu, cart sheet, theme toggle, shared components" },
-      { id: "catalog-views", label: "Catalog Views", type: "frontend", parent: "browser-group",
-        description: "Home (infinite scroll) + Products (load more) with SSR hydration" },
-      { id: "checkout-module", label: "Checkout Flow", type: "frontend", parent: "browser-group",
-        description: "Decorative forms, simulated order, confetti success page" },
-      { id: "client-state", label: "Zustand Stores", type: "library", parent: "browser-group",
-        description: "Cart store (5 actions) + theme store, persisted to localStorage" },
-      { id: "dummyjson", label: "dummyjson.com API", type: "gateway", parent: "external-group",
-        description: "Product catalog: categories, products, pagination" },
-      { id: "localstorage", label: "localStorage", type: "store", parent: "external-group",
-        description: "Cart and theme persistence" }
-    ],
-    edges: [
-      { source: "ssr-server", target: "query-layer", label: "prefetch in loader" },
-      { source: "query-layer", target: "dummyjson", label: "GET products", style: "dashed" },
-      { source: "catalog-views", target: "query-layer", label: "infinite queries" },
-      { source: "catalog-views", target: "client-state", label: "add to cart" },
-      { source: "ui-shell", target: "client-state", label: "cart badge, theme" },
-      { source: "checkout-module", target: "client-state", label: "read/clear cart" },
-      { source: "client-state", target: "localstorage", label: "persist", style: "dashed" },
-      { source: "ssr-server", target: "catalog-views", label: "hydrated HTML" },
-      { source: "checkout-module", target: "ui-shell", label: "shared components" }
-    ]
-  };
+  // === ARCHITECTURE DATA ===================================================
+  var RAW = JSON.parse('{"nodes": [{"id": "server", "name": "Server", "description": "Node.js SSR server, build toolchain, and config", "type": "group", "hasChildren": true}, {"id": "ssr-server", "name": "SSR Server", "description": "React Router serve entry point with Vite bundling", "type": "service", "parent": "server", "hasChildren": true}, {"id": "vite-config", "name": "Vite Config", "description": "Vite build configuration with Tailwind, React Router, and tsconfig-paths plugins", "type": "config", "parent": "ssr-server", "file": "vite.config.ts", "exports": [{"name": "default", "kind": "config", "description": "defineConfig with tailwindcss(), reactRouter(), tsconfigPaths() plugins and @ alias"}], "hasChildren": false}, {"id": "react-router-config", "name": "React Router Config", "description": "React Router framework config enabling SSR and prerendering", "type": "config", "parent": "ssr-server", "file": "react-router.config.ts", "exports": [{"name": "default", "kind": "config", "description": "Config with ssr: true and prerender for / and /products"}], "hasChildren": false}, {"id": "route-definitions", "name": "Route Definitions", "description": "File-based route tree mapping URLs to route modules", "type": "config", "parent": "server", "hasChildren": true}, {"id": "routes-config", "name": "Routes Config", "description": "Declares the URL-to-module mapping for all routes", "type": "config", "parent": "route-definitions", "file": "app/routes.ts", "exports": [{"name": "default", "kind": "const", "description": "RouteConfig array: / -> root-layout (children: index -> home, products/:category?), /checkout, /success"}], "hasChildren": false}, {"id": "app-shell", "name": "App Shell", "description": "Root React component with QueryClientProvider and theme initialisation", "type": "component", "parent": "server", "hasChildren": true}, {"id": "root-module", "name": "Root Module", "description": "HTML document shell, QueryClient setup, error boundary", "type": "component", "parent": "app-shell", "file": "app/root.tsx", "exports": [{"name": "Layout", "kind": "component", "description": "HTML document wrapper with <Meta>, <Links>, <Scripts>, <ScrollRestoration>"}, {"name": "App", "kind": "component", "description": "Default export; creates QueryClient, wraps Outlet in QueryClientProvider, renders Toaster"}, {"name": "ErrorBoundary", "kind": "component", "description": "Catches route errors; renders 404 or generic error with dev stack trace"}], "hasChildren": false}, {"id": "global-styles", "name": "Global Styles", "description": "Tailwind base, theme tokens (oklch), custom collapsible animations", "type": "stylesheet", "parent": "app-shell", "file": "app/app.css", "exports": [{"name": ":root", "kind": "css-custom-properties", "description": "Light theme design tokens (background, foreground, primary, etc.)"}, {"name": ".dark", "kind": "css-custom-properties", "description": "Dark theme design tokens"}, {"name": "slideDown / slideUp", "kind": "keyframes", "description": "Animations for Radix Collapsible open/close"}], "hasChildren": false}, {"id": "browser", "name": "Browser", "description": "Client-side application: views, state, data fetching, UI components", "type": "group", "hasChildren": true}, {"id": "shared-lib", "name": "Shared Types & Utilities", "description": "Domain types and helper functions used across the app", "type": "library", "parent": "browser", "hasChildren": true}, {"id": "types", "name": "Domain Types", "description": "Core domain type definitions for products, categories, and cart", "type": "library", "parent": "shared-lib", "file": "app/types.ts", "exports": [{"name": "Category", "kind": "type", "description": "{ id, slug, name, image }"}, {"name": "Product", "kind": "type", "description": "{ id, title, price, images }"}, {"name": "CartItem", "kind": "type", "description": "{ product: Product, count: number }"}], "hasChildren": false}, {"id": "utils", "name": "Utility Functions", "description": "Tailwind class merge helper and slug-to-title converter", "type": "library", "parent": "shared-lib", "file": "app/utils.ts", "exports": [{"name": "cn", "kind": "function", "description": "Merges clsx + tailwind-merge for conditional class names"}, {"name": "fromSlugToTitle", "kind": "function", "description": "Converts kebab-case slug to Title Case"}], "hasChildren": false}, {"id": "query-layer", "name": "Data Fetching Layer", "description": "TanStack Query + ky HTTP client for server state", "type": "library", "parent": "browser", "hasChildren": true}, {"id": "api-client", "name": "API Client", "description": "ky instance configured for dummyjson.com", "type": "library", "parent": "query-layer", "file": "app/api.ts", "exports": [{"name": "api", "kind": "const", "description": "ky instance with prefixUrl https://dummyjson.com"}], "hasChildren": false}, {"id": "categories-query", "name": "Categories Query", "description": "TanStack query options and hook for fetching all product categories", "type": "library", "parent": "query-layer", "file": "app/hooks/categories-query.tsx", "exports": [{"name": "categoriesQueryOptions", "kind": "const", "description": "queryOptions for GET /products/categories returning Category[]"}, {"name": "useCategoriesQuery", "kind": "function", "description": "React hook wrapping useQuery(categoriesQueryOptions)"}], "hasChildren": false}, {"id": "home-infinite-query", "name": "Home Category Sections", "description": "Infinite query for loading products grouped by category on home page", "type": "library", "parent": "query-layer", "file": "app/routes/home/hooks/category-sections-infinte-query.tsx", "exports": [{"name": "categorySectionsInfiniteQueryOptions", "kind": "function", "description": "Returns infiniteQueryOptions; pages of 4 categories with 4 products each, 800ms artificial delay"}, {"name": "useCategorySectionsInfiniteQuery", "kind": "function", "description": "React hook combining useCategoriesQuery + useInfiniteQuery"}], "hasChildren": false}, {"id": "products-infinite-query", "name": "Products Pagination", "description": "Infinite query for paginated product list with offset-based pagination", "type": "library", "parent": "query-layer", "file": "app/routes/products/hooks/products-infinite-query.tsx", "exports": [{"name": "productsInfiniteQueryOptions", "kind": "function", "description": "Returns infiniteQueryOptions for GET /products or /products/category/:slug, limit 8, skip-based pagination"}, {"name": "useProductsInfiniteQuery", "kind": "function", "description": "React hook wrapping useInfiniteQuery(productsInfiniteQueryOptions)"}], "hasChildren": false}, {"id": "client-state", "name": "Client State", "description": "Zustand stores persisted to localStorage", "type": "library", "parent": "browser", "hasChildren": true}, {"id": "cart-store", "name": "Cart Store", "description": "Shopping cart state with add/remove/increment/decrement/clear actions", "type": "library", "parent": "client-state", "file": "app/hooks/cart-store.tsx", "exports": [{"name": "useCartStore", "kind": "function", "description": "Zustand store hook; state: items, total, successfulOrder; actions: addItem, removeItem, incrementItem, decrementItem, clear; persisted as \'cart-storage\'"}], "hasChildren": false}, {"id": "theme-store", "name": "Theme Store", "description": "Theme preference state (dark/light/system) with DOM class toggle", "type": "library", "parent": "client-state", "file": "app/hooks/theme-store.tsx", "exports": [{"name": "useThemeStore", "kind": "function", "description": "Zustand store hook; state: theme; action: setTheme (toggles documentElement classList); persisted as \'theme-storage\'"}], "hasChildren": false}, {"id": "ui-shell", "name": "UI Shell", "description": "Root layout route with Header, nav, and cart drawer", "type": "component", "parent": "browser", "hasChildren": true}, {"id": "root-layout", "name": "Root Layout Route", "description": "Layout route that prefetches categories and renders Header + Outlet", "type": "route", "parent": "ui-shell", "file": "app/routes/root-layout/index.tsx", "exports": [{"name": "loader", "kind": "function", "description": "SSR loader: prefetches categoriesQueryOptions, returns dehydrated QueryClient"}, {"name": "RootLayout", "kind": "component", "description": "Default export; wraps children in HydrationBoundary, renders Header + <main><Outlet/></main>"}], "hasChildren": false}, {"id": "header", "name": "Header", "description": "Sticky top bar with NavMenu, Logo, Cart, and ThemeToggle", "type": "component", "parent": "ui-shell", "file": "app/routes/root-layout/components/header.tsx", "exports": [{"name": "default", "kind": "component", "description": "Header component composing NavMenu, Logo, Cart, ThemeToggle in a sticky bar"}], "hasChildren": true}, {"id": "logo", "name": "Logo", "description": "ShopHub brand mark linking to home", "type": "component", "parent": "header", "file": "app/routes/root-layout/components/logo.tsx", "exports": [{"name": "Logo", "kind": "component", "description": "Renders \'S\' badge + \'ShopHub\' text as Link to /"}], "hasChildren": false}, {"id": "nav-menu", "name": "Navigation Menu", "description": "Slide-out sheet with category links and collapsible \'See All\'", "type": "component", "parent": "header", "file": "app/routes/root-layout/components/nav-menu.tsx", "exports": [{"name": "NavMenu", "kind": "component", "description": "Sheet-based mobile nav; shows first 10 categories + collapsible rest; auto-closes on navigation"}], "hasChildren": false}, {"id": "cart-drawer", "name": "Cart Drawer", "description": "Shopping cart slide-out sheet with item list and checkout link", "type": "component", "parent": "header", "file": "app/routes/root-layout/components/cart/index.tsx", "exports": [{"name": "Cart", "kind": "component", "description": "Sheet with ShoppingCart trigger badge, CartItem list or EmptyState, total, Checkout link"}], "hasChildren": true}, {"id": "cart-item", "name": "Cart Item", "description": "Single cart line item with quantity controls and remove button", "type": "component", "parent": "cart-drawer", "file": "app/routes/root-layout/components/cart/cart-item.tsx", "exports": [{"name": "CartItem", "kind": "component", "description": "Renders product thumbnail, title, price, +/- buttons, and remove (X) button"}], "hasChildren": false}, {"id": "cart-empty-state", "name": "Cart Empty State", "description": "Empty cart placeholder with icon and message", "type": "component", "parent": "cart-drawer", "file": "app/routes/root-layout/components/cart/empty-state.tsx", "exports": [{"name": "EmptyState", "kind": "component", "description": "Renders ShoppingCart icon + \'Your cart is empty\' message"}], "hasChildren": false}, {"id": "theme-toggle", "name": "Theme Toggle", "description": "Light/dark mode toggle button", "type": "component", "parent": "header", "file": "app/components/theme-toggle.tsx", "exports": [{"name": "ThemeToggle", "kind": "component", "description": "Button toggling useThemeStore between light/dark; shows Sun/Moon icons"}], "hasChildren": false}, {"id": "catalogue-views", "name": "Catalogue Views", "description": "Home page and products list page with infinite scroll", "type": "group", "parent": "browser", "hasChildren": true}, {"id": "home-route", "name": "Home Page", "description": "Featured categories view with infinite-scroll category sections", "type": "route", "parent": "catalogue-views", "file": "app/routes/home/index.tsx", "exports": [{"name": "meta", "kind": "function", "description": "Sets page title \'ShopHub | Home\' and description meta"}, {"name": "loader", "kind": "function", "description": "SSR loader: fetches categories, prefetches first page of categorySectionsInfiniteQuery, returns dehydrated state"}, {"name": "HomeRoute", "kind": "component", "description": "Default export; HydrationBoundary wrapping Home component with infinite scroll via react-intersection-observer"}], "hasChildren": true}, {"id": "category-section", "name": "Category Section", "description": "Horizontal scrollable row of product cards for a single category", "type": "component", "parent": "home-route", "file": "app/routes/home/components/CategorySection.tsx", "exports": [{"name": "CategorySection", "kind": "component", "description": "Renders category title link + horizontal ProductCard row + \'See More\' link"}, {"name": "CategorySectionSkeleton", "kind": "component", "description": "Loading skeleton matching CategorySection layout"}], "hasChildren": false}, {"id": "products-route", "name": "Products Page", "description": "Grid view of products with optional category filter and load-more pagination", "type": "route", "parent": "catalogue-views", "file": "app/routes/products/index.tsx", "exports": [{"name": "meta", "kind": "function", "description": "Dynamic page title based on category param or \'All Products\'"}, {"name": "loader", "kind": "function", "description": "SSR loader: prefetches productsInfiniteQuery for the category, returns dehydrated state + title"}, {"name": "CategoriesRoute", "kind": "component", "description": "Default export; HydrationBoundary wrapping grid of ProductCards with \'Load more\' button"}], "hasChildren": true}, {"id": "category-breadcrumb", "name": "Category Breadcrumb", "description": "Breadcrumb navigation showing Featured Categories > current category", "type": "component", "parent": "products-route", "file": "app/routes/products/components/category-breadcrumb.tsx", "exports": [{"name": "CategoryBreadcrumb", "kind": "component", "description": "Breadcrumb with Link to / (Featured Categories) > current category page"}], "hasChildren": false}, {"id": "checkout-flow", "name": "Checkout Flow", "description": "Two-page checkout: form submission and order success confirmation", "type": "group", "parent": "browser", "hasChildren": true}, {"id": "checkout-route", "name": "Checkout Page", "description": "Order summary + shipping/payment forms with client-side action", "type": "route", "parent": "checkout-flow", "file": "app/routes/checkout/index.tsx", "exports": [{"name": "meta", "kind": "function", "description": "Sets page title \'ShopHub | Checkout\'"}, {"name": "clientAction", "kind": "function", "description": "Simulates 1s order processing, clears cart, sets successfulOrder flag, redirects to /success"}, {"name": "clientLoader", "kind": "function", "description": "Guards route: redirects to /products if cart is empty"}, {"name": "Checkout", "kind": "component", "description": "Default export; two-column layout with OrderSummary + Form (ShippingForm, PaymentForm, submit button with loading state)"}], "hasChildren": true}, {"id": "checkout-barrel", "name": "Checkout Components Barrel", "description": "Re-exports OrderSummary, ShippingForm, PaymentForm", "type": "library", "parent": "checkout-route", "file": "app/routes/checkout/components/index.ts", "exports": [{"name": "*", "kind": "re-export", "description": "Barrel re-exporting from order-summary, shipping-form, payment-form"}], "hasChildren": false}, {"id": "order-summary", "name": "Order Summary", "description": "Displays cart items with subtotal, VAT, and total", "type": "component", "parent": "checkout-route", "file": "app/routes/checkout/components/order-summary.tsx", "exports": [{"name": "OrderSummary", "kind": "component", "description": "Renders list of OrderItems + subtotal/VAT(20%)/total breakdown"}], "hasChildren": true}, {"id": "order-item", "name": "Order Item", "description": "Single line item in the order summary", "type": "component", "parent": "order-summary", "file": "app/routes/checkout/components/order-item.tsx", "exports": [{"name": "OrderItem", "kind": "component", "description": "Renders product thumbnail, title, quantity, and line total"}], "hasChildren": false}, {"id": "shipping-form", "name": "Shipping Form", "description": "Form fields for name, email, address, city, postal code", "type": "component", "parent": "checkout-route", "file": "app/routes/checkout/components/shipping-form.tsx", "exports": [{"name": "ShippingForm", "kind": "component", "description": "Renders labeled Input fields: Full Name, Email, Address, City, Postal Code"}], "hasChildren": false}, {"id": "payment-form", "name": "Payment Form", "description": "Form fields for card number, expiry, CVV", "type": "component", "parent": "checkout-route", "file": "app/routes/checkout/components/payment-form.tsx", "exports": [{"name": "PaymentForm", "kind": "component", "description": "Renders labeled Input fields: Card Number, Expiry Date (MM/YY), CVV"}], "hasChildren": false}, {"id": "success-route", "name": "Success Page", "description": "Order confirmation with confetti animation", "type": "route", "parent": "checkout-flow", "file": "app/routes/success.tsx", "exports": [{"name": "meta", "kind": "function", "description": "Sets page title \'ShopHub | Success\'"}, {"name": "clientLoader", "kind": "function", "description": "Guards route: redirects to /products unless successfulOrder flag is set; clears flag after read"}, {"name": "Success", "kind": "component", "description": "Default export; renders CheckCircle icon, success message, order number #134145, confetti via js-confetti, and \'Continue Shopping\' link"}], "hasChildren": false}, {"id": "shared-ui", "name": "Shared UI Components", "description": "Reusable presentation components used across multiple views", "type": "library", "parent": "browser", "hasChildren": true}, {"id": "product-card", "name": "Product Card", "description": "Product display card with image, title, price, and add-to-cart", "type": "component", "parent": "shared-ui", "file": "app/components/product-card.tsx", "exports": [{"name": "ProductCard", "kind": "component", "description": "Card with product image (hover zoom), title, price, and \'Add to cart\' button triggering sonner toast"}, {"name": "ProductCardSkeleton", "kind": "component", "description": "Pulse-animated loading skeleton matching ProductCard dimensions"}], "hasChildren": false}, {"id": "ui-primitives", "name": "UI Primitives", "description": "Radix-based headless UI components styled with Tailwind", "type": "library", "parent": "shared-ui", "hasChildren": true}, {"id": "ui-button", "name": "Button", "description": "CVA-styled button with variant and size props", "type": "component", "parent": "ui-primitives", "file": "app/components/ui/button.tsx", "exports": [{"name": "Button", "kind": "component", "description": "Polymorphic button (asChild via Radix Slot); variants: default, destructive, outline, secondary, ghost, link; sizes: default, sm, lg, icon"}, {"name": "buttonVariants", "kind": "const", "description": "CVA variant definition for reuse outside Button component"}], "hasChildren": false}, {"id": "ui-sheet", "name": "Sheet", "description": "Slide-over dialog panel (Radix Dialog-based)", "type": "component", "parent": "ui-primitives", "file": "app/components/ui/sheet.tsx", "exports": [{"name": "Sheet", "kind": "component", "description": "Root wrapper around Radix Dialog"}, {"name": "SheetTrigger", "kind": "component", "description": "Trigger element for opening the sheet"}, {"name": "SheetClose", "kind": "component", "description": "Close button element"}, {"name": "SheetContent", "kind": "component", "description": "Animated panel with side prop (top/right/bottom/left), overlay, and close X"}, {"name": "SheetHeader", "kind": "component", "description": "Flex column header area"}, {"name": "SheetFooter", "kind": "component", "description": "Auto-margin footer area"}, {"name": "SheetTitle", "kind": "component", "description": "Radix Dialog.Title with font styling"}, {"name": "SheetDescription", "kind": "component", "description": "Radix Dialog.Description with muted styling"}], "hasChildren": false}, {"id": "ui-navigation-menu", "name": "Navigation Menu", "description": "Radix Navigation Menu with viewport and animations", "type": "component", "parent": "ui-primitives", "file": "app/components/ui/navigation-menu.tsx", "exports": [{"name": "NavigationMenu", "kind": "component", "description": "Root container with optional viewport"}, {"name": "NavigationMenuList", "kind": "component", "description": "Horizontal list of menu items"}, {"name": "NavigationMenuItem", "kind": "component", "description": "Single menu item wrapper"}, {"name": "NavigationMenuContent", "kind": "component", "description": "Dropdown content with slide animations"}, {"name": "NavigationMenuTrigger", "kind": "component", "description": "Trigger with chevron rotation animation"}, {"name": "NavigationMenuLink", "kind": "component", "description": "Styled anchor link within menu"}, {"name": "NavigationMenuIndicator", "kind": "component", "description": "Visual indicator for active menu item"}, {"name": "NavigationMenuViewport", "kind": "component", "description": "Viewport container for dropdown content"}, {"name": "navigationMenuTriggerStyle", "kind": "const", "description": "CVA class string for trigger styling reuse"}], "hasChildren": false}, {"id": "ui-breadcrumb", "name": "Breadcrumb", "description": "Composable breadcrumb navigation primitives", "type": "component", "parent": "ui-primitives", "file": "app/components/ui/breadcrumb.tsx", "exports": [{"name": "Breadcrumb", "kind": "component", "description": "Nav wrapper with aria-label=\'breadcrumb\'"}, {"name": "BreadcrumbList", "kind": "component", "description": "Ordered list of breadcrumb items"}, {"name": "BreadcrumbItem", "kind": "component", "description": "Single breadcrumb item li"}, {"name": "BreadcrumbLink", "kind": "component", "description": "Anchor or Slot-based breadcrumb link"}, {"name": "BreadcrumbPage", "kind": "component", "description": "Current page indicator (aria-current=\'page\')"}, {"name": "BreadcrumbSeparator", "kind": "component", "description": "ChevronRight separator between breadcrumb items"}, {"name": "BreadcrumbEllipsis", "kind": "component", "description": "MoreHorizontal icon for collapsed breadcrumb overflow"}], "hasChildren": false}, {"id": "ui-collapsible", "name": "Collapsible", "description": "Radix Collapsible with slide animations", "type": "component", "parent": "ui-primitives", "file": "app/components/ui/collapsible.tsx", "exports": [{"name": "Collapsible", "kind": "component", "description": "Root collapsible wrapper"}, {"name": "CollapsibleTrigger", "kind": "component", "description": "Toggle trigger for expanding/collapsing"}, {"name": "CollapsibleContent", "kind": "component", "description": "Animated content panel with slideDown/slideUp keyframes"}], "hasChildren": false}, {"id": "ui-input", "name": "Input", "description": "Styled text input with focus ring and validation states", "type": "component", "parent": "ui-primitives", "file": "app/components/ui/input.tsx", "exports": [{"name": "Input", "kind": "component", "description": "HTML input with Tailwind styling, focus-visible ring, aria-invalid destructive state"}], "hasChildren": false}, {"id": "ui-sonner", "name": "Toaster", "description": "Theme-aware toast notification container", "type": "component", "parent": "ui-primitives", "file": "app/components/ui/sonner.tsx", "exports": [{"name": "Toaster", "kind": "component", "description": "Sonner Toaster wrapper that reads theme from useThemeStore for light/dark toast styling"}], "hasChildren": false}, {"id": "external", "name": "External", "description": "External APIs, test infrastructure", "type": "group", "hasChildren": true}, {"id": "dummyjson-api", "name": "DummyJSON API", "description": "Third-party REST API at https://dummyjson.com", "type": "external-service", "parent": "external", "hasChildren": true}, {"id": "dummyjson-categories", "name": "Categories Endpoint", "description": "GET /products/categories - returns all product categories", "type": "endpoint", "parent": "dummyjson-api", "hasChildren": false}, {"id": "dummyjson-products", "name": "Products Endpoint", "description": "GET /products - paginated product list with select, limit, skip params", "type": "endpoint", "parent": "dummyjson-api", "hasChildren": false}, {"id": "dummyjson-products-by-category", "name": "Products by Category Endpoint", "description": "GET /products/category/:slug - filtered product list by category slug", "type": "endpoint", "parent": "dummyjson-api", "hasChildren": false}, {"id": "e2e-tests", "name": "E2E Test Suite", "description": "Playwright end-to-end tests against dev server", "type": "test-suite", "parent": "external", "hasChildren": true}, {"id": "e2e-config", "name": "Playwright Config", "description": "Test runner config: fullyParallel, 3 browsers, baseURL localhost:5173", "type": "config", "parent": "e2e-tests", "file": "playwright.config.ts", "exports": [{"name": "default", "kind": "config", "description": "defineConfig with chromium/firefox/webkit projects, webServer command \'yarn dev\'"}], "hasChildren": false}, {"id": "e2e-products", "name": "Products Tests", "description": "Tests for product display, add-to-cart, and category navigation", "type": "test", "parent": "e2e-tests", "file": "e2e/products.spec.ts", "exports": [{"name": "Products page", "kind": "test-suite", "description": "3 tests: display products by category, add product to cart, navigate between categories"}], "hasChildren": false}, {"id": "e2e-checkout", "name": "Checkout Tests", "description": "Full checkout flow test from product add to success page", "type": "test", "parent": "e2e-tests", "file": "e2e/checkout.spec.ts", "exports": [{"name": "Checkout flow", "kind": "test-suite", "description": "1 test: complete checkout process (add to cart, fill shipping + payment, submit, verify success page)"}], "hasChildren": false}], "edges": [{"source": "ssr-server", "target": "dummyjson-api", "label": "SSR Prefetch + Hydration", "flowId": "ssr-prefetch-flow"}, {"source": "dummyjson-api", "target": "root-layout", "label": "SSR Prefetch + Hydration", "flowId": "ssr-prefetch-flow"}, {"source": "root-layout", "target": "home-route", "label": "SSR Prefetch + Hydration", "flowId": "ssr-prefetch-flow"}, {"source": "home-route", "target": "products-route", "label": "SSR Prefetch + Hydration", "flowId": "ssr-prefetch-flow"}, {"source": "home-route", "target": "home-infinite-query", "label": "Infinite Scroll (Home)", "flowId": "infinite-scroll-flow"}, {"source": "home-infinite-query", "target": "api-client", "label": "Infinite Scroll (Home)", "flowId": "infinite-scroll-flow"}, {"source": "api-client", "target": "dummyjson-products-by-category", "label": "Infinite Scroll (Home)", "flowId": "infinite-scroll-flow"}, {"source": "products-route", "target": "products-infinite-query", "label": "Load More (Products)", "flowId": "load-more-flow"}, {"source": "products-infinite-query", "target": "api-client", "label": "Load More (Products)", "flowId": "load-more-flow"}, {"source": "api-client", "target": "dummyjson-products", "label": "Load More (Products)", "flowId": "load-more-flow"}, {"source": "product-card", "target": "cart-store", "label": "Cart Add-to-Checkout", "flowId": "cart-flow"}, {"source": "cart-store", "target": "cart-drawer", "label": "Cart Add-to-Checkout", "flowId": "cart-flow"}, {"source": "cart-drawer", "target": "checkout-route", "label": "Cart Add-to-Checkout", "flowId": "cart-flow"}, {"source": "checkout-route", "target": "success-route", "label": "Cart Add-to-Checkout", "flowId": "cart-flow"}, {"source": "theme-toggle", "target": "theme-store", "label": "Theme Toggle", "flowId": "theme-flow"}, {"source": "theme-store", "target": "root-module", "label": "Theme Toggle", "flowId": "theme-flow"}, {"source": "root-module", "target": "ui-sonner", "label": "Theme Toggle", "flowId": "theme-flow"}], "purpose": "E-commerce storefront demo built on React Router v7 with SSR, TanStack Query for server-state, Zustand for client-state, and a Radix/Tailwind component library. Consumes dummyjson.com as the product catalogue API.\\n", "stack": {"runtime": "Node.js", "framework": "React Router v7 (SSR mode)", "bundler": "Vite 6", "language": "TypeScript 5.8", "styling": "Tailwind CSS v4 + tw-animate-css", "component_primitives": "Radix UI", "http_client": "ky", "server_state": "TanStack Query v5", "client_state": "Zustand v5 (persisted)", "testing": "Playwright (e2e)", "icons": "lucide-react", "notifications": "sonner", "confetti": "js-confetti"}}');
 
-  // ── Color Map ──────────────────────────────────────────────────────
-  var typeColors = {
-    frontend:  { bg: '#4a90d9', border: '#3a78c0', text: '#fff' },
-    library:   { bg: '#9b59b6', border: '#8244a0', text: '#fff' },
-    gateway:   { bg: '#e67e22', border: '#cf6d14', text: '#fff' },
-    api:       { bg: '#27ae60', border: '#1e8c4c', text: '#fff' },
-    store:     { bg: '#1abc9c', border: '#14a085', text: '#fff' },
-    group:     { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.12)', text: '#999' }
-  };
+  // === DATA INDEX ===========================================================
+  var nodeMap = {};       // id -> node data
+  var childrenOf = {};    // parentId -> [childId, ...]
+  var rootIds = [];       // top-level node ids
+  var totalNodes = RAW.nodes.length;
 
-  function getColor(type) {
-    return typeColors[type] || typeColors.frontend;
+  RAW.nodes.forEach(function(n) {
+    nodeMap[n.id] = n;
+    if (n.parent) {
+      if (!childrenOf[n.parent]) childrenOf[n.parent] = [];
+      childrenOf[n.parent].push(n.id);
+    } else {
+      rootIds.push(n.id);
+    }
+  });
+
+  // Count all descendants
+  function countDescendants(id) {
+    var kids = childrenOf[id] || [];
+    var count = kids.length;
+    kids.forEach(function(kid) { count += countDescendants(kid); });
+    return count;
   }
 
-  // ── Build Cytoscape Elements ───────────────────────────────────────
-  var elements = [];
+  // Get ancestors for breadcrumb
+  function getAncestors(id) {
+    var path = [];
+    var current = id;
+    while (current) {
+      path.unshift(current);
+      current = nodeMap[current] ? nodeMap[current].parent : null;
+    }
+    return path;
+  }
 
-  architectureData.components.forEach(function(c) {
-    var node = {
-      data: {
-        id: c.id,
-        label: c.label,
-        nodeType: c.type,
-        description: c.description || ''
-      }
-    };
-    if (c.parent) node.data.parent = c.parent;
-    elements.push(node);
-  });
-
-  architectureData.edges.forEach(function(e, i) {
-    elements.push({
-      data: {
-        id: 'edge-' + i,
-        source: e.source,
-        target: e.target,
-        label: e.label || '',
-        edgeStyle: e.style || 'solid'
-      }
-    });
-  });
-
-  // ── Layout config (reused) ─────────────────────────────────────────
-  var coseBilkentDefaults = {
-    name: 'cose-bilkent',
-    quality: 'proof',
-    nodeDimensionsIncludeLabels: true,
-    idealEdgeLength: 120,
-    nodeRepulsion: 8000,
-    edgeElasticity: 0.45,
-    nestingFactor: 0.1,
-    gravity: 0.25,
-    gravityRange: 3.8,
-    numIter: 2500,
-    tile: true,
-    tilingPaddingVertical: 20,
-    tilingPaddingHorizontal: 20,
-    animate: false,
-    fit: true,
-    padding: 80
+  // === TYPE STYLING =========================================================
+  var typeConfig = {
+    'group':            { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.15)', text: '#999', shape: 'roundrectangle' },
+    'component':        { bg: '#4a90d9', border: '#3a78c0', text: '#fff', shape: 'roundrectangle' },
+    'service':          { bg: '#4a90d9', border: '#3a78c0', text: '#fff', shape: 'roundrectangle' },
+    'external-service': { bg: '#e67e22', border: '#cf6d14', text: '#fff', shape: 'diamond' },
+    'endpoint':         { bg: '#d4740e', border: '#b8640c', text: '#fff', shape: 'diamond' },
+    'route':            { bg: '#1abc9c', border: '#14a085', text: '#fff', shape: 'hexagon' },
+    'library':          { bg: '#9b59b6', border: '#8244a0', text: '#fff', shape: 'roundrectangle' },
+    'config':           { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'ellipse' },
+    'stylesheet':       { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'ellipse' },
+    'test-suite':       { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'roundrectangle' },
+    'test':             { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'ellipse' }
   };
 
-  // ── Initialize Cytoscape ───────────────────────────────────────────
+  function getTypeConfig(type) {
+    return typeConfig[type] || typeConfig.component;
+  }
+
+  // === STATE ================================================================
+  var expandedNodes = {};   // id -> true if expanded
+  var focusedNodeId = null; // if user has clicked into a specific branch
+
+  // === CYTOSCAPE INIT =======================================================
   var cy = cytoscape({
     container: document.getElementById('cy'),
-    elements: elements,
-    minZoom: 0.3,
-    maxZoom: 3,
+    elements: [],
+    minZoom: 0.2,
+    maxZoom: 4,
     wheelSensitivity: 0.3,
     style: [
-      // ── Group (compound) nodes ──
+      // Collapsed group (has children, not expanded)
       {
-        selector: 'node[nodeType="group"]',
+        selector: 'node[nodeType="group"][?collapsed]',
+        style: {
+          'shape': 'roundrectangle',
+          'width': function(ele) { return Math.max(180, 140 + ele.data('label').length * 3); },
+          'height': 56,
+          'background-color': 'rgba(123,104,238,0.08)',
+          'border-width': 2,
+          'border-style': 'dashed',
+          'border-color': 'rgba(123,104,238,0.35)',
+          'label': 'data(label)',
+          'color': '#ccc',
+          'font-size': '13px',
+          'font-weight': '600',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-wrap': 'wrap',
+          'text-max-width': '220px',
+          'font-family': 'Inter, sans-serif',
+          'overlay-opacity': 0
+        }
+      },
+      // Expanded group (compound parent)
+      {
+        selector: 'node[nodeType="group"][!collapsed]',
         style: {
           'shape': 'roundrectangle',
           'background-color': 'rgba(255,255,255,0.02)',
           'background-opacity': 1,
           'border-width': 1.5,
           'border-style': 'dashed',
-          'border-color': 'rgba(255,255,255,0.12)',
-          'border-opacity': 1,
+          'border-color': 'rgba(255,255,255,0.1)',
           'label': 'data(label)',
-          'color': '#777',
-          'font-size': '13px',
+          'color': '#666',
+          'font-size': '12px',
           'font-weight': '600',
           'text-halign': 'center',
           'text-valign': 'top',
@@ -366,186 +540,93 @@
           'font-family': 'Inter, sans-serif'
         }
       },
-      // ── Collapsed compound nodes ──
+      // Collapsed non-group parent (has children, not expanded)
       {
-        selector: 'node.cy-expand-collapse-collapsed-node',
+        selector: 'node[?hasChildren][?collapsed][nodeType!="group"]',
+        style: {
+          'shape': function(ele) { return getTypeConfig(ele.data('nodeType')).shape; },
+          'width': function(ele) { return Math.max(160, 120 + ele.data('label').length * 3); },
+          'height': 50,
+          'background-color': function(ele) { return getTypeConfig(ele.data('nodeType')).bg; },
+          'border-width': 2,
+          'border-color': function(ele) {
+            var base = getTypeConfig(ele.data('nodeType')).bg;
+            return base;
+          },
+          'border-style': 'solid',
+          'label': 'data(label)',
+          'color': function(ele) { return getTypeConfig(ele.data('nodeType')).text; },
+          'font-size': '12px',
+          'font-weight': '500',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-wrap': 'wrap',
+          'text-max-width': '150px',
+          'font-family': 'Inter, sans-serif',
+          'overlay-opacity': 0
+        }
+      },
+      // Expanded non-group parent (compound parent)
+      {
+        selector: 'node[?hasChildren][!collapsed][nodeType!="group"]',
         style: {
           'shape': 'roundrectangle',
-          'border-style': 'solid',
-          'border-width': 2,
-          'border-color': 'rgba(123,104,238,0.5)',
-          'background-color': 'rgba(123,104,238,0.12)',
+          'background-color': function(ele) {
+            var cfg = getTypeConfig(ele.data('nodeType'));
+            // Darken the background
+            return cfg.bg + '15';
+          },
           'background-opacity': 1,
-          'padding': '24px',
+          'border-width': 1.5,
+          'border-style': 'solid',
+          'border-color': function(ele) { return getTypeConfig(ele.data('nodeType')).bg + '44'; },
           'label': 'data(label)',
-          'color': '#ccc',
-          'font-size': '13px',
+          'color': function(ele) { return getTypeConfig(ele.data('nodeType')).bg; },
+          'font-size': '12px',
           'font-weight': '600',
           'text-halign': 'center',
-          'text-valign': 'center',
-          'text-margin-y': 0,
+          'text-valign': 'top',
+          'text-margin-y': -6,
+          'padding': '24px',
+          'compound-sizing-wrt-labels': 'include',
           'text-wrap': 'wrap',
-          'text-max-width': '240px',
-          'font-family': 'Inter, sans-serif',
-          'width': 240,
-          'height': 60
+          'text-max-width': '200px',
+          'font-family': 'Inter, sans-serif'
         }
       },
-      // ── Frontend nodes ──
+      // Leaf nodes (no children)
       {
-        selector: 'node[nodeType="frontend"]',
+        selector: 'node[!hasChildren]',
         style: {
-          'shape': 'roundrectangle',
-          'width': 180,
-          'height': 50,
-          'background-color': '#4a90d9',
-          'background-opacity': 1,
+          'shape': function(ele) { return getTypeConfig(ele.data('nodeType')).shape; },
+          'width': function(ele) { return Math.max(140, 100 + ele.data('label').length * 3.5); },
+          'height': 44,
+          'background-color': function(ele) { return getTypeConfig(ele.data('nodeType')).bg; },
           'border-width': 0,
           'label': 'data(label)',
-          'color': '#fff',
-          'font-size': '12px',
+          'color': function(ele) { return getTypeConfig(ele.data('nodeType')).text; },
+          'font-size': '11px',
           'font-weight': '500',
           'text-halign': 'center',
           'text-valign': 'center',
           'text-wrap': 'wrap',
-          'text-max-width': '160px',
+          'text-max-width': '130px',
           'font-family': 'Inter, sans-serif',
           'overlay-opacity': 0
         }
       },
-      // ── Library nodes ──
-      {
-        selector: 'node[nodeType="library"]',
-        style: {
-          'shape': 'roundrectangle',
-          'width': 180,
-          'height': 50,
-          'background-color': '#9b59b6',
-          'background-opacity': 1,
-          'border-width': 0,
-          'label': 'data(label)',
-          'color': '#fff',
-          'font-size': '12px',
-          'font-weight': '500',
-          'text-halign': 'center',
-          'text-valign': 'center',
-          'text-wrap': 'wrap',
-          'text-max-width': '160px',
-          'font-family': 'Inter, sans-serif',
-          'overlay-opacity': 0
-        }
-      },
-      // ── Gateway nodes ──
-      {
-        selector: 'node[nodeType="gateway"]',
-        style: {
-          'shape': 'roundrectangle',
-          'width': 180,
-          'height': 50,
-          'background-color': '#e67e22',
-          'background-opacity': 1,
-          'border-width': 0,
-          'label': 'data(label)',
-          'color': '#fff',
-          'font-size': '12px',
-          'font-weight': '500',
-          'text-halign': 'center',
-          'text-valign': 'center',
-          'text-wrap': 'wrap',
-          'text-max-width': '160px',
-          'font-family': 'Inter, sans-serif',
-          'overlay-opacity': 0
-        }
-      },
-      // ── API nodes ──
-      {
-        selector: 'node[nodeType="api"]',
-        style: {
-          'shape': 'roundrectangle',
-          'width': 180,
-          'height': 50,
-          'background-color': '#27ae60',
-          'background-opacity': 1,
-          'border-width': 0,
-          'label': 'data(label)',
-          'color': '#fff',
-          'font-size': '12px',
-          'font-weight': '500',
-          'text-halign': 'center',
-          'text-valign': 'center',
-          'text-wrap': 'wrap',
-          'text-max-width': '160px',
-          'font-family': 'Inter, sans-serif',
-          'overlay-opacity': 0
-        }
-      },
-      // ── Store nodes ──
-      {
-        selector: 'node[nodeType="store"]',
-        style: {
-          'shape': 'roundrectangle',
-          'width': 180,
-          'height': 50,
-          'background-color': '#1abc9c',
-          'background-opacity': 1,
-          'border-width': 0,
-          'label': 'data(label)',
-          'color': '#fff',
-          'font-size': '12px',
-          'font-weight': '500',
-          'text-halign': 'center',
-          'text-valign': 'center',
-          'text-wrap': 'wrap',
-          'text-max-width': '160px',
-          'font-family': 'Inter, sans-serif',
-          'overlay-opacity': 0
-        }
-      },
-      // ── Hover glow (via overlay) ──
-      {
-        selector: 'node.hover-glow',
-        style: {
-          'overlay-color': '#7b68ee',
-          'overlay-opacity': 0.15,
-          'overlay-padding': 8
-        }
-      },
-      // ── Solid edges ──
+      // Solid edges
       {
         selector: 'edge[edgeStyle="solid"]',
         style: {
           'width': 1.5,
-          'line-color': 'rgba(255,255,255,0.18)',
-          'target-arrow-color': 'rgba(255,255,255,0.18)',
+          'line-color': 'rgba(255,255,255,0.15)',
+          'target-arrow-color': 'rgba(255,255,255,0.15)',
           'target-arrow-shape': 'triangle',
           'arrow-scale': 0.8,
           'curve-style': 'bezier',
           'label': 'data(label)',
-          'font-size': '10px',
-          'font-family': 'Inter, sans-serif',
-          'color': 'rgba(255,255,255,0.35)',
-          'text-rotation': 'autorotate',
-          'text-margin-y': -10,
-          'text-background-color': '#1a1a2e',
-          'text-background-opacity': 0.85,
-          'text-background-padding': '3px',
-          'text-background-shape': 'roundrectangle'
-        }
-      },
-      // ── Dashed edges ──
-      {
-        selector: 'edge[edgeStyle="dashed"]',
-        style: {
-          'width': 1.5,
-          'line-style': 'dashed',
-          'line-dash-pattern': [6, 4],
-          'line-color': 'rgba(255,255,255,0.12)',
-          'target-arrow-color': 'rgba(255,255,255,0.12)',
-          'target-arrow-shape': 'triangle',
-          'arrow-scale': 0.8,
-          'curve-style': 'bezier',
-          'label': 'data(label)',
-          'font-size': '10px',
+          'font-size': '9px',
           'font-family': 'Inter, sans-serif',
           'color': 'rgba(255,255,255,0.3)',
           'text-rotation': 'autorotate',
@@ -556,153 +637,498 @@
           'text-background-shape': 'roundrectangle'
         }
       },
-      // ── Highlighted edges on hover ──
+      // Dashed edges (cross-boundary)
+      {
+        selector: 'edge[edgeStyle="dashed"]',
+        style: {
+          'width': 1.5,
+          'line-style': 'dashed',
+          'line-dash-pattern': [6, 4],
+          'line-color': 'rgba(255,255,255,0.1)',
+          'target-arrow-color': 'rgba(255,255,255,0.1)',
+          'target-arrow-shape': 'triangle',
+          'arrow-scale': 0.8,
+          'curve-style': 'bezier',
+          'label': 'data(label)',
+          'font-size': '9px',
+          'font-family': 'Inter, sans-serif',
+          'color': 'rgba(255,255,255,0.25)',
+          'text-rotation': 'autorotate',
+          'text-margin-y': -10,
+          'text-background-color': '#1a1a2e',
+          'text-background-opacity': 0.85,
+          'text-background-padding': '3px',
+          'text-background-shape': 'roundrectangle'
+        }
+      },
+      // Hover glow
+      {
+        selector: 'node.hover-glow',
+        style: {
+          'overlay-color': '#7b68ee',
+          'overlay-opacity': 0.15,
+          'overlay-padding': 8
+        }
+      },
+      // Highlighted edges
       {
         selector: 'edge.highlighted',
         style: {
           'line-color': 'rgba(123,104,238,0.6)',
           'target-arrow-color': 'rgba(123,104,238,0.6)',
           'color': 'rgba(255,255,255,0.7)',
-          'width': 2.5
+          'width': 2.5,
+          'z-index': 999
         }
       },
-      // ── Dimmed nodes/edges when hovering ──
+      // Flow-highlighted edges
+      {
+        selector: 'edge.flow-highlight',
+        style: {
+          'line-color': 'rgba(123,104,238,0.7)',
+          'target-arrow-color': 'rgba(123,104,238,0.7)',
+          'color': 'rgba(255,255,255,0.8)',
+          'width': 3,
+          'z-index': 1000
+        }
+      },
+      // Dimmed
       {
         selector: 'node.dimmed',
-        style: {
-          'opacity': 0.25
-        }
+        style: { 'opacity': 0.2 }
       },
       {
         selector: 'edge.dimmed',
+        style: { 'opacity': 0.08 }
+      },
+      // Expandable cue: + badge
+      {
+        selector: 'node[?collapsed][?hasChildren]',
         style: {
-          'opacity': 0.1
+          'border-width': 2
         }
       }
-    ],
-    layout: coseBilkentDefaults
+    ]
   });
 
-  // ── Child count map (for summary labels) ─────────────────────────
-  var childCounts = {};
-  architectureData.components.forEach(function(c) {
-    if (c.parent) {
-      childCounts[c.parent] = (childCounts[c.parent] || 0) + 1;
+  // === GRAPH BUILDING =======================================================
+
+  // Find the visible ancestor of a node (the highest collapsed parent, or self)
+  function findVisibleAncestor(id) {
+    if (!nodeMap[id]) return null;
+    // Walk up from id; return the first ancestor that IS in the graph
+    var current = id;
+    while (current) {
+      if (cy.getElementById(current).length > 0) return current;
+      current = nodeMap[current] ? nodeMap[current].parent : null;
     }
-  });
+    return null;
+  }
 
-  // Store original labels for expand restore
-  var originalLabels = {};
-  architectureData.components.forEach(function(c) {
-    originalLabels[c.id] = c.label;
-  });
+  // Build the current visible graph
+  function rebuildGraph(animateLayout) {
+    var elements = [];
+    var visibleIds = new Set();
 
-  // ── Expand/Collapse ────────────────────────────────────────────────
-  var ecApi = cy.expandCollapse({
-    layoutBy: {
+    function addNode(id, parentIdInGraph) {
+      var n = nodeMap[id];
+      if (!n) return;
+      visibleIds.add(id);
+
+      var isExpanded = expandedNodes[id];
+      var kids = childrenOf[id] || [];
+      var hasKids = kids.length > 0;
+      var desc = countDescendants(id);
+
+      var label = n.name;
+      if (hasKids && !isExpanded) {
+        label = n.name + '  [' + desc + ']';
+      }
+
+      var nodeData = {
+        id: id,
+        label: label,
+        nodeType: n.type,
+        description: n.description || '',
+        hasChildren: hasKids,
+        collapsed: hasKids && !isExpanded,
+        file: n.file || '',
+        origName: n.name
+      };
+      if (parentIdInGraph && isExpanded) {
+        // Only set compound parent if parent is expanded
+      }
+      if (parentIdInGraph) {
+        nodeData.parent = parentIdInGraph;
+      }
+
+      elements.push({ group: 'nodes', data: nodeData });
+
+      if (isExpanded && hasKids) {
+        kids.forEach(function(kid) {
+          addNode(kid, id);
+        });
+      }
+    }
+
+    rootIds.forEach(function(rid) {
+      addNode(rid, null);
+    });
+
+    // Build edges: only between visible nodes
+    var edgeElements = [];
+    RAW.edges.forEach(function(e, i) {
+      var src = findVisibleNodeForEdge(e.source, visibleIds);
+      var tgt = findVisibleNodeForEdge(e.target, visibleIds);
+      if (src && tgt && src !== tgt) {
+        // Check if this edge already exists (avoid duplicates)
+        var edgeKey = src + '->' + tgt;
+        var exists = edgeElements.some(function(ee) {
+          return ee.data.source === src && ee.data.target === tgt;
+        });
+        if (!exists) {
+          // Determine if edge crosses group boundary
+          var srcTop = getTopLevel(src);
+          var tgtTop = getTopLevel(tgt);
+          var edgeStyle = srcTop !== tgtTop ? 'dashed' : 'solid';
+          edgeElements.push({
+            group: 'edges',
+            data: {
+              id: 'edge-' + i + '-' + src + '-' + tgt,
+              source: src,
+              target: tgt,
+              label: e.label || '',
+              edgeStyle: edgeStyle,
+              flowId: e.flowId || ''
+            }
+          });
+        }
+      }
+    });
+
+    elements = elements.concat(edgeElements);
+
+    // Apply to cytoscape
+    cy.elements().remove();
+    cy.add(elements);
+
+    // Update counter
+    updateNodeCounter(visibleIds.size);
+
+    // Layout
+    var layoutOpts = {
       name: 'cose-bilkent',
       quality: 'proof',
       nodeDimensionsIncludeLabels: true,
-      idealEdgeLength: 120,
-      nodeRepulsion: 8000,
-      animate: true,
-      animationDuration: 400,
+      idealEdgeLength: visibleIds.size > 30 ? 80 : 120,
+      nodeRepulsion: visibleIds.size > 30 ? 6000 : 8000,
+      edgeElasticity: 0.45,
+      nestingFactor: 0.1,
+      gravity: 0.25,
+      gravityRange: 3.8,
+      numIter: 2500,
+      tile: true,
+      tilingPaddingVertical: 16,
+      tilingPaddingHorizontal: 16,
+      animate: animateLayout ? 'end' : false,
+      animationDuration: animateLayout ? 400 : 0,
       fit: true,
-      padding: 80
-    },
-    fisheye: false,
-    animate: true,
-    animationDuration: 400,
-    undoable: false,
-    cueEnabled: true,
-    expandCollapseCuePosition: 'top-left',
-    expandCollapseCueSize: 14,
-    expandCollapseCueLineSize: 10,
-    zIndex: 999
-  });
+      padding: 100
+    };
 
-  // ── Summary labels on collapse/expand ───────────────────────────
-  function setSummaryLabel(node) {
-    var id = node.id();
-    var count = childCounts[id] || 0;
-    var base = originalLabels[id] || node.data('label');
-    if (count > 0) {
-      node.data('label', base + ' (' + count + ' components)');
-    }
+    cy.layout(layoutOpts).run();
+
+    // Make collapsed group nodes ungrabified for clean click
+    cy.nodes('[?collapsed]').ungrabify();
   }
 
-  function restoreLabel(node) {
-    var id = node.id();
-    if (originalLabels[id]) {
-      node.data('label', originalLabels[id]);
+  function findVisibleNodeForEdge(nodeId, visibleIds) {
+    var current = nodeId;
+    while (current) {
+      if (visibleIds.has(current)) return current;
+      current = nodeMap[current] ? nodeMap[current].parent : null;
     }
+    return null;
   }
 
-  cy.on('expandcollapse.aftercollapse', function(evt) {
-    var node = evt.target;
-    setSummaryLabel(node);
-  });
-
-  cy.on('expandcollapse.afterexpand', function(evt) {
-    var node = evt.target;
-    restoreLabel(node);
-  });
-
-  // ── Click group nodes to toggle collapse/expand ─────────────────
-  cy.on('tap', 'node[nodeType="group"]', function(e) {
-    e.preventDefault();
-    var node = e.target;
-    if (ecApi.isCollapsible(node)) {
-      ecApi.collapse(node);
+  function getTopLevel(id) {
+    var current = id;
+    while (nodeMap[current] && nodeMap[current].parent) {
+      current = nodeMap[current].parent;
     }
-  });
+    return current;
+  }
 
-  // Also allow double-click as fallback
-  cy.on('dbltap', 'node[nodeType="group"]', function(e) {
-    var node = e.target;
-    if (ecApi.isCollapsible(node)) {
-      ecApi.collapse(node);
+  // === EXPAND / COLLAPSE ====================================================
+
+  function expandNode(id) {
+    if (!childrenOf[id] || childrenOf[id].length === 0) return;
+    expandedNodes[id] = true;
+    rebuildGraph(true);
+    updateBreadcrumb(id);
+  }
+
+  function collapseNode(id) {
+    // Collapse this node and all descendants
+    delete expandedNodes[id];
+    function collapseDescendants(nid) {
+      var kids = childrenOf[nid] || [];
+      kids.forEach(function(kid) {
+        delete expandedNodes[kid];
+        collapseDescendants(kid);
+      });
     }
-  });
+    collapseDescendants(id);
+    rebuildGraph(true);
+    // Update breadcrumb to parent
+    var parent = nodeMap[id] ? nodeMap[id].parent : null;
+    updateBreadcrumb(parent);
+  }
 
-  // Also handle tap on collapsed nodes (which get the collapsed-node class)
-  cy.on('tap', 'node.cy-expand-collapse-collapsed-node', function(e) {
-    var node = e.target;
-    if (ecApi.isExpandable(node)) {
-      ecApi.expand(node);
-    }
-  });
+  function expandAll() {
+    RAW.nodes.forEach(function(n) {
+      if (n.hasChildren) expandedNodes[n.id] = true;
+    });
+    rebuildGraph(false);
+    updateBreadcrumb(null);
+  }
 
-  // ── Tooltip ────────────────────────────────────────────────────────
+  function collapseAll() {
+    expandedNodes = {};
+    rebuildGraph(true);
+    updateBreadcrumb(null);
+  }
+
+  function resetView() {
+    expandedNodes = {};
+    focusedNodeId = null;
+    rebuildGraph(false);
+    updateBreadcrumb(null);
+    setTimeout(function() { cy.fit(undefined, 100); }, 300);
+  }
+
+  // === BREADCRUMB ===========================================================
+
+  function updateBreadcrumb(activeNodeId) {
+    var bc = document.getElementById('breadcrumb');
+    bc.innerHTML = '';
+
+    // Always show "System" root
+    var rootCrumb = document.createElement('span');
+    rootCrumb.className = 'bc-crumb' + (!activeNodeId ? ' current' : '');
+    rootCrumb.textContent = 'System';
+    rootCrumb.onclick = function() {
+      collapseAll();
+    };
+    bc.appendChild(rootCrumb);
+
+    if (!activeNodeId) return;
+
+    var ancestors = getAncestors(activeNodeId);
+    ancestors.forEach(function(id, idx) {
+      var sep = document.createElement('span');
+      sep.className = 'bc-sep';
+      sep.textContent = '\u203A';
+      bc.appendChild(sep);
+
+      var crumb = document.createElement('span');
+      var isLast = idx === ancestors.length - 1;
+      crumb.className = 'bc-crumb' + (isLast ? ' current' : '');
+      crumb.textContent = nodeMap[id].name;
+      if (!isLast) {
+        crumb.onclick = (function(nid) {
+          return function() {
+            // Collapse everything below this node
+            var kids = childrenOf[nid] || [];
+            kids.forEach(function(kid) {
+              delete expandedNodes[kid];
+              function collapseBelow(cid) {
+                var ck = childrenOf[cid] || [];
+                ck.forEach(function(c) {
+                  delete expandedNodes[c];
+                  collapseBelow(c);
+                });
+              }
+              collapseBelow(kid);
+            });
+            rebuildGraph(true);
+            updateBreadcrumb(nid);
+          };
+        })(id);
+      }
+      bc.appendChild(crumb);
+    });
+  }
+
+  // === NODE COUNTER =========================================================
+
+  function updateNodeCounter(visible) {
+    var counter = document.getElementById('node-counter');
+    counter.innerHTML = 'Showing <strong>' + visible + '</strong> of <strong>' + totalNodes + '</strong> nodes';
+  }
+
+  // === TOOLTIP ==============================================================
+
   var tooltip = document.getElementById('tooltip');
   var ttLabel = tooltip.querySelector('.tt-label');
   var ttType = tooltip.querySelector('.tt-type');
+  var ttFile = tooltip.querySelector('.tt-file');
   var ttDesc = tooltip.querySelector('.tt-desc');
+  var ttExports = tooltip.querySelector('.tt-exports');
+  var ttChildrenHint = tooltip.querySelector('.tt-children-hint');
 
-  cy.on('mouseover', 'node[nodeType!="group"]', function(e) {
-    var node = e.target;
-    var color = getColor(node.data('nodeType'));
+  function showTooltip(cyNode) {
+    var id = cyNode.data('id');
+    var n = nodeMap[id];
+    if (!n) return;
 
-    ttLabel.textContent = node.data('label');
-    ttType.textContent = node.data('nodeType');
-    ttType.style.color = color.bg;
-    ttDesc.textContent = node.data('description') || '';
+    var cfg = getTypeConfig(n.type);
+    ttLabel.textContent = n.name;
+    ttType.textContent = n.type.replace(/-/g, ' ');
+    ttType.style.color = cfg.bg === 'rgba(255,255,255,0.03)' ? '#7b68ee' : cfg.bg;
+    ttFile.textContent = n.file || '';
+    ttFile.style.display = n.file ? 'block' : 'none';
+    ttDesc.textContent = n.description || '';
+
+    // Exports
+    if (n.exports && n.exports.length > 0) {
+      var html = '<div class="tt-exports-title">Exports (' + n.exports.length + ')</div>';
+      n.exports.forEach(function(exp) {
+        html += '<div class="tt-export-item">';
+        html += '<span class="export-name">' + escapeHtml(exp.name) + '</span>';
+        if (exp.kind) html += '<span class="export-kind"> (' + exp.kind + ')</span>';
+        html += '</div>';
+      });
+      ttExports.innerHTML = html;
+      ttExports.style.display = 'block';
+    } else {
+      ttExports.style.display = 'none';
+    }
+
+    // Children hint
+    var kids = childrenOf[id] || [];
+    if (kids.length > 0 && !expandedNodes[id]) {
+      ttChildrenHint.textContent = 'Click to expand ' + countDescendants(id) + ' child nodes';
+      ttChildrenHint.style.display = 'block';
+    } else if (kids.length > 0 && expandedNodes[id]) {
+      ttChildrenHint.textContent = 'Right-click to collapse';
+      ttChildrenHint.style.display = 'block';
+    } else {
+      ttChildrenHint.style.display = 'none';
+    }
 
     tooltip.classList.add('visible');
-    node.addClass('hover-glow');
+  }
 
-    // Highlight connected edges, dim everything else
-    var connected = node.connectedEdges();
-    var neighbors = node.neighborhood().add(node);
-    connected.addClass('highlighted');
+  function hideTooltip() {
+    tooltip.classList.remove('visible');
+  }
 
-    cy.elements().not(neighbors).not(connected).addClass('dimmed');
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // === FLOW FILTERS =========================================================
+
+  var flows = [
+    { id: 'ssr-prefetch-flow', name: 'SSR Prefetch', color: '#4a90d9' },
+    { id: 'infinite-scroll-flow', name: 'Infinite Scroll', color: '#1abc9c' },
+    { id: 'load-more-flow', name: 'Load More', color: '#e67e22' },
+    { id: 'cart-flow', name: 'Cart Flow', color: '#9b59b6' },
+    { id: 'theme-flow', name: 'Theme Toggle', color: '#e74c3c' }
+  ];
+
+  var activeFlow = null;
+
+  function buildFlowFilters() {
+    var container = document.getElementById('flow-filters');
+    flows.forEach(function(flow) {
+      var pill = document.createElement('button');
+      pill.className = 'flow-pill';
+      pill.textContent = flow.name;
+      pill.dataset.flowId = flow.id;
+      pill.onclick = function() {
+        if (activeFlow === flow.id) {
+          activeFlow = null;
+          pill.classList.remove('active');
+          cy.elements().removeClass('dimmed flow-highlight highlighted');
+        } else {
+          activeFlow = flow.id;
+          document.querySelectorAll('.flow-pill').forEach(function(p) { p.classList.remove('active'); });
+          pill.classList.add('active');
+          highlightFlow(flow.id);
+        }
+      };
+      container.appendChild(pill);
+    });
+  }
+
+  function highlightFlow(flowId) {
+    cy.elements().removeClass('dimmed flow-highlight highlighted');
+    var flowEdges = cy.edges().filter(function(e) { return e.data('flowId') === flowId; });
+    if (flowEdges.length === 0) return;
+
+    var connectedNodes = flowEdges.connectedNodes();
+    // Also include parent compound nodes
+    var allRelevant = connectedNodes.union(flowEdges);
+    connectedNodes.forEach(function(n) {
+      var ancestors = n.ancestors();
+      allRelevant = allRelevant.union(ancestors);
+    });
+
+    cy.elements().not(allRelevant).addClass('dimmed');
+    flowEdges.addClass('flow-highlight');
+  }
+
+  // === EVENT HANDLERS =======================================================
+
+  // Click to expand
+  cy.on('tap', 'node', function(e) {
+    var node = e.target;
+    var id = node.data('id');
+    var hasKids = (childrenOf[id] || []).length > 0;
+
+    if (hasKids && !expandedNodes[id]) {
+      expandNode(id);
+    }
   });
 
-  cy.on('mouseout', 'node[nodeType!="group"]', function(e) {
-    tooltip.classList.remove('visible');
+  // Right-click to collapse
+  cy.on('cxttap', 'node', function(e) {
+    e.preventDefault();
+    var node = e.target;
+    var id = node.data('id');
+    if (expandedNodes[id]) {
+      collapseNode(id);
+    }
+  });
+
+  // Prevent default context menu
+  document.getElementById('cy').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+
+  // Tooltip on hover
+  cy.on('mouseover', 'node', function(e) {
+    var node = e.target;
+    showTooltip(node);
+    node.addClass('hover-glow');
+
+    // Highlight connected edges
+    if (!activeFlow) {
+      var connected = node.connectedEdges();
+      var neighbors = node.neighborhood().add(node);
+      connected.addClass('highlighted');
+      cy.elements().not(neighbors).not(connected).addClass('dimmed');
+    }
+  });
+
+  cy.on('mouseout', 'node', function(e) {
+    hideTooltip();
     e.target.removeClass('hover-glow');
-    cy.elements().removeClass('highlighted dimmed');
+    if (!activeFlow) {
+      cy.elements().removeClass('highlighted dimmed');
+    }
   });
 
   cy.on('mousemove', function(e) {
@@ -712,61 +1138,55 @@
       var pad = 16;
       var tw = tooltip.offsetWidth;
       var th = tooltip.offsetHeight;
-
       var left = x + pad;
       var top = y + pad;
-
       if (left + tw > window.innerWidth - 20) left = x - tw - pad;
       if (top + th > window.innerHeight - 20) top = y - th - pad;
-
       tooltip.style.left = left + 'px';
       tooltip.style.top = top + 'px';
     }
   });
 
-  // ── Button handlers ────────────────────────────────────────────────
-  document.getElementById('btn-expand-all').addEventListener('click', function() {
-    ecApi.expandAll();
+  // Cursor hints
+  cy.on('mouseover', 'node[?collapsed][?hasChildren]', function() {
+    document.getElementById('cy').style.cursor = 'pointer';
+  });
+  cy.on('mouseout', 'node[?collapsed][?hasChildren]', function() {
+    document.getElementById('cy').style.cursor = 'default';
+  });
+  cy.on('mouseover', 'node[!collapsed][?hasChildren]', function() {
+    document.getElementById('cy').style.cursor = 'pointer';
+  });
+  cy.on('mouseout', 'node[!collapsed][?hasChildren]', function() {
+    document.getElementById('cy').style.cursor = 'default';
   });
 
-  document.getElementById('btn-collapse-all').addEventListener('click', function() {
-    ecApi.collapseAll();
-  });
+  // === BUTTON HANDLERS ======================================================
 
-  // Also handle label updates for "all" operations (events fire per-node, so this is covered)
-
+  document.getElementById('btn-expand-all').addEventListener('click', expandAll);
+  document.getElementById('btn-collapse-all').addEventListener('click', collapseAll);
+  document.getElementById('btn-reset').addEventListener('click', resetView);
   document.getElementById('btn-fit').addEventListener('click', function() {
-    cy.animate({ fit: { padding: 80 }, duration: 400, easing: 'ease-in-out-cubic' });
+    cy.animate({ fit: { padding: 100 }, duration: 400, easing: 'ease-in-out-cubic' });
   });
 
-  // ── Initial fit with padding for header ────────────────────────────
-  // Disable dragging on group nodes so click registers as tap
-  cy.nodes('[nodeType="group"]').ungrabify();
+  // === INIT =================================================================
 
-  // Add cursor hint — group nodes show pointer cursor via CSS on the container
-  cy.on('mouseover', 'node[nodeType="group"]', function() {
-    document.getElementById('cy').style.cursor = 'pointer';
-  });
-  cy.on('mouseout', 'node[nodeType="group"]', function() {
-    document.getElementById('cy').style.cursor = 'default';
-  });
-  cy.on('mouseover', 'node.cy-expand-collapse-collapsed-node', function() {
-    document.getElementById('cy').style.cursor = 'pointer';
-  });
-  cy.on('mouseout', 'node.cy-expand-collapse-collapsed-node', function() {
-    document.getElementById('cy').style.cursor = 'default';
-  });
+  buildFlowFilters();
+  rebuildGraph(false);
+  updateBreadcrumb(null);
 
   cy.ready(function() {
     setTimeout(function() {
-      cy.fit(undefined, 80);
-      cy.panBy({ x: 0, y: 30 });
-    }, 200);
+      cy.fit(undefined, 100);
+      cy.panBy({ x: 0, y: 50 });
+    }, 300);
   });
 
-  // Expose for programmatic access (e.g. browser console)
   window.cy = cy;
-  window.ecApi = ecApi;
+  window.archData = RAW;
+  window.expandNode = expandNode;
+  window.collapseNode = collapseNode;
 
 })();
 </script>
