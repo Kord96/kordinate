@@ -1,6 +1,6 @@
 # detect-patterns
 
-Scan a project's source code to identify which design patterns are in use and write a patterns report.
+Scan a project's source code to identify which design patterns and anti-patterns are in use and write a patterns report.
 
 ## Arguments
 
@@ -8,63 +8,77 @@ Scan a project's source code to identify which design patterns are in use and wr
 
 ## Steps
 
-1. Parse project name from `$ARGUMENTS`. If missing, show usage and exit.
+1. **Parse** project name from `$ARGUMENTS`. If missing, show usage and exit.
 
-2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
+2. **Locate the project directory.** Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
 
-3. Read `agent-memory/patterns.md` for the full pattern catalog and `agent-memory/designer/patterns/*.md` for recognition signatures.
+3. **Load the pattern catalog.** Read the full patterns index at `agent-memory/patterns.md` (156 patterns across 20 categories). Parse out every pattern entry -- each row has a pattern name, description, and a relative reference to its `pattern.md` file (e.g., `patterns/hexagonal/pattern.md`).
 
-4. **Scan the project** for pattern signatures. For each pattern, check:
+4. **Load the anti-patterns catalog.** Read the anti-patterns index at `agent-memory/anti-patterns.md` (22 anti-patterns across 6 categories). Parse out every anti-pattern entry -- each row has a name, a brief "what to look for" summary, and a relative reference to its `pattern.md` file (e.g., `anti-patterns/god-object/pattern.md`).
 
-   | Pattern | Look for |
-   |---------|----------|
-   | Hexagonal | Ports as interfaces/protocols, adapters in separate modules, domain layer with zero infra imports |
-   | DDD | Bounded contexts, aggregate classes, domain event classes |
-   | Plugin | Plugin registry, dynamic registration at startup, pluggable components |
-   | Stream-to-store | Kafka consumer → buffer → flush → local store (stoik imports) |
-   | ETL/ELT | Scheduled batch jobs, extract/transform/load functions, cron triggers |
-   | Event sourcing | Append-only event log, event replay, aggregate state from events |
-   | CQRS | Separate read/write models, query services distinct from command handlers |
-   | Saga | Multi-step transactions, compensating actions, step state tracking |
-   | Choreography | Event-driven handlers with no central coordinator, event bus |
-   | API gateway | Central routing, auth middleware, rate limiting proxy |
-   | Circuit breaker | pybreaker/tenacity imports, state machine (closed/open/half-open), fallbacks |
-   | Bulkhead | Isolated thread/connection pools, semaphore-bounded resources |
-   | Retry with backoff | tenacity/backoff imports, exponential delay, dead-letter handling |
-   | Backpressure | Queue depth limits, consumer lag checks, flow control logic |
-   | Service manager | orchestrator imports, ServiceManager, HealthCheck, graceful shutdown |
-   | Sidecar | Multi-container pod specs, shared volumes/network in manifests |
+5. **Scan the project for patterns.** For each pattern in the catalog:
 
-   Use `Grep` and `Glob` to find imports, class definitions, and code signatures. Check:
-   - Python imports (`import stoik`, `from orchestrator`, `import tenacity`, `import pybreaker`)
-   - Class hierarchies (`class *Consumer`, `class *Manager`, `class *Aggregate`)
-   - Directory structure (`adapters/`, `domain/`, `ports/`, `plugins/`)
-   - Kubernetes manifests (`deploy/`, `manifests/`) for sidecar containers
-   - Config files for retry/circuit breaker settings
+   a. Read the pattern's `pattern.md` file (resolve relative to `agent-memory/`). Extract the `## Recognition > ### Signatures` section -- this is a bullet list of concrete code signatures to search for.
 
-5. **Assess confidence** for each detected pattern:
-   - **high** — clear imports + correct usage pattern
-   - **medium** — partial implementation or custom variant
-   - **low** — traces of the pattern but not formalized
+   b. Use `Grep` and `Glob` against the project directory to search for each signature. Typical searches include:
+      - Import statements (e.g., `import pybreaker`, `from tenacity`, `import stoik`)
+      - Class and function names matching the signature (e.g., `class.*Adapter`, `CircuitBreaker`)
+      - Directory structures (e.g., `ports/`, `adapters/`, `domain/`)
+      - Configuration files and Kubernetes manifests
+      - Framework-specific patterns described in the signatures
 
-6. **Identify gaps** — patterns that should be present given the project's architecture but are missing. Common gaps:
+   c. Assess confidence using the pattern's `## Recognition > ### Confidence` section. Each pattern defines what qualifies as:
+      - **high** -- strong, unambiguous evidence (see the pattern's own definition)
+      - **medium** -- partial implementation or custom variant
+      - **low** -- traces of the pattern but not formalized
+
+   d. Record each detected pattern with: pattern name, confidence level, file locations where evidence was found, and a brief note explaining the evidence.
+
+   Do not read every pattern file upfront. Use a two-pass approach:
+   - **Pass 1 (broad scan):** Use the pattern descriptions from the index to decide which categories are likely relevant to this project. Grep for high-signal keywords across the codebase first (framework imports, directory names, config files) to narrow the candidate list.
+   - **Pass 2 (deep scan):** Only read the full `pattern.md` and its Signatures section for patterns that had hits in Pass 1 or belong to categories strongly suggested by the project structure.
+
+6. **Scan the project for anti-patterns.** For each anti-pattern in the catalog:
+
+   a. Read the anti-pattern's `pattern.md` file (resolve relative to `agent-memory/`). Extract the `## Recognition > ### Signatures` section.
+
+   b. Use `Grep` and `Glob` to search for each signature. Typical searches include:
+      - Large files (line counts exceeding thresholds)
+      - Naming patterns (e.g., `Manager`, `Handler`, `Utils` classes)
+      - Structural smells (circular imports, empty catch blocks, deeply nested callbacks)
+      - Data access patterns (queries in loops, missing batch endpoints)
+
+   c. Assess confidence using the anti-pattern's `## Recognition > ### Confidence` section.
+
+   d. Record each detected anti-pattern with: name, confidence level, file locations, and a brief note.
+
+7. **Identify gaps** -- patterns that should be present given the project's architecture but are missing. Common gaps:
    - External dependencies without circuit breakers
    - Shared thread/connection pools without bulkhead isolation
    - No retry logic on network calls
    - No backpressure on producer-consumer pipelines
+   - Missing observability (no structured logging, metrics, or tracing)
+   - No input validation at API boundaries
 
-7. **Write the report** to `<project-repo>/.claude/agent-memory/designer/patterns.md`:
+8. **Write the report** to `<project-repo>/.claude/agent-memory/designer/patterns.md`:
 
    ```markdown
    # <project> — Detected Patterns
 
    > Auto-generated by /designer:detect-patterns. Last run: <date>
+   > Scanned against: 156-pattern catalog, 22 anti-patterns
 
-   ## Detected
+   ## Detected Patterns
 
-   | Pattern | Confidence | Where | Notes |
-   |---------|-----------|-------|-------|
-   | ... | high/medium/low | files/modules | brief note |
+   | Pattern | Category | Confidence | Where | Notes |
+   |---------|----------|-----------|-------|-------|
+   | ... | category | high/medium/low | files/modules | brief note |
+
+   ## Detected Anti-Patterns
+
+   | Anti-Pattern | Category | Confidence | Where | Notes |
+   |-------------|----------|-----------|-------|-------|
+   | ... | category | high/medium/low | files/modules | brief note |
 
    ## Gaps
 
@@ -75,4 +89,4 @@ Scan a project's source code to identify which design patterns are in use and wr
 
    Create the directory `<project-repo>/.claude/agent-memory/designer/` if it doesn't exist. Delegate the `.md` write to scribe if the guard-md hook blocks you.
 
-8. **Report** — summarize findings to the caller: how many patterns detected, key gaps, and where the full report was written.
+9. **Report** -- summarize findings to the caller: how many patterns detected, how many anti-patterns detected, key gaps, and where the full report was written.

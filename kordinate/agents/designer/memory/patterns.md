@@ -6,7 +6,7 @@ preloaded: designer
 ---
 # Patterns Index
 
-156 patterns across 20 categories. Each pattern has recognition signatures for code scanning.
+157 patterns across 20 categories. Each pattern has recognition signatures for code scanning.
 
 ## Categories
 
@@ -59,7 +59,8 @@ preloaded: designer
 | Anti-corruption layer | Boundary translation between systems or bounded contexts | [view](patterns/anti-corruption-layer/pattern.md) |
 | Decorator / Wrapper | Adding behavior to an object without modifying its interface | [view](patterns/decorator/pattern.md) |
 | Proxy | Controls access to an object through the same interface | [view](patterns/proxy/pattern.md) |
-| Adapter / Facade | Translates one interface to another or simplifies a complex subsystem | [view](patterns/adapter/pattern.md) |
+| Adapter | Translates one interface to another | [view](patterns/adapter/pattern.md) |
+| Facade | Simplified interface to a complex subsystem | [view](patterns/facade/pattern.md) |
 | Pipeline / Filter | Ordered chain of transform functions processing data through stages | [view](patterns/pipeline-filter/pattern.md) |
 | Composite | Tree structures where leaves and containers share the same interface | [view](patterns/composite/pattern.md) |
 | Flyweight | Shared immutable objects to reduce memory | [view](patterns/flyweight/pattern.md) |
