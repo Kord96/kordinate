@@ -189,7 +189,8 @@
 
 <!-- Cytoscape core -->
 <script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
-<!-- Layout engines -->
+<!-- Layout engines (load order matters: layout-base -> cose-base -> cose-bilkent) -->
+<script src="https://unpkg.com/layout-base@2.0.1/layout-base.js"></script>
 <script src="https://unpkg.com/cose-base@2.2.0/cose-base.js"></script>
 <script src="https://unpkg.com/cytoscape-cose-bilkent@4.1.0/cytoscape-cose-bilkent.js"></script>
 <!-- Expand/Collapse -->
