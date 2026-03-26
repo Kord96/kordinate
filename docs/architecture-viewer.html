@@ -548,27 +548,26 @@
     padding-top: 98px;
   }
 
-  /* ========= FAILURE TAB ========= */
-  #failure-panel #cy-failure {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding-top: 98px;
+  /* ========= RESILIENCE TAB ========= */
+  #failure-panel {
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
-  #failure-controls {
-    position: fixed;
-    top: 100px;
-    left: 28px;
-    z-index: 1008;
+  .resilience-container {
+    padding: 20px 32px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .resilience-controls {
     display: flex;
     gap: 12px;
     align-items: center;
+    margin-bottom: 24px;
   }
 
-  #failure-controls label {
+  .resilience-controls label {
     font-size: 12px;
     color: #888;
     font-weight: 500;
@@ -586,7 +585,7 @@
     outline: none;
     -webkit-appearance: none;
     appearance: none;
-    min-width: 260px;
+    min-width: 300px;
   }
 
   #failure-select:focus {
@@ -598,47 +597,155 @@
     color: #ddd;
   }
 
-  #failure-impact {
-    position: fixed;
-    top: 136px;
-    left: 28px;
-    z-index: 1008;
-    max-width: 400px;
-    padding: 14px 18px;
-    background: rgba(26,26,46,0.92);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.08);
+  .resilience-severity {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+  }
+
+  .resilience-severity.critical { background: rgba(231,76,60,0.2); color: #ff6b6b; border: 1px solid rgba(231,76,60,0.4); }
+  .resilience-severity.high { background: rgba(230,126,34,0.2); color: #f0a050; border: 1px solid rgba(230,126,34,0.4); }
+  .resilience-severity.medium { background: rgba(241,196,15,0.2); color: #f1c40f; border: 1px solid rgba(241,196,15,0.4); }
+  .resilience-severity.low { background: rgba(46,204,113,0.2); color: #6dffab; border: 1px solid rgba(46,204,113,0.4); }
+
+  /* Timeline */
+  .resilience-timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .resilience-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .timeline-section {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .timeline-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -24px;
+    top: 14px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid;
+    z-index: 1;
+  }
+
+  .timeline-section.trigger .timeline-dot { background: #e74c3c; border-color: #e74c3c; }
+  .timeline-section.cascade .timeline-dot { background: #e67e22; border-color: #e67e22; }
+  .timeline-section.impact .timeline-dot { background: #f39c12; border-color: #f39c12; }
+  .timeline-section.detection .timeline-dot { background: #3498db; border-color: #3498db; }
+  .timeline-section.recovery .timeline-dot { background: #2ecc71; border-color: #2ecc71; }
+
+  .timeline-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .timeline-section.trigger .timeline-header { color: #e74c3c; }
+  .timeline-section.cascade .timeline-header { color: #e67e22; }
+  .timeline-section.impact .timeline-header { color: #f39c12; }
+  .timeline-section.detection .timeline-header { color: #3498db; }
+  .timeline-section.recovery .timeline-header { color: #2ecc71; }
+
+  .timeline-content {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 10px;
-    font-size: 12px;
+    padding: 14px 18px;
+  }
+
+  .timeline-section.trigger .timeline-content { border-left: 3px solid #e74c3c; }
+  .timeline-section.cascade .timeline-content { border-left: 3px solid #e67e22; }
+  .timeline-section.impact .timeline-content { border-left: 3px solid #f39c12; }
+  .timeline-section.detection .timeline-content { border-left: 3px solid #3498db; }
+  .timeline-section.recovery .timeline-content { border-left: 3px solid #2ecc71; }
+
+  .timeline-text {
+    font-size: 13px;
+    color: #ccc;
     line-height: 1.6;
   }
 
-  #failure-impact .impact-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #e74c3c;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-
-  #failure-impact .impact-text {
-    color: #aaa;
+  .cascade-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     margin-bottom: 8px;
+    font-size: 13px;
   }
 
-  #failure-impact .mitigation-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #2ecc71;
-    font-weight: 600;
-    margin-bottom: 4px;
+  .cascade-step:last-child { margin-bottom: 0; }
+
+  .cascade-step .step-number {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 1px;
   }
 
-  #failure-impact .mitigation-text {
-    color: #888;
+  .timeline-section.cascade .step-number { background: rgba(230,126,34,0.2); color: #e67e22; border: 1px solid rgba(230,126,34,0.3); }
+  .timeline-section.detection .step-number { background: rgba(52,152,219,0.2); color: #3498db; border: 1px solid rgba(52,152,219,0.3); }
+  .timeline-section.recovery .step-number { background: rgba(46,204,113,0.2); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+
+  .cascade-step .step-component {
+    color: #b8a9ff;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    white-space: nowrap;
   }
+
+  .cascade-step .step-arrow {
+    color: #555;
+    flex-shrink: 0;
+  }
+
+  .cascade-step .step-effect {
+    color: #aaa;
+  }
+
+  .signal-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #aaa;
+  }
+
+  .signal-item:last-child { margin-bottom: 0; }
+
+  /* (failure-impact panel removed — replaced by inline resilience timeline) */
 
   /* Data tab legend overrides */
   #data-legend .legend-swatch {
@@ -694,7 +801,7 @@
     <span class="tab-icon">&#9707;</span>Data
   </button>
   <button class="tab-btn" data-tab="failure">
-    <span class="tab-icon">&#9888;</span>Failure
+    <span class="tab-icon">&#x1F6E1;</span>Resilience
   </button>
   <div class="tab-description" id="tab-desc">Component hierarchy &mdash; expand and collapse to explore</div>
 </div>
@@ -795,34 +902,9 @@
   </div>
 </div>
 
-<!-- ===== TAB 4: FAILURE ===== -->
+<!-- ===== TAB 4: RESILIENCE ===== -->
 <div class="tab-panel" id="failure-panel">
-  <div id="cy-failure"></div>
-  <div id="failure-controls" style="display:none;">
-    <label for="failure-select">Failure mode:</label>
-    <select id="failure-select"></select>
-  </div>
-  <div id="failure-impact" style="display:none;">
-    <div class="impact-title">Impact</div>
-    <div class="impact-text"></div>
-    <div class="mitigation-title">Mitigation</div>
-    <div class="mitigation-text"></div>
-  </div>
-  <div class="graph-legend" id="failure-legend" style="display:none;">
-    <h3>Blast Radius</h3>
-    <div class="legend-item">
-      <div class="legend-shape"><svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="2" fill="#e74c3c"/></svg></div>
-      Affected
-    </div>
-    <div class="legend-item">
-      <div class="legend-shape"><svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="2" fill="#2ecc71"/></svg></div>
-      Unaffected
-    </div>
-    <div class="legend-item">
-      <div class="legend-shape"><svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="2" fill="rgba(255,255,255,0.08)"/></svg></div>
-      Not in scope
-    </div>
-  </div>
+  <div class="resilience-container" id="resilience-container"></div>
 </div>
 
 <script>
@@ -1014,43 +1096,107 @@
   };
 
   // ==========================================================================
-  // FAILURE MODES (for Failure tab)
+  // FAILURE MODES (for Resilience tab — new cascade/detection/recovery format)
   // ==========================================================================
   var FAILURE_MODES = [
     {
       id: 'dummyjson-down',
-      name: 'DummyJSON API unavailable',
-      impact: 'SSR loaders fail, pages return 500; client queries show error state',
-      mitigation: 'TanStack Query retries (default 3); ErrorBoundary catches render errors',
-      affected: ['dummyjson-api', 'dummyjson-categories', 'dummyjson-products', 'dummyjson-products-by-category', 'query-layer', 'api-client', 'categories-query', 'home-infinite-query', 'products-infinite-query', 'ssr-server', 'home-route', 'products-route', 'category-section', 'category-breadcrumb', 'nav-menu']
+      name: 'DummyJSON API Down',
+      trigger: 'DummyJSON API becomes unreachable or returns errors',
+      cascade: [
+        { component: 'api-client', effect: 'ky requests fail or hang (no timeout configured)' },
+        { component: 'categories-query', effect: 'Category prefetch fails' },
+        { component: 'home-infinite-query', effect: 'Product sections fail to load' },
+        { component: 'products-infinite-query', effect: 'Product list fails to load' },
+        { component: 'root-layout', effect: 'SSR loader blocks indefinitely waiting for categories' },
+        { component: 'home-route', effect: 'SSR loader blocks, returns error' },
+        { component: 'products-route', effect: 'SSR loader blocks, returns error' }
+      ],
+      impact: 'Product pages show infinite loading spinners or root ErrorBoundary. Cart and checkout continue working from local state.',
+      detection: [
+        'Root ErrorBoundary renders error (dev mode shows stack trace)',
+        'TanStack Query retries 3x with exponential backoff',
+        'No server-side logging \u2014 failures are silent on the server',
+        'No health check endpoint to probe'
+      ],
+      recovery: [
+        'TanStack Query retries 3x automatically',
+        'After retry exhaustion, query enters error state',
+        'Root ErrorBoundary catches and renders generic error',
+        'Cart/checkout/theme continue from localStorage (unaffected)',
+        'Manual: restart SSR server if loaders are stuck'
+      ],
+      severity: 'critical'
     },
     {
       id: 'localstorage-unavailable',
-      name: 'localStorage unavailable',
-      impact: 'Cart and theme state not persisted across sessions; Zustand persist middleware falls back to in-memory',
-      mitigation: 'Zustand persist handles storage errors gracefully',
-      affected: ['cart-store', 'theme-store', 'cart-drawer', 'cart-item', 'cart-empty-state', 'theme-toggle']
+      name: 'localStorage Unavailable',
+      trigger: 'Browser localStorage is full, disabled, or blocked by policy',
+      cascade: [
+        { component: 'cart-store', effect: 'Zustand persist middleware fails to read/write' },
+        { component: 'theme-store', effect: 'Theme preference not persisted' }
+      ],
+      impact: 'Cart and theme work within session but lose state on page refresh. No error shown to user.',
+      detection: [
+        'none \u2014 Zustand persist silently falls back to in-memory'
+      ],
+      recovery: [
+        'Zustand stores continue in-memory automatically',
+        'State is lost on refresh \u2014 no recovery for lost data'
+      ],
+      severity: 'medium'
     },
     {
       id: 'empty-cart-checkout',
-      name: 'Direct navigation to /checkout with empty cart',
-      impact: 'clientLoader redirects to /products; user never sees empty checkout',
-      mitigation: 'Guard in clientLoader checks items.length === 0',
-      affected: ['checkout-route', 'order-summary', 'shipping-form', 'payment-form']
+      name: 'Empty Cart Checkout',
+      trigger: 'User navigates directly to /checkout with empty cart',
+      cascade: [
+        { component: 'checkout-route', effect: 'clientLoader reads cart state, finds 0 items' }
+      ],
+      impact: 'User never sees empty checkout page.',
+      detection: [
+        'clientLoader guard check: items.length === 0'
+      ],
+      recovery: [
+        'Automatic redirect to /products'
+      ],
+      severity: 'low'
     },
     {
       id: 'direct-success-access',
-      name: 'Direct navigation to /success without order',
-      impact: 'clientLoader redirects to /products unless successfulOrder flag is set',
-      mitigation: 'Guard in clientLoader + flag cleared after read',
-      affected: ['success-route']
+      name: 'Direct Success Access',
+      trigger: 'User navigates directly to /success without completing checkout',
+      cascade: [
+        { component: 'success-route', effect: 'clientLoader reads successfulOrder flag, finds false' }
+      ],
+      impact: 'User never sees success page without placing order.',
+      detection: [
+        'clientLoader guard check: successfulOrder === false'
+      ],
+      recovery: [
+        'Automatic redirect to /products',
+        'successfulOrder flag cleared after read to prevent stale state'
+      ],
+      severity: 'low'
     },
     {
       id: 'ssr-hydration-mismatch',
-      name: 'Hydration mismatch between server and client',
-      impact: 'React warnings; potential UI flicker on theme-dependent components',
-      mitigation: 'Theme applied via useEffect after mount to avoid SSR/client class mismatch',
-      affected: ['root-module', 'theme-store', 'theme-toggle', 'global-styles']
+      name: 'SSR Hydration Mismatch',
+      trigger: 'Server renders without dark class, client applies it in useEffect',
+      cascade: [
+        { component: 'root-module', effect: 'SSR HTML has light theme, client applies dark class post-hydration' },
+        { component: 'ui-sonner', effect: 'Toaster theme prop may mismatch briefly' }
+      ],
+      impact: 'Brief flash of light theme on page load if user has dark mode. React logs console warnings.',
+      detection: [
+        'React hydration mismatch warning in browser console',
+        'Visual flash visible to user'
+      ],
+      recovery: [
+        'useEffect applies correct theme class within milliseconds',
+        'Subsequent renders are correct'
+      ],
+      severity: 'low'
     }
   ];
 
@@ -1199,7 +1345,7 @@
     structure: 'Component hierarchy &mdash; expand and collapse to explore',
     flows: 'Sequence diagrams for each data flow through the system',
     data: 'State stores and which components read or write them',
-    failure: 'Blast radius analysis for each failure mode'
+    failure: 'Resilience runbook &mdash; trigger, cascade, detection, recovery'
   };
 
   var currentTab = 'structure';
@@ -1240,9 +1386,7 @@
         if (tab === 'data' && cyData) {
           setTimeout(function() { cyData.fit(undefined, 80); }, 100);
         }
-        if (tab === 'failure' && cyFailure) {
-          setTimeout(function() { cyFailure.fit(undefined, 80); }, 100);
-        }
+        // resilience tab does not need re-fit
       }
 
       if (tab === 'structure' && cyStructure) {
@@ -1263,9 +1407,7 @@
       document.getElementById('data-legend').style.display = 'none';
     }
     if (tab === 'failure') {
-      document.getElementById('failure-controls').style.display = 'none';
-      document.getElementById('failure-impact').style.display = 'none';
-      document.getElementById('failure-legend').style.display = 'none';
+      // resilience tab is self-contained, no floating elements to hide
     }
   }
 
@@ -1281,9 +1423,7 @@
       document.getElementById('data-legend').style.display = '';
     }
     if (tab === 'failure') {
-      document.getElementById('failure-controls').style.display = '';
-      document.getElementById('failure-impact').style.display = '';
-      document.getElementById('failure-legend').style.display = '';
+      // resilience tab is self-contained, no floating elements to show
     }
   }
 
@@ -2199,250 +2339,117 @@
   }
 
   // ==========================================================================
-  // TAB 4: FAILURE (Blast radius)
+  // TAB 4: RESILIENCE (vertical timeline runbook)
   // ==========================================================================
-  var cyFailure = null;
-
   function initFailureTab() {
+    var container = document.getElementById('resilience-container');
+
+    // Build controls
+    var controlsDiv = document.createElement('div');
+    controlsDiv.className = 'resilience-controls';
+    controlsDiv.innerHTML = '<label for="failure-select">Scenario:</label><select id="failure-select"></select>';
+    container.appendChild(controlsDiv);
+
+    // Build timeline container
+    var timelineDiv = document.createElement('div');
+    timelineDiv.id = 'resilience-timeline';
+    container.appendChild(timelineDiv);
+
     // Populate dropdown
     var select = document.getElementById('failure-select');
     FAILURE_MODES.forEach(function(fm) {
       var opt = document.createElement('option');
       opt.value = fm.id;
-      opt.textContent = fm.name;
+      opt.textContent = fm.name + ' (' + fm.severity + ')';
       select.appendChild(opt);
     });
 
     select.addEventListener('change', function() {
-      renderFailureMode(select.value);
+      renderResilienceTimeline(select.value);
     });
 
-    // Build a flat graph of all key components (no compound nesting for clarity)
-    buildFailureGraph();
-    renderFailureMode(FAILURE_MODES[0].id);
+    renderResilienceTimeline(FAILURE_MODES[0].id);
   }
 
-  function buildFailureGraph() {
-    // Collect a meaningful subset of nodes (not every leaf)
-    var interestingIds = [
-      'ssr-server', 'dummyjson-api', 'query-layer', 'api-client',
-      'categories-query', 'home-infinite-query', 'products-infinite-query',
-      'root-module', 'root-layout', 'home-route', 'products-route',
-      'category-section', 'category-breadcrumb', 'nav-menu',
-      'cart-store', 'theme-store', 'cart-drawer', 'cart-item', 'cart-empty-state',
-      'checkout-route', 'success-route', 'theme-toggle',
-      'header', 'logo', 'ui-sonner', 'product-card',
-      'global-styles', 'order-summary', 'shipping-form', 'payment-form'
-    ];
-
-    var elements = [];
-    interestingIds.forEach(function(id) {
-      var n = nodeMap[id];
-      if (!n) return;
-      elements.push({
-        group: 'nodes',
-        data: {
-          id: 'fail-' + id,
-          origId: id,
-          label: n.name,
-          nodeType: n.type,
-          description: n.description,
-          file: n.file
-        }
-      });
-    });
-
-    // Add edges from the original data flows that connect interesting nodes
-    var edgeIdx = 0;
-    RAW.edges.forEach(function(e) {
-      var src = interestingIds.indexOf(e.source) >= 0 ? e.source : null;
-      var tgt = interestingIds.indexOf(e.target) >= 0 ? e.target : null;
-      if (src && tgt) {
-        elements.push({
-          group: 'edges',
-          data: {
-            id: 'fail-edge-' + (edgeIdx++),
-            source: 'fail-' + src,
-            target: 'fail-' + tgt,
-            label: ''
-          }
-        });
-      }
-    });
-
-    // Add some extra structural edges for visual coherence
-    var extraEdges = [
-      ['ssr-server', 'root-module'],
-      ['root-layout', 'header'],
-      ['header', 'logo'],
-      ['header', 'nav-menu'],
-      ['header', 'cart-drawer'],
-      ['header', 'theme-toggle'],
-      ['cart-drawer', 'cart-item'],
-      ['cart-drawer', 'cart-empty-state'],
-      ['query-layer', 'api-client'],
-      ['query-layer', 'categories-query'],
-      ['query-layer', 'home-infinite-query'],
-      ['query-layer', 'products-infinite-query'],
-      ['api-client', 'dummyjson-api'],
-      ['home-route', 'category-section'],
-      ['products-route', 'category-breadcrumb'],
-      ['checkout-route', 'order-summary'],
-      ['checkout-route', 'shipping-form'],
-      ['checkout-route', 'payment-form'],
-      ['root-module', 'ui-sonner'],
-      ['root-module', 'global-styles']
-    ];
-
-    extraEdges.forEach(function(pair) {
-      if (interestingIds.indexOf(pair[0]) < 0 || interestingIds.indexOf(pair[1]) < 0) return;
-      var exists = elements.some(function(el) {
-        return el.group === 'edges' && el.data.source === 'fail-' + pair[0] && el.data.target === 'fail-' + pair[1];
-      });
-      if (!exists) {
-        elements.push({
-          group: 'edges',
-          data: {
-            id: 'fail-edge-' + (edgeIdx++),
-            source: 'fail-' + pair[0],
-            target: 'fail-' + pair[1],
-            label: ''
-          }
-        });
-      }
-    });
-
-    cyFailure = cytoscape({
-      container: document.getElementById('cy-failure'),
-      elements: elements,
-      minZoom: 0.3,
-      maxZoom: 3,
-      wheelSensitivity: 0.3,
-      style: [
-        {
-          selector: 'node',
-          style: {
-            'shape': function(ele) { return getTypeConfig(ele.data('nodeType')).shape; },
-            'width': function(ele) { return Math.max(150, 110 + ele.data('label').length * 3.5); },
-            'height': 46,
-            'background-color': 'rgba(255,255,255,0.06)',
-            'border-width': 2,
-            'border-color': 'rgba(255,255,255,0.1)',
-            'label': 'data(label)',
-            'color': '#999',
-            'font-size': '11px',
-            'font-weight': '500',
-            'text-halign': 'center',
-            'text-valign': 'center',
-            'text-wrap': 'wrap',
-            'text-max-width': '140px',
-            'font-family': 'Inter, sans-serif'
-          }
-        },
-        {
-          selector: 'node.affected',
-          style: {
-            'background-color': 'rgba(231,76,60,0.25)',
-            'border-color': '#e74c3c',
-            'border-width': 2.5,
-            'color': '#ff6b6b'
-          }
-        },
-        {
-          selector: 'node.unaffected',
-          style: {
-            'background-color': 'rgba(46,204,113,0.15)',
-            'border-color': '#2ecc71',
-            'border-width': 2,
-            'color': '#6dffab'
-          }
-        },
-        {
-          selector: 'edge',
-          style: {
-            'width': 1.5,
-            'line-color': 'rgba(255,255,255,0.08)',
-            'target-arrow-color': 'rgba(255,255,255,0.08)',
-            'target-arrow-shape': 'triangle',
-            'arrow-scale': 0.7,
-            'curve-style': 'bezier'
-          }
-        },
-        {
-          selector: 'edge.affected-edge',
-          style: {
-            'line-color': 'rgba(231,76,60,0.4)',
-            'target-arrow-color': 'rgba(231,76,60,0.4)',
-            'width': 2
-          }
-        },
-        { selector: 'node.hover-glow', style: { 'overlay-color': '#7b68ee', 'overlay-opacity': 0.15, 'overlay-padding': 8 } }
-      ]
-    });
-
-    cyFailure.layout({
-      name: 'cose-bilkent',
-      quality: 'proof',
-      nodeDimensionsIncludeLabels: true,
-      idealEdgeLength: 120,
-      nodeRepulsion: 8000,
-      edgeElasticity: 0.4,
-      gravity: 0.3,
-      numIter: 2500,
-      fit: true,
-      padding: 80
-    }).run();
-
-    // Tooltip for failure tab
-    cyFailure.on('mouseover', 'node', function(e) {
-      var node = e.target;
-      var origId = node.data('origId');
-      var n = nodeMap[origId];
-      if (!n) return;
-      var cfg = getTypeConfig(n.type);
-      showTooltip(n, cfg);
-      node.addClass('hover-glow');
-    });
-
-    cyFailure.on('mouseout', 'node', function(e) {
-      hideTooltip();
-      e.target.removeClass('hover-glow');
-    });
-
-    cyFailure.on('mousemove', function(e) {
-      if (e.originalEvent) positionTooltip(e.originalEvent);
-    });
-  }
-
-  function renderFailureMode(failureId) {
+  function renderResilienceTimeline(failureId) {
     var fm = FAILURE_MODES.find(function(f) { return f.id === failureId; });
     if (!fm) return;
 
-    // Update impact panel
-    document.querySelector('#failure-impact .impact-text').textContent = fm.impact;
-    document.querySelector('#failure-impact .mitigation-text').textContent = fm.mitigation;
+    var container = document.getElementById('resilience-timeline');
+    var html = '';
 
-    // Classify nodes
-    var affectedSet = new Set(fm.affected);
-    cyFailure.nodes().forEach(function(node) {
-      var origId = node.data('origId');
-      node.removeClass('affected unaffected');
-      if (affectedSet.has(origId)) {
-        node.addClass('affected');
-      } else {
-        node.addClass('unaffected');
-      }
-    });
+    // Severity badge
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">';
+    html += '<span class="resilience-severity ' + fm.severity + '">' + fm.severity + '</span>';
+    html += '<span style="font-size:14px;color:#ccc;font-weight:500;">' + escapeHtml(fm.name) + '</span>';
+    html += '</div>';
 
-    // Classify edges
-    cyFailure.edges().forEach(function(edge) {
-      edge.removeClass('affected-edge');
-      var srcAffected = edge.source().hasClass('affected');
-      var tgtAffected = edge.target().hasClass('affected');
-      if (srcAffected && tgtAffected) {
-        edge.addClass('affected-edge');
-      }
-    });
+    html += '<div class="resilience-timeline">';
+
+    // 1. TRIGGER
+    html += '<div class="timeline-section trigger">';
+    html += '<div class="timeline-dot"></div>';
+    html += '<div class="timeline-header">Trigger</div>';
+    html += '<div class="timeline-content"><div class="timeline-text">' + escapeHtml(fm.trigger) + '</div></div>';
+    html += '</div>';
+
+    // 2. CASCADE
+    if (fm.cascade && fm.cascade.length > 0) {
+      html += '<div class="timeline-section cascade">';
+      html += '<div class="timeline-dot"></div>';
+      html += '<div class="timeline-header">Cascade <span style="font-weight:400;font-size:10px;letter-spacing:0;text-transform:none;color:#888;">(' + fm.cascade.length + ' component' + (fm.cascade.length > 1 ? 's' : '') + ')</span></div>';
+      html += '<div class="timeline-content">';
+      fm.cascade.forEach(function(step, i) {
+        html += '<div class="cascade-step">';
+        html += '<span class="step-number">' + (i + 1) + '</span>';
+        html += '<span class="step-component">' + escapeHtml(step.component) + '</span>';
+        html += '<span class="step-arrow">\u2192</span>';
+        html += '<span class="step-effect">' + escapeHtml(step.effect) + '</span>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    // 3. IMPACT
+    html += '<div class="timeline-section impact">';
+    html += '<div class="timeline-dot"></div>';
+    html += '<div class="timeline-header">Impact</div>';
+    html += '<div class="timeline-content"><div class="timeline-text">' + escapeHtml(fm.impact) + '</div></div>';
+    html += '</div>';
+
+    // 4. DETECTION
+    if (fm.detection && fm.detection.length > 0) {
+      html += '<div class="timeline-section detection">';
+      html += '<div class="timeline-dot"></div>';
+      html += '<div class="timeline-header">Detection <span style="font-weight:400;font-size:10px;letter-spacing:0;text-transform:none;color:#888;">(' + fm.detection.length + ' signal' + (fm.detection.length > 1 ? 's' : '') + ')</span></div>';
+      html += '<div class="timeline-content">';
+      fm.detection.forEach(function(signal, i) {
+        html += '<div class="signal-item">';
+        html += '<span class="step-number">' + (i + 1) + '</span>';
+        html += '<span>' + escapeHtml(signal) + '</span>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    // 5. RECOVERY
+    if (fm.recovery && fm.recovery.length > 0) {
+      html += '<div class="timeline-section recovery">';
+      html += '<div class="timeline-dot"></div>';
+      html += '<div class="timeline-header">Recovery <span style="font-weight:400;font-size:10px;letter-spacing:0;text-transform:none;color:#888;">(' + fm.recovery.length + ' step' + (fm.recovery.length > 1 ? 's' : '') + ')</span></div>';
+      html += '<div class="timeline-content">';
+      fm.recovery.forEach(function(step, i) {
+        html += '<div class="signal-item">';
+        html += '<span class="step-number">' + (i + 1) + '</span>';
+        html += '<span>' + escapeHtml(step) + '</span>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    html += '</div>'; // close resilience-timeline
+
+    container.innerHTML = html;
   }
 
   // ==========================================================================
