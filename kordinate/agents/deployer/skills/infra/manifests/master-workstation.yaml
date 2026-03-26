@@ -23,15 +23,8 @@
 ## RBAC: agent-readonly (read-only cluster access). Deployer agent uses
 ## the k3s admin kubeconfig via SSH for write operations.
 ##
-apiVersion: v1
-kind: Secret
-metadata:
-  name: cloudflared-tunnel
-  labels:
-    app: workstation
-    component: ingress
-stringData:
-  TUNNEL_TOKEN: MUST_BE_SET
+## Secret 'cloudflared-tunnel' is created by deployer from pass store at deploy time.
+## Do not include it here — MUST_BE_SET placeholder overwrites the real token on apply.
 ---
 apiVersion: v1
 kind: ConfigMap

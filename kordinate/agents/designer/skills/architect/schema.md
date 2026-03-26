@@ -13,7 +13,9 @@ purpose: "<one sentence — what the system does>"
 
 stack:
   languages: ["<Python>", "<TypeScript>"]
-  frameworks: ["<FastAPI>", "<React>"]
+  frameworks:
+    - name: "<framework name>"
+      concepts: ["<concept-name>"]         # which concepts from the catalog this framework provides
   runtime: "<description of how it runs>"
 
 actors:
@@ -135,7 +137,17 @@ purpose: "Stream processing framework — consumes from Kafka, buffers in memory
 
 stack:
   languages: ["Python"]
-  frameworks: ["confluent-kafka", "FastAPI", "Apache Arrow Flight"]
+  frameworks:
+    - name: "confluent-kafka"
+      concepts: [message-queue, stream-to-store, pub-sub]
+    - name: "FastAPI"
+      concepts: [router, middleware, input-validation]
+    - name: "Apache Arrow Flight"
+      concepts: [grpc]
+    - name: "DuckDB"
+      concepts: [embedded-olap]
+    - name: "stoik"
+      concepts: [stream-to-store, backpressure, retry]
   runtime: "Long-running Python process with consumer loop, embedded DuckDB, and FlightSQL/HTTP servers"
 
 actors:

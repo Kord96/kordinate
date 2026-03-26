@@ -39,7 +39,7 @@ RUN npm install -g @anthropic-ai/claude-code
 # Create claude user and give ownership of claude-code install (enables auto-updates)
 RUN useradd -m -s /bin/bash -d /home/claude claude \
     && echo "claude ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/claude \
-    && chown -R claude:claude /usr/lib/node_modules/@anthropic-ai /usr/bin/claude
+    && chown -R claude:claude /home/claude /usr/lib/node_modules/@anthropic-ai /usr/bin/claude
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
