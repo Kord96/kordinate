@@ -37,11 +37,19 @@ for agent_dir in "$KORDINATE_HOME"/agents/*/; do
     else
       fail "$name/IDENTITY.md — missing curated or scope"
     fi
-    # Check Claude fields
-    if grep -q '^name:' "$id_file" && grep -q '^description:' "$id_file" && grep -q '^tools:' "$id_file"; then
-      pass "$name/IDENTITY.md — has Claude fields"
+    # Subagents have tools; main session does not
+    if grep -q '^tools:' "$id_file"; then
+      if grep -q '^name:' "$id_file" && grep -q '^description:' "$id_file"; then
+        pass "$name/IDENTITY.md — has Claude fields"
+      else
+        fail "$name/IDENTITY.md — missing name or description"
+      fi
     else
-      fail "$name/IDENTITY.md — missing name, description, or tools"
+      if grep -q '^name:' "$id_file" && grep -q '^description:' "$id_file"; then
+        pass "$name/IDENTITY.md — main session (no tools, not a subagent)"
+      else
+        fail "$name/IDENTITY.md — missing name or description"
+      fi
     fi
   else
     fail "$name/IDENTITY.md — not found"
@@ -97,9 +105,11 @@ done
 
 section "Claude Native ($CLAUDE_HOME)"
 
-# Agent files
+# Agent files (subagents only — main session is not linked as an agent)
 for agent_dir in "$KORDINATE_HOME"/agents/*/; do
   name=$(basename "$agent_dir")
+  id_file="$agent_dir/IDENTITY.md"
+  [ -f "$id_file" ] && ! grep -q '^tools:' "$id_file" && continue
   agent_file="$CLAUDE_HOME/agents/$name.md"
   if [ -f "$agent_file" ]; then
     # Should NOT have kordinate properties
@@ -113,9 +123,11 @@ for agent_dir in "$KORDINATE_HOME"/agents/*/; do
   fi
 done
 
-# Agent memory indexes
+# Agent memory indexes (subagents only — main session uses auto-memory)
 for agent_dir in "$KORDINATE_HOME"/agents/*/; do
   name=$(basename "$agent_dir")
+  id_file="$agent_dir/IDENTITY.md"
+  [ -f "$id_file" ] && ! grep -q '^tools:' "$id_file" && continue
   mem_file="$CLAUDE_HOME/agent-memory/$name/MEMORY.md"
   if [ -f "$mem_file" ]; then
     lines=$(wc -l < "$mem_file")

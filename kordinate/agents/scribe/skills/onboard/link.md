@@ -15,9 +15,14 @@ See [claude-native.md](../remember/claude-native.md) for the runtime's paths.
 For each agent in `$KORDINATE_HOME/agents/`:
 
 1. Read `IDENTITY.md`
-2. Write to `~/.claude/agents/<name>.md` — strip kordinate properties (`curated`, `preloaded`, `scope`) from frontmatter, keep Claude fields (`name`, `description`, `tools`, `model`, `color`, `memory`)
-3. Create `~/.claude/agent-memory/<name>/MEMORY.md` — an **index** (not a copy) that points to the actual memory files at `$KORDINATE_HOME/agents/<name>/memory/`. For each memory file, read its frontmatter `description` and add an entry: `- [filename](absolute-path) — description`. The 200-line limit applies to this index, not to the underlying files.
-4. Copy agent skills to `~/.claude/skills/` (entire directory including Level 3 resources)
+2. **Subagents** (have `tools:` in frontmatter):
+   - Write to `~/.claude/agents/<name>.md` — strip kordinate properties (`curated`, `preloaded`, `scope`) from frontmatter, keep Claude fields (`name`, `description`, `tools`, `model`, `color`, `memory`)
+   - Create `~/.claude/agent-memory/<name>/MEMORY.md` — an **index** (not a copy) that points to the actual memory files at `$KORDINATE_HOME/agents/<name>/memory/`. For each memory file, read its frontmatter `description` and add an entry: `- [filename](absolute-path) — description`. The 200-line limit applies to this index, not to the underlying files.
+   - Copy agent skills to `~/.claude/skills/` (entire directory including Level 3 resources)
+3. **Main session** (no `tools:` in frontmatter, e.g. `main`):
+   - Do NOT write to `~/.claude/agents/` (not a subagent)
+   - Do NOT create `~/.claude/agent-memory/` index (main session uses auto-memory)
+   - Surface kordinate memories by adding `@` imports to `~/.claude/CLAUDE.md` for each `.md` file in `$KORDINATE_HOME/agents/main/memory/`
 
 ### Global Skills
 
