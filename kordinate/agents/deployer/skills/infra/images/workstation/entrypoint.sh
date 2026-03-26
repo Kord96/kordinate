@@ -27,9 +27,10 @@ export PATH="$KORDINATE_HOME/bin:$PATH"
 # ─── Symlink persistent state from /kord into ephemeral home ───
 ln -sfn "$KORD_ROOT/pass" "$HOME/.password-store"
 ln -sfn "$KORD_ROOT/ssh" "$HOME/.ssh"
+ln -sfn "$KORD_ROOT/gnupg" "$HOME/.gnupg"
 ln -sfn "$KORDINATE_HOME" "$HOME/.kord"
 ln -sfn "$KORD_ROOT/projects" "$HOME/projects"
-chmod 700 "$KORD_ROOT/pass" "$KORD_ROOT/ssh" 2>/dev/null || true
+chmod 700 "$KORD_ROOT/pass" "$KORD_ROOT/ssh" "$KORD_ROOT/gnupg" 2>/dev/null || true
 
 # Provision authorized keys from pass store (key-based auth fallback)
 SSH_KEY=$(pass show kordinate/ssh/authorized_key 2>/dev/null || true)

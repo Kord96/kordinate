@@ -15,9 +15,9 @@
 ## Setup: ./kordinate init deploys this, links repo, copies credentials, runs auth-check.
 ## Only `claude login` is manual after setup.
 ##
-## SAFETY: Applying this manifest restarts the workstation and kills active sessions.
-## This is hard-blocked by guard-kubectl.sh from inside the pod.
-## Restarts must be done externally.
+## SAFETY: Rolling update strategy — new pod starts before old pod terminates.
+## Both pods share the kord PVC (RWX) and tunnel, so SSH works throughout.
+## Guard-kubectl.sh still blocks self-modification from inside the pod.
 ##
 ## Image: built from workstation/Dockerfile, pushed to cluster registry.
 ## RBAC: agent-readonly (read-only cluster access). Deployer agent uses
@@ -84,7 +84,10 @@ metadata:
 spec:
   replicas: 1
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: workstation

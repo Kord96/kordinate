@@ -4,6 +4,7 @@
 ##
 ## Layout:
 ##   /kord/pass/        — password store (GPG-encrypted credentials)
+##   /kord/gnupg/       — GPG keyring (required for pass)
 ##   /kord/ssh/         — SSH keys (user + host)
 ##   /kord/kordinate/   — kordinate runtime (~/.kord)
 ##   /kord/projects/    — cloned repos (each may have <repo>/.kord)
@@ -42,7 +43,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              mkdir -p /kord/pass /kord/ssh /kord/projects
+              mkdir -p /kord/pass /kord/ssh /kord/gnupg /kord/projects
 
               if [ -d /kord/kordinate/.git ]; then
                 echo "kordinate runtime already initialized, skipping"
@@ -54,7 +55,7 @@ spec:
                 echo "kordinate runtime initialized"
               fi
 
-              chmod 700 /kord/pass /kord/ssh
+              chmod 700 /kord/pass /kord/ssh /kord/gnupg
               echo "kord volume ready"
           volumeMounts:
             - name: kord
