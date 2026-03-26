@@ -97,10 +97,16 @@ external_dependencies:
 failure_modes:
   - id: "<kebab-case>"
     trigger: "<what goes wrong>"
-    affected: ["<component-id>"]
-    impact: "<what users/system experience>"
-    detection: "<how you know — metric, log, health check, or none>"
-    mitigation: "<what happens automatically, or none>"
+    cascade:                               # ordered sequence of what breaks
+      - component: "<component-id>"
+        effect: "<what happens to this component>"
+    impact: "<what end users experience>"
+    detection:                             # ordered: how you know it happened
+      - "<first signal — metric, log, error, or 'none'>"
+      - "<second signal>"
+    recovery:                              # ordered: what happens to recover
+      - "<first recovery step — automatic or manual>"
+      - "<second recovery step>"
     severity: critical | high | medium | low
 ```
 
@@ -306,23 +312,42 @@ external_dependencies:
 failure_modes:
   - id: kafka-down
     trigger: "Kafka broker becomes unreachable"
-    affected: ["kafka-consumer", "consume-loop", "buffer"]
+    cascade:
+      - component: kafka-consumer
+        effect: "Consumer poll fails, reconnection loop starts"
+      - component: consume-loop
+        effect: "Buffer stops receiving records"
+      - component: buffer
+        effect: "No new data to flush, buffer empties"
     impact: "Ingestion halts. No new data written to DuckDB. Query serving continues from existing data."
-    detection: "Consumer reconnection logs, kafka_consumer_lag metric flatlines"
-    mitigation: "Consumer auto-reconnects with backoff"
+    detection:
+      - "Consumer reconnection logs (librdkafka)"
+      - "kafka_consumer_lag metric flatlines"
+    recovery:
+      - "Consumer auto-reconnects with librdkafka backoff"
+      - "Buffer resumes on next successful poll"
+      - "No data loss — offsets not committed until flush"
     severity: critical
   - id: duckdb-lock-contention
     trigger: "Multiple processes contend for DuckDB file lock"
-    affected: ["duckdb-store"]
+    cascade:
+      - component: duckdb-store
+        effect: "Write operations block waiting for file lock"
     impact: "Write latency increases. Buffer grows in memory."
-    detection: "Retry count metrics in duckdb_store"
-    mitigation: "Exponential backoff retry (60 attempts, jitter)"
+    detection:
+      - "Retry count metrics in duckdb_store"
+    recovery:
+      - "Exponential backoff retry (60 attempts, jitter)"
     severity: medium
   - id: snapshot-module-missing
     trigger: "Store.release() called with snapshot=True"
-    affected: ["duckdb-store"]
+    cascade:
+      - component: duckdb-store
+        effect: "ModuleNotFoundError raised during snapshot"
     impact: "ModuleNotFoundError — process crashes"
-    detection: "none"
-    mitigation: "none"
+    detection:
+      - "none"
+    recovery:
+      - "none"
     severity: high
 ```

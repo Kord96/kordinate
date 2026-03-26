@@ -12,7 +12,7 @@ Scan a project's source code to identify which design patterns and anti-patterns
 
 2. **Locate the project directory.** Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
 
-3. **Load the catalogs.** Read both indexes at `agent-memory/patterns.md` (155 patterns across 20 categories) and `agent-memory/anti-patterns.md` (61 anti-patterns across 21 categories). All entries live in `agent-memory/patterns/` — patterns have `type: pattern` and anti-patterns have `type: anti-pattern` in frontmatter.
+3. **Load the catalogs.** Read both indexes at `agent-memory/concepts.md` (155 patterns across 20 categories) and `agent-memory/anti-patterns.md` (61 anti-patterns across 21 categories). All entries live in `agent-memory/concepts/` — patterns have `type: pattern` and anti-patterns have `type: anti-pattern` in frontmatter.
 
 5. **Scan the project for patterns.** For each pattern in the catalog:
 
@@ -37,14 +37,14 @@ Scan a project's source code to identify which design patterns and anti-patterns
    - **Pass 1 (broad scan):** Use Grep for high-signal keywords across the codebase (framework imports, directory names, config files) to narrow the candidate list.
    - **Pass 2 (AST scan):** For patterns that have `ast-grep.yaml` rule files, run ast-grep for precise structural matching:
      ```bash
-     ast-grep scan --rule agent-memory/patterns/<name>/ast-grep.yaml <project-dir>
+     ast-grep scan --rule agent-memory/concepts/<name>/ast-grep.yaml <project-dir>
      ```
      AST matches are higher confidence than grep — they understand code structure and ignore comments/strings.
    - **Pass 3 (deep scan):** For remaining candidates from Pass 1, read the full `pattern.md` Signatures section and verify with targeted grep.
 
 6. **Scan for anti-patterns.** For anti-patterns that have `semgrep.yaml` rule files, run semgrep for semantic analysis:
    ```bash
-   semgrep --config agent-memory/patterns/<name>/semgrep.yaml <project-dir> --json
+   semgrep --config agent-memory/concepts/<name>/semgrep.yaml <project-dir> --json
    ```
    Semgrep understands data flow and cross-line patterns (e.g., SQL injection via f-string, swallowed exceptions). Parse the JSON output for findings.
 

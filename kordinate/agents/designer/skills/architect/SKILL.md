@@ -25,6 +25,12 @@ Produce a structured architectural understanding of a project.
    - `api-review.md` (from `/review-api`)
    - `debt-assessment.md` (from `/assess-debt`)
 
+   Also read the concept catalog:
+   - `agents/designer/memory/abstractions.md` — the 19 abstraction levels and their descriptions
+   - `agents/designer/memory/concepts/*/pattern.md` — scan Recognition signatures to match detected imports against known concepts
+
+   Use concept names from the catalog as the vocabulary for `state[].concept`, `external_dependencies[].concept`, and `components[].patterns`. Do not invent ad-hoc terms — if a concept exists in the catalog, use its name.
+
    Also check `<project>/.claude/agent-memory/sauron/scan.md`.
 
    If none exist, proceed without — file contents are sufficient.
@@ -40,6 +46,8 @@ Produce a structured architectural understanding of a project.
    - Entry points (servers, CLI, main) ARE core abstractions — they're where actors interact
    - Data stores and external integrations ARE core — they define the system's boundaries
    - Prefer business-domain abstractions over infrastructure plumbing
+
+   Tag each component with relevant `abstraction` levels from `abstractions.md`. This enables the `/illustrate` skill to decide which viewpoints to generate. For example, a component tagged `[data, messaging]` is relevant to both the Data and Flows viewpoints.
 
 6. **Map relationships** — for each pair of abstractions, determine if a significant relationship exists:
    - What flows between them (data, events, calls)
@@ -65,6 +73,8 @@ Produce a structured architectural understanding of a project.
    - Purpose: source-of-truth, cache, derived, staging
    - Persistence: persistent or ephemeral
 
+   Use `concept` terms from the concept catalog (e.g., `embedded-olap` not "DuckDB database", `message-broker` not "Kafka"). The `technology` field carries the specific implementation.
+
 10. **Map events** — for each event/topic/signal found:
     - Producer component
     - Consumer component(s)
@@ -77,6 +87,8 @@ Produce a structured architectural understanding of a project.
     - Purpose
     - Criticality (critical/important/optional)
     - Whether resilience patterns exist (retry, circuit breaker, timeout, fallback)
+
+    Use `concept` terms from the concept catalog for classification. Match detected libraries against concept Recognition signatures to ensure consistent naming.
 
 12. **Identify failure modes** — for each external dependency and stateful component:
     - What breaks

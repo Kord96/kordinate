@@ -14,7 +14,7 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
 
 3. **Determine applicable patterns** — check for cached output at `<project-repo>/.claude/agent-memory/designer/patterns.md`. If present, use detected patterns. If absent, run a quick pattern detection scan (same signatures as `/detect-patterns` step 4).
 
-4. **Load anti-patterns** — for each detected pattern, read its `pattern.md` file from `~/.kord/agents/designer/memory/patterns/<pattern>/pattern.md`. Extract the `## Anti-patterns` section. If no Anti-patterns section exists, skip that pattern.
+4. **Load anti-patterns** — for each detected pattern, read its `pattern.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/pattern.md`. Extract the `## Anti-patterns` section. If no Anti-patterns section exists, skip that pattern.
 
 5. **Scan for violations** — for each anti-pattern, use Grep and Glob to search the project codebase. Score each violation:
    - **CRITICAL** (3 pts) — structural violations that affect reliability or correctness (e.g., business logic in route handlers, missing circuit breakers on external calls, shared mutable state across bounded contexts)
