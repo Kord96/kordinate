@@ -31,14 +31,22 @@ ln -sfn "$KORDINATE_HOME" "$HOME/.kord"
 ln -sfn "$KORD_ROOT/projects" "$HOME/projects"
 chmod 700 "$KORD_ROOT/pass" "$KORD_ROOT/ssh" 2>/dev/null || true
 
-# Provision authorized keys from pass store for sshd access (cloudflared / fallback path)
+# Provision authorized keys from pass store (key-based auth fallback)
 SSH_KEY=$(pass show kordinate/ssh/authorized_key 2>/dev/null || true)
 if [ -n "$SSH_KEY" ]; then
   echo "$SSH_KEY" > ~/.ssh/authorized_keys
   chmod 600 ~/.ssh/authorized_keys
   echo "SSH authorized key provisioned from pass"
+fi
+
+# Set password for SSH access via Cloudflare tunnel.
+# Cloudflare Access SSO gates the connection; password is a second factor.
+SSH_PASS=$(pass show kordinate/ssh/password 2>/dev/null || true)
+if [ -n "$SSH_PASS" ]; then
+  echo "claude:$SSH_PASS" | sudo chpasswd
+  echo "SSH password set from pass"
 else
-  echo "WARNING: no SSH key in pass (kordinate/ssh/authorized_key) — sshd will reject key auth"
+  echo "WARNING: no SSH password in pass (kordinate/ssh/password)"
 fi
 
 # Start sshd as a fallback so the workstation is reachable even if Tailscale SSH fails.

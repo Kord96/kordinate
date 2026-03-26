@@ -29,6 +29,7 @@ fi
 
 # Auto-attach to default tmux session on SSH login
 if [[ -n "$SSH_CONNECTION" ]] && [[ -z "$TMUX" ]] && [[ $- == *i* ]]; then
+  command tmux select-window -t "$TMUX_DEFAULT:0" 2>/dev/null
   tmux attach-session -t "$TMUX_DEFAULT" 2>/dev/null || tmux new-session -s "$TMUX_DEFAULT"
 fi
 
