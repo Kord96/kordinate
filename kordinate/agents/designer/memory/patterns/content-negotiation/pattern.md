@@ -1,0 +1,48 @@
+---
+description: Content/Protocol Negotiation architectural pattern
+curated: true
+scope: global
+preloaded: none
+---
+# Content/Protocol Negotiation
+
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- `Accept` and `Content-Type` HTTP headers used for format selection
+- `produces` and `consumes` annotations on API endpoints (JAX-RS, Spring)
+- Format selection logic dispatching between JSON, XML, protobuf, or other serializations
+- API versioning via `Accept-Version`, `Accept: application/vnd.api.v2+json`, or URL path segments
+- Media type routing: `application/json`, `application/xml`, `application/protobuf`
+- `406 Not Acceptable` or `415 Unsupported Media Type` error responses
+- Content negotiation middleware or request interceptors
+- `Vary: Accept` response header for cache correctness
+
+### Confidence
+
+- **high** -- Explicit `Accept`/`Content-Type` handling with multiple format serializers and `406`/`415` responses
+- **medium** -- API version headers or vendor media types with format-specific serialization
+- **low** -- Single format API that sets `Content-Type` without any negotiation logic
+
+## Architecture
+
+Look for correct format dispatch based on client preferences with proper error responses for unsupported types.
+
+### Review Checklist
+
+- All supported media types are explicitly declared, not inferred
+- Unsupported `Accept` types return `406 Not Acceptable` with a list of supported types
+- Unsupported `Content-Type` on requests returns `415 Unsupported Media Type`
+- `Vary: Accept` header is set on responses to prevent cache poisoning
+- Default format is defined for requests without an `Accept` header
+- API versioning strategy is consistent (header-based, URL-based, or media type -- not mixed)
+
+### Anti-patterns
+
+- Silently ignoring the `Accept` header and always returning JSON
+- Missing `Vary` header causing CDN or proxy caches to serve wrong formats
+- Mixing version negotiation strategies across endpoints (some URL-based, some header-based)
+- Supporting content types that are never tested or documented
