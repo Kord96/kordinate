@@ -90,18 +90,40 @@ guard_bash() {
 
       branch=$(echo "$push_cmd" | grep -oE 'origin\s+(\S+)' | awk '{print $2}')
       branch=$(echo "$branch" | sed 's/.*://')
-      [ -z "$branch" ] && branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+      if [ -z "$branch" ]; then
+        local git_c_detect
+        git_c_detect=$(echo "$cmd" | grep -oE 'git\s+-C\s+(\S+)' | awk '{print $NF}')
+        if [ -n "$git_c_detect" ]; then
+          branch=$(git -C "$git_c_detect" branch --show-current 2>/dev/null || echo "unknown")
+        else
+          branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+        fi
+      fi
+
+      # Resolve repo root: check -C <dir>, cd <dir>, or fall back to cwd
+      local git_c_dir repo_root cd_dir
+      git_c_dir=$(echo "$cmd" | grep -oE 'git\s+-C\s+(\S+)' | awk '{print $NF}')
+      if [ -z "$git_c_dir" ]; then
+        cd_dir=$(echo "$cmd" | grep -oE '^\s*cd\s+(\S+)' | awk '{print $NF}')
+      fi
+      if [ -n "$git_c_dir" ]; then
+        repo_root=$(git -C "$git_c_dir" rev-parse --show-toplevel 2>/dev/null)
+      elif [ -n "$cd_dir" ]; then
+        repo_root=$(git -C "$cd_dir" rev-parse --show-toplevel 2>/dev/null)
+      else
+        repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+      fi
 
       case "$branch" in
         main)
           # Allow if /merge is running (lock exists)
-          local repo_root
-          repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
-          [ -d "$repo_root/.merge-lock" ] && allow
+          [ -n "$repo_root" ] && [ -d "$repo_root/.merge-lock" ] && allow
           # Allow if fast-forward is possible
-          git fetch origin main 2>/dev/null
-          if git merge-base --is-ancestor origin/main HEAD 2>/dev/null; then
-            allow
+          if [ -n "$repo_root" ]; then
+            git -C "$repo_root" fetch origin main 2>/dev/null
+            if git -C "$repo_root" merge-base --is-ancestor origin/main HEAD 2>/dev/null; then
+              allow
+            fi
           fi
           deny "Push to main blocked — your branch has diverged from main. Use /merge to rebase and resolve."
           ;;
@@ -120,9 +142,9 @@ guard_bash() {
   case "$cmd" in
     *kubectl*)
       if echo "$cmd" | grep -qE 'kubectl\s+(apply|create|delete|patch|replace|scale|rollout|drain|cordon|uncordon|taint|label|annotate)'; then
-        # Always blocked — even with auth
-        if echo "$cmd" | grep -qE 'workstation|apply\s+-k\s+master/|kubectl\s+drain|kubectl\s+cordon'; then
-          deny "Blocked: workstation and master namespace modifications are never allowed."
+        # Hard-block: self-modifying the workstation deployment or draining nodes
+        if echo "$cmd" | grep -qE 'deploy(ment)?[/ ]workstation|kubectl\s+drain|kubectl\s+cordon'; then
+          deny "Blocked: workstation deployment self-modification and node drain are never allowed from inside the pod."
         fi
         check_auth deployer && allow
         deny "kubectl write operations require deployer authentication. Use /infra."
@@ -130,8 +152,8 @@ guard_bash() {
       ;;
   esac
 
-  # Grafana API — only match network calls, not file operations mentioning "grafana"
-  if echo "$cmd" | grep -qE '(curl|wget|ssh).*grafana|grafana.*(curl|wget|ssh)|:(30300|3000)/api'; then
+  # Grafana API — match admin operations (dashboard writes, provisioning), not health checks or proxying
+  if echo "$cmd" | grep -qE ':(30300|3000)/api/(dashboards|datasources|provisioning|admin|annotations)|grafana_admin'; then
     check_auth sauron && allow
     deny "Grafana operations require sauron authentication. Use /authenticate as sauron."
   fi
