@@ -14,15 +14,18 @@ Read `profile/config.yaml` and generate kustomize overlays for a cluster. Base m
 $KORDINATE_HOME/profile/overlays/<cluster>/
 ├── gateway/
 │   ├── kustomization.yaml
-│   └── patches.yaml
+│   ├── patches.yaml
+│   └── ingress-caddyfile.yaml      # generated — Caddy routing config
 ├── monitor/
 │   ├── kustomization.yaml
 │   └── patches.yaml
 └── master/
     ├── kustomization.yaml
     ├── patches.yaml
-    ├── alloy-config.yaml       # generated — cluster-specific River config
-    └── gateway-registry.yaml   # generated — cluster gateway IPs
+    ├── workstation-caddyfile.yaml   # generated — Caddy routing config
+    ├── datasources.yaml            # generated — Grafana datasource provisioning
+    ├── alloy-config.yaml           # generated — cluster-specific River config
+    └── gateway-registry.yaml       # generated — cluster gateway IPs
 ```
 
 ## Master Overlay — kord-shared PVC
@@ -53,10 +56,38 @@ Read from `profile/config.yaml` for the target cluster:
 | `MUST_BE_SET_BY_OVERLAY` (TS hostname) | `clusters.<name>.name` | `vandc` |
 | Tailscale IPs | `clusters.<name>.gateway_tailscale_ip` | `100.107.8.117` |
 | Domain names | `network.grafana_public` | `grafana.khaledkord.com` |
+| Domain names | `network.docs_public` | `docs.khaledkord.com` |
+
+## Derived Values (not in config.yaml)
+
+Service DNS names follow a deterministic pattern — construct them from the namespace context:
+
+| Value | Derivation | Example |
+|-------|-----------|---------|
+| Grafana URL | `grafana.<namespace>.svc.cluster.local:3000` | `grafana.master.svc.cluster.local:3000` |
+| Prometheus URL | `prometheus.<namespace>.svc.cluster.local:<port>` | `prometheus.master.svc.cluster.local:9191` |
+| Loki URL | `loki.<namespace>.svc.cluster.local:3100` | `loki.master.svc.cluster.local:3100` |
 
 ## Generated ConfigMaps
 
 These are too complex for simple kustomize patches — generate the full ConfigMap in the overlay.
+
+### workstation-caddyfile (master namespace)
+
+Read `network.grafana_public` and `network.docs_public` from config.yaml. Construct service DNS from namespace context. Generate:
+- `@grafana` host matcher → reverse proxy to `grafana.master.svc.cluster.local:3000`
+- `@docs` host matcher → reverse proxy to `localhost:4321`
+- Fallback 404 handler
+
+### ingress-caddyfile (gateway namespace)
+
+Read `network.grafana_public` from config.yaml. Generate:
+- `@grafana` host matcher → reverse proxy to `grafana.master.svc.cluster.local:3000`
+- Fallback 404 handler
+
+### grafana-datasources (master namespace)
+
+Construct Prometheus and Loki URLs from namespace context. Generate the full provisioning ConfigMap with datasource entries.
 
 ### alloy-config (master namespace)
 

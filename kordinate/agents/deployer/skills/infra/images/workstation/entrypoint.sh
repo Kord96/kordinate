@@ -54,10 +54,11 @@ else
   echo "WARNING: no SSH password in pass (kordinate/ssh/password)"
 fi
 
-# Start sshd as a fallback so the workstation is reachable even if Tailscale SSH fails.
-# Generate host keys if missing (first boot), then start sshd on port 22.
+# Start sshd on port 2222 for Cloudflare tunnel SSH access.
+# Port 22 is reserved for Tailscale SSH (identity-based, internal tailnet).
+# Cloudflare tunnel routes ssh.khaledkord.com → localhost:2222 → sshd.
 sudo ssh-keygen -A 2>/dev/null
-sudo /usr/sbin/sshd 2>/dev/null && echo "sshd started on port 22" || echo "WARNING: sshd failed to start"
+sudo /usr/sbin/sshd -p 2222 2>/dev/null && echo "sshd started on port 2222 (Cloudflare)" || echo "WARNING: sshd failed to start"
 
 # ─── Tailscale (from pass if available, non-fatal) ───
 TS_KEY=$(pass show kordinate/tailscale/auth_key_workstation 2>/dev/null || true)

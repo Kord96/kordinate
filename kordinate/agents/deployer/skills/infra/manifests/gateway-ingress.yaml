@@ -16,36 +16,9 @@ metadata:
     component: ingress
 stringData:
   TUNNEL_TOKEN: MUST_BE_SET
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ingress-caddyfile
-  labels:
-    app: monitoring
-    component: ingress
-data:
-  Caddyfile: |
-    {
-      auto_https off
-    }
-
-    :80 {
-      @grafana host grafana.khaledkord.com
-      handle @grafana {
-        reverse_proxy grafana.master.svc.cluster.local:3000
-      }
-
-      # Add future services here:
-      # @service host service.khaledkord.com
-      # handle @service {
-      #   reverse_proxy service.master.svc.cluster.local:PORT
-      # }
-
-      handle {
-        respond "Not Found" 404
-      }
-    }
+##
+## Caddyfile ConfigMap: generated in overlay (profile/overlays/<cluster>/gateway/).
+## The Deployment mounts it but this base does not define it.
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -89,6 +62,7 @@ spec:
               memory: 256Mi
         - name: caddy
           image: caddy:2-alpine
+          command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--watch"]
           ports:
             - containerPort: 80
           resources:

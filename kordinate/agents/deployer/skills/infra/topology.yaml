@@ -11,13 +11,12 @@ gateway:
 
 master:
   - master-kord-storage.yaml
-  - master-workstation.yaml
-  - prometheus.yaml            # base — overlay sets: port=9191, retention=30d, PVC
-  - loki.yaml                  # base — overlay sets: PVC name
+  - master-workstation.yaml          # Caddyfile ConfigMap generated in overlay
+  - prometheus.yaml                  # base — overlay sets: port=9191, retention=30d, PVC
+  - loki.yaml                       # base — overlay sets: PVC name
   - master-grafana.yaml
-  - master-alloy.yaml          # Deployment only — ConfigMap generated in overlay
-  - master-datasources.yaml
-  # master alloy-config and gateway-registry ConfigMaps are generated per-cluster in profile/overlays/
+  - master-alloy.yaml               # Deployment only — ConfigMap generated in overlay
+  # Generated in overlay: workstation-caddyfile, grafana-datasources, alloy-config, gateway-registry
 
 monitor:
   - prometheus.yaml            # base — overlay sets: port=9090, retention=7d, emptyDir

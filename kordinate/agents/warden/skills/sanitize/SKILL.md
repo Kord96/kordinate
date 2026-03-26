@@ -33,3 +33,34 @@ Classify content and route it to the right place. $ARGUMENTS should include the 
 | "The API key for Grafana is sk-abc123" | Credential — goes to pass |
 | "Grafana dashboards need to be redeployed after config changes" | Memory — operational knowledge |
 | "MinIO at 10.95.43.66:9000 password is kordinate-minio" | Mixed — IP+port to config, password to pass |
+
+## Manifest Validation
+
+When sanitize is invoked on Kubernetes manifest files (`.yaml` in `manifests/`), validate that base manifests contain no environment-specific values. Base manifests must be pure templates — overlays fill in real values.
+
+### Detection Rules
+
+Scan base manifests in `agents/deployer/skills/infra/manifests/` for:
+
+| Pattern | Severity | Action |
+|---------|----------|--------|
+| Public domains (FQDNs not ending in `.local`) | ERROR | Must move to overlay-generated ConfigMap |
+| `.svc.cluster.local` references | WARN | Should be derived from namespace context in overlays |
+| IP addresses (not `127.0.0.1` or `0.0.0.0`) | ERROR | Must come from config.yaml via overlay |
+| Inline config blocks > 5 lines in ConfigMap data | INFO | Consider overlay generation |
+
+### Allowlist (safe in base manifests)
+
+- Placeholder values: `REGISTRY`, `STORAGE_CLASS`, `MUST_BE_SET`, `MUST_BE_SET_BY_OVERLAY`
+- Localhost references: `localhost`, `127.0.0.1`, `0.0.0.0`
+- Container image references (public registries: `grafana/`, `prom/`, `caddy:`, `cloudflare/`, etc.)
+- Port numbers in `containerPort`, `port`, `targetPort` fields
+- Kubernetes API URLs (`kubernetes.default.svc`)
+
+### Procedure for Manifest Validation
+
+1. Glob for `*.yaml` in `agents/deployer/skills/infra/manifests/`
+2. For each file, grep for domain patterns, IPs, and `.svc.cluster.local`
+3. Filter against the allowlist
+4. Cross-reference: if a value from `profile/config.yaml` (`network.*`, `clusters.*.services.*`) appears in a base manifest, flag it
+5. Report findings with file:line, severity, and recommendation

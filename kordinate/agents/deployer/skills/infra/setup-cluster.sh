@@ -61,7 +61,8 @@ install_server() {
         --disable traefik \
         --disable servicelb \
         --write-kubeconfig-mode 644 \
-        --kube-apiserver-arg service-node-port-range=8000-40000
+        --kube-apiserver-arg service-node-port-range=8000-40000 \
+        --kubelet-arg sync-frequency=1s
 
     log "k3s server installed"
     info "Kubeconfig: /etc/rancher/k3s/k3s.yaml"

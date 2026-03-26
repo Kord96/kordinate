@@ -18,10 +18,34 @@ Install Longhorn and configure storage classes. Idempotent.
 
 1. Authenticate
 2. SSH to control plane
-3. Check if Longhorn is installed: `kubectl get ns longhorn-system`
-4. If not: install Longhorn v1.7.3, wait for rollout
-5. Ensure `longhorn` StorageClass exists with correct provisioner
-6. Verify: `kubectl get sc longhorn`
+3. Install `open-iscsi` prerequisite on all cluster nodes:
+   ```
+   ssh kkord@<IP> "sudo apt-get install -y open-iscsi && sudo systemctl enable --now iscsid"
+   ```
+   Repeat for each node in `profile/config.yaml` clusters.<name>.nodes.
+   Skip nodes that are macOS/Docker VMs (e.g. colima) — they cannot run Longhorn.
+4. Check if Longhorn is installed: `kubectl get ns longhorn-system`
+5. If not: install Longhorn v1.7.3:
+   ```
+   kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.7.3/deploy/longhorn.yaml
+   ```
+6. Wait for rollout:
+   ```
+   kubectl -n longhorn-system rollout status deploy/longhorn-driver-deployer --timeout=120s
+   kubectl -n longhorn-system rollout status daemonset/longhorn-manager --timeout=120s
+   ```
+   Note: longhorn-manager pods on nodes without `open-iscsi` will CrashLoop — this is expected.
+7. Verify `longhorn` StorageClass uses the correct provisioner:
+   ```
+   kubectl get sc longhorn -o jsonpath='{.provisioner}'
+   ```
+   Must be `driver.longhorn.io`, NOT `rancher.io/local-path`.
+   If wrong, delete and let Longhorn recreate it:
+   ```
+   kubectl delete sc longhorn
+   # Longhorn manager will recreate it with the correct provisioner
+   ```
+8. Verify: `kubectl get sc longhorn`
 
 ## deploy-master `<cluster>`
 
@@ -32,14 +56,19 @@ Deploy master namespace infrastructure. Includes workstation (with Beorn inside)
 3. **Run `setup-secrets <cluster>`** if secrets don't exist
 4. **Run `setup-kord-storage <cluster>`** if kord-shared PVC doesn't exist
 5. Use bootstrap auth (both `.deployer-auth` and `.bootstrap-auth`)
-6. SSH and apply each manifest individually with `-n master`:
+6. SSH and apply kord-storage and workstation base manifests individually:
    ```
-   kubectl apply -n master -f kord-storage.yaml -f workstation.yaml -f alloy.yaml -f prometheus.yaml -f loki.yaml -f grafana.yaml -f datasources.yaml
+   kubectl apply -n master -f kord-storage.yaml -f workstation.yaml
    ```
-   Do NOT use `kubectl apply -k` (blocked).
-7. Apply dashboard ConfigMaps
-8. Verify pods running (including workstation with Beorn on port 3100)
-9. Remove auth
+7. SSH and apply remaining master resources via kustomize overlay:
+   ```
+   kubectl apply -k profile/overlays/<cluster>/master/ --load-restrictor LoadRestrictionsNone
+   ```
+   This applies base manifests with overlay patches plus generated ConfigMaps
+   (workstation-caddyfile, grafana-datasources, alloy-config, gateway-registry).
+8. Apply dashboard ConfigMaps
+9. Verify pods running (including workstation with Beorn on port 3100)
+10. Remove auth
 
 ## setup-kord-storage `<cluster>`
 

@@ -8,8 +8,9 @@
 ## Tailscale runs inside the container for SSH access.
 ##
 ## Ingress: cloudflared + Caddy run as sidecars in this pod.
-##   - HTTP services (Grafana, etc.) route through Caddy on localhost:80
-##   - SSH is configured in the Cloudflare dashboard to route directly to localhost:22
+##   - HTTP services (Grafana, docs, etc.) route through Caddy on localhost:80
+##   - External SSH: Cloudflare tunnel routes ssh.khaledkord.com → localhost:2222 (sshd)
+##   - Internal SSH: Tailscale SSH on port 22 (identity-based, no keys needed)
 ##   All containers share the pod network namespace, so localhost works.
 ##
 ## Setup: ./kordinate init deploys this, links repo, copies credentials, runs auth-check.
@@ -25,30 +26,9 @@
 ##
 ## Secret 'cloudflared-tunnel' is created by deployer from pass store at deploy time.
 ## Do not include it here — MUST_BE_SET placeholder overwrites the real token on apply.
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: workstation-caddyfile
-  labels:
-    app: workstation
-    component: ingress
-data:
-  Caddyfile: |
-    {
-      auto_https off
-    }
-
-    :80 {
-      @grafana host grafana.khaledkord.com
-      handle @grafana {
-        reverse_proxy grafana.master.svc.cluster.local:3000
-      }
-
-      handle {
-        respond "Not Found" 404
-      }
-    }
+##
+## Caddyfile ConfigMap: generated in overlay (profile/overlays/<cluster>/master/).
+## The Deployment mounts it but this base does not define it.
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -148,6 +128,7 @@ spec:
               memory: 256Mi
         - name: caddy
           image: caddy:2-alpine
+          command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--watch"]
           ports:
             - containerPort: 80
               name: http

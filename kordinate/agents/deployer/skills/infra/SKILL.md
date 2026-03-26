@@ -15,8 +15,9 @@ scope: global
 | `stop <project> <env>` | Scale down an environment | [operations.md](operations.md) |
 | `clean <project> <env>` | Delete PVCs and data | [operations.md](operations.md) |
 | `diff <project> <source> <target>` | Stage incremental data changes | [diff.md](diff.md) |
-| `migrate [cluster]` | Execute workstation migration (build, PVC, data, deploy) | [migrate.md](migrate.md) |
+| `migrate <cluster>` | Execute workstation migration (build, PVC, data, deploy) | [migrate.md](migrate.md) |
 | `migrate-cleanup` | Post-migration verification and cleanup (run from new pod) | [migrate-cleanup.md](migrate-cleanup.md) |
+| `upgrade-storage <pvc> <namespace>` | Upgrade a PVC to Longhorn RWX | [upgrade-storage.md](upgrade-storage.md) |
 | `preflight <project> <env>` | Pre-deployment validation checks | [preflight.md](preflight.md) |
 | `rollback <project> <env>` | Revert deployment to pre-roll state | [rollback.md](rollback.md) |
 
