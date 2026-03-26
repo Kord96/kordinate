@@ -1,0 +1,15 @@
+rules:
+  - id: log-then-raise
+    pattern: |
+      logger.error(...)
+      raise $EXC
+    message: "Logging error then re-raising — exception will be logged again upstream"
+    severity: INFO
+    languages: [python]
+  - id: log-then-raise-variant
+    pattern: |
+      logger.exception(...)
+      raise
+    message: "Logging exception then re-raising — creates duplicate log entries"
+    severity: INFO
+    languages: [python]

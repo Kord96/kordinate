@@ -1,0 +1,17 @@
+rules:
+  - id: query-in-loop
+    pattern: |
+      for $ITEM in $ITEMS:
+          ...
+          $OBJ.query(...)
+    message: "Database query inside loop — potential N+1 query problem"
+    severity: WARNING
+    languages: [python]
+  - id: execute-in-loop
+    pattern: |
+      for $ITEM in $ITEMS:
+          ...
+          cursor.execute(...)
+    message: "SQL execute inside loop — potential N+1 query problem"
+    severity: WARNING
+    languages: [python]

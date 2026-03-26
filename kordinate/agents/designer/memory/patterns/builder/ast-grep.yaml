@@ -1,0 +1,11 @@
+id: builder-return-self
+language: Python
+rule:
+  pattern: 'return self'
+---
+id: build-method
+language: Python
+rule:
+  pattern: |
+    def build(self, $$$ARGS):
+        $$$BODY

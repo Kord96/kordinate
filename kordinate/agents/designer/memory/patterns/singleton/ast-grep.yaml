@@ -1,0 +1,18 @@
+id: singleton-class-variable
+language: Python
+rule:
+  pattern: '_instance = None'
+---
+id: singleton-new-method
+language: Python
+rule:
+  pattern: |
+    def __new__(cls, $$$ARGS):
+        $$$BODY
+---
+id: singleton-get-instance
+language: Python
+rule:
+  pattern: |
+    def get_instance($$$ARGS):
+        $$$BODY
