@@ -464,17 +464,22 @@
 
   // === TYPE STYLING =========================================================
   var typeConfig = {
-    'group':            { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.15)', text: '#999', shape: 'roundrectangle' },
+    'group':            { bg: '#2a2a4e', border: '#4a4a6e', text: '#aaa', shape: 'roundrectangle' },
     'component':        { bg: '#4a90d9', border: '#3a78c0', text: '#fff', shape: 'roundrectangle' },
-    'service':          { bg: '#4a90d9', border: '#3a78c0', text: '#fff', shape: 'roundrectangle' },
+    'frontend':         { bg: '#4a90d9', border: '#3a78c0', text: '#fff', shape: 'roundrectangle' },
+    'service':          { bg: '#3498db', border: '#2980b9', text: '#fff', shape: 'roundrectangle' },
     'external-service': { bg: '#e67e22', border: '#cf6d14', text: '#fff', shape: 'diamond' },
     'endpoint':         { bg: '#d4740e', border: '#b8640c', text: '#fff', shape: 'diamond' },
     'route':            { bg: '#1abc9c', border: '#14a085', text: '#fff', shape: 'hexagon' },
     'library':          { bg: '#9b59b6', border: '#8244a0', text: '#fff', shape: 'roundrectangle' },
-    'config':           { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'ellipse' },
+    'config':           { bg: '#c0392b', border: '#a93226', text: '#fff', shape: 'ellipse' },
     'stylesheet':       { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'ellipse' },
-    'test-suite':       { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'roundrectangle' },
-    'test':             { bg: '#e74c3c', border: '#c0392b', text: '#fff', shape: 'ellipse' }
+    'test-suite':       { bg: '#e67e22', border: '#cf6d14', text: '#fff', shape: 'roundrectangle' },
+    'test':             { bg: '#e67e22', border: '#cf6d14', text: '#fff', shape: 'ellipse' },
+    'gateway':          { bg: '#e67e22', border: '#cf6d14', text: '#fff', shape: 'diamond' },
+    'store':            { bg: '#1abc9c', border: '#14a085', text: '#fff', shape: 'barrel' },
+    'worker':           { bg: '#2ecc71', border: '#27ae60', text: '#fff', shape: 'roundrectangle' },
+    'api':              { bg: '#3498db', border: '#2980b9', text: '#fff', shape: 'roundrectangle' }
   };
 
   function getTypeConfig(type) {
@@ -521,7 +526,7 @@
         selector: 'node[nodeType="group"][!collapsed]',
         style: {
           'shape': 'roundrectangle',
-          'background-color': 'rgba(123,104,238,0.06)',
+          'background-color': 'rgba(42,42,78,0.7)',
           'background-opacity': 1,
           'border-width': 1.5,
           'border-style': 'dashed',
@@ -984,7 +989,7 @@
     var cfg = getTypeConfig(n.type);
     ttLabel.textContent = n.name;
     ttType.textContent = n.type.replace(/-/g, ' ');
-    ttType.style.color = cfg.bg === 'rgba(255,255,255,0.03)' ? '#7b68ee' : cfg.bg;
+    ttType.style.color = cfg.bg === '#2a2a4e' ? '#7b68ee' : cfg.bg;
     ttFile.textContent = n.file || '';
     ttFile.style.display = n.file ? 'block' : 'none';
     ttDesc.textContent = n.description || '';
