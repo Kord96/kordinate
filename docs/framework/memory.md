@@ -4,7 +4,7 @@ Everything in kordinate — identity, skills, memory, contracts — is knowledge
 
 ## Properties
 
-Every piece of knowledge is described by eight properties:
+Every piece of knowledge is described by nine properties:
 
 | Property | Question | Values | Default |
 |----------|----------|--------|---------|

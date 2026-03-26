@@ -58,9 +58,7 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
     | skill | `/boot` | Catch up on parent context and code changes |
     | skill | `/kord` | Invoke an agent via kord protocol |
     | skill | `/merge` | Merge session branch forward |
-    | guard | `guard-git.sh` | Branch protection |
-    | guard | `guard-md.sh` | Structured files — scribe only |
-    | hook | `auto-merge-to-dev.sh` | Fast-forward main after push |
+    | guard | `guard.sh` | Unified domain enforcement |
     | hook | `agent-memory.sh` | Regenerate agent MEMORY.md before spawn |
 
 === "Scribe"
@@ -91,7 +89,7 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
     | Type | Name | Purpose |
     |------|------|---------|
     | skill | `/infra` | Infrastructure operations (subcommands: bootstrap, deploy, roll, stop, clean, diff, migrate, generate-overlays) |
-    | guard | `guard-kubectl.sh` | kubectl write operations — deployer only |
+    | guard | `guard.sh` | Domain enforcement (kubectl write ops) |
     | tool | `postgres.py` | Local database operations |
 
 === "Sauron"
@@ -104,7 +102,7 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
     |------|------|---------|
     | skill | `/scan` | Scan a project for monitoring gaps |
     | skill | `/diagnose` | Diagnose a specific issue |
-    | guard | `guard-grafana.sh` | Grafana MCP tools — sauron only |
+    | guard | `guard.sh` | Domain enforcement (Grafana access) |
     | tool | Grafana MCP | Dashboard management |
     | tool | nokrashi-tools | Code analysis |
     | tool | klog | Log analysis |

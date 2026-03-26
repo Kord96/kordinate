@@ -32,8 +32,7 @@ Owns all infrastructure operations — the only agent authorized to write to clu
 
 | Hook | What it guards |
 |------|---------------|
-| `guard-kubectl.sh` | kubectl writes via SSH + `docker build/push/tag`. Hard-blocks workstation resources. Master namespace writes require bootstrap auth. |
-| `guard-redis.sh` | Redis MCP access |
+| `guard.sh` | kubectl writes via SSH + `docker build/push/tag`. Hard-blocks workstation resources. Master namespace writes require bootstrap auth. |
 
 ??? abstract "config.yaml reference"
 
