@@ -3,9 +3,14 @@
 ## Runs in master namespace. Beorn (MCP agent server) runs as a background
 ## process inside this pod on port 3100.
 ##
-## PVC-backed: /home/claude persists across restarts (auth, repos, pass store).
-## All credentials live in pass store on the PVC.
+## Storage: single 'kord' PVC mounted at /kord with persistent system state.
+## /home/claude is ephemeral — entrypoint symlinks to /kord subdirectories.
 ## Tailscale runs inside the container for SSH access.
+##
+## Ingress: cloudflared + Caddy run as sidecars in this pod.
+##   - HTTP services (Grafana, etc.) route through Caddy on localhost:80
+##   - SSH is configured in the Cloudflare dashboard to route directly to localhost:22
+##   All containers share the pod network namespace, so localhost works.
 ##
 ## Setup: ./kordinate init deploys this, links repo, copies credentials, runs auth-check.
 ## Only `claude login` is manual after setup.
@@ -18,6 +23,40 @@
 ## RBAC: agent-readonly (read-only cluster access). Deployer agent uses
 ## the k3s admin kubeconfig via SSH for write operations.
 ##
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflared-tunnel
+  labels:
+    app: workstation
+    component: ingress
+stringData:
+  TUNNEL_TOKEN: MUST_BE_SET
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workstation-caddyfile
+  labels:
+    app: workstation
+    component: ingress
+data:
+  Caddyfile: |
+    {
+      auto_https off
+    }
+
+    :80 {
+      @grafana host grafana.khaledkord.com
+      handle @grafana {
+        reverse_proxy grafana.master.svc.cluster.local:3000
+      }
+
+      handle {
+        respond "Not Found" 404
+      }
+    }
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -35,20 +74,6 @@ subjects:
   - kind: ServiceAccount
     name: workstation
     namespace: master
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: workstation-home
-  labels:
-    app: workstation
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: STORAGE_CLASS
-  resources:
-    requests:
-      storage: 20Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -86,9 +111,11 @@ spec:
             - name: TS_HOSTNAME
               value: workstation
             - name: KORDINATE_HOME
-              value: /kord-shared
+              value: /kord/kordinate
             - name: KORD_WORKTREE_ROOT
-              value: /kord-shared/.worktrees
+              value: /kord/kordinate/.worktrees
+            - name: KORD_ROOT
+              value: /kord
           securityContext:
             capabilities:
               add: ["NET_ADMIN", "NET_RAW"]
@@ -99,20 +126,52 @@ spec:
             limits:
               memory: 5Gi
           volumeMounts:
-            - name: home
-              mountPath: /home/claude
-            - name: kord-shared
-              mountPath: /kord-shared
+            - name: kord
+              mountPath: /kord
             - name: dev-tun
               mountPath: /dev/net/tun
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - run
+            - --token
+            - $(TUNNEL_TOKEN)
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-tunnel
+                  key: TUNNEL_TOKEN
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+        - name: caddy
+          image: caddy:2-alpine
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: caddyfile
+              mountPath: /etc/caddy
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
       volumes:
-        - name: home
+        - name: kord
           persistentVolumeClaim:
-            claimName: workstation-home
-        - name: kord-shared
-          persistentVolumeClaim:
-            claimName: kord-shared
+            claimName: kord
         - name: dev-tun
           hostPath:
             path: /dev/net/tun
             type: CharDevice
+        - name: caddyfile
+          configMap:
+            name: workstation-caddyfile

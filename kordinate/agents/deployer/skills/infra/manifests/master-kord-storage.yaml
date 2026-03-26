@@ -1,12 +1,20 @@
 ##
-## Kord shared storage — RWX PVC for shared agent state.
-## Initialized by a one-shot Job that creates an empty git repo.
-## Actual kord content (agents, skills, etc) populated by onboard/bootstrap.
+## Kord — persistent system volume for the kordinate platform.
+## RWX so multiple pods (workstation, future agents) can mount it.
+##
+## Layout:
+##   /kord/pass/        — password store (GPG-encrypted credentials)
+##   /kord/ssh/         — SSH keys (user + host)
+##   /kord/kordinate/   — kordinate runtime (~/.kord)
+##   /kord/projects/    — cloned repos (each may have <repo>/.kord)
+##
+## Initialized by a one-shot Job that creates the directory structure
+## and an empty git repo for the kordinate runtime.
 ##
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: kord-shared
+  name: kord
   labels:
     app: kord
 spec:
@@ -15,7 +23,7 @@ spec:
   storageClassName: STORAGE_CLASS
   resources:
     requests:
-      storage: 5Gi
+      storage: 20Gi
 ---
 apiVersion: batch/v1
 kind: Job
@@ -34,19 +42,24 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              if [ -d /kord-shared/.git ]; then
-                echo "kord-shared already initialized, skipping"
-                exit 0
+              mkdir -p /kord/pass /kord/ssh /kord/projects
+
+              if [ -d /kord/kordinate/.git ]; then
+                echo "kordinate runtime already initialized, skipping"
+              else
+                git init /kord/kordinate
+                cd /kord/kordinate
+                git commit --allow-empty -m "init kord runtime"
+                mkdir -p .worktrees .locks
+                echo "kordinate runtime initialized"
               fi
-              git init /kord-shared
-              cd /kord-shared
-              git commit --allow-empty -m "init kord shared state"
-              mkdir -p .worktrees .locks
-              echo "kord-shared initialized"
+
+              chmod 700 /kord/pass /kord/ssh
+              echo "kord volume ready"
           volumeMounts:
-            - name: kord-shared
-              mountPath: /kord-shared
+            - name: kord
+              mountPath: /kord
       volumes:
-        - name: kord-shared
+        - name: kord
           persistentVolumeClaim:
-            claimName: kord-shared
+            claimName: kord

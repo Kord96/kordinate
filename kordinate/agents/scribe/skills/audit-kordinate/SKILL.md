@@ -1,5 +1,5 @@
 ---
-name: audit
+name: audit-kordinate
 description: Read-only health check for the memory and kordinate system — scans files and reports issues.
 curated: true
 scope: global

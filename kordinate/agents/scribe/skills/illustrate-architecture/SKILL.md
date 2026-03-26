@@ -1,5 +1,5 @@
 ---
-name: illustrate
+name: illustrate-architecture
 description: Generate diagram descriptions and optional tutorials from a project's architecture.yaml — decides which diagrams are useful and at what abstraction level.
 curated: true
 scope: global

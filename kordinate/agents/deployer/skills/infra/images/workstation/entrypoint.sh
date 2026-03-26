@@ -5,7 +5,8 @@ set -euo pipefail
 # ─── Shell config (once) ───
 if ! grep -q 'KORDINATE_HOME' ~/.bashrc 2>/dev/null; then
   cat >> ~/.bashrc <<'BASHRC'
-export KORDINATE_HOME="$HOME/kordinate"
+export KORD_ROOT="${KORD_ROOT:-/kord}"
+export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
 export PATH="$KORDINATE_HOME/bin:$PATH"
 alias claude="claude-session --dangerously-skip-permissions"
 [ -f "$KORDINATE_HOME/bin/tmux-session.bash" ] && source "$KORDINATE_HOME/bin/tmux-session.bash"
@@ -19,12 +20,31 @@ if [ ! -f ~/.bash_profile ]; then
 PROF
 fi
 
-export KORDINATE_HOME="$HOME/kordinate"
+export KORD_ROOT="${KORD_ROOT:-/kord}"
+export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
 export PATH="$KORDINATE_HOME/bin:$PATH"
 
-# ─── SSH ───
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
+# ─── Symlink persistent state from /kord into ephemeral home ───
+ln -sfn "$KORD_ROOT/pass" "$HOME/.password-store"
+ln -sfn "$KORD_ROOT/ssh" "$HOME/.ssh"
+ln -sfn "$KORDINATE_HOME" "$HOME/.kord"
+ln -sfn "$KORD_ROOT/projects" "$HOME/projects"
+chmod 700 "$KORD_ROOT/pass" "$KORD_ROOT/ssh" 2>/dev/null || true
+
+# Provision authorized keys from pass store for sshd access (cloudflared / fallback path)
+SSH_KEY=$(pass show kordinate/ssh/authorized_key 2>/dev/null || true)
+if [ -n "$SSH_KEY" ]; then
+  echo "$SSH_KEY" > ~/.ssh/authorized_keys
+  chmod 600 ~/.ssh/authorized_keys
+  echo "SSH authorized key provisioned from pass"
+else
+  echo "WARNING: no SSH key in pass (kordinate/ssh/authorized_key) — sshd will reject key auth"
+fi
+
+# Start sshd as a fallback so the workstation is reachable even if Tailscale SSH fails.
+# Generate host keys if missing (first boot), then start sshd on port 22.
+sudo ssh-keygen -A 2>/dev/null
+sudo /usr/sbin/sshd 2>/dev/null && echo "sshd started on port 22" || echo "WARNING: sshd failed to start"
 
 # ─── Tailscale (from pass if available, non-fatal) ───
 TS_KEY=$(pass show kordinate/tailscale/auth_key_workstation 2>/dev/null || true)
@@ -67,32 +87,20 @@ else
   echo "Tailscale: no auth key in pass — run auth-check.sh to configure"
 fi
 
-# ─── Initialize kord shared state ───
-if [ -n "${KORDINATE_HOME:-}" ] && [ -d "$KORDINATE_HOME" ]; then
-  # Ensure worktree and lock directories exist
-  mkdir -p "${KORD_WORKTREE_ROOT:-$KORDINATE_HOME/.worktrees}"
-  mkdir -p "$KORDINATE_HOME/.locks"
-
-  # Symlink ~/.kord -> KORDINATE_HOME for tools that expect it
-  if [ ! -L "$HOME/.kord" ]; then
-    rm -rf "$HOME/.kord" 2>/dev/null || true
-    ln -sf "$KORDINATE_HOME" "$HOME/.kord"
-    echo "Symlinked ~/.kord -> $KORDINATE_HOME"
-  fi
-
-  # Prune stale worktrees from previous crashes
-  if [ -d "$KORDINATE_HOME/.git" ]; then
-    git -C "$KORDINATE_HOME" worktree prune 2>/dev/null || true
-  fi
+# ─── Initialize kord state ───
+mkdir -p "${KORD_WORKTREE_ROOT:-$KORDINATE_HOME/.worktrees}"
+mkdir -p "$KORDINATE_HOME/.locks"
+if [ -d "$KORDINATE_HOME/.git" ]; then
+  git -C "$KORDINATE_HOME" worktree prune 2>/dev/null || true
 fi
 
-# ─── Update kordinate (if repo exists) ───
-if [ -d ~/kordinate/.git ]; then
-  git -C ~/kordinate pull --ff-only 2>/dev/null || true
+# ─── Update kordinate (if runtime repo exists) ───
+if [ -d "$KORDINATE_HOME/.git" ]; then
+  git -C "$KORDINATE_HOME" pull --ff-only 2>/dev/null || true
 fi
 
 # ─── Start Beorn (MCP agent server) ───
-MCP_SERVER="$HOME/kordinate/kordinate/lib/mcp-agent-server"
+MCP_SERVER="$KORDINATE_HOME/lib/mcp-agent-server"
 if [ -d "$MCP_SERVER" ]; then
   echo "Installing Beorn dependencies..."
   (cd "$MCP_SERVER" && npm install --production 2>/dev/null || npm install 2>/dev/null || true)

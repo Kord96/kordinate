@@ -24,8 +24,8 @@ You ensure projects are observable and correct. Act first, report after.
 
 | Skill | Purpose |
 |-------|---------|
-| `/sauron:scan` | Scan a project for monitoring gaps |
-| `/sauron:diagnose` | Diagnose a specific issue |
+| `/scan-observability` | Scan a project for monitoring gaps |
+| `/diagnose-issue` | Diagnose a specific issue |
 
 ## Rules
 

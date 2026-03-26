@@ -23,7 +23,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3100');
 const HOME = process.env.HOME || '/home/claude';
 const KORDINATE_HOME = process.env.KORDINATE_HOME || join(HOME, '.kord');
-const REPO_ROOT = process.env.REPO_ROOT || join(HOME, 'kordinate');
 const BOOT_TIME = new Date().toISOString();
 
 // ─── Discover agents from KORD.json or agents/ directory ───
@@ -186,7 +185,7 @@ async function invokeAgent(agent, prompt) {
 
     const result = await new Promise((resolve, reject) => {
       const child = spawn('claude', args, {
-        cwd: REPO_ROOT,
+        cwd: KORDINATE_HOME,
         env: { ...process.env, HOME, KORDINATE_HOME: worktree.path },
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: true, // survive parent shell exit
