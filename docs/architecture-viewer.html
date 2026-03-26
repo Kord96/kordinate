@@ -23,7 +23,7 @@
     top: 0;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: 1010;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -89,7 +89,7 @@
     position: fixed;
     bottom: 24px;
     left: 24px;
-    z-index: 100;
+    z-index: 1010;
     background: rgba(26,26,46,0.92);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255,255,255,0.08);
@@ -127,7 +127,7 @@
 
   #tooltip {
     position: fixed;
-    z-index: 200;
+    z-index: 1020;
     background: rgba(16,16,32,0.96);
     backdrop-filter: blur(16px);
     border: 1px solid rgba(255,255,255,0.12);
@@ -171,7 +171,7 @@
     position: fixed;
     bottom: 24px;
     right: 24px;
-    z-index: 100;
+    z-index: 1010;
     font-size: 11px;
     color: #555;
     background: rgba(26,26,46,0.8);
@@ -373,18 +373,20 @@
           'border-style': 'solid',
           'border-width': 2,
           'border-color': 'rgba(123,104,238,0.5)',
-          'background-color': 'rgba(123,104,238,0.08)',
+          'background-color': 'rgba(123,104,238,0.12)',
           'background-opacity': 1,
-          'padding': '22px',
+          'padding': '24px',
           'label': 'data(label)',
-          'color': '#bbb',
-          'font-size': '14px',
+          'color': '#ccc',
+          'font-size': '13px',
           'font-weight': '600',
           'text-halign': 'center',
           'text-valign': 'center',
           'text-margin-y': 0,
+          'text-wrap': 'wrap',
+          'text-max-width': '240px',
           'font-family': 'Inter, sans-serif',
-          'width': 200,
+          'width': 240,
           'height': 60
         }
       },
@@ -580,6 +582,20 @@
     layout: coseBilkentDefaults
   });
 
+  // ── Child count map (for summary labels) ─────────────────────────
+  var childCounts = {};
+  architectureData.components.forEach(function(c) {
+    if (c.parent) {
+      childCounts[c.parent] = (childCounts[c.parent] || 0) + 1;
+    }
+  });
+
+  // Store original labels for expand restore
+  var originalLabels = {};
+  architectureData.components.forEach(function(c) {
+    originalLabels[c.id] = c.label;
+  });
+
   // ── Expand/Collapse ────────────────────────────────────────────────
   var ecApi = cy.expandCollapse({
     layoutBy: {
@@ -602,6 +618,51 @@
     expandCollapseCueSize: 14,
     expandCollapseCueLineSize: 10,
     zIndex: 999
+  });
+
+  // ── Summary labels on collapse/expand ───────────────────────────
+  function setSummaryLabel(node) {
+    var id = node.id();
+    var count = childCounts[id] || 0;
+    var base = originalLabels[id] || node.data('label');
+    if (count > 0) {
+      node.data('label', base + ' (' + count + ' components)');
+    }
+  }
+
+  function restoreLabel(node) {
+    var id = node.id();
+    if (originalLabels[id]) {
+      node.data('label', originalLabels[id]);
+    }
+  }
+
+  cy.on('expandcollapse.aftercollapse', function(evt) {
+    var node = evt.target;
+    setSummaryLabel(node);
+  });
+
+  cy.on('expandcollapse.afterexpand', function(evt) {
+    var node = evt.target;
+    restoreLabel(node);
+  });
+
+  // ── Click group nodes to toggle collapse/expand ─────────────────
+  cy.on('tap', 'node[nodeType="group"]', function(e) {
+    var node = e.target;
+    if (ecApi.isCollapsible(node)) {
+      ecApi.collapse(node);
+    } else if (ecApi.isExpandable(node)) {
+      ecApi.expand(node);
+    }
+  });
+
+  // Also handle tap on collapsed nodes (which get the collapsed-node class)
+  cy.on('tap', 'node.cy-expand-collapse-collapsed-node', function(e) {
+    var node = e.target;
+    if (ecApi.isExpandable(node)) {
+      ecApi.expand(node);
+    }
   });
 
   // ── Tooltip ────────────────────────────────────────────────────────
@@ -664,6 +725,8 @@
     ecApi.collapseAll();
   });
 
+  // Also handle label updates for "all" operations (events fire per-node, so this is covered)
+
   document.getElementById('btn-fit').addEventListener('click', function() {
     cy.animate({ fit: { padding: 80 }, duration: 400, easing: 'ease-in-out-cubic' });
   });
@@ -675,6 +738,10 @@
       cy.panBy({ x: 0, y: 30 });
     }, 200);
   });
+
+  // Expose for programmatic access (e.g. browser console)
+  window.cy = cy;
+  window.ecApi = ecApi;
 
 })();
 </script>
