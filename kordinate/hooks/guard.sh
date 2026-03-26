@@ -93,6 +93,7 @@ guard_bash() {
       if [ -z "$branch" ]; then
         local git_c_detect
         git_c_detect=$(echo "$cmd" | grep -oE 'git\s+-C\s+(\S+)' | awk '{print $NF}')
+        git_c_detect="${git_c_detect/#\~/$HOME}"
         if [ -n "$git_c_detect" ]; then
           branch=$(git -C "$git_c_detect" branch --show-current 2>/dev/null || echo "unknown")
         else
@@ -105,6 +106,9 @@ guard_bash() {
       git_c_dir=$(echo "$cmd" | grep -oE 'git\s+-C\s+(\S+)' | awk '{print $NF}')
       if [ -z "$git_c_dir" ]; then
         cd_dir=$(echo "$cmd" | grep -oE '^\s*cd\s+(\S+)' | awk '{print $NF}')
+        cd_dir="${cd_dir/#\~/$HOME}"
+      else
+        git_c_dir="${git_c_dir/#\~/$HOME}"
       fi
       if [ -n "$git_c_dir" ]; then
         repo_root=$(git -C "$git_c_dir" rev-parse --show-toplevel 2>/dev/null)
