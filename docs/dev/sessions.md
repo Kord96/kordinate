@@ -1,6 +1,6 @@
 # Sessions & Branches
 
-Each tmux window runs its own agent runtime with isolated agents and hooks. Windows create isolated git worktrees + branches via `bin/claude-session`. On exit: push + PR if changes, cleanup if not.
+Each tmux window runs its own agent runtime with isolated agents and hooks. Windows create isolated git worktrees + branches via `bin/claude-session`. On exit: commits uncommitted work, cleans up if no changes.
 
 ```mermaid
 flowchart TB
@@ -17,16 +17,14 @@ flowchart TB
         end
     end
 
-    W1 & W2 & PW1 -->|on exit| PR{changes?}
-    PR -->|yes| PUSH[auto-push]
-    PR -->|no| CLEAN[cleanup worktree]
-    PUSH --> FF{conflicts?}
-    FF -->|no| DONE[merged to main]
-    FF -->|yes| MERGE[PR created + /merge]
+    W1 & W2 & PW1 -->|on exit| CHK{changes?}
+    CHK -->|yes| COMMIT[commit uncommitted work]
+    CHK -->|no| CLEAN[cleanup worktree]
+    COMMIT --> PRESERVE[session preserved locally]
 ```
 
 ## Branch Model
 
-`session/*` → `main` → `test` → `prod`
+Session branches are **local only** -- never pushed to remote. The agent pushes directly to main when ready (`git push origin HEAD:main`). If that fails (non-fast-forward), use `/merge` to rebase.
 
-The `auto-merge-to-dev.sh` hook tries to fast-forward main after each push. If it fails, run `/merge`.
+`main` → `test` → `prod`

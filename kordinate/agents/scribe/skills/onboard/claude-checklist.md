@@ -54,7 +54,8 @@ These can be verified immediately — no session restart required.
     - `boot/` (SKILL.md + claude-session-structure.md)
     - `kord/` (SKILL.md)
     - `authenticate/` (SKILL.md)
-    - `merge/` (SKILL.md)
+    - `merge/` (SKILL.md + Level 3 resources)
+    - `install/` (SKILL.md)
 
 **Hooks:**
 

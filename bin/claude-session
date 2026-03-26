@@ -2,7 +2,7 @@
 # Start Claude Code in an isolated git worktree.
 # - In tmux: worktree is keyed by tmux session+window (reused on re-run = auto resume)
 # - Outside tmux: falls back to timestamp-based worktree
-# - On exit: pushes + creates PR if changes exist, cleans up if not
+# - On exit: commits uncommitted work, cleans up if no changes
 # Usage: bin/claude-session [claude args...]
 
 set -e
@@ -108,7 +108,7 @@ else
   set -e
 fi
 
-# Cleanup or push+PR
+# Cleanup or preserve
 commits=$(git log main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
 dirty=$(git status --porcelain 2>/dev/null)
 
@@ -123,22 +123,6 @@ else
     echo "Committing uncommitted changes..."
     git add -A
     git commit -m "wip: uncommitted changes at session exit"
-  fi
-
-  # Push and create PR if one doesn't exist
-  echo "Pushing session branch..."
-  git push -u origin "$branch" 2>/dev/null || git push --force-with-lease origin "$branch"
-
-  existing_pr=$(gh pr list --head "$branch" --json number --jq '.[0].number' 2>/dev/null)
-  if [ -z "$existing_pr" ]; then
-    echo "Creating PR..."
-    gh pr create \
-      --title "session: ${session_id}" \
-      --body "Auto-created from Claude session worktree." \
-      --base main \
-      --head "$branch" 2>/dev/null || echo "PR creation failed — push succeeded, create manually"
-  else
-    echo "PR #$existing_pr already exists"
   fi
 
   echo "Session preserved at: $worktree (branch: $branch)"
