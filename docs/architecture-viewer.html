@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sous-storefront -- Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #1a1a2e;
+    color: #e0e0e0;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: linear-gradient(180deg, rgba(26,26,46,0.97) 0%, rgba(26,26,46,0.85) 100%);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  #header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: #f0f0f0;
+  }
+
+  #header h1 span {
+    color: #7b68ee;
+    font-weight: 700;
+  }
+
+  #header .subtitle {
+    font-size: 12px;
+    color: #888;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  #controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn {
+    padding: 7px 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    color: #ccc;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  .btn:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    color: #fff;
+  }
+
+  #cy {
+    width: 100%;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  #legend {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 100;
+    background: rgba(26,26,46,0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-width: 180px;
+  }
+
+  #legend h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #888;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #bbb;
+  }
+
+  .legend-item:last-child { margin-bottom: 0; }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  #tooltip {
+    position: fixed;
+    z-index: 200;
+    background: rgba(16,16,32,0.96);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 14px 18px;
+    max-width: 320px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  #tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #tooltip .tt-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f0f0f0;
+    margin-bottom: 6px;
+  }
+
+  #tooltip .tt-type {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  #tooltip .tt-desc {
+    font-size: 12px;
+    color: #aaa;
+    line-height: 1.5;
+  }
+
+  #info-badge {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 100;
+    font-size: 11px;
+    color: #555;
+    background: rgba(26,26,46,0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 8px 14px;
+  }
+
+  /* Expand/collapse cue styling */
+  .cy-expand-collapse-collapsed-node {
+    border-style: solid;
+  }
+</style>
+
+<!-- Cytoscape core -->
+<script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+<!-- Layout engines -->
+<script src="https://unpkg.com/cose-base@2.2.0/cose-base.js"></script>
+<script src="https://unpkg.com/cytoscape-cose-bilkent@4.1.0/cytoscape-cose-bilkent.js"></script>
+<!-- Expand/Collapse -->
+<script src="https://unpkg.com/cytoscape-expand-collapse@4.1.0/cytoscape-expand-collapse.js"></script>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <h1><span>sous-storefront</span> &mdash; Architecture</h1>
+    <div class="subtitle">SSR e-commerce storefront &middot; React Router v7 &middot; dummyjson.com API</div>
+  </div>
+  <div id="controls">
+    <button class="btn" id="btn-expand-all">Expand All</button>
+    <button class="btn" id="btn-collapse-all">Collapse All</button>
+    <button class="btn" id="btn-fit">Fit View</button>
+  </div>
+</div>
+
+<div id="cy"></div>
+
+<div id="legend">
+  <h3>Component Types</h3>
+  <div class="legend-item"><div class="legend-dot" style="background:#4a90d9"></div>Frontend</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div>Library</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div>Gateway / API</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1abc9c"></div>Store</div>
+  <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.06); border:1px dashed rgba(255,255,255,0.2)"></div>Group</div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-label"></div>
+  <div class="tt-type"></div>
+  <div class="tt-desc"></div>
+</div>
+
+<div id="info-badge">Scroll to zoom &middot; Drag to pan &middot; Click groups to collapse</div>
+
+<script>
+(function() {
+
+  // ── Architecture Data ──────────────────────────────────────────────
+  var architectureData = {
+    project: "sous-storefront",
+    purpose: "SSR e-commerce storefront consuming dummyjson.com API with client-side cart",
+    components: [
+      { id: "server-group", label: "Server (Node.js SSR)", type: "group" },
+      { id: "browser-group", label: "Browser", type: "group" },
+      { id: "external-group", label: "External", type: "group" },
+      { id: "ssr-server", label: "SSR Server & Router", type: "frontend", parent: "server-group",
+        description: "React Router v7 SSR, route loaders, prerendering" },
+      { id: "query-layer", label: "Data Fetching Layer", type: "library", parent: "server-group",
+        description: "TanStack Query + ky HTTP client + dehydrate/hydrate bridge" },
+      { id: "ui-shell", label: "UI Shell", type: "frontend", parent: "browser-group",
+        description: "Header, nav menu, cart sheet, theme toggle, shared components" },
+      { id: "catalog-views", label: "Catalog Views", type: "frontend", parent: "browser-group",
+        description: "Home (infinite scroll) + Products (load more) with SSR hydration" },
+      { id: "checkout-module", label: "Checkout Flow", type: "frontend", parent: "browser-group",
+        description: "Decorative forms, simulated order, confetti success page" },
+      { id: "client-state", label: "Zustand Stores", type: "library", parent: "browser-group",
+        description: "Cart store (5 actions) + theme store, persisted to localStorage" },
+      { id: "dummyjson", label: "dummyjson.com API", type: "gateway", parent: "external-group",
+        description: "Product catalog: categories, products, pagination" },
+      { id: "localstorage", label: "localStorage", type: "store", parent: "external-group",
+        description: "Cart and theme persistence" }
+    ],
+    edges: [
+      { source: "ssr-server", target: "query-layer", label: "prefetch in loader" },
+      { source: "query-layer", target: "dummyjson", label: "GET products", style: "dashed" },
+      { source: "catalog-views", target: "query-layer", label: "infinite queries" },
+      { source: "catalog-views", target: "client-state", label: "add to cart" },
+      { source: "ui-shell", target: "client-state", label: "cart badge, theme" },
+      { source: "checkout-module", target: "client-state", label: "read/clear cart" },
+      { source: "client-state", target: "localstorage", label: "persist", style: "dashed" },
+      { source: "ssr-server", target: "catalog-views", label: "hydrated HTML" },
+      { source: "checkout-module", target: "ui-shell", label: "shared components" }
+    ]
+  };
+
+  // ── Color Map ──────────────────────────────────────────────────────
+  var typeColors = {
+    frontend:  { bg: '#4a90d9', border: '#3a78c0', text: '#fff' },
+    library:   { bg: '#9b59b6', border: '#8244a0', text: '#fff' },
+    gateway:   { bg: '#e67e22', border: '#cf6d14', text: '#fff' },
+    api:       { bg: '#27ae60', border: '#1e8c4c', text: '#fff' },
+    store:     { bg: '#1abc9c', border: '#14a085', text: '#fff' },
+    group:     { bg: 'rgba(255,255,255,0.03)', border: 'rgba(255,255,255,0.12)', text: '#999' }
+  };
+
+  function getColor(type) {
+    return typeColors[type] || typeColors.frontend;
+  }
+
+  // ── Build Cytoscape Elements ───────────────────────────────────────
+  var elements = [];
+
+  architectureData.components.forEach(function(c) {
+    var node = {
+      data: {
+        id: c.id,
+        label: c.label,
+        nodeType: c.type,
+        description: c.description || ''
+      }
+    };
+    if (c.parent) node.data.parent = c.parent;
+    elements.push(node);
+  });
+
+  architectureData.edges.forEach(function(e, i) {
+    elements.push({
+      data: {
+        id: 'edge-' + i,
+        source: e.source,
+        target: e.target,
+        label: e.label || '',
+        edgeStyle: e.style || 'solid'
+      }
+    });
+  });
+
+  // ── Layout config (reused) ─────────────────────────────────────────
+  var coseBilkentDefaults = {
+    name: 'cose-bilkent',
+    quality: 'proof',
+    nodeDimensionsIncludeLabels: true,
+    idealEdgeLength: 120,
+    nodeRepulsion: 8000,
+    edgeElasticity: 0.45,
+    nestingFactor: 0.1,
+    gravity: 0.25,
+    gravityRange: 3.8,
+    numIter: 2500,
+    tile: true,
+    tilingPaddingVertical: 20,
+    tilingPaddingHorizontal: 20,
+    animate: false,
+    fit: true,
+    padding: 80
+  };
+
+  // ── Initialize Cytoscape ───────────────────────────────────────────
+  var cy = cytoscape({
+    container: document.getElementById('cy'),
+    elements: elements,
+    minZoom: 0.3,
+    maxZoom: 3,
+    wheelSensitivity: 0.3,
+    style: [
+      // ── Group (compound) nodes ──
+      {
+        selector: 'node[nodeType="group"]',
+        style: {
+          'shape': 'roundrectangle',
+          'background-color': 'rgba(255,255,255,0.02)',
+          'background-opacity': 1,
+          'border-width': 1.5,
+          'border-style': 'dashed',
+          'border-color': 'rgba(255,255,255,0.12)',
+          'border-opacity': 1,
+          'label': 'data(label)',
+          'color': '#777',
+          'font-size': '13px',
+          'font-weight': '600',
+          'text-halign': 'center',
+          'text-valign': 'top',
+          'text-margin-y': -6,
+          'padding': '28px',
+          'compound-sizing-wrt-labels': 'include',
+          'text-wrap': 'wrap',
+          'text-max-width': '220px',
+          'font-family': 'Inter, sans-serif'
+        }
+      },
+      // ── Collapsed compound nodes ──
+      {
+        selector: 'node.cy-expand-collapse-collapsed-node',
+        style: {
+          'shape': 'roundrectangle',
+          'border-style': 'solid',
+          'border-width': 2,
+          'border-color': 'rgba(123,104,238,0.5)',
+          'background-color': 'rgba(123,104,238,0.08)',
+          'background-opacity': 1,
+          'padding': '22px',
+          'label': 'data(label)',
+          'color': '#bbb',
+          'font-size': '14px',
+          'font-weight': '600',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-margin-y': 0,
+          'font-family': 'Inter, sans-serif',
+          'width': 200,
+          'height': 60
+        }
+      },
+      // ── Frontend nodes ──
+      {
+        selector: 'node[nodeType="frontend"]',
+        style: {
+          'shape': 'roundrectangle',
+          'width': 180,
+          'height': 50,
+          'background-color': '#4a90d9',
+          'background-opacity': 1,
+          'border-width': 0,
+          'label': 'data(label)',
+          'color': '#fff',
+          'font-size': '12px',
+          'font-weight': '500',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-wrap': 'wrap',
+          'text-max-width': '160px',
+          'font-family': 'Inter, sans-serif',
+          'overlay-opacity': 0
+        }
+      },
+      // ── Library nodes ──
+      {
+        selector: 'node[nodeType="library"]',
+        style: {
+          'shape': 'roundrectangle',
+          'width': 180,
+          'height': 50,
+          'background-color': '#9b59b6',
+          'background-opacity': 1,
+          'border-width': 0,
+          'label': 'data(label)',
+          'color': '#fff',
+          'font-size': '12px',
+          'font-weight': '500',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-wrap': 'wrap',
+          'text-max-width': '160px',
+          'font-family': 'Inter, sans-serif',
+          'overlay-opacity': 0
+        }
+      },
+      // ── Gateway nodes ──
+      {
+        selector: 'node[nodeType="gateway"]',
+        style: {
+          'shape': 'roundrectangle',
+          'width': 180,
+          'height': 50,
+          'background-color': '#e67e22',
+          'background-opacity': 1,
+          'border-width': 0,
+          'label': 'data(label)',
+          'color': '#fff',
+          'font-size': '12px',
+          'font-weight': '500',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-wrap': 'wrap',
+          'text-max-width': '160px',
+          'font-family': 'Inter, sans-serif',
+          'overlay-opacity': 0
+        }
+      },
+      // ── API nodes ──
+      {
+        selector: 'node[nodeType="api"]',
+        style: {
+          'shape': 'roundrectangle',
+          'width': 180,
+          'height': 50,
+          'background-color': '#27ae60',
+          'background-opacity': 1,
+          'border-width': 0,
+          'label': 'data(label)',
+          'color': '#fff',
+          'font-size': '12px',
+          'font-weight': '500',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-wrap': 'wrap',
+          'text-max-width': '160px',
+          'font-family': 'Inter, sans-serif',
+          'overlay-opacity': 0
+        }
+      },
+      // ── Store nodes ──
+      {
+        selector: 'node[nodeType="store"]',
+        style: {
+          'shape': 'roundrectangle',
+          'width': 180,
+          'height': 50,
+          'background-color': '#1abc9c',
+          'background-opacity': 1,
+          'border-width': 0,
+          'label': 'data(label)',
+          'color': '#fff',
+          'font-size': '12px',
+          'font-weight': '500',
+          'text-halign': 'center',
+          'text-valign': 'center',
+          'text-wrap': 'wrap',
+          'text-max-width': '160px',
+          'font-family': 'Inter, sans-serif',
+          'overlay-opacity': 0
+        }
+      },
+      // ── Hover glow (via overlay) ──
+      {
+        selector: 'node.hover-glow',
+        style: {
+          'overlay-color': '#7b68ee',
+          'overlay-opacity': 0.15,
+          'overlay-padding': 8
+        }
+      },
+      // ── Solid edges ──
+      {
+        selector: 'edge[edgeStyle="solid"]',
+        style: {
+          'width': 1.5,
+          'line-color': 'rgba(255,255,255,0.18)',
+          'target-arrow-color': 'rgba(255,255,255,0.18)',
+          'target-arrow-shape': 'triangle',
+          'arrow-scale': 0.8,
+          'curve-style': 'bezier',
+          'label': 'data(label)',
+          'font-size': '10px',
+          'font-family': 'Inter, sans-serif',
+          'color': 'rgba(255,255,255,0.35)',
+          'text-rotation': 'autorotate',
+          'text-margin-y': -10,
+          'text-background-color': '#1a1a2e',
+          'text-background-opacity': 0.85,
+          'text-background-padding': '3px',
+          'text-background-shape': 'roundrectangle'
+        }
+      },
+      // ── Dashed edges ──
+      {
+        selector: 'edge[edgeStyle="dashed"]',
+        style: {
+          'width': 1.5,
+          'line-style': 'dashed',
+          'line-dash-pattern': [6, 4],
+          'line-color': 'rgba(255,255,255,0.12)',
+          'target-arrow-color': 'rgba(255,255,255,0.12)',
+          'target-arrow-shape': 'triangle',
+          'arrow-scale': 0.8,
+          'curve-style': 'bezier',
+          'label': 'data(label)',
+          'font-size': '10px',
+          'font-family': 'Inter, sans-serif',
+          'color': 'rgba(255,255,255,0.3)',
+          'text-rotation': 'autorotate',
+          'text-margin-y': -10,
+          'text-background-color': '#1a1a2e',
+          'text-background-opacity': 0.85,
+          'text-background-padding': '3px',
+          'text-background-shape': 'roundrectangle'
+        }
+      },
+      // ── Highlighted edges on hover ──
+      {
+        selector: 'edge.highlighted',
+        style: {
+          'line-color': 'rgba(123,104,238,0.6)',
+          'target-arrow-color': 'rgba(123,104,238,0.6)',
+          'color': 'rgba(255,255,255,0.7)',
+          'width': 2.5
+        }
+      },
+      // ── Dimmed nodes/edges when hovering ──
+      {
+        selector: 'node.dimmed',
+        style: {
+          'opacity': 0.25
+        }
+      },
+      {
+        selector: 'edge.dimmed',
+        style: {
+          'opacity': 0.1
+        }
+      }
+    ],
+    layout: coseBilkentDefaults
+  });
+
+  // ── Expand/Collapse ────────────────────────────────────────────────
+  var ecApi = cy.expandCollapse({
+    layoutBy: {
+      name: 'cose-bilkent',
+      quality: 'proof',
+      nodeDimensionsIncludeLabels: true,
+      idealEdgeLength: 120,
+      nodeRepulsion: 8000,
+      animate: true,
+      animationDuration: 400,
+      fit: true,
+      padding: 80
+    },
+    fisheye: false,
+    animate: true,
+    animationDuration: 400,
+    undoable: false,
+    cueEnabled: true,
+    expandCollapseCuePosition: 'top-left',
+    expandCollapseCueSize: 14,
+    expandCollapseCueLineSize: 10,
+    zIndex: 999
+  });
+
+  // ── Tooltip ────────────────────────────────────────────────────────
+  var tooltip = document.getElementById('tooltip');
+  var ttLabel = tooltip.querySelector('.tt-label');
+  var ttType = tooltip.querySelector('.tt-type');
+  var ttDesc = tooltip.querySelector('.tt-desc');
+
+  cy.on('mouseover', 'node[nodeType!="group"]', function(e) {
+    var node = e.target;
+    var color = getColor(node.data('nodeType'));
+
+    ttLabel.textContent = node.data('label');
+    ttType.textContent = node.data('nodeType');
+    ttType.style.color = color.bg;
+    ttDesc.textContent = node.data('description') || '';
+
+    tooltip.classList.add('visible');
+    node.addClass('hover-glow');
+
+    // Highlight connected edges, dim everything else
+    var connected = node.connectedEdges();
+    var neighbors = node.neighborhood().add(node);
+    connected.addClass('highlighted');
+
+    cy.elements().not(neighbors).not(connected).addClass('dimmed');
+  });
+
+  cy.on('mouseout', 'node[nodeType!="group"]', function(e) {
+    tooltip.classList.remove('visible');
+    e.target.removeClass('hover-glow');
+    cy.elements().removeClass('highlighted dimmed');
+  });
+
+  cy.on('mousemove', function(e) {
+    if (tooltip.classList.contains('visible') && e.originalEvent) {
+      var x = e.originalEvent.clientX;
+      var y = e.originalEvent.clientY;
+      var pad = 16;
+      var tw = tooltip.offsetWidth;
+      var th = tooltip.offsetHeight;
+
+      var left = x + pad;
+      var top = y + pad;
+
+      if (left + tw > window.innerWidth - 20) left = x - tw - pad;
+      if (top + th > window.innerHeight - 20) top = y - th - pad;
+
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+    }
+  });
+
+  // ── Button handlers ────────────────────────────────────────────────
+  document.getElementById('btn-expand-all').addEventListener('click', function() {
+    ecApi.expandAll();
+  });
+
+  document.getElementById('btn-collapse-all').addEventListener('click', function() {
+    ecApi.collapseAll();
+  });
+
+  document.getElementById('btn-fit').addEventListener('click', function() {
+    cy.animate({ fit: { padding: 80 }, duration: 400, easing: 'ease-in-out-cubic' });
+  });
+
+  // ── Initial fit with padding for header ────────────────────────────
+  cy.ready(function() {
+    setTimeout(function() {
+      cy.fit(undefined, 80);
+      cy.panBy({ x: 0, y: 30 });
+    }, 200);
+  });
+
+})();
+</script>
+</body>
+</html>
