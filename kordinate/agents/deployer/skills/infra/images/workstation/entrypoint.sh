@@ -32,6 +32,12 @@ ln -sfn "$KORDINATE_HOME" "$HOME/.kord"
 ln -sfn "$KORD_ROOT/projects" "$HOME/projects"
 chmod 700 "$KORD_ROOT/pass" "$KORD_ROOT/ssh" "$KORD_ROOT/gnupg" 2>/dev/null || true
 
+# ─── Symlink Claude Code state from /kord into ephemeral home ───
+# Remove ephemeral .claude if it exists (upgrade path from non-persistent state)
+[ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && rm -rf "$HOME/.claude"
+mkdir -p "$KORD_ROOT/claude-home"
+ln -sfn "$KORD_ROOT/claude-home" "$HOME/.claude"
+
 # Provision authorized keys from pass store (key-based auth fallback)
 SSH_KEY=$(pass show kordinate/ssh/authorized_key 2>/dev/null || true)
 if [ -n "$SSH_KEY" ]; then
@@ -133,6 +139,17 @@ if [ -d "$MCP_SERVER" ]; then
   fi
 else
   echo "WARNING: MCP agent server not found at $MCP_SERVER — Beorn not started"
+fi
+
+# ─── Restore tmux layout from persistent state ───
+if [ -x "$KORDINATE_HOME/bin/tmux-restore" ]; then
+  "$KORDINATE_HOME/bin/tmux-restore" || echo "WARNING: tmux-restore failed — starting with empty tmux"
+fi
+
+# ─── Periodic tmux layout save (every 60s) ───
+if [ -x "$KORDINATE_HOME/bin/tmux-save" ]; then
+  (while true; do sleep 60; "$KORDINATE_HOME/bin/tmux-save" 2>/dev/null; done) &
+  echo "tmux auto-save started (every 60s)"
 fi
 
 echo "Workstation ready."

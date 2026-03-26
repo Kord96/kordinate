@@ -3,11 +3,12 @@
 ## RWX via Longhorn — allows multiple pods to mount (workstation, docs, etc).
 ##
 ## Layout:
-##   /kord/pass/        — password store (GPG-encrypted credentials)
-##   /kord/gnupg/       — GPG keyring (required for pass)
-##   /kord/ssh/         — SSH keys (user + host)
-##   /kord/kordinate/   — kordinate runtime (~/.kord)
-##   /kord/projects/    — cloned repos (each may have <repo>/.kord)
+##   /kord/pass/         — password store (GPG-encrypted credentials)
+##   /kord/gnupg/        — GPG keyring (required for pass)
+##   /kord/ssh/          — SSH keys (user + host)
+##   /kord/kordinate/    — kordinate runtime (~/.kord)
+##   /kord/projects/     — cloned repos (each may have <repo>/.kord)
+##   /kord/claude-home/  — Claude Code state (~/.claude)
 ##
 ## Initialized by a one-shot Job that creates the directory structure
 ## and an empty git repo for the kordinate runtime.
@@ -43,7 +44,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              mkdir -p /kord/pass /kord/ssh /kord/gnupg /kord/projects
+              mkdir -p /kord/pass /kord/ssh /kord/gnupg /kord/projects /kord/claude-home
 
               if [ -d /kord/kordinate/.git ]; then
                 echo "kordinate runtime already initialized, skipping"

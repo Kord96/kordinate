@@ -92,6 +92,13 @@ spec:
               value: /kord/kordinate/.worktrees
             - name: KORD_ROOT
               value: /kord
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/bash
+                  - -c
+                  - /kord/kordinate/bin/tmux-save 2>/dev/null || true
           securityContext:
             capabilities:
               add: ["NET_ADMIN", "NET_RAW"]

@@ -19,6 +19,13 @@ bind-key c run-shell '$_tmux_bin_dir/tmux-new-window "#{pane_current_path}"'
 TMUXCONF
 fi
 
+# ─── Save layout on session/window structural changes ───
+if [ -n "${TMUX:-}" ] && [ -x "$_tmux_bin_dir/tmux-save" ]; then
+  command tmux set-hook -g after-new-session "run-shell '$_tmux_bin_dir/tmux-save 2>/dev/null || true'" 2>/dev/null || true
+  command tmux set-hook -g after-new-window "run-shell '$_tmux_bin_dir/tmux-save 2>/dev/null || true'" 2>/dev/null || true
+  command tmux set-hook -g session-closed "run-shell '$_tmux_bin_dir/tmux-save 2>/dev/null || true'" 2>/dev/null || true
+fi
+
 # ─── Default session ───
 TMUX_DEFAULT="0-general"
 
