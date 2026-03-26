@@ -1,5 +1,6 @@
 ---
 description: Batch Loader (N+1 Prevention) architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -45,3 +46,5 @@ Look for systematic batching of data fetches to eliminate per-item queries, espe
 - Batch function that does not preserve key-to-result ordering, returning mismatched data
 - Applying batching only at the top level while nested resolvers still trigger per-item queries
 - No maximum batch size, generating SQL queries with thousands of IDs in the IN clause
+
+See also: n-plus-one anti-pattern

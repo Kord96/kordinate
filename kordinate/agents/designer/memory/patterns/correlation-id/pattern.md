@@ -1,5 +1,6 @@
 ---
 description: Correlation ID architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -40,3 +41,5 @@ Look for consistent ID propagation across all service boundaries with structured
 - Generating a new ID at each service instead of propagating the original (breaks cross-service correlation)
 - Logging the correlation ID only at entry and exit points, not in intermediate operations
 - Propagating IDs in HTTP headers but not in async message payloads (losing correlation at queue boundaries)
+
+See also: distributed-tracing

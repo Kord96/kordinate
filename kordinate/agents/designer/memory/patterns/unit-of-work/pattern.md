@@ -1,5 +1,6 @@
 ---
 description: Unit of Work architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

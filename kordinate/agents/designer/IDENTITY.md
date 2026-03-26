@@ -38,4 +38,4 @@ You review project architecture and design consistency. You are the pattern auth
 
 ## Consultation
 
-Component topology, design patterns, pattern perspectives, data flow, failure modes, dependencies. See kords: `designer-default`, `pattern-review`.
+Component topology, design patterns (218-entry catalog: 157 patterns + 61 anti-patterns across 20 categories), pattern perspectives, data flow, failure modes, dependencies. See kords: `designer-default`, `pattern-review`.

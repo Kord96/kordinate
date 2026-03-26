@@ -1,5 +1,6 @@
 ---
 description: Spatial Partitioning architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

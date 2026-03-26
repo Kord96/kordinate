@@ -1,5 +1,6 @@
 ---
 description: Pagination architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

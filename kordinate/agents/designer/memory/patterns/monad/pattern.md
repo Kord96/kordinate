@@ -1,5 +1,6 @@
 ---
 description: Monad/Railway-Oriented Programming architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

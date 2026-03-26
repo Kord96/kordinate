@@ -1,5 +1,6 @@
 ---
 description: Request-Reply architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

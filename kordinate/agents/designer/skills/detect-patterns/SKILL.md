@@ -14,7 +14,7 @@ Scan a project's source code to identify which design patterns and anti-patterns
 
 3. **Load the pattern catalog.** Read the full patterns index at `agent-memory/patterns.md` (156 patterns across 20 categories). Parse out every pattern entry -- each row has a pattern name, description, and a relative reference to its `pattern.md` file (e.g., `patterns/hexagonal/pattern.md`).
 
-4. **Load the anti-patterns catalog.** Read the anti-patterns index at `agent-memory/anti-patterns.md` (22 anti-patterns across 6 categories). Parse out every anti-pattern entry -- each row has a name, a brief "what to look for" summary, and a relative reference to its `pattern.md` file (e.g., `anti-patterns/god-object/pattern.md`).
+4. **Load the anti-patterns catalog.** Read the anti-patterns index at `agent-memory/anti-patterns.md` (22 anti-patterns across 6 categories). Parse out every anti-pattern entry -- each row has a name, a brief "what to look for" summary, and a relative reference to its `pattern.md` file (e.g., `patterns/god-object/pattern.md`).
 
 5. **Scan the project for patterns.** For each pattern in the catalog:
 

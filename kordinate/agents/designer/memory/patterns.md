@@ -6,7 +6,7 @@ preloaded: designer
 ---
 # Patterns Index
 
-157 patterns across 20 categories. Each pattern has recognition signatures for code scanning.
+155 patterns across 20 categories. Each pattern has recognition signatures for code scanning.
 
 ## Categories
 
@@ -195,8 +195,6 @@ preloaded: designer
 | Request-reply | RPC over message broker with correlation IDs | [view](patterns/request-reply/pattern.md) |
 | Event-driven architecture | Domain events as first-class objects flowing through an event bus | [view](patterns/event-driven/pattern.md) |
 | Outbox | Events written to DB in same transaction, published by separate process | [view](patterns/outbox/pattern.md) |
-| Inbox | Idempotent message processing with deduplication | [view](patterns/inbox/pattern.md) |
-| Saga orchestrator | Central coordinator managing saga steps with compensation | [view](patterns/saga-orchestrator/pattern.md) |
 | Event notification | Thin events containing only ID + type, consumer calls back for data | [view](patterns/event-notification/pattern.md) |
 | Event-carried state | Fat events containing full entity state for replication | [view](patterns/event-carried-state/pattern.md) |
 

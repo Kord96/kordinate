@@ -1,5 +1,6 @@
 ---
 description: Observer/Event Emitter architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -44,3 +45,5 @@ Look for correct lifecycle management of subscriptions and defined event contrac
 - Observers mutating the event/subject during notification (action at a distance)
 - String-based event names with no type safety on payloads
 - Synchronous observer chain blocking the emitter when async would be appropriate
+
+See also: pub-sub (inter-process variant)

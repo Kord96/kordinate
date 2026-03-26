@@ -1,5 +1,6 @@
 ---
 description: Content/Protocol Negotiation architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

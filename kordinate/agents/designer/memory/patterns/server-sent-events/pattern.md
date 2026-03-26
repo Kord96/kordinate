@@ -1,5 +1,6 @@
 ---
 description: Server-Sent Events architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

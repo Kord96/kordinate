@@ -1,5 +1,6 @@
 ---
 description: Abstract Syntax Tree (AST) architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

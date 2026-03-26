@@ -1,5 +1,6 @@
 ---
 description: Model-View-ViewModel architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

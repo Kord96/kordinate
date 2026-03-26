@@ -1,5 +1,6 @@
 ---
 description: Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

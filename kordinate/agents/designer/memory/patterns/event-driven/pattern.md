@@ -1,5 +1,6 @@
 ---
 description: Event-Driven architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -44,3 +45,5 @@ Look for components communicating through well-defined domain events rather than
 - Circular event chains where event A triggers B which triggers A
 - Handlers that query back to the producer for additional data (tight coupling disguised as events)
 - No event schema registry, leading to silent contract breakage between services
+
+See also: event-notification (thin events), event-carried-state (fat events)

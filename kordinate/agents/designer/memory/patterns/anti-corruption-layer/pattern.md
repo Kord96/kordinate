@@ -1,5 +1,6 @@
 ---
 description: Anti-Corruption Layer architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -44,3 +45,5 @@ Look for a boundary translation layer that isolates internal domain models from 
 - Translation logic duplicated across multiple services instead of centralized
 - ACL that grows business logic beyond translation (should only translate, not decide)
 - No ACL at all -- domain objects mirror the external system's schema one-to-one
+
+See also: adapter (implementation mechanism)

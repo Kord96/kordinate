@@ -1,5 +1,6 @@
 ---
 description: Component Architecture architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

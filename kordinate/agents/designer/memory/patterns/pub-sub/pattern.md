@@ -1,5 +1,6 @@
 ---
 description: Publish-Subscribe architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -43,3 +44,5 @@ Look for decoupled producers and consumers communicating through named topics wi
 - Subscribers with side effects that break when receiving duplicate messages
 - Topic explosion: creating a new topic per entity instead of using message filtering
 - No monitoring of subscriber lag or dropped messages
+
+See also: observer (in-process variant)

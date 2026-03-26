@@ -1,5 +1,6 @@
 ---
 description: Strangler Fig architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

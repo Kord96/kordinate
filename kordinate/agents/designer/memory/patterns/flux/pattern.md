@@ -1,5 +1,6 @@
 ---
 description: Flux/Redux (Unidirectional Data Flow) architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

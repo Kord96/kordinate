@@ -1,5 +1,6 @@
 ---
 description: Timeout architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -45,3 +46,5 @@ Look for explicit timeout enforcement on every external call with deadline propa
 - Uniform timeout across all calls regardless of expected latency profile
 - Catching timeout errors silently without logging, metrics, or fallback
 - Deadline not propagated to downstream services -- child call outlives parent deadline
+
+See also: circuit-breaker, retry (often combined)

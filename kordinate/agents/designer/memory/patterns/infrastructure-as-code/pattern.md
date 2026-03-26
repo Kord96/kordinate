@@ -1,5 +1,6 @@
 ---
 description: Infrastructure as Code architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

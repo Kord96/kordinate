@@ -1,5 +1,6 @@
 ---
 description: Entity-Component-System (ECS) architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

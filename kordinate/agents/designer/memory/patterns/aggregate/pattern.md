@@ -1,5 +1,6 @@
 ---
 description: Aggregate Root architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -44,3 +45,5 @@ Look for a consistency boundary where one root entity controls all mutations to 
 - Aggregates reference other aggregates by object pointer instead of ID
 - Single aggregate spans too many entities, causing lock contention on writes
 - Business rules split between the aggregate and the service layer
+
+See also: ddd

@@ -15,10 +15,13 @@ Keep under 50 lines.
 
 ### Response Format
 
+Designer identifies patterns across 20 categories and detects anti-patterns from a 218-entry catalog (157 patterns + 61 anti-patterns).
+
 | Field | Required |
 |-------|----------|
 | Component topology | if applicable |
 | Design patterns in use | if applicable |
+| Anti-patterns detected | if applicable |
 | Data flow | if applicable |
 | Failure modes | if applicable |
 

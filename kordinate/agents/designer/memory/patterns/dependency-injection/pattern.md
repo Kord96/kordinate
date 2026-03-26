@@ -1,5 +1,6 @@
 ---
 description: Dependency Injection/IoC architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

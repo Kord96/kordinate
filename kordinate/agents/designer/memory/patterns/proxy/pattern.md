@@ -1,5 +1,6 @@
 ---
 description: Proxy architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -44,3 +45,5 @@ Look for the proxy providing transparent access control without leaking its pres
 - Caching proxy with no invalidation -- stale data served indefinitely
 - Protection proxy that duplicates authorization logic already handled elsewhere
 - Proxy chains where multiple proxies wrap each other without clear purpose
+
+See also: decorator

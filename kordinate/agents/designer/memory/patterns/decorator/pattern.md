@@ -1,5 +1,6 @@
 ---
 description: Decorator/Wrapper architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -44,3 +45,5 @@ Look for decorators preserving the wrapped object's interface and each decorator
 - God decorator that adds logging, caching, auth, and validation in a single wrapper
 - Circular decoration where decorator A wraps B which wraps A
 - Decorators with hidden side effects that change behavior in non-obvious ways when composed
+
+See also: proxy (controls access vs adds behavior)

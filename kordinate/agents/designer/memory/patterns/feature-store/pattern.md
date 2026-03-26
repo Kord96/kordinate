@@ -1,5 +1,6 @@
 ---
 description: Feature Store architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

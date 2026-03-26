@@ -1,5 +1,6 @@
 ---
 description: Cron/Scheduler architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

@@ -1,5 +1,6 @@
 ---
 description: Value Object architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -44,3 +45,5 @@ Look for immutable objects that are compared by their field values rather than b
 - Mutable fields hidden behind an immutable facade (e.g., internal mutable list)
 - Equality defined on a subset of fields, breaking substitutability
 - Value objects that grow to hold behavior unrelated to the value they represent
+
+See also: ddd

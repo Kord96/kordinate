@@ -1,5 +1,6 @@
 ---
 description: Workflow Engine architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -45,3 +46,5 @@ Look for DAG-based task orchestration with explicit step dependencies, state tra
 - Steps that cannot be retried because they produce side effects without idempotency keys
 - Monolithic workflow with dozens of tightly coupled steps instead of composed sub-workflows
 - No persistent state -- a process crash loses all progress and requires full restart
+
+See also: saga (for distributed transactions with compensation)

@@ -1,5 +1,6 @@
 ---
 description: Graceful Degradation architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

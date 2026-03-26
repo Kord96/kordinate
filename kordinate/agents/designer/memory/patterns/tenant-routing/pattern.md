@@ -1,5 +1,6 @@
 ---
 description: Tenant-Aware Routing architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

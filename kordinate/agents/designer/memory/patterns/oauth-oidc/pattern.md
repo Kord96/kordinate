@@ -1,5 +1,6 @@
 ---
 description: OAuth2/OpenID Connect architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

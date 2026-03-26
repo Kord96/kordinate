@@ -1,5 +1,6 @@
 ---
 description: Result/Either Type architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none

@@ -1,5 +1,6 @@
 ---
 description: Saga architectural pattern
+type: pattern
 curated: true
 scope: global
 preloaded: none
@@ -20,6 +21,8 @@ How to identify this pattern in code.
 - `SagaStep` classes or interfaces with `execute()` and `compensate()` methods
 - Step status tracking (pending, completed, compensating, compensated)
 - Saga state persistence to a database or durable store
+- Central coordinator class managing a sequence of saga steps (`SagaOrchestrator`, `SagaManager`, `SagaCoordinator`)
+- Distinct from choreography-based saga -- one service drives the flow, not distributed event reactions
 
 ### Confidence
 
@@ -38,8 +41,21 @@ Look for correct compensation logic and failure handling across distributed step
 - Saga coordinator tracks step state (pending, completed, compensated)
 - Timeout handling exists for steps that may hang
 
+### Orchestration Variant
+
+In the orchestration variant, a central coordinator class (`SagaOrchestrator`, `SagaManager`, `SagaCoordinator`) drives the distributed transaction through an explicit sequence of steps. Each step defines a forward action and a compensating action. The orchestrator persists saga state so that recovery can resume or compensate after a crash. Compensation is executed in reverse order of completed steps. This is distinct from choreography-based saga where distributed event reactions drive the flow -- here one service owns the entire sequence.
+
+Key review points for the orchestration variant:
+- Saga state is persisted (not in-memory only) so a process crash does not lose transaction progress
+- Step execution is idempotent -- retrying a step does not cause duplicate side effects
+- The orchestrator handles partial failure without leaving the system in an inconsistent state
+- The orchestrator calls steps through interfaces rather than being tightly coupled to implementations
+
 ### Anti-patterns
 
 - Missing compensation for one or more steps (partial rollback)
 - Compensating actions that can themselves fail without retry
 - Using sagas where a simple two-phase operation would suffice
+- Saga state kept only in memory -- a process crash loses the transaction progress
+- Non-idempotent steps that produce duplicates on retry
+- Orchestrator tightly coupled to step implementations instead of calling them through interfaces
