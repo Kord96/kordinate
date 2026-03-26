@@ -68,7 +68,7 @@ else
 fi
 
 branch="session/${session_id}"
-worktree="${repo_root}/../${session_id}"
+worktree="${repo_root}/.worktrees/${session_id}"
 
 # Try --continue, fall back to fresh start if no conversation exists
 run_claude_continue() {
