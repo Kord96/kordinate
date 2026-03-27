@@ -15,52 +15,72 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
 
 ## Inputs
 
-Three inputs, each with a different purpose:
+1. **architecture.yaml** — the structural map. Component hierarchy, root groups, `depends_on` edges. Your guide to what the pieces are.
 
-1. **architecture.yaml** — the structural map. Component hierarchy, root groups, `depends_on` edges, external dependencies. Your guide to what the pieces are.
+2. **patterns.md** (optional) — from `/detect-patterns`. Which patterns the code uses, anti-patterns present, and patterns MISSING. Enriches every viewpoint.
 
-2. **patterns.md** (optional) — from `/detect-patterns`. Tells you which patterns the code uses (reactive-store, circuit-breaker, etc.), which anti-patterns exist (swallowed exceptions, n+1 queries), and which patterns are MISSING (no timeout, no retry). Use this to enrich every viewpoint — tag components with their patterns, highlight anti-patterns as warnings, and surface gaps prominently in the Resilience tab.
-
-3. **The project source code** — the execution truth. Always read the code. The YAML is a map, patterns.md is annotations, the code is the territory.
+3. **The project source code** — the execution truth. Always read the code.
 
 ## Procedure
 
-1. **Run the converter** to produce the initial structural JSON from the YAML:
-   ```bash
-   python3 convert-to-viewer.py <architecture.yaml> <output.json>
-   ```
-   This gives you nodes, hierarchy edges, and a skeleton. The structure is done.
+### 1. Structure
 
-2. **Review the structure.** Check the converter output and improve it for visual clarity:
-   - Merge root groups that have only 1 child into a neighboring group (a group with 1 child is just noise)
-   - Prune root groups that have no edges to other groups (testing, CI/CD, build tooling rarely help understand the system)
-   - Consider merging closely related thin groups (e.g. "Data Access [1]" + "External [1]" → "External [2]")
+Run [convert-to-viewer.py](convert-to-viewer.py) to produce the initial JSON. If the script isn't available, produce the structure manually: walk `components` + `children` → flat nodes with parent/hasChildren, extract `depends_on` → edges, add externals.
 
-   Then read the codebase. Use architecture.yaml to know which files matter, then read them. Build a unified understanding — don't think about tabs yet. Just understand the code.
+Review the structure:
+- Merge root groups with only 1 child into a neighbor
+- Prune root groups with no edges to other groups
+- Merge related thin groups into one
 
-3. **Produce all viewpoints at once** from that understanding. Each viewpoint is a different lens on the same codebase:
+### 2. Read the code
 
-   **Flows** — for each data flow, trace the full reactive chain through the code. Include all participants (not just components — users, browser APIs, DOM, framework internals). 5-12 steps per flow. End at the user-visible outcome. Write a `mermaid` sequence diagram string for each flow. Short labels, detailed `action` fields.
+Use `modules` fields from architecture.yaml to find the key files. Read them. Build a unified understanding of how the system works before producing any viewpoints.
 
-   **State** — for each store/cache, identify every component that reads from it and every component that writes to it by searching the code for usage. Include persistence mechanism and serialization format.
+If `patterns.md` exists, read it too — note which components have patterns, which have anti-patterns, and what's missing.
 
-   **Failure modes** — for each failure, trace the cascade through the code. Which components break, in what order, what does the user see, how is it detected, how does it recover.
+### 3. Produce all viewpoints at once
 
-   These inform each other. A flow reveals state dependencies. State reveals failure cascades. Failure reveals missing resilience in flows. Produce them together.
+Each viewpoint is a lens on the same understanding:
 
-4. **Write the enriched JSON** — merge the converter's structural output with your enriched flows, state, and failure data. The JSON shape:
-   ```json
-   {
-     "nodes": [...],
-     "edges": [...],
-     "state": [...],
-     "failure_modes": [...],
-     "data_flows": [...]
-   }
-   ```
+**Flows** — trace each data flow through the code as a full reactive chain:
+- Include all participants: users, components, stores, browser APIs (IntersectionObserver, localStorage, DOM), framework internals (HydrationBoundary, QueryClient)
+- 5-12 steps per flow, ending at the user-visible outcome
+- Include domain details: pagination params, delays, cache keys, guard conditions
+- Write a `mermaid` sequence diagram string for each flow (the Flows tab renders these)
+- Mermaid format: `sequenceDiagram` with `participant` declarations, `->>`/`-->>` arrows, `Note over` annotations
+- If patterns.md reports anti-patterns in a flow path, annotate them
 
-5. **Generate tutorial** (if `--tutorial`) — what is this, who uses it, how does it work (one section per flow), what's stored where, what can go wrong.
+**State** — for each store/cache:
+- Search the code for every import/usage of the store hook to find all readers and writers
+- Include: persistence mechanism, serialization format, scope (per-request vs singleton vs global)
+- If patterns.md reports state-related patterns (reactive-store, cache-aside), note them
 
-6. **Write output** — `architecture.json` to the docs site. Tutorial if requested.
+**Failure modes** — for each failure:
+- Trace the cascade through the code: what breaks first, what breaks next, what the user sees
+- Include detection signals and recovery steps
+- If patterns.md reports missing resilience patterns (no timeout, no retry), surface these prominently
 
-7. **Report** — node count, edge count, root groups, flow step counts (should average 8+), state reader/writer counts.
+These inform each other. Produce them together.
+
+### 4. Write output
+
+Merge the structure with enriched viewpoints into `architecture.json`:
+```json
+{
+  "nodes": [...],
+  "edges": [...],
+  "state": [...],
+  "failure_modes": [...],
+  "data_flows": [...]
+}
+```
+
+Write to the docs site content directory.
+
+### 5. Tutorial (if --tutorial)
+
+What is this, who uses it, how does it work (one section per flow), what's stored where, what can go wrong.
+
+### 6. Report
+
+Node count, edge count, root groups, flow step counts (target: average 8+), state reader/writer counts.
