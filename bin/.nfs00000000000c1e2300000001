@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# Start Claude Code in an isolated git worktree.
+# - In tmux: worktree is keyed by tmux session+window (reused on re-run = auto resume)
+# - Outside tmux: falls back to timestamp-based worktree
+# - On exit: commits uncommitted work, cleans up if no changes
+# Usage: bin/claude-session [claude args...]
+
+set -e
+
+CLAUDE="claude"
+
+# If not in tmux, start/attach to 0-general and re-run inside it
+if [ -z "$TMUX" ]; then
+  TMUX_DEFAULT="0-general"
+  command tmux has-session -t "$TMUX_DEFAULT" 2>/dev/null || command tmux new-session -d -s "$TMUX_DEFAULT"
+  exec command tmux attach-session -t "$TMUX_DEFAULT" \; send-keys "$0 $*" Enter
+fi
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+if [ -z "$repo_root" ]; then
+  echo "Not in a git repo — running claude directly"
+  exec $CLAUDE "$@"
+fi
+
+# Ensure tmux session name matches the repo name
+repo=$(basename "$repo_root")
+if [ -n "$TMUX" ]; then
+  current_session=$(tmux display-message -p '#{session_name}')
+  if [ "$current_session" != "$repo" ]; then
+    if tmux has-session -t "=$repo" 2>/dev/null; then
+      # Session exists — create a new window there
+      tmux new-window -t "=$repo" -c "$repo_root" "$0 $*"
+      exit 0
+    else
+      # No session with repo name — create one and attach
+      tmux new-session -d -s "$repo" -c "$repo_root" "$0 $*"
+      tmux switch-client -t "=$repo"
+      exit 0
+    fi
+  fi
+fi
+
+# Already in a worktree? Just run claude.
+main_worktree=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
+if [ "$repo_root" != "$main_worktree" ]; then
+  echo "Already in a worktree — running claude directly"
+  exec $CLAUDE "$@"
+fi
+
+# Create a worktree. All runtime state lives at ~/.claude/ — nothing to copy.
+create_worktree() {
+  local wt_path="$1" branch_arg="$2"
+  git -C "$repo_root" worktree add "$wt_path" $branch_arg
+  mkdir -p "$wt_path/.claude/agent-state"
+}
+
+# Generate session ID: tmux-based (stable) or timestamp (fallback)
+if [ -n "$TMUX" ]; then
+  tmux_window=$(tmux display-message -p '#{window_index}')
+  # Window 0 stays on main — no worktree
+  if [ "$tmux_window" = "0" ]; then
+    echo "Window 0 — running on main directly"
+    exec $CLAUDE "$@"
+  fi
+  session_id="w${tmux_window}-${repo}"
+else
+  session_id="$(date +%Y%m%d-%H%M%S)-${repo}"
+fi
+
+branch="session/${session_id}"
+worktree="${repo_root}/../${session_id}"
+
+# Try --continue, fall back to fresh start if no conversation exists
+run_claude_continue() {
+  set +e
+  $CLAUDE --continue "$@"
+  exit_code=$?
+  set -e
+  if [ $exit_code -ne 0 ]; then
+    echo "No prior conversation — starting fresh"
+    set +e
+    $CLAUDE "$@"
+    exit_code=$?
+    set -e
+  fi
+}
+
+# Reuse existing worktree if it exists (auto-resume)
+if [ -d "$worktree" ]; then
+  echo "Resuming session: $worktree (branch: $branch)"
+  cd "$worktree"
+  run_claude_continue "$@"
+# Branch exists but worktree was cleaned up — recreate worktree and resume
+elif git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
+  create_worktree "$worktree" "$branch"
+  echo "Resuming session (worktree recreated): $worktree (branch: $branch)"
+  cd "$worktree"
+  run_claude_continue "$@"
+# Fresh session
+else
+  git -C "$repo_root" pull --ff-only 2>/dev/null || true
+  create_worktree "$worktree" "-b $branch"
+  echo "New session: $worktree (branch: $branch)"
+  cd "$worktree"
+  set +e
+  $CLAUDE "$@"
+  exit_code=$?
+  set -e
+fi
+
+# Cleanup or preserve
+commits=$(git log main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
+dirty=$(git status --porcelain 2>/dev/null)
+
+if [ "$commits" -eq 0 ] && [ -z "$dirty" ]; then
+  echo "No changes — cleaning up worktree"
+  cd "$repo_root"
+  git worktree remove "$worktree" 2>/dev/null || true
+  git branch -d "$branch" 2>/dev/null || true
+else
+  # Commit any uncommitted work
+  if [ -n "$dirty" ]; then
+    echo "Committing uncommitted changes..."
+    git add -A
+    git commit -m "wip: uncommitted changes at session exit"
+  fi
+
+  echo "Session preserved at: $worktree (branch: $branch)"
+fi
+
+exit $exit_code
