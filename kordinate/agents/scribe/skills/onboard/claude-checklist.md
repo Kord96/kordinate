@@ -9,9 +9,9 @@ These can be verified immediately — no session restart required.
 ### Kordinate Source ($KORDINATE_HOME)
 
 - [ ] `agents/<name>/IDENTITY.md` exists with:
-    - Kordinate properties: `curated`, `preloaded: <name>`, `scope: global`
+    - Recall properties: `curated`, `preloaded: <name>`
     - Claude fields: `name`, `description`, `tools`, `model`, `color`, `memory`
-- [ ] `agents/<name>/memory/scratchpad.md` exists (`curated: false`, `scope: global`)
+- [ ] `agents/<name>/memory/scratchpad.md` exists (`curated: false`)
 - [ ] `agents/<provider>/kords/<name>-default/contract.md` exists (if agent has kord expertise)
 - [ ] `shared/memory-protocol.md` exists (`preloaded: all`)
 - [ ] `shared/auth-protocol.md` exists (`preloaded: all`)
@@ -24,7 +24,7 @@ These can be verified immediately — no session restart required.
 **Per Agent:**
 
 - [ ] `~/.claude/agents/<name>.md` exists
-- [ ] Frontmatter has Claude fields (`name`, `description`, `tools`, `model`) — no kordinate properties (`curated`, `preloaded`, `scope`)
+- [ ] Frontmatter has Claude fields (`name`, `description`, `tools`, `model`) — no recall properties (`curated`, `preloaded`)
 - [ ] Frontmatter: `memory: user` (fallback — boot handles full 2D memory)
 - [ ] Markdown body matches kordinate IDENTITY.md body
 - [ ] Agent skills copied to `~/.claude/skills/` (entire directory including Level 3 resources)
@@ -59,7 +59,7 @@ These can be verified immediately — no session restart required.
 **Guard:**
 
 - [ ] `~/.claude/settings.json` has PreToolUse hook on `Write|Edit`
-- [ ] Hook command points to `$KORDINATE_HOME/agents/scribe/skills/remember/guard.sh`
+- [ ] Hook command points to `$KORDINATE_HOME/hooks/guard.sh`
 - [ ] Guard blocks writes to `~/.kord/` without scribe auth
 - [ ] Guard allows writes to `~/.kord/` with scribe auth (`/tmp/.scribe-auth`)
 - [ ] Guard allows non-curated, non-templated files without auth

@@ -14,7 +14,6 @@ color: <color>
 memory: user
 curated: true
 preloaded: <agent-name>
-scope: global
 ---
 
 # <Agent Name>
@@ -43,4 +42,4 @@ scope: global
 - `tools`: list only what the agent needs
 - `model`: usually `inherit` (uses parent's model)
 - `memory: user` for global persistence via Claude native fallback
-- `curated: true`, `preloaded: <name>`, `scope: global` — kordinate properties (stripped during sync to Claude native)
+- `curated: true`, `preloaded: <name>` — recall properties (stripped during sync to Claude native)

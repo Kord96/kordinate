@@ -32,10 +32,10 @@ for agent_dir in "$KORDINATE_HOME"/agents/*/; do
   id_file="$agent_dir/IDENTITY.md"
   if [ -f "$id_file" ]; then
     # Check kordinate properties
-    if grep -q '^curated:' "$id_file" && grep -q '^scope:' "$id_file"; then
-      pass "$name/IDENTITY.md — has kordinate properties"
+    if grep -q '^curated:' "$id_file" && grep -q '^preloaded:' "$id_file"; then
+      pass "$name/IDENTITY.md — has recall properties"
     else
-      fail "$name/IDENTITY.md — missing curated or scope"
+      fail "$name/IDENTITY.md — missing curated or preloaded"
     fi
     # Subagents have tools; main session does not
     if grep -q '^tools:' "$id_file"; then
@@ -115,10 +115,10 @@ for agent_dir in "$KORDINATE_HOME"/agents/*/; do
   agent_file="$CLAUDE_HOME/agents/$name.md"
   if [ -f "$agent_file" ]; then
     # Should NOT have kordinate properties
-    if grep -q '^curated:' "$agent_file" || grep -q '^preloaded:' "$agent_file" || grep -q '^scope:' "$agent_file"; then
-      fail "agents/$name.md — still has kordinate properties (should be stripped)"
+    if grep -q '^curated:' "$agent_file" || grep -q '^preloaded:' "$agent_file"; then
+      fail "agents/$name.md — still has recall properties (should be stripped)"
     else
-      pass "agents/$name.md — clean (no kordinate properties)"
+      pass "agents/$name.md — clean (no recall properties)"
     fi
   else
     fail "agents/$name.md — not found"
@@ -216,7 +216,7 @@ else
 fi
 
 # Test guard behavior
-guard_sh="$KORDINATE_HOME/agents/scribe/skills/remember/guard.sh"
+guard_sh="$KORDINATE_HOME/hooks/guard.sh"
 if [ -f "$guard_sh" ]; then
   # Should block curated kordinate file without auth
   rm -f /tmp/.scribe-auth

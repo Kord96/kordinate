@@ -20,7 +20,7 @@ Path: `kords/<kord-name>/`
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `contract.md` | yes | Frontmatter (description, requester, provider, mode, skill, curated, scope) defining the consultation contract |
+| `contract.md` | yes | Frontmatter (description, requester, mode, skill, curated, cache_inputs) defining the consultation contract |
 | `data.md` | no | Cached state for stateful kords — stores last response with `.valid` timestamp |
 | `expiry.sh` | no | Script that checks if cached data is still valid — returns 0 (valid) or 1 (expired) |
 
@@ -32,7 +32,7 @@ Path: `agents/<agent-name>/`
 
 | File/Dir | Required | Purpose |
 |----------|----------|---------|
-| `IDENTITY.md` | yes | Agent definition — frontmatter (name, description, model, color, memory, tools, curated, preloaded, scope) + skills table + rules + consultation |
+| `IDENTITY.md` | yes | Agent definition — frontmatter (name, description, model, color, memory, tools, curated, preloaded) + skills table + rules + consultation |
 | `memory/` | yes | Agent's knowledge store |
 | `memory/scratchpad.md` | yes | Uncurated working notes (curated: false) |
 | `memory/tools.md` | no | Tools reference for the agent |
@@ -45,7 +45,7 @@ Path: `agents/<agent-name>/skills/<skill-name>/` or `skills/<skill-name>/` (glob
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `SKILL.md` | yes | Skill definition — frontmatter (name, description, curated, scope) + procedure with numbered steps |
+| `SKILL.md` | yes | Skill definition — frontmatter (name, description, curated) + procedure with numbered steps |
 | `*.md` | no | Level 3 resources referenced from SKILL.md (e.g., `extractors.md`, `schema.md`, `checks.md`) |
 | `*.sh` | no | Helper scripts (e.g., `generate-kord.sh`) |
 | `*.py` | no | Helper scripts |
@@ -60,7 +60,7 @@ Same structure as agent skill directories. Global skills (boot, kord, authentica
 
 Path: `shared/<protocol-name>.md`
 
-Single file, no directory. Frontmatter with description, curated, scope, preloaded. Included via `@~/.kord/shared/<name>.md` in CLAUDE.md.
+Single file, no directory. Frontmatter with description, curated, preloaded. Included via `@~/.kord/shared/<name>.md` in CLAUDE.md.
 
 ## Validation
 

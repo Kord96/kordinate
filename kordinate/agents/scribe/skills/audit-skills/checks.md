@@ -9,8 +9,7 @@ Each check has an ID, severity, layer, and description. The audit runs every che
 | S01 | ERROR | Frontmatter exists | SKILL.md must start with `---` YAML frontmatter block |
 | S02 | ERROR | `name` field present | Frontmatter must include `name` |
 | S03 | WARNING | `description` field present | Without a description, Claude cannot auto-invoke the skill |
-| S04 | WARNING | `curated` field present | Kordinate convention: all production skills should declare `curated: true` |
-| S05 | WARNING | `scope` field present | Kordinate convention: should declare `global` or `project` scope |
+| S04 | INFO | `curated` field present | Recall property: `curated: true` means the guard requires scribe auth to modify this file |
 | S06 | INFO | `argument-hint` present when skill accepts args | If the skill body references `$ARGUMENTS`, `$0`, or `$1`, frontmatter should include `argument-hint` |
 | S07 | INFO | SKILL.md under 500 lines | Large skills should use supporting files for reference material |
 | S08 | INFO | Supporting files referenced | If sibling `.md` files exist, SKILL.md should link to them |

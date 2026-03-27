@@ -12,23 +12,28 @@ description: "<Concept Name> — one-line description of what this concept is"
 type: pattern | anti-pattern
 testable: true | false
 curated: true
-scope: global
 preloaded: none
 graphable: true | false
 abstraction: [<abstraction-1>, <abstraction-2>]
 ---
 ```
 
-### Field reference
+### Recall properties
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `description` | yes | Human-readable name + brief description |
+| `curated` | yes | Always `true` for concept files |
+| `preloaded` | yes | Always `none` (loaded on demand, not preloaded into agent memory) |
+
+### Concept-specific fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
 | `type` | yes | `pattern` for concepts to follow, `anti-pattern` for concepts to avoid |
 | `testable` | no | Whether this concept can be validated with automated checks |
-| `curated` | yes | Always `true` for concept files |
-| `scope` | yes | Always `global` |
-| `preloaded` | yes | Always `none` (loaded on demand, not preloaded into agent memory) |
+| `observable` | no | Whether this concept has monitoring/observability signals |
+| `distributed` | no | Whether this concept involves distributed systems |
 | `graphable` | yes | `true` if the concept can be meaningfully represented as a diagram |
 | `abstraction` | yes | List of abstraction levels this concept belongs to. Valid values: architectural, design, data, integration, messaging, infrastructure, resilience, concurrency, security, api, lifecycle, deployment, observability, testing, frontend, error-handling, realtime, ml, compiler. See `agents/designer/memory/abstractions.md` for descriptions. |
 

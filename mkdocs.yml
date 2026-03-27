@@ -51,6 +51,7 @@ nav:
       - Guards: framework/guards.md
       - Kords: framework/kords.md
       - Recall System: framework/memory.md
+      - Frontmatter Reference: framework/frontmatter.md
   - Default Team:
       - agents/index.md
       - Scribe: agents/scribe.md

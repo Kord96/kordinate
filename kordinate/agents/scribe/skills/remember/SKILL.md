@@ -2,10 +2,9 @@
 name: remember
 description: Write a memory for an agent. Handles scope, frontmatter properties, kordinate and Claude native paths, and KORD.md updates.
 curated: true
-scope: global
 ---
 
-Write a memory on behalf of an agent. Other agents are blocked from writing to memory/kord paths by [guard.sh](guard.sh) and told to delegate here.
+Write a memory on behalf of an agent. Other agents are blocked from writing to memory/kord paths by the guard hook (`$KORDINATE_HOME/hooks/guard.sh`) and told to delegate here.
 
 $ARGUMENTS should include the agent name and what to remember.
 
@@ -30,15 +29,14 @@ For directory structure requirements, see [directory-templates.md](directory-tem
     - **Project** (`.kord/agents/<name>/memory/`) — specific to this repo. Local endpoints, project-specific workflows, repo-specific facts.
     - Some information belongs in both with different detail levels.
 
-5. **Add frontmatter** — every memory file needs kordinate properties:
+5. **Add frontmatter** — every memory file needs recall properties:
     ```yaml
     ---
     description: One sentence describing the content
     curated: false          # scratchpad
-    scope: global           # or project
     ---
     ```
-    For topic files, set `curated: true`.
+    For topic files, set `curated: true`. Scope (global vs project) is determined by which path you write to, not a frontmatter field.
 
 6. **Write to kordinate path** — the source of truth.
     See [kordinate-recall.md](kordinate-recall.md) for paths and properties.

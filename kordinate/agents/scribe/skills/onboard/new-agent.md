@@ -20,9 +20,9 @@ Level 3 resource for the onboard skill.
         └── scratchpad.md
     ```
 
-3. **Generate IDENTITY.md** — see [identity-template.md](../remember/identity-template.md) for the template. Add frontmatter properties (`curated: true`, `preloaded: <name>`, `scope: global`).
+3. **Generate IDENTITY.md** — see [identity-template.md](../remember/identity-template.md) for the template. Add recall properties (`curated: true`, `preloaded: <name>`).
 
-4. **Generate scratchpad.md** with empty frontmatter (`curated: false`, `scope: global`).
+4. **Generate scratchpad.md** with empty frontmatter (`curated: false`).
 
 5. **Create default kord** — use `/create-kord default-<name>` with the expertise from step 1.
 

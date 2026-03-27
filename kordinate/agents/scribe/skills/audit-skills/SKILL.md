@@ -192,7 +192,9 @@ When improving skills (in `improve` or `fix` modes), follow these principles:
 - Include examples with input/output pairs.
 
 ### Frontmatter
-Required: `name`, `description`. Recommended for kordinate: `curated`, `scope`, `argument-hint` (when args accepted).
+Required (Claude-native): `name`, `description`. Optional: `argument-hint` (when args accepted).
+
+Recall property: `curated: true` (protects skill files via guard). Do not put `scope` on skills — scope is determined by file path (`~/.kord/` = global, `.kord/` = project).
 
 Use `disable-model-invocation: true` for destructive/deployment skills. Use `allowed-tools` to restrict read-only skills. Use `context: fork` for heavy analysis that could overflow context.
 

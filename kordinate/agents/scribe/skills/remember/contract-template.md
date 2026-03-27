@@ -57,7 +57,6 @@ For stateful kords, `review.md` is the prompt sent to the provider during stage 
 ---
 description: Cache review prompt — sent to provider when expiry is uncertain
 curated: true
-scope: global
 ---
 
 You are reviewing whether your cached response is still valid.
