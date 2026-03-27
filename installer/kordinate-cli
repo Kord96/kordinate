@@ -459,30 +459,6 @@ with open('$SCRIPT_DIR/profile/config.yaml', 'w') as f:
   echo ""
 }
 
-# ═══════════════════════════════════════════════════════════════
-# JOIN — shortcut: join an existing cluster as agent node
-# ═══════════════════════════════════════════════════════════════
-cmd_join() {
-  echo -e "${BOLD}kordinate join${NC}"
-  echo ""
-
-  require_cmd curl "apt install curl"
-  require_root
-
-  local JOIN_CLUSTER_NAME="" JOIN_SERVER_IP=""
-
-  if ! prompt_join_or_create; then
-    err "No reachable clusters found in config.yaml"
-    exit 1
-  fi
-
-  install_k3s_agent "$JOIN_SERVER_IP"
-  update_config_add_node "$JOIN_CLUSTER_NAME" "$(detect_node_ip)"
-
-  echo ""
-  log "Joined cluster $JOIN_CLUSTER_NAME"
-}
-
 
 # ═══════════════════════════════════════════════════════════════
 # CONNECT — setup SSH to workstation via Cloudflare tunnel
@@ -590,8 +566,9 @@ usage() {
   echo "Usage: ./kordinate <command>"
   echo ""
   echo "  init              Install k3s, deploy workstation, setup auth"
-  echo "  join              Join an existing cluster as agent node"
   echo "  connect [domain]  Setup SSH to workstation via Cloudflare tunnel"
+  echo ""
+  echo "To add worker nodes, use the deployer agent: /add-node <ssh-target> <cluster>"
   echo ""
   echo "After init, use the deployer agent for all infrastructure setup."
   echo "Workstation commands (run inside): kord-hydrate, kord-export, kord-import"
@@ -599,7 +576,6 @@ usage() {
 
 case "${1:-}" in
   init)     cmd_init ;;
-  join)     cmd_join ;;
   connect)  cmd_connect "${@:2}" ;;
   -h|--help|help) usage ;;
   *)        usage; exit 1 ;;
