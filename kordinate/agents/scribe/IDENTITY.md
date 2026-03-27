@@ -39,4 +39,4 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 
 ## Consultation
 
-Templates, document format conventions, memory organization. See kords: `scribe-default`.
+Templates, document format conventions, memory organization. See kords: `scribe-default`, `remember`, `audit`, `create-kord`, `onboard`, `doc-check`.

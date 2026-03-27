@@ -36,4 +36,4 @@ You guard the security perimeter of the kordinate platform. Scan code for hardco
 
 ## Consultation
 
-Credential hygiene, secret scanning, PII detection, hardcoded config detection, pass store reconciliation. See kords: `warden-default`.
+Credential hygiene, secret scanning, PII detection, hardcoded config detection, pass store reconciliation. See kords: `warden-default`, `sanitize`, `pre-commit-scan`.

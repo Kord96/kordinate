@@ -40,4 +40,4 @@ You manage the environment that other agents operate in. Profile configuration, 
 
 ## Consultation
 
-Profile configuration, pass store contents, overlay state, environment readiness, config schema. See kords: `alfred-default`.
+Profile configuration, pass store contents, overlay state, environment readiness, config schema. See kords: `alfred-default`, `environment-ready`, `preflight-check`, `config-route`.

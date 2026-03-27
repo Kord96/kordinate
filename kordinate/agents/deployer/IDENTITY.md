@@ -42,4 +42,4 @@ You manage deployments across environments.
 
 ## Consultation
 
-Cluster state, versions, configuration, networking, history, monitoring architecture. See kords: `deployer-default`.
+Cluster state, versions, configuration, networking, history, monitoring architecture. See kords: `deployer-default`, `cluster-topology`, `deployment-status`, `setup-secrets`.
