@@ -1,104 +1,50 @@
 ---
 name: architect
-description: Produce a unified architectural understanding of a project as architecture.yaml — components, flows, state, events, dependencies, failure modes.
+description: >
+  Produce architecture.yaml — components, flows, state, events, dependencies, failure modes.
+  Use when asked to understand architecture, audit a codebase, onboard to a project, or before
+  cross-cutting changes.
+argument-hint: "<project>"
+context: fork
 curated: true
 scope: global
 ---
 
-Produce a structured architectural understanding of a project.
+Produce `architecture.yaml` — a structured map of a project's architecture that downstream skills (`/assess-debt`) and future viewpoint generators consume.
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>` (e.g., `logbd`, `stoik`, `sous-storefront`). The project directory must exist at `~/<project>/`, `~/repos/<project>/`, or `~/test-repos/<project>/`.
+`$ARGUMENTS` — Required: `<project>`. Directory must exist at `~/<project>/`, `~/repos/<project>/`, or `~/test-repos/<project>/`.
 
 ## Steps
 
-1. Parse project name from `$ARGUMENTS`. Locate the project directory. If not found, report and exit.
+1. **Locate and scan project** — resolve the project directory (call it `$ROOT` for the remaining steps). Check paths in order: `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`; if `$ARGUMENTS` is an absolute path, use it directly. If not found, report which paths were checked and exit. If found but empty or has no source files, produce a minimal `architecture.yaml` with just `project`, `purpose: "Empty or scaffold"`, and empty `components`. Detect the stack: **languages** from package manifests (`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, etc.); **frameworks** from dependency lists in those manifests (e.g., `fastapi` in `pyproject.toml` dependencies means FastAPI); **runtime** from Dockerfile CMD/ENTRYPOINT, Procfile, `__main__.py`, or main entry point (long-lived server, CLI invocation, serverless, etc.). For mixed/unusual stacks, document what you find honestly. **Monorepo**: if the root contains multiple packages/services (e.g., `packages/`, `services/`, `apps/`), treat each as a top-level component and note the monorepo structure in `purpose`. **No clear entry point**: rely on package manifests, Dockerfiles, and high-fan-in modules to infer the main paths.
 
-2. **Detect stack** — check for `package.json` (JS/TS), `pyproject.toml`/`requirements.txt`/`setup.py` (Python), `go.mod` (Go), `Cargo.toml` (Rust), or combinations. Note the primary language and framework.
+2. **Gather sources** — glob `$ROOT` for source files matching the include patterns in [extractors.md](extractors.md), skipping excluded directories and files. Read matches into context. Cap at 100KB per file. For large projects (>500 files after filtering), follow the priority order in extractors.md: entry points and manifests first, then boundaries and interfaces, then business logic, stopping when context is full.
 
-3. **Gather file contents** — collect source files for analysis. See [extractors.md](extractors.md) for include/exclude patterns. For each file, read its contents. Cap at 100KB per file. If the project is too large (>500 files after filtering), prioritize: entry points, hub modules, config files, manifests, README.
+3. **Gather existing analysis** — read from `$ROOT/.claude/agent-memory/designer/` if available: `patterns.md`, `dependencies.md`, `api-review.md`, `debt-assessment.md`. Read the abstraction index (`~/.kord/agents/designer/memory/abstractions.md`) and use its canonical names for component `abstraction` and `patterns` fields. For `concept` fields on `state` and `external_dependencies`, use the infrastructure terms listed in [schema.md](schema.md) (e.g., `embedded-olap`, `message-broker`) -- these are NOT from abstractions.md. Consult specific `~/.kord/agents/designer/memory/concepts/<name>/pattern.md` files only when you suspect a match -- do not read the full catalog. Consistent naming matters because downstream skills match on these terms. If nothing exists, file contents alone suffice.
 
-4. **Gather existing analysis** — read from `<project>/.claude/agent-memory/designer/` if available:
-   - `patterns.md` (from `/detect-patterns`)
-   - `dependencies.md` (from `/map-dependencies`)
-   - `api-review.md` (from `/review-api`)
-   - `debt-assessment.md` (from `/assess-debt`)
+4. **Identify components, capabilities, and relationships** — target 5-10 top-level components (acceptable range: 4-12). See [guidance.md](guidance.md) for filtering criteria and what to extract per component. Use `children` to nest sub-components rather than inflating the top-level count. Group components into capabilities: business-level things the system can do, linked to the actors who use them. Map relationships between components grounded in actual code (imports, calls, message passing). Shared utility imports are incidental coupling, not architectural relationships.
 
-   Also read the concept catalog:
-   - `agents/designer/memory/abstractions.md` — the 19 abstraction levels and their descriptions
-   - `agents/designer/memory/concepts/*/pattern.md` — scan Recognition signatures to match detected imports against known concepts
+5. **Map actors, flows, and events** — identify external actors (users, services, cron, data sources). Trace 2-4 critical data flows showing how data moves from trigger to final state; link each flow to the actor(s) that trigger it. For CRUD/REST projects, request-response cycles are valid flows. For CLI tools, command invocation through to output/side-effect is a flow. Map events (producer, consumers, data carried). Omit `events` entirely if the project has none.
 
-   Use concept names from the catalog as the vocabulary for `state[].concept`, `external_dependencies[].concept`, and `components[].patterns`. Do not invent ad-hoc terms — if a concept exists in the catalog, use its name.
+6. **Catalog state and dependencies** — for each data store: concept, technology, what it stores, purpose, persistence. For each external dependency: concept, technology, which components use it, criticality, resilience patterns. Use concept catalog terms (`embedded-olap` not "DuckDB database").
 
-   Also check `<project>/.claude/agent-memory/sauron/scan.md`.
+7. **Identify failure modes** — for each external dependency and stateful component, trace cascading failures: what breaks, which components are affected, user impact, detection, recovery, severity. For detection: look for existing metrics, health checks, log patterns, or error handlers in the code; if none exist, write `"none"` (this itself is a finding). For recovery: document automatic recovery (retries, reconnects) found in code, or `"none"` if manual intervention is required. Think through chains: if A depends on B depends on external C, then C failing cascades through B to A.
 
-   If none exist, proceed without — file contents are sufficient.
+8. **Write and report** — assemble findings into [schema.md](schema.md) format. Set `version: "1"` and `generated` to today's date. Write to `$ROOT/.claude/agent-memory/designer/architecture.yaml` (create directory if needed). If a pre-commit hook prevents the write, ask scribe to write it instead. Report: purpose, capabilities, component names, flow count, dependency count, failure modes with severity, file path written.
 
-5. **Identify core abstractions** — using the file contents and any existing analysis, identify the 5-10 most architecturally significant abstractions in the project. For each, provide:
-   - A concise name (human-readable, not a module path)
-   - What it does (one sentence)
-   - Which source files implement it
-   - What patterns it uses (if detected)
+## Example Report
 
-   Filtering heuristics:
-   - Utilities/logging/config modules have high fan-in but are NOT core abstractions — skip them
-   - Entry points (servers, CLI, main) ARE core abstractions — they're where actors interact
-   - Data stores and external integrations ARE core — they define the system's boundaries
-   - Prefer business-domain abstractions over infrastructure plumbing
+```
+## Architecture: stoik
 
-   Tag each component with relevant `abstraction` levels from `abstractions.md`. This enables the `/illustrate` skill to decide which viewpoints to generate. For example, a component tagged `[data, messaging]` is relevant to both the Data and Flows viewpoints.
+**Purpose**: Stream processing — Kafka to DuckDB with FlightSQL/HTTP serving.
+**Capabilities** (3): Stream ingestion, Batch storage, Query serving
+**Components** (7): Kafka Consumer, In-Memory Buffer, Consume Loop, DuckDB Store, FlightSQL Server, HTTP API, Entity Cache
+**Flows** (2): Kafka-to-DuckDB ingestion, Query serving
+**External** (2): Kafka Broker (critical), Schema Registry (important)
+**Failures** (3): Kafka down (critical), DuckDB lock contention (medium), Snapshot module missing (high)
 
-6. **Map relationships** — for each pair of abstractions, determine if a significant relationship exists:
-   - What flows between them (data, events, calls)
-   - Direction (A→B, B→A, bidirectional)
-   - Label the relationship in a few words (e.g., "publishes entities", "queries graph", "enriches via DNS")
-
-   Only include relationships backed by actual code (imports, function calls, message passing). Exclude trivial relationships (shared utility imports).
-
-7. **Identify actors** — who/what interacts with the system from outside:
-   - Users (via API, CLI, UI)
-   - Other services (via HTTP, gRPC, message broker)
-   - Scheduled jobs (cron, timers)
-   - Data sources (files, NFS, external APIs)
-
-8. **Map data flows** — trace the critical paths through the system. A data flow is a sequence of steps showing how data moves from trigger to final state. Focus on:
-   - The primary ingestion/processing pipeline
-   - The query/serving path
-   - Any async/event-driven chains
-
-9. **Catalog state** — for each data store detected, classify:
-   - Technology (use generic concept: relational database, document store, embedded OLAP, cache, object store, message broker, filesystem — plus the specific implementation)
-   - What it stores
-   - Purpose: source-of-truth, cache, derived, staging
-   - Persistence: persistent or ephemeral
-
-   Use `concept` terms from the concept catalog (e.g., `embedded-olap` not "DuckDB database", `message-broker` not "Kafka"). The `technology` field carries the specific implementation.
-
-10. **Map events** — for each event/topic/signal found:
-    - Producer component
-    - Consumer component(s)
-    - What data it carries
-    - Rough frequency if determinable
-
-11. **Catalog external dependencies** — for each external call:
-    - What it is (generic concept + implementation)
-    - Which component uses it
-    - Purpose
-    - Criticality (critical/important/optional)
-    - Whether resilience patterns exist (retry, circuit breaker, timeout, fallback)
-
-    Use `concept` terms from the concept catalog for classification. Match detected libraries against concept Recognition signatures to ensure consistent naming.
-
-12. **Identify failure modes** — for each external dependency and stateful component:
-    - What breaks
-    - Which components are affected
-    - What users/system experience
-    - Whether detection/mitigation exists
-    - Severity
-
-13. **Write architecture.yaml** — assemble all findings into the schema defined in [schema.md](schema.md). Write to `<project>/.claude/agent-memory/designer/architecture.yaml`.
-
-    Create the directory if it doesn't exist. Delegate the write to scribe if the guard-md hook blocks you.
-
-14. **Report** — summarize: purpose, component count, flow count, external dependency count, failure modes identified, and where the file was written.
+Written to: ~/stoik/.claude/agent-memory/designer/architecture.yaml
+```

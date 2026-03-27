@@ -1,3 +1,11 @@
+---
+name: scan-observability
+description: Scan a project for all observability signals — metrics, log statements, and health checks.
+argument-hint: "<project> [--output <path>]"
+curated: true
+scope: global
+---
+
 Scan a project for all observability signals — metrics, log statements, and health checks.
 
 **Input**: $ARGUMENTS (required: project directory path. Optional: `--output <path>` for catalog file location)
