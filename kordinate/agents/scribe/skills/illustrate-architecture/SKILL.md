@@ -1,11 +1,11 @@
 ---
 name: illustrate-architecture
-description: Generate diagram descriptions and optional tutorials from a project's architecture.yaml — decides which diagrams are useful and at what abstraction level.
+description: Transform a project's architecture.yaml into an interactive viewer JSON and optional tutorial — the primary visual documentation output.
 curated: true
 scope: global
 ---
 
-Generate structured diagram descriptions and optional brief tutorials from a project's architectural understanding.
+Transform a project's architectural understanding into viewer-ready JSON for the ProjectExplorer component, and optionally a brief tutorial.
 
 ## Arguments
 
@@ -15,46 +15,67 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
 
 ## Procedure
 
-1. Parse project name from `$ARGUMENTS`. Locate the project directory at `~/<project>/`, `~/repos/<project>/`, or `~/test-repos/<project>/`.
+1. Parse project name from `$ARGUMENTS`. Locate the project directory.
 
-2. **Read architecture.yaml** — load the project's architectural understanding. This is the sole input — no code scanning needed.
+2. **Read architecture.yaml** — this is the sole input. Understand the component hierarchy, flows, state, and failure modes.
 
-3. **Decide which diagrams to generate** — not every project needs every diagram type. Use these rules:
+3. **Produce viewer JSON** — convert the architecture into `architecture.json` for the ProjectExplorer Cytoscape viewer. The JSON has this shape:
 
-   | If architecture.yaml has... | Viewpoint | Zoom | Why |
-   |---------------------------|-----------|------|-----|
-   | 4+ components with `depends_on` | **structural** | 1 | System overview |
-   | Components with `children` | **structural** | 2+ | Zoomed detail per component with children |
-   | Any `data_flows` with 3+ steps | **behavioral** | 1 | One diagram per flow |
-   | 3+ `state` entries | **data** | 1 | What's stored where |
-   | Components with `deployment` info | **deployment** | 1 | Infrastructure topology |
-   | Any `failure_modes` with severity critical | **failure** | 1 | Blast radius per critical failure |
+   ```json
+   {
+     "nodes": [...],
+     "edges": [...],
+     "state": [...],
+     "failure_modes": [...],
+     "data_flows": [...]
+   }
+   ```
 
-   Skip viewpoints that would be trivial. Each viewpoint is generated at the appropriate zoom level.
+   ### Nodes
 
-4. **Generate diagram descriptions** — for each selected diagram type, produce a structured description. See [diagram-schema.md](diagram-schema.md) for the output format.
+   Walk the `components` array recursively (including `children`). For each component, create a node:
+   - `id`, `name`, `description` — from the component
+   - `type` — `"group"` if it has children. Otherwise map: frontend→component, store→library, api/worker→service, gateway→external-service
+   - `hasChildren` — true if it has a `children` array
+   - `parent` — the parent component's id (from nesting). Top-level components have no parent.
+   - `file` — from `modules[0]` if available
+   - `exports` — if available
 
-   Guidelines for abstraction level:
-   - Component diagrams: use component names, not module paths
-   - Sequence diagrams: one per data flow, actors on the left, external deps on the right
-   - State diagrams: group by purpose (source-of-truth vs cache vs derived)
-   - Keep labels short (3-5 words max on connections)
-   - Annotate patterns on components only if they aid understanding
-   - Include failure modes as annotations on the affected connections (dashed lines, warnings)
+   Also add `external_dependencies` as nodes with type `"external-service"`. Create an "External" group if one doesn't already exist.
 
-5. **Generate tutorial** (if `--tutorial` flag) — produce a brief walkthrough document structured as:
+   ### Edges
+
+   Three sources of edges, in priority order:
+
+   **Flow edges** (highest priority) — from `data_flows`. For each flow, create edges between consecutive steps. Label with the flow name, set `flowId` to the flow id.
+
+   **Structural edges** — from `depends_on` on components. Label as "uses", set `flowId` to "dependency". Skip if a flow edge already connects the same pair of nodes.
+
+   **Render edges** (lowest priority) — for leaf nodes that have a parent but no edges at all, add a parent→child edge labeled "renders" with `flowId` "rendering". This ensures no node is visually orphaned. Skip if any other edge already connects the pair.
+
+   The goal: every leaf node must be connected to at least one edge. Orphan nodes make the graph look broken.
+
+   ### State, Failure Modes, Data Flows
+
+   Include `state`, `failure_modes`, and `data_flows` from the architecture.yaml directly in the JSON. These populate the Data, Resilience, and Flows tabs respectively.
+
+   A reference implementation of this conversion is at [convert-to-viewer.py](convert-to-viewer.py). You can run it for validation, but you should produce the JSON yourself using your judgment — the script is a fallback, not a replacement for understanding the architecture.
+
+4. **Review the output** — before writing, check:
+   - Are there orphan leaf nodes with no edges? Fix them.
+   - Are there duplicate edges (same pair connected by both flow and dependency)? Remove the dependency.
+   - Do the root groups make sense? If there are more than 5 root nodes, consider whether some should be grouped.
+   - Are the flow edges telling a coherent story? Each flow should trace a clear path through the system.
+
+5. **Generate tutorial** (if `--tutorial` flag) — produce a brief walkthrough:
    - **What is this?** — from `purpose` + `stack`
    - **Who uses it?** — from `actors`
-   - **How does it work?** — one section per `data_flow`, written as a narrative walkthrough referencing components by name
+   - **How does it work?** — one section per `data_flow`, narrative walkthrough referencing components by name
    - **What's stored where?** — from `state`, grouped by purpose
    - **What can go wrong?** — from `failure_modes`, ordered by severity
 
-   Write in plain language. No code snippets. Reference component names as bold text. The goal is "understand the system in 5 minutes."
+   Write in plain language. No code snippets. The goal is "understand the system in 5 minutes."
 
-6. **Write output** — write to `<project>/.claude/agent-memory/scribe/`:
-   - `diagrams.yaml` — structured diagram descriptions
-   - `tutorial.md` — brief tutorial (only if `--tutorial` flag)
+6. **Write output** — write `architecture.json` to the docs site content directory for the project (e.g., `docs/src/content/docs/<project>/architecture.json`). Write tutorial to `<project>/.claude/agent-memory/scribe/tutorial.md` if requested.
 
-   Create the directory if needed. Delegate write to scribe via beorn if blocked.
-
-7. **Report** — list which diagrams were generated and why, plus the tutorial if applicable.
+7. **Report** — node count, edge count, root groups, orphan count (should be 0), which tabs have content.
