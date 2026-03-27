@@ -107,6 +107,11 @@ else
   echo "Tailscale: no auth key in pass — run auth-check.sh to configure"
 fi
 
+# ─── Git config for NFS ───
+# NFS causes git index-pack to create read-only temp files that fail on read-back.
+# Unpack to loose objects instead of pack files to avoid this.
+git config --global transfer.unpackLimit 10000
+
 # ─── Initialize kord state ───
 mkdir -p "${KORD_WORKTREE_ROOT:-$KORDINATE_HOME/.worktrees}"
 mkdir -p "$KORDINATE_HOME/.locks"
