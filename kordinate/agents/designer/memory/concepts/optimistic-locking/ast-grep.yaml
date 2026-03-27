@@ -1,0 +1,40 @@
+id: optimistic-locking-version-where-py
+language: Python
+rule:
+  pattern: |
+    $QUERY.filter($MODEL.version == $VERSION).update($$$ARGS)
+---
+id: optimistic-locking-execute-conditional-py
+language: Python
+rule:
+  pattern: |
+    $CURSOR.execute("UPDATE $$$TABLE SET $$$COLS, version = version + 1 WHERE $$$COND AND version = %s", $$$PARAMS)
+---
+id: optimistic-locking-if-match-header-py
+language: Python
+rule:
+  pattern: $ETAG = $REQUEST.headers.get("If-Match")
+---
+id: optimistic-locking-version-field-ts
+language: TypeScript
+rule:
+  pattern: |
+    await $MODEL.update($DATA, {
+        where: { id: $ID, version: $VERSION },
+        $$$OPTS
+    })
+---
+id: optimistic-locking-if-match-header-ts
+language: TypeScript
+rule:
+  pattern: $ETAG = $REQ.headers['if-match']
+---
+id: optimistic-locking-dynamo-condition-ts
+language: TypeScript
+rule:
+  pattern: |
+    $CLIENT.update({
+        $$$PARAMS,
+        ConditionExpression: $CONDITION,
+        $$$OPTS
+    })

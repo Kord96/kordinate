@@ -1,0 +1,32 @@
+id: template-abstract-hook
+language: Python
+rule:
+  pattern: |
+    @abstractmethod
+    def _do_$STEP(self, $$$ARGS):
+        $$$BODY
+---
+id: template-abc-base
+language: Python
+rule:
+  pattern: |
+    class $NAME(ABC):
+        $$$BODY
+---
+id: template-hook-call
+language: Python
+rule:
+  pattern: 'self._do_$STEP($$$ARGS)'
+---
+id: template-abstract-method-ts
+language: TypeScript
+rule:
+  pattern: 'abstract $METHOD($$$ARGS): $RETURN;'
+---
+id: template-protected-hook-ts
+language: TypeScript
+rule:
+  pattern: |
+    protected $METHOD($$$ARGS) {
+        $$$BODY
+    }

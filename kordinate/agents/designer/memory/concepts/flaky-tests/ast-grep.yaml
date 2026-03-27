@@ -1,0 +1,63 @@
+# Score 3: Flaky tests are a behavioral phenomenon, but the CODE SMELLS that cause
+# flakiness have clear structural signatures: sleep in tests, time.time assertions,
+# retry decorators on tests, and real HTTP calls in test files.
+
+id: flaky-tests-sleep-in-test-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      def $FN($$$ARGS):
+          $$$BODY
+    constraints:
+      FN:
+        regex: '^test_'
+  pattern: time.sleep($DURATION)
+---
+id: flaky-tests-sleep-in-test-ts
+language: TypeScript
+rule:
+  inside:
+    pattern: |
+      it($DESC, async () => {
+          $$$BODY
+      })
+  pattern: await $SLEEP($DURATION)
+  constraints:
+    SLEEP:
+      regex: '(sleep|delay|setTimeout)'
+---
+id: flaky-tests-retry-decorator-py
+language: Python
+rule:
+  pattern: |
+    @retry($$$ARGS)
+    def $FN($$$PARAMS):
+        $$$BODY
+  constraints:
+    FN:
+      regex: '^test_'
+---
+id: flaky-tests-time-assertion-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      def $FN($$$ARGS):
+          $$$BODY
+    constraints:
+      FN:
+        regex: '^test_'
+  pattern: time.time()
+---
+id: flaky-tests-real-http-in-test-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      def $FN($$$ARGS):
+          $$$BODY
+    constraints:
+      FN:
+        regex: '^test_'
+  pattern: requests.$METHOD($$$ARGS)

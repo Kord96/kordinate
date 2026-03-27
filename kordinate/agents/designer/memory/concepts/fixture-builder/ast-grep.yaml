@@ -1,0 +1,29 @@
+id: fixture-builder-factory-class-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(factory.Factory):
+        $$$BODY
+---
+id: fixture-builder-subfactory-py
+language: Python
+rule:
+  pattern: 'factory.SubFactory($FACTORY)'
+---
+id: fixture-builder-lazy-attribute-py
+language: Python
+rule:
+  pattern: 'factory.LazyAttribute($FUNC)'
+---
+id: fixture-builder-pytest-fixture-py
+language: Python
+rule:
+  pattern: |
+    @pytest.fixture
+    def $NAME($$$ARGS):
+        $$$BODY
+---
+id: fixture-builder-faker-ts
+language: TypeScript
+rule:
+  pattern: 'faker.$CATEGORY.$METHOD($$$ARGS)'

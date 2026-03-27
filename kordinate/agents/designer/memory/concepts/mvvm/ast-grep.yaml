@@ -1,0 +1,33 @@
+id: mvvm-observable-decorator-py
+language: Python
+rule:
+  pattern: |
+    @observable
+    def $NAME(self):
+        $$$BODY
+---
+id: mvvm-viewmodel-class-py
+language: Python
+rule:
+  pattern: |
+    class $NAMEViewModel:
+        $$$BODY
+---
+id: mvvm-viewmodel-class-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $NAMEViewModel {
+        $$$BODY
+    }
+---
+id: mvvm-makeobservable-ts
+language: TypeScript
+rule:
+  pattern: makeObservable($THIS, $$$ARGS)
+---
+id: mvvm-useobserver-ts
+language: TypeScript
+rule:
+  pattern: |
+    observer($COMPONENT)

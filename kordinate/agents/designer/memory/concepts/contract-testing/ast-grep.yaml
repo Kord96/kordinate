@@ -1,0 +1,29 @@
+id: contract-testing-pact-verifier-py
+language: Python
+rule:
+  pattern: 'Verifier($$$ARGS)'
+---
+id: contract-testing-upon-receiving-py
+language: Python
+rule:
+  pattern: '$PACT.upon_receiving($DESC)'
+---
+id: contract-testing-will-respond-py
+language: Python
+rule:
+  pattern: '$INTERACTION.will_respond_with($STATUS, $$$REST)'
+---
+id: contract-testing-pact-ts
+language: TypeScript
+rule:
+  pattern: 'new Pact($$$ARGS)'
+---
+id: contract-testing-addInteraction-ts
+language: TypeScript
+rule:
+  pattern: '$PROVIDER.addInteraction($$$ARGS)'
+---
+id: contract-testing-uponReceiving-ts
+language: TypeScript
+rule:
+  pattern: '$INTERACTION.uponReceiving($DESC)'

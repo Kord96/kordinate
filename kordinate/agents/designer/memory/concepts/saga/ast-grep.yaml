@@ -1,0 +1,42 @@
+id: saga-compensate-method
+language: Python
+rule:
+  pattern: |
+    def compensate(self, $$$ARGS):
+        $$$BODY
+---
+id: saga-step-execute
+language: Python
+rule:
+  pattern: |
+    def execute(self, $$$ARGS):
+        $$$BODY
+---
+id: saga-temporal-workflow
+language: Python
+rule:
+  pattern: |
+    @workflow.defn
+    class $NAME:
+        $$$BODY
+---
+id: saga-compensate-ts
+language: TypeScript
+rule:
+  pattern: |
+    compensate($$$ARGS) {
+        $$$BODY
+    }
+---
+id: saga-step-execute-ts
+language: TypeScript
+rule:
+  pattern: |
+    execute($$$ARGS) {
+        $$$BODY
+    }
+---
+id: saga-add-step-ts
+language: TypeScript
+rule:
+  pattern: '$OBJ.addStep($$$ARGS)'

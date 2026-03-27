@@ -1,0 +1,24 @@
+id: cors-middleware-flask-py
+language: Python
+rule:
+  pattern: CORS($APP, $$$ARGS)
+---
+id: cors-middleware-fastapi-py
+language: Python
+rule:
+  pattern: |
+    $APP.add_middleware(CORSMiddleware, $$$ARGS)
+---
+id: cors-middleware-express-ts
+language: TypeScript
+rule:
+  pattern: $APP.use(cors($$$ARGS))
+---
+id: cors-options-object-ts
+language: TypeScript
+rule:
+  pattern: |
+    cors({
+        origin: $ORIGIN,
+        $$$OPTS
+    })

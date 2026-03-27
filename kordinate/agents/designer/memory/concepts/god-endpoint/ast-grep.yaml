@@ -1,0 +1,62 @@
+# Score 3: God Endpoint detection requires counting distinct operations behind a
+# single route, which is a semantic/volume check, not a single structural match.
+# However, the core smell IS structural: a large switch/if-else dispatching on
+# an "action" or "type" parameter inside one handler. These rules catch that shape.
+
+id: god-endpoint-action-switch-py
+language: Python
+rule:
+  pattern: |
+    if $REQ.$FIELD == $ACTION1:
+        $$$BODY1
+    elif $REQ.$FIELD == $ACTION2:
+        $$$BODY2
+    elif $REQ.$FIELD == $ACTION3:
+        $$$BODY3
+    elif $REQ.$FIELD == $ACTION4:
+        $$$BODY4
+  constraints:
+    FIELD:
+      regex: '(action|type|operation|method|command)'
+---
+id: god-endpoint-action-dispatch-dict-py
+language: Python
+rule:
+  pattern: |
+    $ACTIONS = {
+        $$$ENTRIES
+    }
+  has:
+    pattern: '$KEY: $HANDLER'
+    stopBy: end
+  constraints:
+    ACTIONS:
+      regex: '(actions|handlers|operations|commands|dispatch)'
+---
+id: god-endpoint-switch-action-ts
+language: TypeScript
+rule:
+  pattern: |
+    switch ($REQ.$FIELD) {
+        $$$CASES
+    }
+  constraints:
+    FIELD:
+      regex: '(action|type|operation|method|command)'
+---
+id: god-endpoint-action-param-ts
+language: TypeScript
+rule:
+  pattern: |
+    if ($REQ.$FIELD === $ACTION1) {
+        $$$BODY1
+    } else if ($REQ.$FIELD === $ACTION2) {
+        $$$BODY2
+    } else if ($REQ.$FIELD === $ACTION3) {
+        $$$BODY3
+    } else if ($REQ.$FIELD === $ACTION4) {
+        $$$BODY4
+    }
+  constraints:
+    FIELD:
+      regex: '(action|type|operation|method|command)'

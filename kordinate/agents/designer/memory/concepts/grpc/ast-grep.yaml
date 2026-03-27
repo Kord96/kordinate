@@ -1,0 +1,24 @@
+id: grpc-server-py
+language: Python
+rule:
+  pattern: '$SERVER.add_insecure_port($$$ARGS)'
+---
+id: grpc-servicer-registration-py
+language: Python
+rule:
+  pattern: 'grpc.insecure_channel($$$ARGS)'
+---
+id: grpc-import-py
+language: Python
+rule:
+  pattern: 'import grpc'
+---
+id: grpc-server-ts
+language: TypeScript
+rule:
+  pattern: '$SERVER.addService($SERVICE, $$$ARGS)'
+---
+id: grpc-load-package-ts
+language: TypeScript
+rule:
+  pattern: 'loadPackageDefinition($$$ARGS)'

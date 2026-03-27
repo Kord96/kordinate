@@ -1,0 +1,29 @@
+id: token-auth-jwt-decode-py
+language: Python
+rule:
+  pattern: jwt.decode($TOKEN, $$$ARGS)
+---
+id: token-auth-jwt-encode-py
+language: Python
+rule:
+  pattern: jwt.encode($PAYLOAD, $$$ARGS)
+---
+id: token-auth-bearer-extract-py
+language: Python
+rule:
+  pattern: $TOKEN = $REQUEST.headers.get("Authorization")
+---
+id: token-auth-jwt-verify-ts
+language: TypeScript
+rule:
+  pattern: jwt.verify($TOKEN, $$$ARGS)
+---
+id: token-auth-jwt-sign-ts
+language: TypeScript
+rule:
+  pattern: jwt.sign($PAYLOAD, $$$ARGS)
+---
+id: token-auth-jwt-decode-ts
+language: TypeScript
+rule:
+  pattern: jwt.decode($TOKEN, $$$ARGS)

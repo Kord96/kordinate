@@ -1,0 +1,36 @@
+# Score 3: Train wreck is a long method chain across DIFFERENT objects.
+# ast-grep can match deeply chained member access expressions.
+
+# Raised chain depth from 5 to 6 levels -- 5-deep chains are common in
+# frameworks (e.g. self.field.widget.attrs.get, this.props.route.params.id)
+id: train-wreck-deep-chain-py
+language: Python
+rule:
+  pattern: $A.$B.$C.$D.$E.$F
+---
+id: train-wreck-deep-method-chain-py
+language: Python
+rule:
+  pattern: $A.$B().$C().$D().$E().$F()
+---
+id: train-wreck-deep-chain-ts
+language: TypeScript
+rule:
+  pattern: $A.$B.$C.$D.$E.$F
+---
+id: train-wreck-deep-method-chain-ts
+language: TypeScript
+rule:
+  pattern: $A.$B().$C().$D().$E().$F()
+---
+id: train-wreck-null-guard-chain-py
+language: Python
+rule:
+  pattern: |
+    if $A and $A.$B and $A.$B.$C and $A.$B.$C.$D:
+        $$$BODY
+---
+id: train-wreck-optional-chain-ts
+language: TypeScript
+rule:
+  pattern: $A?.$B?.$C?.$D?.$E

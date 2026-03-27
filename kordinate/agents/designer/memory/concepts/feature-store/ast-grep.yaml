@@ -1,0 +1,31 @@
+id: featurestore-feast-online-py
+language: Python
+rule:
+  pattern: '$STORE.get_online_features($$$ARGS)'
+---
+id: featurestore-feast-historical-py
+language: Python
+rule:
+  pattern: '$STORE.get_historical_features($$$ARGS)'
+---
+id: featurestore-feast-apply-py
+language: Python
+rule:
+  pattern: '$STORE.apply($$$ARGS)'
+---
+id: featurestore-feast-featureview-py
+language: Python
+rule:
+  pattern: |
+    $NAME = FeatureView($$$ARGS)
+---
+id: featurestore-feast-entity-py
+language: Python
+rule:
+  pattern: |
+    $NAME = Entity($$$ARGS)
+---
+id: featurestore-feast-store-py
+language: Python
+rule:
+  pattern: '$STORE = FeatureStore($$$ARGS)'

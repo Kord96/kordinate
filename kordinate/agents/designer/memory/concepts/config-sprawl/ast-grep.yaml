@@ -1,0 +1,20 @@
+# Score 2: Configuration Sprawl is a project-level organizational problem -- the same
+# config value defined in multiple sources -- that cannot be detected from any single
+# file's AST.
+#
+# Detection requires:
+#   - Identifying all configuration sources (env vars, YAML, code constants, DB settings)
+#   - Finding the same logical setting defined in 3+ places
+#   - Understanding precedence relationships between config sources
+#
+# These are cross-file, cross-format analyses. A single os.environ.get() call or a
+# config.yaml entry is not itself an anti-pattern -- the problem is duplication and
+# inconsistency across sources.
+#
+# ast-grep operates on a single file's AST and cannot correlate settings across files,
+# let alone across different file formats (Python, YAML, .env).
+#
+# This anti-pattern is best detected by:
+#   - Custom scripts that inventory all config keys and their sources
+#   - Grep-based audits for specific config keys across the project
+#   - Configuration management frameworks with validation

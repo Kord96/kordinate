@@ -1,0 +1,44 @@
+id: saga-orch-run-method
+language: Python
+rule:
+  pattern: |
+    def run(self, $$$ARGS):
+        $$$BODY
+---
+id: saga-orch-register-step
+language: Python
+rule:
+  pattern: |
+    def register_step(self, $$$ARGS):
+        $$$BODY
+---
+id: saga-orch-compensate-all
+language: Python
+rule:
+  pattern: |
+    def _compensate(self, $$$ARGS):
+        $$$BODY
+---
+id: saga-orch-run-ts
+language: TypeScript
+rule:
+  pattern: |
+    async run($$$ARGS) {
+        $$$BODY
+    }
+---
+id: saga-orch-add-step-ts
+language: TypeScript
+rule:
+  pattern: |
+    addStep($$$ARGS) {
+        $$$BODY
+    }
+---
+id: saga-orch-rollback-ts
+language: TypeScript
+rule:
+  pattern: |
+    async rollback($$$ARGS) {
+        $$$BODY
+    }

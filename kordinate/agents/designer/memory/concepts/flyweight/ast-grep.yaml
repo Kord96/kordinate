@@ -1,0 +1,26 @@
+# Score 2: Flyweight is a memory optimization pattern detectable only by design intent.
+#
+# The core characteristic -- shared immutable instances keyed by intrinsic state with
+# extrinsic state passed at usage time -- requires understanding object lifecycle and
+# sharing semantics that ast-grep cannot infer.
+#
+# A few very specific Python idioms are weak indicators. These are low-confidence because
+# __slots__ is often used for performance without flyweight intent, and sys.intern() is
+# rare in application code. WeakValueDictionary is slightly stronger but still used for
+# non-flyweight caching.
+
+# Low-confidence heuristic: WeakValueDictionary as a class-level cache (flyweight pool)
+---
+id: flyweight-python-weak-pool
+language: Python
+rule:
+  pattern: |
+    $NAME = WeakValueDictionary()
+
+# Low-confidence heuristic: sys.intern() calls suggesting string interning
+---
+id: flyweight-python-intern
+language: Python
+rule:
+  pattern: |
+    sys.intern($ARG)

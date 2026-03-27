@@ -1,0 +1,19 @@
+id: game-loop-fixed-update-py
+language: Python
+rule:
+  pattern: |
+    def fixed_update($$$ARGS):
+        $$$BODY
+---
+id: game-loop-raf-ts
+language: TypeScript
+rule:
+  pattern: 'requestAnimationFrame($CALLBACK)'
+---
+id: game-loop-fixed-timestep-ts
+language: TypeScript
+rule:
+  pattern: |
+    fixedUpdate($$$ARGS) {
+        $$$BODY
+    }

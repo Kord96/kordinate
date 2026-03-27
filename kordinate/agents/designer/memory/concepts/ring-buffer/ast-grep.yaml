@@ -1,0 +1,14 @@
+id: ring-buffer-deque-maxlen
+language: Python
+rule:
+  pattern: 'deque(maxlen=$SIZE)'
+---
+id: ring-buffer-advance-head-ts
+language: TypeScript
+rule:
+  pattern: 'this.head = (this.head + 1) % this.capacity'
+---
+id: ring-buffer-advance-tail-ts
+language: TypeScript
+rule:
+  pattern: 'this.tail = (this.tail + 1) % this.capacity'

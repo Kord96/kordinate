@@ -1,0 +1,27 @@
+id: property-testing-given-py
+language: Python
+rule:
+  pattern: |
+    @given($$$STRATEGIES)
+    def $NAME($$$ARGS):
+        $$$BODY
+---
+id: property-testing-st-integers-py
+language: Python
+rule:
+  pattern: 'st.integers($$$ARGS)'
+---
+id: property-testing-st-text-py
+language: Python
+rule:
+  pattern: 'st.text($$$ARGS)'
+---
+id: property-testing-fc-assert-ts
+language: TypeScript
+rule:
+  pattern: 'fc.assert($$$ARGS)'
+---
+id: property-testing-fc-property-ts
+language: TypeScript
+rule:
+  pattern: 'fc.property($$$ARGS)'

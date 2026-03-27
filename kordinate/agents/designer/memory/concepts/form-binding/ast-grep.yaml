@@ -1,0 +1,38 @@
+id: form-binding-useForm-ts
+language: TypeScript
+rule:
+  pattern: 'useForm($$$ARGS)'
+---
+id: form-binding-register-ts
+language: TypeScript
+rule:
+  pattern: 'register($NAME)'
+---
+id: form-binding-handleSubmit-ts
+language: TypeScript
+rule:
+  pattern: 'handleSubmit($HANDLER)'
+---
+id: form-binding-zodResolver-ts
+language: TypeScript
+rule:
+  pattern: 'zodResolver($SCHEMA)'
+---
+id: form-binding-yupResolver-ts
+language: TypeScript
+rule:
+  pattern: 'yupResolver($SCHEMA)'
+---
+id: form-binding-formgroup-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(forms.Form):
+        $$$BODY
+---
+id: form-binding-modelform-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(forms.ModelForm):
+        $$$BODY

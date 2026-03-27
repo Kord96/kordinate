@@ -1,0 +1,20 @@
+id: error-boundary-getDerivedState-ts
+language: TypeScript
+rule:
+  pattern: |
+    static getDerivedStateFromError($ERROR) {
+        $$$BODY
+    }
+---
+id: error-boundary-componentDidCatch-ts
+language: TypeScript
+rule:
+  pattern: |
+    componentDidCatch($ERROR, $INFO) {
+        $$$BODY
+    }
+---
+id: error-boundary-component-ts
+language: TypeScript
+rule:
+  pattern: '<ErrorBoundary $$$ATTRS>$$$CHILDREN</ErrorBoundary>'
