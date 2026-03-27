@@ -1,0 +1,36 @@
+id: websocket-connect-py
+language: Python
+rule:
+  pattern: |
+    async with websockets.connect($URL) as $WS:
+        $$$BODY
+---
+id: websocket-handler-py
+language: Python
+rule:
+  pattern: |
+    async def $HANDLER($WEBSOCKET, $$$ARGS):
+        $$$BODY
+---
+id: websocket-fastapi-py
+language: Python
+rule:
+  pattern: |
+    @$APP.websocket($PATH)
+    async def $HANDLER($WS):
+        $$$BODY
+---
+id: websocket-constructor-ts
+language: TypeScript
+rule:
+  pattern: new WebSocket($$$ARGS)
+---
+id: websocket-onmessage-ts
+language: TypeScript
+rule:
+  pattern: $WS.onmessage = $HANDLER
+---
+id: websocket-server-ts
+language: TypeScript
+rule:
+  pattern: new WebSocketServer($$$ARGS)

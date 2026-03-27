@@ -1,0 +1,9 @@
+id: pipe-chain
+language: Python
+rule:
+  pattern: '$A | $B'
+---
+id: method-chain-long
+language: Python
+rule:
+  pattern: '$OBJ.$M1($$$A1).$M2($$$A2).$M3($$$A3)'

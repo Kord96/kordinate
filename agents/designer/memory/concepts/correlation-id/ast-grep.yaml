@@ -1,0 +1,24 @@
+id: correlation-id-extract-header-py
+language: Python
+rule:
+  pattern: $ID = $REQUEST.headers.get("X-Request-ID", $$$DEFAULT)
+---
+id: correlation-id-structlog-bind-py
+language: Python
+rule:
+  pattern: structlog.contextvars.bind_contextvars(request_id=$ID)
+---
+id: correlation-id-uuid-generate-py
+language: Python
+rule:
+  pattern: $ID = str(uuid.uuid4())
+---
+id: correlation-id-extract-header-ts
+language: TypeScript
+rule:
+  pattern: $ID = $REQ.headers['x-request-id']
+---
+id: correlation-id-set-header-ts
+language: TypeScript
+rule:
+  pattern: $RES.setHeader('x-request-id', $ID)

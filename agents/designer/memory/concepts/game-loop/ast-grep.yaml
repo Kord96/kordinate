@@ -1,0 +1,39 @@
+id: game-loop-while-running-py
+language: Python
+rule:
+  pattern: |
+    while $RUNNING:
+        $$$BODY
+---
+id: game-loop-fixed-update-py
+language: Python
+rule:
+  pattern: |
+    def fixed_update($$$ARGS):
+        $$$BODY
+---
+id: game-loop-delta-time-py
+language: Python
+rule:
+  pattern: '$DT = $NOW - $LAST'
+---
+id: game-loop-raf-ts
+language: TypeScript
+rule:
+  pattern: 'requestAnimationFrame($CALLBACK)'
+---
+id: game-loop-update-render-ts
+language: TypeScript
+rule:
+  pattern: |
+    update($$$ARGS) {
+        $$$BODY
+    }
+---
+id: game-loop-fixed-timestep-ts
+language: TypeScript
+rule:
+  pattern: |
+    fixedUpdate($$$ARGS) {
+        $$$BODY
+    }

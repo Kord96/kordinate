@@ -1,0 +1,44 @@
+id: monad-bind-py
+language: Python
+rule:
+  pattern: |
+    def bind($SELF, $$$ARGS):
+        $$$BODY
+---
+id: monad-flat-map-py
+language: Python
+rule:
+  pattern: |
+    def flat_map($SELF, $$$ARGS):
+        $$$BODY
+---
+id: monad-and-then-py
+language: Python
+rule:
+  pattern: |
+    def and_then($SELF, $$$ARGS):
+        $$$BODY
+---
+id: monad-flatmap-ts
+language: TypeScript
+rule:
+  pattern: |
+    flatMap($$$ARGS) {
+        $$$BODY
+    }
+---
+id: monad-bind-ts
+language: TypeScript
+rule:
+  pattern: |
+    bind($$$ARGS) {
+        $$$BODY
+    }
+---
+id: monad-chain-ts
+language: TypeScript
+rule:
+  pattern: |
+    chain($$$ARGS) {
+        $$$BODY
+    }

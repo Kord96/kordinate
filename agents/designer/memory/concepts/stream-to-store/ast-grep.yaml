@@ -1,0 +1,31 @@
+id: stream-to-store-consumer-poll-py
+language: Python
+rule:
+  pattern: $CONSUMER.poll($$$ARGS)
+---
+id: stream-to-store-consumer-commit-py
+language: Python
+rule:
+  pattern: $CONSUMER.commit($$$ARGS)
+---
+id: stream-to-store-flush-py
+language: Python
+rule:
+  pattern: |
+    def flush(self, $$$ARGS):
+        $$$BODY
+---
+id: stream-to-store-consumer-subscribe-ts
+language: TypeScript
+rule:
+  pattern: $CONSUMER.subscribe($$$ARGS)
+---
+id: stream-to-store-consumer-run-ts
+language: TypeScript
+rule:
+  pattern: |
+    await $CONSUMER.run({
+        eachMessage: async ($$$PARAMS) => {
+            $$$BODY
+        }
+    })

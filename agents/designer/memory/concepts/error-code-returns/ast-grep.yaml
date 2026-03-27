@@ -1,0 +1,29 @@
+id: error-code-return-negative-one-py
+language: Python
+rule:
+  pattern: 'return -1'
+---
+id: error-code-check-negative-one-py
+language: Python
+rule:
+  pattern: 'if $VAR == -1:'
+---
+id: error-code-check-none-py
+language: Python
+rule:
+  pattern: 'if $VAR is None:'
+---
+id: error-code-return-negative-one-ts
+language: TypeScript
+rule:
+  pattern: 'return -1;'
+---
+id: error-code-check-null-ts
+language: TypeScript
+rule:
+  pattern: 'if ($VAR === null) { $$$BODY }'
+---
+id: error-code-check-negative-one-ts
+language: TypeScript
+rule:
+  pattern: 'if ($VAR === -1) { $$$BODY }'

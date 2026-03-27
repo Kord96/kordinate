@@ -1,0 +1,31 @@
+id: actor-receive-handler-py
+language: Python
+rule:
+  pattern: |
+    def on_receive(self, $MESSAGE):
+        $$$BODY
+---
+id: actor-pykka-class-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(pykka.ThreadingActor):
+        $$$BODY
+---
+id: actor-tell-py
+language: Python
+rule:
+  pattern: '$ACTOR.tell($$$ARGS)'
+---
+id: actor-handle-message-ts
+language: TypeScript
+rule:
+  pattern: |
+    handleMessage($MESSAGE) {
+        $$$BODY
+    }
+---
+id: actor-send-message-ts
+language: TypeScript
+rule:
+  pattern: '$ACTOR.send($$$ARGS)'

@@ -1,0 +1,36 @@
+id: result-ok-err-class
+language: Python
+rule:
+  pattern: |
+    def is_ok(self):
+        $$$BODY
+---
+id: result-is-err
+language: Python
+rule:
+  pattern: |
+    def is_err(self):
+        $$$BODY
+---
+id: result-map-chain
+language: Python
+rule:
+  pattern: '$OBJ.and_then($$$ARGS)'
+---
+id: result-ok-err-ts
+language: TypeScript
+rule:
+  pattern: |
+    function Ok($VALUE) {
+        $$$BODY
+    }
+---
+id: result-fold-ts
+language: TypeScript
+rule:
+  pattern: '$OBJ.fold($ON_LEFT, $ON_RIGHT)'
+---
+id: result-flatmap-ts
+language: TypeScript
+rule:
+  pattern: '$OBJ.flatMap($$$ARGS)'

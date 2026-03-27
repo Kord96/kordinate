@@ -1,0 +1,32 @@
+id: distributed-tracing-start-span-py
+language: Python
+rule:
+  pattern: $TRACER.start_span($$$ARGS)
+---
+id: distributed-tracing-start-as-current-span-py
+language: Python
+rule:
+  pattern: |
+    with $TRACER.start_as_current_span($$$ARGS) as $SPAN:
+        $$$BODY
+---
+id: distributed-tracing-withspan-decorator-py
+language: Python
+rule:
+  pattern: |
+    @WithSpan($$$ARGS)
+    def $FUNC($$$PARAMS):
+        $$$BODY
+---
+id: distributed-tracing-start-span-ts
+language: TypeScript
+rule:
+  pattern: $TRACER.startSpan($$$ARGS)
+---
+id: distributed-tracing-start-active-span-ts
+language: TypeScript
+rule:
+  pattern: |
+    $TRACER.startActiveSpan($NAME, ($SPAN) => {
+        $$$BODY
+    })

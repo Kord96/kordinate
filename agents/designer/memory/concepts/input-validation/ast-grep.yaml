@@ -1,0 +1,33 @@
+id: validation-pydantic-model-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(BaseModel):
+        $$$BODY
+---
+id: validation-pydantic-field-py
+language: Python
+rule:
+  pattern: '$FIELD: $TYPE = Field($$$ARGS)'
+---
+id: validation-marshmallow-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(Schema):
+        $$$BODY
+---
+id: validation-zod-schema-ts
+language: TypeScript
+rule:
+  pattern: 'z.object($$$SHAPE)'
+---
+id: validation-zod-parse-ts
+language: TypeScript
+rule:
+  pattern: '$SCHEMA.parse($DATA)'
+---
+id: validation-joi-schema-ts
+language: TypeScript
+rule:
+  pattern: 'Joi.object($$$SHAPE)'

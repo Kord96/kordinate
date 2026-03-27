@@ -1,0 +1,31 @@
+id: prototype-clone-method-py
+language: Python
+rule:
+  pattern: |
+    def clone(self, $$$ARGS):
+        $$$BODY
+---
+id: prototype-deepcopy-py
+language: Python
+rule:
+  pattern: copy.deepcopy($OBJ)
+---
+id: prototype-copy-py
+language: Python
+rule:
+  pattern: copy.copy($OBJ)
+---
+id: prototype-object-create-ts
+language: TypeScript
+rule:
+  pattern: Object.create($PROTO)
+---
+id: prototype-spread-clone-ts
+language: TypeScript
+rule:
+  pattern: '{ ...$OBJ }'
+---
+id: prototype-object-assign-ts
+language: TypeScript
+rule:
+  pattern: Object.assign({}, $$$SOURCES)

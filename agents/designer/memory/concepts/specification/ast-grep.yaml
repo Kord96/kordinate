@@ -1,0 +1,44 @@
+id: spec-is-satisfied-by
+language: Python
+rule:
+  pattern: |
+    def is_satisfied_by(self, $CANDIDATE):
+        $$$BODY
+---
+id: spec-and-combinator
+language: Python
+rule:
+  pattern: |
+    def and_spec(self, $OTHER):
+        $$$BODY
+---
+id: spec-or-combinator
+language: Python
+rule:
+  pattern: |
+    def or_spec(self, $OTHER):
+        $$$BODY
+---
+id: spec-is-satisfied-by-ts
+language: TypeScript
+rule:
+  pattern: |
+    isSatisfiedBy($CANDIDATE) {
+        $$$BODY
+    }
+---
+id: spec-and-combinator-ts
+language: TypeScript
+rule:
+  pattern: |
+    and($OTHER) {
+        $$$BODY
+    }
+---
+id: spec-or-combinator-ts
+language: TypeScript
+rule:
+  pattern: |
+    or($OTHER) {
+        $$$BODY
+    }

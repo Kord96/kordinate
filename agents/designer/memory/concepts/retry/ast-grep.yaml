@@ -1,0 +1,30 @@
+id: retry-tenacity-decorator-py
+language: Python
+rule:
+  pattern: |
+    @retry($$$ARGS)
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: retry-backoff-decorator-py
+language: Python
+rule:
+  pattern: |
+    @backoff.on_exception($$$ARGS)
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: retry-tenacity-wait-py
+language: Python
+rule:
+  pattern: 'wait_exponential($$$ARGS)'
+---
+id: retry-async-retry-ts
+language: TypeScript
+rule:
+  pattern: 'retry($FUNC, $$$OPTS)'
+---
+id: retry-p-retry-ts
+language: TypeScript
+rule:
+  pattern: 'pRetry($FUNC, $$$OPTS)'

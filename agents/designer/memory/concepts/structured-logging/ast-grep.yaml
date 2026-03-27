@@ -1,0 +1,29 @@
+id: structlog-bind-py
+language: Python
+rule:
+  pattern: '$LOGGER.bind($$$KWARGS)'
+---
+id: structlog-get-logger-py
+language: Python
+rule:
+  pattern: 'structlog.get_logger($$$ARGS)'
+---
+id: structlog-info-kv-py
+language: Python
+rule:
+  pattern: '$LOGGER.info($MSG, $$$KWARGS)'
+---
+id: structlog-pino-ts
+language: TypeScript
+rule:
+  pattern: 'pino($$$OPTS)'
+---
+id: structlog-winston-json-ts
+language: TypeScript
+rule:
+  pattern: 'winston.format.json($$$ARGS)'
+---
+id: structlog-child-logger-ts
+language: TypeScript
+rule:
+  pattern: '$LOGGER.child($$$BINDINGS)'

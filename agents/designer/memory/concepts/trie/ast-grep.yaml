@@ -1,0 +1,41 @@
+id: trie-node-children
+language: Python
+rule:
+  pattern: 'self.children = {}'
+---
+id: trie-is-end-flag
+language: Python
+rule:
+  pattern: 'self.is_end = $VALUE'
+---
+id: trie-starts-with
+language: Python
+rule:
+  pattern: |
+    def starts_with(self, $PREFIX):
+        $$$BODY
+---
+id: trie-insert
+language: Python
+rule:
+  pattern: |
+    def insert(self, $WORD):
+        $$$BODY
+---
+id: trie-node-children-ts
+language: TypeScript
+rule:
+  pattern: 'children = new Map()'
+---
+id: trie-is-end-ts
+language: TypeScript
+rule:
+  pattern: 'isEnd = $VALUE'
+---
+id: trie-starts-with-ts
+language: TypeScript
+rule:
+  pattern: |
+    startsWith($PREFIX) {
+        $$$BODY
+    }

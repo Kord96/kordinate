@@ -1,0 +1,32 @@
+id: batchloader-dataloader-ts
+language: TypeScript
+rule:
+  pattern: 'new DataLoader($BATCH_FN, $$$OPTS)'
+---
+id: batchloader-dataloader-load-ts
+language: TypeScript
+rule:
+  pattern: '$LOADER.load($KEY)'
+---
+id: batchloader-dataloader-loadmany-ts
+language: TypeScript
+rule:
+  pattern: '$LOADER.loadMany($KEYS)'
+---
+id: batchloader-prefetch-related-py
+language: Python
+rule:
+  pattern: '$QS.prefetch_related($$$FIELDS)'
+---
+id: batchloader-select-related-py
+language: Python
+rule:
+  pattern: '$QS.select_related($$$FIELDS)'
+---
+id: batchloader-aiodataloader-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(DataLoader):
+        async def batch_load_fn(self, $KEYS):
+            $$$BODY

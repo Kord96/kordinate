@@ -1,0 +1,13 @@
+id: factory-create-method
+language: Python
+rule:
+  pattern: |
+    def create_$NAME($$$ARGS):
+        $$$BODY
+---
+id: factory-class
+language: Python
+rule:
+  pattern: |
+    class $NAMEFactory:
+        $$$BODY

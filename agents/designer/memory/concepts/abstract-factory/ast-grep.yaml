@@ -1,0 +1,45 @@
+id: abstract-factory-create-methods-py
+language: Python
+rule:
+  pattern: |
+    class $FACTORY:
+        $$$BODY
+  has:
+    pattern: |
+      def create_$NAME(self, $$$ARGS):
+          $$$BODY
+---
+id: abstract-factory-abc-py
+language: Python
+rule:
+  pattern: |
+    class $FACTORY(ABC):
+        $$$BODY
+  has:
+    pattern: |
+      @abstractmethod
+      def create_$NAME(self, $$$ARGS):
+          $$$BODY
+---
+id: abstract-factory-create-methods-ts
+language: TypeScript
+rule:
+  pattern: |
+    interface $FACTORY {
+        $$$BODY
+    }
+  has:
+    pattern: "create$NAME($$$ARGS): $TYPE"
+---
+id: abstract-factory-class-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $FACTORY implements $INTERFACE {
+        $$$BODY
+    }
+  has:
+    pattern: |
+      create$NAME($$$ARGS) {
+          $$$BODY
+      }
