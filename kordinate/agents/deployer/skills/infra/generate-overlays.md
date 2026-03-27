@@ -14,8 +14,7 @@ Read `profile/config.yaml` and generate kustomize overlays for a cluster. Base m
 $KORDINATE_HOME/profile/overlays/<cluster>/
 ├── gateway/
 │   ├── kustomization.yaml
-│   ├── patches.yaml
-│   └── ingress-caddyfile.yaml      # generated — Caddy routing config
+│   └── patches.yaml
 ├── monitor/
 │   ├── kustomization.yaml
 │   └── patches.yaml
@@ -76,13 +75,7 @@ These are too complex for simple kustomize patches — generate the full ConfigM
 
 Read `network.grafana_public` and `network.docs_public` from config.yaml. Construct service DNS from namespace context. Generate:
 - `@grafana` host matcher → reverse proxy to `grafana.master.svc.cluster.local:3000`
-- `@docs` host matcher → reverse proxy to `localhost:4321`
-- Fallback 404 handler
-
-### ingress-caddyfile (gateway namespace)
-
-Read `network.grafana_public` from config.yaml. Generate:
-- `@grafana` host matcher → reverse proxy to `grafana.master.svc.cluster.local:3000`
+- `@docs` host matcher → reverse proxy to `docs.master.svc.cluster.local:80`
 - Fallback 404 handler
 
 ### grafana-datasources (master namespace)

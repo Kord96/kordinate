@@ -7,10 +7,10 @@
 gateway:
   - gateway-pod.yaml
   - gateway-minio.yaml
-  - gateway-ingress.yaml
 
 master:
   - master-kord-storage.yaml
+  - master-docs.yaml                 # Astro Starlight docs site (docs.khaledkord.com)
   - master-workstation.yaml          # Caddyfile ConfigMap generated in overlay
   - prometheus.yaml                  # base — overlay sets: port=9191, retention=30d, PVC
   - loki.yaml                       # base — overlay sets: PVC name
@@ -33,5 +33,6 @@ shared:
 
 images:
   - workstation
+  - docs
   - log-puller
   - loki-federate

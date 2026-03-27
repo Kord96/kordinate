@@ -83,7 +83,6 @@ Live at `agents/deployer/skills/infra/manifests/` (namespace-prefixed flat files
 | Manifest | Purpose |
 |----------|---------|
 | gateway-pod.yaml | Gateway Tailscale pod (cluster front door) |
-| gateway-ingress.yaml | Ingress configuration |
 | gateway-minio.yaml | MinIO object storage |
 
 ### Master Namespace
@@ -95,6 +94,7 @@ Live at `agents/deployer/skills/infra/manifests/` (namespace-prefixed flat files
 | master-grafana.yaml | Grafana |
 | master-datasources.yaml | Grafana datasources |
 | master-alloy.yaml | Master Alloy collector |
+| master-docs.yaml | Astro Starlight docs site (docs.khaledkord.com) |
 | master-workstation.yaml | Workstation deployment + PVC (Beorn runs inside) |
 | master-kord-storage.yaml | Shared kord PVC storage |
 | dashboards/ | Dashboard provisioning + JSON definitions |
