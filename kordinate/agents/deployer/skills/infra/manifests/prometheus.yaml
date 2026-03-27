@@ -58,6 +58,7 @@ spec:
             - --web.listen-address=:9090
             - --config.file=/etc/prometheus/prometheus.yml
             - --web.enable-remote-write-receiver
+            - --web.enable-lifecycle
           ports:
             - containerPort: 9090
           resources:
@@ -71,6 +72,22 @@ spec:
               mountPath: /etc/prometheus
             - name: prometheus-data
               mountPath: /prometheus
+        - name: config-reloader
+          image: ghcr.io/jimmidyson/configmap-reload:v0.14.0
+          args:
+            - --volume-dir=/etc/prometheus
+            - --webhook-url=http://localhost:9090/-/reload
+            - --webhook-method=POST
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
       volumes:
         - name: prometheus-config
           configMap:

@@ -111,6 +111,22 @@ spec:
               mountPath: /etc/loki
             - name: loki-data
               mountPath: /data/loki
+        - name: config-reloader
+          image: ghcr.io/jimmidyson/configmap-reload:v0.14.0
+          args:
+            - --volume-dir=/etc/loki
+            - --webhook-url=http://localhost:3100/config/reload
+            - --webhook-method=POST
+          volumeMounts:
+            - name: loki-config
+              mountPath: /etc/loki
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi
       volumes:
         - name: loki-config
           configMap:
