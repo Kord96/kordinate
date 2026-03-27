@@ -10,32 +10,32 @@ preloaded: designer
 
 ## Categories
 
-| Category | Scope | Key Question |
-|----------|-------|--------------|
-| architecture | Overall system structure | What is the deployment and service topology? |
-| structural | How code is organized within a service | Is business logic decoupled from infrastructure? |
-| data | How data flows and is stored | Is data moving correctly through the system? |
-| integration | How services communicate with each other | Are cross-service interactions safe and traceable? |
-| resilience | How the system handles failure | What happens when a dependency goes down? |
-| lifecycle | How a single service starts, runs, and stops | Does the service boot and shut down cleanly? |
-| creational | How objects are created | Are object creation concerns separated from business logic? |
-| behavioral | How objects communicate | Are responsibilities clearly distributed? |
-| concurrency | How parallel work is managed | Is concurrent access safe and efficient? |
-| frontend | How user interfaces are structured | Is UI state and rendering well-organized? |
-| storage | How data is persisted and accessed | Is persistence abstracted from domain logic? |
-| messaging | How messages flow between components | Are messages delivered reliably and processed correctly? |
-| deployment | How software is released | Are releases safe, reversible, and observable? |
-| security | How access and trust are managed | Are authentication and authorization enforced correctly? |
-| api | How services expose interfaces | Are APIs consistent, versioned, and well-defined? |
-| distributed | How distributed systems coordinate | Are coordination and consistency handled correctly? |
-| testing | How code is verified | Are tests isolated, deterministic, and covering the right boundaries? |
-| error-handling | How failures are represented | Are errors values or exceptions, and is handling explicit? |
-| infrastructure | How environments are provisioned | Is infrastructure reproducible and secrets secure? |
-| networking | How network communication is handled | Are protocols and connections managed correctly? |
-| observability | How systems are monitored | Are logs, metrics, and traces structured and useful? |
-| realtime | How real-time systems are structured | Is simulation deterministic and performant? |
-| ml | How ML systems are built | Are models versioned, features managed, and experiments tracked? |
-| compiler | How language tooling is structured | Are parsing, representation, and transformation well-separated? |
+| Category | Description |
+|----------|-------------|
+| architecture | Overall system structure |
+| structural | How code is organized within a service |
+| data | How data flows and is stored |
+| integration | How services communicate with each other |
+| resilience | How the system handles failure |
+| lifecycle | How a single service starts, runs, and stops |
+| creational | How objects are created |
+| behavioral | How objects communicate |
+| concurrency | How parallel work is managed |
+| frontend | How user interfaces are structured |
+| storage | How data is persisted and accessed |
+| messaging | How messages flow between components |
+| deployment | How software is released |
+| security | How access and trust are managed |
+| api | How services expose interfaces |
+| distributed | How distributed systems coordinate |
+| testing | How code is verified |
+| error-handling | How failures are represented |
+| infrastructure | How environments are provisioned |
+| networking | How network communication is handled |
+| observability | How systems are monitored |
+| realtime | How real-time systems are structured |
+| ml | How ML systems are built |
+| compiler | How language tooling is structured |
 
 ## Patterns
 
