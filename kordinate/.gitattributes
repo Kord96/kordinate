@@ -1,8 +1,1 @@
-# Encrypt site-specific content
-profile/** filter=git-crypt diff=git-crypt
-profile/README.md !filter !diff
-profile/locks/** !filter !diff
-profile/keybindings.json !filter !diff
-
-# Encrypt agent operational memory (site-specific auto-memory)
-agents/*/memory/dynamic/** filter=git-crypt diff=git-crypt
+# Intentionally empty — git-crypt removed
