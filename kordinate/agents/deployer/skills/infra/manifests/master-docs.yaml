@@ -40,8 +40,8 @@ spec:
             periodSeconds: 10
           volumeMounts:
             - name: kord
-              mountPath: /app/src/content/docs
-              subPath: projects/docs/src/content/docs
+              mountPath: /app/src
+              subPath: projects/docs/src
       volumes:
         - name: kord
           persistentVolumeClaim:
