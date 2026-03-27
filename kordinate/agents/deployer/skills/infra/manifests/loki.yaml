@@ -112,21 +112,29 @@ spec:
             - name: loki-data
               mountPath: /data/loki
         - name: config-reloader
-          image: ghcr.io/jimmidyson/configmap-reload:v0.14.0
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
           args:
-            - --volume-dir=/etc/loki
-            - --webhook-url=http://localhost:3100/config/reload
-            - --webhook-method=POST
+            - |
+              HASH=$(md5sum /etc/loki/loki.yml | cut -d' ' -f1)
+              while true; do
+                sleep 30
+                NEW=$(md5sum /etc/loki/loki.yml | cut -d' ' -f1)
+                if [ "$NEW" != "$HASH" ]; then
+                  wget -q --post-data='' -O- http://localhost:3100/config/reload 2>/dev/null && echo "Loki config reloaded" || echo "Reload failed"
+                  HASH=$NEW
+                fi
+              done
           volumeMounts:
             - name: loki-config
               mountPath: /etc/loki
               readOnly: true
           resources:
             requests:
-              cpu: 10m
-              memory: 16Mi
+              cpu: 5m
+              memory: 8Mi
             limits:
-              memory: 32Mi
+              memory: 16Mi
       volumes:
         - name: loki-config
           configMap:

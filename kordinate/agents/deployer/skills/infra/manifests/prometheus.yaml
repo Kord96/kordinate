@@ -73,21 +73,29 @@ spec:
             - name: prometheus-data
               mountPath: /prometheus
         - name: config-reloader
-          image: ghcr.io/jimmidyson/configmap-reload:v0.14.0
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
           args:
-            - --volume-dir=/etc/prometheus
-            - --webhook-url=http://localhost:9090/-/reload
-            - --webhook-method=POST
+            - |
+              HASH=$(md5sum /etc/prometheus/prometheus.yml | cut -d' ' -f1)
+              while true; do
+                sleep 30
+                NEW=$(md5sum /etc/prometheus/prometheus.yml | cut -d' ' -f1)
+                if [ "$NEW" != "$HASH" ]; then
+                  wget -q --post-data='' -O- http://localhost:9090/-/reload 2>/dev/null && echo "Prometheus config reloaded" || echo "Reload failed"
+                  HASH=$NEW
+                fi
+              done
           volumeMounts:
             - name: prometheus-config
               mountPath: /etc/prometheus
               readOnly: true
           resources:
             requests:
-              cpu: 10m
-              memory: 16Mi
+              cpu: 5m
+              memory: 8Mi
             limits:
-              memory: 32Mi
+              memory: 16Mi
       volumes:
         - name: prometheus-config
           configMap:
