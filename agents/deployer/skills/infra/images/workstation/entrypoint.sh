@@ -57,6 +57,7 @@ fi
 # Start sshd on port 2222 for Cloudflare tunnel SSH access.
 # Port 22 is reserved for Tailscale SSH (identity-based, internal tailnet).
 # Cloudflare tunnel routes ssh.khaledkord.com → localhost:2222 → sshd.
+sudo mkdir -p /run/sshd
 sudo ssh-keygen -A 2>/dev/null
 sudo /usr/sbin/sshd -p 2222 2>/dev/null && echo "sshd started on port 2222 (Cloudflare)" || echo "WARNING: sshd failed to start"
 

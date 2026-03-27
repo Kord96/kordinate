@@ -342,40 +342,24 @@ cmd_init() {
   echo ""
   echo -e "${BOLD}Step 7: Link repo${NC}"
 
-  if command -v gh &>/dev/null && gh auth status &>/dev/null 2>&1; then
-    read -rp "Remote repo URL for workstation ~/.claude (enter to auto-create): " LINK_REPO
-    if [ -z "$LINK_REPO" ]; then
-      info "No repo provided — creating private kordinate repo..."
-      local GH_USER
-      GH_USER=$(gh api user -q .login)
-      local REPO_NAME="kordinate"
-      if gh repo view "${GH_USER}/${REPO_NAME}" &>/dev/null 2>&1; then
-        info "Repo ${GH_USER}/${REPO_NAME} already exists"
-      else
-        gh repo create "$REPO_NAME" --private --confirm
-        log "Created private repo: ${GH_USER}/${REPO_NAME}"
-        local TMP_REPO
-        TMP_REPO=$(mktemp -d)
-        git init "$TMP_REPO"
-        cp -r "$SCRIPT_DIR/agents" "$SCRIPT_DIR/commands" "$SCRIPT_DIR/hooks" \
-              "$SCRIPT_DIR/CLAUDE.md" "$SCRIPT_DIR/profile" \
-              "$SCRIPT_DIR/settings.json" "$SCRIPT_DIR/bin" "$SCRIPT_DIR/setup" \
-              "$SCRIPT_DIR/kordinate" \
-              "$TMP_REPO/" 2>/dev/null || true
-        git -C "$TMP_REPO" add -A
-        git -C "$TMP_REPO" commit -m "initial kordinate setup"
-        git -C "$TMP_REPO" remote add origin "https://github.com/${GH_USER}/${REPO_NAME}.git"
-        git -C "$TMP_REPO" push -u origin HEAD:main
-        rm -rf "$TMP_REPO"
-        log "Scaffolded data pushed to repo"
-      fi
-      LINK_REPO="https://github.com/${GH_USER}/${REPO_NAME}.git"
-    fi
-    ws_exec "git clone $LINK_REPO ~/.claude 2>/dev/null || git -C ~/.claude pull --ff-only"
-    log "Linked workstation to $LINK_REPO"
-  else
-    warn "gh not authenticated — skipping repo link. Run gh auth login on the workstation later."
-  fi
+  # Copy kordinate files into workstation ~/.kord (no git repo — just files).
+  # The workstation entrypoint symlinks ~/.kord to $KORDINATE_HOME on the PVC.
+  local KORD_SRC="$SCRIPT_DIR/.."
+  info "Copying kordinate files to workstation..."
+  local POD
+  POD=$(ws_pod)
+  local TMP_KORD
+  TMP_KORD=$(mktemp -d)
+  cp -r "$KORD_SRC/agents" "$KORD_SRC/skills" "$KORD_SRC/shared" \
+        "$KORD_SRC/lib" "$KORD_SRC/bin" "$KORD_SRC/kordinate" \
+        "$KORD_SRC/CLAUDE.md" "$KORD_SRC/KORD.md" "$KORD_SRC/KORD.json" \
+        "$TMP_KORD/" 2>/dev/null || true
+  [ -d "$KORD_SRC/installer/profile" ] && cp -r "$KORD_SRC/installer/profile" "$TMP_KORD/"
+  tar czf /tmp/kordinate-files.tar.gz -C "$TMP_KORD" .
+  kc cp /tmp/kordinate-files.tar.gz "master/$POD:/tmp/kordinate-files.tar.gz" -c workstation
+  ws_exec "mkdir -p /kord/kordinate && tar xzf /tmp/kordinate-files.tar.gz -C /kord/kordinate && rm /tmp/kordinate-files.tar.gz"
+  rm -rf "$TMP_KORD" /tmp/kordinate-files.tar.gz
+  log "Kordinate files copied to workstation (no git repo)"
 
   # ─── Step 8: Credentials ───
   echo ""
