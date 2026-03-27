@@ -23,14 +23,6 @@ rule:
     def $NAME($$$ARGS):
         $$$BODY
 ---
-id: fixture-builder-create-ts
-language: TypeScript
-rule:
-  pattern: |
-    function $BUILD($$$OVERRIDES) {
-        $$$BODY
-    }
----
 id: fixture-builder-faker-ts
 language: TypeScript
 rule:

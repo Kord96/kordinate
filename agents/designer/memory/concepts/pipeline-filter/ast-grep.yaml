@@ -1,9 +1,14 @@
-id: pipe-chain
+id: pipeline-filter-pipe-method-py
 language: Python
 rule:
-  pattern: '$A | $B'
+  pattern: '$OBJ.pipe($$$ARGS)'
 ---
-id: method-chain-long
+id: pipeline-filter-add-filter-py
 language: Python
 rule:
-  pattern: '$OBJ.$M1($$$A1).$M2($$$A2).$M3($$$A3)'
+  pattern: '$OBJ.add_filter($$$ARGS)'
+---
+id: pipeline-filter-chain-ts
+language: TypeScript
+rule:
+  pattern: '$OBJ.pipe($$$ARGS)'

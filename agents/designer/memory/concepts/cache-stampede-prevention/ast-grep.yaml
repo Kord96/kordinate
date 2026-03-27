@@ -3,13 +3,6 @@ language: Python
 rule:
   pattern: '$REDIS.set($LOCK_KEY, $VALUE, nx=True, ex=$TTL)'
 ---
-id: cache-stampede-lock-guard-py
-language: Python
-rule:
-  pattern: |
-    with $LOCK($KEY):
-        $$$BODY
----
 id: cache-stampede-singleflight-py
 language: Python
 rule:

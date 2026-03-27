@@ -6,23 +6,17 @@ rule:
 id: grpc-servicer-registration-py
 language: Python
 rule:
-  pattern: '$FUNC($SERVICER, $SERVER)'
-  regex: add_.*Servicer_to_server
+  pattern: 'grpc.insecure_channel($$$ARGS)'
 ---
-id: grpc-channel-py
+id: grpc-import-py
 language: Python
 rule:
-  pattern: 'grpc.insecure_channel($$$ARGS)'
+  pattern: 'import grpc'
 ---
 id: grpc-server-ts
 language: TypeScript
 rule:
   pattern: '$SERVER.addService($SERVICE, $$$ARGS)'
----
-id: grpc-client-ts
-language: TypeScript
-rule:
-  pattern: 'new $CLIENT($ADDR, $$$ARGS)'
 ---
 id: grpc-load-package-ts
 language: TypeScript

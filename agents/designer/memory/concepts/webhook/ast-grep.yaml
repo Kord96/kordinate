@@ -8,19 +8,6 @@ language: Python
 rule:
   pattern: 'hmac.new($$$ARGS)'
 ---
-id: webhook-fastapi-handler-py
-language: Python
-rule:
-  pattern: |
-    @$APP.post($PATH)
-    async def $HANDLER($$$PARAMS):
-        $$$BODY
----
-id: webhook-express-post-ts
-language: TypeScript
-rule:
-  pattern: '$APP.post($PATH, $$$HANDLERS)'
----
 id: webhook-createHmac-ts
 language: TypeScript
 rule:

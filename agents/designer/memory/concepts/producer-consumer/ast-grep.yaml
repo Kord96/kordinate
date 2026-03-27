@@ -1,17 +1,21 @@
-id: producer-consumer-queue-put-py
-language: Python
-rule:
-  pattern: '$QUEUE.put($$$ARGS)'
----
-id: producer-consumer-queue-get-py
-language: Python
-rule:
-  pattern: '$QUEUE.get($$$ARGS)'
----
 id: producer-consumer-queue-init-py
 language: Python
 rule:
   pattern: '$NAME = queue.Queue($$$ARGS)'
+---
+id: producer-consumer-put-py
+language: Python
+rule:
+  pattern: '$QUEUE.put($ITEM)'
+  inside:
+    kind: while_statement
+---
+id: producer-consumer-get-py
+language: Python
+rule:
+  pattern: '$QUEUE.get()'
+  inside:
+    kind: while_statement
 ---
 id: producer-consumer-enqueue-ts
 language: TypeScript
@@ -22,8 +26,3 @@ id: producer-consumer-dequeue-ts
 language: TypeScript
 rule:
   pattern: '$QUEUE.dequeue($$$ARGS)'
----
-id: producer-consumer-push-shift-ts
-language: TypeScript
-rule:
-  pattern: '$QUEUE.push($$$ARGS)'
