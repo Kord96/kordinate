@@ -68,11 +68,11 @@ for name, cl in clusters.items():
         }
         grafana_added = True
 
-# Beorn — runs as a background process inside the workstation pod.
+# Agent factory — spawns beorn agents (Claude Code as any kordinate agent).
 mcp['mcpServers']['beorn'] = {
     'type': 'http',
-    'url': 'http://localhost:3100/mcp',
-    '_note': 'Shape-shifting agent server. Runs inside the workstation pod.'
+    'url': 'http://agent-factory.master.svc.cluster.local:3100/mcp',
+    '_note': 'Agent factory. Runs as a separate deployment in master namespace.'
 }
 
 print(json.dumps(mcp, indent=2))

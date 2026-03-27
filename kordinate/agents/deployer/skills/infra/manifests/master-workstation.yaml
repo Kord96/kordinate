@@ -1,7 +1,6 @@
 ##
 ## Workstation — Claude Code interactive agent CLI with tmux.
-## Runs in master namespace. Beorn (MCP agent server) runs as a background
-## process inside this pod on port 3100.
+## Runs in master namespace.
 ##
 ## Storage: single 'kord' PVC mounted at /kord with persistent system state.
 ## /home/claude is ephemeral — entrypoint symlinks to /kord subdirectories.
@@ -76,9 +75,6 @@ spec:
           image: REGISTRY/workstation:latest
           stdin: true
           tty: true
-          ports:
-            - containerPort: 3100
-              name: beorn
           env:
             - name: HOME
               value: /home/claude

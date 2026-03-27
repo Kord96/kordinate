@@ -127,25 +127,6 @@ fi
 # ─── Hydrate MCP config ───
 kord-hydrate 2>/dev/null || echo "WARNING: kord-hydrate failed — MCP config not generated"
 
-# ─── Start Beorn (MCP agent server) ───
-MCP_SERVER="$KORDINATE_HOME/lib/mcp-agent-server"
-if [ -d "$MCP_SERVER" ]; then
-  echo "Installing Beorn dependencies..."
-  (cd "$MCP_SERVER" && npm install --production 2>/dev/null || npm install 2>/dev/null || true)
-  echo "Starting Beorn MCP agent server on port ${PORT:-3100}..."
-  export PORT="${PORT:-3100}"
-  node "$MCP_SERVER/server.js" &
-  BEORN_PID=$!
-  sleep 2
-  if kill -0 "$BEORN_PID" 2>/dev/null; then
-    echo "Beorn started (PID $BEORN_PID)"
-  else
-    echo "WARNING: Beorn failed to start — workstation continues without MCP agent server"
-  fi
-else
-  echo "WARNING: MCP agent server not found at $MCP_SERVER — Beorn not started"
-fi
-
 # ─── Restore tmux layout from persistent state ───
 if [ -x "$KORDINATE_HOME/bin/tmux-restore" ]; then
   "$KORDINATE_HOME/bin/tmux-restore" || echo "WARNING: tmux-restore failed — starting with empty tmux"
