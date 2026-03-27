@@ -1,0 +1,50 @@
+id: middleware-express-use-ts
+language: TypeScript
+rule:
+  pattern: '$APP.use($$$ARGS)'
+---
+id: middleware-express-handler-ts
+language: TypeScript
+rule:
+  pattern: |
+    function $NAME($REQ, $RES, $NEXT) {
+        $$$BODY
+    }
+---
+id: middleware-koa-ts
+language: TypeScript
+rule:
+  pattern: |
+    async ($CTX, $NEXT) => {
+        $$$BODY
+    }
+---
+id: middleware-redux-ts
+language: TypeScript
+rule:
+  pattern: |
+    ($STORE) => ($NEXT) => ($ACTION) => {
+        $$$BODY
+    }
+---
+id: middleware-django-call-py
+language: Python
+rule:
+  pattern: |
+    def __call__(self, $REQUEST):
+        $$$BODY
+---
+id: middleware-fastapi-py
+language: Python
+rule:
+  pattern: |
+    @$APP.middleware("http")
+    async def $NAME($REQUEST, $CALL_NEXT):
+        $$$BODY
+---
+id: middleware-base-http-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(BaseHTTPMiddleware):
+        $$$BODY

@@ -1,0 +1,24 @@
+id: lazy-loading-react-lazy-ts
+language: TypeScript
+rule:
+  pattern: 'React.lazy($$$ARGS)'
+---
+id: lazy-loading-lazy-ts
+language: TypeScript
+rule:
+  pattern: 'lazy($$$ARGS)'
+---
+id: lazy-loading-dynamic-import-ts
+language: TypeScript
+rule:
+  pattern: 'import($MODULE)'
+---
+id: lazy-loading-next-dynamic-ts
+language: TypeScript
+rule:
+  pattern: 'dynamic($$$ARGS)'
+---
+id: lazy-loading-defineAsyncComponent-ts
+language: TypeScript
+rule:
+  pattern: 'defineAsyncComponent($$$ARGS)'

@@ -1,0 +1,29 @@
+# Score 2: Future/Promise is a language-level concurrency primitive built into the syntax
+# of most modern languages. Matching async/await or Promise would flag nearly every
+# async function in the codebase -- the signal-to-noise ratio makes any rule useless
+# for pattern detection.
+#
+# The pattern is interesting to detect only when it's ABSENT (sync code that should be
+# async) or MISUSED (anti-patterns like sequential awaits in a loop). The presence of
+# async/await itself is not a finding -- it's baseline modern code.
+#
+# The one heuristic worth considering is the sequential-await-in-loop anti-pattern
+# mentioned in the pattern file. This IS structurally matchable.
+
+# Low-confidence heuristic: await inside a for loop (potential sequential-await anti-pattern).
+# This is not detecting the Future/Promise pattern itself, but a common misuse of it.
+# False positives: loops where sequential execution is intentional (rate limiting,
+# ordered operations, error handling that must be sequential).
+id: future-promise-python-sequential-await-in-loop
+language: Python
+rule:
+  kind: for_statement
+  has:
+    kind: await_expression
+---
+id: future-promise-js-sequential-await-in-loop
+language: JavaScript
+rule:
+  kind: for_statement
+  has:
+    kind: await_expression

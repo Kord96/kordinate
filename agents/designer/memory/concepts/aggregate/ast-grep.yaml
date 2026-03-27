@@ -1,0 +1,36 @@
+id: aggregate-root-base-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(AggregateRoot):
+        $$$BODY
+---
+id: aggregate-raise-event-py
+language: Python
+rule:
+  pattern: 'self._raise_event($EVENT)'
+---
+id: aggregate-invariant-guard-py
+language: Python
+rule:
+  pattern: |
+    if not $CONDITION:
+        raise $EXCEPTION($$$ARGS)
+---
+id: aggregate-root-base-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $NAME extends AggregateRoot {
+        $$$BODY
+    }
+---
+id: aggregate-add-event-ts
+language: TypeScript
+rule:
+  pattern: 'this.addDomainEvent($EVENT)'
+---
+id: aggregate-apply-event-ts
+language: TypeScript
+rule:
+  pattern: 'this.apply($EVENT)'

@@ -1,0 +1,63 @@
+# Score 3: Boolean blindness is about CALL SITES passing multiple boolean
+# positional arguments. ast-grep can match the smell shape: function calls
+# with 3+ boolean literals as positional args.
+
+id: boolean-blindness-3-bools-py
+language: Python
+rule:
+  pattern: $FN(True, True, True)
+---
+id: boolean-blindness-3-bools-alt-py
+language: Python
+rule:
+  pattern: $FN(True, False, True)
+---
+id: boolean-blindness-3-bools-alt2-py
+language: Python
+rule:
+  pattern: $FN(False, True, False)
+---
+id: boolean-blindness-3-bools-alt3-py
+language: Python
+rule:
+  pattern: $FN(False, False, False)
+---
+id: boolean-blindness-3-bools-ts
+language: TypeScript
+rule:
+  pattern: $FN(true, true, true)
+---
+id: boolean-blindness-3-bools-alt-ts
+language: TypeScript
+rule:
+  pattern: $FN(true, false, true)
+---
+id: boolean-blindness-3-bools-alt2-ts
+language: TypeScript
+rule:
+  pattern: $FN(false, true, false)
+---
+id: boolean-blindness-3-bools-alt3-ts
+language: TypeScript
+rule:
+  pattern: $FN(true, false, false)
+---
+id: boolean-blindness-3-bools-alt4-ts
+language: TypeScript
+rule:
+  pattern: $FN(false, false, true)
+---
+id: boolean-blindness-3-bools-alt5-ts
+language: TypeScript
+rule:
+  pattern: $FN(false, true, true)
+---
+id: boolean-blindness-3-bools-alt6-ts
+language: TypeScript
+rule:
+  pattern: $FN(true, true, false)
+---
+id: boolean-blindness-3-bools-alt7-ts
+language: TypeScript
+rule:
+  pattern: $FN(false, false, false)

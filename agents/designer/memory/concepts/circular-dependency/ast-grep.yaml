@@ -1,0 +1,25 @@
+# Score 3: True circular dependency detection requires graph analysis across files,
+# which ast-grep cannot do. However, we CAN match the WORKAROUND signatures that
+# indicate a circular dependency exists: deferred imports inside functions,
+# TYPE_CHECKING guards, and from __future__ import annotations.
+
+id: circular-dep-deferred-import-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      def $FN($$$ARGS):
+          $$$BODY
+  pattern: import $MODULE
+---
+id: circular-dep-type-checking-guard-py
+language: Python
+rule:
+  pattern: |
+    if TYPE_CHECKING:
+        $$$IMPORTS
+---
+id: circular-dep-future-annotations-py
+language: Python
+rule:
+  pattern: from __future__ import annotations

@@ -1,0 +1,19 @@
+id: slot-children-prop-ts
+language: TypeScript
+rule:
+  pattern: '$PROPS.children'
+---
+id: slot-render-prop-ts
+language: TypeScript
+rule:
+  pattern: '$PROPS.render($$$ARGS)'
+---
+id: slot-clone-element-ts
+language: TypeScript
+rule:
+  pattern: 'React.cloneElement($$$ARGS)'
+---
+id: slot-children-map-ts
+language: TypeScript
+rule:
+  pattern: 'React.Children.map($$$ARGS)'

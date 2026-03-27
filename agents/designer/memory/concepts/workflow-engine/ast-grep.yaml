@@ -1,0 +1,45 @@
+id: workflow-airflow-dag-py
+language: Python
+rule:
+  pattern: |
+    with DAG($$$ARGS) as $DAG:
+        $$$BODY
+---
+id: workflow-airflow-operator-py
+language: Python
+rule:
+  pattern: '$TASK = PythonOperator($$$ARGS)'
+---
+id: workflow-temporal-workflow-py
+language: Python
+rule:
+  pattern: |
+    @workflow.defn
+    class $NAME:
+        $$$BODY
+---
+id: workflow-temporal-activity-py
+language: Python
+rule:
+  pattern: |
+    @activity.defn
+    async def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: workflow-temporal-ts
+language: TypeScript
+rule:
+  pattern: |
+    export async function $NAME($$$PARAMS): Promise<$RET> {
+        $$$BODY
+    }
+---
+id: workflow-step-functions-ts
+language: TypeScript
+rule:
+  pattern: 'new sfn.StateMachine($$$ARGS)'
+---
+id: workflow-temporal-client-ts
+language: TypeScript
+rule:
+  pattern: '$CLIENT.workflow.start($$$ARGS)'

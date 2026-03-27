@@ -1,0 +1,21 @@
+# Score 2: Inconsistent Naming is a convention/style problem that requires comparing
+# naming patterns across the codebase, not matching a structural pattern.
+#
+# Detection requires:
+#   - Extracting all identifiers from the codebase
+#   - Classifying their casing convention (camelCase, snake_case, PascalCase)
+#   - Finding files or scopes where conventions are mixed
+#   - Identifying the same domain concept referred to by different names
+#
+# ast-grep matches AST structure, not naming style. While it supports regex constraints
+# on identifiers, you would need to write rules like "find a snake_case variable in the
+# same scope as a camelCase variable" -- which requires scope-level analysis ast-grep
+# does not support.
+#
+# Even detecting mixed casing in a single file would require matching ALL identifiers
+# and classifying each one -- ast-grep matches specific patterns, not "all identifiers."
+#
+# This anti-pattern is best detected by:
+#   - Language-specific linters: pylint naming-convention, eslint camelcase
+#   - Custom scripts extracting and classifying identifier names
+#   - Project glossary enforcement tools

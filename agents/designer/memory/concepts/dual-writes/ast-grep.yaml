@@ -1,0 +1,21 @@
+# Score 2: Dual Writes is a data consistency anti-pattern where two stores are written
+# in the same operation without atomicity guarantees. Detection requires understanding
+# that two calls target DIFFERENT data stores and that no transactional envelope wraps
+# them -- semantic knowledge ast-grep cannot infer.
+#
+# The pattern file lists signatures like "db.save() followed by producer.send()" but
+# in real code these method names vary wildly:
+#   - session.commit() + kafka_producer.produce()
+#   - Model.objects.create() + channel.basic_publish()
+#   - repository.save() + event_bus.emit()
+#   - cursor.execute() + requests.post()
+#
+# Even if we matched one specific pair, we cannot know:
+#   - Whether they target different stores (vs. two methods on the same DB)
+#   - Whether an outbox pattern wraps them (transactional safety)
+#   - Whether eventual consistency is acceptable for this case
+#
+# This anti-pattern is best detected by:
+#   - Architecture review identifying write paths to multiple stores
+#   - Transaction boundary analysis in the data layer
+#   - Distributed tracing showing multi-store writes in a single span

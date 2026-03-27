@@ -1,0 +1,39 @@
+# Score 3: Memory leaks are fundamentally about the ABSENCE of cleanup.
+# ast-grep can match the incomplete patterns: addEventListener without remove,
+# setInterval without clear, and open() without context manager.
+
+id: memory-leak-addeventlistener-ts
+language: TypeScript
+rule:
+  pattern: $TARGET.addEventListener($EVENT, $HANDLER)
+---
+id: memory-leak-setinterval-no-clear-ts
+language: TypeScript
+rule:
+  pattern: setInterval($$$ARGS)
+  not:
+    inside:
+      pattern: $VAR = setInterval($$$ARGS)
+---
+id: memory-leak-global-append-py
+language: Python
+rule:
+  pattern: $COLLECTION.append($ITEM)
+  inside:
+    pattern: |
+      while $COND:
+          $$$BODY
+---
+id: memory-leak-open-no-with-py
+language: Python
+rule:
+  pattern: $VAR = open($$$ARGS)
+---
+id: memory-leak-dict-grow-in-loop-py
+language: Python
+rule:
+  pattern: $DICT[$KEY] = $VALUE
+  inside:
+    pattern: |
+      while $COND:
+          $$$BODY

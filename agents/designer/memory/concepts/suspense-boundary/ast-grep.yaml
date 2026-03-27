@@ -1,0 +1,14 @@
+id: suspense-boundary-ts
+language: TypeScript
+rule:
+  pattern: '<Suspense $$$ATTRS>$$$CHILDREN</Suspense>'
+---
+id: suspense-fallback-ts
+language: TypeScript
+rule:
+  pattern: '<Suspense fallback={$FALLBACK}>$$$CHILDREN</Suspense>'
+---
+id: suspense-startTransition-ts
+language: TypeScript
+rule:
+  pattern: 'startTransition($$$ARGS)'

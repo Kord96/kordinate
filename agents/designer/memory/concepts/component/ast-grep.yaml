@@ -1,0 +1,25 @@
+id: component-function-ts
+language: TypeScript
+rule:
+  pattern: |
+    function $NAME($PROPS): JSX.Element {
+        $$$BODY
+    }
+---
+id: component-arrow-ts
+language: TypeScript
+rule:
+  pattern: |
+    const $NAME = ($PROPS) => {
+        $$$BODY
+    }
+---
+id: component-defineComponent-ts
+language: TypeScript
+rule:
+  pattern: 'defineComponent($$$ARGS)'
+---
+id: component-customElement-ts
+language: TypeScript
+rule:
+  pattern: 'customElements.define($NAME, $CLASS)'
