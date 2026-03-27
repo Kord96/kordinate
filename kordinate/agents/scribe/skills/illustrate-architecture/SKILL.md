@@ -1,83 +1,70 @@
 ---
 name: illustrate-architecture
-description: Transform a project's architecture.yaml into an interactive viewer JSON and optional tutorial — the primary visual documentation output.
+description: Transform a project's architecture into interactive viewer JSON — reads architecture.yaml for structure, reads the code for flows and state.
 curated: true
 scope: global
 ---
 
-Transform a project's architectural understanding into viewer-ready JSON for the ProjectExplorer component, and optionally a brief tutorial.
+Transform a project's architecture into viewer-ready JSON for the ProjectExplorer component.
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>` (e.g., `logbd`, `stoik`, `sous-storefront`). Optional: `--tutorial` to also generate a brief tutorial.
+`$ARGUMENTS` — Required: `<project>`. Optional: `--tutorial`.
 
-The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/designer/architecture.yaml`. If it doesn't exist, report and suggest running `/designer:architect` first.
+The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/designer/architecture.yaml`. If not, suggest running `/designer:architect` first.
+
+## Inputs
+
+Two inputs, each with a different purpose:
+
+1. **architecture.yaml** — the structural map. Use it for: component hierarchy, root groups, `depends_on` edges, external dependencies. The architect already did the hard work of identifying what the pieces are.
+
+2. **The project source code** — the execution truth. Read the actual code to trace flows, understand state management, and identify failure cascades. The architecture.yaml's `data_flows` are a starting point, but they're often too shallow. The code tells you what actually happens.
 
 ## Procedure
 
-1. Parse project name from `$ARGUMENTS`. Locate the project directory.
+### Structure (from architecture.yaml)
 
-2. **Read architecture.yaml** — this is the sole input. Understand the component hierarchy, flows, state, and failure modes.
-
-3. **Produce viewer JSON** — convert the architecture into `architecture.json` for the ProjectExplorer Cytoscape viewer. The JSON has this shape:
-
-   ```json
-   {
-     "nodes": [...],
-     "edges": [...],
-     "state": [...],
-     "failure_modes": [...],
-     "data_flows": [...]
-   }
-   ```
-
-   ### Nodes
-
-   Walk the `components` array recursively (including `children`). For each component, create a node:
-   - `id`, `name`, `description` — from the component
-   - `type` — `"group"` if it has children. Otherwise map: frontend→component, store→library, api/worker→service, gateway→external-service
-   - `hasChildren` — true if it has a `children` array
-   - `parent` — the parent component's id (from nesting). Top-level components have no parent.
-   - `file` — from `modules[0]` if available
-   - `exports` — if available
-
-   Also add `external_dependencies` as nodes with type `"external-service"`. Create an "External" group if one doesn't already exist.
-
-   ### Edges
-
-   Three sources of edges, in priority order:
-
-   **Flow edges** (highest priority) — from `data_flows`. For each flow, create edges between consecutive steps. Label with the flow name, set `flowId` to the flow id.
-
-   **Structural edges** — from `depends_on` on components. Label as "uses", set `flowId` to "dependency". Skip if a flow edge already connects the same pair of nodes.
-
-   **Do NOT add render edges** — children nested inside group nodes are visually connected by the containment itself. Adding parent→child "renders" edges creates long crossing arrows that clutter the graph. Leaf nodes without explicit edges are fine — their position inside a group communicates the relationship.
-
-   ### State, Failure Modes, Data Flows
-
-   Include `state`, `failure_modes`, and `data_flows` from the architecture.yaml directly in the JSON. These populate the Data, Resilience, and Flows tabs respectively.
-
-   Run [convert-to-viewer.py](convert-to-viewer.py) to produce the initial JSON:
+1. Run [convert-to-viewer.py](convert-to-viewer.py) to produce the initial JSON from the YAML:
    ```bash
-   python3 convert-to-viewer.py <project>/.claude/agent-memory/designer/architecture.yaml <output.json>
+   python3 convert-to-viewer.py <architecture.yaml> <output.json>
    ```
-   Then review the output — the script handles the mechanical conversion (hierarchy flattening, edge dedup, bidirectional label hiding) but you should check that the root groups make sense and the flows tell a coherent story. Adjust if needed.
+   This handles: hierarchy flattening, `depends_on` edges, flow edges, dedup, bidirectional label hiding.
 
-4. **Review the output** — before writing, check:
-   - Are there orphan leaf nodes with no edges? Fix them.
-   - Are there duplicate edges (same pair connected by both flow and dependency)? Remove the dependency.
-   - Do the root groups make sense? If there are more than 5 root nodes, consider whether some should be grouped.
-   - Are the flow edges telling a coherent story? Each flow should trace a clear path through the system.
+2. Review the structure: root groups make sense, no orphans, clean hierarchy.
 
-5. **Generate tutorial** (if `--tutorial` flag) — produce a brief walkthrough:
-   - **What is this?** — from `purpose` + `stack`
-   - **Who uses it?** — from `actors`
-   - **How does it work?** — one section per `data_flow`, narrative walkthrough referencing components by name
-   - **What's stored where?** — from `state`, grouped by purpose
-   - **What can go wrong?** — from `failure_modes`, ordered by severity
+### Flows (from the code)
 
-   Write in plain language. No code snippets. The goal is "understand the system in 5 minutes."
+3. For each `data_flow` in architecture.yaml, **read the actual source files** involved and trace the full reactive chain. The YAML gives you the starting point (which components participate), but you must follow the execution through the code to produce rich sequence diagrams.
 
-6. **Write output** — write `architecture.json` to the docs site content directory for the project (e.g., `docs/src/content/docs/<project>/architecture.json`). Write tutorial to `<project>/.claude/agent-memory/scribe/tutorial.md` if requested.
+   Each flow must include:
+   - **All participants**, not just components — include infrastructure (SSR server, browser), APIs (IntersectionObserver, DOM), stores, and the user
+   - **5-12 steps** tracing the complete path from trigger to user-visible outcome
+   - **Reactive propagation** — store updates → subscribers re-render → side effects fire
+   - **Serialization boundaries** — where data crosses process/format boundaries
+   - **Domain-specific details** — pagination params, delay values, cache keys, guard conditions
 
-7. **Report** — node count, edge count, root groups, orphan count (should be 0), which tabs have content.
+   Write the flow data into the `data_flows` array in the JSON. Each flow needs:
+   - `id`, `name`, `description`, `trigger`
+   - `steps` with `component`, `action`, `data`, `to`, `technology`
+   - `mermaid` — a complete Mermaid sequence diagram string for the Flows tab
+
+   The `mermaid` field is the primary visualization. The `steps` are metadata. Put the effort into making the Mermaid diagram clear and detailed.
+
+### State (from architecture.yaml + code)
+
+4. For the Data tab, include `state` entries from architecture.yaml. If they're thin, read the actual store/cache implementations to identify readers and writers.
+
+### Failure Modes (from architecture.yaml + code)
+
+5. For the Resilience tab, include `failure_modes` from architecture.yaml. If cascade chains are shallow, trace through the code to understand the actual blast radius.
+
+### Tutorial (if --tutorial)
+
+6. Produce a brief walkthrough: what is this, who uses it, how does it work (one section per flow as narrative), what's stored where, what can go wrong.
+
+### Write output
+
+7. Write `architecture.json` to the docs site content directory. Write tutorial if requested.
+
+8. **Report** — node count, edge count, root groups, flow step counts, which tabs have content.
