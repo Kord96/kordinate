@@ -45,26 +45,10 @@ Authenticate before writing: use `/authenticate`.
 
 3. **Generate contract.md** — see [contract-template.md](../remember/contract-template.md) for the template. Include `mode` and `skill` fields in frontmatter.
 
-4. **Generate expiry.sh** (stateful only) — use two-stage cache invalidation. Specify the directories/files the provider depends on (listed in the contract's "Cache Inputs" section):
+4. **Generate expiry.sh** (stateful only) — delegates to the generic `lib/kord-expiry.sh` script, which reads `cache_inputs` from contract.md frontmatter:
     ```bash
     #!/bin/bash
-    # Two-stage cache expiry. Exit 0 = fresh, 1 = stale, 2 = uncertain.
-    KORD_DIR="$(cd "$(dirname "$0")" && pwd)"
-    KORDINATE_HOME="${KORDINATE_HOME:-$HOME/.kord}"
-    source "$KORDINATE_HOME/lib/cache.sh"
-
-    # Stage 1: Deterministic checks
-    # No cached data → definitely stale
-    [ -s "$KORD_DIR/data.md" ] || exit 1
-
-    # Hash unchanged → definitely fresh
-    cache_check "$KORD_DIR/.hash" \
-      "<input-path-1>" \
-      "<input-path-2>" \
-      && exit 0
-
-    # Hash changed but cache exists → uncertain (needs agent review)
-    exit 2
+    exec "${KORDINATE_HOME:-$HOME/.kord}/lib/kord-expiry.sh" "$(cd "$(dirname "$0")" && pwd)"
     ```
     Make executable: `chmod +x expiry.sh`
 
@@ -106,6 +90,6 @@ Authenticate before writing: use `/authenticate`.
 
 ## Notes
 
-- Cache invalidation is two-stage: `expiry.sh` returns exit 0 (fresh), exit 1 (stale), or exit 2 (uncertain). Exit 2 triggers a lightweight agent review via `review.md` before deciding whether to regenerate.
-- New kords should specify their hash inputs in the contract's "Cache Inputs" section and use those same paths in `expiry.sh`.
+- Cache invalidation is two-stage: `expiry.sh` delegates to `lib/kord-expiry.sh`, which reads `cache_inputs` from contract.md frontmatter. Exit 0 (fresh), exit 1 (stale), or exit 2 (uncertain). Exit 2 triggers a lightweight agent review via `review.md` before deciding whether to regenerate.
+- New kords specify cache inputs in the contract's frontmatter under `cache_inputs:` (paths, threshold, stale_threshold, max_age). The generic expiry script reads these — no per-kord customization needed.
 - Stateless kords have ONLY contract.md — no expiry.sh, data.md, or review.md.

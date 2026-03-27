@@ -4,6 +4,13 @@ requester: any
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - kordinate/agents/warden/memory/
+    - profile/config.yaml
+  threshold: 0.05
+  stale_threshold: 0.30
+  max_age: 7d
 ---
 
 ## Provider Guidelines
@@ -18,9 +25,3 @@ Answer questions about credential management, secret exposure, PII risks, and ha
 | severity | yes (critical/high/medium/low) |
 | recommendation | yes |
 | affected_files | if applicable |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/kordinate/agents/warden/memory/`
-- `$KORDINATE_HOME/profile/config.yaml`

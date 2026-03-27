@@ -4,6 +4,12 @@ requester: any
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - kordinate/agents/scribe/memory/
+  threshold: 0.05
+  stale_threshold: 0.30
+  max_age: 7d
 ---
 
 ## Provider Guidelines
@@ -18,8 +24,3 @@ Keep under 50 lines.
 |-------|----------|
 | Template content | yes |
 | Usage notes | if applicable |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/kordinate/agents/scribe/memory/`

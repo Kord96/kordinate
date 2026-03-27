@@ -4,6 +4,14 @@ requester: any
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - kordinate/agents/sauron/memory/
+    - kordinate/agents/deployer/skills/infra/manifests/
+    - kordinate/agents/deployer/skills/infra/dashboards/
+  threshold: 0.05
+  stale_threshold: 0.25
+  max_age: 5d
 ---
 
 ## Provider Guidelines
@@ -18,10 +26,3 @@ Return the catalog of configured dashboards, scraped metrics, and active alert r
 | Metric names and types | yes |
 | Alert rules and conditions | yes |
 | Scrape targets | if applicable |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/kordinate/agents/sauron/memory/`
-- `$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/manifests/`
-- `$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/dashboards/`

@@ -48,11 +48,11 @@ Handle locally — no Beorn, no agent spawn:
 Delegate to Beorn's `kord` tool:
 
 1. Call Beorn MCP tool `kord` with `kord_name` and `message`.
-2. Beorn runs a two-stage expiry check:
-   - **Fresh** (exit 0) — hash unchanged, serve cached `data.md` immediately.
-   - **Stale** (exit 1) — no cached data or first run. Spawn the provider agent, regenerate `data.md`.
-   - **Uncertain** (exit 2) — hash changed but cached data exists. Beorn reads `review.md`, fills in `{{DIFF}}` (files changed since last hash) and `{{CACHED_DATA}}` (current data.md), then spawns a lightweight agent review. If the review responds `VALID`, Beorn updates the hash via `cache_store` and serves the cache. If `STALE`, Beorn proceeds to full regeneration.
-3. After Beorn stores `data.md`, it also runs `cache_store "$KORD_DIR/.hash" <inputs>` to snapshot the input hash. The inputs are listed in the contract's "Cache Inputs" section.
+2. Beorn runs a two-stage expiry check via `lib/kord-expiry.sh`, which reads `cache_inputs` from contract.md frontmatter and computes staleness from change magnitude + age decay:
+   - **Fresh** (exit 0) — change score below threshold, serve cached `data.md` immediately.
+   - **Stale** (exit 1) — no cached data, max age exceeded, or change score above stale_threshold. Spawn the provider agent, regenerate `data.md`.
+   - **Uncertain** (exit 2) — change score between thresholds. Beorn reads `review.md`, fills in `{{DIFF}}` (files changed since last snapshot) and `{{CACHED_DATA}}` (current data.md), then spawns a lightweight agent review. If the review responds `VALID`, Beorn updates the snapshot and serves the cache. If `STALE`, Beorn proceeds to full regeneration.
+3. After Beorn stores `data.md`, it also runs `cache_snapshot` to store a `.snapshot` file (line counts + md5 hashes of all input files). This powers the magnitude-based expiry on next check.
 4. If Beorn returns `[cached]` prefix, the result came from cache. `[cached:revalidated]` means it passed stage 2 review.
 5. Return the result.
 

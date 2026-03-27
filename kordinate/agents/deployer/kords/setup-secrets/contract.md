@@ -4,6 +4,12 @@ requester: alfred
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - profile/
+  threshold: 0.05
+  stale_threshold: 0.30
+  max_age: 7d
 ---
 
 ## Provider Guidelines
@@ -20,8 +26,3 @@ This is part of the deployment pipeline — alfred validates prerequisites, then
 | Cluster name | yes |
 | Secrets created/updated | yes |
 | Errors or warnings | if applicable |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/profile/`

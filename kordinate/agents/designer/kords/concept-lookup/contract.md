@@ -4,6 +4,13 @@ requester: any
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - kordinate/agents/designer/memory/concepts/
+    - kordinate/agents/designer/memory/anti-patterns/
+  threshold: 0.03
+  stale_threshold: 0.20
+  max_age: 14d
 ---
 
 ## Provider Guidelines
@@ -19,9 +26,3 @@ Return the definition, detection rules, and common violations for the requested 
 | Detection rules or signals | yes |
 | Common violations | if anti-pattern or applicable |
 | Related patterns | if applicable |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/kordinate/agents/designer/memory/patterns/`
-- `$KORDINATE_HOME/kordinate/agents/designer/memory/anti-patterns/`

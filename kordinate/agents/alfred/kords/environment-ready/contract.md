@@ -4,6 +4,13 @@ requester: deployer
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - profile/config.yaml
+    - profile/overlays/
+  threshold: 0.05
+  stale_threshold: 0.30
+  max_age: 7d
 ---
 
 ## Provider Guidelines
@@ -18,9 +25,3 @@ Run a quick preflight check for the target cluster. Verify profile config, overl
 | Issues list | if not ready |
 | Missing credentials | if any |
 | Stale overlays | if any |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/profile/config.yaml`
-- `$KORDINATE_HOME/profile/overlays/`

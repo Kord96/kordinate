@@ -190,6 +190,27 @@ function parseContractFrontmatter(raw) {
   return fm;
 }
 
+function parseCacheInputPaths(raw) {
+  const match = raw.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return [];
+  const fm = match[1];
+  if (!fm.includes('cache_inputs:')) return [];
+  const paths = [];
+  let inPaths = false;
+  for (const line of fm.split('\n')) {
+    const s = line.trim();
+    if (s === 'paths:') { inPaths = true; continue; }
+    if (inPaths) {
+      if (s.startsWith('- ')) {
+        paths.push(join(KORDINATE_HOME, s.slice(2).trim()));
+      } else if (s && !s.startsWith('-')) {
+        inPaths = false;
+      }
+    }
+  }
+  return paths;
+}
+
 function extractGuidelines(raw) {
   const idx = raw.indexOf('## Provider Guidelines');
   return idx >= 0 ? raw.slice(idx + '## Provider Guidelines'.length).trim() : '';
@@ -237,28 +258,21 @@ function runCacheReview(kordDir, provider) {
   // Strip frontmatter
   template = template.replace(/^---\n[\s\S]*?\n---\n?/, '');
 
-  // Compute changed files: files newer than .hash
+  // Compute changed files: files newer than .snapshot (or .hash for compat)
+  const snapshotFile = join(kordDir, '.snapshot');
   const hashFile = join(kordDir, '.hash');
+  const referenceFile = existsSync(snapshotFile) ? snapshotFile : hashFile;
   let changedFiles = '';
-  if (existsSync(hashFile)) {
+  if (existsSync(referenceFile)) {
     try {
-      // Read contract to find cache input paths
+      // Read contract to find cache input paths from frontmatter
       const contractPath = join(kordDir, 'contract.md');
       const contractRaw = existsSync(contractPath) ? readFileSync(contractPath, 'utf8') : '';
-      const cacheSection = contractRaw.match(/## Cache Inputs[\s\S]*?(?=\n## |$)/);
-      const inputPaths = [];
-      if (cacheSection) {
-        const pathMatches = cacheSection[0].matchAll(/`([^`]+)`/g);
-        for (const m of pathMatches) {
-          // Resolve $KORDINATE_HOME references
-          const resolved = m[1].replace('$KORDINATE_HOME', KORDINATE_HOME);
-          if (existsSync(resolved)) inputPaths.push(resolved);
-        }
-      }
+      const inputPaths = parseCacheInputPaths(contractRaw).filter(p => existsSync(p));
       if (inputPaths.length > 0) {
         const dirs = inputPaths.map(p => `"${p}"`).join(' ');
         changedFiles = execSync(
-          `find ${dirs} -newer "${hashFile}" -type f 2>/dev/null | head -50`,
+          `find ${dirs} -newer "${referenceFile}" -type f 2>/dev/null | head -50`,
           { timeout: 5000, env: { ...process.env, HOME, KORDINATE_HOME } },
         ).toString().trim();
       }
@@ -304,6 +318,33 @@ function updateHash(kordDir) {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
   } catch { /* best-effort */ }
+
+  // Also update the snapshot for magnitude-based expiry
+  updateSnapshot(kordDir);
+}
+
+function updateSnapshot(kordDir) {
+  try {
+    const contractPath = join(kordDir, 'contract.md');
+    if (!existsSync(contractPath)) return;
+    const contractRaw = readFileSync(contractPath, 'utf8');
+    const inputPaths = parseCacheInputPaths(contractRaw);
+    if (inputPaths.length === 0) return;
+
+    const snapshotFile = join(kordDir, '.snapshot');
+    const pathArgs = inputPaths.map(p => `"${p}"`).join(' ');
+    execSync(
+      `bash -c 'source "$KORDINATE_HOME/lib/cache.sh" && cache_snapshot "${snapshotFile}" ${pathArgs}'`,
+      {
+        cwd: kordDir,
+        timeout: 10000,
+        env: { ...process.env, HOME, KORDINATE_HOME },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    );
+  } catch (e) {
+    log(`Snapshot update failed for ${kordDir}: ${e.message}`);
+  }
 }
 
 // ─── MCP tool registration ───
@@ -407,10 +448,11 @@ function registerTools(server) {
       log(`TOOL kord spawning`, { kord_name, provider });
       const response = await invokeAgent(provider, fullPrompt);
 
-      // Cache result
+      // Cache result and snapshot inputs
       try {
         writeFileSync(dataPath, response);
         writeFileSync(join(kordDir, '.valid'), new Date().toISOString());
+        updateSnapshot(kordDir);
         log(`TOOL kord cached`, { kord_name, responseLen: response.length });
       } catch (e) {
         log(`TOOL kord cache write failed`, { kord_name, error: e.message });

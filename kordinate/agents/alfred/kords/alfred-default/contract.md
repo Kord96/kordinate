@@ -4,6 +4,13 @@ requester: any
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - profile/config.yaml
+    - profile/overlays/
+  threshold: 0.05
+  stale_threshold: 0.30
+  max_age: 7d
 ---
 
 ## Provider Guidelines
@@ -18,9 +25,3 @@ Answer questions about profile configuration, credential store state, overlay va
 | detail | yes |
 | recommendation | if action needed |
 | affected_files | if applicable |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/profile/config.yaml`
-- `$KORDINATE_HOME/profile/overlays/`

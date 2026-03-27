@@ -4,6 +4,15 @@ requester: any
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - kordinate/agents/deployer/skills/infra/manifests/
+    - kordinate/agents/deployer/skills/infra/topology.yaml
+    - profile/config.yaml
+    - profile/overlays/
+  threshold: 0.05
+  stale_threshold: 0.25
+  max_age: 5d
 ---
 
 ## Provider Guidelines
@@ -18,11 +27,3 @@ Return the current cluster layout: namespaces, services, ports, and networking t
 | Service names and ports | yes |
 | Ingress / endpoint routes | yes |
 | Inter-service dependencies | if applicable |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/manifests/`
-- `$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/topology.yaml`
-- `$KORDINATE_HOME/profile/config.yaml`
-- `$KORDINATE_HOME/profile/overlays/`

@@ -27,6 +27,13 @@ description: <what this kord provides>
 requester: <agent or "any">
 mode: <stateless or stateful>
 skill: <skill-name>          # required if mode is stateless
+cache_inputs:                # required if mode is stateful
+  paths:
+    - <relative/path/from/kordinate-home>
+    - <another/path/>
+  threshold: 0.05            # below = fresh (default 0.05)
+  stale_threshold: 0.30      # above = stale (default 0.30)
+  max_age: 7d                # always stale after this (default 7d)
 ---
 <!-- provider is implicit from the directory path: agents/<provider>/kords/<name>/ -->
 
@@ -40,11 +47,6 @@ skill: <skill-name>          # required if mode is stateless
 | Field | Required |
 |-------|----------|
 | <field> | yes/no |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `<path-to-hash>`
 ```
 
 ## review.md Template

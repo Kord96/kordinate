@@ -4,6 +4,12 @@ requester: deployer
 mode: stateful
 curated: true
 scope: global
+cache_inputs:
+  paths:
+    - kordinate/agents/sauron/memory/
+  threshold: 0.05
+  stale_threshold: 0.30
+  max_age: 7d
 ---
 
 ## Provider Guidelines
@@ -20,8 +26,3 @@ Keep under 50 lines.
 | Missing dashboards or metrics | yes |
 | Missing alerts | yes |
 | Summary | no |
-
-## Cache Inputs
-
-Hash these paths to detect staleness:
-- `$KORDINATE_HOME/kordinate/agents/sauron/memory/`
