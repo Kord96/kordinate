@@ -16,6 +16,13 @@ rule:
   pattern: |
     if not $CONDITION:
         raise $EXCEPTION($$$ARGS)
+  inside:
+    kind: class_definition
+    has:
+      kind: argument_list
+      has:
+        kind: identifier
+        regex: '(AggregateRoot|Aggregate|Entity|DomainModel)'
 ---
 id: aggregate-root-base-ts
 language: TypeScript

@@ -1,0 +1,122 @@
+##
+## Beorn — shape-shifting agent pool.
+## A single pod type that can become any kordinate agent on demand.
+## Starts at 0 replicas. delegate.sh scales to 1, makes the call, scales back to 0.
+##
+## Same Docker image as workstation. Entrypoint starts the MCP agent server
+## instead of sleep infinity.
+##
+## PVC-backed: /home/claude persists repo clone, Claude Code auth, pass store.
+## K8s Service provides stable DNS for delegate.sh.
+##
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-pool
+  labels:
+    app: agent-pool
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: agent-pool-readonly
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: agent-readonly
+subjects:
+  - kind: ServiceAccount
+    name: agent-pool
+    namespace: gateway
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: agent-pool-home
+  labels:
+    app: agent-pool
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: STORAGE_CLASS
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-pool
+  labels:
+    app: agent-pool
+spec:
+  selector:
+    app: agent-pool
+  ports:
+    - name: http
+      port: 3100
+      targetPort: 3100
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-pool
+  labels:
+    app: agent-pool
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: agent-pool
+  template:
+    metadata:
+      labels:
+        app: agent-pool
+    spec:
+      serviceAccountName: agent-pool
+      containers:
+        - name: beorn
+          image: REGISTRY/workstation:latest
+          command: ["/bin/bash", "-c", "$KORDINATE_HOME/agents/deployer/skills/bootstrap/manifests/gateway/base/beorn/entrypoint.sh"]
+          env:
+            - name: HOME
+              value: /home/claude
+            - name: TERM
+              value: xterm-256color
+            - name: KORDINATE_HOME
+              value: /home/claude/kordinate/kordinate
+            - name: PORT
+              value: "3100"
+          ports:
+            - containerPort: 3100
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3100
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3100
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              memory: 4Gi
+          volumeMounts:
+            - name: home
+              mountPath: /home/claude
+      volumes:
+        - name: home
+          persistentVolumeClaim:
+            claimName: agent-pool-home

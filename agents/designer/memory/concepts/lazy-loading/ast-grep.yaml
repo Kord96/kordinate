@@ -3,20 +3,28 @@ language: TypeScript
 rule:
   pattern: 'React.lazy($$$ARGS)'
 ---
-id: lazy-loading-lazy-ts
+id: lazy-loading-lazy-import-ts
 language: TypeScript
 rule:
-  pattern: 'lazy($$$ARGS)'
+  pattern: 'lazy(() => import($MODULE))'
 ---
-id: lazy-loading-dynamic-import-ts
+id: lazy-loading-dynamic-import-component-ts
 language: TypeScript
 rule:
+  kind: call_expression
   pattern: 'import($MODULE)'
+  inside:
+    kind: arrow_function
+    inside:
+      any:
+        - pattern: 'lazy($$$ARGS)'
+        - pattern: 'React.lazy($$$ARGS)'
+        - pattern: 'dynamic($$$ARGS)'
 ---
 id: lazy-loading-next-dynamic-ts
 language: TypeScript
 rule:
-  pattern: 'dynamic($$$ARGS)'
+  pattern: 'dynamic(() => import($MODULE))'
 ---
 id: lazy-loading-defineAsyncComponent-ts
 language: TypeScript

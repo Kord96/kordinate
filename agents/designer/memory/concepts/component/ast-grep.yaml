@@ -13,6 +13,12 @@ rule:
     const $NAME = ($PROPS) => {
         $$$BODY
     }
+  has:
+    any:
+      - kind: jsx_element
+      - kind: jsx_self_closing_element
+      - kind: jsx_fragment
+      - pattern: 'React.createElement($$$ARGS)'
 ---
 id: component-defineComponent-ts
 language: TypeScript

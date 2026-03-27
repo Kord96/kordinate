@@ -2,10 +2,13 @@
 # ast-grep can match the incomplete patterns: addEventListener without remove,
 # setInterval without clear, and open() without context manager.
 
-id: memory-leak-addeventlistener-ts
+# addEventListener is only a leak when cleanup is missing, but ast-grep
+# cannot verify the absence of removeEventListener across scopes.
+# Narrowed: only flag anonymous handlers (which can't be removed).
+id: memory-leak-addeventlistener-anon-ts
 language: TypeScript
 rule:
-  pattern: $TARGET.addEventListener($EVENT, $HANDLER)
+  pattern: '$TARGET.addEventListener($EVENT, ($$$PARAMS) => { $$$BODY })'
 ---
 id: memory-leak-setinterval-no-clear-ts
 language: TypeScript
@@ -13,7 +16,10 @@ rule:
   pattern: setInterval($$$ARGS)
   not:
     inside:
-      pattern: $VAR = setInterval($$$ARGS)
+      any:
+        - pattern: $VAR = setInterval($$$ARGS)
+        - pattern: 'const $VAR = setInterval($$$ARGS)'
+        - pattern: 'let $VAR = setInterval($$$ARGS)'
 ---
 id: memory-leak-global-append-py
 language: Python

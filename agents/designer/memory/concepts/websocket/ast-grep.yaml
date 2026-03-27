@@ -11,6 +11,13 @@ rule:
   pattern: |
     async def $HANDLER($WEBSOCKET, $$$ARGS):
         $$$BODY
+  has:
+    any:
+      - pattern: '$WEBSOCKET.send($$$SARGS)'
+      - pattern: '$WEBSOCKET.receive($$$RARGS)'
+      - pattern: '$WEBSOCKET.accept($$$AARGS)'
+      - pattern: 'await $WEBSOCKET.recv()'
+      - pattern: 'await $WEBSOCKET.close()'
 ---
 id: websocket-fastapi-py
 language: Python

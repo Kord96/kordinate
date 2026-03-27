@@ -105,9 +105,9 @@ spec:
           resources:
             requests:
               cpu: 2000m
-              memory: 3Gi
+              memory: 4Gi
             limits:
-              memory: 5Gi
+              memory: 8Gi
           volumeMounts:
             - name: kord
               mountPath: /kord

@@ -19,10 +19,15 @@ language: Python
 rule:
   pattern: 'wait_exponential($$$ARGS)'
 ---
+# Narrowed from generic `retry($FUNC, $$$OPTS)` which matched too many things.
+# Now requires explicit retry config options.
 id: retry-async-retry-ts
 language: TypeScript
 rule:
-  pattern: 'retry($FUNC, $$$OPTS)'
+  any:
+    - pattern: 'retry($FUNC, { retries: $N, $$$OPTS })'
+    - pattern: 'retry($FUNC, { times: $N, $$$OPTS })'
+    - pattern: 'retry($FUNC, { maxRetries: $N, $$$OPTS })'
 ---
 id: retry-p-retry-ts
 language: TypeScript

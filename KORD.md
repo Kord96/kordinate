@@ -44,6 +44,7 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/designer/memory/anti-patterns/swallowed-exception/pattern.md` — Swallowed Exception anti-pattern
 - `agents/designer/memory/anti-patterns/tight-coupling/pattern.md` — Tight Coupling anti-pattern
 - `agents/designer/memory/app-contract.md` — App Contract
+- `agents/designer/memory/architect-cytoscape-hierarchy.md` — /architect skill must produce hierarchical architecture data for the Cytoscape viewer, not flat component inventories
 - `agents/designer/memory/patterns.md` — Index of recognized architectural patterns by category
 - `agents/designer/memory/patterns/abstract-factory/pattern.md` — Abstract Factory architectural pattern
 - `agents/designer/memory/patterns/active-record/pattern.md` — Active Record architectural pattern

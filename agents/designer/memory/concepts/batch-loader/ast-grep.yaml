@@ -7,6 +7,15 @@ id: batchloader-dataloader-load-ts
 language: TypeScript
 rule:
   pattern: '$LOADER.load($KEY)'
+  not:
+    any:
+      - pattern: 'cheerio.load($KEY)'
+      - pattern: '$BROWSER.load($KEY)'
+      - pattern: 'dotenv.load($KEY)'
+      - pattern: 'yaml.load($KEY)'
+      - pattern: 'JSON.load($KEY)'
+      - pattern: 'fs.load($KEY)'
+      - pattern: 'module.load($KEY)'
 ---
 id: batchloader-dataloader-loadmany-ts
 language: TypeScript

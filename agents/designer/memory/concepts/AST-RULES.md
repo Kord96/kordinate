@@ -125,8 +125,10 @@ rule:
     <structural pattern>
 ```
 
-### Existing Rules (23)
+### Existing Rules (40)
 
-**ast-grep (15):** active-record, builder, command, config-management, decorator, dependency-injection, factory, iterator, observer, pipeline-filter, repository, singleton, state-machine, strategy, visitor
+**ast-grep score-5 (15):** active-record, builder, command, config-management, decorator, dependency-injection, factory, iterator, observer, pipeline-filter, repository, singleton, state-machine, strategy, visitor
+
+**ast-grep score-4 (17):** api-key-auth, content-negotiation, correlation-id, cors, distributed-lock, distributed-tracing, health-check, metrics-instrumentation, oauth-oidc, optimistic-locking, optimistic-update, rate-limiting, server-sent-events, service-manager, stream-to-store, token-auth, websocket
 
 **semgrep (8):** hardcoded-credentials, insecure-deserialization, log-and-throw, n-plus-one, race-condition, sql-injection, swallowed-exception, sync-in-async

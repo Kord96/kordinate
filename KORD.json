@@ -36,6 +36,7 @@
   {"path":"agents/designer/memory/anti-patterns/swallowed-exception/pattern.md","description":"Swallowed Exception anti-pattern","curated":true},
   {"path":"agents/designer/memory/anti-patterns/tight-coupling/pattern.md","description":"Tight Coupling anti-pattern","curated":true},
   {"path":"agents/designer/memory/app-contract.md","description":"App Contract","curated":true,"preloaded":"designer"},
+  {"path":"agents/designer/memory/architect-cytoscape-hierarchy.md","description":"/architect skill must produce hierarchical architecture data for the Cytoscape viewer, not flat component inventories","curated":true},
   {"path":"agents/designer/memory/patterns.md","description":"Index of recognized architectural patterns by category","curated":true,"preloaded":"designer"},
   {"path":"agents/designer/memory/patterns/abstract-factory/pattern.md","description":"Abstract Factory architectural pattern","curated":true},
   {"path":"agents/designer/memory/patterns/active-record/pattern.md","description":"Active Record architectural pattern","curated":true},

@@ -20,10 +20,13 @@ language: TypeScript
 rule:
   pattern: Object.create($PROTO)
 ---
-id: prototype-spread-clone-ts
+# Removed: `{ ...$OBJ }` -- too generic, matches ALL spread expressions.
+# Spread is a general JS idiom, not specifically a prototype/clone pattern.
+# Object.create and Object.assign are more specific indicators.
+id: prototype-structuredClone-ts
 language: TypeScript
 rule:
-  pattern: '{ ...$OBJ }'
+  pattern: 'structuredClone($OBJ)'
 ---
 id: prototype-object-assign-ts
 language: TypeScript

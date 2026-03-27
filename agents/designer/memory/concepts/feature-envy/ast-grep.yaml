@@ -11,9 +11,11 @@
 # reaching deep into another object's structure. This is low-confidence because getter
 # chains can be legitimate (navigating a well-designed object graph, accessing config).
 
-# Low-confidence heuristic: deep attribute chains (4+ levels) suggesting Law of Demeter violation
+# Low-confidence heuristic: very deep attribute chains (6+ levels) suggesting
+# reaching far into another object's structure. Raised from 4+ to 6+ levels
+# to reduce false positives from normal framework navigation (e.g. self.field.widget.attrs.get).
 id: feature-envy-python-deep-chain
 language: Python
 rule:
   pattern: |
-    $A.$B.$C.$D.$E
+    $A.$B.$C.$D.$E.$F.$G

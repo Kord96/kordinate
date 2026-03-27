@@ -1,0 +1,154 @@
+##
+## Workstation — Claude Code interactive agent CLI with tmux.
+## Runs in master namespace. Beorn (MCP agent server) runs as a background
+## process inside this pod on port 3100.
+##
+## Storage: single 'kord' PVC mounted at /kord with persistent system state.
+## /home/claude is ephemeral — entrypoint symlinks to /kord subdirectories.
+## Tailscale runs inside the container for SSH access.
+##
+## Ingress: cloudflared + Caddy run as sidecars in this pod.
+##   - HTTP services (Grafana, docs, etc.) route through Caddy on localhost:80
+##   - External SSH: Cloudflare tunnel routes ssh.khaledkord.com → localhost:2222 (sshd)
+##   - Internal SSH: Tailscale SSH on port 22 (identity-based, no keys needed)
+##   All containers share the pod network namespace, so localhost works.
+##
+## Setup: ./kordinate init deploys this, links repo, copies credentials, runs auth-check.
+## Only `claude login` is manual after setup.
+##
+## SAFETY: Rolling update strategy — new pod starts before old pod terminates.
+## Both pods share the kord PVC (RWX) and tunnel, so SSH works throughout.
+## Guard-kubectl.sh still blocks self-modification from inside the pod.
+##
+## Image: built from workstation/Dockerfile, pushed to cluster registry.
+## RBAC: agent-readonly (read-only cluster access). Deployer agent uses
+## the k3s admin kubeconfig via SSH for write operations.
+##
+## Secret 'cloudflared-tunnel' is created by deployer from pass store at deploy time.
+## Do not include it here — MUST_BE_SET placeholder overwrites the real token on apply.
+##
+## Caddyfile ConfigMap: generated in overlay (profile/overlays/<cluster>/master/).
+## The Deployment mounts it but this base does not define it.
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workstation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: workstation-readonly
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: agent-readonly
+subjects:
+  - kind: ServiceAccount
+    name: workstation
+    namespace: master
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workstation
+  labels:
+    app: workstation
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: workstation
+  template:
+    metadata:
+      labels:
+        app: workstation
+    spec:
+      serviceAccountName: workstation
+      hostname: claude-workstation
+      containers:
+        - name: workstation
+          image: REGISTRY/workstation:latest
+          stdin: true
+          tty: true
+          ports:
+            - containerPort: 3100
+              name: beorn
+          env:
+            - name: HOME
+              value: /home/claude
+            - name: TERM
+              value: xterm-256color
+            - name: TS_HOSTNAME
+              value: workstation
+            - name: KORDINATE_HOME
+              value: /kord/kordinate
+            - name: KORD_WORKTREE_ROOT
+              value: /kord/kordinate/.worktrees
+            - name: KORD_ROOT
+              value: /kord
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "NET_RAW"]
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 3Gi
+            limits:
+              memory: 5Gi
+          volumeMounts:
+            - name: kord
+              mountPath: /kord
+            - name: dev-tun
+              mountPath: /dev/net/tun
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - run
+            - --token
+            - $(TUNNEL_TOKEN)
+          env:
+            - name: TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflared-tunnel
+                  key: TUNNEL_TOKEN
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+        - name: caddy
+          image: caddy:2-alpine
+          command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--watch"]
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: caddyfile
+              mountPath: /etc/caddy
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+      volumes:
+        - name: kord
+          persistentVolumeClaim:
+            claimName: kord
+        - name: dev-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+        - name: caddyfile
+          configMap:
+            name: workstation-caddyfile

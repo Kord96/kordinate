@@ -1,0 +1,5 @@
+- [workflow.md](workflow.md) — Designer review workflow
+- [app-contract.md](app-contract.md) — App Contract
+- [tools.md](tools.md) — Designer tools reference
+- [patterns.md](patterns.md) — Index of recognized architectural patterns by category
+- [architect-cytoscape-hierarchy.md](/kord/kordinate/agents/designer/memory/architect-cytoscape-hierarchy.md) — /architect must produce hierarchical data for Cytoscape viewer, not flat inventories

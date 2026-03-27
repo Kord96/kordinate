@@ -1,0 +1,103 @@
+##
+## Workstation — Claude Code interactive agent CLI with tmux.
+## PVC-backed: /home/claude persists across restarts (auth, repos, pass store).
+## All credentials live in pass store on the PVC.
+## Tailscale runs inside the container for SSH access.
+##
+## Setup: ./kordinate init deploys this, links repo, copies credentials, runs auth-check.
+## Only `claude login` is manual after setup.
+##
+## SAFETY: Applying this manifest restarts the workstation and kills active sessions.
+## This is hard-blocked by guard-kubectl.sh from inside the pod.
+## Restarts must be done externally.
+##
+## Image: built from workstation/Dockerfile, pushed to cluster registry.
+## RBAC: agent-readonly (read-only cluster access). Deployer agent uses
+## the k3s admin kubeconfig via SSH for write operations.
+##
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: workstation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: workstation-readonly
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: agent-readonly
+subjects:
+  - kind: ServiceAccount
+    name: workstation
+    namespace: gateway
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: workstation-home
+  labels:
+    app: workstation
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: STORAGE_CLASS
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workstation
+  labels:
+    app: workstation
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: workstation
+  template:
+    metadata:
+      labels:
+        app: workstation
+    spec:
+      serviceAccountName: workstation
+      hostname: claude-workstation
+      containers:
+        - name: workstation
+          image: REGISTRY/workstation:latest
+          stdin: true
+          tty: true
+          env:
+            - name: HOME
+              value: /home/claude
+            - name: TERM
+              value: xterm-256color
+            - name: TS_HOSTNAME
+              value: workstation
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "NET_RAW"]
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 3Gi
+            limits:
+              memory: 5Gi
+          volumeMounts:
+            - name: home
+              mountPath: /home/claude
+            - name: dev-tun
+              mountPath: /dev/net/tun
+      volumes:
+        - name: home
+          persistentVolumeClaim:
+            claimName: workstation-home
+        - name: dev-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice

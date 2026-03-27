@@ -10,6 +10,12 @@ rule:
     function $NAME($REQ, $RES, $NEXT) {
         $$$BODY
     }
+  has:
+    any:
+      - pattern: '$NEXT($$$ARGS)'
+      - pattern: '$RES.send($$$ARGS)'
+      - pattern: '$RES.json($$$ARGS)'
+      - pattern: '$RES.status($$$ARGS)'
 ---
 id: middleware-koa-ts
 language: TypeScript
@@ -18,6 +24,8 @@ rule:
     async ($CTX, $NEXT) => {
         $$$BODY
     }
+  has:
+    pattern: 'await $NEXT()'
 ---
 id: middleware-redux-ts
 language: TypeScript

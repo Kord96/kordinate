@@ -7,6 +7,16 @@ id: slot-render-prop-ts
 language: TypeScript
 rule:
   pattern: '$PROPS.render($$$ARGS)'
+  inside:
+    any:
+      - kind: jsx_expression
+      - kind: return_statement
+        inside:
+          kind: function_declaration
+          has:
+            any:
+              - kind: jsx_element
+              - kind: jsx_self_closing_element
 ---
 id: slot-clone-element-ts
 language: TypeScript

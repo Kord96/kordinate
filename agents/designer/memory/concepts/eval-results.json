@@ -1,0 +1,1819 @@
+{
+  "timestamp": "2026-03-27T03:43:46Z",
+  "repos": {
+    "bulletproof-react": {
+      "url": "https://github.com/alan2207/bulletproof-react",
+      "language": "typescript",
+      "files": 562
+    },
+    "django": {
+      "url": "https://github.com/django/django",
+      "language": "python",
+      "files": 7052
+    },
+    "fastapi-template": {
+      "url": "https://github.com/tiangolo/full-stack-fastapi-template",
+      "language": "python",
+      "files": 261
+    },
+    "flask": {
+      "url": "https://github.com/pallets/flask",
+      "language": "python",
+      "files": 265
+    },
+    "nextjs": {
+      "url": "https://github.com/vercel/next.js",
+      "language": "typescript",
+      "files": 28315
+    },
+    "starlette": {
+      "url": "https://github.com/encode/starlette",
+      "language": "python",
+      "files": 156
+    },
+    "tanstack-query": {
+      "url": "https://github.com/TanStack/query",
+      "language": "typescript",
+      "files": 2174
+    },
+    "trpc": {
+      "url": "https://github.com/trpc/trpc",
+      "language": "typescript",
+      "files": 1560
+    }
+  },
+  "results": {
+    "abstract-factory": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "active-record": {
+      "bulletproof-react": 0,
+      "django": 3292,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "actor-model": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "adapter": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "aggregate": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "anemic-domain-model": {
+      "bulletproof-react": 0,
+      "django": 1,
+      "fastapi-template": 1,
+      "flask": 0,
+      "nextjs": 1,
+      "starlette": 2,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "api-key-auth": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "audit-logging": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "backpressure": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "batch-loader": {
+      "bulletproof-react": 0,
+      "django": 469,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "bloom-filter": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "boolean-blindness": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "bridge": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "builder": {
+      "bulletproof-react": 0,
+      "django": 84,
+      "fastapi-template": 2,
+      "flask": 4,
+      "nextjs": 0,
+      "starlette": 5,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "bulkhead": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "busy-waiting": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 3
+    },
+    "cache-aside": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "cache-stampede-prevention": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "callback-hell": {
+      "bulletproof-react": 3,
+      "django": 21,
+      "fastapi-template": 0,
+      "flask": 1,
+      "nextjs": 24,
+      "starlette": 0,
+      "tanstack-query": 2,
+      "trpc": 0
+    },
+    "chain-of-responsibility": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "circular-dependency": {
+      "bulletproof-react": 0,
+      "django": 7,
+      "fastapi-template": 0,
+      "flask": 26,
+      "nextjs": 0,
+      "starlette": 47,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "command": {
+      "bulletproof-react": 0,
+      "django": 11,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "component": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "component-slot": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "composite": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "config-management": {
+      "bulletproof-react": 0,
+      "django": 49,
+      "fastapi-template": 0,
+      "flask": 19,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "connection-pooling": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "content-negotiation": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "contract-testing": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "correlation-id": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "cors": {
+      "bulletproof-react": 6,
+      "django": 0,
+      "fastapi-template": 1,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "cqrs": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "data-mapper": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "database-migration": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 12,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "ddd": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "decorator": {
+      "bulletproof-react": 0,
+      "django": 6331,
+      "fastapi-template": 35,
+      "flask": 660,
+      "nextjs": 3,
+      "starlette": 153,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "deep-nesting": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "dependency-injection": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 10,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "distributed-lock": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 1,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "distributed-tracing": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 1,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "entity-component-system": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "error-boundary": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "error-code-returns": {
+      "bulletproof-react": 0,
+      "django": 2,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 19,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "etl": {
+      "bulletproof-react": 0,
+      "django": 13,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "event-sourcing": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "experiment-framework": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "facade": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "factory": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "feature-envy": {
+      "bulletproof-react": 0,
+      "django": 11,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "feature-flag": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "feature-store": {
+      "bulletproof-react": 0,
+      "django": 8,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "fire-and-forget": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "fixture-builder": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 17,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "flaky-tests": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "flux": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 3,
+      "starlette": 0,
+      "tanstack-query": 1,
+      "trpc": 0
+    },
+    "flyweight": {
+      "bulletproof-react": 0,
+      "django": 1,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "form-binding": {
+      "bulletproof-react": 0,
+      "django": 236,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "future-promise": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "game-loop": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "god-endpoint": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "graphql": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 2,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 1
+    },
+    "grpc": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "hardcoded-urls": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "health-check": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "hydration": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "idempotent-consumer": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "inbox": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "input-validation": {
+      "bulletproof-react": 15,
+      "django": 3,
+      "fastapi-template": 22,
+      "flask": 0,
+      "nextjs": 51,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 246
+    },
+    "intermediate-representation": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "iterator": {
+      "bulletproof-react": 0,
+      "django": 84,
+      "fastapi-template": 0,
+      "flask": 2,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "lava-flow": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "lazy-loading": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 2
+    },
+    "lexer-parser": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "log-spam": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "long-transactions": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "lru-cache": {
+      "bulletproof-react": 0,
+      "django": 7,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 6,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "magic-numbers": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "mediator": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "memento": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "memory-leak": {
+      "bulletproof-react": 0,
+      "django": 12,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 15,
+      "starlette": 0,
+      "tanstack-query": 2,
+      "trpc": 38
+    },
+    "message-queue": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "metric-cardinality-explosion": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "metrics-instrumentation": {
+      "bulletproof-react": 0,
+      "django": 7,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "micro-frontend": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 18,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 3
+    },
+    "middleware": {
+      "bulletproof-react": 16,
+      "django": 40,
+      "fastapi-template": 11,
+      "flask": 0,
+      "nextjs": 10,
+      "starlette": 25,
+      "tanstack-query": 9,
+      "trpc": 68
+    },
+    "misleading-names": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "missing-log-context": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "model-registry": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "monad": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "mvvm": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "null-object": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "oauth-oidc": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 2,
+      "flask": 0,
+      "nextjs": 1,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "object-pool": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "observer": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "optimistic-locking": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "optimistic-update": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 1,
+      "trpc": 0
+    },
+    "over-under-fetching": {
+      "bulletproof-react": 0,
+      "django": 72,
+      "fastapi-template": 0,
+      "flask": 5,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "pagination": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "pipeline-filter": {
+      "bulletproof-react": 0,
+      "django": 7,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 22,
+      "starlette": 0,
+      "tanstack-query": 8,
+      "trpc": 16
+    },
+    "plugin": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "pokemon-exception": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "producer-consumer": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "prop-drilling": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "property-testing": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "prototype": {
+      "bulletproof-react": 0,
+      "django": 95,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 44,
+      "starlette": 0,
+      "tanstack-query": 1,
+      "trpc": 3
+    },
+    "proxy": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "rate-limiting": {
+      "bulletproof-react": 0,
+      "django": 10,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "rbac": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "reactive-store": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 1,
+      "starlette": 0,
+      "tanstack-query": 1,
+      "trpc": 0
+    },
+    "read-through": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "read-write-lock": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "repository": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "request-reply": {
+      "bulletproof-react": 0,
+      "django": 3,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "result-type": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 16,
+      "starlette": 0,
+      "tanstack-query": 9,
+      "trpc": 7
+    },
+    "retry": {
+      "bulletproof-react": 0,
+      "django": 3,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 2,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "ring-buffer": {
+      "bulletproof-react": 0,
+      "django": 1,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "route-guard": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "router": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "saga": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "saga-orchestrator": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "scheduler": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 8,
+      "starlette": 0,
+      "tanstack-query": 1,
+      "trpc": 7
+    },
+    "select-star": {
+      "bulletproof-react": 0,
+      "django": 695,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 1,
+      "starlette": 0,
+      "tanstack-query": 2,
+      "trpc": 0
+    },
+    "server-prefetch": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 34,
+      "trpc": 3
+    },
+    "server-sent-events": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "serverless": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 5,
+      "starlette": 0,
+      "tanstack-query": 2,
+      "trpc": 0
+    },
+    "service-manager": {
+      "bulletproof-react": 0,
+      "django": 1,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 4,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 5
+    },
+    "session-auth": {
+      "bulletproof-react": 0,
+      "django": 23,
+      "fastapi-template": 7,
+      "flask": 3,
+      "nextjs": 0,
+      "starlette": 1,
+      "tanstack-query": 0,
+      "trpc": 1
+    },
+    "side-effect-hook": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 15,
+      "starlette": 0,
+      "tanstack-query": 8,
+      "trpc": 0
+    },
+    "singleton": {
+      "bulletproof-react": 0,
+      "django": 9,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "snapshot-testing": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 1067,
+      "starlette": 0,
+      "tanstack-query": 26,
+      "trpc": 314
+    },
+    "soft-delete": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "spaghetti-code": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "spatial-partitioning": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "specification": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "state-machine": {
+      "bulletproof-react": 0,
+      "django": 5,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 2,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "strategy": {
+      "bulletproof-react": 0,
+      "django": 1,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "stream-to-store": {
+      "bulletproof-react": 0,
+      "django": 13,
+      "fastapi-template": 16,
+      "flask": 5,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "stringly-typed": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "structured-logging": {
+      "bulletproof-react": 0,
+      "django": 12,
+      "fastapi-template": 0,
+      "flask": 1,
+      "nextjs": 1,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "suspense-boundary": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "template-method": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "tenant-isolation": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "tenant-routing": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "test-doubles": {
+      "bulletproof-react": 0,
+      "django": 44,
+      "fastapi-template": 6,
+      "flask": 0,
+      "nextjs": 124,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "tick-simulation": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "timeout": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "token-auth": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 4,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "train-wreck": {
+      "bulletproof-react": 0,
+      "django": 37,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 9,
+      "starlette": 0,
+      "tanstack-query": 1,
+      "trpc": 34
+    },
+    "training-pipeline": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "trie": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "unbounded-growth": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "unit-of-work": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "value-object": {
+      "bulletproof-react": 0,
+      "django": 62,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "visitor": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "webhook": {
+      "bulletproof-react": 0,
+      "django": 1,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "websocket": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 7,
+      "starlette": 0,
+      "tanstack-query": 1,
+      "trpc": 16
+    },
+    "worker-pool": {
+      "bulletproof-react": 0,
+      "django": 1,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 13,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "workflow-engine": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    },
+    "write-behind": {
+      "bulletproof-react": 0,
+      "django": 0,
+      "fastapi-template": 0,
+      "flask": 0,
+      "nextjs": 0,
+      "starlette": 0,
+      "tanstack-query": 0,
+      "trpc": 0
+    }
+  },
+  "suspects": [
+    {
+      "concept": "decorator",
+      "repo": "django",
+      "count": 6331,
+      "reason": "very high count (6331); 2110x vs nextjs (3)"
+    },
+    {
+      "concept": "active-record",
+      "repo": "django",
+      "count": 3292,
+      "reason": "very high count (3292)"
+    },
+    {
+      "concept": "snapshot-testing",
+      "repo": "nextjs",
+      "count": 1067,
+      "reason": "very high count (1067); 41x vs tanstack-query (26)"
+    },
+    {
+      "concept": "select-star",
+      "repo": "django",
+      "count": 695,
+      "reason": "very high count (695); 695x vs nextjs (1)"
+    },
+    {
+      "concept": "decorator",
+      "repo": "flask",
+      "count": 660,
+      "reason": "very high count (660); 220x vs nextjs (3)"
+    },
+    {
+      "concept": "batch-loader",
+      "repo": "django",
+      "count": 469,
+      "reason": "high count (469)"
+    },
+    {
+      "concept": "snapshot-testing",
+      "repo": "trpc",
+      "count": 314,
+      "reason": "high count (314); 12x vs tanstack-query (26)"
+    },
+    {
+      "concept": "input-validation",
+      "repo": "trpc",
+      "count": 246,
+      "reason": "high count (246); 82x vs django (3)"
+    },
+    {
+      "concept": "form-binding",
+      "repo": "django",
+      "count": 236,
+      "reason": "high count (236)"
+    },
+    {
+      "concept": "decorator",
+      "repo": "starlette",
+      "count": 153,
+      "reason": "high count (153); 51x vs nextjs (3)"
+    },
+    {
+      "concept": "test-doubles",
+      "repo": "nextjs",
+      "count": 124,
+      "reason": "high count (124); 21x vs fastapi-template (6)"
+    },
+    {
+      "concept": "prototype",
+      "repo": "django",
+      "count": 95,
+      "reason": "95x vs tanstack-query (1)"
+    },
+    {
+      "concept": "builder",
+      "repo": "django",
+      "count": 84,
+      "reason": "42x vs fastapi-template (2)"
+    },
+    {
+      "concept": "iterator",
+      "repo": "django",
+      "count": 84,
+      "reason": "42x vs flask (2)"
+    },
+    {
+      "concept": "over-under-fetching",
+      "repo": "django",
+      "count": 72,
+      "reason": "14x vs flask (5)"
+    },
+    {
+      "concept": "input-validation",
+      "repo": "nextjs",
+      "count": 51,
+      "reason": "17x vs django (3)"
+    },
+    {
+      "concept": "prototype",
+      "repo": "nextjs",
+      "count": 44,
+      "reason": "44x vs tanstack-query (1)"
+    },
+    {
+      "concept": "memory-leak",
+      "repo": "trpc",
+      "count": 38,
+      "reason": "19x vs tanstack-query (2)"
+    },
+    {
+      "concept": "train-wreck",
+      "repo": "django",
+      "count": 37,
+      "reason": "37x vs tanstack-query (1)"
+    },
+    {
+      "concept": "decorator",
+      "repo": "fastapi-template",
+      "count": 35,
+      "reason": "12x vs nextjs (3)"
+    },
+    {
+      "concept": "server-prefetch",
+      "repo": "tanstack-query",
+      "count": 34,
+      "reason": "11x vs trpc (3)"
+    },
+    {
+      "concept": "train-wreck",
+      "repo": "trpc",
+      "count": 34,
+      "reason": "34x vs tanstack-query (1)"
+    },
+    {
+      "concept": "callback-hell",
+      "repo": "nextjs",
+      "count": 24,
+      "reason": "24x vs flask (1)"
+    },
+    {
+      "concept": "session-auth",
+      "repo": "django",
+      "count": 23,
+      "reason": "23x vs starlette (1)"
+    },
+    {
+      "concept": "callback-hell",
+      "repo": "django",
+      "count": 21,
+      "reason": "21x vs flask (1)"
+    },
+    {
+      "concept": "websocket",
+      "repo": "trpc",
+      "count": 16,
+      "reason": "16x vs tanstack-query (1)"
+    },
+    {
+      "concept": "worker-pool",
+      "repo": "nextjs",
+      "count": 13,
+      "reason": "13x vs django (1)"
+    },
+    {
+      "concept": "structured-logging",
+      "repo": "django",
+      "count": 12,
+      "reason": "12x vs flask (1)"
+    },
+    {
+      "concept": "decorator",
+      "repo": "nextjs",
+      "count": 3,
+      "reason": "Python-only concept matched in TypeScript repo"
+    },
+    {
+      "concept": "anemic-domain-model",
+      "repo": "nextjs",
+      "count": 1,
+      "reason": "Python-only concept matched in TypeScript repo"
+    }
+  ]
+}

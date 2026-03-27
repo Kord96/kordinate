@@ -26,6 +26,20 @@ id: validation-zod-parse-ts
 language: TypeScript
 rule:
   pattern: '$SCHEMA.parse($DATA)'
+  not:
+    any:
+      - pattern: 'JSON.parse($DATA)'
+      - pattern: '$PATH.parse($DATA)'
+      - pattern: 'url.parse($DATA)'
+      - pattern: 'URL.parse($DATA)'
+      - pattern: 'cookie.parse($DATA)'
+      - pattern: 'dotenv.parse($DATA)'
+      - pattern: 'path.parse($DATA)'
+      - pattern: 'querystring.parse($DATA)'
+      - pattern: 'qs.parse($DATA)'
+      - pattern: 'semver.parse($DATA)'
+      - pattern: 'yaml.parse($DATA)'
+      - pattern: 'csv.parse($DATA)'
 ---
 id: validation-joi-schema-ts
 language: TypeScript
