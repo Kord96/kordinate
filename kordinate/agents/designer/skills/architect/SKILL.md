@@ -27,8 +27,6 @@ Produce a structured architectural understanding of a project.
 
    Nest every concrete abstraction under a root group via `children`. Create sub-groups for closely related components. The goal is a 3-4 level deep tree.
 
-   **Prune disconnected groups.** If a root group has no edges to other groups, it probably doesn't belong. Testing, CI/CD, and build tooling rarely help someone understand how the system works.
-
    Filtering:
    - Entry points, data stores, and external integrations ARE core abstractions
    - Utilities, logging, and config modules are NOT — skip them

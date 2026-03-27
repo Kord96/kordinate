@@ -27,7 +27,7 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
    ```
    This gives you nodes, hierarchy edges, and a skeleton. The structure is done.
 
-2. **Read the codebase.** Use architecture.yaml to know which files matter, then read them. Build a unified understanding of how the system works — don't think about tabs or viewpoints yet. Just understand the code.
+2. **Review the structure.** Check the converter output: prune root groups that have no edges to other groups (testing, CI/CD, build tooling rarely help someone understand how the system works — remove them). Then read the codebase. Use architecture.yaml to know which files matter, then read them. Build a unified understanding — don't think about tabs yet. Just understand the code.
 
 3. **Produce all viewpoints at once** from that understanding. Each viewpoint is a different lens on the same codebase:
 
