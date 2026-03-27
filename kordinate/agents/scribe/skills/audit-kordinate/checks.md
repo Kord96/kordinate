@@ -54,6 +54,34 @@ Check all `.md` files under `agents/`:
 - File larger than 20KB: **WARNING**
 - File larger than 10KB (but under 20KB): **INFO**
 
+## Kord directory completeness
+
+Every kord directory must conform to the standard template based on its mode:
+
+### Stateful kords (`mode: stateful` in contract.md frontmatter)
+
+Required files:
+- `contract.md` — must exist with valid frontmatter
+- `data.md` — must exist (may be empty before first consultation)
+- `expiry.sh` — must exist and be executable (`-x` permission)
+- `review.md` — must exist and contain both `{{DIFF}}` and `{{CACHED_DATA}}` placeholders
+
+Severity:
+- **ERROR** — any required file missing
+- **ERROR** — `expiry.sh` exists but is not executable
+- **ERROR** — `review.md` exists but missing `{{DIFF}}` or `{{CACHED_DATA}}` placeholder
+
+### Stateless kords (`mode: stateless` in contract.md frontmatter)
+
+Required files:
+- `contract.md` — must exist with valid frontmatter
+
+Unexpected files (should not exist in stateless kords):
+- `data.md`, `expiry.sh`, `review.md`
+
+Severity:
+- **WARNING** — unexpected files present in a stateless kord directory
+
 ## Duplicate descriptions
 
 Scan all frontmatter `description` fields across all files in the scan targets.

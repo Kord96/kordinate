@@ -27,43 +27,85 @@ Authenticate before writing: use `/authenticate`.
     - Skill — if stateless, which skill to expose (required for stateless)
 
 2. **Create kord directory** under the provider's agent directory:
+
+    Stateful kords:
     ```
     $KORDINATE_HOME/agents/<provider>/kords/<name>/
-    ├── contract.md
-    ├── data.md (empty, populated on first consult)
-    └── expiry.sh
+    ├── contract.md     # frontmatter + guidelines + cache inputs
+    ├── data.md         # cached response (empty until first consultation)
+    ├── expiry.sh       # two-stage cache check (exit 0/1/2)
+    └── review.md       # prompt template for stage 2 agent review
+    ```
+
+    Stateless kords:
+    ```
+    $KORDINATE_HOME/agents/<provider>/kords/<name>/
+    └── contract.md     # frontmatter + skill field
     ```
 
 3. **Generate contract.md** — see [contract-template.md](../remember/contract-template.md) for the template. Include `mode` and `skill` fields in frontmatter.
 
-4. **Generate expiry.sh** — use hash-based cache invalidation. Specify the directories/files the provider depends on (listed in the contract's "Cache Inputs" section):
+4. **Generate expiry.sh** (stateful only) — use two-stage cache invalidation. Specify the directories/files the provider depends on (listed in the contract's "Cache Inputs" section):
     ```bash
     #!/bin/bash
-    # Hash-based cache expiry. Exit 0 = fresh, exit 1 = stale.
+    # Two-stage cache expiry. Exit 0 = fresh, 1 = stale, 2 = uncertain.
     KORD_DIR="$(cd "$(dirname "$0")" && pwd)"
     KORDINATE_HOME="${KORDINATE_HOME:-$HOME/.kord}"
     source "$KORDINATE_HOME/lib/cache.sh"
 
-    # Check if cached data exists
-    [ -f "$KORD_DIR/data.md" ] || exit 1
+    # Stage 1: Deterministic checks
+    # No cached data → definitely stale
+    [ -s "$KORD_DIR/data.md" ] || exit 1
 
-    # Check input hash — stale if dependencies changed since last consultation
+    # Hash unchanged → definitely fresh
     cache_check "$KORD_DIR/.hash" \
       "<input-path-1>" \
       "<input-path-2>" \
-      || exit 1
+      && exit 0
 
-    exit 0  # fresh
+    # Hash changed but cache exists → uncertain (needs agent review)
+    exit 2
     ```
     Make executable: `chmod +x expiry.sh`
 
-5. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
+5. **Generate review.md** (stateful only) — use the standard review prompt template:
+    ```markdown
+    ---
+    description: Cache review prompt — sent to provider when expiry is uncertain
+    curated: true
+    scope: global
+    ---
 
-6. **Report** what was created:
-    - "Kord `<name>` defined. Files: contract.md, data.md, expiry.sh"
+    You are reviewing whether your cached response is still valid.
+
+    ## Changed Inputs
+
+    {{DIFF}}
+
+    ## Cached Response
+
+    {{CACHED_DATA}}
+
+    ## Decision
+
+    Based on the changes above, is your cached response still accurate and complete?
+
+    - If the changes are irrelevant to your cached response (e.g., comments, formatting, unrelated files), respond: `VALID`
+    - If the changes affect the accuracy of your cached response, respond: `STALE`
+
+    Respond with ONLY `VALID` or `STALE` on the first line, followed by a brief reason.
+    ```
+
+    The `{{DIFF}}` and `{{CACHED_DATA}}` placeholders are filled by Beorn at runtime.
+
+6. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
+
+7. **Report** what was created:
+    - Stateful: "Kord `<name>` defined. Files: contract.md, data.md, expiry.sh, review.md"
+    - Stateless: "Kord `<name>` defined. Files: contract.md"
 
 ## Notes
 
-- Cache invalidation is hash-based: `expiry.sh` sources `$KORDINATE_HOME/lib/cache.sh` and compares a stored hash (`.hash`) against the current hash of the provider's input paths. After a successful consultation, Beorn runs `cache_store` to snapshot the hash alongside `data.md`.
+- Cache invalidation is two-stage: `expiry.sh` returns exit 0 (fresh), exit 1 (stale), or exit 2 (uncertain). Exit 2 triggers a lightweight agent review via `review.md` before deciding whether to regenerate.
 - New kords should specify their hash inputs in the contract's "Cache Inputs" section and use those same paths in `expiry.sh`.
-- Stateless kords don't need expiry.sh or data.md — the skill runs fresh every time.
+- Stateless kords have ONLY contract.md — no expiry.sh, data.md, or review.md.

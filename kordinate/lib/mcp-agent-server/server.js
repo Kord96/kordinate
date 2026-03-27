@@ -14,7 +14,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
 import { spawn, execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
@@ -213,7 +213,7 @@ function findKordDir(kordName) {
 
 function checkExpiry(kordDir) {
   const expiryScript = join(kordDir, 'expiry.sh');
-  if (!existsSync(expiryScript)) return false; // no expiry = stale
+  if (!existsSync(expiryScript)) return 'stale';
   try {
     execSync(`bash "${expiryScript}"`, {
       cwd: kordDir,
@@ -221,10 +221,89 @@ function checkExpiry(kordDir) {
       env: { ...process.env, HOME, KORDINATE_HOME },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    return true; // exit 0 = fresh
-  } catch {
-    return false; // exit 1 = stale
+    return 'fresh';  // exit 0
+  } catch (e) {
+    if (e.status === 2) return 'uncertain';  // exit 2
+    return 'stale';  // exit 1
   }
+}
+
+function runCacheReview(kordDir, provider) {
+  // Read the review.md template
+  const reviewPath = join(kordDir, 'review.md');
+  if (!existsSync(reviewPath)) return 'STALE';
+
+  let template = readFileSync(reviewPath, 'utf8');
+  // Strip frontmatter
+  template = template.replace(/^---\n[\s\S]*?\n---\n?/, '');
+
+  // Compute changed files: files newer than .hash
+  const hashFile = join(kordDir, '.hash');
+  let changedFiles = '';
+  if (existsSync(hashFile)) {
+    try {
+      // Read contract to find cache input paths
+      const contractPath = join(kordDir, 'contract.md');
+      const contractRaw = existsSync(contractPath) ? readFileSync(contractPath, 'utf8') : '';
+      const cacheSection = contractRaw.match(/## Cache Inputs[\s\S]*?(?=\n## |$)/);
+      const inputPaths = [];
+      if (cacheSection) {
+        const pathMatches = cacheSection[0].matchAll(/`([^`]+)`/g);
+        for (const m of pathMatches) {
+          // Resolve $KORDINATE_HOME references
+          const resolved = m[1].replace('$KORDINATE_HOME', KORDINATE_HOME);
+          if (existsSync(resolved)) inputPaths.push(resolved);
+        }
+      }
+      if (inputPaths.length > 0) {
+        const dirs = inputPaths.map(p => `"${p}"`).join(' ');
+        changedFiles = execSync(
+          `find ${dirs} -newer "${hashFile}" -type f 2>/dev/null | head -50`,
+          { timeout: 5000, env: { ...process.env, HOME, KORDINATE_HOME } },
+        ).toString().trim();
+      }
+    } catch { /* best-effort */ }
+  }
+  if (!changedFiles) changedFiles = '(unable to determine changed files)';
+
+  // Read cached data
+  const dataPath = join(kordDir, 'data.md');
+  const cachedData = existsSync(dataPath) ? readFileSync(dataPath, 'utf8') : '';
+
+  // Fill template placeholders
+  const prompt = template
+    .replace('{{DIFF}}', changedFiles)
+    .replace('{{CACHED_DATA}}', cachedData);
+
+  // Invoke the provider agent with the review prompt (lightweight)
+  try {
+    const result = execSync(
+      `claude --print --dangerously-skip-permissions ${JSON.stringify(prompt)}`,
+      {
+        cwd: REPO_ROOT,
+        timeout: 60000,
+        env: { ...process.env, HOME, KORDINATE_HOME },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    ).toString().trim();
+
+    const firstLine = result.split('\n')[0].trim().toUpperCase();
+    return firstLine.startsWith('VALID') ? 'VALID' : 'STALE';
+  } catch {
+    return 'STALE';  // review failed → treat as stale
+  }
+}
+
+function updateHash(kordDir) {
+  // Re-run cache_store to update the hash after a VALID review
+  try {
+    execSync(`bash -c 'source "$KORDINATE_HOME/lib/cache.sh" && cache_store "${join(kordDir, '.hash')}"'`, {
+      cwd: kordDir,
+      timeout: 5000,
+      env: { ...process.env, HOME, KORDINATE_HOME },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch { /* best-effort */ }
 }
 
 // ─── MCP tool registration ───
@@ -292,16 +371,34 @@ function registerTools(server) {
       const { dir: kordDir, provider } = found;
       const contractPath = join(kordDir, 'contract.md');
       const raw = readFileSync(contractPath, 'utf8');
-
-      // Check cache freshness
       const dataPath = join(kordDir, 'data.md');
-      if (checkExpiry(kordDir) && existsSync(dataPath)) {
+
+      // Check cache freshness — three states
+      const expiryState = checkExpiry(kordDir);
+
+      if (expiryState === 'fresh' && existsSync(dataPath)) {
         const cached = readFileSync(dataPath, 'utf8');
         log(`TOOL kord cache hit`, { kord_name, cachedLen: cached.length });
         return { content: [{ type: 'text', text: `[cached]\n\n${cached}` }] };
       }
 
-      // Stale or no cache — spawn agent
+      if (expiryState === 'uncertain') {
+        // Stage 2: lightweight agent review
+        log(`TOOL kord uncertain`, { kord_name, provider });
+        const verdict = runCacheReview(kordDir, provider);
+        log(`TOOL kord review verdict`, { kord_name, verdict });
+
+        if (verdict === 'VALID') {
+          updateHash(kordDir);
+          const cached = readFileSync(dataPath, 'utf8');
+          log(`TOOL kord cache revalidated`, { kord_name, cachedLen: cached.length });
+          return { content: [{ type: 'text', text: `[cached:revalidated]\n\n${cached}` }] };
+        }
+        // verdict is STALE — fall through to full regeneration
+        log(`TOOL kord review stale, regenerating`, { kord_name });
+      }
+
+      // Stale or review-stale — spawn agent for full regeneration
       const guidelines = extractGuidelines(raw);
       const fullPrompt = guidelines
         ? `${guidelines}\n\n---\n\n${message}`

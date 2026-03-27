@@ -48,9 +48,12 @@ Handle locally — no Beorn, no agent spawn:
 Delegate to Beorn's `kord` tool:
 
 1. Call Beorn MCP tool `kord` with `kord_name` and `message`.
-2. Beorn handles: contract lookup, expiry/cache check, agent spawning, result caching.
+2. Beorn runs a two-stage expiry check:
+   - **Fresh** (exit 0) — hash unchanged, serve cached `data.md` immediately.
+   - **Stale** (exit 1) — no cached data or first run. Spawn the provider agent, regenerate `data.md`.
+   - **Uncertain** (exit 2) — hash changed but cached data exists. Beorn reads `review.md`, fills in `{{DIFF}}` (files changed since last hash) and `{{CACHED_DATA}}` (current data.md), then spawns a lightweight agent review. If the review responds `VALID`, Beorn updates the hash via `cache_store` and serves the cache. If `STALE`, Beorn proceeds to full regeneration.
 3. After Beorn stores `data.md`, it also runs `cache_store "$KORD_DIR/.hash" <inputs>` to snapshot the input hash. The inputs are listed in the contract's "Cache Inputs" section.
-4. If Beorn returns `[cached]` prefix, the result came from cache.
+4. If Beorn returns `[cached]` prefix, the result came from cache. `[cached:revalidated]` means it passed stage 2 review.
 5. Return the result.
 
 If Beorn is not available (no MCP connection), fall back to native subagent spawning via the Agent tool — read the contract guidelines and spawn the provider agent directly. No caching in this case.

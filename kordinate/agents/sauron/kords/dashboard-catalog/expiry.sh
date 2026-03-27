@@ -1,17 +1,19 @@
 #!/bin/bash
-# Hash-based cache expiry. Exit 0 = fresh, exit 1 = stale.
+# Two-stage cache expiry. Exit 0 = fresh, 1 = stale, 2 = uncertain.
 KORD_DIR="$(cd "$(dirname "$0")" && pwd)"
 KORDINATE_HOME="${KORDINATE_HOME:-$HOME/.kord}"
 source "$KORDINATE_HOME/lib/cache.sh"
 
-# Check if cached data exists
-[ -f "$KORD_DIR/data.md" ] || exit 1
+# Stage 1: Deterministic checks
+# No cached data → definitely stale
+[ -s "$KORD_DIR/data.md" ] || exit 1
 
-# Check input hash — stale if dependencies changed since last consultation
+# Hash unchanged → definitely fresh
 cache_check "$KORD_DIR/.hash" \
   "$KORDINATE_HOME/kordinate/agents/sauron/memory/" \
   "$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/manifests/" \
   "$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/dashboards/" \
-  || exit 1
+  && exit 0
 
-exit 0  # fresh
+# Hash changed but cache exists → uncertain (needs agent review)
+exit 2
