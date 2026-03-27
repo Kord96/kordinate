@@ -37,7 +37,7 @@ Produce a structured architectural understanding of a project.
 
 5. **Identify core abstractions and organize into groups** — using the file contents and any existing analysis, identify the architecturally significant abstractions. Then organize them into a hierarchy:
 
-   First, identify 3-5 **root groups** — abstract containers representing the system's major layers or boundaries (e.g. "Server", "Browser", "External", "Data Layer"). These are NOT concrete modules — they're organizational containers.
+   First, identify 3-5 **root groups** — abstract containers representing the system's major layers or boundaries (e.g. "Server", "Browser", "External", "Data Layer"). These are NOT concrete modules — they're organizational containers. Aim for the minimum number that captures the real architectural boundaries. 3 is often enough. More than 5 means you're not abstracting enough.
 
    Then, nest every concrete abstraction under a root group as `children`. For each:
    - A concise name (human-readable, not a module path)
@@ -48,12 +48,15 @@ Produce a structured architectural understanding of a project.
 
    Create sub-groups within root groups when multiple components are closely related (e.g. "UI Shell" containing header, nav, cart drawer). The goal is a 3-4 level deep tree, not a flat list.
 
+   **After organizing, prune disconnected groups.** If a root group has no `depends_on` relationships with any other root group (no data flows, no edges connecting it to the rest of the system), consider whether it belongs in the architecture at all. Testing infrastructure, CI/CD config, and build tooling are important but rarely add value as root groups in an architecture diagram — they clutter the view without helping someone understand how the system works. Include them only if they have meaningful runtime connections to the core system.
+
    Filtering heuristics:
    - Utilities/logging/config modules have high fan-in but are NOT core abstractions — skip them
    - Entry points (servers, CLI, main) ARE core abstractions — they're where actors interact
    - Data stores and external integrations ARE core — they define the system's boundaries
    - Prefer business-domain abstractions over infrastructure plumbing
    - A leaf component at the top level is a sign of insufficient grouping — wrap it in a group
+   - A root group with no edges to other groups is a sign it shouldn't be a root group
 
    Tag each component with relevant `abstraction` levels from `abstractions.md`. This enables the `/illustrate` skill to decide which viewpoints to generate. For example, a component tagged `[data, messaging]` is relevant to both the Data and Flows viewpoints.
 
