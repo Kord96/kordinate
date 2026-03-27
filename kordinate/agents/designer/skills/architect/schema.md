@@ -117,10 +117,11 @@ failure_modes:
 - All `id` fields are kebab-case, unique within their section
 - Cross-references use `id` strings, not indices
 - `concept` fields use generic infrastructure terms, `technology` fields name the specific tool
-- Components should number 5-10 for most projects. If you have more than 12, you're probably not abstracting enough. If you have fewer than 4, you're probably over-abstracting.
-- Data flows trace the critical paths, not every possible code path. 2-4 flows for a typical project.
+- **Top-level components MUST be root groups only.** A root group is an abstract container (e.g. "Server", "Browser", "External", "Data Layer") — NOT a concrete module. Aim for 3-5 root groups. Everything else nests under them via `children`. If you have a leaf component (no children) at the top level, it belongs inside a group.
+- **Every concrete component must have a parent.** Use `children` nesting so no concrete component (service, library, frontend, store, config) appears at the top level. Only `group` type nodes should be roots.
+- Data flows trace the critical paths, not every possible code path. 3-6 flows for a typical project.
 - Failure modes should cover every external dependency and every stateful component. The question is always: "what happens if this goes down?"
-- Components can nest to any depth via `children`. Each level represents a meaningful architectural boundary (service → package → module). Don't nest deeper than the code's natural structure.
+- Components nest to any depth via `children`. Each level represents a meaningful architectural boundary (service → package → module). Don't nest deeper than the code's natural structure, but DO create abstract groups to organize related leaf components.
 - The `deployment` field on components enables the deployment viewpoint. Only add it to components that map to a k8s workload.
 - The `technology` field on flow steps enables annotated sequence diagrams. Use short labels: "HTTP/JSON", "gRPC :8815", "Kafka", "localStorage".
 

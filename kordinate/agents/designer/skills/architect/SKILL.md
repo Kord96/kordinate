@@ -35,17 +35,25 @@ Produce a structured architectural understanding of a project.
 
    If none exist, proceed without — file contents are sufficient.
 
-5. **Identify core abstractions** — using the file contents and any existing analysis, identify the 5-10 most architecturally significant abstractions in the project. For each, provide:
+5. **Identify core abstractions and organize into groups** — using the file contents and any existing analysis, identify the architecturally significant abstractions. Then organize them into a hierarchy:
+
+   First, identify 3-5 **root groups** — abstract containers representing the system's major layers or boundaries (e.g. "Server", "Browser", "External", "Data Layer"). These are NOT concrete modules — they're organizational containers.
+
+   Then, nest every concrete abstraction under a root group as `children`. For each:
    - A concise name (human-readable, not a module path)
    - What it does (one sentence)
    - Which source files implement it
    - What patterns it uses (if detected)
+   - Which root group it belongs under
+
+   Create sub-groups within root groups when multiple components are closely related (e.g. "UI Shell" containing header, nav, cart drawer). The goal is a 3-4 level deep tree, not a flat list.
 
    Filtering heuristics:
    - Utilities/logging/config modules have high fan-in but are NOT core abstractions — skip them
    - Entry points (servers, CLI, main) ARE core abstractions — they're where actors interact
    - Data stores and external integrations ARE core — they define the system's boundaries
    - Prefer business-domain abstractions over infrastructure plumbing
+   - A leaf component at the top level is a sign of insufficient grouping — wrap it in a group
 
    Tag each component with relevant `abstraction` levels from `abstractions.md`. This enables the `/illustrate` skill to decide which viewpoints to generate. For example, a component tagged `[data, messaging]` is relevant to both the Data and Flows viewpoints.
 
