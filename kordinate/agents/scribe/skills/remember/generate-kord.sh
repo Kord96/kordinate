@@ -90,7 +90,7 @@ if [ -n "$memories" ]; then
 fi
 
 # Kords
-kords=$(find "$ROOT/kords" -name "contract.md" 2>/dev/null | sort)
+kords=$(find "$ROOT/agents" -path "*/kords/*/contract.md" 2>/dev/null | sort)
 if [ -n "$kords" ]; then
   echo "" >> "$OUTPUT_MD"
   echo "## Kords" >> "$OUTPUT_MD"

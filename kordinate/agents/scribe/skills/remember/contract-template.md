@@ -8,10 +8,10 @@ Level 3 resource for the remember skill.
 ---
 description: <what this kord provides>
 requester: <agent or "any">
-provider: <agent>
 mode: <stateless or stateful>
 skill: <skill-name>          # required if mode is stateless
 ---
+<!-- provider is implicit from the directory path: agents/<provider>/kords/<name>/ -->
 
 ## Provider Guidelines
 

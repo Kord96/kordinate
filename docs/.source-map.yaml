@@ -5,7 +5,7 @@ framework/overview.md:
   - kordinate/agents/*/IDENTITY.md
 
 framework/kords.md:
-  - kordinate/kords/*/contract.md
+  - kordinate/agents/*/kords/*/contract.md
   - kordinate/skills/kord/SKILL.md
 
 framework/guards.md:

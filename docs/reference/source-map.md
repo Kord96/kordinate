@@ -18,7 +18,7 @@ flowchart LR
 | Doc Page | Implementation Sources |
 |----------|----------------------|
 | **framework/overview.md** | `agents/*/IDENTITY.md` |
-| **framework/kords.md** | `kords/*/contract.md`, `skills/kord/SKILL.md` |
+| **framework/kords.md** | `agents/*/kords/*/contract.md`, `skills/kord/SKILL.md` |
 | **framework/guards.md** | `agents/scribe/skills/remember/guard.sh` |
 | **framework/memory.md** | `KORD.md`, `agents/scribe/skills/remember/generate-kord.sh` |
 | **agents/index.md** | `agents/*/IDENTITY.md` |
@@ -36,6 +36,6 @@ flowchart LR
 | Pattern definitions | designer (`memory/patterns/`) | `docs/reference/patterns/` |
 | Library docs | designer (`memory/libraries/`) | `docs/reference/libraries/` |
 | Infrastructure facts | deployer (`memory/infra.md`) | `docs/infra/infrastructure.md` |
-| Kord protocol | kords (`kords/*/contract.md`) | `docs/framework/kords.md` |
+| Kord protocol | kords (`agents/*/kords/*/contract.md`) | `docs/framework/kords.md` |
 
 Agent source files are the authority for facts. Human docs interpret and present them.

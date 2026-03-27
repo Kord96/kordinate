@@ -76,16 +76,18 @@ fi
 
 # Kord contracts
 section "Kord Contracts"
-for kord_dir in "$KORDINATE_HOME"/kords/*/; do
+for kord_dir in "$KORDINATE_HOME"/agents/*/kords/*/; do
+  [ -d "$kord_dir" ] || continue
   kord_name=$(basename "$kord_dir")
   contract="$kord_dir/contract.md"
+  # Derive provider from path: agents/<provider>/kords/<name>/
+  provider=$(echo "$kord_dir" | sed 's|.*/agents/\([^/]*\)/kords/.*|\1|')
   if [ -f "$contract" ]; then
-    provider=$(grep '^provider:' "$contract" | head -1 | sed 's/provider: *//')
     mode=$(grep '^mode:' "$contract" | head -1 | sed 's/mode: *//')
     if [ -n "$provider" ] && [ -n "$mode" ]; then
       pass "$kord_name — provider=$provider, mode=$mode"
     else
-      fail "$kord_name — missing provider or mode in frontmatter"
+      fail "$kord_name — missing provider (path) or mode in frontmatter"
     fi
   else
     fail "$kord_name — no contract.md"
@@ -93,7 +95,7 @@ for kord_dir in "$KORDINATE_HOME"/kords/*/; do
 done
 
 # Expiry scripts are executable and return 0 or 1
-for expiry in "$KORDINATE_HOME"/kords/*/expiry.sh; do
+for expiry in "$KORDINATE_HOME"/agents/*/kords/*/expiry.sh; do
   [ -f "$expiry" ] || continue
   kord_name=$(basename "$(dirname "$expiry")")
   if bash "$expiry" 2>/dev/null; then
@@ -299,7 +301,7 @@ if [ "${1:-}" = "--runtime" ]; then
 
     # Cache invalidation — expiry check
     test_kord="deployer-default"
-    test_kord_dir="$KORDINATE_HOME/kords/$test_kord"
+    test_kord_dir="$KORDINATE_HOME/agents/deployer/kords/$test_kord"
     if [ -d "$test_kord_dir" ]; then
       # Ensure stale state
       rm -f "$test_kord_dir/.valid"

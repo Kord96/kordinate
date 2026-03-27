@@ -23,6 +23,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3100');
 const HOME = process.env.HOME || '/home/claude';
 const KORDINATE_HOME = process.env.KORDINATE_HOME || join(HOME, '.kord');
+const REPO_ROOT = process.env.REPO_ROOT || join(HOME, 'kordinate');
 const BOOT_TIME = new Date().toISOString();
 
 // ─── Discover agents from KORD.json or agents/ directory ───
@@ -104,89 +105,30 @@ function loadSystemPrompt(agent) {
   return parts.join('\n\n');
 }
 
-// ─── Git worktree lifecycle ───
-
-const KORD_WORKTREE_ROOT = process.env.KORD_WORKTREE_ROOT || join(KORDINATE_HOME, '.worktrees');
-const KORD_LOCK_DIR = join(KORDINATE_HOME, '.locks');
-
-function createAgentWorktree(agent) {
-  const id = `mem-${agent}-${randomUUID().slice(0, 8)}`;
-  const path = join(KORD_WORKTREE_ROOT, id);
-  const branch = `memory/${id}`;
-  execSync(`git -C "${KORDINATE_HOME}" worktree add "${path}" -b "${branch}" HEAD`, {
-    timeout: 30000,
-    env: { ...process.env, HOME, KORDINATE_HOME },
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  log(`WORKTREE created: ${id} (branch: ${branch})`);
-  return { id, path, branch };
-}
-
-function mergeAgentWorktree(worktree) {
-  const { id, path, branch } = worktree;
-  try {
-    // Check if worktree has changes
-    const status = execSync(`git -C "${path}" status --porcelain`, { encoding: 'utf8', timeout: 10000 }).trim();
-    if (!status) {
-      log(`WORKTREE ${id}: no changes`);
-      return true; // nothing to merge
-    }
-    // Commit changes
-    execSync(`git -C "${path}" add -A`, { timeout: 10000 });
-    execSync(`git -C "${path}" commit -m "memory: ${worktree.id}"`, { timeout: 10000, env: { ...process.env, GIT_AUTHOR_NAME: 'beorn', GIT_AUTHOR_EMAIL: 'beorn@kordinate', GIT_COMMITTER_NAME: 'beorn', GIT_COMMITTER_EMAIL: 'beorn@kordinate' } });
-    // Try fast-forward merge with flock
-    mkdirSync(KORD_LOCK_DIR, { recursive: true });
-    execSync(`flock "${KORD_LOCK_DIR}/merge.lock" git -C "${KORDINATE_HOME}" merge --ff-only "${branch}"`, {
-      timeout: 30000,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    log(`WORKTREE ${id}: merged to main`);
-    return true;
-  } catch (e) {
-    log(`WORKTREE ${id}: merge failed — ${e.message}. Branch preserved for /merge.`);
-    return false;
-  }
-}
-
-function cleanupAgentWorktree(worktree, merged) {
-  const { id, path, branch } = worktree;
-  try {
-    execSync(`git -C "${KORDINATE_HOME}" worktree remove "${path}" --force`, { timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] });
-    if (merged) {
-      execSync(`git -C "${KORDINATE_HOME}" branch -d "${branch}"`, { timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] });
-    }
-    log(`WORKTREE ${id}: cleaned up (merged: ${merged})`);
-  } catch (e) {
-    log(`WORKTREE ${id}: cleanup error — ${e.message}`);
-  }
-}
-
 async function invokeAgent(agent, prompt) {
   log(`INVOKE ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
   const start = Date.now();
 
-  const worktree = createAgentWorktree(agent);
+  log(`INVOKE ${agent}: regenerating memory...`);
+  regenerateMemory(agent);
+
+  log(`INVOKE ${agent}: loading system prompt...`);
+  const systemPrompt = loadSystemPrompt(agent);
+  log(`INVOKE ${agent}: system prompt ${systemPrompt ? systemPrompt.length + ' chars' : 'empty'}`);
+
+  const args = ['--print', '--dangerously-skip-permissions'];
+  if (systemPrompt) {
+    args.push('--system-prompt', systemPrompt);
+  }
+  args.push(prompt);
+
+  log(`INVOKE ${agent}: spawning claude --print (${args.length} args)...`);
 
   try {
-    log(`INVOKE ${agent}: regenerating memory...`);
-    regenerateMemory(agent);
-
-    log(`INVOKE ${agent}: loading system prompt...`);
-    const systemPrompt = loadSystemPrompt(agent);
-    log(`INVOKE ${agent}: system prompt ${systemPrompt ? systemPrompt.length + ' chars' : 'empty'}`);
-
-    const args = ['--print', '--dangerously-skip-permissions'];
-    if (systemPrompt) {
-      args.push('--system-prompt', systemPrompt);
-    }
-    args.push(prompt);
-
-    log(`INVOKE ${agent}: spawning claude --print (${args.length} args)...`);
-
     const result = await new Promise((resolve, reject) => {
       const child = spawn('claude', args, {
-        cwd: KORDINATE_HOME,
-        env: { ...process.env, HOME, KORDINATE_HOME: worktree.path },
+        cwd: REPO_ROOT,
+        env: { ...process.env, HOME },
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: true, // survive parent shell exit
       });
@@ -232,9 +174,6 @@ async function invokeAgent(agent, prompt) {
     if (e.stderr) log(`INVOKE ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
     if (e.stdout) log(`INVOKE ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
     throw e;
-  } finally {
-    const merged = mergeAgentWorktree(worktree);
-    cleanupAgentWorktree(worktree, merged);
   }
 }
 
@@ -254,6 +193,22 @@ function parseContractFrontmatter(raw) {
 function extractGuidelines(raw) {
   const idx = raw.indexOf('## Provider Guidelines');
   return idx >= 0 ? raw.slice(idx + '## Provider Guidelines'.length).trim() : '';
+}
+
+function findKordDir(kordName) {
+  // Search across all agents/*/kords/ directories
+  const agentsDir = join(KORDINATE_HOME, 'agents');
+  try {
+    const agents = readdirSync(agentsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory());
+    for (const agent of agents) {
+      const candidate = join(agentsDir, agent.name, 'kords', kordName);
+      if (existsSync(join(candidate, 'contract.md'))) {
+        return { dir: candidate, provider: agent.name };
+      }
+    }
+  } catch { /* fall through */ }
+  return null;
 }
 
 function checkExpiry(kordDir) {
@@ -328,20 +283,15 @@ function registerTools(server) {
     },
     async ({ kord_name, message }) => {
       log(`TOOL kord called`, { kord_name, message: message.substring(0, 100) });
-      const kordDir = join(KORDINATE_HOME, 'kords', kord_name);
+      const found = findKordDir(kord_name);
+
+      if (!found) {
+        throw new Error(`Kord not found: ${kord_name} (searched agents/*/kords/)`);
+      }
+
+      const { dir: kordDir, provider } = found;
       const contractPath = join(kordDir, 'contract.md');
-
-      if (!existsSync(contractPath)) {
-        throw new Error(`Kord not found: ${kord_name} (looked in ${contractPath})`);
-      }
-
       const raw = readFileSync(contractPath, 'utf8');
-      const fm = parseContractFrontmatter(raw);
-      const provider = fm.provider;
-
-      if (!provider) {
-        throw new Error(`Kord ${kord_name} has no provider in frontmatter`);
-      }
 
       // Check cache freshness
       const dataPath = join(kordDir, 'data.md');
@@ -439,10 +389,3 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[beorn] Known agents: ${KNOWN_AGENTS.join(', ')}`);
   console.log(`[beorn] MCP: /mcp | Health: /health`);
 });
-
-// Prune stale worktrees every 5 minutes
-setInterval(() => {
-  try {
-    execSync(`git -C "${KORDINATE_HOME}" worktree prune`, { timeout: 10000, stdio: 'ignore' });
-  } catch { /* best-effort */ }
-}, 300000);

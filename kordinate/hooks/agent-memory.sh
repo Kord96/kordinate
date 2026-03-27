@@ -31,7 +31,7 @@ SHARED="$KORDINATE_HOME/agents/shared/MEMORY.md"
 STATIC="$AGENT_DIR/memory/static"
 INSTRUCTIONS="$AGENT_DIR/instructions"
 DYNAMIC="$AGENT_DIR/memory/dynamic"
-KORDS_DIR="$KORDINATE_HOME/agents/root/kords"
+KORDS_DIR="$KORDINATE_HOME/agents"
 MEMORY_FILE="$DYNAMIC/MEMORY.md"
 HASH_FILE="$DYNAMIC/.hash"
 
@@ -109,20 +109,20 @@ STATIC_LINES=${STATIC_LINES:-0}
   if [ -d "$KORDS_DIR" ]; then
     requester_kords=()
     provider_kords=()
-    for kord_dir in "$KORDS_DIR"/*/; do
+    for kord_dir in "$KORDS_DIR"/*/kords/*/; do
       [ -d "$kord_dir" ] || continue
       kord_md="$kord_dir/contract.md"
       [ -f "$kord_md" ] || continue
       kord_name=$(basename "$kord_dir")
 
-      # Check provider
-      provider=$(sed -n '/^## Provider$/,/^##/{/^## Provider$/d;/^##/d;/^$/d;p;}' "$kord_md" | head -1 | tr -d '[:space:]')
+      # Derive provider from path: agents/<provider>/kords/<name>/
+      provider=$(echo "$kord_dir" | sed 's|.*/agents/\([^/]*\)/kords/.*|\1|')
       if [ "$provider" = "$AGENT" ]; then
         provider_kords+=("$kord_name")
       fi
 
-      # Check requester
-      requester_line=$(sed -n '/^## Requester$/,/^##/{/^## Requester$/d;/^##/d;/^$/d;p;}' "$kord_md" | head -1)
+      # Check requester from frontmatter
+      requester_line=$(sed -n 's/^requester: *//p' "$kord_md" | head -1)
       if [[ "$requester_line" == *"any"* ]] || [[ "$requester_line" == *"$AGENT"* ]]; then
         requester_kords+=("$kord_name")
       fi

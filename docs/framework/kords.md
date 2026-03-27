@@ -12,24 +12,24 @@ Each kord specifies how the provider fulfills the request:
 ??? example "stateless — remember"
 
     ```markdown
+    <!-- agents/scribe/kords/remember/contract.md -->
     ---
     description: Write a memory for an agent
     requester: any
-    provider: scribe
     mode: stateless
     skill: remember
     ---
     ```
 
-    The requester invokes `/remember` directly — no scribe agent spawned.
+    Provider is `scribe` (derived from path). The requester invokes `/remember` directly — no scribe agent spawned.
 
 ??? example "stateful — deployer-default"
 
     ```markdown
+    <!-- agents/deployer/kords/deployer-default/contract.md -->
     ---
     description: General deployment and cluster questions
     requester: any
-    provider: deployer
     mode: stateful
     ---
 
@@ -78,21 +78,26 @@ Describe what you need. Scribe creates the contract:
 
 ### Structure
 
-Kords live at `$KORDINATE_HOME/kords/`:
+Kords live under their provider agent's directory at `$KORDINATE_HOME/agents/<provider>/kords/`:
 
 ```
-$KORDINATE_HOME/kords/
-├── pattern-review/
-│   ├── contract.md         # protocol definition
-│   ├── data.md             # cached result (stateful mode)
-│   └── expiry.sh           # freshness check (optional)
-├── scribe-remember/
-│   └── contract.md         # stateless mode — no data.md needed
-└── deployer-default/
-    ├── contract.md
-    ├── data.md
-    └── expiry.sh
+$KORDINATE_HOME/agents/
+├── designer/kords/
+│   └── pattern-review/
+│       ├── contract.md         # protocol definition
+│       ├── data.md             # cached result (stateful mode)
+│       └── expiry.sh           # freshness check (optional)
+├── scribe/kords/
+│   └── remember/
+│       └── contract.md         # stateless mode — no data.md needed
+└── deployer/kords/
+    └── deployer-default/
+        ├── contract.md
+        ├── data.md
+        └── expiry.sh
 ```
+
+The provider is implicit from the directory path — no `provider:` field in contract frontmatter.
 
 ??? note "Contract template"
 
@@ -100,10 +105,10 @@ $KORDINATE_HOME/kords/
     ---
     description: <what this kord provides>
     requester: <agent or "any">
-    provider: <agent>
     mode: <stateless or stateful>
     skill: <skill-name>          # required if mode is stateless
     ---
+    <!-- provider is implicit from the directory path: agents/<provider>/kords/<name>/ -->
 
     ## Provider Guidelines
 

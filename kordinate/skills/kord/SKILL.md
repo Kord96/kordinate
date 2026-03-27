@@ -20,9 +20,17 @@ Thin wrapper that routes kord requests. Stateless kords run locally, stateful ko
 
 ## Resolution
 
-1. If first param matches a kord name under `$KORDINATE_HOME/kords/` → use it. Provider from contract.
+1. If first param matches a kord name under any `$KORDINATE_HOME/agents/*/kords/` directory → use it. Derive provider from the path (`agents/<provider>/kords/<name>/`).
 2. If first param matches an agent name → check if second param is a kord name. If yes, use that kord. If no, use `<agent>-default`.
-3. Read `contract.md` frontmatter to get `provider`, `mode`, `skill`.
+3. Derive `provider` from the path (`agents/<provider>/kords/<name>/`). Read `contract.md` frontmatter for `mode` and `skill`.
+
+## Requester Enforcement
+
+After resolving the kord, check the `requester` field in the contract frontmatter:
+
+- If `requester: any` → proceed.
+- If `requester: <agent-name>` or `requester: <agent1>, <agent2>` → check that the calling agent matches one of the listed names. The calling agent is determined by which auth lock exists (`/tmp/.<name>-auth`) or, if no lock exists, the caller is `main`.
+- If the caller is not authorized: **refuse the request** and report: "Kord `<name>` is restricted to `<requester>`. Use `/kord <provider>` to consult directly instead."
 
 ## Execution
 
@@ -44,8 +52,4 @@ Delegate to Beorn's `kord` tool:
 3. If Beorn returns `[cached]` prefix, the result came from cache.
 4. Return the result.
 
-Beorn is the sole agent host for stateful kords. It creates a git worktree per agent spawn in `$KORDINATE_HOME`, so memory writes are isolated per agent and merged back into main on completion.
-
-**Connection**: on-cluster via cluster DNS (`beorn.kordinate.svc.cluster.local`), off-cluster via Tailscale.
-
-**No fallback**: if Beorn is unreachable, report the error to the caller. Do NOT fall back to native subagent spawning — stateful kords require Beorn's lifecycle management (worktree creation, memory isolation, merge on completion).
+If Beorn is not available (no MCP connection), fall back to native subagent spawning via the Agent tool — read the contract guidelines and spawn the provider agent directly. No caching in this case.

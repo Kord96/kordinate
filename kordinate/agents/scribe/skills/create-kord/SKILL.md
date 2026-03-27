@@ -22,13 +22,13 @@ Authenticate before writing: use `/authenticate`.
     - Kord name (required, kebab-case)
     - One-line description (required)
     - Requester — which agents can invoke this kord (required, or "any")
-    - Provider — which agent answers (required, exactly one)
+    - Provider — which agent answers (required, exactly one; determines directory path, not written to frontmatter)
     - Mode — `stateless` (skill is self-contained) or `stateful` (needs agent context). Default: `stateful`.
     - Skill — if stateless, which skill to expose (required for stateless)
 
-2. **Create kord directory:**
+2. **Create kord directory** under the provider's agent directory:
     ```
-    $KORDINATE_HOME/kords/<name>/
+    $KORDINATE_HOME/agents/<provider>/kords/<name>/
     ├── contract.md
     ├── data.md (empty, populated on first consult)
     └── expiry.sh
