@@ -1,16 +1,19 @@
 ---
 name: merge
-description: Merge session or memory branches into main and clean up stale worktrees.
+description: Merge session or memory branches into main, resolve conflicts, and clean up stale worktrees. Use when the worktree-push hook reports a conflict, when branches need manual merging, or to garbage-collect old worktrees.
+argument-hint: "[--memory] [<branch>]"
 curated: true
 scope: global
 ---
 
-Merge session branches back into main and garbage-collect stale worktrees left by `claude-session`. Run periodically.
+Merge session or memory branches into main and clean up stale worktrees.
+
+Most worktree pushes merge to main automatically via the `worktree-push` PostToolUse hook. This skill is the fallback when that hook hits conflicts, and also handles batch merging and cleanup.
 
 `$ARGUMENTS` — Optional flags and branch names:
 - `--memory` — merge `memory/*` branches in `$KORDINATE_HOME` instead of `session/*` branches in the current repo.
 - Specific branch name (e.g., `session/w1-logbd` or `memory/agent-abc123`).
-- Default (no flag): session branches in current repo.
+- Default (no flag): all session branches in current repo.
 
 ## Procedure
 
@@ -21,7 +24,6 @@ Merge session branches back into main and garbage-collect stale worktrees left b
 
 ## Rules
 
-- Session branches are local only — never push them to remote.
 - Never force-push to main — `git push origin HEAD:main` only succeeds on fast-forward.
 - Always use detached HEAD in the merge workspace — never checkout named branches.
 - Always clean up the merge workspace and release the lock, even on errors.

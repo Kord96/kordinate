@@ -11,7 +11,7 @@ git branch --list 'session/*'
 
 If `$ARGUMENTS` specifies a branch, filter to just that one.
 
-Session branches are local only — they are never pushed to remote.
+Session branches may exist on remote (pushed by worktrees), but they are intermediate — the worktree-push hook merges them to main automatically.
 
 ## Memory Branch Discovery (`--memory`)
 

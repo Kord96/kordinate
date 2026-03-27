@@ -28,7 +28,7 @@ git branch -D session/<name>
 git worktree prune
 ```
 
-Session branches are local only — no remote branches or PRs to clean up.
+If the session branch was pushed to remote (by the worktree-push hook), delete it there too: `git push origin --delete session/<name>` after the local branch is deleted.
 
 ## For each merged or empty memory branch (`--memory`)
 
