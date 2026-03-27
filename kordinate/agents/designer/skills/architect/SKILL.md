@@ -70,10 +70,22 @@ Produce a structured architectural understanding of a project.
    - Scheduled jobs (cron, timers)
    - Data sources (files, NFS, external APIs)
 
-8. **Map data flows** — trace the critical paths through the system. A data flow is a sequence of steps showing how data moves from trigger to final state. Focus on:
+8. **Map data flows** — trace the critical paths through the system. A data flow is a sequence of steps showing how data moves from trigger to final **user-visible** state. Each flow should answer: "what happens when [trigger]?"
+
+   Focus on:
    - The primary ingestion/processing pipeline
    - The query/serving path
    - Any async/event-driven chains
+
+   Each flow must trace the **full chain**, not just direct function calls:
+   - Follow reactive subscriptions (store selectors, query cache updates, component re-renders)
+   - Include serialization boundaries (dehydrate → serialize → hydrate, localStorage read/write)
+   - End at the user-visible outcome (what changes on screen, what state is persisted)
+   - Include 5-10 steps per flow, not 2-3. If a flow has fewer than 4 steps, you probably stopped too early.
+
+   Use short labels on steps (3-5 words). Put detail in the step's `data` and `action` fields, not the label.
+
+   Each step should specify the `technology` field for the transport: "in-memory", "HTTP/JSON", "localStorage", "React re-render", "Zustand selector", "TanStack Query cache", etc.
 
 9. **Catalog state** — for each data store detected, classify:
    - Technology (use generic concept: relational database, document store, embedded OLAP, cache, object store, message broker, filesystem — plus the specific implementation)
