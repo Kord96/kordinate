@@ -39,6 +39,61 @@ guard_write() {
   file_path=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
   [ -z "$file_path" ] && allow
 
+  # config.yaml: field-level ACL — each YAML path has an owning agent
+  case "$file_path" in
+    */profile/config.yaml)
+      local acl_file="$KORD_HOME/profile/config-acl.yaml"
+      if [ -f "$acl_file" ]; then
+        local old_str new_str
+        old_str=$(echo "$INPUT" | jq -r '.tool_input.old_string // .tool_input.content // empty')
+        new_str=$(echo "$INPUT" | jq -r '.tool_input.new_string // empty')
+        local required_agent
+        required_agent=$(ACL_FILE="$acl_file" CONFIG_FILE="$file_path" OLD_STR="$old_str" python3 -c "
+import yaml, os
+
+acl = yaml.safe_load(open(os.environ['ACL_FILE']))
+config_file = os.environ['CONFIG_FILE']
+old_str = os.environ.get('OLD_STR', '')
+
+# Find which top-level key the edit falls under by locating old_str in the file
+agents = set()
+try:
+    with open(config_file) as f:
+        lines = f.readlines()
+    # Find the line where old_str starts
+    full = ''.join(lines)
+    pos = full.find(old_str[:60])
+    if pos >= 0:
+        # Walk backwards to find the top-level key (no leading whitespace)
+        before = full[:pos].splitlines()
+        for line in reversed(before):
+            if line and not line[0].isspace() and ':' in line:
+                top_key = line.split(':')[0].strip()
+                for path, agent in acl.items():
+                    if path.split('.')[0] == top_key:
+                        agents.add(agent)
+                break
+except Exception:
+    pass
+
+print(' '.join(sorted(agents)) if agents else '')
+" 2>/dev/null)
+
+        # Check if any matching agent is authenticated
+        if [ -n "$required_agent" ]; then
+          for agent in $required_agent; do
+            check_auth "$agent" && allow
+          done
+          deny "config.yaml edit touches fields owned by: $required_agent. Authenticate as one of them."
+        fi
+      fi
+
+      # Fallback: scribe can always edit config.yaml
+      check_auth scribe && allow
+      deny "config.yaml edit requires field-owner or scribe authentication."
+      ;;
+  esac
+
   # Scribe: curated .kord/ files only
   case "$file_path" in
     */.kord/*)
