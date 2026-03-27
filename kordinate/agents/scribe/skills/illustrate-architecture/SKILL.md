@@ -17,54 +17,20 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
 
 1. **architecture.yaml** — the structural map. Component hierarchy, root groups, `depends_on` edges. Your guide to what the pieces are.
 
-2. **patterns.md** (optional) — from `/detect-patterns`. Which patterns the code uses, anti-patterns present, and patterns MISSING. Enriches every viewpoint.
+2. **patterns.md** (optional) — from `/detect-patterns`. Which patterns the code uses, anti-patterns present, and patterns MISSING.
 
 3. **The project source code** — the execution truth. Always read the code.
 
 ## Procedure
 
-### 1. Structure
+### 1. Read everything
 
-Run [convert-to-viewer.py](convert-to-viewer.py) to produce the initial JSON. If the script isn't available, produce the structure manually: walk `components` + `children` → flat nodes with parent/hasChildren, extract `depends_on` → edges, add externals.
+Read architecture.yaml to understand the structure. Read patterns.md if it exists. Then use `modules` fields from the YAML to find key source files and read them. Build a unified understanding of how the system works before producing anything.
 
-Review the structure:
-- Merge root groups with only 1 child into a neighbor
-- Prune root groups with no edges to other groups
-- Merge related thin groups into one
+### 2. Produce the viewer JSON in one pass
 
-### 2. Read the code
+Produce `architecture.json` directly from your understanding. Don't use intermediate tools or converters — produce the complete JSON yourself. The output shape:
 
-Use `modules` fields from architecture.yaml to find the key files. Read them. Build a unified understanding of how the system works before producing any viewpoints.
-
-If `patterns.md` exists, read it too — note which components have patterns, which have anti-patterns, and what's missing.
-
-### 3. Produce all viewpoints at once
-
-Each viewpoint is a lens on the same understanding:
-
-**Flows** — trace each data flow through the code as a full reactive chain:
-- Include all participants: users, components, stores, browser APIs (IntersectionObserver, localStorage, DOM), framework internals (HydrationBoundary, QueryClient)
-- 5-12 steps per flow, ending at the user-visible outcome
-- Include domain details: pagination params, delays, cache keys, guard conditions
-- Write a `mermaid` sequence diagram string for each flow (the Flows tab renders these)
-- Mermaid format: `sequenceDiagram` with `participant` declarations, `->>`/`-->>` arrows, `Note over` annotations
-- If patterns.md reports anti-patterns in a flow path, annotate them
-
-**State** — for each store/cache:
-- Search the code for every import/usage of the store hook to find all readers and writers
-- Include: persistence mechanism, serialization format, scope (per-request vs singleton vs global)
-- If patterns.md reports state-related patterns (reactive-store, cache-aside), note them
-
-**Failure modes** — for each failure:
-- Trace the cascade through the code: what breaks first, what breaks next, what the user sees
-- Include detection signals and recovery steps
-- If patterns.md reports missing resilience patterns (no timeout, no retry), surface these prominently
-
-These inform each other. Produce them together.
-
-### 4. Write output
-
-Merge the structure with enriched viewpoints into `architecture.json`:
 ```json
 {
   "nodes": [...],
@@ -75,12 +41,50 @@ Merge the structure with enriched viewpoints into `architecture.json`:
 }
 ```
 
-Write to the docs site content directory.
+All viewpoints are different lenses on the same understanding. Produce them together — a flow reveals state dependencies, state reveals failure cascades, failures reveal missing resilience in flows.
 
-### 5. Tutorial (if --tutorial)
+**Nodes** — from `components` + `children` in the YAML:
+- Walk recursively. Components with children → `type: "group"`, `hasChildren: true`
+- Leaf types: frontend→component, store→library, api/worker→service, gateway→external-service
+- `parent` from nesting. Top-level components have no parent.
+- `file` from `modules[0]`. `exports` if available.
+- Add `external_dependencies` as nodes under an "External" group.
+- Review: merge single-child root groups into neighbors. Prune root groups with no edges.
+
+**Edges** — from `depends_on` + `data_flows`:
+- Flow edges from flow steps (label with flow name, set `flowId`)
+- Structural edges from `depends_on` (label "uses", `flowId: "dependency"`)
+- Skip dependency edges if a flow edge already connects the same pair
+- Bidirectional flows: keep both arrows, set `hideLabel: true` on the return edge
+- No render edges — containment communicates parent-child relationships
+
+**Flows** — trace each data flow through the CODE (not just the YAML steps):
+- Include all participants: users, components, stores, browser APIs, framework internals
+- 5-12 steps per flow, ending at the user-visible outcome
+- Domain details: pagination params, delays, cache keys, guard conditions
+- Write a `mermaid` sequence diagram string for each flow (`sequenceDiagram` format with `participant` declarations, `->>` arrows, `Note over` annotations)
+- If patterns.md reports anti-patterns in a flow path, annotate them
+
+**State** — for each store/cache:
+- Search the code for imports/usage of the store hook to find all readers and writers
+- Include: persistence mechanism, serialization, scope
+
+**Failure modes** — for each failure:
+- Trace the cascade through the code
+- If patterns.md reports missing resilience (no timeout, no retry), surface prominently
+
+### 3. Write output
+
+Write `architecture.json` to the docs site content directory for the project.
+
+### 4. Tutorial (if --tutorial)
 
 What is this, who uses it, how does it work (one section per flow), what's stored where, what can go wrong.
 
-### 6. Report
+### 5. Report
 
 Node count, edge count, root groups, flow step counts (target: average 8+), state reader/writer counts.
+
+## Reference
+
+[convert-to-viewer.py](convert-to-viewer.py) documents the mechanical conversion rules (hierarchy flattening, edge dedup, bidirectional handling). Use it as a reference for the JSON format, not as a required step.
