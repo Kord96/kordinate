@@ -1,6 +1,6 @@
 ---
 name: illustrate-architecture
-description: Transform a project's architecture into interactive viewer JSON — reads architecture.yaml for structure, reads the code for flows and state.
+description: Transform a project's architecture into interactive viewer JSON — reads architecture.yaml for structure, reads the code for all viewpoints.
 curated: true
 scope: global
 ---
@@ -15,56 +15,43 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
 
 ## Inputs
 
-Two inputs, each with a different purpose:
+1. **architecture.yaml** — the structural map. Component hierarchy, root groups, `depends_on` edges, external dependencies. Use this as your guide to what the pieces are.
 
-1. **architecture.yaml** — the structural map. Use it for: component hierarchy, root groups, `depends_on` edges, external dependencies. The architect already did the hard work of identifying what the pieces are.
-
-2. **The project source code** — the execution truth. Read the actual code to trace flows, understand state management, and identify failure cascades. The architecture.yaml's `data_flows` are a starting point, but they're often too shallow. The code tells you what actually happens.
+2. **The project source code** — the execution truth. Read the actual code to understand how the pieces work together. Always read the code. The YAML is a map, the code is the territory.
 
 ## Procedure
 
-### Structure (from architecture.yaml)
-
-1. Run [convert-to-viewer.py](convert-to-viewer.py) to produce the initial JSON from the YAML:
+1. **Run the converter** to produce the initial structural JSON from the YAML:
    ```bash
    python3 convert-to-viewer.py <architecture.yaml> <output.json>
    ```
-   This handles: hierarchy flattening, `depends_on` edges, flow edges, dedup, bidirectional label hiding.
+   This gives you nodes, hierarchy edges, and a skeleton. The structure is done.
 
-2. Review the structure: root groups make sense, no orphans, clean hierarchy.
+2. **Read the codebase.** Use architecture.yaml to know which files matter, then read them. Build a unified understanding of how the system works — don't think about tabs or viewpoints yet. Just understand the code.
 
-### Flows (from the code)
+3. **Produce all viewpoints at once** from that understanding. Each viewpoint is a different lens on the same codebase:
 
-3. For each `data_flow` in architecture.yaml, **read the actual source files** involved and trace the full reactive chain. The YAML gives you the starting point (which components participate), but you must follow the execution through the code to produce rich sequence diagrams.
+   **Flows** — for each data flow, trace the full reactive chain through the code. Include all participants (not just components — users, browser APIs, DOM, framework internals). 5-12 steps per flow. End at the user-visible outcome. Write a `mermaid` sequence diagram string for each flow. Short labels, detailed `action` fields.
 
-   Each flow must include:
-   - **All participants**, not just components — include infrastructure (SSR server, browser), APIs (IntersectionObserver, DOM), stores, and the user
-   - **5-12 steps** tracing the complete path from trigger to user-visible outcome
-   - **Reactive propagation** — store updates → subscribers re-render → side effects fire
-   - **Serialization boundaries** — where data crosses process/format boundaries
-   - **Domain-specific details** — pagination params, delay values, cache keys, guard conditions
+   **State** — for each store/cache, identify every component that reads from it and every component that writes to it by searching the code for usage. Include persistence mechanism and serialization format.
 
-   Write the flow data into the `data_flows` array in the JSON. Each flow needs:
-   - `id`, `name`, `description`, `trigger`
-   - `steps` with `component`, `action`, `data`, `to`, `technology`
-   - `mermaid` — a complete Mermaid sequence diagram string for the Flows tab
+   **Failure modes** — for each failure, trace the cascade through the code. Which components break, in what order, what does the user see, how is it detected, how does it recover.
 
-   The `mermaid` field is the primary visualization. The `steps` are metadata. Put the effort into making the Mermaid diagram clear and detailed.
+   These inform each other. A flow reveals state dependencies. State reveals failure cascades. Failure reveals missing resilience in flows. Produce them together.
 
-### State (from architecture.yaml + code)
+4. **Write the enriched JSON** — merge the converter's structural output with your enriched flows, state, and failure data. The JSON shape:
+   ```json
+   {
+     "nodes": [...],
+     "edges": [...],
+     "state": [...],
+     "failure_modes": [...],
+     "data_flows": [...]
+   }
+   ```
 
-4. For the Data tab, include `state` entries from architecture.yaml. If they're thin, read the actual store/cache implementations to identify readers and writers.
+5. **Generate tutorial** (if `--tutorial`) — what is this, who uses it, how does it work (one section per flow), what's stored where, what can go wrong.
 
-### Failure Modes (from architecture.yaml + code)
+6. **Write output** — `architecture.json` to the docs site. Tutorial if requested.
 
-5. For the Resilience tab, include `failure_modes` from architecture.yaml. If cascade chains are shallow, trace through the code to understand the actual blast radius.
-
-### Tutorial (if --tutorial)
-
-6. Produce a brief walkthrough: what is this, who uses it, how does it work (one section per flow as narrative), what's stored where, what can go wrong.
-
-### Write output
-
-7. Write `architecture.json` to the docs site content directory. Write tutorial if requested.
-
-8. **Report** — node count, edge count, root groups, flow step counts, which tabs have content.
+7. **Report** — node count, edge count, root groups, flow step counts (should average 8+), state reader/writer counts.
