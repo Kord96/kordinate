@@ -38,10 +38,11 @@ spec:
               port: 4321
             initialDelaySeconds: 10
             periodSeconds: 10
+          workingDir: /kord/projects/docs
           volumeMounts:
             - name: kord
-              mountPath: /app/src
-              subPath: projects/docs/src
+              mountPath: /kord
+
       volumes:
         - name: kord
           persistentVolumeClaim:
