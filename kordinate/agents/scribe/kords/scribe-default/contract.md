@@ -19,8 +19,7 @@ Keep under 50 lines.
 | Template content | yes |
 | Usage notes | if applicable |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- Templates are modified
-- Documentation conventions change
+Hash these paths to detect staleness:
+- `$KORDINATE_HOME/kordinate/agents/scribe/memory/`

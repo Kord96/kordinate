@@ -49,7 +49,8 @@ Delegate to Beorn's `kord` tool:
 
 1. Call Beorn MCP tool `kord` with `kord_name` and `message`.
 2. Beorn handles: contract lookup, expiry/cache check, agent spawning, result caching.
-3. If Beorn returns `[cached]` prefix, the result came from cache.
-4. Return the result.
+3. After Beorn stores `data.md`, it also runs `cache_store "$KORD_DIR/.hash" <inputs>` to snapshot the input hash. The inputs are listed in the contract's "Cache Inputs" section.
+4. If Beorn returns `[cached]` prefix, the result came from cache.
+5. Return the result.
 
 If Beorn is not available (no MCP connection), fall back to native subagent spawning via the Agent tool — read the contract guidelines and spawn the provider agent directly. No caching in this case.

@@ -36,15 +36,24 @@ Authenticate before writing: use `/authenticate`.
 
 3. **Generate contract.md** — see [contract-template.md](../remember/contract-template.md) for the template. Include `mode` and `skill` fields in frontmatter.
 
-4. **Generate expiry.sh:**
+4. **Generate expiry.sh** — use hash-based cache invalidation. Specify the directories/files the provider depends on (listed in the contract's "Cache Inputs" section):
     ```bash
     #!/bin/bash
+    # Hash-based cache expiry. Exit 0 = fresh, exit 1 = stale.
     KORD_DIR="$(cd "$(dirname "$0")" && pwd)"
-    VALID_MARKER="$KORD_DIR/.valid"
-    if [ -f "$VALID_MARKER" ]; then
-      exit 0  # fresh
-    fi
-    exit 1  # stale
+    KORDINATE_HOME="${KORDINATE_HOME:-$HOME/.kord}"
+    source "$KORDINATE_HOME/lib/cache.sh"
+
+    # Check if cached data exists
+    [ -f "$KORD_DIR/data.md" ] || exit 1
+
+    # Check input hash — stale if dependencies changed since last consultation
+    cache_check "$KORD_DIR/.hash" \
+      "<input-path-1>" \
+      "<input-path-2>" \
+      || exit 1
+
+    exit 0  # fresh
     ```
     Make executable: `chmod +x expiry.sh`
 
@@ -55,5 +64,6 @@ Authenticate before writing: use `/authenticate`.
 
 ## Notes
 
-- The `.valid` marker is created by `/consult` after a successful consultation and deleted by the invalidation hook when provider state changes.
+- Cache invalidation is hash-based: `expiry.sh` sources `$KORDINATE_HOME/lib/cache.sh` and compares a stored hash (`.hash`) against the current hash of the provider's input paths. After a successful consultation, Beorn runs `cache_store` to snapshot the hash alongside `data.md`.
+- New kords should specify their hash inputs in the contract's "Cache Inputs" section and use those same paths in `expiry.sh`.
 - Stateless kords don't need expiry.sh or data.md — the skill runs fresh every time.

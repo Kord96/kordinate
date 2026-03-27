@@ -19,9 +19,9 @@ Keep under 50 lines.
 | Relevant configuration (services, ingresses) | if applicable |
 | Recent changes | if applicable |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- Cluster manifests are modified
-- New deployments are applied
-- Service endpoints or configuration changes
+Hash these paths to detect staleness:
+- `$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/manifests/`
+- `$KORDINATE_HOME/profile/config.yaml`
+- `$KORDINATE_HOME/profile/overlays/`

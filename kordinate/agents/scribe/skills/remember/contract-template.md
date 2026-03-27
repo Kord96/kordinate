@@ -24,10 +24,10 @@ skill: <skill-name>          # required if mode is stateless
 |-------|----------|
 | <field> | yes/no |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- <condition>
+Hash these paths to detect staleness:
+- `<path-to-hash>`
 ```
 
 ## Modes

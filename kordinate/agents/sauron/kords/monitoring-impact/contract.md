@@ -21,9 +21,7 @@ Keep under 50 lines.
 | Missing alerts | yes |
 | Summary | no |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- Dashboard definitions are modified
-- Alert rules are updated
-- Monitoring stack configuration changes
+Hash these paths to detect staleness:
+- `$KORDINATE_HOME/kordinate/agents/sauron/memory/`

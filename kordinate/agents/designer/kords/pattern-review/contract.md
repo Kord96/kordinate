@@ -20,9 +20,7 @@ Keep under 50 lines.
 | Affected files + suggested changes | yes |
 | Summary | no |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- Pattern library is updated
-- Architecture documentation changes
-- New patterns are added
+Hash these paths to detect staleness:
+- `$KORDINATE_HOME/kordinate/agents/designer/memory/`

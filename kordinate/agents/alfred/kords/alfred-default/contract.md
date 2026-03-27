@@ -19,10 +19,8 @@ Answer questions about profile configuration, credential store state, overlay va
 | recommendation | if action needed |
 | affected_files | if applicable |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- profile/config.yaml is modified
-- Pass store entries are added, removed, or rotated
-- Kustomize overlays are regenerated
-- New clusters are added to config
+Hash these paths to detect staleness:
+- `$KORDINATE_HOME/profile/config.yaml`
+- `$KORDINATE_HOME/profile/overlays/`

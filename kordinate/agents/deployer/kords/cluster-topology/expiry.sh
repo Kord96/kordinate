@@ -9,7 +9,10 @@ source "$KORDINATE_HOME/lib/cache.sh"
 
 # Check input hash — stale if dependencies changed since last consultation
 cache_check "$KORD_DIR/.hash" \
-  "$KORDINATE_HOME/kordinate/agents/designer/memory/" \
+  "$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/manifests/" \
+  "$KORDINATE_HOME/kordinate/agents/deployer/skills/infra/topology.yaml" \
+  "$KORDINATE_HOME/profile/config.yaml" \
+  "$KORDINATE_HOME/profile/overlays/" \
   || exit 1
 
 exit 0  # fresh

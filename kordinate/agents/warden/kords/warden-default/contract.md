@@ -19,9 +19,8 @@ Answer questions about credential management, secret exposure, PII risks, and ha
 | recommendation | yes |
 | affected_files | if applicable |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- New secrets are added to the pass store
-- New repos are cloned or code is deployed
-- Cluster secrets are created or rotated
+Hash these paths to detect staleness:
+- `$KORDINATE_HOME/kordinate/agents/warden/memory/`
+- `$KORDINATE_HOME/profile/config.yaml`

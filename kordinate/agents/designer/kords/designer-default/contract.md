@@ -21,9 +21,7 @@ Keep under 50 lines.
 | Data flow | if applicable |
 | Failure modes | if applicable |
 
-## Provider State Invalidation
+## Cache Inputs
 
-Invalidate when:
-- Architecture documentation is updated
-- Pattern library changes
-- Project structure changes
+Hash these paths to detect staleness:
+- `$KORDINATE_HOME/kordinate/agents/designer/memory/`
