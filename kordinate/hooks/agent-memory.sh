@@ -16,11 +16,10 @@ name = d.get('tool_input', {}).get('subagent_type', '')
 print(name.lower())
 " 2>/dev/null)
 
-# Only handle our known agents
-case "$AGENT" in
-  deployer|sauron|designer|scribe) ;;
-  *) echo '{}'; exit 0 ;;
-esac
+# Only handle agents that exist in kordinate (skip built-in types like Explore, Plan)
+if [ -z "$AGENT" ] || [ ! -d "${KORDINATE_HOME:-$HOME/.kord}/agents/$AGENT" ]; then
+  echo '{}'; exit 0
+fi
 
 # Resolve paths
 KORDINATE_HOME="${KORDINATE_HOME:-$(cd "$(dirname "$0")/.." && pwd)}"
