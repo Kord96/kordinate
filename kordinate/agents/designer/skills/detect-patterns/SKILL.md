@@ -1,140 +1,117 @@
+---
+name: detect-patterns
+description: Detect design patterns, anti-patterns, and gaps in a project's source code. Use for architecture review, codebase onboarding, debt audits, or before proposing refactors.
+argument-hint: "<project>"
+curated: true
+scope: global
+---
+
 # detect-patterns
 
-Scan a project's source code to identify which design patterns and anti-patterns are in use and write a patterns report.
+Scan a project's source code to identify which design patterns and anti-patterns are in use and produce a structured patterns report.
 
 ## Arguments
 
-`$ARGUMENTS` — `<project>` or `eval`
+`$ARGUMENTS` -- Required: `<project>` (e.g., `logbd`, `stoik`). The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
 
-| Form | Purpose |
-|------|---------|
-| `<project>` | Scan a project for patterns (e.g., `logbd`, `stoik`). Directory must exist at `~/<project>/` or `~/repos/<project>/`. |
-| `eval` | Evaluate ast-grep rule quality across all test codebases, then audit results for false positives. |
+## Steps
 
-If `$ARGUMENTS` is `eval`, jump to the [Eval](#eval) section. Otherwise, proceed with the scan steps below.
+1. **Parse** the project name from `$ARGUMENTS`. If missing, show usage and exit.
 
-## Scan Steps
+2. **Locate the project directory.** Check `~/<project>/`, then `~/repos/<project>/`. If neither exists, see [Error Handling](#error-handling).
 
-1. **Parse** project name from `$ARGUMENTS`. If missing, show usage and exit.
+3. **Load the catalogs and detect the stack.** Read both indexes:
+   - `~/.kord/agents/designer/memory/concepts.md` -- patterns index (columns: `Pattern | Description | Reference`)
+   - `~/.kord/agents/designer/memory/anti-patterns.md` -- anti-patterns index (columns: `Anti-pattern | What to look for | Reference`)
 
-2. **Locate the project directory.** Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
+   Each index header states its entry and category counts -- use those numbers in the report, do not hardcode them. Both patterns and anti-patterns live in the same directory tree: `~/.kord/agents/designer/memory/concepts/<name>/pattern.md`. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). Note: the two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) -- always pull the category from whichever index the entry appears in.
 
-3. **Load the catalogs.** Read both indexes at `agent-memory/concepts.md` (155 patterns across 20 categories) and `agent-memory/anti-patterns.md` (61 anti-patterns across 21 categories). All entries live in `agent-memory/concepts/` — patterns have `type: pattern` and anti-patterns have `type: anti-pattern` in frontmatter.
+   **Detect the stack.** Before scanning, identify the project's languages and frameworks so you can prioritize relevant categories:
+   - Python: check for `requirements.txt`, `pyproject.toml`, `setup.py`, `Pipfile`; then grep for framework imports (`flask`, `fastapi`, `django`, `celery`, `sqlalchemy`, `httpx`, `requests`).
+   - TypeScript/JS: check for `package.json`, `tsconfig.json`; grep for `express`, `nestjs`, `next`, `react`.
+   - Go: check for `go.mod`; grep for `net/http`, `grpc`, `gin`, `echo`.
+   - Java: check for `pom.xml`, `build.gradle`; grep for `spring`, `quarkus`.
+   - Kubernetes: check for `kustomization.yaml`, `helm/`, Dockerfiles.
+   Record the detected stack -- it drives category selection below and gap analysis in step 5.
 
-5. **Scan the project for patterns.** For each pattern in the catalog:
+   **Category prioritization.** Count source files: `find <project> -name '*.py' -o -name '*.ts' -o -name '*.go' -o -name '*.java' | wc -l`. For any project, rank categories by relevance to the detected stack. Always scan: resilience, error-handling, security, structural, storage/data (these surface the highest-value findings). Add stack-specific categories (e.g., concurrency for async Python, frontend for React, messaging for Kafka consumers). For projects over 500 files, limit the initial scan to the 5-8 most relevant categories and expand only if time permits.
 
-   a. Read the pattern's `pattern.md` file (resolve relative to `agent-memory/`). Extract the `## Recognition > ### Signatures` section -- this is a bullet list of concrete code signatures to search for.
+4. **Scan for patterns and anti-patterns.** Run the three passes below once for patterns, then once for anti-patterns. Each pass narrows or confirms candidates from the previous one.
 
-   b. Use `Grep` and `Glob` against the project directory to search for each signature. Typical searches include:
-      - Import statements (e.g., `import pybreaker`, `from tenacity`, `import stoik`)
-      - Class and function names matching the signature (e.g., `class.*Adapter`, `CircuitBreaker`)
-      - Directory structures (e.g., `ports/`, `adapters/`, `domain/`)
-      - Configuration files and Kubernetes manifests
-      - Framework-specific patterns described in the signatures
+   **Pass 1 -- broad grep to build a candidate list.** Work category by category through the prioritized list from step 3. For each entry in a category, derive grep keywords from its index table row: use the `Description` column (patterns index) or `What to look for` column (anti-patterns index) to extract framework imports (`from pybreaker`, `import opossum`), directory names (`ports/`, `adapters/`), config files (`circuit_breaker.yml`), and class/function names. A hit on any keyword adds that entry to the candidate list. Skip entries with zero hits -- do not read their full `pattern.md`.
 
-   c. Assess confidence using the pattern's `## Recognition > ### Confidence` section. Each pattern defines what qualifies as:
-      - **high** -- strong, unambiguous evidence (see the pattern's own definition)
-      - **medium** -- partial implementation or custom variant
-      - **low** -- traces of the pattern but not formalized
+   **Batch by category:** Build one multi-pattern regex per category (e.g., `pybreaker|opossum|CircuitBreaker|resilience4j` for Resilience) instead of grepping entry-by-entry. This keeps the number of grep invocations to one per category (~24 for patterns, ~21 for anti-patterns) rather than one per entry (~216 total).
 
-   d. Record each detected pattern with: pattern name, confidence level, file locations where evidence was found, and a brief note explaining the evidence.
+   **Pass 2 -- tool rules on candidates that have them.** For each candidate, check for a rule file:
+   - `~/.kord/agents/designer/memory/concepts/<name>/ast-grep.yaml` -- used by ~15 pattern entries (structural GoF patterns like factory, singleton, observer, decorator, strategy, builder, etc.)
+   - `~/.kord/agents/designer/memory/concepts/<name>/semgrep.yaml` -- used by ~8 anti-pattern entries (security and error-handling: hardcoded-credentials, sql-injection, swallowed-exception, race-condition, etc.)
 
-   Use a three-pass approach:
+   Most entries have neither. Each entry has at most one type -- no entry currently has both. Check file existence before running.
 
-   - **Pass 1 (broad scan):** Use Grep for high-signal keywords across the codebase (framework imports, directory names, config files) to narrow the candidate list.
-   - **Pass 2 (AST scan):** For patterns that have `ast-grep.yaml` rule files, run ast-grep for precise structural matching:
-     ```bash
-     ast-grep scan --rule agent-memory/concepts/<name>/ast-grep.yaml <project-dir>
-     ```
-     AST matches are higher confidence than grep — they understand code structure and ignore comments/strings.
-   - **Pass 3 (deep scan):** For remaining candidates from Pass 1, read the full `pattern.md` Signatures section and verify with targeted grep.
+   Run the available rule against the project:
+   - `ast-grep scan --rule <rule-path> <project-dir>`
+   - `semgrep --config <rule-path> <project-dir> --json`
 
-6. **Scan for anti-patterns.** For anti-patterns that have `semgrep.yaml` rule files, run semgrep for semantic analysis:
-   ```bash
-   semgrep --config agent-memory/concepts/<name>/semgrep.yaml <project-dir> --json
-   ```
-   Semgrep understands data flow and cross-line patterns (e.g., SQL injection via f-string, swallowed exceptions). Parse the JSON output for findings.
+   A tool match is strong evidence -- mark the candidate as confirmed with high confidence. Parse semgrep JSON for file paths and line numbers. Remove confirmed candidates from the Pass 3 worklist.
 
-   For anti-patterns without semgrep rules, fall back to Grep-based detection.
+   **Pass 3 -- manual verification of remaining candidates.** For each candidate still unconfirmed after Pass 2 (no rule file exists, or the tool produced no matches), read its `## Recognition > ### Signatures` section from `pattern.md` and verify with targeted Grep/Glob: specific imports, class names, directory layouts, config keys, naming conventions, or structural smells listed in the signatures.
 
-   For each anti-pattern in the catalog:
+   **Confidence assessment.** After confirming a candidate in Pass 2 or 3, read its `## Recognition > ### Confidence` section, which defines what constitutes high, medium, and low for that specific pattern. If the entry lacks a `### Confidence` section, apply the default rubric:
+   - **high** -- unambiguous: library import, framework config, or tool rule match with no false-positive risk.
+     Example: `from pybreaker import CircuitBreaker` in `client.py` -- direct library usage, high.
+   - **medium** -- partial: structural indicators present (directory layout, naming) but implementation deviates from canonical form.
+     Example: `src/ports/` and `src/adapters/` exist but two modules import adapters directly -- medium.
+   - **low** -- traces only: a single keyword hit or a hand-rolled implementation without standard libraries or naming.
+     Example: a `for i in range(3)` retry loop with no backoff and no library -- low.
 
-   a. Read the anti-pattern's `pattern.md` file (resolve relative to `agent-memory/`). Extract the `## Recognition > ### Signatures` section.
+   Record for each: name, category (from catalog), confidence level, file locations, one-sentence evidence note.
 
-   b. Use `Grep` and `Glob` to search for each signature. Typical searches include:
-      - Large files (line counts exceeding thresholds)
-      - Naming patterns (e.g., `Manager`, `Handler`, `Utils` classes)
-      - Structural smells (circular imports, empty catch blocks, deeply nested callbacks)
-      - Data access patterns (queries in loops, missing batch endpoints)
+5. **Identify gaps.** Determine which patterns are absent but expected given what was found in steps 3-4. Use three concrete checks:
+   1. **External calls without resilience.** Grep for HTTP clients, database drivers, and RPC stubs. If external calls exist but no circuit-breaker, retry, timeout, or bulkhead was detected, flag each as a gap.
+   2. **Stack-implied patterns.** Match the project's stack against expected patterns: web API implies input validation and rate limiting; async workers imply backpressure and dead-letter handling; microservices imply service discovery and distributed tracing; any service implies structured logging and health checks.
+   3. **Catalog cross-references.** Review which detected patterns commonly pair together. If one half of a well-known pair is present but the other was not detected, flag it (e.g., event sourcing detected without CQRS, or circuit-breaker without retry).
 
-   c. Assess confidence using the anti-pattern's `## Recognition > ### Confidence` section.
+6. **Write the report** using the format in [Output Format](#output-format). Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
 
-   d. Record each detected anti-pattern with: name, confidence level, file locations, and a brief note.
+7. **Report** -- summarize to the caller: pattern count, anti-pattern count, key gaps, and report location.
 
-7. **Identify gaps** -- patterns that should be present given the project's architecture but are missing. Common gaps:
-   - External dependencies without circuit breakers
-   - Shared thread/connection pools without bulkhead isolation
-   - No retry logic on network calls
-   - No backpressure on producer-consumer pipelines
-   - Missing observability (no structured logging, metrics, or tracing)
-   - No input validation at API boundaries
+## Output Format
 
-8. **Write the report** to `<project-repo>/.claude/agent-memory/designer/patterns.md`:
+Write the report to `<project-repo>/.claude/agent-memory/designer/patterns.md` using this structure:
 
-   ```markdown
-   # <project> — Detected Patterns
+```markdown
+# <project> -- Detected Patterns
 
-   > Auto-generated by /designer:detect-patterns. Last run: <date>
-   > Scanned against: 155-pattern + 61 anti-pattern catalog (ast-grep + semgrep + grep)
+> Auto-generated by /designer:detect-patterns. Last run: <date>
+> Scanned against: <N>-pattern + <M> anti-pattern catalog. Tools used: <list which of ast-grep, semgrep, grep were available>
 
-   ## Detected Patterns
+## Detected Patterns
 
-   | Pattern | Category | Confidence | Where | Notes |
-   |---------|----------|-----------|-------|-------|
-   | ... | category | high/medium/low | files/modules | brief note |
+| Pattern | Category | Confidence | Where | Notes |
+|---------|----------|-----------|-------|-------|
+| circuit-breaker | Resilience | high | `src/api/client.py` | pybreaker wrapping payment service calls |
+| hexagonal | Structural | medium | `src/ports/`, `src/adapters/` | Port interfaces present but adapters bypass ports in 2 modules |
+| retry | Resilience | low | `src/jobs/sync.py` | Manual retry loop, no jitter or backoff strategy |
 
-   ## Detected Anti-Patterns
+## Detected Anti-Patterns
 
-   | Anti-Pattern | Category | Confidence | Where | Notes |
-   |-------------|----------|-----------|-------|-------|
-   | ... | category | high/medium/low | files/modules | brief note |
+| Anti-Pattern | Category | Confidence | Where | Notes |
+|-------------|----------|-----------|-------|-------|
+| god-object | Code Structure | high | `src/services/main.py` (1847 lines) | Single class handling orders, payments, and notifications |
+| swallowed-exception | Error Handling | medium | `src/api/routes.py` | Bare `except: pass` in 3 route handlers |
 
-   ## Gaps
+## Gaps
 
-   | Pattern | Why it's relevant | Recommendation |
-   |---------|------------------|----------------|
-   | ... | reason | what to do |
-   ```
-
-   Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
-
-9. **Report** -- summarize findings to the caller: how many patterns detected, how many anti-patterns detected, key gaps, and where the full report was written.
-
----
-
-## Eval
-
-Evaluate ast-grep rule quality and audit for false positives.
-
-### Step 1: Run the eval script
-
-```bash
-bash skills/detect-patterns/eval-ast-rules.sh
+| Pattern | Why it's relevant | Recommendation |
+|---------|------------------|----------------|
+| bulkhead | Shared DB pool across all services | Isolate connection pools per bounded context |
 ```
 
-This is a deterministic script that runs every `ast-grep.yaml` rule against all available test codebases and writes match counts to `skills/detect-patterns/eval-results.json`. No judgment is needed for this step -- it just collects numbers.
+Order by confidence (high first), then alphabetically. Use project-relative file paths. One sentence max per note. The example rows above are illustrative -- actual output reflects the scanned project.
 
-### Step 2: Audit results
+## Error Handling
 
-Follow the procedure in [eval-audit.md](eval-audit.md). This is an LLM-driven step:
-
-1. Read `eval-results.json`
-2. Triage by priority: suspicious high counts, cross-language leaks, zero-match rules, moderate counts
-3. For each suspect, sample 3-5 actual code matches using ast-grep
-4. Judge each sample as TRUE POSITIVE or FALSE POSITIVE
-5. For false positives, fix the rule, re-run eval, and commit the fix
-6. Repeat until no suspects remain or diminishing returns
-
-### Step 3: Report
-
-Summarize: how many rules evaluated, how many had false positives, what was fixed, and the overall precision estimate.
+- **Project not found:** List checked paths and suggest verifying the project name. Do not scan.
+- **No patterns detected:** Valid for small/unconventional projects. Write the report with empty tables and focus on gaps.
+- **Uncommon languages:** Catalog is strongest for Python, TS/JS, Go, Java, K8s. Grep still works for structural patterns; note coverage gaps in the report header.
+- **Tool unavailable:** If ast-grep or semgrep is missing or a rule fails, continue with grep fallback. Note which tools were unavailable in the report header.

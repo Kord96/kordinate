@@ -96,13 +96,36 @@ Deploy the observability gateway stack.
 
 ## add-node `<cluster> <node-ip>`
 
-Add a worker node to an existing cluster.
+Add a worker node to an existing cluster. Installs Tailscale with an ephemeral key so the
+node can reach the control plane over the tailnet, then joins it as a k3s agent.
+Ephemeral nodes auto-deregister from Tailscale when they go offline — no device pollution.
 
-1. Parse cluster name and node IP
-2. Read `profile/config.yaml` for control plane IP and node token
-3. SSH to node, install k3s agent
-4. Wait for node to appear
-5. Update `profile/config.yaml` — append new IP to cluster's nodes list
+1. Parse cluster name and node IP (the node's reachable IP for initial SSH)
+2. Read `profile/config.yaml` for control plane Tailscale IP and node token
+3. SSH to node, install Tailscale:
+   ```bash
+   curl -fsSL https://tailscale.com/install.sh | sh
+   TS_KEY=$(pass show kordinate/tailscale/auth_key_worker)
+   sudo tailscale up --authkey="$TS_KEY" --hostname="k3s-worker-$(hostname -s)"
+   ```
+   The key in pass must be **ephemeral** and **pre-authorized** (create via Tailscale
+   admin console or API with `"ephemeral": true, "preauthorized": true`).
+4. Verify Tailscale is connected and can reach control plane:
+   ```bash
+   tailscale ping <control-plane-tailscale-ip>
+   ```
+5. SSH to node, install k3s agent pointing at control plane's **Tailscale IP**:
+   ```bash
+   curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" sh -s - \
+     --server "https://<control-plane-tailscale-ip>:6443" \
+     --token "<node-token>" \
+     --node-ip "$(tailscale ip -4)" \
+     --node-name "$(hostname -s)"
+   ```
+   Using `tailscale ip -4` as `--node-ip` so k3s traffic flows over the tailnet.
+6. Wait for node to appear: `kubectl get nodes` on control plane
+7. Update `profile/config.yaml` — append new entry to cluster's nodes list with both
+   the initial SSH IP and the Tailscale IP
 
 ## add-cluster `<name> <node-ip>`
 
@@ -127,6 +150,7 @@ ssh <control-plane> "kubectl create secret generic <name> -n <namespace> \
 | Secret | Namespace | pass path | Keys |
 |--------|-----------|-----------|------|
 | `tailscale-auth` | gateway | `kordinate/tailscale/auth_key_gateway` | `TS_AUTHKEY` |
+| *(host-level)* | — | `kordinate/tailscale/auth_key_worker` | Ephemeral pre-auth key for worker nodes (not a k8s Secret) |
 | `minio-credentials` | gateway | `kordinate/minio/root_user`, `kordinate/minio/root_password` | `root-user`, `root-password` |
 | `cloudflare-tunnel` | gateway | `kordinate/cloudflare/tunnel_token` | `TUNNEL_TOKEN` |
 | `grafana-admin` | master | `kordinate/grafana_admin/password` | `admin-password` |

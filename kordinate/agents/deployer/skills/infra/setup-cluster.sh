@@ -72,55 +72,95 @@ install_server() {
     echo "  $0 agent $node_ip"
 }
 
+install_tailscale() {
+    local ts_key="${TS_AUTHKEY:-}"
+    local ts_hostname="${TS_HOSTNAME:-k3s-worker-$(get_node_name)}"
+
+    if [[ -z "$ts_key" ]]; then
+        err "TS_AUTHKEY env var required (ephemeral pre-authorized key)"
+        exit 1
+    fi
+
+    log "Installing Tailscale"
+    if ! command -v tailscale &>/dev/null; then
+        curl -fsSL https://tailscale.com/install.sh | sh
+    else
+        info "Tailscale already installed"
+    fi
+
+    sudo tailscaled --state=/var/lib/tailscale/tailscaled.state &>/dev/null &
+    sleep 2
+
+    sudo tailscale up --authkey="$ts_key" --hostname="$ts_hostname"
+    local ts_ip
+    ts_ip=$(tailscale ip -4)
+    log "Tailscale up: $ts_ip (hostname: $ts_hostname)"
+    echo "$ts_ip"
+}
+
 install_agent() {
     local server_ip="$1"
-    local node_ip node_name token
+    local node_name token
 
-    node_ip=$(get_node_ip)
     node_name=$(get_node_name)
 
-    echo -n "Enter node token from server: "
-    read -r token
+    # Install Tailscale first — use tailnet IP as the node IP
+    local ts_ip
+    ts_ip=$(install_tailscale)
+
+    if [[ -n "${K3S_TOKEN:-}" ]]; then
+        token="$K3S_TOKEN"
+    else
+        echo -n "Enter node token from server: "
+        read -r token
+    fi
 
     log "Installing k3s agent"
-    info "Server:    $server_ip"
-    info "Node IP:   $node_ip"
+    info "Server:    $server_ip (control plane tailscale IP)"
+    info "Node IP:   $ts_ip (tailscale)"
     info "Node name: $node_name"
     echo
 
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" sh -s - \
         --server "https://${server_ip}:6443" \
         --token "$token" \
-        --node-ip "$node_ip" \
+        --node-ip "$ts_ip" \
         --node-name "$node_name"
 
-    log "k3s agent installed and joined cluster"
+    log "k3s agent installed and joined cluster via tailnet"
 }
 
 install_agent_tainted() {
     local server_ip="$1"
-    local node_ip node_name token
+    local node_name token
 
-    node_ip=$(get_node_ip)
     node_name=$(get_node_name)
 
-    echo -n "Enter node token from server: "
-    read -r token
+    # Install Tailscale first — use tailnet IP as the node IP
+    local ts_ip
+    ts_ip=$(install_tailscale)
+
+    if [[ -n "${K3S_TOKEN:-}" ]]; then
+        token="$K3S_TOKEN"
+    else
+        echo -n "Enter node token from server: "
+        read -r token
+    fi
 
     log "Installing k3s tainted agent (PreferNoSchedule)"
-    info "Server:    $server_ip"
-    info "Node IP:   $node_ip"
+    info "Server:    $server_ip (control plane tailscale IP)"
+    info "Node IP:   $ts_ip (tailscale)"
     info "Node name: $node_name"
     echo
 
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" sh -s - \
         --server "https://${server_ip}:6443" \
         --token "$token" \
-        --node-ip "$node_ip" \
+        --node-ip "$ts_ip" \
         --node-name "$node_name" \
         --node-taint "node-role.kubernetes.io/overflow=true:PreferNoSchedule"
 
-    log "k3s tainted agent installed and joined cluster"
+    log "k3s tainted agent installed and joined cluster via tailnet"
 }
 
 ## post-install is handled by the deployer agent:
@@ -137,7 +177,10 @@ usage() {
     echo "  (post-install is handled by deployer: /deployer:bootstrap setup-namespaces + setup-storage)"
     echo
     echo "Environment variables:"
-    echo "  NODE_IP   Override auto-detected node IP"
+    echo "  TS_AUTHKEY    Tailscale ephemeral pre-auth key (required for agent/agent-tainted)"
+    echo "  TS_HOSTNAME   Override Tailscale hostname (default: k3s-worker-<hostname>)"
+    echo "  K3S_TOKEN     k3s node token (avoids interactive prompt)"
+    echo "  NODE_IP       Override auto-detected node IP (server mode only)"
 }
 
 case "${1:-}" in

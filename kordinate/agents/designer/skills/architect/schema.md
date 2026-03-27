@@ -1,6 +1,6 @@
 # architecture.yaml Schema
 
-Level 3 resource for the architect skill. Defines the output format.
+Level 3 resource for the architect skill. Referenced from step 8 (write and report). Defines the output format.
 
 ## Schema
 
@@ -33,11 +33,12 @@ components:
   - id: "<kebab-case>"
     name: "<Human Readable Name>"
     description: "<what it does — one sentence>"
-    type: service | library | worker | api | frontend | cli | scheduler | store | gateway | broker | database
+    type: service | library | worker | api | frontend | cli | scheduler | store | gateway | broker
     modules:
       - "<path/to/module>"
     depends_on: ["<component-id>"]
-    patterns: ["<pattern-name>"]        # optional, from detect-patterns
+    abstraction: ["<abstraction-name>"]  # optional, from abstractions.md — drives downstream viewpoints
+    patterns: ["<pattern-name>"]        # optional, from detect-patterns or concept catalog
     deployment:                          # optional, for deployment viewpoint
       namespace: "<k8s namespace>"
       kind: "<Deployment | StatefulSet | CronJob | Pod>"
@@ -49,6 +50,7 @@ components:
         description: "<one sentence>"
         type: "<same types as parent>"
         modules: ["<path>"]
+        abstraction: ["<abstraction-name>"]  # optional
         depends_on: ["<component-id>"]
         children: [...]                  # can nest further
 
@@ -85,9 +87,9 @@ events:
 external_dependencies:
   - id: "<kebab-case>"
     name: "<Human Readable Name>"
-    concept: "<generic: http-api | dns | smtp | nfs | grpc | database>"
+    concept: "<generic: http-api | message-broker | database | cache | object-store | dns | smtp | nfs | grpc | auth-provider | cdn>"
     technology: "<specific if known>"
-    component: "<component-id>"
+    components: ["<component-id>"]
     purpose: "<why needed>"
     criticality: critical | important | optional
     resilience:
@@ -117,15 +119,38 @@ failure_modes:
 - All `id` fields are kebab-case, unique within their section
 - Cross-references use `id` strings, not indices
 - `concept` fields use generic infrastructure terms, `technology` fields name the specific tool
-- **Top-level components MUST be root groups only.** A root group is an abstract container (e.g. "Server", "Browser", "External", "Data Layer") — NOT a concrete module. Aim for 3-5 root groups. Everything else nests under them via `children`. If you have a leaf component (no children) at the top level, it belongs inside a group.
-- **Every concrete component must have a parent.** Use `children` nesting so no concrete component (service, library, frontend, store, config) appears at the top level. Only `group` type nodes should be roots.
-- Data flows trace the critical paths, not every possible code path. 3-6 flows for a typical project.
+- `abstraction` values come from `abstractions.md`. A component can have multiple (e.g., `[data, messaging]`). These drive which viewpoints include the component in downstream skills.
+- Component `type: store` covers any data persistence component (embedded databases, caches, file stores). External databases appear in `external_dependencies`, not as components, unless the project manages the database process itself.
+- Components should number 5-10 for most projects. If you have more than 12, you're probably not abstracting enough. If you have fewer than 4, you're probably over-abstracting.
+- Data flows trace the critical paths, not every possible code path. 2-4 flows for a typical project.
 - Failure modes should cover every external dependency and every stateful component. The question is always: "what happens if this goes down?"
-- Components nest to any depth via `children`. Each level represents a meaningful architectural boundary (service → package → module). Don't nest deeper than the code's natural structure, but DO create abstract groups to organize related leaf components.
+- Components can nest to any depth via `children`. Each level represents a meaningful architectural boundary (service → package → module). Don't nest deeper than the code's natural structure.
 - The `deployment` field on components enables the deployment viewpoint. Only add it to components that map to a k8s workload.
 - The `technology` field on flow steps enables annotated sequence diagrams. Use short labels: "HTTP/JSON", "gRPC :8815", "Kafka", "localStorage".
 
-## Example
+## Minimal Skeleton
+
+Start from this and fill in sections as analysis progresses. Omit `events` if the project has none.
+
+```yaml
+version: "1"
+generated: "YYYY-MM-DD"
+project: "<name>"
+purpose: "<one sentence>"
+stack:
+  languages: []
+  frameworks: []
+  runtime: ""
+actors: []
+capabilities: []
+components: []
+data_flows: []
+state: []
+external_dependencies: []
+failure_modes: []
+```
+
+## Full Example
 
 A complete example for a stream-processing pipeline project:
 
@@ -183,6 +208,7 @@ components:
     type: worker
     modules: ["stoik/stream/kafka.py"]
     depends_on: ["buffer"]
+    abstraction: [messaging, data]
     patterns: ["stream-to-store"]
   - id: buffer
     name: "In-Memory Buffer"
@@ -202,6 +228,7 @@ components:
     type: store
     modules: ["stoik/storage/duckdb.py"]
     depends_on: []
+    abstraction: [data]
     patterns: ["retry"]
   - id: flight-server
     name: "FlightSQL Server"
@@ -292,8 +319,8 @@ events:
   - id: kafka-ingest
     type: topic
     name: "Configured at runtime per consumer instance"
-    producer: upstream-kafka
-    consumers: ["kafka-consumer"]
+    producer: kafka-consumer              # component that receives from external source
+    consumers: ["buffer"]
     data: "Avro-encoded entity records"
 
 external_dependencies:
@@ -301,7 +328,7 @@ external_dependencies:
     name: "Kafka Broker"
     concept: message-broker
     technology: "Apache Kafka (KRaft)"
-    component: kafka-consumer
+    components: ["kafka-consumer"]
     purpose: "Source of streaming data"
     criticality: critical
     resilience:
@@ -313,7 +340,7 @@ external_dependencies:
     name: "Schema Registry"
     concept: http-api
     technology: "Confluent Schema Registry"
-    component: kafka-consumer
+    components: ["kafka-consumer"]
     purpose: "Avro schema resolution for deserialization"
     criticality: important
     resilience:

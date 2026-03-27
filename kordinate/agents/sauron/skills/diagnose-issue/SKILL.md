@@ -1,3 +1,11 @@
+---
+name: diagnose-issue
+description: Debug a production issue using the project's observability catalog as a guide.
+argument-hint: "<symptom> [--cluster <name>] [--catalog <path>]"
+curated: true
+scope: global
+---
+
 Debug a production issue using the project's observability catalog as a guide.
 
 **Input**: $ARGUMENTS (required: symptom description. Optional: `--cluster <name>` defaults to first cluster in ~/.claude/profile/config.yaml, `--catalog <path>` defaults to `docs/observability-catalog.yaml`)
