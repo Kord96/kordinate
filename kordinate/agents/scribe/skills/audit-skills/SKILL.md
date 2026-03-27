@@ -16,7 +16,6 @@ Audit, test, benchmark, and improve kordinate skills. Combines static quality ch
 | `eval` | `/audit-skills eval <skill>` | Run skill against test prompts and grade results |
 | `benchmark` | `/audit-skills benchmark <skill>` | With-skill vs baseline comparison with variance analysis |
 | `improve` | `/audit-skills improve <skill>` | Iterative improvement loop with eval feedback |
-| `improve-all` | `/audit-skills improve-all [--agent <name>]` | Spawn each agent to improve its own skills in parallel |
 | `optimize` | `/audit-skills optimize <skill>` | Optimize description for better triggering accuracy |
 
 Default mode is `audit` when no mode is specified.
@@ -145,72 +144,6 @@ For rigorous A/B testing between two skill versions:
 
 ---
 
-## Mode: improve-all
-
-Spawn each team agent to improve its own skills in parallel. Each agent is launched
-as its own `subagent_type` on an isolated worktree, so it brings domain expertise and
-memories to the review. Agents iterate through their skills using the loop defined in
-[agents/improve-loop.md](agents/improve-loop.md).
-
-### Procedure
-
-1. **Discover targets** — scan `kordinate/agents/*/skills/*/SKILL.md`. Filter by
-   `--agent` if provided. Group skills by agent name.
-
-2. **Resolve agent types** — the agent directory name under `kordinate/agents/` is
-   the `subagent_type`. Do not hardcode a list — discover from the directory structure.
-   Skip any agent directory with no skills.
-
-3. **Launch parallel agents** — for each agent, launch one Agent call with:
-   - `subagent_type` set to the agent's directory name
-   - `isolation: "worktree"`
-   - The [agents/improve-loop.md](agents/improve-loop.md) prompt with the agent's
-     skill paths and `--max-iterations` (default: 3)
-   - `--dry-run` flag if set
-
-   Launch all agents in a single message. If a `subagent_type` is not recognized,
-   fall back to `general-purpose` and note this in the report.
-
-   Each agent should run `/boot` before starting to load its memories and context.
-
-4. **Collect results** — each agent returns a structured summary per skill:
-   iterations run, classification per iteration, stop reason, changes made.
-
-5. **Report** — print a summary table:
-
-   ```
-   | Agent    | Skill           | Iterations | Stop Reason    | Changes |
-   |----------|-----------------|------------|----------------|---------|
-   | deployer | infra           | 2/3        | cosmetic-only  | Added missing error handling step, fixed wrong kubectl flag |
-   | designer | architect       | 1/3        | no-changes     | — |
-   | sauron   | scan-obs        | 3/3        | max-iterations | Restructured procedure, added output format, added edge cases |
-   ```
-
-6. **Merge** — for each agent that made structural changes, the worktree contains
-   a branch ready to merge. Prompt the user to review and merge via `/merge`.
-
-### Stop criteria
-
-Each agent follows these rules per skill to decide when to stop iterating:
-
-1. **No changes** — the iteration produced an empty diff. Stop immediately.
-2. **Cosmetic only** — the iteration's changes are all cosmetic (rewording, formatting,
-   reordering without semantic change). Stop after this iteration.
-3. **Revert detected** — the iteration reverts a change from a previous iteration
-   (oscillation). Stop immediately and keep the pre-revert version.
-4. **Max iterations reached** — hard cap hit. Stop regardless.
-
-### Rules
-
-- Never modify files outside the target skill's directory.
-- Never change the skill's `name` or `scope` in frontmatter.
-- Preserve the author's intent — improve clarity and completeness, don't redesign.
-- Improvements must be grounded in what the skill does, not hypothetical features.
-- Each iteration must read the skill fresh to avoid drift from the actual file state.
-- `--dry-run` reads and analyzes but writes nothing.
-
----
-
 ## Mode: optimize
 
 Optimize a skill's description for triggering accuracy.
@@ -271,7 +204,6 @@ Use `disable-model-invocation: true` for destructive/deployment skills. Use `all
 - [agents/grader.md](agents/grader.md) — Grading agent for evaluating skill outputs
 - [agents/comparator.md](agents/comparator.md) — Blind A/B comparison agent
 - [agents/analyzer.md](agents/analyzer.md) — Post-hoc analysis and benchmark analysis agent
-- [agents/improve-loop.md](agents/improve-loop.md) — Per-agent iterative improvement loop prompt (used by `improve-all`)
 - [references/schemas.md](references/schemas.md) — JSON schemas for evals, grading, benchmark, comparison, analysis
 - `eval-viewer/` — `generate_review.py` + `viewer.html` for interactive result review
 - `assets/eval_review.html` — Template for trigger eval query review
