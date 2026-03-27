@@ -4,9 +4,16 @@ Scan a project's source code to identify which design patterns and anti-patterns
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>` (e.g., `logbd`, `stoik`). The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
+`$ARGUMENTS` — `<project>` or `eval`
 
-## Steps
+| Form | Purpose |
+|------|---------|
+| `<project>` | Scan a project for patterns (e.g., `logbd`, `stoik`). Directory must exist at `~/<project>/` or `~/repos/<project>/`. |
+| `eval` | Evaluate ast-grep rule quality across all test codebases, then audit results for false positives. |
+
+If `$ARGUMENTS` is `eval`, jump to the [Eval](#eval) section. Otherwise, proceed with the scan steps below.
+
+## Scan Steps
 
 1. **Parse** project name from `$ARGUMENTS`. If missing, show usage and exit.
 
@@ -102,3 +109,32 @@ Scan a project's source code to identify which design patterns and anti-patterns
    Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
 
 9. **Report** -- summarize findings to the caller: how many patterns detected, how many anti-patterns detected, key gaps, and where the full report was written.
+
+---
+
+## Eval
+
+Evaluate ast-grep rule quality and audit for false positives.
+
+### Step 1: Run the eval script
+
+```bash
+bash skills/detect-patterns/eval-ast-rules.sh
+```
+
+This is a deterministic script that runs every `ast-grep.yaml` rule against all available test codebases and writes match counts to `skills/detect-patterns/eval-results.json`. No judgment is needed for this step -- it just collects numbers.
+
+### Step 2: Audit results
+
+Follow the procedure in [eval-audit.md](eval-audit.md). This is an LLM-driven step:
+
+1. Read `eval-results.json`
+2. Triage by priority: suspicious high counts, cross-language leaks, zero-match rules, moderate counts
+3. For each suspect, sample 3-5 actual code matches using ast-grep
+4. Judge each sample as TRUE POSITIVE or FALSE POSITIVE
+5. For false positives, fix the rule, re-run eval, and commit the fix
+6. Repeat until no suspects remain or diminishing returns
+
+### Step 3: Report
+
+Summarize: how many rules evaluated, how many had false positives, what was fixed, and the overall precision estimate.
