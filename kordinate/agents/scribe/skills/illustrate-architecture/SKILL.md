@@ -51,9 +51,7 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
 
    **Structural edges** — from `depends_on` on components. Label as "uses", set `flowId` to "dependency". Skip if a flow edge already connects the same pair of nodes.
 
-   **Render edges** (lowest priority) — for leaf nodes that have a parent but no edges at all, add a parent→child edge labeled "renders" with `flowId` "rendering". This ensures no node is visually orphaned. Skip if any other edge already connects the pair.
-
-   The goal: every leaf node must be connected to at least one edge. Orphan nodes make the graph look broken.
+   **Do NOT add render edges** — children nested inside group nodes are visually connected by the containment itself. Adding parent→child "renders" edges creates long crossing arrows that clutter the graph. Leaf nodes without explicit edges are fine — their position inside a group communicates the relationship.
 
    ### State, Failure Modes, Data Flows
 
