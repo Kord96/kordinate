@@ -15,9 +15,13 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
 
 ## Inputs
 
-1. **architecture.yaml** — the structural map. Component hierarchy, root groups, `depends_on` edges, external dependencies. Use this as your guide to what the pieces are.
+Three inputs, each with a different purpose:
 
-2. **The project source code** — the execution truth. Read the actual code to understand how the pieces work together. Always read the code. The YAML is a map, the code is the territory.
+1. **architecture.yaml** — the structural map. Component hierarchy, root groups, `depends_on` edges, external dependencies. Your guide to what the pieces are.
+
+2. **patterns.md** (optional) — from `/detect-patterns`. Tells you which patterns the code uses (reactive-store, circuit-breaker, etc.), which anti-patterns exist (swallowed exceptions, n+1 queries), and which patterns are MISSING (no timeout, no retry). Use this to enrich every viewpoint — tag components with their patterns, highlight anti-patterns as warnings, and surface gaps prominently in the Resilience tab.
+
+3. **The project source code** — the execution truth. Always read the code. The YAML is a map, patterns.md is annotations, the code is the territory.
 
 ## Procedure
 
