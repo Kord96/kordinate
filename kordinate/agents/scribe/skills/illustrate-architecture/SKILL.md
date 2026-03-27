@@ -31,7 +31,12 @@ Three inputs, each with a different purpose:
    ```
    This gives you nodes, hierarchy edges, and a skeleton. The structure is done.
 
-2. **Review the structure.** Check the converter output: prune root groups that have no edges to other groups (testing, CI/CD, build tooling rarely help someone understand how the system works — remove them). Then read the codebase. Use architecture.yaml to know which files matter, then read them. Build a unified understanding — don't think about tabs yet. Just understand the code.
+2. **Review the structure.** Check the converter output and improve it for visual clarity:
+   - Merge root groups that have only 1 child into a neighboring group (a group with 1 child is just noise)
+   - Prune root groups that have no edges to other groups (testing, CI/CD, build tooling rarely help understand the system)
+   - Consider merging closely related thin groups (e.g. "Data Access [1]" + "External [1]" → "External [2]")
+
+   Then read the codebase. Use architecture.yaml to know which files matter, then read them. Build a unified understanding — don't think about tabs yet. Just understand the code.
 
 3. **Produce all viewpoints at once** from that understanding. Each viewpoint is a different lens on the same codebase:
 
