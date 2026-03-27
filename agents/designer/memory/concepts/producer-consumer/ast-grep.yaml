@@ -17,11 +17,6 @@ rule:
   inside:
     kind: while_statement
 ---
-id: producer-consumer-enqueue-ts
-language: TypeScript
-rule:
-  pattern: '$QUEUE.enqueue($$$ARGS)'
----
 id: producer-consumer-dequeue-ts
 language: TypeScript
 rule:

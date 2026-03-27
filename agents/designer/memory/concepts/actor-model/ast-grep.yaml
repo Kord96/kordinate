@@ -24,8 +24,3 @@ rule:
     handleMessage($MESSAGE) {
         $$$BODY
     }
----
-id: actor-send-message-ts
-language: TypeScript
-rule:
-  pattern: '$ACTOR.send($$$ARGS)'
