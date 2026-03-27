@@ -4,16 +4,19 @@
 Usage:
     python3 convert-to-viewer.py <architecture.yaml> <output.json>
 
-Reads the designer's architecture.yaml and produces architecture.json
-for the ProjectExplorer viewer component. Handles:
-  - Component hierarchy (children nesting → flat nodes with parent/hasChildren)
-  - Structural edges (depends_on)
-  - Flow edges (data_flows)
-  - Render edges (orphan children get parent→child edge)
-  - Dedup (drop dependency edges when flow edges exist for same pair)
-  - State data (for Data tab)
-  - Failure modes (for Resilience tab)
-  - Data flow details (for Flows tab)
+This is the reference implementation for the illustrate-architecture skill.
+The scribe LLM should use its judgment to produce the JSON, using this
+script as a fallback for validation.
+
+Rules encoded here:
+  1. Components with children → group nodes (hasChildren=true)
+  2. depends_on → structural "uses" edges
+  3. data_flows → flow edges between consecutive steps
+  4. No render edges — containment communicates parent-child visually
+  5. Dedup: drop dependency edges when a flow edge exists for the same pair
+  6. Bidirectional flows: keep both arrows, hide label on the return edge
+  7. State, failure_modes, data_flows included for Data/Resilience/Flows tabs
+  8. External dependencies added as nodes under an "External" group
 """
 
 import yaml
@@ -35,7 +38,9 @@ def walk_components(components, nodes, dep_edges, parent_id=None):
     """Recursively walk components, building nodes and dependency edges."""
     for comp in components:
         has_children = bool(comp.get("children"))
-        node_type = "group" if has_children else TYPE_MAP.get(comp.get("type", ""), comp.get("type", "component"))
+        node_type = "group" if has_children else TYPE_MAP.get(
+            comp.get("type", ""), comp.get("type", "component")
+        )
 
         node = {
             "id": comp["id"],
@@ -57,7 +62,6 @@ def walk_components(components, nodes, dep_edges, parent_id=None):
 
         nodes.append(node)
 
-        # Dependency edges
         for dep in comp.get("depends_on", []):
             dep_edges.append({
                 "source": comp["id"],
@@ -85,51 +89,43 @@ def extract_flow_edges(data_flows):
     return edges
 
 
-def add_render_edges(nodes, all_edges):
-    """Add parent→child edges for orphan leaf nodes."""
-    edge_nodes = set()
-    for e in all_edges:
-        edge_nodes.add(e["source"])
-        edge_nodes.add(e["target"])
+def dedup_and_merge(flow_edges, dep_edges):
+    """Remove dependency edges that overlap with flow edges.
+    For bidirectional flow edges (A→B and B→A with same flowId),
+    keep both arrows but hide the label on the return edge."""
 
-    render_edges = []
-    for n in nodes:
-        if n["id"] not in edge_nodes and not n.get("hasChildren") and n.get("parent"):
-            render_edges.append({
-                "source": n["parent"],
-                "target": n["id"],
-                "label": "renders",
-                "flowId": "rendering",
-            })
-
-    return render_edges
-
-
-def dedup_edges(flow_edges, dep_edges, render_edges):
-    """Remove dependency/render edges that overlap with flow edges."""
+    # Find flow pairs
     flow_pairs = set()
     for e in flow_edges:
         flow_pairs.add(tuple(sorted([e["source"], e["target"]])))
 
+    # Drop overlapping dependency edges
     filtered_dep = []
     for e in dep_edges:
         pair = tuple(sorted([e["source"], e["target"]]))
         if pair not in flow_pairs:
             filtered_dep.append(e)
 
-    filtered_render = []
-    all_pairs = flow_pairs | set(tuple(sorted([e["source"], e["target"]])) for e in filtered_dep)
-    for e in render_edges:
-        pair = tuple(sorted([e["source"], e["target"]]))
-        if pair not in all_pairs:
-            filtered_render.append(e)
+    # Handle bidirectional flow edges: keep both, hide label on return
+    seen_directed = {}
+    merged_flow = []
+    for e in flow_edges:
+        directed_key = (e["source"], e["target"], e["flowId"])
+        reverse_key = (e["target"], e["source"], e["flowId"])
 
-    return flow_edges + filtered_dep + filtered_render
+        if reverse_key in seen_directed:
+            # This is the return edge — hide its label
+            e["hideLabel"] = True
+            e["label"] = ""
+
+        seen_directed[directed_key] = True
+        merged_flow.append(e)
+
+    return merged_flow + filtered_dep
 
 
 def extract_externals(arch, nodes):
-    """Add external dependencies as nodes."""
-    # Find or create External group
+    """Add external dependencies as nodes under an External group."""
     ext_group_id = None
     for n in nodes:
         if n.get("type") == "group" and "external" in n["name"].lower():
@@ -147,7 +143,6 @@ def extract_externals(arch, nodes):
         })
 
     for ext in arch.get("external_dependencies", []):
-        # Don't add if already exists as a node
         if not any(n["id"] == ext["id"] for n in nodes):
             nodes.append({
                 "id": ext["id"],
@@ -164,22 +159,13 @@ def convert(arch):
     nodes = []
     dep_edges = []
 
-    # Walk components
     walk_components(arch.get("components", []), nodes, dep_edges)
-
-    # Add externals
     extract_externals(arch, nodes)
 
-    # Flow edges
     flow_edges = extract_flow_edges(arch.get("data_flows", []))
+    all_edges = dedup_and_merge(flow_edges, dep_edges)
 
-    # Render edges for orphans
-    render_edges = add_render_edges(nodes, flow_edges + dep_edges)
-
-    # Dedup
-    all_edges = dedup_edges(flow_edges, dep_edges, render_edges)
-
-    # State data
+    # State data (Data tab)
     state = []
     for s in arch.get("state", []):
         state.append({
@@ -192,7 +178,7 @@ def convert(arch):
             "persistence": s.get("persistence", ""),
         })
 
-    # Failure modes
+    # Failure modes (Resilience tab)
     failure_modes = []
     for f in arch.get("failure_modes", []):
         failure_modes.append({
@@ -205,7 +191,7 @@ def convert(arch):
             "recovery": f.get("recovery", []),
         })
 
-    # Data flows (for Flows tab)
+    # Data flows (Flows tab)
     data_flows = []
     for flow in arch.get("data_flows", []):
         data_flows.append({
@@ -230,15 +216,12 @@ def main():
         print(f"Usage: {sys.argv[0]} <architecture.yaml> <output.json>")
         sys.exit(1)
 
-    yaml_path = sys.argv[1]
-    json_path = sys.argv[2]
-
-    with open(yaml_path) as f:
+    with open(sys.argv[1]) as f:
         arch = yaml.safe_load(f)
 
     result = convert(arch)
 
-    with open(json_path, "w") as f:
+    with open(sys.argv[2], "w") as f:
         json.dump(result, f, indent=2)
 
     # Report
@@ -246,19 +229,23 @@ def main():
     edges = result["edges"]
     roots = [n for n in nodes if not n.get("parent")]
     groups = [n for n in nodes if n.get("hasChildren")]
+
     edge_nodes = set()
     for e in edges:
         edge_nodes.add(e["source"])
         edge_nodes.add(e["target"])
     orphans = [n for n in nodes if n["id"] not in edge_nodes and not n.get("hasChildren")]
 
+    flow_ids = set(e["flowId"] for e in edges if e["flowId"] not in ("dependency", "rendering"))
+    bidir = sum(1 for e in edges if e.get("hideLabel"))
+
     print(f"Nodes: {len(nodes)} ({len(roots)} roots, {len(groups)} groups)")
-    print(f"Edges: {len(edges)}")
-    print(f"Orphans: {len(orphans)}")
+    print(f"Edges: {len(edges)} ({len(flow_ids)} flows, {bidir} return edges with hidden labels)")
+    print(f"Orphan leaves: {len(orphans)} (connected by containment)")
     print(f"State: {len(result['state'])}")
     print(f"Failure modes: {len(result['failure_modes'])}")
     print(f"Data flows: {len(result['data_flows'])}")
-    print(f"Written to {json_path}")
+    print(f"Written to {sys.argv[2]}")
 
 
 if __name__ == "__main__":

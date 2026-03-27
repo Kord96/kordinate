@@ -57,7 +57,11 @@ The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/
 
    Include `state`, `failure_modes`, and `data_flows` from the architecture.yaml directly in the JSON. These populate the Data, Resilience, and Flows tabs respectively.
 
-   A reference implementation of this conversion is at [convert-to-viewer.py](convert-to-viewer.py). You can run it for validation, but you should produce the JSON yourself using your judgment — the script is a fallback, not a replacement for understanding the architecture.
+   Run [convert-to-viewer.py](convert-to-viewer.py) to produce the initial JSON:
+   ```bash
+   python3 convert-to-viewer.py <project>/.claude/agent-memory/designer/architecture.yaml <output.json>
+   ```
+   Then review the output — the script handles the mechanical conversion (hierarchy flattening, edge dedup, bidirectional label hiding) but you should check that the root groups make sense and the flows tell a coherent story. Adjust if needed.
 
 4. **Review the output** — before writing, check:
    - Are there orphan leaf nodes with no edges? Fix them.
