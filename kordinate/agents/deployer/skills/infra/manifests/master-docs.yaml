@@ -41,7 +41,7 @@ spec:
           volumeMounts:
             - name: kord
               mountPath: /app/src/content/docs
-              subPath: kordinate/site/src/content/docs
+              subPath: projects/docs/src/content/docs
       volumes:
         - name: kord
           persistentVolumeClaim:
