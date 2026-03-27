@@ -94,25 +94,11 @@ Deploy the observability gateway stack.
    - Apply via `kubectl apply -k <overlay-dir>`
 5. Verify gateway pod running
 
-## add-node `<cluster> <node-ip>`
+## add-node / add-cluster
 
-Add a worker node to an existing cluster.
+Both operations are handled by the `/add-node` skill. It provisions a machine, asks which cluster to join (or creates a new one), and deploys the full infrastructure stack when needed.
 
-1. Parse cluster name and node IP
-2. Read `profile/config.yaml` for control plane IP and node token
-3. SSH to node, install k3s agent
-4. Wait for node to appear
-5. Update `profile/config.yaml` — append new IP to cluster's nodes list
-
-## add-cluster `<name> <node-ip>`
-
-Bootstrap a new k3s cluster on a remote machine.
-
-1. Parse cluster name and node IP
-2. SSH to node, run k3s server install via `manifests/bootstrap/setup-cluster.sh`
-3. Run `setup-namespaces` and `setup-storage`
-4. Apply RBAC
-5. Add new cluster entry to `profile/config.yaml`
+See `agents/deployer/skills/add-node/SKILL.md`.
 
 ## Secrets
 
