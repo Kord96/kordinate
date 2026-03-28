@@ -9,10 +9,10 @@ These can be verified immediately — no session restart required.
 ### Kordinate Source ($KORDINATE_HOME)
 
 - [ ] `agents/<name>/IDENTITY.md` exists with:
-    - Recall properties: `curated`, `preloaded: <name>`
+    - Kordinate properties: `curated`, `preloaded: <name>`, `scope: global`
     - Claude fields: `name`, `description`, `tools`, `model`, `color`, `memory`
-- [ ] `agents/<name>/memory/scratchpad.md` exists (`curated: false`)
-- [ ] `agents/<provider>/kords/<name>-default/contract.md` exists (if agent has kord expertise)
+- [ ] `agents/<name>/memory/scratchpad.md` exists (`curated: false`, `scope: global`)
+- [ ] `kords/<name>-default/contract.md` exists (if agent has kord expertise)
 - [ ] `shared/memory-protocol.md` exists (`preloaded: all`)
 - [ ] `shared/auth-protocol.md` exists (`preloaded: all`)
 - [ ] `shared/credentials-protocol.md` exists (`preloaded: all`)
@@ -24,7 +24,7 @@ These can be verified immediately — no session restart required.
 **Per Agent:**
 
 - [ ] `~/.claude/agents/<name>.md` exists
-- [ ] Frontmatter has Claude fields (`name`, `description`, `tools`, `model`) — no recall properties (`curated`, `preloaded`)
+- [ ] Frontmatter has Claude fields (`name`, `description`, `tools`, `model`) — no kordinate properties (`curated`, `preloaded`, `scope`)
 - [ ] Frontmatter: `memory: user` (fallback — boot handles full 2D memory)
 - [ ] Markdown body matches kordinate IDENTITY.md body
 - [ ] Agent skills copied to `~/.claude/skills/` (entire directory including Level 3 resources)
@@ -32,7 +32,7 @@ These can be verified immediately — no session restart required.
 **Agent Memory:**
 
 - [ ] `~/.claude/agent-memory/<name>/MEMORY.md` exists for each agent
-- [ ] MEMORY.md is an **index** — contains links to `$KORDINATE_HOME/agents/<name>/memory/` files, not content copies
+- [ ] MEMORY.md has a **Memory Index** — contains links to `$KORDINATE_HOME/agents/<name>/memory/` files, not content copies
 - [ ] Every link in MEMORY.md points to an existing file
 - [ ] MEMORY.md is under 200 lines
 
@@ -54,15 +54,23 @@ These can be verified immediately — no session restart required.
     - `boot/` (SKILL.md + claude-session-structure.md)
     - `kord/` (SKILL.md)
     - `authenticate/` (SKILL.md)
-    - `merge/` (SKILL.md)
+    - `merge/` (SKILL.md + Level 3 resources)
+    - `install/` (SKILL.md)
 
-**Guard:**
+**Hooks:**
 
-- [ ] `~/.claude/settings.json` has PreToolUse hook on `Write|Edit`
-- [ ] Hook command points to `$KORDINATE_HOME/hooks/guard.sh`
-- [ ] Guard blocks writes to `~/.kord/` without scribe auth
-- [ ] Guard allows writes to `~/.kord/` with scribe auth (`/tmp/.scribe-auth`)
-- [ ] Guard allows non-curated, non-templated files without auth
+- [ ] `~/.claude/settings.json` has `env.KORDINATE_HOME` set to absolute path
+- [ ] PreToolUse on `Write|Edit|Bash` → `$KORDINATE_HOME/hooks/guard.sh`
+- [ ] PreToolUse on `mcp__grafana` → `$KORDINATE_HOME/hooks/guard.sh`
+- [ ] PreToolUse on `Agent` → `$KORDINATE_HOME/hooks/subagent-invocation-gate.sh`
+- [ ] Subagent gate blocks direct spawning of kordinate agents (redirects to `/kord`)
+- [ ] Subagent gate allows built-in agents (Explore, Plan, etc.)
+- [ ] Guard blocks curated `.kord/` writes without scribe auth
+- [ ] Guard allows non-curated, non-templated `.kord/` files without auth
+- [ ] Guard blocks `git push` to main when fast-forward not possible
+- [ ] Guard blocks `git push` to test/prod without deployer auth
+- [ ] Guard blocks kubectl write ops without deployer auth
+- [ ] Guard blocks Grafana ops without sauron auth
 
 ### Manifest
 
@@ -94,6 +102,7 @@ These require a live Claude session. Run [smoke-test.sh](smoke-test.sh) to verif
 - [ ] **Cache invalidation** — removing `.valid` marker causes re-spawn on next call
 - [ ] **Agent memory** — agents can read their own memory from kordinate paths
 - [ ] **Memory index sync** — new memory written via `/remember` appears in both `~/.kord/` and `~/.claude/agent-memory/` MEMORY.md
+- [ ] **Lifecycle compliance** — `/kord <agent> <task>` spawns agent that creates task checklist, reads memory, does work, and runs `/kord remember` before returning
 - [ ] **Manifest integrity** — `manifest_update --dry-run` reports no unexpected drift
 - [ ] **Guard enforcement** — direct write to curated kordinate file is blocked
 - [ ] **Template enforcement** — templated files reject edits that remove required sections

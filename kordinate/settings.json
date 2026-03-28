@@ -21,6 +21,15 @@
             "command": "$KORDINATE_HOME/hooks/guard.sh"
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$KORDINATE_HOME/hooks/subagent-invocation-gate.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
