@@ -35,6 +35,13 @@ Copy from `$KORDINATE_HOME/skills/` to `~/.claude/skills/`:
 - `authenticate/`
 - `merge/`
 - `install/`
+- `improve/`
+
+### Binaries
+
+Copy from `$KORDINATE_HOME/bin/` to the runtime. These are user-facing scripts (session management, import/export, config hydration).
+
+Ensure `$KORDINATE_HOME/bin/` is in PATH — typically via `/kord/kordinate/bin` symlink or shell RC entry.
 
 ### Kords
 
