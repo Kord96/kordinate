@@ -59,6 +59,7 @@ spec:
             - --config.file=/etc/prometheus/prometheus.yml
             - --web.enable-remote-write-receiver
             - --web.enable-lifecycle
+            - --web.enable-admin-api
           ports:
             - containerPort: 9090
           resources:
