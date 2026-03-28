@@ -8,59 +8,69 @@ scope: global
 
 Debug a production issue using the project's observability catalog as a guide.
 
-**Input**: $ARGUMENTS (required: symptom description. Optional: `--cluster <name>` defaults to first cluster in ~/.claude/profile/config.yaml, `--catalog <path>` defaults to `docs/observability-catalog.yaml`)
+**Input**: $ARGUMENTS (required: symptom description. Optional: `--cluster <name>` defaults to first cluster in `$KORDINATE_HOME/profile/config.yaml`, `--catalog <path>` defaults to `docs/observability-catalog.yaml`)
 
 ## Context
 
-This skill uses the observability catalog (produced by `/sauron/inventory`) to systematically investigate issues. The catalog maps every metric, log event, and health check in the project, so we know exactly what signals are available.
+This skill uses the observability catalog (produced by `/sauron/scan-observability`) to systematically investigate issues. The catalog maps every metric, log event, and health check in the project, so we know exactly what signals are available.
 
 ## Steps
 
-1. **Load the catalog** — read `docs/observability-catalog.yaml` (or specified path). If it doesn't exist, tell the user to run `/sauron/inventory` first.
+1. **Load the catalog** — read `docs/observability-catalog.yaml` (or specified path). If it doesn't exist, tell the user to run `/sauron/scan-observability` first.
 
 2. **Classify the symptom** — based on the user's description, identify:
    - Which **health section(s)** are likely affected
    - Which **metrics** are relevant to the symptom
    - Which **log events** would show evidence of the problem
 
-3. **Query health status** — check overall pipeline health first:
+3. **Resolve service endpoints** — read `$KORDINATE_HOME/profile/config.yaml` and extract the cluster's service ports:
+   - `PROM_PORT` from `clusters.<name>.services.metrics.port` (default: 9090)
+   - `LOKI_PORT` from `clusters.<name>.services.logs.port` (default: 3100)
+   - `CLUSTER_IP` from `clusters.<name>.tailscale_ip`
+
+   Prometheus URL: `http://<CLUSTER_IP>:<PROM_PORT>`
+   Loki URL: `http://<CLUSTER_IP>:<LOKI_PORT>`
+
+4. **Query health status** — use health-related metrics from the catalog to check overall pipeline health:
    ```
-   ssh $CLUSTER "curl -s 'http://alloy-gateway.gateway.svc:9090/api/v1/query?query=pipeline_status{component=\"sentinel\",namespace=\"prod\"}'"
+   ssh $CLUSTER "curl -s 'http://<CLUSTER_IP>:<PROM_PORT>/api/v1/query?query=<health_metric_from_catalog>'"
    ```
    Map results to health_checks from the catalog to identify which checks are failing.
 
-4. **Query relevant metrics** — for each metric identified in step 2:
+5. **Query relevant metrics** — for each metric identified in step 2:
    ```
-   ssh $CLUSTER "curl -s 'http://alloy-gateway.gateway.svc:9090/api/v1/query?query=<metric_name>'"
+   ssh $CLUSTER "curl -s 'http://<CLUSTER_IP>:<PROM_PORT>/api/v1/query?query=<metric_name>'"
    ```
    For rate metrics, also query the rate over 5m and 1h windows.
    For gauges, compare current value against recent history (query_range over 1h).
 
-5. **Search relevant logs** — for each log event identified in step 2:
+6. **Search relevant logs** — for each log event identified in step 2:
    Use the catalog's `component` field to construct targeted Loki queries:
    ```
-   ssh $CLUSTER "curl -s 'http://alloy-gateway.gateway.svc:3100/loki/api/v1/query_range' \
+   NOW_NS=$(date +%s)000000000
+   START_NS=$(( $(date +%s) - 900 ))000000000
+   ssh $CLUSTER "curl -s 'http://<CLUSTER_IP>:<LOKI_PORT>/loki/api/v1/query_range' \
      --data-urlencode 'query={namespace=\"prod\",component=\"<component>\"} |= \"<event>\"' \
      --data-urlencode 'limit=20' \
-     --data-urlencode 'start=<15min_ago_ns>' \
-     --data-urlencode 'end=<now_ns>'"
+     --data-urlencode 'start=$START_NS' \
+     --data-urlencode 'end=$NOW_NS'"
    ```
    Also search for error/warning level logs from the same components:
    ```
    {namespace="prod",component="<component>"} | json | level=~"error|warning"
    ```
 
-6. **Correlate signals** — cross-reference:
+7. **Correlate signals** — cross-reference:
    - Which health checks are failing → what metrics drive those checks (from catalog)
    - Which metrics are anomalous → what log events correspond (from catalog, same file/component)
    - Which log events show errors → what operations were affected
 
-7. **Check pods** — for affected components:
+8. **Check pods** — for affected components:
    ```
    ssh $CLUSTER "kubectl get pods -n prod -l component=<component>"
    ```
 
-8. **Diagnose** — produce a structured report:
+9. **Diagnose** — produce a structured report:
 
    ```
    ## Diagnosis: <symptom summary>
@@ -93,7 +103,7 @@ This skill uses the observability catalog (produced by `/sauron/inventory`) to s
 ## Rules
 
 - Always start from the catalog — don't guess at metric/log names
-- If the catalog is stale (>7 days old), warn the user and suggest re-running `/sauron/inventory`
+- If the catalog is stale (>7 days old), warn the user and suggest re-running `/sauron/scan-observability`
 - Query Prometheus and Loki directly via SSH + curl (not via Grafana API)
 - Keep Loki queries narrow — use component labels from the catalog
 - If the symptom maps to multiple sections, investigate them in dependency order (ingestion → processing → enrichment → derived → serving)
