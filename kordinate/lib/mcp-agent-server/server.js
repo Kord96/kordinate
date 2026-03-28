@@ -684,6 +684,7 @@ async function handleRoute(route, message, ifNoneMatch) {
             skill: route.skill,
             provider: route.provider,
             secret,
+            instructions: `Run this locally: echo '${secret}' > /tmp/.${route.provider}-auth && then run /${route.skill} with your original input. After the skill completes, run: rm /tmp/.${route.provider}-auth`,
           }),
           status: 200,
         };
