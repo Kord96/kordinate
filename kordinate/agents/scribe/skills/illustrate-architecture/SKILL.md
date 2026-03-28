@@ -4,13 +4,15 @@ description: >
   Generate an interactive architecture explorer page from Designer's project analysis.
   Reads architecture.yaml, patterns.md, dependencies.md, api-review.md, and debt-assessment.md
   from project memory, then produces an Astro page with Cytoscape.js graph, narrative sidebar,
-  and bottom drawer.
+  and side drawer for detail inspection.
 argument-hint: "<project> [--narrative <dir>]"
 curated: true
 context: fork
 ---
 
-Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a bottom drawer for detail inspection.
+Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a side drawer for detail inspection.
+
+The viewer has four tabs: Structure (component hierarchy), Flows (data flow sequence diagrams), Data (state model graph), and Resilience (failure modes). Clicking any node opens a side drawer showing its full details. Legends are toggled via a `?` button. Every node should have a meaningful `description` and `modules` path — these are displayed in the drawer.
 
 ## Arguments
 

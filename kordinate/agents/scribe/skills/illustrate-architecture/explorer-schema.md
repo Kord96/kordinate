@@ -158,7 +158,7 @@ These fields are **null/empty by default** and populated only when the correspon
 
 - `patterns` — from `patterns.md`. Array of `{ name, category }`. Rendered as small pill badges below the node label.
 - `debt` — from `debt-assessment.md`. Object with `severity` and `items` array. Drives the colored border ring on the node (red = critical, orange = high, yellow = medium).
-- `endpoints` — from `api-review.md`. Array of `{ method, path, description }`. Shown in the bottom drawer when the node is selected.
+- `endpoints` — from `api-review.md`. Array of `{ method, path, description }`. Shown in the side drawer when the node is selected.
 - `resilience` — from `dependencies.md`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description. Applied to external nodes.
 - `criticality` — from `dependencies.md` or `external_dependencies`. Shown as a badge on external nodes.
 
@@ -174,7 +174,7 @@ Edges connect nodes. The `type` field distinguishes relationship kinds:
 
 ### data_flows
 
-Flow objects are used to animate the data flow view. When a user selects a flow from the sidebar, the graph highlights the path and the bottom drawer shows the step-by-step breakdown.
+Flow objects are used to animate the data flow view. When a user selects a flow from the sidebar, the graph highlights the path and the side drawer shows the step-by-step breakdown.
 
 ### groups
 
@@ -183,6 +183,17 @@ Groups define visual clusters in the graph layout. They correspond to capabiliti
 - `actors` — all actors
 
 The Cytoscape.js compound node feature renders groups as background containers.
+
+### Side drawer
+
+Clicking a node in the Structure or Data tab opens a side drawer (360px, right edge) showing:
+- **name** and **type** badge
+- **modules[0]** as the file path (monospace)
+- **description**
+- **exports** list with names and descriptions (from `architecture.yaml` component exports)
+- **children count** for group nodes
+
+Ensure every node has a non-empty `description` and, for leaf nodes, at least one entry in `modules`. Empty descriptions result in a blank drawer.
 
 ## Conventions
 
