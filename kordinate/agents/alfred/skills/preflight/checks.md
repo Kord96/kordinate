@@ -26,11 +26,11 @@ Complete list of all checks performed by `/preflight`. Each check reports `[pass
 
 | # | Check | Validation | Fix |
 |---|-------|-----------|-----|
-| O1 | Overlay directory exists | `$KORDINATE_HOME/profile/overlays/<cluster>/` must exist | Run `/infra generate-overlays <cluster>` |
-| O2 | Gateway overlay present | `<overlay-dir>/gateway/` must exist | Run `/infra generate-overlays <cluster>` |
-| O3 | Namespace overlays present | For each namespace in config `namespaces` list, a matching overlay directory must exist | Run `/infra generate-overlays <cluster>` |
-| O4 | No config drift | Overlay values (IPs, ports, namespaces) must match current config.yaml | Run `/infra generate-overlays <cluster>` to regenerate |
-| O5 | kustomization.yaml valid | Each namespace overlay directory must contain a `kustomization.yaml` | Run `/infra generate-overlays <cluster>` |
+| O1 | Overlay directory exists | `$KORDINATE_HOME/profile/overlays/<cluster>/` must exist | Run `/bootstrap generate-overlays <cluster>` |
+| O2 | Gateway overlay present | `<overlay-dir>/gateway/` must exist | Run `/bootstrap generate-overlays <cluster>` |
+| O3 | Namespace overlays present | For each namespace in config `namespaces` list, a matching overlay directory must exist | Run `/bootstrap generate-overlays <cluster>` |
+| O4 | No config drift | Overlay values (IPs, ports, namespaces) must match current config.yaml | Run `/bootstrap generate-overlays <cluster>` to regenerate |
+| O5 | kustomization.yaml valid | Each namespace overlay directory must contain a `kustomization.yaml` | Run `/bootstrap generate-overlays <cluster>` |
 | O6 | Base path references | `kustomization.yaml` `resources` entries must point to existing base manifest directories | Fix base path references in kustomization.yaml |
 
 ## 3. Credential Availability

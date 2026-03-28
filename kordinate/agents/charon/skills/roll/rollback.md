@@ -1,6 +1,6 @@
 # rollback
 
-Revert a deployment to its pre-roll state using a snapshot recorded during `/infra roll`.
+Revert a deployment to its pre-roll state using a snapshot recorded during `/roll`.
 
 ## Arguments
 
@@ -16,7 +16,7 @@ Optional flags:
 
 ## Snapshot Format
 
-Recorded automatically by `/infra roll` (step 6 in operations.md):
+Recorded automatically by `/roll` (step 6 in operations.md):
 
 ```json
 {
@@ -50,7 +50,7 @@ Note: ConfigMap/Secret content is NOT stored (credentials protocol — hashes on
 
 1. Parse project and env from `$ARGUMENTS`.
 
-2. **Load snapshot** — read `~/.kord/agents/charon/memory/dynamic/rollback/<project>-<env>.json`. If no snapshot exists, report error: "No rollback snapshot found. Rollback is only available after a /infra roll." and exit.
+2. **Load snapshot** — read `~/.kord/agents/charon/memory/dynamic/rollback/<project>-<env>.json`. If no snapshot exists, report error: "No rollback snapshot found. Rollback is only available after a /roll." and exit.
 
 3. **Validate snapshot** — check timestamp is recent (within 7 days). If older, warn but allow proceeding.
 

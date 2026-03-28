@@ -191,7 +191,7 @@ guard_bash() {
           ;;
         test|prod)
           check_auth charon && allow
-          deny "Push to '$branch' requires charon authentication. Use /infra roll."
+          deny "Push to '$branch' requires charon authentication. Use /roll."
           ;;
       esac
       ;;
@@ -206,7 +206,7 @@ guard_bash() {
           deny "Blocked: workstation deployment self-modification and node drain are never allowed from inside the pod."
         fi
         check_auth charon && allow
-        deny "kubectl write operations require charon authentication. Use /infra."
+        deny "kubectl write operations require charon authentication. Use /roll or /bootstrap."
       fi
       ;;
   esac

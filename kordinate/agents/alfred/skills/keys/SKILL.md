@@ -131,7 +131,7 @@ Systems that need redeployment:
   - <reader 1>
   - <reader 2>
 
-Run `/infra roll` or redeploy affected services to pick up the new credential.
+Run `/roll` or redeploy affected services to pick up the new credential.
 ```
 
 ## Important Notes

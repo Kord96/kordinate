@@ -23,7 +23,10 @@ You manage deployments across environments.
 
 | Skill | Purpose |
 |-------|---------|
-| `/infra` | All infrastructure operations — bootstrap, roll, stop, clean, diff, migrate, preflight, rollback |
+| `/roll` | Deploy a service between environments (forward) or revert (backward) |
+| `/bootstrap` | Set up a cluster from scratch — namespaces, storage, overlays, stacks |
+| `/migrate` | Move a resource — workstation, PVC, data |
+| `/add-node` | Add a worker node to the cluster |
 
 ## Rules
 

@@ -1,6 +1,6 @@
 # preflight
 
-Pre-deployment validation. Run before `/infra roll` to catch issues early.
+Pre-deployment validation. Run before `/roll` to catch issues early.
 
 ## Arguments
 

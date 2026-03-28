@@ -57,7 +57,7 @@ Scribe handles: agents → `~/.claude/agents/`, skills → `~/.claude/skills/`, 
 
 Skip if `--local` flag is set. Otherwise ask: "Bootstrap cluster infrastructure? (y/n)"
 
-If yes: delegate to charon — `/infra bootstrap`. This sets up k3s, namespaces, storage, and deploys the workstation pod (which runs Beorn).
+If yes: delegate to charon — `/bootstrap`. This sets up k3s, namespaces, storage, and deploys the workstation pod (which runs Beorn).
 
 ### 6. Verify
 

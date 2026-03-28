@@ -9,7 +9,7 @@ scope: global
 
 Run all prerequisite checks before a deployment. If no cluster specified, check all clusters.
 
-This is the pre-deploy gate -- charon should call this (or be advised to call this) before any `/infra bootstrap` or `/infra roll`.
+This is the pre-deploy gate -- charon should call this (or be advised to call this) before any `/bootstrap` or `/roll`.
 
 ## Arguments
 

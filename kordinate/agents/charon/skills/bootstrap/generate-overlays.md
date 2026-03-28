@@ -109,5 +109,5 @@ gateways:
 
 - Overlays live at `profile/overlays/<cluster>/` — profile-specific, separate from base manifests
 - Secrets (Tailscale auth keys, MinIO credentials) are NOT in overlays — created at deploy time from `pass`
-- If `profile/config.yaml` changes, re-run `/infra generate-overlays <cluster>` to update
+- If `profile/config.yaml` changes, re-run `/bootstrap generate-overlays <cluster>` to update
 - Base manifests at `manifests/` stay abstract — never edit them with cluster-specific values
