@@ -17,6 +17,7 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/alfred/memory/scratchpad.md` — Operational notes and observations
 - `agents/deployer/memory/infra.md` — Infrastructure Reference
 - `agents/deployer/memory/migration.md` — Full migration lifecycle for deployments
+- `agents/deployer/memory/monitoring-topology.md` — Monitoring infrastructure config and topology — cluster endpoints, data flow, dashboard provisioning
 - `agents/deployer/memory/scratchpad.md` — Deployer working notes and observations
 - `agents/deployer/memory/tools.md` — Deployer tools reference — postgres.py and local utilities
 - `agents/deployer/memory/troubleshooting.md` — Common deployment issues and their fixes
@@ -573,31 +574,14 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/scribe/memory/workflow.md` — Scribe authentication and write workflow
 - `agents/warden/memory/scratchpad.md` — Warden working notes and observations
 
-## Kords
+## Routes
 
-- `agents/alfred/kords/alfred-default/contract.md` — Environment state questions — profile config, pass store, overlays, readiness
-- `agents/alfred/kords/config-route/contract.md` — Route a config value to profile/config.yaml with validation
-- `agents/alfred/kords/environment-ready/contract.md` — Deployment preflight check — is a cluster environment ready?
-- `agents/alfred/kords/preflight-check/contract.md` — Pre-deployment readiness check — config, overlays, credentials validated
-- `agents/deployer/kords/cluster-topology/contract.md` — Cluster topology, service endpoints, and networking
-- `agents/deployer/kords/deployer-default/contract.md` — General deployment and cluster questions
-- `agents/deployer/kords/deployment-status/contract.md` — Live deployment status — pods, versions, health
-- `agents/deployer/kords/setup-secrets/contract.md` — Create Kubernetes secrets from pass store for a specific cluster
-- `agents/designer/kords/concept-lookup/contract.md` — Look up a specific architectural pattern or anti-pattern
-- `agents/designer/kords/designer-default/contract.md` — General architecture and design questions
-- `agents/designer/kords/pattern-review/contract.md` — Architecture review for deployment and monitoring changes
-- `agents/sauron/kords/dashboard-catalog/contract.md` — Available dashboards, metrics, and alert rules
-- `agents/sauron/kords/monitoring-impact/contract.md` — Monitoring impact assessment for infrastructure changes
-- `agents/sauron/kords/sauron-default/contract.md` — General monitoring and observability questions
-- `agents/scribe/kords/audit/contract.md` — Read-only health check for memory and kordinate system — scan and report issues
-- `agents/scribe/kords/create-kord/contract.md` — Define a new kord between agents
-- `agents/scribe/kords/doc-check/contract.md` — Verify documentation reflects current code/config state
-- `agents/scribe/kords/onboard/contract.md` — Onboard a new agent to the team
-- `agents/scribe/kords/remember/contract.md` — Write a memory for an agent — handles scope, paths, and registry updates
-- `agents/scribe/kords/scribe-default/contract.md` — General documentation and template questions
-- `agents/warden/kords/pre-commit-scan/contract.md` — Scan specified files for hardcoded secrets before commit
-- `agents/warden/kords/sanitize/contract.md` — Classify content as config, credential, or memory — routes to correct destination
-- `agents/warden/kords/warden-default/contract.md` — General security questions — credential hygiene, secret scanning, PII exposure
+- `agents/alfred/routes.yaml` — Alfred agent route definitions — config, environment, and preflight operations
+- `agents/deployer/routes.yaml` — Deployer agent route definitions — cluster topology, deployment status, and secrets
+- `agents/designer/routes.yaml` — Designer agent route definitions — concept lookup, pattern review, and architecture
+- `agents/sauron/routes.yaml` — Sauron agent route definitions — dashboards, monitoring impact, and observability
+- `agents/scribe/routes.yaml` — Scribe agent route definitions — audit, docs, memory, and onboarding
+- `agents/warden/routes.yaml` — Warden agent route definitions — secret scanning, sanitization, and security
 
 ## Shared
 

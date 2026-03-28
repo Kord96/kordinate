@@ -31,7 +31,6 @@ For each agent in `$KORDINATE_HOME/agents/`:
 Copy from `$KORDINATE_HOME/skills/` to `~/.claude/skills/`:
 
 - `boot/`
-- `kord/`
 - `authenticate/`
 - `merge/`
 - `install/`
@@ -42,10 +41,6 @@ Copy from `$KORDINATE_HOME/skills/` to `~/.claude/skills/`:
 Copy from `$KORDINATE_HOME/bin/` to the runtime. These are user-facing scripts (session management, import/export, config hydration).
 
 Ensure `$KORDINATE_HOME/bin/` is in PATH — typically via `/kord/kordinate/bin` symlink or shell RC entry.
-
-### Kords
-
-For stateless kords: ensure the borrowed skill exists in `~/.claude/skills/` (Claude discovers it globally).
 
 ### CLAUDE.md
 
@@ -73,7 +68,7 @@ This installs:
 
 ### KORD.md
 
-Run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
+Run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index. This scans `routes.yaml` files and memory frontmatter to produce the global registry.
 
 ## Report
 

@@ -1,6 +1,6 @@
 # Directory Templates
 
-Level 3 resource for the remember, onboard, and create-kord skills. Defines the expected directory structure for each type of kordinate entity.
+Level 3 resource for the remember, register, and create-route skills. Defines the expected directory structure for each type of kordinate entity.
 
 When creating or validating a directory, check that all required files exist.
 
@@ -14,18 +14,25 @@ Path: `agents/designer/memory/concepts/<concept-name>/` (canonical path)
 | `README.md` | no | Extended documentation for the human-facing docs site |
 | `<impl>.md` | no | Implementation-specific reference (e.g., `stoik.md` for stream-to-store, `orchestrator.md` for service-manager) |
 
-## Kord Directory
+## Route File
 
-Path: `agents/<provider>/kords/<kord-name>/`
+Path: `agents/<agent-name>/routes.yaml`
 
-| File | Required | Purpose |
-|------|----------|---------|
-| `contract.md` | yes | Frontmatter (description, requester, mode, skill, curated, cache_inputs) defining the consultation contract |
-| `data.md` | stateful only | Cached state — stores last response with `.valid` timestamp |
-| `expiry.sh` | stateful only | Cache check script — delegates to `lib/kord-expiry.sh`. Exit 0 (fresh), 1 (stale), 2 (uncertain) |
-| `review.md` | stateful only | Prompt template for stage 2 agent review — must contain `{{DIFF}}` and `{{CACHED_DATA}}` placeholders |
+A single YAML file per agent defining all routes (capabilities exposed via Beorn). Format:
 
-Stateless kords (like remember, sanitize) only need `contract.md`. Stateful kords (like deployer-default, cluster-topology) need all four files.
+```yaml
+routes:
+  - name: <route-name>        # unique across all agents, kebab-case
+    method: <method>           # tool name exposed to callers, snake_case
+    description: <text>        # one-line summary
+    skill: <skill-name>        # skill directory that handles this route
+    cache:                     # optional
+      inputs:                  # paths whose changes invalidate cache
+        - <path>
+      max_age: <seconds>       # maximum cache age
+```
+
+Route names must be globally unique. The `skill` field must reference an existing skill under the agent's `skills/` or global `skills/`. The `cache` section is omitted for routes that do not cache.
 
 ## Agent Directory
 
@@ -55,7 +62,7 @@ Path: `agents/<agent-name>/skills/<skill-name>/` or `skills/<skill-name>/` (glob
 
 Path: `skills/<skill-name>/`
 
-Same structure as agent skill directories. Global skills (boot, kord, authenticate, merge, install) are available to all agents.
+Same structure as agent skill directories. Global skills (boot, authenticate, merge, install) are available to all agents.
 
 ## Shared Protocol
 

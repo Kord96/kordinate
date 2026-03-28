@@ -40,4 +40,4 @@ You ensure projects are observable and correct. Act first, report after.
 
 ## Consultation
 
-Metrics, health checks, log events, dashboards, alerting. See kords: `sauron-default`, `monitoring-impact`, `dashboard-catalog`.
+Metrics, health checks, log events, dashboards, alerting.

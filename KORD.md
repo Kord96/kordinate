@@ -17,6 +17,7 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/alfred/memory/scratchpad.md` — Operational notes and observations
 - `agents/deployer/memory/infra.md` — Infrastructure Reference
 - `agents/deployer/memory/migration.md` — Full migration lifecycle for deployments
+- `agents/deployer/memory/monitoring-topology.md` — Monitoring infrastructure config and topology — cluster endpoints, data flow, dashboard provisioning
 - `agents/deployer/memory/scratchpad.md` — Deployer working notes and observations
 - `agents/deployer/memory/tools.md` — Deployer tools reference — postgres.py and local utilities
 - `agents/deployer/memory/troubleshooting.md` — Common deployment issues and their fixes
@@ -819,6 +820,15 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/scribe/memory/tools.md` — Scribe tools reference — Gemini MCP for doc review
 - `agents/scribe/memory/workflow.md` — Scribe authentication and write workflow
 - `agents/warden/memory/scratchpad.md` — Warden working notes and observations
+
+## Routes
+
+- `agents/alfred/routes.yaml` — Alfred agent route definitions — config, environment, and preflight operations
+- `agents/deployer/routes.yaml` — Deployer agent route definitions — cluster topology, deployment status, and secrets
+- `agents/designer/routes.yaml` — Designer agent route definitions — concept lookup, pattern review, and architecture
+- `agents/sauron/routes.yaml` — Sauron agent route definitions — dashboards, monitoring impact, and observability
+- `agents/scribe/routes.yaml` — Scribe agent route definitions — audit, docs, memory, and onboarding
+- `agents/warden/routes.yaml` — Warden agent route definitions — secret scanning, sanitization, and security
 
 ## Shared
 
