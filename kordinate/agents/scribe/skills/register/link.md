@@ -54,6 +54,22 @@ Run /boot before starting work.
 @~/.kord/shared/credentials-protocol.md
 ```
 
+### Agent Lock Files
+
+For each agent in `$KORDINATE_HOME/agents/` (except `main`), ensure a lock file exists at `$KORDINATE_HOME/profile/locks/<name>`:
+
+```bash
+mkdir -p "$KORDINATE_HOME/profile/locks"
+for agent in "$KORDINATE_HOME"/agents/*/; do
+  name=$(basename "$agent")
+  [ "$name" = "main" ] && continue
+  [ -f "$KORDINATE_HOME/profile/locks/$name" ] && continue
+  head -c 16 /dev/urandom | md5sum | cut -d' ' -f1 > "$KORDINATE_HOME/profile/locks/$name"
+done
+```
+
+These secrets are used by the guard hook (auth delegation) and the subagent gate (one-time spawn authorization via kord).
+
 ### Guard and Hooks
 
 Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
