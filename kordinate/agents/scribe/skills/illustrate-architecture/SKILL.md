@@ -32,16 +32,15 @@ If not found, report which paths were checked and exit.
 
 ### 2. Ensure fresh analysis via kord
 
-Invoke `/kord designer project-analysis <project-path>` to ensure Designer's analyses are up to date. This runs the full analysis suite (detect-patterns, map-dependencies, review-api, assess-debt, architect) with cache-aware skipping.
+**This step is mandatory — never skip it.** Invoke `/kord designer project-analysis <project-path>` to ensure Designer's analyses are up to date. The kord's expiry.sh handles caching: if the project source hasn't changed since the last analysis, Designer returns immediately without re-running. You do not decide whether to skip — the cache does.
 
-If the kord returns an error, check whether `architecture.yaml` already exists and proceed with stale data. Report the staleness in the final output.
+Do not check for existing files, existing architecture.json in the docs site, or any other indicator to bypass this step. Always invoke the kord. The presence of old outputs does not mean they are fresh.
+
+If the kord returns an error (e.g., Beorn unreachable), report the error and proceed with whatever artifacts already exist at the primary path. Mark the output as "stale — kord failed" in the final report.
 
 ### 3. Read project artifacts
 
-Read from these locations (check both; prefer `.kord/` if it exists):
-
-**Primary**: `<project>/.kord/agents/designer/memory/`
-**Fallback**: `<project>/` (root — some projects keep `architecture.yaml` here)
+Read from `<project>/.kord/agents/designer/memory/` — this is the only authoritative location. Do not read from the project root, the docs site, or any other path.
 
 | File | Required | Purpose |
 |------|----------|---------|
@@ -51,7 +50,7 @@ Read from these locations (check both; prefer `.kord/` if it exists):
 | `api-review.md` | no | Adds API endpoint mapping to nodes |
 | `debt-assessment.md` | no | Adds health coloring per node |
 
-If `architecture.yaml` is missing after the kord attempt, report and suggest running `/designer:architect <project>` directly. Exit.
+If `architecture.yaml` is missing after the kord attempt, report and suggest running `/architect <project>` directly. Exit.
 
 ### 4. Build architecture.json
 
