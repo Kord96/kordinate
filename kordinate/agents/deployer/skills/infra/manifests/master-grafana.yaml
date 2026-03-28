@@ -74,6 +74,30 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
+        - name: datasource-reloader
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              HASH=$(md5sum /etc/grafana/provisioning/datasources/datasources.yaml | cut -d' ' -f1)
+              while true; do
+                sleep 30
+                NEW=$(md5sum /etc/grafana/provisioning/datasources/datasources.yaml | cut -d' ' -f1)
+                if [ "$NEW" != "$HASH" ]; then
+                  wget -q --post-data='' -O- http://localhost:3000/api/admin/provisioning/datasources/reload 2>/dev/null && echo "Datasources reloaded" || echo "Reload failed"
+                  HASH=$NEW
+                fi
+              done
+          volumeMounts:
+            - name: grafana-datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              memory: 16Mi
         - name: grafana-renderer
           image: grafana/grafana-image-renderer:latest
           ports:
