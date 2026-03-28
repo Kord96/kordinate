@@ -1,7 +1,7 @@
 questions:
-  - q: "Is there a class with a private constructor and a static getInstance method for lazy initialization?"
+  - q: "Is there a class with a private constructor and a static getInstance method, or a module-level global instance that serves as the single shared instance?"
     weight: 3
-    signals: ["private constructor with static getInstance", "_instance class variable caching single instance", "sync.Once with package-level var instance"]
+    signals: ["private constructor with static getInstance", "_instance class variable caching single instance", "sync.Once with package-level var instance", "module-level instance = ClassName() imported elsewhere", "export const instance at module scope"]
   - q: "Is instance creation thread-safe to prevent duplicate instantiation?"
     weight: 2
     signals: ["double-checked locking on creation", "sync.Once for safe initialization", "module-level import guaranteeing single creation"]

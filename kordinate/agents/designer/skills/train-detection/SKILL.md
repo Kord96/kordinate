@@ -6,11 +6,16 @@ description: >
   and diagnostic questions. Use when improving detection quality or expanding concept coverage.
 argument-hint: "[--rounds N] [--language LANG] [--topic TOPIC]"
 curated: true
+scope: global
 ---
 
 # train-detection
 
 Automated training loop for improving concept detection quality across the full catalog.
+
+## Dependency: detect-concepts
+
+Invokes `/detect-concepts` via a designer subagent on each sampled repo (step 3). The detect-concepts skill must be installed and functional. Results are read from each repo's `.kord/agents/designer/memory/patterns.md`.
 
 ## Arguments
 
@@ -65,9 +70,9 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
 
 4. **Build ground truth.** For each repo, establish what concepts ACTUALLY exist using three oracles:
 
-   **Oracle 1: Gemini (primary).** Send the repo tree + key source files to Gemini. The prompt provides the full concept list with one-line descriptions and instructs: "Look for the BEHAVIOR, not the NAME. A strategy pattern might be called 'processor' or 'handler'."
+   **Oracle 1: Gemini (primary).** Send the repo tree + key source files to Gemini. First, build the concept list from the same catalogs detect-concepts uses: extract the `Pattern | Description` column from `~/.kord/agents/designer/memory/concepts.md` and the `Anti-pattern | What to look for` column from `~/.kord/agents/designer/memory/anti-patterns.md`. Write the combined list to `/tmp/train-results/concept-list.txt`. The prompt provides this list and instructs: "Look for the BEHAVIOR, not the NAME. A strategy pattern might be called 'processor' or 'handler'."
    ```bash
-   gemini -m gemini-2.5-pro -o json -p "Analyze this codebase. For each concept in this list, answer present/absent with file-level evidence. Look for BEHAVIOR, not naming. $(cat concept-list.txt)" @/tmp/train-repos/<repo>/src/ > /tmp/train-results/<repo>/oracle-gemini.json
+   gemini -m gemini-2.5-pro -o json -p "Analyze this codebase. For each concept in this list, answer present/absent with file-level evidence. Look for BEHAVIOR, not naming. $(cat /tmp/train-results/concept-list.txt)" @/tmp/train-repos/<repo>/src/ > /tmp/train-results/<repo>/oracle-gemini.json
    ```
 
    **Oracle 2: Question-based analysis.** For each concept that passes a quick grep pre-filter (same as detect-concepts Pass 1), load `questions.yaml` and evaluate:
@@ -101,8 +106,8 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
      "timestamp": "2026-03-28T07:30:00Z",
      "repos": ["owner--name", ...],
      "per_concept": {
-       "circuit-breaker": {"tp": 2, "fp": 0, "fn": 1, "tn": 2, "precision": 1.0, "recall": 0.67},
-       "hexagonal": {"tp": 1, "fp": 1, "fn": 0, "tn": 3, "precision": 0.5, "recall": 1.0}
+       "circuit-breaker": {"tp": 2, "fp": 0, "fn": 1, "tn": 2, "precision": 1.0, "recall": 0.67, "f1": 0.80},
+       "hexagonal": {"tp": 1, "fp": 1, "fn": 0, "tn": 3, "precision": 0.5, "recall": 1.0, "f1": 0.67}
      },
      "aggregate": {"precision": 0.85, "recall": 0.78, "f1": 0.81},
      "worst_precision": ["concept-a", "concept-b"],
@@ -127,17 +132,25 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
      - AST rule matches unrelated code? → add constraints
      - Question threshold too low? → raise it
 
-10. **Apply improvements.** For each concept with poor precision or recall:
+10. **Gemini review** (background) -- before applying improvements, kick off a peer review of the proposed changes. Pipe the failure analysis and proposed fixes to Gemini:
+    ```bash
+    gemini -m gemini-2.5-pro -o json -p "Review these proposed changes to a pattern detection system. For each proposed change, flag: overfitting risk (change is too specific to one repo), collateral damage (broadening a keyword will cause false positives elsewhere), threshold changes that are unjustified. Be specific about which change and why." < /tmp/train-results/proposed-improvements.md > /tmp/train-results/gemini-review-improvements.json &
+    ```
+    Continue to step 11 immediately. Check whether the review has returned before finalizing writes in step 11.
+
+11. **Apply improvements.** For each concept with poor precision or recall:
    - Update `concept.md` Recognition signatures (add/remove keywords)
    - Update `questions.yaml` (refine questions, adjust weights/threshold)
    - Update `ast-grep.yaml` if the rule needs tightening/broadening
    - Keep a changelog in the scorecard
 
-11. **Accumulate results.** Append the scorecard to a persistent log at:
+   If the Gemini review from step 10 has returned, incorporate valid critiques: drop changes flagged as overfitting, add constraints to broadened keywords. Ignore critiques that contradict the scorecard evidence (measured false negatives/positives outweigh opinions).
+
+12. **Accumulate results.** Append the scorecard to a persistent log at:
     `~/.kord/agents/designer/memory/training-log.json`
     This allows tracking improvement over time across multiple runs.
 
-12. **Report** -- summarize: repos analyzed, aggregate precision/recall/F1, worst-performing concepts, improvements applied, and where the scorecard was written.
+13. **Report** -- summarize: repos analyzed, aggregate precision/recall/F1, worst-performing concepts, improvements applied, whether Gemini review was incorporated, and where the scorecard was written.
 
 ## Scorecard Schema
 

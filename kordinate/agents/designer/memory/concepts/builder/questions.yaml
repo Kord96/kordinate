@@ -1,7 +1,7 @@
 questions:
-  - q: "Is there a class with fluent setter methods (returning self/this) and a terminal build/create method that produces a different object?"
+  - q: "Is there a class with fluent setter methods (returning self/this) and a terminal build/create method, or fluent chaining like .row().add() that incrementally constructs a complex structure?"
     weight: 3
-    signals: ["fluent methods returning self", "terminal build() method", "builder produces product"]
+    signals: ["fluent methods returning self", "terminal build() method", "builder produces product", ".row().add() chaining", ".field().value() incrementally building structure"]
   - q: "Does the build step validate that all required fields are set before constructing the final object?"
     weight: 2
     signals: ["validation in build()", "required field check", "prevents incomplete objects"]

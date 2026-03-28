@@ -1,7 +1,7 @@
 questions:
-  - q: "Does middleware extract Bearer tokens from Authorization headers and verify JWT signatures before processing requests?"
+  - q: "Does the application extract tokens from Authorization headers, query parameters (access_token, api_token), or custom headers and verify them before processing requests?"
     weight: 3
-    signals: ["Authorization: Bearer extraction", "jwt.verify or jwt.decode", "signature verification in middleware"]
+    signals: ["Authorization: Bearer extraction", "jwt.verify or jwt.decode", "signature verification in middleware", "access_token query parameter", "api_token parameter", "X-Auth-Token header"]
   - q: "Are JWT claims like exp, iss, and aud validated on every request, not just decoded?"
     weight: 3
     signals: ["exp claim validation", "iss and aud verification", "claim checks beyond decode"]

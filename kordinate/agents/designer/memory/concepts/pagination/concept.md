@@ -23,6 +23,8 @@ How to identify this pattern in code.
 - `has_more`, `has_next_page` boolean flag in response payloads
 - Keyset pagination using `WHERE id > ? ORDER BY id LIMIT ?`
 - `totalCount`, `pageInfo`, `edges`/`nodes` in GraphQL connection pattern (Relay spec)
+- Helper functions: `pagination_builder`, `paginate()`, `build_pagination`, `get_paginated`
+- Framework pagination: DRF `PageNumberPagination`, Flask `pagination_builder`, Spring `Pageable`/`Page<T>`
 
 ### Confidence
 

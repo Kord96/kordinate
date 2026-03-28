@@ -1,14 +1,14 @@
 questions:
-  - q: "Does a single class provide a simplified interface that delegates to multiple subsystem classes?"
+  - q: "Does a single class provide a simplified interface that delegates to multiple subsystem classes, even if it is not named Facade?"
     weight: 3
-    signals: ["one class orchestrating calls to several internal components", "simplified method hiding multi-step subsystem interaction"]
+    signals: ["one class orchestrating calls to several internal components", "simplified method hiding multi-step subsystem interaction", "constructor initializes 3+ subsystem objects", "Bot/App/Engine class unifying polling, API, and dispatch"]
   - q: "Does the facade delegate to subsystem classes without containing business logic itself?"
     weight: 3
     signals: ["facade methods only coordinate and delegate", "no domain rules or computations in the facade"]
   - q: "Are the underlying subsystem classes still directly accessible for advanced use cases?"
     weight: 2
     signals: ["subsystem classes have public APIs independent of facade", "facade is optional convenience, not mandatory indirection"]
-  - q: "Is the facade interface stable even as subsystem internals change?"
-    weight: 1
-    signals: ["subsystem refactors do not change facade method signatures", "facade shields callers from internal restructuring"]
+  - q: "Does the class hide the complexity of initializing and coordinating multiple subsystems behind a simple public API (e.g., run(), start(), send())?"
+    weight: 2
+    signals: ["single run/start method hides subsystem orchestration", "user interacts with one class instead of wiring subsystems manually", "subsystem wiring in constructor or setup method"]
 threshold: 6

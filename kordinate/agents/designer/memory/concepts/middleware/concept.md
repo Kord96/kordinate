@@ -27,6 +27,8 @@ How to identify this pattern in code.
 - ASP.NET `IMiddleware` or `app.Use()` / `app.UseMiddleware<T>()`
 - Pipeline ordering: middleware registered in sequence with explicit ordering dependency
 
+**Not middleware:** Framework lifecycle hooks like Flask's `before_request`/`after_request`, Rails `before_action`/`after_action`, or Spring `@PostConstruct` are framework hooks, not the middleware pattern. Middleware requires an explicit composable pipeline with `next()` forwarding, not just hook registration on a framework lifecycle.
+
 ### Confidence
 
 - **high** -- Framework middleware API with `next()` call forwarding to the next handler in a pipeline, registered via `app.use()` or configuration array

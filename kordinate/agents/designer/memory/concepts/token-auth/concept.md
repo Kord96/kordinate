@@ -25,6 +25,8 @@ How to identify this pattern in code.
 - `jsonwebtoken` (Node), `PyJWT` (Python), `jose` (JS/Rust), `golang-jwt` (Go) library imports
 - JWKS URI configuration for key rotation (`/.well-known/jwks.json`)
 - Token blacklist or revocation check for logout support
+- Query-param token variants: `access_token`, `api_token`, `token` as URL parameters (common in platform APIs like VK, Slack legacy, OAuth implicit flow)
+- Token passed via custom headers: `X-Auth-Token`, `X-Access-Token`
 
 ### Confidence
 

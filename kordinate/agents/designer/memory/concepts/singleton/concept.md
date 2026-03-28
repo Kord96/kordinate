@@ -19,9 +19,11 @@ How to identify this pattern in code.
 - Class variable `_instance`, `__instance`, or `instance`
 - Static method `getInstance()`, `get_instance()`, or `shared()`
 - Python: `__new__` override checking for existing instance, `@singleton` decorator, module-level instance
+- Python module-global variant: module-level `registry = ClassName()` or `_cache = CacheClass()` acting as the single shared instance, imported by other modules
 - Java/TS: `private constructor` with `static getInstance()`
 - Go: `sync.Once` with package-level `var instance`
 - Rust: `lazy_static!` or `once_cell::sync::Lazy`
+- JS/TS module-scope: `export const instance = new ClassName()` at module top-level, relying on module caching for singleton behavior
 
 ### Confidence
 

@@ -17,8 +17,11 @@ How to identify this pattern in code.
 ### Signatures
 
 - Python: `__iter__()` / `__next__()` protocol, `yield` generators, `itertools` usage
+- Python async: `__aiter__()` / `__anext__()`, `async for`, `AsyncIterator`, `AsyncGenerator`, `async def` with `yield`
 - JS/TS: `Symbol.iterator`, `next()` returning `{ value, done }`, generators with `function*`/`yield`
+- JS/TS async: `Symbol.asyncIterator`, `for await...of`, `AsyncGenerator`, `async function*`
 - Rust: `Iterator` trait with `next()` returning `Option<Item>`, `IntoIterator`, iterator adaptors
+- Rust async: `Stream` trait, `futures::stream`, `async_stream::stream!`
 - Go: `for range` over channels, iterator functions returning `func() (T, bool)`
 - Java: `Iterator<T>` interface, `Iterable<T>`, `Stream` API
 - Lazy evaluation: `itertools.chain`, `map`/`filter`/`reduce` chains, `Stream.of().filter().map()`

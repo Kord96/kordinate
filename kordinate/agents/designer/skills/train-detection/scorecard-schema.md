@@ -46,6 +46,19 @@ Written to `/tmp/train-results/scorecard-<timestamp>.json` after each training r
   },
   "worst_precision": ["<concept-name>"],
   "worst_recall": ["<concept-name>"],
+  "anchor_results": {
+    "passed": true,
+    "regressions": [],
+    "repos_checked": [
+      {
+        "repo": "pallets/flask",
+        "expected": ["decorator", "middleware", "plugin", "factory", "config-management", "router"],
+        "detected": ["decorator", "middleware", "plugin", "factory", "config-management", "router"],
+        "missed": [],
+        "false_positives": []
+      }
+    ]
+  },
   "improvements_applied": [
     {
       "concept": "<concept-name>",

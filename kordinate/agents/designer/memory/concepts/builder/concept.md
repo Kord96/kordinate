@@ -22,6 +22,8 @@ How to identify this pattern in code.
 - Python: setter methods with `return self`, `@dataclass` with builder wrapper
 - JS/TS: method chaining patterns, optional `Director` class orchestrating build steps
 - Go: functional options pattern (`With*()` functions), or `*Builder` structs with `Build()` method
+- Fluent API without `Builder` naming: method-chaining like `.row().add().text()` or `.field().value().color()` that incrementally constructs a complex structure (e.g., keyboard builders, query builders, form builders)
+- Domain-specific builders: `KeyboardBuilder`, `QueryBuilder`, `MessageBuilder`, `EmbedBuilder` with incremental `.add*()` methods
 
 ### Confidence
 

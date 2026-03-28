@@ -22,6 +22,8 @@ How to identify this pattern in code.
 - Wrapper modules around third-party libraries (e.g., `email_service.py` wrapping SMTP + templates + attachments)
 - `__init__.py` re-exporting a simplified public API from a complex package
 - SDK client classes that hide REST/gRPC details behind method calls
+- Behavioral facade (unnamed): a class whose constructor initializes 3+ distinct subsystem objects and whose public methods delegate to combinations of them (e.g., a `Bot` class coordinating polling, API client, and dispatcher)
+- Framework entry points: `App`, `Bot`, `Engine`, or `Server` classes that unify subsystem wiring behind a simple `run()` or `start()`
 
 ### Confidence
 
