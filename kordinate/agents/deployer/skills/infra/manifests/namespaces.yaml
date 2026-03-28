@@ -1,6 +1,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: gateway
+  labels:
+    app: monitoring
+    tier: gateway
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: monitor
   labels:
     app: monitoring

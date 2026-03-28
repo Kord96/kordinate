@@ -27,22 +27,22 @@ $KORDINATE_HOME/profile/overlays/<cluster>/
     └── gateway-registry.yaml       # generated — cluster gateway IPs
 ```
 
-## Master Overlay — kord-shared PVC
+## Master Overlay — kord PVC
 
-The master overlay must include a patch for the `kord-shared` PVC to set the storageClassName. This PVC is defined in `master-kord-storage.yaml` (base manifest) with placeholder `STORAGE_CLASS`.
+The master overlay must include a patch for the `kord` PVC to set the storageClassName. This PVC is defined in `master-kord-storage.yaml` (base manifest) with placeholder `STORAGE_CLASS`.
 
 In the master `patches.yaml`, add:
 ```yaml
-# Kord shared PVC storage
+# Kord PVC storage
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: kord-shared
+  name: kord
 spec:
   storageClassName: <STORAGE_CLASS>
 ```
 
-The kord-shared volume is referenced by the Workstation deployment (which runs Beorn as a background process) in its base manifest. No additional volume patches are needed unless the overlay needs to override mount paths or env vars.
+The kord volume is referenced by the Workstation deployment (which runs Beorn as a background process) in its base manifest. No additional volume patches are needed unless the overlay needs to override mount paths or env vars.
 
 ## Placeholder → Config Mapping
 

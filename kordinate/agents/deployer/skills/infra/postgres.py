@@ -113,7 +113,7 @@ def ensure_database(url: str = None) -> bool:
     skipped since PgBouncer typically proxies specific databases and
     the postgres admin database may not be accessible.
     """
-    url = url or DATABASE_URL
+    url = url or _require_database_url()
     parts = parse_database_url(url)
     db_name = parts["database"]
 

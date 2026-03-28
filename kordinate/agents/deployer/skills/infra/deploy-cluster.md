@@ -8,8 +8,8 @@ Create all namespaces and apply RBAC. Idempotent.
 
 1. Authenticate (`/authenticate`)
 2. SSH to the cluster control plane
-3. Apply `manifests/bootstrap/namespaces.yaml`
-4. Apply `manifests/rbac/agent-rbac.yaml`
+3. Apply `manifests/namespaces.yaml`
+4. Apply `manifests/agent-rbac.yaml`
 5. Verify: `kubectl get namespaces`
 
 ## setup-storage
@@ -49,12 +49,12 @@ Install Longhorn and configure storage classes. Idempotent.
 
 ## deploy-master `<cluster>`
 
-Deploy master namespace infrastructure. Includes workstation (with Beorn inside) and kord-shared storage.
+Deploy master namespace infrastructure. Includes workstation (with Beorn inside) and kord storage.
 
 1. Parse cluster name. Read `profile/config.yaml` for control plane IP.
 2. **Run `generate-overlays <cluster>`** if overlays don't exist
 3. **Run `setup-secrets <cluster>`** if secrets don't exist
-4. **Run `setup-kord-storage <cluster>`** if kord-shared PVC doesn't exist
+4. **Run `setup-kord-storage <cluster>`** if kord PVC doesn't exist
 5. Use bootstrap auth (both `.deployer-auth` and `.bootstrap-auth`)
 6. SSH and apply kord-storage and workstation base manifests individually:
    ```
@@ -78,8 +78,8 @@ Create the shared kord PVC and initialize the git repo. Must run BEFORE `deploy-
 2. SSH to the cluster control plane
 3. Apply `manifests/master-kord-storage.yaml` with `-n master`
 4. Wait for the `kord-init` Job to complete: `kubectl wait --for=condition=complete job/kord-init -n master --timeout=60s`
-5. Verify PVC is Bound: `kubectl get pvc kord-shared -n master` — status should be `Bound`
-6. Verify git repo exists: `kubectl exec job/kord-init -n master -- ls /kord-shared/.git` (or via a debug pod if the Job has completed)
+5. Verify PVC is Bound: `kubectl get pvc kord -n master` — status should be `Bound`
+6. Verify git repo exists: `kubectl exec job/kord-init -n master -- ls /kord/kordinate/.git` (or via a debug pod if the Job has completed)
 
 ## deploy-gateway `<cluster>`
 
@@ -89,7 +89,7 @@ Deploy the observability gateway stack.
 2. **Run `generate-overlays <cluster>`** if overlays don't exist
 3. **Run `setup-secrets <cluster>`** if secrets don't exist
 4. SSH to cluster:
-   - Create `monitor` namespace if needed
+   - Create `gateway` namespace if needed
    - Copy gateway manifests (base + overlay)
    - Apply via `kubectl apply -k <overlay-dir>`
 5. Verify gateway pod running
@@ -132,7 +132,7 @@ Ephemeral nodes auto-deregister from Tailscale when they go offline — no devic
 Bootstrap a new k3s cluster on a remote machine.
 
 1. Parse cluster name and node IP
-2. SSH to node, run k3s server install via `manifests/bootstrap/setup-cluster.sh`
+2. SSH to node, run k3s server install via `setup-cluster.sh`
 3. Run `setup-namespaces` and `setup-storage`
 4. Apply RBAC
 5. Add new cluster entry to `profile/config.yaml`
@@ -149,10 +149,10 @@ ssh <control-plane> "kubectl create secret generic <name> -n <namespace> \
 
 | Secret | Namespace | pass path | Keys |
 |--------|-----------|-----------|------|
-| `tailscale-auth` | gateway | `kordinate/tailscale/auth_key_gateway` | `TS_AUTHKEY` |
+| `gateway-tailscale` | gateway | `kordinate/tailscale/auth_key_gateway` | `TS_AUTHKEY` |
 | *(host-level)* | — | `kordinate/tailscale/auth_key_worker` | Ephemeral pre-auth key for worker nodes (not a k8s Secret) |
 | `minio-credentials` | gateway | `kordinate/minio/root_user`, `kordinate/minio/root_password` | `root-user`, `root-password` |
-| `cloudflare-tunnel` | gateway | `kordinate/cloudflare/tunnel_token` | `TUNNEL_TOKEN` |
+| `cloudflared-tunnel` | master | `kordinate/cloudflare/tunnel_token` | `TUNNEL_TOKEN` |
 | `grafana-admin` | master | `kordinate/grafana_admin/password` | `admin-password` |
 
 ## Bootstrap Auth

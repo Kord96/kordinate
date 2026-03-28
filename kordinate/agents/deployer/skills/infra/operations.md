@@ -17,7 +17,7 @@ The environment order is: `main` (dev) → `test` → `prod`
 
 1. Parse project, source, and target from `$ARGUMENTS`. If missing, show usage and exit.
 
-2. Discover project layout: find manifests at `<project-repo>/manifests/`, get cluster/registry from `~/.claude/profile/clusters/*.yaml`, use project name as image name. Use the global branch model (main/test/prod).
+2. Discover project layout: find manifests at `<project-repo>/manifests/`, get cluster/registry from `profile/config.yaml`, use project name as image name. Use the global branch model (main/test/prod).
 
 3. **Determine direction**: compare source and target against `main < test < prod`.
 
@@ -111,7 +111,7 @@ Optional flags:
 
 ## Steps
 
-1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/clusters/*.yaml`.
+1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/config.yaml`.
 
 2. SSH to the cluster. List all deployments/statefulsets in the target namespace for this project:
    ```
@@ -153,7 +153,7 @@ Pods must be stopped first (`/deployer:stop`). This command will refuse to run i
 
 ## Steps
 
-1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/clusters/*.yaml`.
+1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/config.yaml`.
 
 2. SSH to the cluster. **Verify pods are stopped**:
    ```
