@@ -79,15 +79,23 @@ Write `architecture.json` to `<docs-content-dir>/<project>/architecture.json`. S
 
 The sidebar narrative is the story that guides readers through the architecture. It is not a bullet-point list — it is **prose that Scribe writes**, using everything learned from the Designer memories.
 
+The narrative follows three complementary approaches:
+
+**C4 multi-level structure** — Each tab's narrative starts at the highest level of abstraction and drills down. The reader should be able to stop at any depth and have a coherent understanding.
+
+**Scenario-driven writing** — Instead of describing components abstractly, trace them through real user journeys. Name concrete actors and actions: "When Sarah browses the category page, the **CategoriesQuery** fires a prefetch from the **root loader**..." This makes architecture tangible — readers understand *what happens*, not just *what exists*.
+
+**Decision anchors** — When a pattern or architectural choice is mentioned, briefly explain *why* it was chosen and what was traded off. Draw from detected patterns and debt data: "The team uses **circuit-breaker** on the DummyJSON client rather than simple retry — the API has long failure windows where retrying would just queue up timeouts." If Designer found anti-patterns or debt, frame them as open decisions: "The **ProductService** currently bypasses the port layer and queries the API directly. This creates coupling that the hexagonal pattern was meant to prevent — a candidate for refactoring."
+
 Write one markdown file per tab into `<docs-content-dir>/<project>/narrative/`:
 
-- **`structure.md`** — The system overview. Open with a 2-3 sentence summary of what the project does and how it's structured. Then one section per capability/module group: what it does, why it exists, how it relates to other groups. Reference component names in bold so the explorer can link them. Mention detected patterns where relevant ("The API layer follows a **hexagonal** architecture — handlers delegate to ports, never touching infrastructure directly."). If debt was detected, weave it in naturally ("The **UserService** has accumulated technical debt — 3 CRITICAL violations around missing circuit breakers.").
+- **`structure.md`** — Start with a C4 Context-level paragraph: what this system does in the world, who uses it, what it connects to. Then zoom to Container level: the major runtime boundaries (server, browser, external services) and how they communicate. Then Component level: one section per module group, written through the lens of a user journey. Reference component names in bold for graph linking. Weave in patterns, debt, and decisions naturally — don't list them separately.
 
-- **`flows.md`** — Data flow walkthroughs. One section per flow, written as a narrative: "When a user adds an item to their cart, the **CartDrawer** component dispatches an action to the **cart store**. The store persists to localStorage and triggers a re-render..." Not a numbered list of steps — a story that traces data through the system.
+- **`flows.md`** — Each flow is a mini-story with a named protagonist. "When a shopper opens the home page, the **SSR server** runs three loaders in sequence. The **root loader** fetches categories from DummyJSON — this call is protected by a **circuit breaker** because..." Explain what happens at each step, why the data moves that way, and what would happen if a step failed. Cross-reference the resilience tab for failure scenarios.
 
-- **`data.md`** — State and storage narrative. Group by purpose (source of truth, cache, derived). Explain what each store holds, who reads it, who writes it, and what consistency guarantees exist.
+- **`data.md`** — Frame around the question "where does truth live?" Group stores by purpose. For each: what state it holds, who reads it, who writes it, what happens on conflict, and why this storage choice was made. "Cart state lives in **localStorage** rather than server-side — the team traded session persistence for offline capability and zero-latency adds."
 
-- **`resilience.md`** — Failure modes narrative. Order by severity. For each: what triggers it, what breaks, what the user sees, and how to recover. Written as scenarios, not tables.
+- **`resilience.md`** — Each failure mode is a scenario: "At 2am, the DummyJSON API starts returning 503s. The **circuit breaker** opens after 5 failures in 30 seconds. The **API client** switches to cached responses via **graceful degradation**. Users see slightly stale category data but the site stays up. The **health check** reports degraded status, and the Grafana alert fires..." Connect back to architecture decisions — this is where those choices pay off (or don't).
 
 **If `--narrative <dir>` is provided**: read existing markdown files from that directory. Use them as-is for the tabs they cover. For tabs without a file, write new narrative as above.
 
