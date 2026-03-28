@@ -26,6 +26,14 @@ How to identify this pattern in code.
 - Java: Jakarta Security `@DeclareRoles`, custom `Role` entity with user-role mapping table
 - Java: Quarkus `@RolesAllowed`, Undertow `SecurityContext.isUserInRole()`
 
+### Negative signals (not sufficient for detection)
+
+- The word `Role` alone is NOT RBAC. Many domains use "role" for non-security purposes: actor roles, user roles in DDD aggregates, role as a domain concept (e.g., team roles in a project management app), database roles.
+- `Permission` as a file permission, Android permission, or capability is not RBAC.
+- `Authority` in Spring Security is often used generically -- only count as RBAC when paired with role-to-permission mapping.
+- K8s RBAC manifests (`Role`, `ClusterRole`) in a project that simply deploys to Kubernetes are infrastructure config, not application RBAC. The pattern refers to application-level role-based access control.
+- `hasRole` or `hasAuthority` in Spring Security config files may be minimal security, not a full RBAC pattern. Look for role-permission mapping tables and user-role assignment.
+
 ### Confidence
 
 - **high** -- role-permission mapping table, middleware enforcing role checks on endpoints, and role assignment to users/groups

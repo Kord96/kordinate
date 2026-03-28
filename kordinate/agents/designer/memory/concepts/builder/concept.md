@@ -33,6 +33,9 @@ How to identify this pattern in code.
 - Python: `.build()` on Mailable, Notification, or Message classes that simply finalize configuration options is not builder -- it is just a setup/finalize lifecycle method. Builder requires a separate Builder class or multi-step fluent construction producing a different type
 - TypeScript/Python: `.build()` as a lifecycle method on a class (e.g., `mailable.build()`, `task.build()`) where the object configures itself is not builder pattern. Builder pattern requires constructing a separate product object through incremental steps
 - Query builders in ORMs (`.where().order_by().limit()`) are the builder pattern only when they construct a separate query object, not when they are simply method chaining on the query itself
+- Java: `.builder()` in test code constructing simple objects (DTO, config) with Lombok or Proto builders is boilerplate, not the pattern. The pattern requires intentional multi-step construction with meaningful build logic.
+- Go: `func New*()` constructors are standard Go, not the builder pattern. Look for explicit `*Builder` struct with `Build()` method or functional options (`With*()` functions) as a conscious design choice.
+- The mere presence of `Builder` class names (e.g., `StringBuilder`, `ProcessBuilder`, `ServerBuilder`) from standard libraries or frameworks is framework usage, not an architectural pattern choice.
 
 ### Confidence
 

@@ -26,7 +26,11 @@ How to identify this pattern in code.
 - Cache invalidation on write paths: `cache.delete(key)` after updates
 - Java: `@Cacheable`, `@CacheEvict`, `CacheManager` (Spring Cache), Caffeine `Cache.get(key, loader)`, Guava `LoadingCache`
 - Go: `groupcache`, `bigcache`, `ristretto`, `go-cache` imports
+- Go: `ristretto.Cache`, `Cache.Get()`/`Cache.Set()` pattern with database fallback
+- Go: `echo` or `fiber` cache middleware with TTL configuration
+- Go: `ent` cache extension or `entcache` package for ORM-level caching
 - Python: `cachetools`, `diskcache`, `dogpile.cache` libraries
+- Any: explicit "check cache, fallback to DB, populate cache" code flow in service methods
 
 ### Negative signals (not sufficient for detection)
 

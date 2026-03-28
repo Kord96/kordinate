@@ -26,6 +26,10 @@ How to identify this pattern in code.
 - Zuul or Spring Cloud Gateway in Java service configurations
 - Rate limiting middleware configured at the gateway layer
 - Auth middleware (JWT validation, API key checks) applied at the gateway before backend routing
+- Go: application explicitly implementing an API gateway with reverse proxy routing, load balancing, rate limiting, and auth -- all in a single service that fronts multiple backend APIs
+- Go: `httputil.ReverseProxy` used as the core routing mechanism with middleware for auth, rate limiting, and logging
+- Java: Spring Cloud Gateway `RouteLocator` bean with `RouteBuilder` defining upstream routing rules
+- Any: project self-describing as an "API Gateway" in README/docs, implementing request routing to multiple backend services with cross-cutting concerns (auth, rate limiting, logging)
 
 ### Confidence
 

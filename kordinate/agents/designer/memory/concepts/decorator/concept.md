@@ -29,6 +29,8 @@ How to identify this pattern in code.
 - `Logging*` or `Cached*` class names without a shared interface with the wrapped object are utilities, not decorators
 - Java annotations like `@Override`, `@Component`, `@Bean` are not the decorator pattern -- look for classes that wrap another instance of the same interface
 - Middleware chains (`app.use()`, handler chains) are the middleware pattern, not decorator, unless each middleware implements the same interface as the handler it wraps
+- Java: `@interface` (annotation type declarations) are annotation definitions, not the decorator GoF pattern. Java annotations add metadata, not runtime behavior wrapping.
+- Go: `Wrapper` or `wrapper` as field names in structs (e.g., wrapping a protobuf message, wrapping an error) is standard composition, not the decorator pattern.
 
 ### Confidence
 

@@ -23,6 +23,12 @@ How to identify this pattern in code.
 - Event payloads like `{"type": "order.created", "id": "123", "timestamp": "..."}`
 - Decoupled notification with consumer-initiated data fetch
 - Contrast with event-carried state transfer where events contain full entity data
+- Java: `DomainEvent` classes with only aggregate ID and event type, no full payload
+- Java: Spring `ApplicationEvent` subclasses carrying only entity IDs
+- Java: `NotificationService`, `EventNotificationService` publishing thin events
+- Java: Kafka messages containing only entity ID + event type, with consumers calling REST API for full data
+- Go: notification event structs with `ID`, `Type`, `Timestamp` fields only
+- Any: `notification/` directory or package with event types that carry IDs, not full entity data
 
 ### Confidence
 

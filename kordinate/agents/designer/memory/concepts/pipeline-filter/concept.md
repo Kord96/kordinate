@@ -31,6 +31,14 @@ How to identify this pattern in code.
 
 **Not this pattern (Python):** A class named `*Pipeline` in a project that is not about data processing (e.g., CI/CD pipeline configuration, ML pipeline metadata, request pipeline in a web framework) may use the word "pipeline" without implementing the pipeline-filter pattern. The pattern requires sequential transform functions with a uniform interface. `pipe()` in RxPY or functional composition is pipeline-filter; `Pipeline` as a container for steps in a web framework's middleware chain is middleware, not pipeline-filter.
 
+### Negative signals (not sufficient for detection)
+
+- The words `Pipeline`, `Stage`, or `Filter` alone are NOT the pipeline-filter pattern. `Pipeline` is used generically (CI pipeline, data pipeline, rendering pipeline). `Stage` appears in lifecycle stages, build stages, release stages. `Filter` appears in search filters, query filters, collection filters.
+- Java: `Filter` in Hibernate criteria, JPA Specification, or Bloom filter contexts is query building or data structures, not pipeline-filter.
+- Go: `io.Reader`/`io.Writer` wrapping is the decorator pattern (wrapping), not pipeline-filter (sequential stages) unless there is an explicit ordered chain of independent processing stages.
+- `chain` in blockchain, certificate chain, or prototype chain contexts is not this pattern.
+- WAF rule processing chains may be pipeline-filter but the word `Filter` in WAF rule names (e.g., `Filter.*chain`) needs verification against actual stage composition.
+
 ### Confidence
 
 - **high** -- Explicit `pipeline()` or `pipe()` call chaining multiple transform functions with typed stage interfaces

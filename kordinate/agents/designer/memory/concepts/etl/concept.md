@@ -32,6 +32,10 @@ How to identify this pattern in code.
 - Method names like `extractValue()`, `extractField()`, `transformRequest()` are generic naming, not ETL.
 - Java: `import` statements, build tool configurations, or archive extraction utilities are not ETL.
 - Go: `extract` or `transform` as function names in non-data-pipeline contexts (config parsing, string manipulation) are not ETL.
+- Java: Spring Batch `ItemReader`/`ItemProcessor`/`ItemWriter` looks like ETL but is the batch processing pattern. Only flag as ETL if the batch job explicitly implements extract-transform-load stages between different data stores.
+- Java: `LoadAccountPort`, `loadData()`, or methods with `load` in the name are NOT ETL unless part of a data pipeline.
+- The word `load` in any language (class loading, module loading, config loading, lazy loading) is NOT ETL.
+- Go: `Load()`, `Extract()`, `Transform()` methods in non-data-pipeline contexts are generic method names, not ETL.
 
 ### Confidence
 

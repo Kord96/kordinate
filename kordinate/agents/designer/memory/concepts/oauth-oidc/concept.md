@@ -31,6 +31,8 @@ How to identify this pattern in code.
 - A library that *instruments* or *supports* OAuth (e.g., OpenTelemetry instrumenting OAuth endpoints) does not implement OAuth itself
 - Mere presence of the word "OAuth" or "OIDC" in configuration or dependency declarations without actual flow implementation is not this pattern
 - JWT token validation alone (without OAuth flows) is token-auth, not OAuth/OIDC
+- The word `OAuth` in Go or Java dependency names (e.g., `golang.org/x/oauth2` used only for API client authentication, Google Cloud SDK authentication) is OAuth as a consumer, not implementing OAuth. Look for OAuth server or flow implementation.
+- `OAuthClient` configuration for connecting to a third-party provider (GitHub, Google) is standard API integration, not the OAuth/OIDC architectural pattern in the application.
 
 ### Confidence
 

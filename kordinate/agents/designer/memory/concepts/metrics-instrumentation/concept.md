@@ -25,6 +25,14 @@ How to identify this pattern in code.
 - Label/tag definitions on metric declarations: `labels=["method", "status"]`, `ConstLabels`
 - Histogram bucket configuration: `buckets=[.01, .05, .1, .5, 1, 5]`
 
+### Negative signals (not sufficient for detection)
+
+- The word `Metrics` or `Counter` alone is NOT metrics instrumentation. `Metrics` appears in many contexts: performance metrics in documentation, metric calculations in domain logic, metric names in configuration.
+- `Counter` as a generic name (loop counter, atomic counter, reference counter, file offset counter) is standard programming, not metrics instrumentation. Look for `Counter` from Prometheus, Micrometer, or OpenTelemetry libraries.
+- `Gauge` in automotive/industrial contexts (fuel gauge, pressure gauge) is domain terminology, not the pattern.
+- `Histogram` in image processing, statistical analysis, or data visualization is domain usage, not observability.
+- Java: Spring Boot Actuator auto-configuration providing `/actuator/metrics` is framework default behavior -- only count as the pattern if there are custom metrics registered beyond defaults.
+
 ### Confidence
 
 - **high** -- Prometheus client imported, metric types registered, and `/metrics` endpoint exposed

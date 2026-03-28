@@ -19,10 +19,14 @@ How to identify this pattern in code.
 ### Signatures
 
 - Request ID generation: `uuid4()`, `ulid()`, `nanoid()` for unique correlation IDs
-- Header propagation: `X-Request-ID`, `X-Correlation-ID` headers on HTTP requests
+- Header propagation: `X-Request-ID`, `X-Correlation-ID`, `X-Trace-ID` headers on HTTP requests
 - Middleware extracting or generating request IDs on incoming requests
 - Structured logging with bound context: `structlog.bind(request_id=...)`, log correlation fields
 - Logging context injection: `MDC.put("correlationId", id)` (Java), `contextvars` (Python)
+- Java: Spring Kafka `RecordHeaders` with correlation ID propagation between producer and consumer
+- Java: `CorrelationId` class, `CORRELATION_ID_HEADER` constant in messaging libraries
+- Go: `context.WithValue()` carrying request IDs through the call chain
+- Go: middleware that extracts `X-Request-ID` from headers and injects into `context.Context`
 
 ### Confidence
 

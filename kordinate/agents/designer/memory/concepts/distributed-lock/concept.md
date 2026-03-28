@@ -26,6 +26,13 @@ How to identify this pattern in code.
 - Lock key naming conventions: `lock:resource:id`, `distributed-lock-*`
 - Try-lock patterns with timeout and retry logic
 
+### Negative signals (not sufficient for detection)
+
+- Go `sync.Mutex` and `sync.RWMutex` are in-process locks, NOT distributed locks. The pattern requires a shared lock store (Redis, etcd, database) accessible across multiple processes or nodes.
+- Java `synchronized`, `ReentrantLock`, `ReentrantReadWriteLock` are in-process locks, not distributed locks.
+- File locks (`flock`, `lockfile`) are OS-level locks, not distributed locks (unless used on a shared filesystem like NFS).
+- The word `Mutex` alone in Go is standard concurrency, not distributed locking. Look for Redis `SETNX`, etcd `concurrency`, or database advisory lock calls.
+
 ### Confidence
 
 - **high** -- explicit distributed lock implementation with TTL, acquire/release semantics, and a shared lock store (Redis, etcd, DB)

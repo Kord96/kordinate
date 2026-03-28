@@ -23,7 +23,12 @@ How to identify this pattern in code.
 - `BlockingQueue` with explicit capacity (Java `ArrayBlockingQueue`, `LinkedBlockingQueue(capacity)`)
 - Kafka consumer configuration with `max.poll.records` limiting batch size
 - `reactor.core.publisher.Flux` with backpressure operators (`limitRate`, `onBackpressureBuffer`, `onBackpressureDrop`)
-- Go channel with explicit buffer size (`make(chan T, N)`) used for flow control
+- Go channel with explicit buffer size (`make(chan T, N)`) used for flow control where producer blocks or drops on full channel
+- Java: LMAX Disruptor `WaitStrategy` (`BusySpinWaitStrategy`, `BlockingWaitStrategy`) controlling producer-consumer flow
+- Java: Reactive Streams `Subscription.request(n)` for demand-driven flow control
+- Go: `maxConcurrency` or `maxInFlight` configuration limiting parallel processing as flow control
+- Go: `select` with `default` on channel send to implement non-blocking backpressure (drop on full)
+- Any: `prefetchCount`, `maxPollRecords`, `maxInFlight` configuration in message broker consumers
 
 ### Negative signals (not sufficient for detection)
 

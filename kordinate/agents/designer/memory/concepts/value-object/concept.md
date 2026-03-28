@@ -26,6 +26,14 @@ How to identify this pattern in code.
 - `frozenset` or `tuple` used instead of mutable collections
 - Factory methods that return new instances instead of modifying existing ones
 - Classes named `*Value`, `*Amount`, `*Range`, `*Address`, `*Money`, `*Quantity`
+- Go: small structs with value semantics (passed by value, compared with `==`), no ID field
+
+### Negative signals (not sufficient for detection)
+
+- Java `record` declarations alone are NOT evidence of the value-object pattern as an architectural concern. Java 16+ records are a language feature used for DTOs, configuration, events, API responses -- not necessarily DDD value objects. The pattern requires intentional DDD design where value objects represent domain concepts with equality by value and no identity.
+- Go `struct` types are always value types by default -- this does not make them value objects. Look for intentional DDD value object design.
+- Lombok `@Value` is also commonly used for simple data carriers, not necessarily DDD value objects.
+- The word `Value` in method or variable names (e.g., `getValue()`, `defaultValue`, `valueOfField`) is generic programming, not the pattern.
 
 ### Confidence
 

@@ -30,6 +30,8 @@ How to identify this pattern in code.
 - Rust: `lazy_static!` or `once_cell::sync::Lazy` for shared global state
 - Java: `@Singleton` annotation in DI frameworks (Spring `@Component`, CDI `@ApplicationScoped`, Guice `@Singleton`) is DI scope configuration, not the singleton design pattern. The pattern requires explicit private constructor + static getInstance().
 - Go: `var instance` at package level without controlled access (private constructor equivalent + lazy init) is a package-level variable, standard in Go, not the singleton pattern.
+- Java: `INSTANCE` or `instance` as a field in enum types is enum usage, not singleton (unless the enum has exactly one value used as a singleton holder).
+- The word `singleton` in comments, test names, or configuration (e.g., "singleton scope", "singleton bean") refers to DI scoping, not the pattern.
 
 **Not this pattern:** Module-level `export const logger = new Logger()` in Node.js/TypeScript is standard module scoping, not the singleton pattern. Node modules are cached by the runtime, making every module-level variable naturally "single instance" -- this is not intentional singleton design. The singleton pattern requires deliberate enforcement: private constructor, lazy initialization check, or thread-safe access control. Similarly, a global database connection or Redis client instantiated once is typical setup, not a design pattern choice.
 

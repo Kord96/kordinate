@@ -23,6 +23,12 @@ How to identify this pattern in code.
 - `ALTER TABLE`, `CREATE TABLE`, `DROP TABLE` in numbered or versioned scripts
 - Schema version tracking table: `alembic_version`, `flyway_schema_history`, `schema_migrations`
 - Migration generation commands: `alembic revision --autogenerate`, `knex migrate:make`
+- Go: `golang-migrate/migrate` in `go.mod`, `goose` or `atlas` migration tooling
+- Go: `migrations/` directory with numbered `.sql` files and a `migrate` CLI command
+- Go: `ent/migrate` package (ent framework) for schema migration generation
+- Java: `flyway` or `liquibase` dependencies in `pom.xml`/`build.gradle` with migration SQL files in `db/migration/`
+- Java: JPA/Hibernate `hibernate.hbm2ddl.auto` for schema auto-generation (lightweight migration)
+- Any: `assets/migrations/` or `db/migrations/` directory containing versioned SQL files
 
 ### Negative signals (not sufficient for detection)
 

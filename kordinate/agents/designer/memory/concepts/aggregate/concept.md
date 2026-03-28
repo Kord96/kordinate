@@ -22,6 +22,15 @@ How to identify this pattern in code.
 - Invariant checks (guard clauses) inside root methods before modifying state
 - Repository interface returns only the root entity, never child entities alone
 - Domain events raised from within the aggregate root after state changes
+- Java: `@Aggregate` annotation (Axon Framework), `AbstractAggregateRoot` (Spring Data)
+- Java: `@AggregateIdentifier` field in DDD aggregate classes
+
+### Negative signals (not sufficient for detection)
+
+- The word `aggregate` alone (SQL aggregate functions, aggregate metrics, aggregate data) is NOT the DDD Aggregate pattern
+- Java: `AggregateFunction`, `AggregateException`, or `aggregate()` stream operations are not the DDD pattern
+- Go: `Aggregate` as a function name for data aggregation (summing, averaging) is not the DDD pattern
+- Classes that hold child collections but expose direct setters/getters on children are entity hierarchies, not DDD aggregates
 
 ### Confidence
 

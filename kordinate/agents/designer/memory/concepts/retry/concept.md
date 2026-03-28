@@ -29,6 +29,13 @@ How to identify this pattern in code.
 
 **Not this pattern:** The word `backoff` in comments or variable names without an actual retry loop is not sufficient. Python: `max_retries` on an HTTP client (e.g., `requests.adapters.HTTPAdapter(max_retries=3)`) is standard client configuration, not the retry architectural pattern unless the codebase also configures backoff, jitter, and retry-on-specific-exceptions. A single `for attempt in range(3)` loop with no backoff is minimal error handling, not the retry pattern.
 
+### Negative signals (not sufficient for detection)
+
+- The words `Retry`, `retry`, or `retryable` alone are NOT the retry pattern. These appear in HTTP client default configurations, test retry annotations, CI job retry settings, and error messages.
+- Java: Spring `@Retryable` IS the retry pattern. But `RetryTemplate` or `BackOffPolicy` in test infrastructure is test setup.
+- Go: A simple `for i := 0; i < maxRetries; i++` loop without backoff or jitter is minimal error handling, not an architectural retry pattern.
+- Test retry mechanisms (JUnit `@RepeatedTest`, `@RetryTest`, flaky test retry) are test infrastructure, not the architectural pattern.
+
 ### Confidence
 
 - **high** -- Library-specific imports (`tenacity`, `polly`, `resilience4j-retry`) with exponential backoff configuration and max retry bounds

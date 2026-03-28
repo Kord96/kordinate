@@ -27,12 +27,21 @@ How to identify this pattern in code.
 - Java: Micronaut `@ConfigurationProperties`, `@Property`
 - Java: Dropwizard `Configuration` class hierarchy with YAML loading and validation
 - Java: Custom config loaders (e.g., light-4j `Config.getInstance().getJsonMapConfig()`)
+- Java: Spring `@ConfigurationProperties` with `@Validated` and profile-specific `application-{profile}.yml`
+- Go: `viper` library with hierarchical config loading (`viper.SetConfigFile()`, `viper.ReadInConfig()`)
+- Go: `spf13/viper`, `kelseyhightower/envconfig`, `koanf` for structured config management
+- Go: `config/` package with `Config` struct loaded from YAML/env vars at startup
+- Go: `envconfig.Process()` for environment-based configuration with struct tags
+- Any: `config/` directory with environment-specific config files (`config/production.yaml`, `config/development.yaml`)
 
 ### Negative signals (not sufficient for detection)
 
 - Java: Simple `@Value` injection or `@ConfigurationProperties` on a single class without profile-based overrides or config hierarchy is standard Spring usage, not an architectural config management pattern
 - Mere presence of `application.yml` or `application.properties` is standard framework configuration
 - Only flag when there is deliberate config architecture: multiple profiles, config server, hierarchical overrides, or config validation
+- The word `ConfigMap` alone (Kubernetes ConfigMap) is K8s infrastructure, not application-level config management unless the application actively reads from ConfigMaps at runtime
+- Go: `viper` imported but used only for reading a single config file is standard, not the architectural pattern. Look for hierarchical overrides, hot-reload, or config server integration.
+- `@Value` in Spring appearing in a few places for basic property injection is standard framework usage, not the config management pattern.
 
 ### Confidence
 

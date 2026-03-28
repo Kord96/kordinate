@@ -25,6 +25,11 @@ How to identify this pattern in code.
 - Poison message handling: dedicated error queue, alert on DLQ depth
 - RabbitMQ `x-dead-letter-exchange`, SQS `RedrivePolicy`, Kafka error topics
 - DLQ consumer or dashboard for inspecting and replaying failed messages
+- Java: Spring Kafka `DeadLetterPublishingRecoverer`, `@RetryableTopic` with DLT configuration
+- Java: Spring AMQP `x-dead-letter-exchange` queue arguments, `RepublishMessageRecoverer`
+- Go: dead-letter queue or error topic routing in message broker configuration
+- Go: `snooze` or `discard` job states in background job systems (e.g., river `JobStateDiscarded`)
+- Any: `deadLetter`, `dead_letter`, `dlq`, `dlt` as configuration keys, variable names, or topic suffixes
 
 ### Confidence
 

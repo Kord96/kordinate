@@ -26,6 +26,13 @@ How to identify this pattern in code.
 - Multiple database connection configurations (shard_0, shard_1, etc.)
 - Rebalancing or migration tooling for shard splits
 
+### Negative signals (not sufficient for detection)
+
+- The word `partition` alone (disk partition, log partition, table partition in comments, Kafka partition) is NOT the sharding pattern. Kafka partitions are Kafka's internal concept; the application-level sharding pattern requires explicit shard routing logic.
+- The word `Shard` in comments, documentation, or configuration names without shard routing logic is not sufficient.
+- Database-level table partitioning (PostgreSQL `PARTITION BY`) managed by the DBA without application-level routing is database configuration, not the application sharding pattern.
+- `ShardKey` or `partition_key` in Kafka client code refers to Kafka's message partitioning, which is Kafka-specific, not application-level sharding.
+
 ### Confidence
 
 - **high** -- explicit shard router with consistent hashing and per-shard connection pools

@@ -35,6 +35,9 @@ How to identify this pattern in code.
 - The word `adapter` alone (database adapter, HTTP adapter, API adapter) without a corresponding `port` interface is the adapter GoF pattern, not hexagonal. Hexagonal requires both ports AND adapters as a structural pattern.
 - `UseCase` classes without a ports/adapters directory structure may indicate clean architecture but not hexagonal specifically.
 - Package names like `import` or file paths containing `port` as part of a platform-specific name (e.g., `bolt_aix.go`, `solaris`) are not hexagonal.
+- Java/Go: having an `adapter/` directory without corresponding `port/` interfaces is the adapter pattern, not hexagonal. Both must be present.
+- Go: `internal/` package structure alone is standard Go layout, not hexagonal. Look for explicit `port/` and `adapter/` subdirectories.
+- Java: `BytesIn`/`BytesOut` or I/O port references are serialization interfaces, not hexagonal ports.
 
 ### Confidence
 

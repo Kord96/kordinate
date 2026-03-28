@@ -26,6 +26,13 @@ How to identify this pattern in code.
 
 **Not this pattern (Python):** `@pytest.fixture` alone does not indicate the fixture-builder pattern. Every Python test suite using pytest has fixtures -- the pattern is specifically about *builder/factory* classes or functions that construct complex test data with defaults and overrides. A `conftest.py` with simple fixtures returning constants or database connections is standard pytest, not the fixture-builder pattern. Look for `factory_boy`, `Faker`, or custom builder classes with `.create()/.build()` methods in test directories.
 
+### Negative signals (not sufficient for detection)
+
+- The word `fixture` alone is NOT the fixture-builder pattern. Test fixture files, `testdata/` directories, test setup methods, and JUnit `@Before`/`@BeforeEach` are standard test infrastructure.
+- The word `TestBuilder` or `Builder` in test code could be the regular builder pattern applied in tests, not the fixture-builder pattern. Look for factory/builder classes that generate multiple variants of test data with defaults.
+- Go: `testdata/` directories with JSON/YAML files are test fixtures (static data), not fixture builders (dynamic construction).
+- Java: `@TestConfiguration` and `@MockBean` are Spring test setup, not fixture builders.
+
 ### Confidence
 
 - **high** -- Dedicated factory/builder classes with sensible defaults, overrides, and composition of nested objects

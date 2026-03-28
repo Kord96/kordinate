@@ -25,6 +25,10 @@ How to identify this pattern in code.
 - `Semaphore`-based isolation limiting concurrent access to a resource
 - `ThreadPoolBulkhead` configuration in Java resilience libraries
 - Separate thread pools or connection pools allocated per downstream dependency
+- Go: `sentinel-golang` `isolation` package with concurrency isolation rules
+- Go: per-dependency semaphore or bounded channel isolating different backend services
+- Any: `isolation` or `bulkhead` as package/directory names with concurrency limiting per-resource
+- Any: separate thread/goroutine pools per service dependency (not a shared global pool)
 
 ### Negative signals (not sufficient for detection)
 

@@ -26,6 +26,13 @@ How to identify this pattern in code.
 
 **Not this pattern:** A generic `version` field for tracking software versions (e.g., `package.json` version, API versioning) or semantic versioning is not optimistic locking. Optimistic locking requires a version field on mutable entities used in conditional writes to detect concurrent modification conflicts.
 
+### Negative signals (not sufficient for detection)
+
+- The word `version` alone (software version, API version, protocol version, schema version, config version) is NOT optimistic locking. Look for `@Version` on JPA entities or `UPDATE WHERE version =` conditional writes.
+- `ETag` used for HTTP caching (not conditional updates) is caching, not optimistic locking.
+- Go: `version` fields in structs for protocol compatibility or API versioning are not optimistic locking.
+- Semantic versioning (`v1.2.3`), package versions, or migration versions are not this pattern.
+
 ### Confidence
 
 - **high** -- Version column with conditional `UPDATE ... WHERE version = ?` and explicit conflict exception handling

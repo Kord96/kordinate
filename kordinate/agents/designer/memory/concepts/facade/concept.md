@@ -16,37 +16,20 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Classes named `*Facade` or `*Gateway` or `*Client` that wrap complex subsystems
-- Single entry point class providing simplified interface to a library or subsystem
-- Methods that orchestrate multiple internal calls into one high-level operation
-- Wrapper modules around third-party libraries (e.g., `email_service.py` wrapping SMTP + templates + attachments)
-- `__init__.py` re-exporting a simplified public API from a complex package
-- SDK client classes that hide REST/gRPC details behind method calls
-- Behavioral facade (unnamed): a class whose constructor initializes 3+ distinct subsystem objects and whose public methods delegate to combinations of them (e.g., a `Bot` class coordinating polling, API client, and dispatcher)
-- Framework entry points: `App`, `Bot`, `Engine`, or `Server` classes that unify subsystem wiring behind a simple `run()` or `start()`
-- Python: module-level convenience functions (`validate()`, `parse()`, `render()`) that hide complex internal machinery (create internal objects, configure, execute, return result)
-- DAG/Pipeline orchestrator classes with `build()`, `run()`, `execute()` methods that coordinate executor, task status, hooks, and rendering into one call
-- `__init__.py` that re-exports a minimal public API from a multi-module package (e.g., `from .validators import validate, Draft7Validator`)
-- Java: `*Client` or `*Manager` classes wrapping multiple subsystem calls behind simple method signatures (e.g., `ClientAndServer` coordinating lifecycle + API)
-- Java: Spring `@Service` injecting 3+ other services and delegating without containing business logic
-- Java: BFF (Backend for Frontend) classes aggregating calls to multiple backend microservices into unified responses
-- Java: `*Parser.builder()` or factory methods returning a high-level API that hides complex internal wiring (e.g., `JavaParser` hiding lexer/AST/visitor pipeline)
-- Java: Quarkus/Jakarta `@ApplicationScoped` service class injecting 3+ other services and providing simplified API
-- Grep-friendly: classes ending in `Service` that inject 3+ collaborators and delegate without containing business logic are behavioral facades
-- TypeScript: SDK client class exposing `.send()`, `.createFunction()`, `.message()`, `.action()` while hiding internal comm handlers, middleware chains, execution engines, and API clients (e.g., `Inngest`, Slack `App`)
-- TypeScript: Central `Api` or `Application` object that aggregates references to all framework subsystems (`api.actions`, `api.connections`, `api.tasks`, `api.servers`) behind a single namespace
-- State management: `createDomain()` providing simplified interface for creating groups of related stores, events, and effects while hiding internal graph node wiring
-- Go: struct with 3+ injected interfaces/services that delegates to combinations of them, providing a simplified public API (e.g., `WAF` struct coordinating rule engine, transaction manager, and audit logger)
-- TypeScript: `createRouter()`, `AutoRouter()`, `createServer()` factory functions that assemble multiple internal subsystems (handler chain, error handling, response formatting, CORS) into a single object with a simple API (`.fetch()`, `.handle()`)
-- TypeScript: Router/framework entry point that wraps middleware pipeline, route matching, error handling, and response formatting behind a single `.handle(request)` or `.fetch(request)` method
-- Python: `App` class that wraps connector, job manager, admin, and worker subsystems behind `task()` decorator and `run_worker()` (e.g., Procrastinate's `App`)
+- Classes explicitly named `*Facade` that wrap complex subsystems behind a simplified interface
+- Python: `__init__.py` re-exporting a simplified public API from a complex package (5+ `from .X import Y` lines)
+- Python: module-level convenience functions (`validate()`, `parse()`, `render()`) that hide complex internal machinery
+- Java: classes named `*Facade` providing simplified access to a subsystem
+- TypeScript: SDK client class wrapping multiple subsystems behind a simple API (`.send()`, `.message()`, `.action()`)
+- Go: struct explicitly named `*Facade` coordinating multiple subsystem interfaces
 
-### Grep-friendly detection (Python)
+### Negative signals (not sufficient for detection)
 
-- Classes named `*Client`, `*Service`, `*Manager`, `*Gateway`, or `*Facade` that wrap subsystems
-- Module-level functions in `__init__.py` that re-export from submodules: `from .internal import public_function`
-- `App`, `Application`, or `Server` classes with `run()` or `start()` that initialize multiple subsystems
-- Python: Look for `__init__.py` files with 5+ `from .X import Y` lines as evidence of API surface simplification
+- Classes named `*Client`, `*Gateway`, `*Manager`, or `*Service` are NOT automatically facades -- these are common naming conventions for many patterns (adapter, gateway, service layer)
+- `App`, `Bot`, `Engine`, or `Server` entry point classes are application bootstrapping, not the facade pattern
+- A service class injecting multiple collaborators is normal service composition, not a facade unless it explicitly simplifies a complex subsystem API for external consumers
+- The word `facade` in comments or package names without an actual simplifying wrapper class is not the pattern
+- Spring `@Service` classes with multiple injected dependencies are standard service layer, not facade
 
 ### Confidence
 

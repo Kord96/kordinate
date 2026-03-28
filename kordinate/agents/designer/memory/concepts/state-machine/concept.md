@@ -31,6 +31,14 @@ How to identify this pattern in code.
 
 - An `enum State` or `enum Status` used purely as a data label (e.g., `Status.ACTIVE`/`Status.INACTIVE`) without transition logic is not a state machine
 - Simple boolean or enum flags (`isProcessing`, `ConnectionState.OPEN`) that are set directly without guarded transitions are status tracking, not state machines
+- The word `transition` in comments, documentation, or generic context (CSS transitions, data format transitions, team transitions) is NOT a state machine
+- Java: `enum` types alone (even named `State` or `Status`) without transition logic are data types, not state machines
+- Database migration "transitions" (schema transitions, Flyway state transitions) are database-migration, not state machine
+- `FSM` as an unrelated acronym (financial, filesystem) without state machine library imports is not this pattern
+- Go: `transition` as a function name in non-lifecycle contexts (data transformation, format conversion) is not this pattern
+- `StateMachine` in Kafka Streams or Spring Batch internal state management is framework internals, not an application-level state machine
+- Go: `iota` constants for states without a transition function or guard logic are enums, not state machines
+- `handle()` or `process()` methods without state-aware dispatching are generic handlers, not state machine handlers
 
 ### Confidence
 

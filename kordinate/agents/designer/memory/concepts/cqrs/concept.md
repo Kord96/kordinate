@@ -24,6 +24,13 @@ How to identify this pattern in code.
 - MediatR `IRequest<T>` and `IRequestHandler<TRequest, TResponse>` with distinct command/query request types (.NET)
 - Separate read and write repository interfaces (e.g., `WriteRepository`, `ReadRepository` or `CommandStore`, `QueryStore`)
 - Separate database connections or data sources for read operations vs write operations
+- Java: `Command` and `Query` as distinct request types routed to separate handler pipelines
+- Java: `commands/` and `queries/` package structure with separate handler classes
+- Java: Axon Framework `@CommandHandler`, `@QueryHandler`, `CommandGateway`, `QueryGateway`
+- Go: separate `command/` and `query/` packages with distinct handler interfaces
+- Go: `CommandBus` and `QueryBus` structs dispatching to separate handlers
+- Any: LMAX Disruptor pattern with separate command processing and query/reporting paths
+- Any: distinct write model and read model classes representing the same aggregate in different structures
 
 ### Confidence
 
