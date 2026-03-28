@@ -291,9 +291,16 @@ function spawnClaude(args, cwd, env, timeoutMs = 900000) {
   return new Promise((resolve, reject) => {
     const child = spawn('claude', args, {
       cwd,
-      env: { ...process.env, ...env },
+      env: {
+        ...process.env,
+        ...env,
+        // Disable file watching in spawned agents — they don't need hot-reload
+        CHOKIDAR_USEPOLLING: '0',
+        CHOKIDAR_INTERVAL: '999999',
+        TSC_WATCHFILE: 'UseFsEvents',
+        DISABLE_FILE_WATCHER: '1',
+      },
       stdio: ['ignore', 'pipe', 'pipe'],
-      detached: true,
     });
 
     let stdout = '';
