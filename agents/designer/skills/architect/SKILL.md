@@ -27,7 +27,7 @@ Produce a structured architectural understanding of a project.
 
    Also read the concept catalog:
    - `agents/designer/memory/abstractions.md` — the 19 abstraction levels and their descriptions
-   - `agents/designer/memory/concepts/*/pattern.md` — scan Recognition signatures to match detected imports against known concepts
+   - `agents/designer/memory/concepts/*/concept.md` — scan Recognition signatures to match detected imports against known concepts
 
    Use concept names from the catalog as the vocabulary for `state[].concept`, `external_dependencies[].concept`, and `components[].patterns`. Do not invent ad-hoc terms — if a concept exists in the catalog, use its name.
 

@@ -1,0 +1,14 @@
+questions:
+  - q: "Does middleware generate or extract a unique correlation ID on incoming requests and bind it to the request context?"
+    weight: 3
+    signals: ["request ID middleware", "correlation ID extraction", "generate ID if not present"]
+  - q: "Is the correlation ID propagated in headers to all downstream service calls?"
+    weight: 3
+    signals: ["X-Request-ID propagation", "correlation header forwarding", "ID in outbound request headers"]
+  - q: "Are all log entries for a request lifecycle enriched with the correlation ID?"
+    weight: 2
+    signals: ["structured log with request ID", "MDC correlation binding", "log context injection"]
+  - q: "Is the correlation ID propagated across async boundaries (message queues, background jobs)?"
+    weight: 1
+    signals: ["ID in message metadata", "correlation across queue boundary", "async context propagation"]
+threshold: 6

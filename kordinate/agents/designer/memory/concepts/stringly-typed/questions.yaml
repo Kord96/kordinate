@@ -1,0 +1,14 @@
+questions:
+  - q: "Are string literals used for branching logic where enums or typed constants should be?"
+    weight: 3
+    signals: ["if type == 'admin' string comparison", "status = 'active' without enum", "same magic string in 3+ files for branching"]
+  - q: "Are function parameters typed as string when they only accept a fixed set of known values?"
+    weight: 3
+    signals: ["string parameter with known valid values", "no type narrowing on string input", "function accepts any string for a finite domain"]
+  - q: "Are string constants scattered across multiple files with no single defining location?"
+    weight: 2
+    signals: ["magic strings duplicated in multiple modules", "no central constant definition", "string values repeated without shared reference"]
+  - q: "Is refactoring of string-based values difficult due to lack of compiler or IDE assistance?"
+    weight: 1
+    signals: ["rename requires project-wide search-replace", "no autocomplete for valid values", "typo in string causes silent runtime bug"]
+threshold: 6

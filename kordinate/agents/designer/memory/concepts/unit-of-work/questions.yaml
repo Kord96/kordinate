@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an explicit unit-of-work object or session that tracks changes across multiple repositories and flushes them in a single commit?"
+    weight: 3
+    signals: ["UoW class with commit and rollback", "Session tracking dirty objects", "register_new and register_dirty methods"]
+  - q: "Does commit happen once at the end of a business operation rather than per-repository call?"
+    weight: 3
+    signals: ["single commit at operation boundary", "no commit inside repository methods", "atomic flush at end of use case"]
+  - q: "Is transaction rollback on failure coordinated to revert all changes, not just the last write?"
+    weight: 2
+    signals: ["rollback reverts all changes", "transaction.atomic scope", "coordinated rollback across repositories"]
+  - q: "Is the unit of work lifetime scoped to a single request or use case rather than being a long-lived singleton?"
+    weight: 1
+    signals: ["UoW per request scope", "context manager scoping transaction", "not a singleton session"]
+threshold: 6

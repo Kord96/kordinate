@@ -1,0 +1,17 @@
+questions:
+  - q: "Are deferred computations represented as Future, Promise, or CompletableFuture objects?"
+    weight: 3
+    signals: ["Promise or Future type wrapping async result", "CompletableFuture or asyncio.Future instances"]
+  - q: "Are results composed using chaining or parallel combinators rather than sequential awaits in loops?"
+    weight: 2
+    signals: ["Promise.all() or asyncio.gather() for parallel work", ".then().then() chaining or thenCompose()"]
+  - q: "Does every future or promise have an explicit error handling path?"
+    weight: 2
+    signals: [".catch() or except handler on every promise chain", "error callback registered on future completion"]
+  - q: "Are timeouts applied to prevent indefinite waits on unresolved futures?"
+    weight: 1
+    signals: ["timeout parameter on await or .get()", "asyncio.wait_for with timeout"]
+  - q: "Are orphaned futures avoided so exceptions are never silently lost?"
+    weight: 1
+    signals: ["all created futures are awaited or observed", "no fire-and-forget promise without error handler"]
+threshold: 6

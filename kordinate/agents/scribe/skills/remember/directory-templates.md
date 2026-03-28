@@ -10,7 +10,7 @@ Path: `agents/designer/memory/concepts/<concept-name>/` (canonical path)
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `pattern.md` | yes | Core concept definition — frontmatter + Recognition + Architecture sections. See [concept-template.md](concept-template.md). |
+| `concept.md` | yes | Core concept definition — frontmatter + Recognition + Architecture sections. See [concept-template.md](concept-template.md). |
 | `README.md` | no | Extended documentation for the human-facing docs site |
 | `<impl>.md` | no | Implementation-specific reference (e.g., `stoik.md` for stream-to-store, `orchestrator.md` for service-manager) |
 

@@ -1,0 +1,17 @@
+questions:
+  - q: "Is there a class with a private constructor and a static getInstance method for lazy initialization?"
+    weight: 3
+    signals: ["private constructor with static getInstance", "_instance class variable caching single instance", "sync.Once with package-level var instance"]
+  - q: "Is instance creation thread-safe to prevent duplicate instantiation?"
+    weight: 2
+    signals: ["double-checked locking on creation", "sync.Once for safe initialization", "module-level import guaranteeing single creation"]
+  - q: "Can the singleton instance be replaced or reset for testing?"
+    weight: 2
+    signals: ["reset method for test teardown", "injectable singleton via DI container", "test hook to override instance"]
+  - q: "Is the singleton justified over dependency injection for the use case?"
+    weight: 1
+    signals: ["clear rationale for single instance", "genuinely process-wide resource", "not used as global grab-bag"]
+  - q: "Is the singleton scoped to a single responsibility rather than accumulating unrelated concerns?"
+    weight: 1
+    signals: ["singleton manages one resource", "not mixing config, logger, and cache", "focused singleton purpose"]
+threshold: 6

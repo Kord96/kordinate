@@ -1,0 +1,14 @@
+questions:
+  - q: "Does a factory return cached immutable instances keyed by intrinsic state?"
+    weight: 3
+    signals: ["factory method returning existing instance from cache", "pool or registry keyed by intrinsic properties"]
+  - q: "Is intrinsic (shared) state separated from extrinsic (caller-provided) state?"
+    weight: 3
+    signals: ["shared object holds only immutable intrinsic data", "extrinsic state passed as parameter at usage time"]
+  - q: "Are flyweight objects truly immutable with no mutable fields?"
+    weight: 2
+    signals: ["frozen dataclass or readonly fields on shared instances", "no setter methods on pooled objects"]
+  - q: "Does the pool have an eviction policy or weak references to prevent unbounded growth?"
+    weight: 1
+    signals: ["WeakValueDictionary or WeakHashMap for pool", "LRU eviction or size limit on instance cache"]
+threshold: 6

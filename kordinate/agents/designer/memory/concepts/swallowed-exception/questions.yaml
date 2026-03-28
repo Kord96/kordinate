@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there empty catch blocks or except:pass statements that silently discard errors?"
+    weight: 3
+    signals: ["except Exception: pass", "catch(e) {} with empty body", "catch-all with no logging or re-raise"]
+  - q: "Do catch blocks return default values without recording the original exception?"
+    weight: 3
+    signals: ["return None in except without logging", "return empty list on error silently", "default value masking original failure"]
+  - q: "Are try/except blocks wrapped around large code sections with bare pass handlers?"
+    weight: 2
+    signals: ["broad try block with pass in except", "catch-all around 50+ lines", "TODO handle this comment in catch"]
+  - q: "Do users report incorrect data or missing results while logs show no errors?"
+    weight: 1
+    signals: ["silent data corruption", "missing results with no error trace", "bugs untraceable due to discarded exceptions"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Do ViewModel classes expose observable properties that the view binds to declaratively?"
+    weight: 3
+    signals: ["@observable property", "@Published var", "LiveData in ViewModel", "reactive state binding"]
+  - q: "Is the ViewModel the single source of truth for view state, with no parallel state maintained in the view?"
+    weight: 3
+    signals: ["view reads from ViewModel only", "no local view state duplicating ViewModel", "one-way data flow to view"]
+  - q: "Are ViewModels testable in isolation without instantiating any view or UI framework?"
+    weight: 2
+    signals: ["ViewModel unit test with no UI imports", "test asserts on ViewModel properties", "no view dependency in test"]
+  - q: "Are subscriptions and bindings cleaned up when the view is destroyed to prevent leaks?"
+    weight: 2
+    signals: ["dispose subscriptions on unmount", "onCleared() cleanup", "binding lifecycle management"]
+threshold: 6

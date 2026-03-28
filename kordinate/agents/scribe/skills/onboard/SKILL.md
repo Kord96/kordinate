@@ -3,7 +3,6 @@ name: onboard
 description: Add a new agent or sync existing agents to the runtime. Use when creating a new agent, linking agents after updates, or verifying the kordinate-to-Claude-native integration.
 argument-hint: "<agent-name> | --sync"
 curated: true
-scope: global
 ---
 
 Add a new kordinate agent or sync existing agents to the Claude Code runtime.

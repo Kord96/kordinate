@@ -1,0 +1,14 @@
+questions:
+  - q: "Are side effects bound to component lifecycle via framework hooks with dependency tracking?"
+    weight: 3
+    signals: ["useEffect with dependency array", "onMounted or watch lifecycle hooks", "ngOnInit for initialization side effects"]
+  - q: "Do effect callbacks return cleanup functions for subscriptions, timers, or listeners?"
+    weight: 3
+    signals: ["return unsubscribe from useEffect", "clearInterval in cleanup", "AbortController aborted in effect cleanup"]
+  - q: "Are dependency arrays complete and accurate, avoiding stale closures or excessive re-runs?"
+    weight: 2
+    signals: ["all referenced variables in dependency array", "empty array for mount-only effect", "no missing deps causing stale data"]
+  - q: "Are data-fetching effects guarded against race conditions from unmounted components?"
+    weight: 1
+    signals: ["abort controller for fetch cancellation", "isMounted check before setState", "stale closure guard in async effect"]
+threshold: 6

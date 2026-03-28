@@ -2,7 +2,6 @@
 name: remember
 description: Write a memory for an agent. Handles scope, frontmatter properties, kordinate and Claude native paths, and KORD.md updates.
 curated: true
-scope: global
 ---
 
 Write a memory on behalf of an agent. Other agents are blocked from writing to memory/kord paths by the guard hook (`$KORDINATE_HOME/hooks/guard.sh`) and told to delegate here.

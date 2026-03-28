@@ -1,0 +1,14 @@
+questions:
+  - q: "Do entity or model classes contain only getters, setters, and field declarations with no business logic methods?"
+    weight: 3
+    signals: ["data-only classes", "no behavior on domain objects", "getters/setters without logic"]
+  - q: "Does all domain logic live in separate service or manager classes that accept passive data objects as parameters?"
+    weight: 3
+    signals: ["service operates on entity", "logic external to model", "service class does validation/rules"]
+  - q: "Is the same validation or invariant logic duplicated across multiple service classes that handle the same entity type?"
+    weight: 2
+    signals: ["duplicated validation", "same check in multiple services", "scattered business rules"]
+  - q: "Can entity objects be put into invalid states because state transition rules are enforced by callers, not by the object itself?"
+    weight: 2
+    signals: ["invalid state reachable", "no constructor validation", "setStatus without guard"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Are SQL queries built using string concatenation or f-strings with user-controlled input?"
+    weight: 3
+    signals: ["f-string inside cursor.execute()", "string concatenation building SQL with user input", "format() inserting variables into SQL"]
+  - q: "Are parameterized queries absent where raw SQL strings are used?"
+    weight: 3
+    signals: ["no ? or $1 placeholders in SQL", "no parameterized bind variables", "raw SQL without parameter substitution"]
+  - q: "Are ORM raw or extra methods used with unsanitized user input?"
+    weight: 2
+    signals: ["raw() with user input in Django", "extra() with unvalidated parameters", "raw SQL in ORM bypassing query builder"]
+  - q: "Are static analysis tools with SQL injection rules absent from the CI pipeline?"
+    weight: 1
+    signals: ["no Bandit or Semgrep SQL rules", "no SQL injection scanning in CI", "no SAST for query safety"]
+threshold: 6

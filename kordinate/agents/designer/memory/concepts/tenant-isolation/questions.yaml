@@ -1,0 +1,14 @@
+questions:
+  - q: "Do database tables include a tenant_id column and are queries consistently filtered by the current tenant?"
+    weight: 3
+    signals: ["tenant_id column", "WHERE tenant_id = ?", "filter by current_tenant"]
+  - q: "Is tenant context extracted at the request boundary via middleware and propagated through the execution chain?"
+    weight: 3
+    signals: ["tenant middleware", "request.tenant_id or ctx.tenant", "TenantContext.current()"]
+  - q: "Does the database enforce tenant isolation via row-level security policies, schema-per-tenant, or database-per-tenant?"
+    weight: 2
+    signals: ["CREATE POLICY", "ENABLE ROW LEVEL SECURITY", "schema-per-tenant or SET search_path"]
+  - q: "Do background jobs and async tasks carry tenant context through their execution rather than running unscoped?"
+    weight: 1
+    signals: ["tenant context in async workers", "tenant propagation in background jobs", "scoped task execution"]
+threshold: 6

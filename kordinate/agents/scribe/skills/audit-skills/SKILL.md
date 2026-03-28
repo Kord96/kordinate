@@ -3,7 +3,6 @@ name: audit-skills
 description: Audit, test, benchmark, and improve SKILL.md files. Use when users want to check skill quality, run a quality gate on skills, run evals against skills, benchmark skill performance, optimize skill descriptions for triggering, or iteratively improve skills based on test results.
 argument-hint: "<mode> [--skill <name>] [--agent <name>] [--fix (audit only)]"
 curated: true
-scope: global
 ---
 
 Audit, test, benchmark, and improve kordinate skills. Combines static quality checks with eval-driven testing and iterative improvement.

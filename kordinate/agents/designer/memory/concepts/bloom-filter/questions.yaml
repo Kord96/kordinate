@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a data structure that supports add and membership-test operations but can return false positives while guaranteeing no false negatives?"
+    weight: 3
+    signals: ["probabilistic membership test", "might_contain()", "false positives acceptable"]
+  - q: "Does the implementation use multiple independent hash functions applied to the same element against a fixed-size bit array?"
+    weight: 3
+    signals: ["multiple hash functions", "bit array", "k hashes into m bits"]
+  - q: "Is a positive membership result followed by a definitive secondary lookup (database, cache) to confirm?"
+    weight: 2
+    signals: ["secondary verification after positive", "bloom check then DB lookup", "two-stage membership"]
+  - q: "Is there a configurable false positive rate parameter that determines the filter's size and hash count?"
+    weight: 2
+    signals: ["error_rate parameter", "configurable false positive rate", "sizing based on expected elements"]
+threshold: 6

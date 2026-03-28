@@ -7,7 +7,6 @@ description: >
   and bottom drawer.
 argument-hint: "<project> [--narrative <dir>]"
 curated: true
-scope: global
 context: fork
 ---
 
@@ -109,7 +108,9 @@ Produce this as **one thought**, not a mechanical transform. Hold the full pictu
 - Every `readers[]` and `writers[]` in state must exist in `nodes[].id`
 - Do not reference components that don't exist in the nodes array
 
-**Hierarchy — 3-5 top-level groups maximum.** Follow the C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not modules. Everything nests inside. Groups beyond depth 2 become regular nodes.
+**Hierarchy — 3-5 top-level groups maximum. This is a hard constraint, not a guideline.** Follow the C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not code modules. The synthetic `external` and `actors` groups count toward this limit. Everything nests inside top-level groups. Groups beyond depth 2 become regular nodes.
+
+**Enforcing the group limit:** After drafting nodes and groups, count the top-level groups. If there are more than 5, merge the two most closely related groups into one before proceeding. For example, if a project has Server, Browser, External, Actors, and two remaining groups like "Storage" and "Processing", combine them into a single "Backend" group. Repeat until you have at most 5. Small projects (under 15 nodes) should aim for 3 groups. The rule of thumb: if two groups would have only 1-2 nodes each, they belong together.
 
 **Narrative approach — all narratives are one coherent story:**
 
@@ -169,7 +170,7 @@ For `structure_narrative`, add a top-level `structure_narrative_map`:
 
 Write to `<docs-content-dir>/<project>/architecture.json`.
 
-### 6. Write the explorer page
+### 5. Write the explorer page
 
 Write a self-contained Astro page to `<docs-pages-dir>/<project>/index.astro`.
 
@@ -221,7 +222,7 @@ The page structure:
 - Responsive: sidebar collapses to overlay on mobile
 - The page should work both in dev mode and as a built static page
 
-### 7. Path resolution for output
+### 6. Path resolution for output
 
 The docs site content lives at (resolve in order):
 1. If `$KORDINATE_HOME/../site/` exists, use it (PVC layout: `kordinate/site/`)
@@ -235,7 +236,7 @@ Within the resolved docs root:
 
 If the docs site path does not exist (option 3 fallback), write all files into the project-local output directory and report that the user should copy them to the docs site manually.
 
-### 8. Report
+### 7. Report
 
 Output a summary:
 

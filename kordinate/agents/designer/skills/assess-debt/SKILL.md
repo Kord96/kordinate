@@ -32,9 +32,9 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
 4. **Load anti-patterns** — two sources of anti-patterns to load:
 
-   **a) From detected patterns:** for each pattern from step 3.1 (whether from `patterns.md` or the quick scan), read its `pattern.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/pattern.md`. Extract the `### Anti-patterns` section under `## Architecture`. This section is a bullet list where each bullet is one anti-pattern to scan for (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). Treat each bullet as a separate scannable anti-pattern. If a pattern's file has no Anti-patterns section, skip it and record it for the report header (see "Patterns detected but none have anti-patterns sections" in step 9).
+   **a) From detected patterns:** for each pattern from step 3.1 (whether from `patterns.md` or the quick scan), read its `concept.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/concept.md`. Extract the `### Anti-patterns` section under `## Architecture`. This section is a bullet list where each bullet is one anti-pattern to scan for (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). Treat each bullet as a separate scannable anti-pattern. If a pattern's file has no Anti-patterns section, skip it and record it for the report header (see "Patterns detected but none have anti-patterns sections" in step 10).
 
-   **b) From already-confirmed anti-patterns:** for each entry carried forward from step 3.2, read the anti-pattern's `pattern.md` from `~/.kord/agents/designer/memory/concepts/<anti-pattern>/pattern.md` and check for a `## Impact` section. The Impact section is a prose sentence describing consequences, not an explicit severity keyword. Map it to a severity level using these heuristics:
+   **b) From already-confirmed anti-patterns:** for each entry carried forward from step 3.2, read the anti-pattern's `concept.md` from `~/.kord/agents/designer/memory/concepts/<anti-pattern>/concept.md` and check for a `## Impact` section. The Impact section is a prose sentence describing consequences, not an explicit severity keyword. Map it to a severity level using these heuristics:
    - **CRITICAL** — Impact mentions reliability, correctness, data loss, outages, security, or safety consequences (e.g., "invariants impossible to enforce," "invalid state transitions slip through").
    - **RECOMMENDED** — Impact mentions maintainability, testability, comprehension, or velocity costs without immediate runtime risk (e.g., "impossible to test or modify in isolation," "business rules scattered across service classes").
    - **MINOR** — Impact mentions readability, convention, or cosmetic concerns only.
@@ -74,15 +74,21 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
    Each recommendation names the anti-pattern, affected files, and what the fix looks like. If a recommendation clusters multiple violations, list all of them and explain why one change addresses them together.
 
-9. **Handle edge cases**:
+9. **Gemini review** (background) -- before writing the final report, kick off a peer review:
+   ```bash
+   gemini -m gemini-2.5-pro -o json -p "Review this tech debt assessment. Flag: severity misclassifications (CRITICAL items that should be RECOMMENDED or vice versa), missing violations visible in the source, recommendations that cluster poorly, and grade overrides that seem wrong. Be specific." < /tmp/debt-draft.md > /tmp/gemini-review-debt.json &
+   ```
+   Continue to step 10 immediately. Step 11 checks whether the review has returned before finalizing.
+
+10. **Handle edge cases**:
    - **No patterns or anti-patterns detected** (no `patterns.md` and quick scan finds nothing, or `patterns.md` exists but both tables are empty): the project may be too small, too new, or use patterns not in the catalog. Report this clearly: "No recognized patterns detected. This can mean the project is very small, uses unconventional architecture, or the pattern catalog doesn't cover its stack. Run `/detect-patterns` for a more thorough scan." Write a minimal report with a Grade A (0 points) and a note explaining the situation.
    - **Project too small for meaningful assessment** (fewer than ~10 source files or ~500 lines of code): note that the assessment has limited value at this scale. Small projects rarely have structural debt — most issues are code-level. Still produce the report, but caveat the grade.
    - **All violations are MINOR**: this is a good result. Report Grade A or B as appropriate, and frame the MINOR items as "polish" rather than "debt." Suggest addressing them during regular code review rather than dedicated refactoring time.
-   - **Patterns detected but none have anti-patterns sections**: every detected pattern was found in the catalog but none of their `pattern.md` files contain an `### Anti-patterns` section. This means the catalog has recognition data but no debt criteria for these patterns. If the `## Detected Anti-Patterns` table from step 3 has entries, the report can still include those. Otherwise, produce a minimal report noting which patterns were detected and that anti-pattern coverage is unavailable for them. Do not assign a misleading Grade A -- instead omit the grade and state that the assessment is incomplete.
+   - **Patterns detected but none have anti-patterns sections**: every detected pattern was found in the catalog but none of their `concept.md` files contain an `### Anti-patterns` section. This means the catalog has recognition data but no debt criteria for these patterns. If the `## Detected Anti-Patterns` table from step 3 has entries, the report can still include those. Otherwise, produce a minimal report noting which patterns were detected and that anti-pattern coverage is unavailable for them. Do not assign a misleading Grade A -- instead omit the grade and state that the assessment is incomplete.
    - **Anti-patterns detected but no patterns**: the `## Detected Anti-Patterns` table has entries but `## Detected Patterns` is empty. The already-confirmed anti-patterns still produce violations — score and grade them normally. Note in the report that no design patterns were detected, so the scan only covers the pre-identified anti-patterns and may undercount debt.
-   - **Project uses patterns not in catalog**: some detected patterns may lack a `pattern.md` file or lack an Anti-patterns section. Skip those patterns and note them in the report header so the reader knows which areas had no anti-pattern coverage.
+   - **Project uses patterns not in catalog**: some detected patterns may lack a `concept.md` file or lack an Anti-patterns section. Skip those patterns and note them in the report header so the reader knows which areas had no anti-pattern coverage.
 
-10. **Write the report** to `<project-repo>/.kord/agents/designer/memory/debt-assessment.md`:
+11. **Write the report** to `<project-repo>/.kord/agents/designer/memory/debt-assessment.md`. If the Gemini review from step 9 has returned, incorporate valid critiques: adjust severity levels, add missed violations, fix clustering. Ignore critiques about scoring methodology -- the grading scale is fixed.
 
    ```markdown
    # <project> — Tech Debt Assessment
@@ -124,4 +130,4 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
    Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
 
-11. **Report** — summarize: score, grade, grade interpretation, top 3 recommendations, and report location.
+12. **Report** — summarize: score, grade, grade interpretation, top 3 recommendations, whether Gemini review was incorporated, and report location.

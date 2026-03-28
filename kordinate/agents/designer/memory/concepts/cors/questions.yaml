@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there CORS middleware or configuration that sets Access-Control-Allow-Origin with an explicit origin allowlist?"
+    weight: 3
+    signals: ["CORS middleware", "origin allowlist", "Access-Control-Allow-Origin configuration"]
+  - q: "Are preflight OPTIONS requests handled with appropriate Access-Control headers?"
+    weight: 2
+    signals: ["OPTIONS handler", "preflight response", "Access-Control-Allow-Methods header"]
+  - q: "Are allowed methods, headers, and credentials explicitly restricted rather than wildcarded?"
+    weight: 2
+    signals: ["restricted allowed methods", "explicit header allowlist", "credentials policy"]
+  - q: "Is Access-Control-Max-Age set to reduce the frequency of preflight requests?"
+    weight: 1
+    signals: ["max-age on preflight", "preflight cache duration", "Access-Control-Max-Age header"]
+threshold: 5

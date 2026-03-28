@@ -1,0 +1,14 @@
+questions:
+  - q: "Are operations encapsulated as objects with an execute() method, enabling them to be queued, logged, or stored?"
+    weight: 3
+    signals: ["command object with execute()", "operation as first-class object", "action class with run method"]
+  - q: "Is there undo or rollback functionality backed by a history stack of executed command objects?"
+    weight: 3
+    signals: ["undo method on command", "command history stack", "reversible operations"]
+  - q: "Are command objects self-contained, carrying all parameters needed for execution?"
+    weight: 2
+    signals: ["self-contained command parameters", "command carries own data", "no external state lookup in execute"]
+  - q: "Is the invoker decoupled from the concrete command types it triggers?"
+    weight: 1
+    signals: ["invoker holds abstract command", "command interface decoupling", "polymorphic dispatch of commands"]
+threshold: 6

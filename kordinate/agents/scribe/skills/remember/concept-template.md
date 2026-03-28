@@ -2,7 +2,7 @@
 
 Level 3 resource for the remember skill. Defines the expected format for Designer concept files.
 
-Use this template when writing a new concept file for the Designer agent at `agents/designer/memory/concepts/<concept-name>/pattern.md` (canonical path).
+Use this template when writing a new concept file for the Designer agent at `agents/designer/memory/concepts/<concept-name>/concept.md` (canonical path).
 
 ## Frontmatter
 
@@ -77,6 +77,6 @@ Review guidance for this concept.
 
 ## Notes
 
-- Each concept gets its own directory: `<concept-name>/pattern.md`
+- Each concept gets its own directory: `<concept-name>/concept.md`
 - The directory may also contain implementation-specific files (e.g., `stoik.md` for stream-to-store, `orchestrator.md` for service-manager)
 - Anti-pattern concept files follow the same structure but `type: anti-pattern` and the Architecture section focuses on detection and remediation rather than review

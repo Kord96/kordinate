@@ -1,0 +1,50 @@
+[
+  {
+    "repo": "pallets/flask",
+    "language": "python",
+    "known_concepts": ["decorator", "middleware", "plugin", "factory", "config-management", "router"],
+    "source": "Flask documentation and architecture"
+  },
+  {
+    "repo": "django/django",
+    "language": "python",
+    "known_concepts": ["mvc", "middleware", "decorator", "observer", "template-method", "active-record", "command", "factory", "orm"],
+    "source": "Django design philosophies documentation"
+  },
+  {
+    "repo": "fastapi/fastapi",
+    "language": "python",
+    "known_concepts": ["dependency-injection", "decorator", "middleware", "input-validation", "router", "content-negotiation"],
+    "source": "FastAPI documentation"
+  },
+  {
+    "repo": "microsoft/TypeScript",
+    "language": "typescript",
+    "known_concepts": ["visitor", "factory", "ast", "lexer-parser", "composite", "iterator"],
+    "source": "TypeScript architecture wiki"
+  },
+  {
+    "repo": "gin-gonic/gin",
+    "language": "go",
+    "known_concepts": ["middleware", "chain-of-responsibility", "builder", "router"],
+    "source": "Gin documentation"
+  },
+  {
+    "repo": "spring-projects/spring-boot",
+    "language": "java",
+    "known_concepts": ["dependency-injection", "factory", "proxy", "decorator", "observer", "template-method", "strategy", "singleton"],
+    "source": "Spring Framework reference"
+  },
+  {
+    "repo": "Netflix/Hystrix",
+    "language": "java",
+    "known_concepts": ["circuit-breaker", "bulkhead", "command", "proxy", "graceful-degradation", "metrics-instrumentation"],
+    "source": "Hystrix wiki and architecture"
+  },
+  {
+    "repo": "reduxjs/redux",
+    "language": "typescript",
+    "known_concepts": ["flux", "middleware", "observer", "command", "event-sourcing", "reactive-store"],
+    "source": "Redux documentation"
+  }
+]

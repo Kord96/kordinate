@@ -24,7 +24,7 @@ Scan a project's source code to identify which design patterns and anti-patterns
    - `~/.kord/agents/designer/memory/concepts.md` -- patterns index (columns: `Pattern | Description | Reference`)
    - `~/.kord/agents/designer/memory/anti-patterns.md` -- anti-patterns index (columns: `Anti-pattern | What to look for | Reference`)
 
-   Each index header states its entry and category counts -- use those numbers in the report, do not hardcode them. Both patterns and anti-patterns live in the same directory tree: `~/.kord/agents/designer/memory/concepts/<name>/pattern.md`. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). Note: the two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) -- always pull the category from whichever index the entry appears in.
+   Each index header states its entry and category counts -- use those numbers in the report, do not hardcode them. Both patterns and anti-patterns live in the same directory tree: `~/.kord/agents/designer/memory/concepts/<name>/concept.md`. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). Note: the two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) -- always pull the category from whichever index the entry appears in.
 
    **Detect the stack.** Before scanning, identify the project's languages and frameworks so you can prioritize relevant categories:
    - Python: check for `requirements.txt`, `pyproject.toml`, `setup.py`, `Pipfile`; then grep for framework imports (`flask`, `fastapi`, `django`, `celery`, `sqlalchemy`, `httpx`, `requests`).
@@ -34,11 +34,11 @@ Scan a project's source code to identify which design patterns and anti-patterns
    - Kubernetes: check for `kustomization.yaml`, `helm/`, Dockerfiles.
    Record the detected stack -- it drives category selection below and gap analysis in step 5.
 
-   **Category prioritization.** Count source files: `find <project> -name '*.py' -o -name '*.ts' -o -name '*.go' -o -name '*.java' | wc -l`. For any project, rank categories by relevance to the detected stack. Always scan: resilience, error-handling, security, structural, storage/data (these surface the highest-value findings). Add stack-specific categories (e.g., concurrency for async Python, frontend for React, messaging for Kafka consumers). For projects over 500 files, limit the initial scan to the 5-8 most relevant categories and expand only if time permits.
+   **Category prioritization.** Estimate project size by globbing source files (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.java`). For any project, rank categories by relevance to the detected stack. Always scan: resilience, error-handling, security, structural, storage/data (these surface the highest-value findings). Add stack-specific categories (e.g., concurrency for async Python, frontend for React, messaging for Kafka consumers). For projects over 500 files, limit the initial scan to the 5-8 most relevant categories and expand only if time permits.
 
 4. **Scan for patterns and anti-patterns.** Run the three passes below once for patterns, then once for anti-patterns. Each pass narrows or confirms candidates from the previous one.
 
-   **Pass 1 -- broad grep to build a candidate list.** Work category by category through the prioritized list from step 3. For each entry in a category, derive grep keywords from its index table row: use the `Description` column (patterns index) or `What to look for` column (anti-patterns index) to extract framework imports (`from pybreaker`, `import opossum`), directory names (`ports/`, `adapters/`), config files (`circuit_breaker.yml`), and class/function names. A hit on any keyword adds that entry to the candidate list. Skip entries with zero hits -- do not read their full `pattern.md`.
+   **Pass 1 -- broad grep to build a candidate list.** Work category by category through the prioritized list from step 3. For each entry in a category, derive grep keywords from its index table row: use the `Description` column (patterns index) or `What to look for` column (anti-patterns index) to extract framework imports (`from pybreaker`, `import opossum`), directory names (`ports/`, `adapters/`), config files (`circuit_breaker.yml`), and class/function names. A hit on any keyword adds that entry to the candidate list. Skip entries with zero hits -- do not read their full `concept.md`.
 
    **Batch by category:** Build one multi-pattern regex per category (e.g., `pybreaker|opossum|CircuitBreaker|resilience4j` for Resilience) instead of grepping entry-by-entry. This keeps the number of grep invocations to one per category (~24 for patterns, ~21 for anti-patterns) rather than one per entry (~216 total).
 
@@ -54,9 +54,16 @@ Scan a project's source code to identify which design patterns and anti-patterns
 
    A tool match is strong evidence -- mark the candidate as confirmed with high confidence. Parse semgrep JSON for file paths and line numbers. Remove confirmed candidates from the Pass 3 worklist.
 
-   **Pass 3 -- manual verification of remaining candidates.** For each candidate still unconfirmed after Pass 2 (no rule file exists, or the tool produced no matches), read its `## Recognition > ### Signatures` section from `pattern.md` and verify with targeted Grep/Glob: specific imports, class names, directory layouts, config keys, naming conventions, or structural smells listed in the signatures.
+   **Pass 3 -- manual verification of remaining candidates.** For each candidate still unconfirmed after Pass 2 (no rule file exists, or the tool produced no matches), read its `## Recognition > ### Signatures` section from `concept.md` and verify with targeted Grep/Glob: specific imports, class names, directory layouts, config keys, naming conventions, or structural smells listed in the signatures.
 
-   **Confidence assessment.** After confirming a candidate in Pass 2 or 3, read its `## Recognition > ### Confidence` section, which defines what constitutes high, medium, and low for that specific pattern. If the entry lacks a `### Confidence` section, apply the default rubric:
+   **Pass 3.5 -- diagnostic question evaluation for remaining ambiguous candidates.** For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), check for a question file at `~/.kord/agents/designer/memory/concepts/<name>/questions.yaml`. If one exists, load it and evaluate:
+   - For questions with `signals` hints, grep for those signals first. If all signals return zero results, answer "no" without further analysis.
+   - For remaining questions, read relevant code and answer yes/no with a one-line justification.
+   - Compute the weighted score (sum of weights for "yes" answers).
+   - If score >= `threshold`, mark as detected. Derive confidence from score/max_score ratio: >= 80% = high, >= threshold = medium.
+   Batch all questions for one concept into a single analysis pass -- do not make separate passes per question. This pass typically adds 2-5 minutes for 10-30 candidate concepts.
+
+   **Confidence assessment.** After confirming a candidate in Pass 2, 3, or 3.5, read its `## Recognition > ### Confidence` section, which defines what constitutes high, medium, and low for that specific pattern. If the entry lacks a `### Confidence` section, apply the default rubric:
    - **high** -- unambiguous: library import, framework config, or tool rule match with no false-positive risk.
      Example: `from pybreaker import CircuitBreaker` in `client.py` -- direct library usage, high.
    - **medium** -- partial: structural indicators present (directory layout, naming) but implementation deviates from canonical form.

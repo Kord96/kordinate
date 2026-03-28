@@ -72,6 +72,10 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
       "name": "<Human Readable Flow Name>",
       "description": "<what this flow accomplishes>",
       "trigger": "<what starts it>",
+      "narrative": "<scenario-driven prose, paragraphs separated by \\n\\n>",
+      "narrative_map": [
+        { "text": "<paragraph text>", "steps": [1, 2, 3] }
+      ],
       "steps": [
         {
           "component": "<component-id>",
@@ -93,6 +97,10 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
       "technology": "<specific tool>",
       "component": "<component-id>",
       "persistence": "persistent | ephemeral",
+      "narrative": "<scenario-driven prose, paragraphs separated by \\n\\n>",
+      "narrative_map": [
+        { "text": "<paragraph text>", "refs": ["<component-id>"] }
+      ],
       "readers": ["<component-id>"],
       "writers": ["<component-id>"]
     }
@@ -104,12 +112,22 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
       "trigger": "<what goes wrong>",
       "severity": "critical | high | medium | low",
       "impact": "<user-visible effect>",
+      "narrative": "<scenario-driven prose, paragraphs separated by \\n\\n>",
+      "narrative_map": [
+        { "text": "<paragraph text>", "cascade_steps": [1, 2], "refs": ["<component-id>"] }
+      ],
       "cascade": [
         { "component": "<component-id>", "effect": "<what happens>" }
       ],
       "detection": ["<signal>"],
       "recovery": ["<step>"]
     }
+  ],
+
+  "overview": "<C4 Context paragraph — what this system does, who uses it. 2-3 sentences.>",
+  "structure_narrative": "<How the system is organized. 3-5 paragraphs with headings, separated by \\n\\n.>",
+  "structure_narrative_map": [
+    { "text": "<paragraph text>", "refs": ["<node-id>"] }
   ]
 }
 ```

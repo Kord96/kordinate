@@ -1,0 +1,14 @@
+questions:
+  - q: "Are records marked with a deleted_at timestamp or is_deleted flag instead of being physically removed?"
+    weight: 3
+    signals: ["deleted_at column NULL for active records", "is_deleted boolean flag on table", "paranoid mode or SoftDeletes trait"]
+  - q: "Do default query scopes automatically exclude soft-deleted records from reads?"
+    weight: 3
+    signals: ["WHERE deleted_at IS NULL in default scope", "global query filter for active records", "default manager excludes deleted"]
+  - q: "Is there a restore or undelete mechanism for soft-deleted records?"
+    weight: 2
+    signals: ["restore() method on model", "undelete operation available", "set deleted_at back to NULL"]
+  - q: "Is there a retention policy with scheduled hard-delete for records past the retention period?"
+    weight: 1
+    signals: ["purge job for old soft-deleted records", "hard delete after retention period", "scheduled cleanup of deleted data"]
+threshold: 6

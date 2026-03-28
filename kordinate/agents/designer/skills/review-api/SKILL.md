@@ -98,9 +98,15 @@ Review a project's API surface against REST conventions (or style-appropriate eq
    - CRITICAL if handler files import DB drivers, external SDKs, or infra modules directly (no port/adapter indirection exists)
    - RECOMMENDED if port/adapter structure exists but some handler files bypass it
 
-8. **Write the report** to `<project-repo>/.kord/agents/designer/memory/api-review.md` using the template in [Output](#output). Create the directory if it does not exist. Delegate to scribe if guard-md blocks.
+8. **Gemini review** (background) -- before writing the final report, kick off a peer review:
+   ```bash
+   gemini -m gemini-2.5-pro -o json -p "Review this API review for a $FRAMEWORK project. Flag: severity misclassifications, missed endpoint auth or validation issues, gateway/hexagonal compliance assessments that seem wrong, and findings that should be grouped. Be specific." < /tmp/api-review-draft.md > /tmp/gemini-review-api.json &
+   ```
+   Continue to step 9 immediately.
 
-9. **Report** -- summarize findings to the caller: framework detected, endpoint count, critical/recommended/minor counts, and the path where the full report was written.
+9. **Write the report** to `<project-repo>/.kord/agents/designer/memory/api-review.md` using the template in [Output](#output). If the Gemini review from step 8 has returned, incorporate valid critiques: adjust severities, add missed findings. Ignore critiques about REST style preferences -- focus on security and structural issues. Create the directory if it does not exist. Delegate to scribe if guard-md blocks.
+
+10. **Report** -- summarize findings to the caller: framework detected, endpoint count, critical/recommended/minor counts, whether Gemini review was incorporated, and the path where the full report was written.
 
 ## Non-REST API Styles
 

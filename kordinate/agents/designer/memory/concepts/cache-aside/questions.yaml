@@ -1,0 +1,14 @@
+questions:
+  - q: "Does a read path check a cache first, then fall back to a primary data source on miss, and populate the cache before returning?"
+    weight: 3
+    signals: ["cache get before db query", "set cache after fetch", "check-then-load-then-store flow"]
+  - q: "Are TTL or expiration values configured on cached entries?"
+    weight: 2
+    signals: ["TTL configuration", "cache expiry setting", "time-to-live parameter"]
+  - q: "Is there explicit cache invalidation on write paths that modify the underlying data?"
+    weight: 2
+    signals: ["cache delete on update", "invalidate after write", "cache eviction on mutation"]
+  - q: "Are cache keys constructed with namespacing or versioning to prevent collisions?"
+    weight: 1
+    signals: ["namespaced cache key", "key template function", "versioned cache prefix"]
+threshold: 5

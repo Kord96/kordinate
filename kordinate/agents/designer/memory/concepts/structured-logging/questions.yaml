@@ -1,0 +1,14 @@
+questions:
+  - q: "Are log entries emitted as JSON with typed key-value fields rather than plain text?"
+    weight: 3
+    signals: ["JSON log formatter configured", "logger.info with key=value fields", "structured encoder producing JSON output"]
+  - q: "Is a context-bound logger propagated through the request lifecycle with correlation IDs?"
+    weight: 3
+    signals: ["logger.bind(request_id=rid)", "log.WithFields attached to context", "correlation ID in every log entry"]
+  - q: "Are structured logging libraries used consistently rather than printf-style formatting?"
+    weight: 2
+    signals: ["structlog or zap or pino imported", "key-value logging API used throughout", "no f-string interpolation in log calls"]
+  - q: "Is sensitive data explicitly redacted from log output?"
+    weight: 1
+    signals: ["password field filtered from logs", "PII redaction in log processor", "no tokens logged in structured fields"]
+threshold: 6

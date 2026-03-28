@@ -1,0 +1,14 @@
+questions:
+  - q: "Are independently deployable frontend modules loaded at runtime by a shell or host application?"
+    weight: 3
+    signals: ["ModuleFederationPlugin with remotes", "single-spa registerApplication", "remote entry URL"]
+  - q: "Do frontend modules have separate build pipelines and can be deployed without coordinating other modules?"
+    weight: 3
+    signals: ["independent Dockerfile per frontend", "separate CI pipeline per module", "versioned remote entry"]
+  - q: "Are shared dependencies (React, Angular) loaded once and shared across micro-frontends to avoid duplication?"
+    weight: 2
+    signals: ["shared: { react: { singleton: true } }", "import map for shared deps", "externals configuration"]
+  - q: "Are styling and state boundaries enforced between modules to prevent cross-module leakage?"
+    weight: 2
+    signals: ["CSS modules per micro-frontend", "shadow DOM isolation", "scoped styles per module"]
+threshold: 6

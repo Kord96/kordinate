@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the server require and verify client certificates, not just its own server certificate?"
+    weight: 3
+    signals: ["ClientAuth: RequireAndVerifyClientCert", "ssl_verify_client on", "client cert required"]
+  - q: "Is a scoped CA bundle loaded for validating client certificates rather than the system-wide CA store?"
+    weight: 3
+    signals: ["ClientCAs configured", "ssl_client_certificate path", "narrow CA trust"]
+  - q: "Is the client certificate identity (CN or SAN) checked after the TLS handshake for authorization decisions?"
+    weight: 2
+    signals: ["SAN extraction from peer cert", "subject CN checked", "identity-based access control"]
+  - q: "Are certificates rotated automatically with defined validity periods?"
+    weight: 2
+    signals: ["cert-manager renewal", "Vault PKI auto-rotation", "certificate expiry monitoring"]
+threshold: 6

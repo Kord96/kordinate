@@ -1,0 +1,14 @@
+questions:
+  - q: "Do interface signatures expose implementation details like SQL fragments, HTTP headers, or file paths?"
+    weight: 3
+    signals: ["SQL in repository method name", "HTTP header in domain interface", "file path in service interface"]
+  - q: "Do callers catch implementation-specific exceptions through abstraction layers?"
+    weight: 3
+    signals: ["catch psycopg2 error through repo", "handle HttpError through service", "infrastructure exception in domain"]
+  - q: "Do domain objects carry serialization or ORM annotations that tie them to a specific storage mechanism?"
+    weight: 2
+    signals: ["JSON tags on domain object", "ORM column mapping in entity", "@Column in domain model"]
+  - q: "Does swapping the underlying implementation require changes to callers despite the abstraction layer?"
+    weight: 2
+    signals: ["callers depend on implementation", "change DB requires changing service", "abstraction mirrors library API"]
+threshold: 7

@@ -2,7 +2,6 @@
 name: audit-kordinate
 description: Read-only health check for the memory and kordinate system — scans files and reports issues.
 curated: true
-scope: global
 ---
 
 Read-only health check for the memory and kordinate system. Scans all agents' memory files, frontmatter, registry entries, and reports issues. Never modifies files.

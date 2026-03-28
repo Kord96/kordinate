@@ -1,0 +1,17 @@
+questions:
+  - q: "Does the system extract API keys from request headers or parameters and validate them against a stored key registry?"
+    weight: 3
+    signals: ["X-API-Key header extraction", "key lookup in database/cache", "middleware validates key"]
+  - q: "Are API keys hashed before storage so the database never contains plaintext keys?"
+    weight: 2
+    signals: ["key hashing", "stored as hash not plaintext", "bcrypt/sha256 on key"]
+  - q: "Is rate limiting or quota enforcement applied per API key to isolate tenant usage?"
+    weight: 2
+    signals: ["per-key rate limit", "quota per tenant", "key-scoped throttling"]
+  - q: "Does the system support key lifecycle operations: generation with sufficient entropy, rotation, and immediate revocation?"
+    weight: 2
+    signals: ["key generation endpoint", "key rotation with grace period", "revocation invalidates immediately"]
+  - q: "Is there a mapping from API key to tenant, user, or permission scope that determines what the key authorizes?"
+    weight: 1
+    signals: ["key-to-tenant mapping", "scoped permissions per key", "key resolves to identity"]
+threshold: 6

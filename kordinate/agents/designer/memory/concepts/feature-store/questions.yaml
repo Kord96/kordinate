@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there dual serving paths for features: low-latency online and batch offline?"
+    weight: 3
+    signals: ["get_online_features() and get_historical_features() methods", "separate online and offline storage backends"]
+  - q: "Are feature definitions centralized in a registry shared between training and serving?"
+    weight: 3
+    signals: ["feature view or feature table definitions in a registry", "shared feature definitions used by both ML training and inference"]
+  - q: "Do offline feature joins support point-in-time correctness to prevent data leakage?"
+    weight: 2
+    signals: ["point-in-time join for training data", "temporal join preventing future data in features"]
+  - q: "Are feature transformations defined once and materialized to both online and offline stores?"
+    weight: 1
+    signals: ["single transformation definition with dual materialization", "feature pipeline writes to both online cache and offline store"]
+threshold: 6

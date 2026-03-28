@@ -1,0 +1,14 @@
+questions:
+  - q: "Do factory methods return interface or abstract types rather than concrete classes?"
+    weight: 3
+    signals: ["create() returns interface or protocol type", "factory method signature uses abstract base class"]
+  - q: "Is object creation centralized in factory classes rather than scattered across callers?"
+    weight: 2
+    signals: ["*Factory class with create/build methods", "callers use factory instead of direct constructor calls"]
+  - q: "Does a type discriminator or configuration drive which concrete class is instantiated?"
+    weight: 2
+    signals: ["switch/match on type string to select implementation", "config-driven class selection in factory"]
+  - q: "Can new product types be added without modifying existing factory code?"
+    weight: 2
+    signals: ["factory uses registration or plugin mechanism", "new types added via config not code changes"]
+threshold: 6

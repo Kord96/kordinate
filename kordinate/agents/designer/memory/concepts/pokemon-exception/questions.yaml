@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there bare except or catch(Exception) blocks that catch all exception types without filtering?"
+    weight: 3
+    signals: ["except:", "except Exception:", "catch(Throwable t)", "bare catch {}"]
+  - q: "Do broad catch blocks swallow errors silently with pass, empty blocks, or generic logging without re-raising?"
+    weight: 3
+    signals: ["except: pass", "catch { /* empty */ }", "log and continue without raise"]
+  - q: "Could the broad catch accidentally intercept system signals like KeyboardInterrupt or SystemExit?"
+    weight: 2
+    signals: ["except: catches KeyboardInterrupt", "Ctrl+C fails to stop", "SystemExit swallowed"]
+  - q: "Are catch-all handlers scattered throughout the codebase rather than consolidated in a top-level error boundary?"
+    weight: 2
+    signals: ["multiple bare except blocks", "catch-all in business logic", "no centralized error handler"]
+threshold: 6

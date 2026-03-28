@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there separate handler classes or modules for commands (writes) and queries (reads)?"
+    weight: 3
+    signals: ["CommandHandler vs QueryHandler", "separate write and read handlers", "command/query class split"]
+  - q: "Do write operations target a different store or model than read operations?"
+    weight: 3
+    signals: ["separate read/write stores", "write model vs read model", "distinct data sources for reads and writes"]
+  - q: "Is there an explicit projection or sync mechanism that keeps the read model consistent with the write model?"
+    weight: 2
+    signals: ["projection from write to read", "event-driven read model sync", "materialized view rebuild"]
+  - q: "Do queries read exclusively from the read model, never directly from the write store?"
+    weight: 1
+    signals: ["read-only query path", "queries bypass write store", "read model as sole query source"]
+threshold: 6

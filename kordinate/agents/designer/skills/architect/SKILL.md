@@ -10,7 +10,7 @@ curated: true
 scope: global
 ---
 
-Produce `architecture.yaml` — a structured map of a project's architecture that downstream skills (`/assess-debt`) and future viewpoint generators consume.
+Produce `architecture.yaml` — a structured map of a project's architecture that downstream skills (`/assess-debt`, `/illustrate-architecture`) and future viewpoint generators consume.
 
 ## Arguments
 
@@ -22,7 +22,7 @@ Produce `architecture.yaml` — a structured map of a project's architecture tha
 
 2. **Gather sources** — glob `$ROOT` for source files matching the include patterns in [extractors.md](extractors.md), skipping excluded directories and files. Read matches into context. Cap at 100KB per file. For large projects (>500 files after filtering), follow the priority order in extractors.md: entry points and manifests first, then boundaries and interfaces, then business logic, stopping when context is full.
 
-3. **Gather existing analysis** — read from `$ROOT/.kord/agents/designer/memory/` if available: `patterns.md`, `dependencies.md`, `api-review.md`, `debt-assessment.md`. Read the abstraction index (`~/.kord/agents/designer/memory/abstractions.md`) and use its canonical names for component `abstraction` and `patterns` fields. For `concept` fields on `state` and `external_dependencies`, use the infrastructure terms listed in [schema.md](schema.md) (e.g., `embedded-olap`, `message-broker`) -- these are NOT from abstractions.md. Consult specific `~/.kord/agents/designer/memory/concepts/<name>/pattern.md` files only when you suspect a match -- do not read the full catalog. Consistent naming matters because downstream skills match on these terms. If nothing exists, file contents alone suffice.
+3. **Gather existing analysis** — read from `$ROOT/.kord/agents/designer/memory/` if available: `patterns.md`, `dependencies.md`, `api-review.md`, `debt-assessment.md`. Read the abstraction index (`~/.kord/agents/designer/memory/abstractions.md`) and use its canonical names for component `abstraction` and `patterns` fields. For `concept` fields on `state` and `external_dependencies`, use the infrastructure terms listed in [schema.md](schema.md) (e.g., `embedded-olap`, `message-broker`) -- these are NOT from abstractions.md. Consult specific `~/.kord/agents/designer/memory/concepts/<name>/concept.md` files only when you suspect a match -- do not read the full catalog. Consistent naming matters because downstream skills match on these terms. If nothing exists, file contents alone suffice.
 
 4. **Identify components, capabilities, and relationships** — target 5-10 top-level components (acceptable range: 4-12). See [guidance.md](guidance.md) for filtering criteria and what to extract per component. Use `children` to nest sub-components rather than inflating the top-level count. Group components into capabilities: business-level things the system can do, linked to the actors who use them. Map relationships between components grounded in actual code (imports, calls, message passing). Shared utility imports are incidental coupling, not architectural relationships.
 

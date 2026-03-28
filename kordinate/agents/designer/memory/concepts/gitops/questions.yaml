@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there ArgoCD Application or Flux GitRepository/Kustomization CRDs pointing to a git repo as the source of truth?"
+    weight: 3
+    signals: ["Application CRD with syncPolicy", "GitRepository kind", "Kustomization kind"]
+  - q: "Does the infrastructure use Kustomize overlays with base and per-environment directories?"
+    weight: 2
+    signals: ["base/", "overlays/staging/", "overlays/production/"]
+  - q: "Is there a reconciliation loop that detects and corrects drift between desired state in git and actual cluster state?"
+    weight: 3
+    signals: ["syncPolicy automated", "self-heal", "prune enabled"]
+  - q: "Do infrastructure changes flow through a PR-based workflow before being applied to the cluster?"
+    weight: 1
+    signals: ["PR review for manifests", "git commit triggers sync", "merge to main deploys"]
+threshold: 6

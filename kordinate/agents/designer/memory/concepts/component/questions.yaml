@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there self-contained UI units with explicit props interfaces that compose into a tree?"
+    weight: 3
+    signals: ["component with props", "composable UI tree", "typed props interface"]
+  - q: "Does data flow unidirectionally through the tree -- props down, events up?"
+    weight: 2
+    signals: ["props passed down", "events emitted up", "unidirectional data flow"]
+  - q: "Are side effects (API calls, subscriptions) isolated in lifecycle hooks or dedicated composables/hooks?"
+    weight: 2
+    signals: ["useEffect for side effects", "lifecycle hook isolation", "composable for data fetching"]
+  - q: "Do components have a render function or template that returns UI markup from component logic?"
+    weight: 2
+    signals: ["render method", "JSX return", "template block in component file"]
+threshold: 6

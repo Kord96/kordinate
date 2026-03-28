@@ -1,0 +1,14 @@
+questions:
+  - q: "Do element or node classes have an accept(visitor) method that dispatches to a type-specific visit method on the visitor?"
+    weight: 3
+    signals: ["accept(visitor) method", "visitor.visit_X(self) double dispatch", "element dispatches to visitor"]
+  - q: "Are there visitor classes with multiple visit_Type methods corresponding to different element types?"
+    weight: 3
+    signals: ["visit_BinaryExpr or visit_Literal methods", "visit_ method per element type", "visitor with type-specific handlers"]
+  - q: "Is the pattern used for AST walking, tree traversal, compiler passes, or serialization?"
+    weight: 2
+    signals: ["AST walker or NodeVisitor", "tree traversal visitor", "compiler pass or serialization visitor"]
+  - q: "Can new visitors be added without modifying existing element classes?"
+    weight: 1
+    signals: ["new visitor without element changes", "open for visitor extension", "algorithm separated from structure"]
+threshold: 6

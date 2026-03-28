@@ -1,0 +1,14 @@
+questions:
+  - q: "Are sidecar proxy containers injected into pods for transparent service-to-service communication?"
+    weight: 3
+    signals: ["istio-proxy or linkerd-proxy container in pod", "sidecar.istio.io/inject annotation", "Envoy sidecar alongside application container"]
+  - q: "Is mTLS enforced between services at the mesh level?"
+    weight: 3
+    signals: ["PeerAuthentication with STRICT mode", "mesh-wide mTLS enabled", "mutual TLS between service proxies"]
+  - q: "Are traffic policies like retries, timeouts, and circuit breaking managed by mesh CRDs?"
+    weight: 2
+    signals: ["VirtualService with timeout config", "DestinationRule with retry policy", "TrafficSplit for canary routing"]
+  - q: "Are sidecar resource limits configured to prevent proxies from starving application containers?"
+    weight: 1
+    signals: ["resource limits on proxy container", "CPU and memory bounds on sidecar", "proxy resource requests defined"]
+threshold: 6

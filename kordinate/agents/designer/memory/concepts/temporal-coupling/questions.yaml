@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there methods that must be called in a specific order where calling them out of order produces runtime errors or silent corruption?"
+    weight: 3
+    signals: ["init before run", "connect before query", "order-dependent method calls"]
+  - q: "Do comments in the code warn about required call sequences like 'must call X before Y' or 'call after init'?"
+    weight: 2
+    signals: ["must call before", "call after init", "order-dependent comments"]
+  - q: "Are there objects that require separate configure or setup calls after construction before they are usable?"
+    weight: 3
+    signals: ["two-phase initialization", "configure after constructor", "setup call required post-construction"]
+  - q: "Does the type system or API allow calling methods in the wrong order without compile-time or type-check errors?"
+    weight: 2
+    signals: ["no typestate enforcement", "runtime-only order checks", "implicit preconditions"]
+threshold: 6

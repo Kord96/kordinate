@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the codebase contain immutable classes (frozen dataclasses, records, or classes with no setters) where equality is based on field values rather than identity?"
+    weight: 3
+    signals: ["frozen=True dataclass or record", "__eq__ based on fields not identity", "no setter methods"]
+  - q: "Do transformations on these objects return new instances rather than mutating in place?"
+    weight: 3
+    signals: ["factory method returns new instance", "transformation creates copy", "no in-place mutation"]
+  - q: "Is validation enforced at construction time so that invalid states are impossible to represent?"
+    weight: 2
+    signals: ["constructor validation", "__post_init__ validation", "invalid state rejected at creation"]
+  - q: "Are these objects used without an identity field (no id or primary key participating in equality)?"
+    weight: 1
+    signals: ["no id field", "equality without identity", "compared by value not reference"]
+threshold: 6
