@@ -54,11 +54,11 @@ Read from `<project>/.kord/agents/designer/memory/` — this is the only authori
 
 If `architecture.yaml` is missing after the kord attempt, report and suggest running `/architect <project>` directly. Exit.
 
-### 4. Produce architecture.json
+### 4a. Produce architecture.json — write
 
-This is the core creative step. Read all Designer artifacts + source code and produce **one coherent JSON file** that contains everything the explorer needs: graph data, flow narratives, failure scenarios, and structural overview. The narrative is not a separate step — it lives inside the data.
+This is the core creative step. Prose quality is the priority — write first, annotate in step 4b.
 
-Produce this as **one thought**, not a mechanical transform. Hold the full picture — components, their relationships, how data flows, where things break, what patterns are in use, what debt exists — and express it as a single coherent artifact.
+Produce this as **one thought**, not a mechanical transform. Hold the full picture and express it as a single coherent artifact.
 
 **Output structure:**
 
@@ -125,7 +125,47 @@ Follow the voice, formatting, and structure rules in [narrative-style.md](narrat
 - API endpoints from `api-review.md` → `node.endpoints[]`
 - External dep resilience from `dependencies.md` → `node.resilience`
 
-**Gemini review** — after producing the JSON, run a background Gemini review per `~/.kord/shared/gemini-protocol.md`. Ask Gemini to verify: do all narrative references resolve to real nodes? Are any flows missing edges? Is the narrative a story or a list? Fix valid critiques.
+### 4b. Annotate narratives — match paragraphs to structure
+
+Re-read all narratives from step 4a. For each one, produce a `narrative_map` array that tags each paragraph with the structural elements it describes. **Do not change the prose** — just annotate it.
+
+Split each narrative on `\n\n` into paragraphs. For each paragraph, identify what it covers:
+
+- **Flow narratives** → `"steps": [1, 2, 3]` — which step indices (1-based) the paragraph describes. A paragraph covers a step if it mentions any component involved in that step.
+- **State narratives** → `"refs": ["cart-drawer", "checkout-page"]` — which component IDs the paragraph references.
+- **Failure narratives** → `"cascade_steps": [1, 2]` and/or `"refs": [...]` — which cascade steps and components.
+- **Structure narrative** → `"refs": ["server", "root-loader"]` — which node IDs (groups or components).
+
+Add `narrative_map` alongside the existing `narrative` string:
+
+```json
+{
+  "narrative": "para1\n\npara2\n\npara3",
+  "narrative_map": [
+    { "text": "para1", "steps": [1, 2, 3] },
+    { "text": "para2", "steps": [4, 5] },
+    { "text": "para3", "steps": [6, 7, 8] }
+  ]
+}
+```
+
+For `structure_narrative`, add a top-level `structure_narrative_map`:
+
+```json
+{
+  "structure_narrative_map": [
+    { "text": "The system runs across three boundaries...", "refs": ["server", "browser", "external"] },
+    { "text": "The **Agent System** coordinates...", "refs": ["agent-system", "main-agent"] }
+  ]
+}
+```
+
+**Validation:**
+- Every paragraph must appear in `narrative_map`
+- Every step/cascade index must be covered by at least one paragraph
+- Every `refs[]` value must exist in `nodes[].id`
+
+**Gemini review** — after completing both 4a and 4b, run a background Gemini review per `~/.kord/shared/gemini-protocol.md`. Verify: references resolve, narrative is a story not a list, step ranges are correct. Fix valid critiques.
 
 Write to `<docs-content-dir>/<project>/architecture.json`.
 
