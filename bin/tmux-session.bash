@@ -9,6 +9,9 @@
 
 _tmux_bin_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Skip everything in non-interactive shells (subagent Bash tool calls)
+[[ $- != *i* ]] && return 2>/dev/null
+
 # ─── Generate tmux.conf if missing ───
 if [ ! -f "$HOME/.tmux.conf" ]; then
   cat > "$HOME/.tmux.conf" <<TMUXCONF
@@ -20,7 +23,9 @@ TMUXCONF
 fi
 
 # ─── Save layout on session/window structural changes ───
-if [ -n "${TMUX:-}" ] && [ -x "$_tmux_bin_dir/tmux-save" ]; then
+# Only in interactive shells — subagent Bash calls inherit $TMUX and would
+# re-register hooks on every tool call, causing session conflicts.
+if [ -n "${TMUX:-}" ] && [ -x "$_tmux_bin_dir/tmux-save" ] && [[ $- == *i* ]]; then
   command tmux set-hook -g after-new-session "run-shell '$_tmux_bin_dir/tmux-save 2>/dev/null || true'" 2>/dev/null || true
   command tmux set-hook -g after-new-window "run-shell '$_tmux_bin_dir/tmux-save 2>/dev/null || true'" 2>/dev/null || true
   command tmux set-hook -g session-closed "run-shell '$_tmux_bin_dir/tmux-save 2>/dev/null || true'" 2>/dev/null || true
