@@ -299,7 +299,11 @@ function spawnClaude(args, cwd, env, timeoutMs = 900000) {
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => { stdout += d; });
-    child.stderr.on('data', (d) => { stderr += d; });
+    child.stderr.on('data', (d) => {
+      stderr += d;
+      // Stream agent progress to pod logs in real-time
+      process.stderr.write(d);
+    });
 
     const timer = setTimeout(() => {
       child.kill('SIGTERM');
