@@ -74,34 +74,28 @@ else
   fail "KORD.json missing or invalid"
 fi
 
-# Kord contracts
-section "Kord Contracts"
-for kord_dir in "$KORDINATE_HOME"/agents/*/kords/*/; do
-  [ -d "$kord_dir" ] || continue
-  kord_name=$(basename "$kord_dir")
-  contract="$kord_dir/contract.md"
-  # Derive provider from path: agents/<provider>/kords/<name>/
-  provider=$(echo "$kord_dir" | sed 's|.*/agents/\([^/]*\)/kords/.*|\1|')
-  if [ -f "$contract" ]; then
-    mode=$(grep '^mode:' "$contract" | head -1 | sed 's/mode: *//')
-    if [ -n "$provider" ] && [ -n "$mode" ]; then
-      pass "$kord_name — provider=$provider, mode=$mode"
-    else
-      fail "$kord_name — missing provider (path) or mode in frontmatter"
-    fi
+# Route definitions
+section "Route Definitions"
+for agent_dir in "$KORDINATE_HOME"/agents/*/; do
+  name=$(basename "$agent_dir")
+  routes_file="$agent_dir/routes.yaml"
+  # Only check agents that have skills
+  [ -d "$agent_dir/skills" ] || continue
+  if [ -f "$routes_file" ]; then
+    route_count=$(grep -c '^ *- name:' "$routes_file" 2>/dev/null || echo 0)
+    pass "$name/routes.yaml — $route_count routes defined"
+    # Validate each route references an existing skill
+    while IFS= read -r skill_ref; do
+      skill_ref=$(echo "$skill_ref" | sed 's/^ *skill: *//')
+      [ -z "$skill_ref" ] && continue
+      if [ -d "$agent_dir/skills/$skill_ref" ] || [ -d "$KORDINATE_HOME/skills/$skill_ref" ]; then
+        pass "$name route skill '$skill_ref' — exists"
+      else
+        fail "$name route skill '$skill_ref' — not found"
+      fi
+    done < <(grep '^ *skill:' "$routes_file" 2>/dev/null)
   else
-    fail "$kord_name — no contract.md"
-  fi
-done
-
-# Expiry scripts are executable and return 0 or 1
-for expiry in "$KORDINATE_HOME"/agents/*/kords/*/expiry.sh; do
-  [ -f "$expiry" ] || continue
-  kord_name=$(basename "$(dirname "$expiry")")
-  if bash "$expiry" 2>/dev/null; then
-    pass "$kord_name/expiry.sh — returns fresh (0)"
-  else
-    pass "$kord_name/expiry.sh — returns stale (1)"
+    fail "$name/routes.yaml — not found (agent has skills/)"
   fi
 done
 
@@ -176,7 +170,7 @@ fi
 
 # Global skills
 section "Skills"
-for skill in boot kord authenticate merge; do
+for skill in boot authenticate merge; do
   if [ -f "$CLAUDE_HOME/skills/$skill/SKILL.md" ]; then
     pass "skills/$skill/ — present"
   else
@@ -354,30 +348,24 @@ if [ "${1:-}" = "--runtime" ]; then
       "List the filenames in $KORDINATE_HOME/agents/deployer/memory/. Just filenames, one per line." \
       "infra.md"
 
-    # Cache invalidation — expiry check
-    test_kord="deployer-default"
-    test_kord_dir="$KORDINATE_HOME/agents/deployer/kords/$test_kord"
-    if [ -d "$test_kord_dir" ]; then
-      # Ensure stale state
-      rm -f "$test_kord_dir/.valid"
-      if ! bash "$test_kord_dir/expiry.sh" 2>/dev/null; then
-        pass "Cache invalidation — stale without .valid"
-      else
-        fail "Cache invalidation — should be stale without .valid"
-      fi
-      # Restore fresh state
-      echo "$(date -Iseconds)" > "$test_kord_dir/.valid"
-      if [ -f "$test_kord_dir/data.md" ]; then
-        if bash "$test_kord_dir/expiry.sh" 2>/dev/null; then
-          pass "Cache invalidation — fresh with .valid + data.md"
+    # Route cache directories
+    cache_dir="$KORDINATE_HOME/.cache"
+    if [ -d "$cache_dir" ]; then
+      cache_count=$(find "$cache_dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+      pass "Route cache directory exists ($cache_count cached routes)"
+      # Verify cache entries correspond to defined routes
+      for cached in "$cache_dir"/*/; do
+        [ -d "$cached" ] || continue
+        cached_name=$(basename "$cached")
+        # Check if any routes.yaml mentions this route name
+        if grep -rq "name: *$cached_name" "$KORDINATE_HOME"/agents/*/routes.yaml 2>/dev/null; then
+          pass "Cache '$cached_name' — matches a defined route"
         else
-          fail "Cache invalidation — should be fresh with .valid + data.md"
+          fail "Cache '$cached_name' — orphaned (no matching route definition)"
         fi
-      else
-        skip "Cache invalidation — no data.md to test fresh state"
-      fi
+      done
     else
-      skip "Cache invalidation — $test_kord not found"
+      skip "Route cache directory not found ($cache_dir)"
     fi
 
     echo

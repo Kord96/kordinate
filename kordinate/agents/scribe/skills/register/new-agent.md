@@ -24,7 +24,11 @@ Level 3 resource for the register skill.
 
 4. **Generate scratchpad.md** with empty frontmatter (`curated: false`).
 
-5. **Create default kord** — follow [create-kord.md](create-kord.md) to define `default-<name>` with the expertise from step 1.
+5. **Create routes.yaml** — create `$KORDINATE_HOME/agents/<name>/routes.yaml` with an empty routes array:
+    ```yaml
+    routes: []
+    ```
+    Routes can be added later via [create-route.md](create-route.md).
 
 6. **Create guard hook** (if exclusive tools specified):
     - Generate `$KORDINATE_HOME/hooks/guard-<name>.sh`:

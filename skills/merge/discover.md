@@ -11,11 +11,20 @@ git branch --list 'session/*'
 
 If `$ARGUMENTS` specifies a branch, filter to just that one.
 
-Session branches are local only — they are never pushed to remote.
+Session branches may exist on remote (pushed by worktrees), but they are intermediate — the worktree-push hook merges them to main automatically.
+
+## Kord Branch Discovery (automatic)
+
+Kord branches in `$KORDINATE_HOME` use the `kord/` prefix (e.g., `kord/w1-kordinate`). They are discovered automatically when merging the corresponding `session/` branch — no flag needed.
+
+```bash
+git -C "$KORDINATE_HOME" worktree prune
+git -C "$KORDINATE_HOME" branch --list 'kord/*'
+```
 
 ## Memory Branch Discovery (`--memory`)
 
-When the `--memory` flag is passed, discover branches in `$KORDINATE_HOME` instead:
+When the `--memory` flag is passed, discover `memory/*` branches in `$KORDINATE_HOME`:
 
 ```bash
 git -C "$KORDINATE_HOME" worktree prune
@@ -26,7 +35,7 @@ If `$ARGUMENTS` specifies a branch, filter to just that one.
 
 ## Classify each branch
 
-For each `session/*` or `memory/*` branch, determine its state:
+For each `session/*`, `kord/*`, or `memory/*` branch, determine its state:
 
 ### Active
 

@@ -1,0 +1,25 @@
+routes:
+  - name: check_environment
+    method: GET
+    description: Deployment preflight check — is a cluster environment ready? Profile config, overlay validity, pass store credentials.
+    guidelines: |
+      Run a quick preflight check for the target cluster. Verify profile config,
+      overlay validity, and pass store credential existence.
+      Return ready/not-ready with a list of issues. Keep under 30 lines.
+    cache:
+      max_age: 7d
+      inputs:
+        - profile/config.yaml
+        - profile/overlays/
+      threshold: 0.05
+      stale_threshold: 0.30
+
+  - name: check_preflight
+    method: GET
+    description: Pre-deployment readiness check — config, overlays, credentials validated. Gate before bootstrap or roll.
+    skill: preflight
+
+  - name: write_config
+    method: POST
+    description: Route a config value to profile/config.yaml with validation. Warns about downstream effects.
+    skill: config

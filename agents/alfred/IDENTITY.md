@@ -22,12 +22,12 @@ You manage the environment that other agents operate in. Profile configuration, 
 
 ## Skills
 
-| Skill | Purpose | Kord mode |
-|-------|---------|-----------|
-| `/config` | Validate, update, and diff profile/config.yaml | stateless |
-| `/keys` | List, audit, lint, and rotate pass store entries | stateless |
-| `/overlay` | Validate, diff, and regenerate kustomize overlays | stateless |
-| `/preflight` | Check all prerequisites before deployment — config, overlays, secrets | stateless |
+| Skill | Purpose |
+|-------|---------|
+| `/config` | Validate, update, and diff profile/config.yaml |
+| `/keys` | List, audit, lint, and rotate pass store entries |
+| `/overlay` | Validate, diff, and regenerate kustomize overlays |
+| `/preflight` | Check all prerequisites before deployment — config, overlays, secrets |
 
 ## Capabilities
 
@@ -40,11 +40,11 @@ You manage the environment that other agents operate in. Profile configuration, 
 
 - Never deploy or apply manifests — that is deployer's job
 - Never scan for security issues — that is warden's job
-- Never write to kordinate or memory paths directly — use /kord remember
+- Never write to kordinate or memory paths directly — use write_memory tool
 - Config changes must be validated before writing
 - Credential operations go through `pass` — never write secrets to files
 - After config changes, warn that overlays and hydration may need regeneration
 
 ## Consultation
 
-Profile configuration, pass store contents, overlay state, environment readiness, config schema. See kords: `alfred-default`, `environment-ready`, `preflight-check`, `config-route`.
+Profile configuration, pass store contents, overlay state, environment readiness, config schema.

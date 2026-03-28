@@ -5,54 +5,100 @@
 // Loads the target agent's identity (IDENTITY.md) and memory, invokes
 // Claude Code as that agent via --print, returns the response.
 //
-// MCP tools: delegate, kord, status
-// MCP endpoint: POST|GET|DELETE /mcp
+// Routes are declared per agent in routes.yaml. Each route becomes
+// an MCP tool with a capability-based name (no agent names visible).
+//
+// MCP tools: delegate, status, + dynamic per-route tools
+// MCP endpoint: POST /mcp
 // Health:       GET /health
 
 import express from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
+import yaml from 'js-yaml';
 import { spawn, execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, mkdirSync } from 'node:fs';
+import { join, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3100');
 const HOME = process.env.HOME || '/home/claude';
 const KORDINATE_HOME = process.env.KORDINATE_HOME || join(HOME, '.kord');
 const REPO_ROOT = process.env.REPO_ROOT || join(HOME, 'kordinate');
+const CACHE_DIR = join(KORDINATE_HOME, 'cache');
 const BOOT_TIME = new Date().toISOString();
 
-// ─── Discover agents from KORD.json or agents/ directory ───
+// File extensions tracked for cache magnitude scoring
+const TRACKED_EXTS = new Set(['.md', '.yaml', '.yml', '.json', '.sh', '.js']);
 
-function loadAgentNames() {
-  // Try KORD.json first — it lists all agents with IDENTITY.md entries
+// ─── Route registry ───
+
+function loadRouteRegistry() {
+  const registry = new Map();
+  const agentsDir = join(KORDINATE_HOME, 'agents');
+
+  let agents;
   try {
-    const kordPath = join(KORDINATE_HOME, 'KORD.json');
-    if (existsSync(kordPath)) {
-      const entries = JSON.parse(readFileSync(kordPath, 'utf8'));
-      const names = entries
-        .filter(e => e.path.match(/^agents\/[^/]+\/IDENTITY\.md$/))
-        .map(e => e.path.split('/')[1]);
-      if (names.length > 0) return names;
+    agents = readdirSync(agentsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory());
+  } catch {
+    log('WARN: could not read agents directory');
+    return registry;
+  }
+
+  for (const agent of agents) {
+    const routesPath = join(agentsDir, agent.name, 'routes.yaml');
+    if (!existsSync(routesPath)) continue;
+
+    try {
+      const raw = readFileSync(routesPath, 'utf8');
+      const doc = yaml.load(raw);
+      if (!doc?.routes || !Array.isArray(doc.routes)) continue;
+
+      for (const route of doc.routes) {
+        if (!route.name || !route.method || !route.description) {
+          log(`WARN: skipping invalid route in ${agent.name}/routes.yaml`, route);
+          continue;
+        }
+        if (registry.has(route.name)) {
+          log(`WARN: duplicate route name "${route.name}" in ${agent.name} (already registered by ${registry.get(route.name).provider})`);
+          continue;
+        }
+        registry.set(route.name, {
+          ...route,
+          provider: agent.name,
+        });
+      }
+    } catch (e) {
+      log(`WARN: failed to parse ${agent.name}/routes.yaml: ${e.message}`);
     }
-  } catch { /* fall through */ }
+  }
 
-  // Fallback: scan agents/ directory for dirs containing IDENTITY.md
-  try {
-    const agentsDir = join(KORDINATE_HOME, 'agents');
-    return readdirSync(agentsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory() && existsSync(join(agentsDir, d.name, 'IDENTITY.md')))
-      .map(d => d.name);
-  } catch { /* fall through */ }
-
-  return ['deployer', 'sauron', 'designer', 'scribe'];
+  return registry;
 }
 
-const KNOWN_AGENTS = loadAgentNames();
+function getKnownAgents(registry) {
+  const agents = new Set();
+  for (const route of registry.values()) {
+    agents.add(route.provider);
+  }
+  // Also include agents with IDENTITY.md but no routes
+  try {
+    const agentsDir = join(KORDINATE_HOME, 'agents');
+    for (const d of readdirSync(agentsDir, { withFileTypes: true })) {
+      if (d.isDirectory() && existsSync(join(agentsDir, d.name, 'IDENTITY.md'))) {
+        agents.add(d.name);
+      }
+    }
+  } catch { /* best-effort */ }
+  return [...agents].sort();
+}
+
+const routeRegistry = loadRouteRegistry();
+const KNOWN_AGENTS = getKnownAgents(routeRegistry);
 const activeRequests = new Map();
 
 // ─── Agent helpers ───
@@ -76,21 +122,19 @@ function regenerateMemory(agent) {
       },
     );
   } catch (e) {
-    console.error(`[beorn] Memory regen failed for ${agent}: ${e.stderr?.toString() || e.message}`);
+    log(`Memory regen failed for ${agent}: ${e.stderr?.toString() || e.message}`);
   }
 }
 
 function loadSystemPrompt(agent) {
   const parts = [];
 
-  // Load agent identity from $KORDINATE_HOME/agents/<name>/IDENTITY.md
   const identityMd = join(KORDINATE_HOME, 'agents', agent, 'IDENTITY.md');
   if (existsSync(identityMd)) {
     const raw = readFileSync(identityMd, 'utf8');
     parts.push(raw.replace(/^---\n[\s\S]*?\n---\n?/, ''));
   }
 
-  // Load all memory files from $KORDINATE_HOME/agents/<name>/memory/
   const memoryDir = join(KORDINATE_HOME, 'agents', agent, 'memory');
   if (existsSync(memoryDir)) {
     try {
@@ -109,12 +153,8 @@ async function invokeAgent(agent, prompt) {
   log(`INVOKE ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
   const start = Date.now();
 
-  log(`INVOKE ${agent}: regenerating memory...`);
   regenerateMemory(agent);
-
-  log(`INVOKE ${agent}: loading system prompt...`);
   const systemPrompt = loadSystemPrompt(agent);
-  log(`INVOKE ${agent}: system prompt ${systemPrompt ? systemPrompt.length + ' chars' : 'empty'}`);
 
   const args = ['--print', '--dangerously-skip-permissions'];
   if (systemPrompt) {
@@ -122,15 +162,13 @@ async function invokeAgent(agent, prompt) {
   }
   args.push(prompt);
 
-  log(`INVOKE ${agent}: spawning claude --print (${args.length} args)...`);
-
   try {
     const result = await new Promise((resolve, reject) => {
       const child = spawn('claude', args, {
         cwd: REPO_ROOT,
         env: { ...process.env, HOME },
         stdio: ['ignore', 'pipe', 'pipe'],
-        detached: true, // survive parent shell exit
+        detached: true,
       });
 
       let stdout = '';
@@ -140,7 +178,7 @@ async function invokeAgent(agent, prompt) {
 
       const timer = setTimeout(() => {
         child.kill('SIGTERM');
-        reject(new Error(`Timed out after 900s`));
+        reject(new Error('Timed out after 900s'));
       }, 900000);
 
       child.on('close', (code) => {
@@ -160,7 +198,6 @@ async function invokeAgent(agent, prompt) {
         reject(e);
       });
 
-      // Don't let the child prevent Node from exiting when server shuts down
       child.unref();
     });
 
@@ -177,76 +214,359 @@ async function invokeAgent(agent, prompt) {
   }
 }
 
-// ─── Contract helpers ───
+// ─── Cache helpers ───
 
-function parseContractFrontmatter(raw) {
-  const match = raw.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return {};
-  const fm = {};
-  for (const line of match[1].split('\n')) {
-    const idx = line.indexOf(':');
-    if (idx > 0) fm[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
+function getCacheDir(routeName) {
+  return join(CACHE_DIR, routeName);
+}
+
+function ensureCacheDir(routeName) {
+  const dir = getCacheDir(routeName);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+function parseDuration(str) {
+  if (!str) return 0;
+  const match = String(str).match(/^(\d+)(s|m|h|d)$/);
+  if (!match) return 7 * 86400; // default 7d
+  const n = parseInt(match[1]);
+  switch (match[2]) {
+    case 's': return n;
+    case 'm': return n * 60;
+    case 'h': return n * 3600;
+    case 'd': return n * 86400;
+    default: return 7 * 86400;
   }
-  return fm;
 }
 
-function extractGuidelines(raw) {
-  const idx = raw.indexOf('## Provider Guidelines');
-  return idx >= 0 ? raw.slice(idx + '## Provider Guidelines'.length).trim() : '';
+function md5(content) {
+  return createHash('md5').update(content).digest('hex');
 }
 
-function findKordDir(kordName) {
-  // Search across all agents/*/kords/ directories
-  const agentsDir = join(KORDINATE_HOME, 'agents');
+function computeETag(data) {
+  return `"${md5(data)}"`;
+}
+
+/** Walk input paths and collect tracked files. */
+function collectFiles(inputs) {
+  const files = [];
+  for (const input of inputs) {
+    const absPath = join(KORDINATE_HOME, input);
+    try {
+      const stat = statSync(absPath);
+      if (stat.isDirectory()) {
+        walkDir(absPath, files);
+      } else if (stat.isFile() && TRACKED_EXTS.has(extname(absPath))) {
+        files.push(absPath);
+      }
+    } catch { /* path doesn't exist, skip */ }
+  }
+  return files.sort();
+}
+
+function walkDir(dir, out) {
   try {
-    const agents = readdirSync(agentsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory());
-    for (const agent of agents) {
-      const candidate = join(agentsDir, agent.name, 'kords', kordName);
-      if (existsSync(join(candidate, 'contract.md'))) {
-        return { dir: candidate, provider: agent.name };
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walkDir(full, out);
+      } else if (entry.isFile() && TRACKED_EXTS.has(extname(entry.name))) {
+        out.push(full);
       }
     }
-  } catch { /* fall through */ }
-  return null;
+  } catch { /* skip unreadable dirs */ }
 }
 
-function checkExpiry(kordDir, message) {
-  const expiryScript = join(kordDir, 'expiry.sh');
-  if (!existsSync(expiryScript)) return false; // no expiry = stale
+/** Read snapshot file into a Map of path -> { lines, hash }. */
+function readSnapshot(snapshotPath) {
+  const snap = new Map();
+  if (!existsSync(snapshotPath)) return snap;
   try {
-    execSync(`bash "${expiryScript}" ${JSON.stringify(message || '')}`, {
-      cwd: kordDir,
-      timeout: 10000,
-      env: { ...process.env, HOME, KORDINATE_HOME },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    return true; // exit 0 = fresh
-  } catch {
-    return false; // exit 1 = stale
+    const content = readFileSync(snapshotPath, 'utf8');
+    for (const line of content.split('\n')) {
+      if (!line.trim()) continue;
+      const parts = line.split(/\s+/);
+      if (parts.length >= 3) {
+        const lines = parseInt(parts[0]);
+        const hash = parts[1];
+        const path = parts.slice(2).join(' ');
+        snap.set(path, { lines, hash });
+      }
+    }
+  } catch { /* best-effort */ }
+  return snap;
+}
+
+/** Write snapshot of current file state. */
+function writeSnapshot(snapshotPath, inputs) {
+  const files = collectFiles(inputs);
+  const lines = [];
+  for (const file of files) {
+    try {
+      const content = readFileSync(file, 'utf8');
+      const lineCount = content.split('\n').length;
+      const hash = md5(content);
+      lines.push(`${lineCount} ${hash} ${file}`);
+    } catch { /* skip unreadable files */ }
+  }
+  writeFileSync(snapshotPath, lines.join('\n') + '\n');
+}
+
+/**
+ * Check cache freshness for a route.
+ * Returns 'fresh', 'uncertain', or 'stale'.
+ */
+function checkCacheExpiry(route, cacheDir) {
+  const cache = route.cache;
+  if (!cache) return 'stale'; // no cache config = always regenerate
+
+  const dataPath = join(cacheDir, 'data.md');
+  if (!existsSync(dataPath)) return 'stale';
+
+  // Age check
+  const maxAgeSeconds = parseDuration(cache.max_age);
+  if (maxAgeSeconds > 0) {
+    try {
+      const mtime = statSync(dataPath).mtimeMs;
+      const ageSeconds = (Date.now() - mtime) / 1000;
+      if (ageSeconds >= maxAgeSeconds) return 'stale';
+    } catch {
+      return 'stale';
+    }
+  }
+
+  // Hash-only mode — no magnitude scoring
+  if (cache.type === 'hash' && cache.inputs) {
+    const hashPath = join(cacheDir, '.hash');
+    const files = collectFiles(cache.inputs);
+    const allContent = files.map(f => { try { return readFileSync(f, 'utf8'); } catch { return ''; } }).join('');
+    const currentHash = md5(allContent);
+    try {
+      const storedHash = readFileSync(hashPath, 'utf8').trim();
+      return currentHash === storedHash ? 'fresh' : 'stale';
+    } catch {
+      return 'stale'; // no stored hash
+    }
+  }
+
+  // Magnitude-based scoring
+  if (!cache.inputs) return 'fresh'; // no inputs to check = trust max_age alone
+
+  const snapshotPath = join(cacheDir, '.snapshot');
+  const snapshot = readSnapshot(snapshotPath);
+  if (snapshot.size === 0) return 'uncertain'; // data exists but no snapshot
+
+  const threshold = cache.threshold ?? 0.05;
+  const staleThreshold = cache.stale_threshold ?? 0.30;
+
+  const currentFiles = collectFiles(cache.inputs);
+  let totalLines = 0;
+  let changedLines = 0;
+
+  // Check files in snapshot
+  for (const [path, { lines: oldLines, hash: oldHash }] of snapshot) {
+    totalLines += oldLines;
+    try {
+      const content = readFileSync(path, 'utf8');
+      const newHash = md5(content);
+      if (oldHash !== newHash) {
+        const newLines = content.split('\n').length;
+        const diff = Math.abs(newLines - oldLines);
+        changedLines += diff > 0 ? diff : 1; // hash differs but same length = at least 1
+      }
+    } catch {
+      changedLines += oldLines; // file deleted
+    }
+  }
+
+  // Detect new files not in snapshot
+  for (const file of currentFiles) {
+    if (!snapshot.has(file)) {
+      try {
+        const content = readFileSync(file, 'utf8');
+        changedLines += content.split('\n').length;
+      } catch { /* skip */ }
+    }
+  }
+
+  if (totalLines === 0) totalLines = 1;
+
+  // Staleness score: change_ratio + (age_ratio * change_ratio)
+  const changeRatio = changedLines / totalLines;
+  const mtime = statSync(join(cacheDir, 'data.md')).mtimeMs;
+  const ageSeconds = (Date.now() - mtime) / 1000;
+  const ageRatio = Math.min(ageSeconds / (maxAgeSeconds || 1), 1.0);
+  const score = changeRatio + (ageRatio * changeRatio);
+
+  if (score < threshold) return 'fresh';
+  if (score > staleThreshold) return 'stale';
+  return 'uncertain';
+}
+
+// Review template for uncertain cache state (shared across all routes)
+const REVIEW_TEMPLATE = `You are reviewing whether your cached response is still valid.
+
+## Changed Inputs
+
+{{DIFF}}
+
+## Cached Response
+
+{{CACHED_DATA}}
+
+## Decision
+
+Based on the changes above, is your cached response still accurate and complete?
+
+- If the changes are irrelevant to your cached response (e.g., comments, formatting, unrelated files), respond: \`VALID\`
+- If the changes affect the accuracy of your cached response, respond: \`STALE\`
+
+Respond with ONLY \`VALID\` or \`STALE\` on the first line, followed by a brief reason.`;
+
+/** Run lightweight cache review for uncertain state. */
+async function runCacheReview(route, cacheDir) {
+  const dataPath = join(cacheDir, 'data.md');
+  const snapshotPath = join(cacheDir, '.snapshot');
+
+  let diff = 'No diff available.';
+  try {
+    const snapshot = readSnapshot(snapshotPath);
+    const changed = [];
+    for (const [path, { hash: oldHash }] of snapshot) {
+      try {
+        const content = readFileSync(path, 'utf8');
+        if (md5(content) !== oldHash) {
+          changed.push(`Changed: ${path}`);
+        }
+      } catch {
+        changed.push(`Deleted: ${path}`);
+      }
+    }
+    if (changed.length > 0) {
+      diff = changed.join('\n');
+    }
+  } catch { /* best-effort */ }
+
+  const cachedData = existsSync(dataPath) ? readFileSync(dataPath, 'utf8') : 'No cached data.';
+  const reviewPrompt = REVIEW_TEMPLATE
+    .replace('{{DIFF}}', diff)
+    .replace('{{CACHED_DATA}}', cachedData.substring(0, 2000)); // truncate for review
+
+  try {
+    const response = await invokeAgent(route.provider, reviewPrompt);
+    const firstLine = response.split('\n')[0].trim().toUpperCase();
+    return firstLine.startsWith('VALID') ? 'valid' : 'stale';
+  } catch (e) {
+    log(`Cache review failed for ${route.name}: ${e.message}`);
+    return 'stale'; // fail-open: regenerate
+  }
+}
+
+// ─── Route handler ───
+
+async function handleRoute(route, message, ifNoneMatch) {
+  const requestId = `${route.name}-${Date.now()}`;
+  activeRequests.set(requestId, { route: route.name, provider: route.provider, startedAt: new Date().toISOString() });
+
+  try {
+    // Non-cached routes: always spawn agent
+    if (!route.cache) {
+      const prompt = route.guidelines
+        ? `${route.guidelines}\n\n---\n\n${message}`
+        : route.skill
+          ? `Run the /${route.skill} skill. Input: ${message}`
+          : message;
+
+      const response = await invokeAgent(route.provider, prompt);
+      return { text: response, etag: computeETag(response), status: 200 };
+    }
+
+    // Cached routes
+    const cacheDir = ensureCacheDir(route.name);
+    const dataPath = join(cacheDir, 'data.md');
+    const snapshotPath = join(cacheDir, '.snapshot');
+    const hashPath = join(cacheDir, '.hash');
+
+    const expiry = checkCacheExpiry(route, cacheDir);
+    log(`ROUTE ${route.name}: cache=${expiry}`);
+
+    // Fresh — serve from cache
+    if (expiry === 'fresh' && existsSync(dataPath)) {
+      const cached = readFileSync(dataPath, 'utf8');
+      const etag = computeETag(cached);
+
+      // ETag conditional check
+      if (ifNoneMatch && ifNoneMatch === etag) {
+        return { text: '[304 not modified]', etag, status: 304 };
+      }
+
+      return { text: `[cached]\n\n${cached}`, etag, status: 200 };
+    }
+
+    // Uncertain — run lightweight review
+    if (expiry === 'uncertain') {
+      const reviewResult = await runCacheReview(route, cacheDir);
+      if (reviewResult === 'valid') {
+        // Update snapshot and serve
+        if (route.cache.inputs) writeSnapshot(snapshotPath, route.cache.inputs);
+        writeFileSync(join(cacheDir, '.valid'), new Date().toISOString());
+        const cached = readFileSync(dataPath, 'utf8');
+        return { text: `[cached:revalidated]\n\n${cached}`, etag: computeETag(cached), status: 200 };
+      }
+      // Fall through to regenerate
+    }
+
+    // Stale — regenerate
+    const prompt = route.guidelines
+      ? `${route.guidelines}\n\n---\n\n${message}`
+      : route.skill
+        ? `Run the /${route.skill} skill. Input: ${message}`
+        : message;
+
+    const response = await invokeAgent(route.provider, prompt);
+
+    // Cache the result
+    try {
+      writeFileSync(dataPath, response);
+      writeFileSync(join(cacheDir, '.valid'), new Date().toISOString());
+      if (route.cache.inputs) writeSnapshot(snapshotPath, route.cache.inputs);
+      if (route.cache.type === 'hash' && route.cache.inputs) {
+        const files = collectFiles(route.cache.inputs);
+        const allContent = files.map(f => { try { return readFileSync(f, 'utf8'); } catch { return ''; } }).join('');
+        writeFileSync(hashPath, md5(allContent));
+      }
+      log(`ROUTE ${route.name}: cached, ${response.length} chars`);
+    } catch (e) {
+      log(`ROUTE ${route.name}: cache write failed — ${e.message}`);
+    }
+
+    return { text: response, etag: computeETag(response), status: 200 };
+  } finally {
+    activeRequests.delete(requestId);
   }
 }
 
 // ─── MCP tool registration ───
 
 function registerTools(server) {
+  // Delegate — invoke any agent directly
   server.tool(
     'delegate',
     'Delegate a prompt to a kordinate agent. Beorn loads the agent identity, invokes Claude Code as that agent, and returns the response.',
     {
-      agent: z.enum(KNOWN_AGENTS).describe('The agent to invoke (deployer, sauron, designer, scribe)'),
+      agent: z.enum(KNOWN_AGENTS).describe('The agent to invoke'),
       prompt: z.string().describe('The prompt to send to the agent'),
     },
     async ({ agent, prompt }) => {
-      log(`TOOL delegate called`, { agent, prompt: prompt.substring(0, 100) });
+      log('TOOL delegate called', { agent, prompt: prompt.substring(0, 100) });
       const requestId = `${agent}-${Date.now()}`;
       activeRequests.set(requestId, { agent, startedAt: new Date().toISOString() });
       try {
         const response = await invokeAgent(agent, prompt);
-        log(`TOOL delegate done`, { agent, responseLen: response.length });
         return { content: [{ type: 'text', text: response }] };
       } catch (e) {
-        log(`TOOL delegate error`, { agent, error: e.message });
+        log('TOOL delegate error', { agent, error: e.message });
         throw e;
       } finally {
         activeRequests.delete(requestId);
@@ -254,12 +574,16 @@ function registerTools(server) {
     },
   );
 
+  // Status
   server.tool(
     'status',
-    'Return the current status of the beorn server — uptime, known agents, active requests.',
+    'Return the current status of the beorn server — uptime, known agents, registered routes, active requests.',
     {},
     async () => {
-      log('TOOL status called');
+      const routes = [];
+      for (const [name, route] of routeRegistry) {
+        routes.push({ name, method: route.method, provider: route.provider, cached: !!route.cache });
+      }
       return {
         content: [{
           type: 'text',
@@ -267,6 +591,7 @@ function registerTools(server) {
             name: 'beorn',
             boot: BOOT_TIME,
             agents: KNOWN_AGENTS,
+            routes,
             active: [...activeRequests.values()],
           }, null, 2),
         }],
@@ -274,57 +599,40 @@ function registerTools(server) {
     },
   );
 
-  server.tool(
-    'kord',
-    'Route a stateful request through a kord contract. Handles contract lookup, cache/expiry checking, agent spawning, and result caching.',
-    {
-      kord_name: z.string().describe('The kord contract name (e.g., deployer-default, pattern-review)'),
-      message: z.string().describe('The message/question to send to the provider'),
-    },
-    async ({ kord_name, message }) => {
-      log(`TOOL kord called`, { kord_name, message: message.substring(0, 100) });
-      const found = findKordDir(kord_name);
+  // Dynamic per-route tools
+  for (const [name, route] of routeRegistry) {
+    const schema = {
+      message: z.string().describe('The request message'),
+    };
 
-      if (!found) {
-        throw new Error(`Kord not found: ${kord_name} (searched agents/*/kords/)`);
-      }
+    // Add optional ETag field for cached routes
+    if (route.cache) {
+      schema.if_none_match = z.string().optional().describe('ETag from a previous response for conditional requests');
+    }
 
-      const { dir: kordDir, provider } = found;
-      const contractPath = join(kordDir, 'contract.md');
-      const raw = readFileSync(contractPath, 'utf8');
-
-      // Per-project data file for artifact kords — derive slug from message
-      const slug = message.split(/\s+/)[0].replace(/[^a-zA-Z0-9-]/g, '_').slice(-32);
-      const dataPath = join(kordDir, `data-${slug}.md`);
-
-      // Check cache freshness (pass message so expiry.sh can hash project-specific inputs)
-      if (checkExpiry(kordDir, message) && existsSync(dataPath)) {
-        const cached = readFileSync(dataPath, 'utf8');
-        log(`TOOL kord cache hit`, { kord_name, slug, cachedLen: cached.length });
-        return { content: [{ type: 'text', text: `[cached]\n\n${cached}` }] };
-      }
-
-      // Stale or no cache — spawn agent
-      const guidelines = extractGuidelines(raw);
-      const fullPrompt = guidelines
-        ? `${guidelines}\n\n---\n\n${message}`
-        : message;
-
-      log(`TOOL kord spawning`, { kord_name, provider });
-      const response = await invokeAgent(provider, fullPrompt);
-
-      // Cache result
-      try {
-        writeFileSync(dataPath, response);
-        writeFileSync(join(kordDir, '.valid'), new Date().toISOString());
-        log(`TOOL kord cached`, { kord_name, slug, responseLen: response.length });
-      } catch (e) {
-        log(`TOOL kord cache write failed`, { kord_name, error: e.message });
-      }
-
-      return { content: [{ type: 'text', text: response }] };
-    },
-  );
+    server.tool(
+      name,
+      route.description,
+      schema,
+      async (params) => {
+        log(`TOOL ${name} called`, { message: params.message?.substring(0, 100) });
+        try {
+          const result = await handleRoute(route, params.message, params.if_none_match);
+          const meta = route.cache ? ` etag=${result.etag}` : '';
+          log(`TOOL ${name} done`, { status: result.status, responseLen: result.text.length });
+          return {
+            content: [{
+              type: 'text',
+              text: result.etag ? `${result.text}\n\n<!-- etag: ${result.etag} -->` : result.text,
+            }],
+          };
+        } catch (e) {
+          log(`TOOL ${name} error`, { error: e.message });
+          throw e;
+        }
+      },
+    );
+  }
 }
 
 // ─── Logging ───
@@ -343,7 +651,6 @@ function log(msg, data) {
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 
-// Request logging middleware
 app.use((req, _res, next) => {
   if (req.path !== '/health') {
     const body = req.body;
@@ -353,25 +660,22 @@ app.use((req, _res, next) => {
   next();
 });
 
-// Health — K8s readiness probe
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', name: 'beorn', boot: BOOT_TIME });
+  res.json({ status: 'ok', name: 'beorn', boot: BOOT_TIME, routes: routeRegistry.size });
 });
 
 // ─── MCP transport ───
-// Stateless: each request gets its own server + transport.
-// No session persistence needed — each call is independent.
 
 app.post('/mcp', async (req, res) => {
   const method = req.body?.method || 'unknown';
   log(`MCP request: ${method}`);
 
   try {
-    const server = new McpServer({ name: 'beorn', version: '1.0.0' });
+    const server = new McpServer({ name: 'beorn', version: '2.0.0' });
     registerTools(server);
 
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined, // stateless — no sessions
+      sessionIdGenerator: undefined,
     });
 
     await server.connect(transport);
@@ -388,7 +692,8 @@ app.post('/mcp', async (req, res) => {
 // ─── Start ───
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`[beorn] Shape-shifting MCP agent server on :${PORT}`);
-  console.log(`[beorn] Known agents: ${KNOWN_AGENTS.join(', ')}`);
-  console.log(`[beorn] MCP: /mcp | Health: /health`);
+  log('Shape-shifting MCP agent server on :' + PORT);
+  log(`Known agents: ${KNOWN_AGENTS.join(', ')}`);
+  log(`Registered routes: ${[...routeRegistry.keys()].join(', ')}`);
+  log('MCP: /mcp | Health: /health');
 });

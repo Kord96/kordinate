@@ -15,7 +15,7 @@ Follow this checklist exactly. Create tasks for each item using TaskCreate:
 
 1. Read your memory index at $KORDINATE_HOME/agents/<agent>/memory/MEMORY.md
 2. <task steps derived from the caller's message and contract guidelines>
-3. Run `/kord remember <insight>` with any non-obvious insights you learned
+3. Save any non-obvious insights you learned to your memory
 
 Mark each task complete as you go. Do not return your final answer until all tasks are done.
 ```
@@ -27,10 +27,10 @@ Where:
 
 ## When to Apply
 
-| Kord mode | Apply wrapper? | Why |
-|-----------|---------------|-----|
-| stateful | yes | Agent does autonomous work, may learn something |
-| stateless | no | Skill runs locally, no agent spawned |
+| Route | Apply wrapper? | Why |
+|-------|---------------|-----|
+| delegate (stateful) | yes | Agent does autonomous work, may learn something |
+| capability tool (stateless) | no | Tool runs locally, no agent spawned |
 
 ## When NOT to Apply
 

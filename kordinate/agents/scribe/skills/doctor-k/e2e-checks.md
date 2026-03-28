@@ -1,6 +1,6 @@
 # End-to-End Checks
 
-Level 3 resource for the doctor-k skill. These checks actually invoke the system — spawning agents, routing kords, writing memories. They verify behavior, not just structure.
+Level 3 resource for the doctor-k skill. These checks actually invoke the system — spawning agents, calling capability tools, writing memories. They verify behavior, not just structure.
 
 Run these after structural and runtime checks pass. They have side effects (spawn agents, write temp memories) and take longer to execute.
 
@@ -15,34 +15,33 @@ For each agent in `$KORDINATE_HOME/agents/` (except `main`):
 - **PASS** — agent responds with correct identity
 - **FAIL** — agent not found, wrong identity, or spawn error
 
-## Lifecycle compliance
+## Beorn capability tools
 
-For one agent (pick the first alphabetically), test the full kord lifecycle:
+For one agent (pick the first alphabetically), test capability tool invocation via Beorn:
 
-1. Invoke `/kord <agent> describe your purpose in one sentence`
-2. The kord skill should wrap with the lifecycle checklist
-3. Verify the agent created tasks (TaskCreate was used)
-4. Verify the agent attempted `/kord remember` before returning
+1. Call a capability tool exposed by the agent's route (e.g., `write_memory` for scribe)
+2. Verify the tool returns a structured response (not an error)
+3. Verify the agent processed the request (check for expected output fields)
 
-- **PASS** — agent followed all lifecycle steps
-- **PARTIAL** — agent did the task but skipped remember
-- **FAIL** — agent ignored the lifecycle entirely
+- **PASS** — capability tool returned expected response
+- **PARTIAL** — tool responded but with unexpected format
+- **FAIL** — tool errored or agent could not process the request
 
-## Stateless kord routing
+## Memory write tool
 
-Test `/kord remember test-e2e-check: this is a health check probe`:
+Test the `write_memory` capability tool:
 
-1. The kord should resolve to the `remember` kord (stateless)
+1. Call `write_memory` with a test payload: `"test-e2e-check: this is a health check probe"`
 2. Scribe should authenticate, write the memory, and report success
 3. Verify the memory was written to `$KORDINATE_HOME/agents/<caller>/memory/scratchpad.md`
 4. Clean up: remove the test entry from scratchpad
 
 - **PASS** — memory written and cleaned up
-- **FAIL** — routing error, auth failure, or write failure
+- **FAIL** — tool error, auth failure, or write failure
 
 ## Memory persistence
 
-1. Write a test memory via `/kord remember e2e-probe: <timestamp>`
+1. Write a test memory via `write_memory` tool: `e2e-probe: <timestamp>`
 2. Verify it appears in the agent's scratchpad at `$KORDINATE_HOME`
 3. Verify the runtime MEMORY.md index at `~/.claude/agent-memory/<name>/MEMORY.md` has an entry for scratchpad.md
 4. Clean up the test entry
@@ -81,7 +80,7 @@ Each agent's IDENTITY.md has a `## Capabilities` section listing testable assert
    - Skills that analyze: provide a small test input and verify structured output
    - Skills that write: invoke and verify the artifact was created, then clean up
    - Skills that require infrastructure (kubectl, Grafana): **SKIP** if not available, don't fail
-3. Spawn the agent via `/kord` (so lifecycle wrapper applies) with a minimal task
+3. Invoke the agent's capability tool via Beorn with a minimal task
 
 - **PASS** — capability produced expected result
 - **SKIP** — required infrastructure unavailable
@@ -96,8 +95,8 @@ Present as a checklist grouped by category:
 ```
 System E2E:
   [PASS] Agent spawning: augur, charon, sauron, scribe, warden, alfred
-  [PASS] Lifecycle compliance: augur followed full lifecycle
-  [PASS] Stateless kord routing: /kord remember wrote and cleaned up
+  [PASS] Beorn capability tools: augur responded via capability tool
+  [PASS] Memory write tool: write_memory wrote and cleaned up
   [PASS] Memory persistence: scratchpad + runtime index updated
   [PASS] Guard enforcement: curated write blocked
   [SKIP] Kord worktree isolation: not a git repo
@@ -111,7 +110,7 @@ Per-Agent Capabilities:
     [SKIP] bootstrap cluster — no kubectl access
     [SKIP] add worker node — no kubectl access
   scribe:
-    [PASS] write agent memories via /remember
+    [PASS] write agent memories via write_memory
     [PASS] link kordinate to runtime via /register --link
   ...
 ```

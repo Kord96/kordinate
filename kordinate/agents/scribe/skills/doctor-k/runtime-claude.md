@@ -59,5 +59,5 @@ Verify `~/.claude/CLAUDE.md` contains expected content:
 
 Verify that kordinate skills are available in the runtime:
 
-- **Global skills** — boot, kord, authenticate, merge, install-k should exist in `~/.claude/skills/`: **ERROR** if missing
+- **Global skills** — boot, authenticate, merge, install should exist in `~/.claude/skills/`: **ERROR** if missing
 - **Agent skills** — each agent's skills should exist in `~/.claude/skills/`: **WARNING** if missing

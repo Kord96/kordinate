@@ -114,7 +114,7 @@ print(' '.join(sorted(agents)) if agents else '')
         fi
       fi
 
-      deny "This file is managed by kordinate. Use /kord remember to write memories."
+      deny "This file is managed by kordinate. Use the write_memory tool to write memories."
       ;;
   esac
 

@@ -44,10 +44,10 @@ Example:
 - `agents/deployer/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded: deployer, template: identity)
 - `agents/deployer/memory/cluster-topology.md` — Current cluster layout and service endpoints
 
-## Kords
+## Routes
 
-- `agents/deployer/kords/deployer-default/contract.md` — General cluster questions (curated, template: contract)
-- `agents/deployer/kords/deployer-default/data.md` — Cached cluster state (template: data, expiry: expiry.sh)
+- `agents/deployer/routes.yaml` — Route definitions for deployer agent (cluster-health, deploy-service)
+- `agents/scribe/routes.yaml` — Route definitions for scribe agent (write-memory, register-agent)
 
 ## Team
 

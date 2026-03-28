@@ -5,6 +5,8 @@ curated: true
 scope: global
 ---
 
+> **DEPRECATED**: This skill is being replaced by beorn capability tools. Use capability tools (e.g., write_memory, analyze_architecture) directly.
+
 Thin wrapper that routes kord requests. Stateless kords run locally, stateful kords go through Beorn.
 
 **Input**: $ARGUMENTS — `<provider> [kord-name] <message>` or `<kord-name> <message>`

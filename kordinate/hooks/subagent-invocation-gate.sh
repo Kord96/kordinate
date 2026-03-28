@@ -30,7 +30,7 @@ fi
 # Only block if this is a kordinate agent (has a directory in agents/)
 if [ -d "$KORDINATE_HOME/agents/$AGENT" ] && [ "$AGENT" != "main" ]; then
   cat <<EOF
-{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Use /kord $AGENT instead of spawning directly. The kord protocol adds lifecycle management (memory loading, remember on exit)."}}
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Use beorn capability tools (e.g., write_memory, analyze_architecture) or the delegate MCP tool instead of spawning directly."}}
 EOF
   exit 0
 fi

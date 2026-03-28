@@ -1,0 +1,10 @@
+routes:
+  - name: scan_secrets
+    method: POST
+    description: Scan specified files for hardcoded secrets, PII, and exposed configuration before commit
+    skill: scan-breaches
+
+  - name: sanitize_content
+    method: POST
+    description: Classify content as config, credential, or memory — routes to the correct destination
+    skill: sanitize

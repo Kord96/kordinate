@@ -20,12 +20,12 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 
 ## Skills
 
-| Skill | Purpose | Kord mode |
-|-------|---------|-----------|
-| `/remember` | Write a memory for an agent — handles scope, paths, and KORD.md | stateless |
-| `/register` | Register a new agent or kord, or sync existing agents to the runtime | stateful |
-| `/doctor-k` | Health-check the kordinate system — structural checks, runtime validation, and e2e tests | stateless |
-| `/document` | Generate documentation — architecture diagrams, tutorials, doc artifacts | stateless |
+| Skill | Purpose |
+|-------|---------|
+| `/remember` | Write a memory for an agent — handles scope, paths, and KORD.md |
+| `/register` | Register a new agent or kord, or sync existing agents to the runtime |
+| `/doctor-k` | Health-check the kordinate system — structural checks, runtime validation, and e2e tests |
+| `/document` | Generate documentation — architecture diagrams, tutorials, doc artifacts |
 
 ## Capabilities
 
@@ -46,4 +46,4 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 
 ## Consultation
 
-Templates, document format conventions, memory organization. See kords: `scribe-default`, `remember`, `doctor-k`, `register`, `doc-check`.
+Templates, document format conventions, memory organization.

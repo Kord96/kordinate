@@ -89,17 +89,28 @@ if [ -n "$memories" ]; then
   done
 fi
 
-# Kords
-kords=$(find "$ROOT/agents" -path "*/kords/*/contract.md" 2>/dev/null | sort)
-if [ -n "$kords" ]; then
+# Routes
+routes_files=$(find "$ROOT/agents" -name "routes.yaml" 2>/dev/null | sort)
+if [ -n "$routes_files" ]; then
   echo "" >> "$OUTPUT_MD"
-  echo "## Kords" >> "$OUTPUT_MD"
+  echo "## Routes" >> "$OUTPUT_MD"
   echo "" >> "$OUTPUT_MD"
-  for f in $kords; do
-    desc=$(fm_val "description" "$f")
+  for f in $routes_files; do
     rel=${f#$ROOT/}
-    echo "- \`$rel\` — $desc" >> "$OUTPUT_MD"
-    add_entry "$f"
+    agent_name=$(echo "$rel" | sed 's|agents/\([^/]*\)/.*|\1|')
+    # Extract route names and descriptions from YAML
+    while IFS= read -r line; do
+      route_name=$(echo "$line" | sed 's/^ *- name: *//')
+      [ -z "$route_name" ] && continue
+      echo "- \`$rel\` — $agent_name route: $route_name" >> "$OUTPUT_MD"
+      # Add JSON entry for the route
+      if [ "$FIRST" = true ]; then
+        FIRST=false
+      else
+        echo "," >> "$OUTPUT_JSON"
+      fi
+      printf '  {"path":"%s","description":"%s route: %s","owner":"%s"}' "$rel" "$agent_name" "$route_name" "$agent_name" >> "$OUTPUT_JSON"
+    done < <(grep '^ *- name:' "$f" 2>/dev/null)
   done
 fi
 

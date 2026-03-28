@@ -4,7 +4,7 @@ Level 3 resource for the doctor-k skill. Structural checks that verify kordinate
 
 ## Frontmatter completeness
 
-Every `.md` file under `agents/` and `kords/` must have a `description` field in its YAML frontmatter.
+Every `.md` file under `agents/` must have a `description` field in its YAML frontmatter.
 
 Additional required fields by file type:
 - **IDENTITY.md** — must also have `curated`, `scope`, `preloaded`
@@ -27,9 +27,9 @@ Severity: **ERROR** for any invalid value.
 
 Compare KORD.json entries against actual files on disk:
 
-- **Orphaned entry** — an entry exists in KORD.json but the referenced file does not exist on disk.
+- **Orphaned entry** — an entry exists in KORD.json but the referenced file does not exist on disk (check both memory files and route entries).
     - Severity: **ERROR**
-- **Missing entry** — a file exists on disk with a `description` in its frontmatter but has no corresponding entry in KORD.json.
+- **Missing entry** — a file exists on disk with a `description` in its frontmatter but has no corresponding entry in KORD.json. Routes defined in `routes.yaml` files should also appear.
     - Severity: **WARNING**
 
 ## Scratchpad staleness
@@ -45,33 +45,29 @@ Check all `.md` files under `agents/`:
 - File larger than 20KB: **WARNING**
 - File larger than 10KB (but under 20KB): **INFO**
 
-## Kord directory completeness
+## Route registry validation
 
-Every kord directory must conform to the standard template based on its mode:
+Every agent that has skills should have a `routes.yaml` defining its routes.
 
-### Stateful kords (`mode: stateful` in contract.md frontmatter)
+### Route file presence
 
-Required files:
-- `contract.md` — must exist with valid frontmatter
-- `data.md` — must exist (may be empty before first consultation)
-- `expiry.sh` — must exist and be executable (`-x` permission)
-- `review.md` — must exist and contain both `{{DIFF}}` and `{{CACHED_DATA}}` placeholders
+For each agent directory that contains a `skills/` subdirectory, check for `routes.yaml`:
+- **ERROR** — agent has skills but no `routes.yaml`
 
-Severity:
-- **ERROR** — any required file missing
-- **ERROR** — `expiry.sh` exists but is not executable
-- **ERROR** — `review.md` exists but missing `{{DIFF}}` or `{{CACHED_DATA}}` placeholder
+### Route name uniqueness
 
-### Stateless kords (`mode: stateless` in contract.md frontmatter)
+Collect all route `name` fields across all `routes.yaml` files:
+- **ERROR** — two or more routes share the same name (even across different agents)
 
-Required files:
-- `contract.md` — must exist with valid frontmatter
+### Cache input paths
 
-Unexpected files (should not exist in stateless kords):
-- `data.md`, `expiry.sh`, `review.md`
+For each route with a `cache` section, validate that `inputs` paths resolve to existing files or directories:
+- **WARNING** — a cache input path does not exist on disk
 
-Severity:
-- **WARNING** — unexpected files present in a stateless kord directory
+### Skill references
+
+For each route, verify the `skill` field references a skill directory that exists under the agent's `skills/` or under global `skills/`:
+- **ERROR** — route references a skill that does not exist
 
 ## Duplicate descriptions
 
@@ -92,7 +88,7 @@ If the manifest does not exist: **INFO** (migration may be needed).
 
 If running from a dev repo (`.dev-source` exists), compare the dev tree (`agents/`) against the installable tree (`kordinate/agents/`):
 - Skills that exist in one tree but not the other: **WARNING**
-- Kords that exist in one tree but not the other: **WARNING**
+- Routes defined in one tree but not the other: **WARNING**
 - IDENTITY.md content that differs between trees: **INFO**
 
 ## Output format
