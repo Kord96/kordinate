@@ -62,6 +62,7 @@ spec:
         component: alloy
     spec:
       serviceAccountName: alloy
+      shareProcessNamespace: true
       containers:
         - name: alloy
           image: grafana/alloy:v1.5.1
@@ -81,6 +82,31 @@ spec:
           volumeMounts:
             - name: alloy-config
               mountPath: /etc/alloy
+        - name: config-reloader
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              HASH=$(md5sum /etc/alloy/config.alloy | cut -d' ' -f1)
+              while true; do
+                sleep 30
+                NEW=$(md5sum /etc/alloy/config.alloy | cut -d' ' -f1)
+                if [ "$NEW" != "$HASH" ]; then
+                  PID=$(pgrep -f 'alloy.*run' | head -1)
+                  [ -n "$PID" ] && kill -HUP "$PID" && echo "Alloy config reloaded (SIGHUP $PID)" || echo "Reload failed"
+                  HASH=$NEW
+                fi
+              done
+          volumeMounts:
+            - name: alloy-config
+              mountPath: /etc/alloy
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              memory: 16Mi
       volumes:
         - name: alloy-config
           configMap:
