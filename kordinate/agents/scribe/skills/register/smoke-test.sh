@@ -248,6 +248,61 @@ else
   fail "guard.sh not found"
 fi
 
+# ─── Manifest Validation ───
+
+section "Manifest"
+
+manifest="$KORDINATE_HOME/.manifest.json"
+if [ -f "$manifest" ]; then
+  if jq empty "$manifest" 2>/dev/null; then
+    pass ".manifest.json exists and is valid JSON"
+  else
+    fail ".manifest.json exists but is not valid JSON"
+  fi
+
+  # Check source field is populated
+  source_type=$(jq -r '.source.type // empty' "$manifest" 2>/dev/null)
+  if [ -n "$source_type" ]; then
+    pass ".manifest.json source field is populated (type=$source_type)"
+  else
+    fail ".manifest.json source field missing or empty"
+  fi
+
+  # Check all manifest file entries exist on disk
+  manifest_missing=0
+  while IFS= read -r rel_path; do
+    [ -z "$rel_path" ] && continue
+    if [ ! -f "$KORDINATE_HOME/$rel_path" ]; then
+      manifest_missing=$((manifest_missing + 1))
+    fi
+  done < <(jq -r '.files // {} | keys[]' "$manifest" 2>/dev/null)
+  if [ "$manifest_missing" -eq 0 ]; then
+    file_count=$(jq -r '.files // {} | keys | length' "$manifest" 2>/dev/null)
+    pass "All manifest file entries exist on disk ($file_count files)"
+  else
+    fail "$manifest_missing manifest file entries missing on disk"
+  fi
+else
+  fail ".manifest.json not found"
+fi
+
+# Dev mode checks
+if [ -f "$KORDINATE_HOME/.dev-source" ]; then
+  dev_repo=$(cat "$KORDINATE_HOME/.dev-source")
+  if [ -d "$dev_repo" ]; then
+    pass ".dev-source points to valid path ($dev_repo)"
+    if [ -d "$dev_repo/kordinate" ]; then
+      pass "Dev repo contains kordinate/ package directory"
+    else
+      fail "Dev repo missing kordinate/ package directory"
+    fi
+  else
+    fail ".dev-source points to non-existent path: $dev_repo"
+  fi
+else
+  skip "Dev mode not active (.dev-source not found)"
+fi
+
 # ─── Runtime Checks (optional) ───
 
 if [ "${1:-}" = "--runtime" ]; then

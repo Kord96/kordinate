@@ -62,6 +62,21 @@ Path: `shared/<protocol-name>.md`
 
 Single file, no directory. Frontmatter with description, curated, scope, preloaded. Included via `@~/.kord/shared/<name>.md` in CLAUDE.md.
 
+## Manifest File
+
+Path: `$KORDINATE_HOME/.manifest.json`
+
+| Field | Purpose |
+|-------|---------|
+| version | Manifest schema version |
+| source | Package source (type, path/url, ref) |
+| runtime | Detected runtime name |
+| home | Absolute path to $KORDINATE_HOME |
+| dev_mode | Whether dev mode is active |
+| installed_at | ISO timestamp of initial install |
+| updated_at | ISO timestamp of last update |
+| files | Map of relative paths to {sha256, source, curated} |
+
 ## Validation
 
 When creating any directory, verify:

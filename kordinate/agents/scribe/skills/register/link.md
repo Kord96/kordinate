@@ -12,6 +12,8 @@ See [claude-native.md](../remember/claude-native.md) for the runtime's paths.
 
 ### Agents
 
+**Dev-mode source resolution**: If `$KORDINATE_HOME/.dev-source` exists, read its contents to get the dev repo path. For each agent, check whether `<dev-repo-path>/kordinate/agents/<name>/` exists -- if so, it is a package agent and its `IDENTITY.md` and `memory/` should be read from the dev repo path instead of `$KORDINATE_HOME`. User-created agents (those not present in the dev repo's `kordinate/agents/` directory) continue to resolve from `$KORDINATE_HOME` as normal.
+
 For each agent in `$KORDINATE_HOME/agents/`:
 
 1. Read `IDENTITY.md`

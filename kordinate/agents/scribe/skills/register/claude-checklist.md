@@ -64,6 +64,20 @@ These can be verified immediately — no session restart required.
 - [ ] Guard allows writes to `~/.kord/` with scribe auth (`/tmp/.scribe-auth`)
 - [ ] Guard allows non-curated, non-templated files without auth
 
+### Manifest
+
+- [ ] `$KORDINATE_HOME/.manifest.json` exists
+- [ ] Manifest `source` field is set (type, path/url)
+- [ ] Manifest `runtime` field matches detected runtime
+- [ ] All files listed in manifest exist on disk
+- [ ] Manifest hashes match on-disk hashes for curated files
+
+### Dev Mode (if active)
+
+- [ ] `$KORDINATE_HOME/.dev-source` exists and points to a valid repo
+- [ ] Dev repo contains `kordinate/` package directory
+- [ ] Post-commit hook is installed in dev repo (`.git/hooks/post-commit` contains dev-sync)
+
 ### Project Level
 
 - [ ] `.kord/` exists in project root (if project-scoped memory is needed)
@@ -80,5 +94,6 @@ These require a live Claude session. Run [smoke-test.sh](smoke-test.sh) to verif
 - [ ] **Cache invalidation** — removing `.valid` marker causes re-spawn on next call
 - [ ] **Agent memory** — agents can read their own memory from kordinate paths
 - [ ] **Memory index sync** — new memory written via `/remember` appears in both `~/.kord/` and `~/.claude/agent-memory/` MEMORY.md
+- [ ] **Manifest integrity** — `manifest_update --dry-run` reports no unexpected drift
 - [ ] **Guard enforcement** — direct write to curated kordinate file is blocked
 - [ ] **Template enforcement** — templated files reject edits that remove required sections
