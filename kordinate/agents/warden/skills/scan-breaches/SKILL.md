@@ -44,9 +44,9 @@ Scan a project's source code for hardcoded secrets, personally identifiable info
 2. **Scan critical** — grep for API key prefixes, JWT patterns, password assignments, private key headers, connection strings. Exclude `.git/`, `node_modules/`, `pass` store paths.
 3. **Scan high** — grep for email patterns and phone numbers in source files. Exclude git config, IDENTITY.md author fields, and `package.json` metadata.
 4. **Scan medium** — grep for hardcoded IPs and hostnames. Cross-reference against `$KORDINATE_HOME/profile/config.yaml` — IPs that exist in config.yaml are expected; flag those that don't.
-5. **Check git history** — search recent commits (last 50) for patterns that were added then removed (secrets that leaked into history).
+5. **Check git history** — run `git log -p -50 --diff-filter=A` and grep the diffs for critical patterns (API keys, tokens, passwords, private keys). Flag any match — even if the secret was later removed, it remains in git history.
 6. **Report** findings grouped by severity. Show file:line and pattern type, never the actual secret value.
-7. **If `--fix`** — for each finding, invoke `/warden:sanitize` to route it to the correct destination.
+7. **If `--fix`** — for each finding, invoke `/sanitize` to route it to the correct destination.
 
 ## Output Format
 
@@ -64,7 +64,7 @@ MEDIUM (n findings)
   <file>:<line> — hardcoded <type>, not in config.yaml
 
 HISTORY (n findings)
-  <commit> <file> — <pattern type> added in <date>
+  <commit-hash> <file>:<line> — <pattern type> (committed <date>, still in history)
 
 Summary: n critical, n high, n medium, n history
 ```
