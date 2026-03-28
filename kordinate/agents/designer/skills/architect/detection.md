@@ -57,7 +57,7 @@ For candidates still unconfirmed after Pass 3 (signature verification was inconc
 - Compute the weighted score (sum of weights for "yes" answers).
 - If score >= `threshold`, mark as detected. Derive confidence from score/max_score ratio: >= 80% = high, >= threshold = medium.
 
-Batch all questions for one concept into a single analysis pass — do not make separate passes per question.
+Batch all questions for one concept into a single analysis pass — do not make separate passes per question. This pass typically adds 2-5 minutes for 10-30 candidate concepts.
 
 ## Confidence Assessment
 

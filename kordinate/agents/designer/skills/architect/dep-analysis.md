@@ -30,7 +30,7 @@ Level 3 resource for the architect skill. Referenced from step 3 (map dependenci
 
 ## External Service Detection
 
-Scan for client library usage and ORM schema files. These are common starting points; adapt to what the project uses.
+Scan for client library usage and ORM schema files. For each service found, record: type (use concept vocabulary below), technology, target (from connection strings, env vars, or config if visible), which files use it, and config source.
 
 **ORM schema files**: `prisma/schema.prisma` (`provider`, `url`), `drizzle.config.ts`, `ormconfig.ts`, SQLAlchemy `metadata`, GORM `Open()`. These declare database providers and connections authoritatively.
 
@@ -82,9 +82,9 @@ Performance: scans all siblings. For repos with 10+ sibling projects, warn about
 
 ## Module Graph Analysis
 
-Build a directed graph: `A -> B` means A depends on B. Then flag:
+Build a directed graph: `A -> B` means A depends on B. Respect `--depth N` if set — stop traversal at depth N. Collapse leaf modules into their parent where a parent has only leaf children. Then flag:
 
-- **Circular dependencies**: report the full cycle path. Cap detection at cycles of length 5 or fewer.
+- **Circular dependencies**: report the full cycle path. Cap detection at cycles of length 5 or fewer — if longer cycles exist, note their presence and move on.
 - **Hub modules**: imported by >50% of other modules. These are coupling hotspots.
 
 ## Concept Vocabulary
@@ -97,9 +97,8 @@ Use these exact values in the architecture.yaml output:
 
 ## Edge Cases
 
-| Marker | Handling |
-|--------|----------|
-| `pnpm-workspace.yaml`, `package.json` `workspaces`, `go.work` | Monorepo — treat workspace members as modules |
-| `vendor/`, `third_party/`, `_vendor/` | Vendored deps — skip for module discovery, record imports as external |
-| `.gitmodules` | Git submodules — treat submodule dirs as external |
-| `gen/`, `generated/`, `proto/gen/`, `__generated__/` | Build-generated code — note but do not trace |
+- **Monorepo with shared packages**: If the project root contains workspace config (`pnpm-workspace.yaml`, `package.json` with `workspaces`, `go.work`), resolve the workspace member globs to directories and treat each member as a module. For JS/TS also check `tsconfig.json` `references` as an authoritative dependency declaration between packages. Shared packages (e.g., `packages/shared/`, `libs/common/`) are internal dependencies — graph them like any other module but tag them as `shared` in the role field.
+- **Vendored dependencies**: Skip `vendor/`, `third_party/`, `_vendor/` directories entirely for module discovery and import tracing. They are not project code. If a vendored package is imported, record the import target (e.g., `github.com/foo/bar`) as an external dependency, not an internal module.
+- **Git submodules**: Check for `.gitmodules`. Submodule directories contain external code — do not traverse them for internal module discovery. If project source imports from a submodule path, record it as an external dependency with a note "(git submodule)".
+- **Build-generated code**: Skip directories matching `gen/`, `generated/`, `proto/gen/`, `__generated__/`. If imports reference generated code, note the import but do not trace into the generated files.
+- **Unsupported languages**: If no recognizable language markers are found, note what was found. The dependency analysis supports Python, JS/TS, and Go; other languages get best-effort import tracing.
