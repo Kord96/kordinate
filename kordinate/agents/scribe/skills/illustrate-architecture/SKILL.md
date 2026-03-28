@@ -54,69 +54,77 @@ Read from `<project>/.kord/agents/designer/memory/` — this is the only authori
 
 If `architecture.yaml` is missing after the kord attempt, report and suggest running `/architect <project>` directly. Exit.
 
-### 4. Build architecture.json
+### 4. Produce architecture.json
 
-Transform `architecture.yaml` into the JSON format described in [explorer-schema.md](explorer-schema.md). This is the data file the ArchExplorer component consumes at build time.
+This is the core creative step. Read all Designer artifacts + source code and produce **one coherent JSON file** that contains everything the explorer needs: graph data, flow narratives, failure scenarios, and structural overview. The narrative is not a separate step — it lives inside the data.
 
-**Key field names** — the component reads these exact keys:
-- Nodes use `name` (not `label`) for display text
-- Nodes use `hasChildren: true` for parent/group nodes, `parent` for nesting
-- Nodes use `file` (not `modules`) for source file path, `exports` for exported symbols
-- Top-level `data_flows` (not `flows`) for flow objects
-- Top-level `state` (not `stores`) for state/store objects
-- Top-level `failure_modes` (not `failures`) for failure objects
-- Edges use `flowId` to associate with a data flow; edges without `flowId` are dependency edges
+Produce this as **one thought**, not a mechanical transform. Hold the full picture — components, their relationships, how data flows, where things break, what patterns are in use, what debt exists — and express it as a single coherent artifact.
 
-**Hierarchy constraint — 3-5 top-level groups maximum.** The graph should feel spacious, not cluttered. Follow the C4 Container model: top-level groups are runtime boundaries (e.g., Server, Browser, External), not every module or directory. Everything else nests inside as children or grandchildren. If the architecture.yaml has more than 5 top-level components, consolidate them into broader containers. Groups beyond depth 2 should become regular component nodes, not groups — the user drills down by expanding, not by seeing a flat sea of boxes.
+**Output structure:**
 
-Reference: the existing sous-storefront explorer uses 3 groups (Server, Browser, External) with 83 nodes nested inside. That's the right density.
+```json
+{
+  "nodes": [...],
+  "edges": [...],
+  "data_flows": [
+    {
+      "id": "flow-id",
+      "name": "Human-readable name",
+      "narrative": "When a shopper opens the home page, **root-loader** fires...",
+      "steps": [
+        { "component": "root-loader", "action": "fetches categories", "to": "api-client" }
+      ]
+    }
+  ],
+  "state": [
+    {
+      "id": "store-id",
+      "name": "Cart Store",
+      "narrative": "Cart state lives in **localStorage** rather than server-side...",
+      "purpose": "source-of-truth",
+      "readers": ["cart-drawer", "checkout-page"],
+      "writers": ["add-to-cart-handler"]
+    }
+  ],
+  "failure_modes": [
+    {
+      "id": "failure-id",
+      "severity": "critical",
+      "narrative": "At 2am, DummyJSON starts returning 503s. The **circuit-breaker** opens...",
+      "cascade": [{ "component": "api-client", "effect": "..." }],
+      "detection": [...],
+      "recovery": [...]
+    }
+  ],
+  "overview": "Brief C4 Context paragraph — what this system does, who uses it.",
+  "structure_narrative": "The system runs across **server**, **browser**, and **external**..."
+}
+```
 
-**Base transform** (from architecture.yaml alone):
+**Constraints — every reference must resolve:**
+- Every `component` in a flow step must exist in `nodes[].id`
+- Every flow step pair (step N → step N+1) creates an edge with `flowId` — do not create flows without connected edges
+- Every `**bold-text**` in any narrative must match a `nodes[].id` or `nodes[].name`
+- Every `cascade[].component` in failure modes must exist in `nodes[].id`
+- Every `readers[]` and `writers[]` in state must exist in `nodes[].id`
+- Do not reference components that don't exist in the nodes array
 
-- **Top-level groups**: Create 3-5 group nodes representing runtime/deployment boundaries. Typical: `server` (SSR, API, loaders), `browser` (client app, UI, state), `external` (third-party services, APIs). Map each architecture.yaml component to the appropriate group based on where it runs.
-- Each **component** becomes a node: `{ id, name, description, type, parent, file, exports, hasChildren }`. Set `parent` to the containing group. Components that contain children become nested group nodes, but only at depth 1-2. At depth 3+, use regular nodes.
-- Each **depends_on** relationship becomes an edge: `{ source, target, label }`
-- Each **external_dependency** becomes a node with `type: "external"`, grouped under the `external` top-level group
-- Each **data_flow** from the YAML becomes a `data_flows[]` entry with `{ id, name, description, trigger, steps[] }`. Each step: `{ component, action, data, to, technology }`. Also create edges with `flowId` linking the step components.
-- Each **state** entry becomes a `state[]` entry: `{ id, name, description, purpose, technology, component, persistence, readers[], writers[] }`
-- Each **failure_mode** becomes a `failure_modes[]` entry: `{ id, trigger, severity, impact, cascade[], detection[], recovery[] }`
+**Hierarchy — 3-5 top-level groups maximum.** Follow the C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not modules. Everything nests inside. Groups beyond depth 2 become regular nodes.
 
-**Enrichments** (from optional files):
+**Narrative approach:**
+- **C4 multi-level**: Overview → containers → components, each level coherent on its own
+- **Scenario-driven**: Trace real user journeys through components. Name actors: "When Sarah adds to cart, **CartDrawer** dispatches to **cart-store**..."
+- **Decision anchors**: Explain *why* patterns were chosen, what was traded off, where debt is an open question
 
-- **Pattern badges** (from `patterns.md`): Match patterns to component nodes. Add a `patterns` array with `{ name, category }`.
-- **Debt markers** (from `debt-assessment.md`): Map debt items to affected nodes. Add a `debt` object with `{ severity, items: [{ title, description }] }`. Severity drives node border coloring.
-- **API endpoints** (from `api-review.md`): Map routes to component nodes. Add `endpoints` array with `{ method, path, description }`.
-- **External deps enrichment** (from `dependencies.md`): Add `resilience` object `{ timeout, retry, circuitBreaker, fallback }` and `criticality` to external nodes.
+**Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
+- Pattern badges from `patterns.md` → `node.patterns[]`
+- Debt markers from `debt-assessment.md` → `node.debt`
+- API endpoints from `api-review.md` → `node.endpoints[]`
+- External dep resilience from `dependencies.md` → `node.resilience`
 
-Write `architecture.json` to `<docs-content-dir>/<project>/architecture.json`. See step 7 for path resolution.
+**Gemini review** — after producing the JSON, run a background Gemini review per `~/.kord/shared/gemini-protocol.md`. Ask Gemini to verify: do all narrative references resolve to real nodes? Are any flows missing edges? Is the narrative a story or a list? Fix valid critiques.
 
-### 5. Write narrative
-
-The sidebar narrative is the story that guides readers through the architecture. It is not a bullet-point list — it is **prose that Scribe writes**, using everything learned from the Designer memories.
-
-The narrative follows three complementary approaches:
-
-**C4 multi-level structure** — Each tab's narrative starts at the highest level of abstraction and drills down. The reader should be able to stop at any depth and have a coherent understanding.
-
-**Scenario-driven writing** — Instead of describing components abstractly, trace them through real user journeys. Name concrete actors and actions: "When Sarah browses the category page, the **CategoriesQuery** fires a prefetch from the **root loader**..." This makes architecture tangible — readers understand *what happens*, not just *what exists*.
-
-**Decision anchors** — When a pattern or architectural choice is mentioned, briefly explain *why* it was chosen and what was traded off. Draw from detected patterns and debt data: "The team uses **circuit-breaker** on the DummyJSON client rather than simple retry — the API has long failure windows where retrying would just queue up timeouts." If Designer found anti-patterns or debt, frame them as open decisions: "The **ProductService** currently bypasses the port layer and queries the API directly. This creates coupling that the hexagonal pattern was meant to prevent — a candidate for refactoring."
-
-Write one markdown file per tab into `<docs-content-dir>/<project>/narrative/`:
-
-- **`structure.md`** — Start with a C4 Context-level paragraph: what this system does in the world, who uses it, what it connects to. Then zoom to Container level: the major runtime boundaries (server, browser, external services) and how they communicate. Then Component level: one section per module group, written through the lens of a user journey. Reference component names in bold for graph linking. Weave in patterns, debt, and decisions naturally — don't list them separately.
-
-- **`flows.md`** — Each flow is a mini-story with a named protagonist. "When a shopper opens the home page, the **SSR server** runs three loaders in sequence. The **root loader** fetches categories from DummyJSON — this call is protected by a **circuit breaker** because..." Explain what happens at each step, why the data moves that way, and what would happen if a step failed. Cross-reference the resilience tab for failure scenarios.
-
-- **`data.md`** — Frame around the question "where does truth live?" Group stores by purpose. For each: what state it holds, who reads it, who writes it, what happens on conflict, and why this storage choice was made. "Cart state lives in **localStorage** rather than server-side — the team traded session persistence for offline capability and zero-latency adds."
-
-- **`resilience.md`** — Each failure mode is a scenario: "At 2am, the DummyJSON API starts returning 503s. The **circuit breaker** opens after 5 failures in 30 seconds. The **API client** switches to cached responses via **graceful degradation**. Users see slightly stale category data but the site stays up. The **health check** reports degraded status, and the Grafana alert fires..." Connect back to architecture decisions — this is where those choices pay off (or don't).
-
-**If `--narrative <dir>` is provided**: read existing markdown files from that directory. Use them as-is for the tabs they cover. For tabs without a file, write new narrative as above.
-
-Each heading in the narrative should use `{#component-id}` syntax to anchor it to a graph node for bidirectional linking. For example: `## API Layer {#api-gateway}`.
-
-**Gemini review** — after writing `structure.md`, run a background Gemini review per the gemini-protocol (see `~/.kord/shared/gemini-protocol.md` for exact flags). Pipe `structure.md` to Gemini with the architecture.yaml as context. Continue writing the other tabs. Before finalizing, read the review and fix valid critiques.
+Write to `<docs-content-dir>/<project>/architecture.json`.
 
 ### 6. Write the explorer page
 
