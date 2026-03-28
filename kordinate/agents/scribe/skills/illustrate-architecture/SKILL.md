@@ -12,7 +12,7 @@ context: fork
 
 Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a side drawer for detail inspection.
 
-The viewer has four tabs: Structure (component hierarchy), Flows (data flow sequence diagrams), Data (state model graph), and Resilience (failure modes). Clicking any node opens a side drawer showing its full details. Legends are toggled via a `?` button. Every node should have a meaningful `description` and `modules` path — these are displayed in the drawer.
+Every node should have a meaningful `description` and at least one entry in `modules` for leaf nodes. The viewer uses these for detail inspection.
 
 ## Arguments
 
