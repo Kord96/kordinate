@@ -9,16 +9,8 @@
   ],
   "links": [
     {
-      "type": "link",
-      "title": "Operational Health",
-      "icon": "dashboard",
-      "url": "/d/operational-health/",
-      "includeVars": true,
-      "keepTime": true
-    },
-    {
       "type": "dashboards",
-      "title": "Apps",
+      "title": "logbd",
       "icon": "apps",
       "asDropdown": true,
       "includeVars": true,
@@ -54,7 +46,7 @@
           "refId": "StandardVariableQuery"
         },
         "refresh": 1,
-        "regex": "/^(dev|test|prod)$/",
+        "regex": "",
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
