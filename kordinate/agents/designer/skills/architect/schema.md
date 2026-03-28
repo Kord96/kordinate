@@ -38,7 +38,7 @@ components:
       - "<path/to/module>"
     depends_on: ["<component-id>"]
     abstraction: ["<abstraction-name>"]  # optional, from abstractions.md — drives downstream viewpoints
-    patterns: ["<pattern-name>"]        # optional, from detect-patterns or concept catalog
+    patterns: ["<pattern-name>"]        # optional, from detect-concepts or concept catalog
     deployment:                          # optional, for deployment viewpoint
       namespace: "<k8s namespace>"
       kind: "<Deployment | StatefulSet | CronJob | Pod>"

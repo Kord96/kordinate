@@ -14,9 +14,9 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
 
 `$ARGUMENTS` — Required: `<project>`. The project directory must exist at `~/<project>/`, `~/repos/<project>/`, or `~/test-repos/<project>/`.
 
-## Dependency: detect-patterns
+## Dependency: detect-concepts
 
-Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/detect-patterns`. If that file is absent, step 3 falls back to a quick scan.
+Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/detect-concepts`. If that file is absent, step 3 falls back to a quick scan.
 
 ## Steps
 
@@ -25,10 +25,10 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`, then `~/test-repos/<project>/`. If not found, report and exit.
 
 3. **Determine applicable patterns** — check for `<project-repo>/.kord/agents/designer/memory/patterns.md`.
-   - **If present** (preferred — detect-patterns does a thorough multi-pass scan):
+   - **If present** (preferred — detect-concepts does a thorough multi-pass scan):
      1. Read the `Pattern` column from the `## Detected Patterns` table. These are the patterns whose anti-patterns you will scan for in steps 4-5.
      2. Read the `## Detected Anti-Patterns` table. These are already-confirmed anti-patterns that skip the scan in step 5 and go straight into the violations list with the file paths and detail from the `Where` and `Notes` columns. Severity assignment for these entries happens in step 4 after loading pattern files.
-   - **If absent:** run a quick keyword/import/directory scan (same heuristics as `/detect-patterns` step 4, pass 1). Note in the report that results are from a quick scan and `/detect-patterns` would improve accuracy.
+   - **If absent:** run a quick keyword/import/directory scan (same heuristics as `/detect-concepts` step 4, pass 1). Note in the report that results are from a quick scan and `/detect-concepts` would improve accuracy.
 
 4. **Load anti-patterns** — two sources of anti-patterns to load:
 
@@ -39,7 +39,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
    - **RECOMMENDED** — Impact mentions maintainability, testability, comprehension, or velocity costs without immediate runtime risk (e.g., "impossible to test or modify in isolation," "business rules scattered across service classes").
    - **MINOR** — Impact mentions readability, convention, or cosmetic concerns only.
 
-   If the `## Impact` section is absent, fall back to the `Confidence` column from the detect-patterns table as a proxy: high = CRITICAL, medium = RECOMMENDED, low = MINOR. These entries skip scanning and go directly into the violations list.
+   If the `## Impact` section is absent, fall back to the `Confidence` column from the detect-concepts table as a proxy: high = CRITICAL, medium = RECOMMENDED, low = MINOR. These entries skip scanning and go directly into the violations list.
 
 5. **Scan for violations** — for each anti-pattern from step 4a, use Grep and Glob to search the project codebase. (Items from step 4b already have severity assigned and go directly into the violations list with the same point values below -- do not re-scan them.) Score each newly found violation by impact:
    - **CRITICAL** (5 pts) — structural violations that affect reliability or correctness. These represent real risk: data loss, outages, or bugs that are hard to trace. Examples: no fallback when circuit opens, retrying non-idempotent operations, shared mutable state across bounded contexts.
@@ -81,7 +81,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
    Continue to step 10 immediately. Step 11 checks whether the review has returned before finalizing.
 
 10. **Handle edge cases**:
-   - **No patterns or anti-patterns detected** (no `patterns.md` and quick scan finds nothing, or `patterns.md` exists but both tables are empty): the project may be too small, too new, or use patterns not in the catalog. Report this clearly: "No recognized patterns detected. This can mean the project is very small, uses unconventional architecture, or the pattern catalog doesn't cover its stack. Run `/detect-patterns` for a more thorough scan." Write a minimal report with a Grade A (0 points) and a note explaining the situation.
+   - **No patterns or anti-patterns detected** (no `patterns.md` and quick scan finds nothing, or `patterns.md` exists but both tables are empty): the project may be too small, too new, or use patterns not in the catalog. Report this clearly: "No recognized patterns detected. This can mean the project is very small, uses unconventional architecture, or the pattern catalog doesn't cover its stack. Run `/detect-concepts` for a more thorough scan." Write a minimal report with a Grade A (0 points) and a note explaining the situation.
    - **Project too small for meaningful assessment** (fewer than ~10 source files or ~500 lines of code): note that the assessment has limited value at this scale. Small projects rarely have structural debt — most issues are code-level. Still produce the report, but caveat the grade.
    - **All violations are MINOR**: this is a good result. Report Grade A or B as appropriate, and frame the MINOR items as "polish" rather than "debt." Suggest addressing them during regular code review rather than dedicated refactoring time.
    - **Patterns detected but none have anti-patterns sections**: every detected pattern was found in the catalog but none of their `concept.md` files contain an `### Anti-patterns` section. This means the catalog has recognition data but no debt criteria for these patterns. If the `## Detected Anti-Patterns` table from step 3 has entries, the report can still include those. Otherwise, produce a minimal report noting which patterns were detected and that anti-pattern coverage is unavailable for them. Do not assign a misleading Grade A -- instead omit the grade and state that the assessment is incomplete.

@@ -1,7 +1,7 @@
 ---
 name: train-detection
 description: >
-  Continuously improve concept detection by cloning diverse repos, running detect-patterns,
+  Continuously improve concept detection by cloning diverse repos, running detect-concepts,
   evaluating results against question-based ground truth, and refining signatures, AST rules,
   and diagnostic questions. Use when improving detection quality or expanding concept coverage.
 argument-hint: "[--rounds N] [--language LANG] [--topic TOPIC]"
@@ -26,7 +26,7 @@ Automated training loop for improving concept detection quality across the full 
 The training loop has four phases:
 
 1. **Sample** -- clone diverse repos from GitHub
-2. **Detect** -- run detect-patterns on each
+2. **Detect** -- run detect-concepts on each
 3. **Evaluate** -- compare detection results against question-based ground truth
 4. **Improve** -- update signatures, questions, and AST rules based on findings
 
@@ -52,9 +52,9 @@ Each round produces a scorecard. Over multiple runs, detection precision and rec
 
 ### Phase 2: Detect
 
-3. **Run detect-patterns** on each cloned repo. Use an Agent subagent with `subagent_type=designer`:
+3. **Run detect-concepts** on each cloned repo. Use an Agent subagent with `subagent_type=designer`:
    ```
-   Agent(subagent_type="designer", prompt="Run /detect-patterns on /tmp/train-repos/<repo>")
+   Agent(subagent_type="designer", prompt="Run /detect-concepts on /tmp/train-repos/<repo>")
    ```
    Collect the output `patterns.md` from each repo's `.kord/agents/designer/memory/patterns.md`.
    Run repos in parallel where possible (up to 3 concurrent).
@@ -70,7 +70,7 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
    gemini -m gemini-2.5-pro -o json -p "Analyze this codebase. For each concept in this list, answer present/absent with file-level evidence. Look for BEHAVIOR, not naming. $(cat concept-list.txt)" @/tmp/train-repos/<repo>/src/ > /tmp/train-results/<repo>/oracle-gemini.json
    ```
 
-   **Oracle 2: Question-based analysis.** For each concept that passes a quick grep pre-filter (same as detect-patterns Pass 1), load `questions.yaml` and evaluate:
+   **Oracle 2: Question-based analysis.** For each concept that passes a quick grep pre-filter (same as detect-concepts Pass 1), load `questions.yaml` and evaluate:
    - For questions with `signals` hints, grep first; skip questions with zero evidence
    - Answer remaining questions yes/no by reading relevant code
    - Score: if weight sum >= threshold, mark present
@@ -87,7 +87,7 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
 
 5. **Check anchor repos.** On every run, also evaluate against the anchor repos in [anchor-repos.json](anchor-repos.json). These are well-known projects with documented patterns (e.g., decorator in Flask, visitor in TypeScript compiler). If detection regresses on anchors, something broke — flag it before proceeding with improvements.
 
-6. **Compare.** For each repo, diff the detect-patterns output against ground truth:
+6. **Compare.** For each repo, diff the detect-concepts output against ground truth:
    - **True Positive** -- detected AND in ground truth
    - **False Positive** -- detected but NOT in ground truth
    - **False Negative** -- NOT detected but IS in ground truth
@@ -114,7 +114,7 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
 
 8. **Analyze failures.** For each false negative (missed detection):
    - Read the repo code where the concept exists (from ground truth evidence)
-   - Identify WHY detect-patterns missed it:
+   - Identify WHY detect-concepts missed it:
      - Missing grep keyword? → add to Recognition signatures
      - AST rule too narrow? → broaden the rule
      - No AST rule exists? → consider writing one
@@ -147,6 +147,6 @@ See [scorecard-schema.md](scorecard-schema.md) for the full JSON schema.
 
 - **GitHub API rate limit:** Back off and retry, or use `--skip-clone` with existing repos.
 - **Repo too large:** Skip repos over 10000 files with a warning.
-- **detect-patterns fails:** Record the failure in the scorecard, continue with next repo.
+- **detect-concepts fails:** Record the failure in the scorecard, continue with next repo.
 - **Gemini unavailable:** Fall back to running questions through the designer agent (Claude) instead. Slower but functional.
 - **No questions.yaml:** Skip question-based evaluation for that concept. Flag it for question generation.

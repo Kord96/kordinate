@@ -14,12 +14,12 @@ Run a full analysis suite against the target project. The message starts with th
 1. Parse the project path from the first word of the message
 
 2. **Parallel scan** — run these three simultaneously (they are independent):
-   - `/detect-patterns` — write patterns.md
+   - `/detect-concepts` — write patterns.md
    - `/map-dependencies` — write dependencies.md
    - `/review-api` — write api-review.md (skip if no HTTP endpoints detected)
 
-3. **Debt assessment** — after detect-patterns completes:
-   - `/assess-debt` — write debt-assessment.md (skip if detect-patterns found nothing)
+3. **Debt assessment** — after detect-concepts completes:
+   - `/assess-debt` — write debt-assessment.md (skip if detect-concepts found nothing)
 
 4. **Architecture** — after all above complete:
    - `/architect` — write architecture.yaml (reads all previous outputs)

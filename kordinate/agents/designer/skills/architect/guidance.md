@@ -24,7 +24,7 @@ For each component, capture:
 - **description**: one sentence of what it does
 - **modules**: source files that implement it
 - **abstraction**: levels from `abstractions.md` (e.g., `[data, messaging]`) -- these drive which viewpoints downstream skills generate
-- **patterns**: from detect-patterns output or concept catalog
+- **patterns**: from detect-concepts output or concept catalog
 - **depends_on**: other component ids (directional: A depends_on B means A calls/imports/consumes from B)
 
 ## Relationship Mapping

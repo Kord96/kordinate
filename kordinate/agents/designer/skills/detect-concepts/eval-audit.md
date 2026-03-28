@@ -1,6 +1,6 @@
 # Eval Audit
 
-Level 3 resource for detect-patterns skill.
+Level 3 resource for detect-concepts skill.
 
 ## Procedure
 

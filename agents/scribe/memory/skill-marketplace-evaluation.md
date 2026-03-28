@@ -48,7 +48,7 @@ Self-improvements: /sauron:alert (biggest system gap — no alerting at all), ex
 | agent-workflow-designer | SKIP | Wrong domain (AI agent patterns, not app architecture) |
 | dependency-auditor | REFERENCE | Hygiene checklist → memory |
 
-Self-improvements: **fill 12/16 empty pattern sections** (highest ROI), new skills (review-api, assess-debt, map-dependencies, record-decision), enhance detect-patterns with observability coverage, pattern files may belong as skill resources not memory
+Self-improvements: **fill 12/16 empty pattern sections** (highest ROI), new skills (review-api, assess-debt, map-dependencies, record-decision), enhance detect-concepts with observability coverage, pattern files may belong as skill resources not memory
 
 ### Scribe
 | Skill | Verdict | Notes |

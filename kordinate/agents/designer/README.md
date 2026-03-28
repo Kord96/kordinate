@@ -6,7 +6,7 @@ Architecture review and pattern authority — reviews design consistency and ide
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| [detect-patterns](skills/detect-patterns/SKILL.md) | `/designer:detect-patterns <project>` | Scan a project for recognized architectural patterns |
+| [detect-concepts](skills/detect-concepts/SKILL.md) | `/designer:detect-concepts <project>` | Scan a project for recognized architectural patterns |
 
 ## Kords Provided
 

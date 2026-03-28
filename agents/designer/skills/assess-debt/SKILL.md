@@ -12,7 +12,7 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
 
 2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
 
-3. **Determine applicable patterns** — check for cached output at `<project-repo>/.claude/agent-memory/designer/patterns.md`. If present, use detected patterns. If absent, run a quick pattern detection scan (same signatures as `/detect-patterns` step 4).
+3. **Determine applicable patterns** — check for cached output at `<project-repo>/.claude/agent-memory/designer/patterns.md`. If present, use detected patterns. If absent, run a quick pattern detection scan (same signatures as `/detect-concepts` step 4).
 
 4. **Load anti-patterns** — for each detected pattern, read its `concept.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/concept.md`. Extract the `## Anti-patterns` section. If no Anti-patterns section exists, skip that pattern.
 

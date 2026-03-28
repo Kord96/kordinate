@@ -34,7 +34,7 @@ If not found, report which paths were checked and exit.
 Spawn a Designer subagent to analyze the project:
 
 ```
-Agent(subagent_type="designer", prompt="Run full project analysis on <project-path>. Execute in order: /detect-patterns, /map-dependencies, /review-api, /assess-debt, /architect. Write all outputs to <project-path>/.kord/agents/designer/memory/. Return a manifest of what was produced.")
+Agent(subagent_type="designer", prompt="Run full project analysis on <project-path>. Execute in order: /detect-concepts, /map-dependencies, /review-api, /assess-debt, /architect. Write all outputs to <project-path>/.kord/agents/designer/memory/. Return a manifest of what was produced.")
 ```
 
 Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/designer/memory/` and mark the report as `stale — Designer failed`.
