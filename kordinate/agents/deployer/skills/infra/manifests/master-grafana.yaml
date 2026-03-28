@@ -74,6 +74,12 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
+            - name: db-general
+              mountPath: /dashboards/general
+            - name: db-business
+              mountPath: /dashboards/logbd
+            - name: db-drill
+              mountPath: /dashboards/logbd/Drill
         - name: datasource-reloader
           image: busybox:1.36
           command: ["/bin/sh", "-c"]
@@ -121,6 +127,18 @@ spec:
         - name: grafana-datasources
           configMap:
             name: grafana-datasources
+        - name: db-general
+          configMap:
+            name: grafana-db-general
+            optional: true
+        - name: db-business
+          configMap:
+            name: grafana-db-business
+            optional: true
+        - name: db-drill
+          configMap:
+            name: grafana-db-drill
+            optional: true
 ---
 apiVersion: v1
 kind: Service
