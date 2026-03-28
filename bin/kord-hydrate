@@ -34,27 +34,6 @@ for name, cl in clusters.items():
         continue
     svcs = cl.get('services', {})
 
-    # Postgres
-    pg = svcs.get('postgres', {})
-    if pg.get('port') and pg.get('user') and pg.get('database'):
-        mcp['mcpServers'][f'postgres-{name}'] = {
-            'command': 'npx',
-            'args': ['-y', '@modelcontextprotocol/server-postgres',
-                     f\"postgresql://{pg['user']}@{ip}:{pg['port']}/{pg['database']}\"]
-        }
-
-    # Redis
-    redis = svcs.get('redis', {})
-    if redis.get('port'):
-        mcp['mcpServers'][f'redis-{name}'] = {
-            'command': 'npx',
-            'args': ['-y', '@modelcontextprotocol/server-redis'],
-            'env': {
-                'REDIS_HOST': ip,
-                'REDIS_PORT': str(redis['port'])
-            }
-        }
-
     # Grafana (singleton)
     grafana = svcs.get('grafana', {})
     if grafana.get('port') and not grafana_added:
