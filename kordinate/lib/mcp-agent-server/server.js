@@ -655,6 +655,17 @@ async function runCacheReview(route, cacheDir) {
   }
 }
 
+// ─── Auth delegation ───
+
+function readAuthSecret(agent) {
+  const lockFile = join(KORDINATE_HOME, 'profile', 'locks', agent);
+  try {
+    return readFileSync(lockFile, 'utf8').trim();
+  } catch {
+    return null;
+  }
+}
+
 // ─── Route handler ───
 
 async function handleRoute(route, message, ifNoneMatch) {
@@ -662,7 +673,26 @@ async function handleRoute(route, message, ifNoneMatch) {
   activeRequests.set(requestId, { route: route.name, provider: route.provider, startedAt: new Date().toISOString() });
 
   try {
-    // Non-cached routes
+    // Skill routes without guidelines — delegate to caller via auth grant
+    if (route.skill && !route.guidelines && !route.cache) {
+      const secret = readAuthSecret(route.provider);
+      if (secret) {
+        log(`ROUTE ${route.name}: auth delegation to /${route.skill} as ${route.provider}`);
+        return {
+          text: JSON.stringify({
+            local: true,
+            skill: route.skill,
+            provider: route.provider,
+            secret,
+          }),
+          status: 200,
+        };
+      }
+      // No secret found — fall through to full spawn
+      log(`ROUTE ${route.name}: no auth secret for ${route.provider}, falling back to full spawn`);
+    }
+
+    // Non-cached routes that need full agent spawn
     if (!route.cache) {
       const prompt = route.guidelines
         ? `${route.guidelines}\n\n---\n\n${message}`
