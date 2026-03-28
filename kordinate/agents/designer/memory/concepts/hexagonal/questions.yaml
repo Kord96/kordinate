@@ -1,7 +1,7 @@
 questions:
   - q: "Is there a ports/ and adapters/ directory structure with Port-suffixed interfaces and Adapter-suffixed implementations?"
     weight: 3
-    signals: ["ports/ directory", "adapters/ directory", "RepositoryPort interface", "PostgresAdapter class"]
+    signals: ["ports/ directory", "adapters/ directory", "RepositoryPort interface", "PostgresAdapter class", "domain/ + infrastructure/ package structure", "application/ + domain/ + infrastructure/ layering", "usecase/ or interactor/ packages", "Spring @Repository interfaces in domain with JPA implementations in infrastructure"]
   - q: "Is the domain layer free of infrastructure imports like HTTP libraries, database drivers, or cloud SDKs?"
     weight: 3
     signals: ["no requests import in domain", "no boto3 in domain", "no DB driver in domain"]

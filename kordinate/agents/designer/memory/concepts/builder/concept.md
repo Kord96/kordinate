@@ -25,11 +25,17 @@ How to identify this pattern in code.
 - Fluent API without `Builder` naming: method-chaining like `.row().add().text()` or `.field().value().color()` that incrementally constructs a complex structure (e.g., keyboard builders, query builders, form builders)
 - Domain-specific builders: `KeyboardBuilder`, `QueryBuilder`, `MessageBuilder`, `EmbedBuilder` with incremental `.add*()` methods
 
+### Negative signals (not builder pattern)
+
+- Java: Lombok `@Builder` on a simple DTO/entity without custom build logic is annotation-driven boilerplate, not the Builder pattern
+- Java: `Stream.builder()`, `StringBuilder`, `ProcessBuilder` are JDK utility builders, not architectural builder patterns
+- Mere presence of `.builder()` calls without a custom Builder class with multi-step construction is not sufficient
+
 ### Confidence
 
-- **high** -- class named `*Builder` with fluent methods and a terminal `build()` returning a different type
-- **medium** -- method chaining returning `self`/`this` with a finalizing method
-- **low** -- constructor with many optional parameters or a config dict
+- **high** -- custom `*Builder` class with fluent methods, multi-step construction, and a terminal `build()` returning a different type
+- **medium** -- method chaining returning `self`/`this` with a finalizing method and non-trivial construction logic
+- **low** -- constructor with many optional parameters, config dict, or Lombok `@Builder` without custom build steps
 
 ## Architecture
 

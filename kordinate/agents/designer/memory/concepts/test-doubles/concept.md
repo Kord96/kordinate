@@ -24,6 +24,12 @@ How to identify this pattern in code.
 - `Fake*` or `Mock*` or `Stub*` classes in test directories
 - Spy assertions on `.call_count`, `.called_with`, `.toHaveBeenCalledTimes()`
 
+### Negative signals (not sufficient for detection)
+
+- Mere presence of `@Mock`, `Mockito.mock()`, `jest.fn()`, or `unittest.mock` imports is standard test tooling, not an architectural pattern
+- Only flag test doubles when custom `Fake*`, `Mock*`, `Stub*`, or `InMemory*` classes exist implementing production interfaces
+- Framework-provided mocking annotations (`@MockBean`, `@Mock`) without custom double implementations do not constitute the pattern
+
 ### Confidence
 
 - **high** — Mock/stub/fake classes implementing production interfaces found in test directories, with explicit verification of call behavior

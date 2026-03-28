@@ -22,6 +22,15 @@ How to identify this pattern in code.
 - System calls: `select()`, `epoll()`, `kqueue()`, `IOCP`
 - `asyncio.run()`, `loop.run_forever()`, event emitters, or `on('event', handler)`
 - Libraries: Python `asyncio`/`twisted`, `libuv` (Node.js), Rust `tokio`/`mio`, Java NIO/Netty
+- Java: Netty `EventLoopGroup`, `NioEventLoopGroup`, `Channel`, `ChannelHandler` with event-driven I/O
+- Java: NIO `Selector`, `SelectionKey`, `SocketChannel` for multiplexed non-blocking I/O
+- Java: Vert.x `Vertx`, `EventBus`, `Verticle` with event loop model
+
+### Negative signals (not reactor pattern)
+
+- Java: Using Project Reactor (`Mono`, `Flux`) or Spring WebFlux is reactive programming, NOT the reactor/event loop pattern
+- Reactive Streams API usage (`Publisher`, `Subscriber`) is a different concept (reactive programming, not the reactor pattern)
+- Only flag reactor when there is an actual event loop multiplexing I/O, not just reactive type usage
 
 ### Confidence
 

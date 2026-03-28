@@ -23,6 +23,10 @@ How to identify this pattern in code.
 - Explicit separation of "driving" (inbound) and "driven" (outbound) adapters
 - Dependency injection wiring adapters to ports at application startup
 - In-memory adapter implementations used in tests as port substitutes
+- Java: `domain/` + `infrastructure/` or `domain/` + `adapter/` package structure with interfaces in domain, implementations in infrastructure
+- Java: `application/` + `domain/` + `infrastructure/` three-layer packaging (Clean Architecture / DDD layering)
+- Java: `usecase/` or `interactor/` packages separated from framework code
+- Java: Spring `@Repository` interfaces in domain packages, JPA/JDBC implementations in infrastructure packages
 
 ### Confidence
 

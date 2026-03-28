@@ -25,6 +25,12 @@ How to identify this pattern in code.
 - Spring Boot Actuator `/actuator/health` with auto-configured health indicators
 - Health check libraries or frameworks with pluggable health indicator registration
 
+### Negative signals (not sufficient for detection)
+
+- Java: Default Spring Boot Actuator dependency without custom `HealthIndicator` implementations is framework default, not an architectural health check pattern
+- Having `/actuator/health` endpoint from auto-configuration alone does not constitute the pattern
+- Only flag when custom health indicators exist that check specific dependency connectivity (DB, cache, queue)
+
 ### Confidence
 
 - **high** -- separate liveness and readiness endpoints with dependency checks, K8s probes configured, health status aggregation

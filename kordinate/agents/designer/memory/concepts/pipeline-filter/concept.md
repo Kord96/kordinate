@@ -23,6 +23,9 @@ How to identify this pattern in code.
 - Data flowing through sequential stages in a defined order
 - Unix-style composition: small single-purpose transforms piped together
 - Functional pipeline libraries (`ramda`, `lodash/fp`, `transducers`)
+- Java: Netty `ChannelPipeline` with `addLast()`/`addFirst()` ordered handler chain
+- Java: Spring `GatewayFilterChain`, Servlet `FilterChain`, Spring Security `SecurityFilterChain` with ordered filter execution
+- Java: Composite recipe/rule patterns where transforms are chained: `CompositeRecipe`, `RecipeList`, `addRecipe()`
 
 ### Confidence
 

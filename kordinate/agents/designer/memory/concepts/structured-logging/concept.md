@@ -24,6 +24,15 @@ How to identify this pattern in code.
 - Log level as a structured field (`"level": "info"`) not a format prefix (`INFO:`)
 - Correlation ID attached to every log entry
 - Log configuration importing JSON formatter or structured encoder
+- Java: `net.logstash.logback.encoder.LogstashEncoder`, `LoggingEventCompositeJsonEncoder` for JSON log output
+- Java: MDC (Mapped Diagnostic Context) usage with `MDC.put()` for request-scoped structured fields
+- Java: Log4j2 `JsonLayout`, `JsonTemplateLayout` configuration
+- Java: Custom `LogEntry` or `LogEvent` classes with discrete structured fields beyond simple message strings
+
+### Negative signals (not sufficient for detection)
+
+- Mere SLF4J `LoggerFactory.getLogger()` or `log.info()` usage is standard Java logging, not structured logging
+- Using `Logger` without JSON output format or MDC context binding is unstructured (plain text) logging
 
 ### Confidence
 

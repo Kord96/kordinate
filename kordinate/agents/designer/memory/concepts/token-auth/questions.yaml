@@ -1,7 +1,7 @@
 questions:
   - q: "Does the application extract tokens from Authorization headers, query parameters (access_token, api_token), or custom headers and verify them before processing requests?"
     weight: 3
-    signals: ["Authorization: Bearer extraction", "jwt.verify or jwt.decode", "signature verification in middleware", "access_token query parameter", "api_token parameter", "X-Auth-Token header"]
+    signals: ["Authorization: Bearer extraction", "jwt.verify or jwt.decode", "signature verification in middleware", "access_token query parameter", "api_token parameter", "X-Auth-Token header", "JwtDecoder or JwtAuthenticationConverter", "java-jwt or jjwt or nimbus-jose-jwt import", "JWTValidator or JWTAuthenticationHandler", "Keycloak adapter with KeycloakAuthenticationToken", "spring.security.oauth2.resourceserver.jwt config"]
   - q: "Are JWT claims like exp, iss, and aud validated on every request, not just decoded?"
     weight: 3
     signals: ["exp claim validation", "iss and aud verification", "claim checks beyond decode"]

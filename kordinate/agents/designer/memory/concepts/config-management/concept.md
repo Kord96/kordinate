@@ -24,6 +24,12 @@ How to identify this pattern in code.
 - Hierarchical config with overrides (default -> environment -> instance)
 - Config validation at startup with fail-fast on missing required values
 
+### Negative signals (not sufficient for detection)
+
+- Java: Simple `@Value` injection or `@ConfigurationProperties` on a single class without profile-based overrides or config hierarchy is standard Spring usage, not an architectural config management pattern
+- Mere presence of `application.yml` or `application.properties` is standard framework configuration
+- Only flag when there is deliberate config architecture: multiple profiles, config server, hierarchical overrides, or config validation
+
 ### Confidence
 
 - **high** -- Structured config loading with environment-specific overrides, validation at startup, and no hardcoded values in business logic

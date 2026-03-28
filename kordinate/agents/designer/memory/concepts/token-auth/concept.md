@@ -27,6 +27,11 @@ How to identify this pattern in code.
 - Token blacklist or revocation check for logout support
 - Query-param token variants: `access_token`, `api_token`, `token` as URL parameters (common in platform APIs like VK, Slack legacy, OAuth implicit flow)
 - Token passed via custom headers: `X-Auth-Token`, `X-Access-Token`
+- Java: `java-jwt` (auth0), `jjwt` (io.jsonwebtoken), `nimbus-jose-jwt` library imports
+- Java: Spring Security `JwtDecoder`, `JwtAuthenticationConverter`, `JwtAuthenticationToken`, `@EnableResourceServer`
+- Java: Keycloak adapter with `KeycloakWebSecurityConfigurerAdapter`, `keycloak.json`, `KeycloakAuthenticationToken`
+- Java: Spring config `spring.security.oauth2.resourceserver.jwt.issuer-uri` or `jwk-set-uri`
+- Java: Custom `JWTValidator`, `JWTAuthenticationHandler`, `TokenProvider` classes
 
 ### Confidence
 
