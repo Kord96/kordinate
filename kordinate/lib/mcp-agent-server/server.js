@@ -683,12 +683,13 @@ function readAuthSecret(agent) {
 
 // ─── Route handler ───
 
-async function handleRoute(route, message, ifNoneMatch) {
+async function handleRoute(route, message, ifNoneMatch, caller) {
+  const isMain = !caller || caller === 'main';
   const requestId = `${route.name}-${Date.now()}`;
-  activeRequests.set(requestId, { route: route.name, provider: route.provider, startedAt: new Date().toISOString() });
+  activeRequests.set(requestId, { route: route.name, provider: route.provider, caller: caller || 'unknown', startedAt: new Date().toISOString() });
 
   try {
-    // Skill routes without guidelines — delegate to caller via auth grant
+    // Skill routes — always return auth grant (caller runs locally)
     if (route.skill && !route.guidelines && !route.cache) {
       const secret = readAuthSecret(route.provider);
       if (secret) {
@@ -704,17 +705,31 @@ async function handleRoute(route, message, ifNoneMatch) {
           status: 200,
         };
       }
-      // No secret found — fall through to full spawn
-      log(`ROUTE ${route.name}: no auth secret for ${route.provider}, falling back to full spawn`);
+      log(`ROUTE ${route.name}: no auth secret for ${route.provider}, falling back to spawn`);
     }
 
-    // Non-cached routes that need full agent spawn
+    // Non-cached routes
     if (!route.cache) {
       const prompt = route.guidelines
         ? `${route.guidelines}\n\n---\n\n${message}`
         : route.skill
           ? `Run the /${route.skill} skill. Input: ${message}`
           : message;
+
+      // Main caller: return instructions to spawn locally (faster, visible)
+      // Subagent caller: kord spawns remotely (subagents can't spawn subagents)
+      if (isMain) {
+        log(`ROUTE ${route.name}: local spawn instructions for main caller`);
+        return {
+          text: JSON.stringify({
+            local: true,
+            agent: route.provider,
+            prompt,
+            instructions: `Spawn a subagent using the Agent tool with subagent_type="${route.provider}" and the prompt above. This runs locally in your session for better visibility and speed.`,
+          }),
+          status: 200,
+        };
+      }
 
       const response = await invokeFull(route.provider, prompt);
       return { text: response, etag: computeETag(response), status: 200 };
@@ -762,6 +777,21 @@ async function handleRoute(route, message, ifNoneMatch) {
         ? `Run the /${route.skill} skill. Input: ${message}`
         : message;
 
+    // Main caller: return instructions to regenerate locally
+    if (isMain) {
+      log(`ROUTE ${route.name}: stale cache, local regeneration for main caller`);
+      return {
+        text: JSON.stringify({
+          local: true,
+          agent: route.provider,
+          prompt,
+          cache_stale: true,
+          instructions: `Cache is stale. Spawn a subagent using Agent tool with subagent_type="${route.provider}" and the prompt above. The result will be cached on next kord call.`,
+        }),
+        status: 200,
+      };
+    }
+
     const response = await invokeFull(route.provider, prompt);
 
     // Cache the result
@@ -791,15 +821,32 @@ function registerTools(server) {
   // Delegate — invoke any agent directly
   server.tool(
     'delegate',
-    'Delegate a prompt to a kordinate agent. Beorn loads the agent identity, invokes Claude Code as that agent, and returns the response.',
+    'Delegate a prompt to a kordinate agent. If caller is main, returns instructions to spawn locally. If caller is a subagent, spawns remotely.',
     {
       agent: z.enum(KNOWN_AGENTS).describe('The agent to invoke'),
       prompt: z.string().describe('The prompt to send to the agent'),
+      caller: z.string().optional().describe('Who is calling — "main" for local spawn instructions, agent name for remote spawn'),
     },
-    async ({ agent, prompt }) => {
-      log('TOOL delegate called', { agent, prompt: prompt.substring(0, 100) });
+    async ({ agent, prompt, caller }) => {
+      const isMain = !caller || caller === 'main';
+      log('TOOL delegate called', { agent, caller: caller || 'main', prompt: prompt.substring(0, 100) });
+
+      if (isMain) {
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              local: true,
+              agent,
+              prompt,
+              instructions: `Spawn a subagent using the Agent tool with subagent_type="${agent}" and the prompt above. This runs locally in your session for better visibility and speed.`,
+            }),
+          }],
+        };
+      }
+
       const requestId = `${agent}-${Date.now()}`;
-      activeRequests.set(requestId, { agent, startedAt: new Date().toISOString() });
+      activeRequests.set(requestId, { agent, caller, startedAt: new Date().toISOString() });
       try {
         const response = await invokeFull(agent, prompt);
         return { content: [{ type: 'text', text: response }] };
@@ -841,6 +888,7 @@ function registerTools(server) {
   for (const [name, route] of routeRegistry) {
     const schema = {
       message: z.string().describe('The request message'),
+      caller: z.string().optional().describe('Who is calling — "main" for local spawn instructions, omit or agent name for remote spawn'),
     };
 
     // Add optional ETag field for cached routes
@@ -853,9 +901,9 @@ function registerTools(server) {
       route.description,
       schema,
       async (params) => {
-        log(`TOOL ${name} called`, { message: params.message?.substring(0, 100) });
+        log(`TOOL ${name} called`, { caller: params.caller || 'main', message: params.message?.substring(0, 100) });
         try {
-          const result = await handleRoute(route, params.message, params.if_none_match);
+          const result = await handleRoute(route, params.message, params.if_none_match, params.caller);
           const meta = route.cache ? ` etag=${result.etag}` : '';
           log(`TOOL ${name} done`, { status: result.status, responseLen: result.text.length });
           return {
