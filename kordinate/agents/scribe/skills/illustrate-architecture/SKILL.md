@@ -75,24 +75,23 @@ Transform `architecture.yaml` into the JSON format described in [explorer-schema
 
 Write `architecture.json` to `<docs-content-dir>/<project>/architecture.json`. See step 7 for path resolution.
 
-### 5. Read or generate narrative
+### 5. Write narrative
 
-**If `--narrative <dir>` is provided**: read markdown files from that directory for each sidebar tab:
-- `structure.md` — system overview narrative
-- `flows.md` — data flow walkthroughs
-- `data.md` — state and storage narrative
-- `resilience.md` — failure modes and recovery narrative
+The sidebar narrative is the story that guides readers through the architecture. It is not a bullet-point list — it is **prose that Scribe writes**, using everything learned from the Designer memories.
 
-Missing files are replaced with auto-generated stubs. Extra files are ignored.
+Write one markdown file per tab into `<docs-content-dir>/<project>/narrative/`:
 
-**If no `--narrative` flag**: auto-generate section stubs from the architecture data:
+- **`structure.md`** — The system overview. Open with a 2-3 sentence summary of what the project does and how it's structured. Then one section per capability/module group: what it does, why it exists, how it relates to other groups. Reference component names in bold so the explorer can link them. Mention detected patterns where relevant ("The API layer follows a **hexagonal** architecture — handlers delegate to ports, never touching infrastructure directly."). If debt was detected, weave it in naturally ("The **UserService** has accumulated technical debt — 3 CRITICAL violations around missing circuit breakers.").
 
-- **Structure**: list components grouped by capability, one paragraph per group describing what it does and how components relate
-- **Flows**: one subsection per data_flow, written as a narrative walkthrough ("When X happens, the Y component does Z, passing data to W...")
-- **Data**: one subsection per state entry, grouped by purpose (source-of-truth, cache, derived)
-- **Resilience**: one subsection per failure_mode ordered by severity, describing trigger, cascade, impact, and recovery
+- **`flows.md`** — Data flow walkthroughs. One section per flow, written as a narrative: "When a user adds an item to their cart, the **CartDrawer** component dispatches an action to the **cart store**. The store persists to localStorage and triggers a re-render..." Not a numbered list of steps — a story that traces data through the system.
 
-Write narrative markdown as frontmatter-less `.md` files into `<docs-content-dir>/<project>/narrative/`.
+- **`data.md`** — State and storage narrative. Group by purpose (source of truth, cache, derived). Explain what each store holds, who reads it, who writes it, and what consistency guarantees exist.
+
+- **`resilience.md`** — Failure modes narrative. Order by severity. For each: what triggers it, what breaks, what the user sees, and how to recover. Written as scenarios, not tables.
+
+**If `--narrative <dir>` is provided**: read existing markdown files from that directory. Use them as-is for the tabs they cover. For tabs without a file, write new narrative as above.
+
+Each heading in the narrative should use `{#component-id}` syntax to anchor it to a graph node for bidirectional linking. For example: `## API Layer {#api-gateway}`.
 
 ### 6. Write the explorer page
 
