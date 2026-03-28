@@ -17,18 +17,20 @@ How to identify this pattern in code.
 ### Signatures
 
 - `Result<T, E>`, `Ok()`, `Err()` in Rust code
-- `Either<L, R>`, `Left()`, `Right()` from fp-ts, Arrow (Kotlin), or Cats (Scala)
-- `match` or `fold` on result types to handle success and failure branches
-- No exception throwing for expected/recoverable failures
-- Railway-oriented programming: chained `.map()`, `.flatMap()`, `.and_then()` on results
-- Custom `Result` or `Outcome` classes with `is_ok()` / `is_err()` methods in Python or TypeScript
+- `Either<L, R>`, `E.left()`, `E.right()` from fp-ts, Arrow (Kotlin), or Cats (Scala)
+- `match` or `fold` on result types to handle success and failure branches explicitly
+- Custom `Result` or `Outcome` classes with `is_ok()` / `is_err()` / `isOk()` / `isErr()` methods
+- Railway-oriented programming: chained `.map()`, `.flatMap()`, `.and_then()` on result types
 - `returns` library in Python with `Result`, `Success`, `Failure`
+- Go: `(value, error)` return tuples as the standard error handling pattern
+
+**Not this pattern:** The presence of `Either` from fp-ts in a codebase that also uses `pipe()`, `TaskEither`, and monadic composition is the monad pattern -- result-type specifically means using errors-as-values instead of exceptions as the primary error strategy. Also, `try/catch` blocks that return `{ success: true/false }` are not result-type unless they use a formal union type with distinct success/failure branches.
 
 ### Confidence
 
-- **high** — Consistent use of `Result`/`Either` across module boundaries, with `match`/`fold` at call sites and no exceptions for domain errors
-- **medium** — Result type used in some modules but exceptions still thrown in others for the same category of errors
-- **low** — Functions returning tuples like `(value, error)` or nullable error fields without a formal result type
+- **high** -- Consistent use of `Result`/`Either` across module boundaries, with `match`/`fold` at call sites and no exceptions for domain errors
+- **medium** -- Result type used in some modules but exceptions still thrown in others for the same category of errors
+- **low** -- Functions returning `(value, error)` tuples or nullable error fields without a formal result type
 
 ## Architecture
 

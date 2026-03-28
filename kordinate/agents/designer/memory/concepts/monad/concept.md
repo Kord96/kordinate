@@ -16,20 +16,21 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- `bind()`, `flatMap()`, `>>=`, `and_then()`, `chain()` methods for monadic composition
+- Explicit monadic library imports: `fp-ts` (`pipe`, `E.chain`, `TE.map`), `cats`/`zio` (Scala), `dry-monads` (Ruby), `returns` (Python)
+- `bind()`, `flatMap()`, `>>=`, `and_then()`, `chain()` methods composing monadic types across function boundaries
 - `do` notation (Haskell), for-comprehensions (Scala)
-- `Maybe` / `Option` chaining with `map()` and `bind()`/`flatMap()`
-- `IO` monad for sequencing side effects
-- `returns` library `flow()` for composing monadic pipelines (Python)
-- Libraries: `fp-ts` (TypeScript), `cats`/`zio` (Scala), `dry-monads` (Ruby)
+- `Maybe`/`Option`/`IO` monadic types with explicit `map`/`flatMap` chains
+- `pipe()` from `fp-ts/function` composing `Either`/`TaskEither`/`Option` operations
 
 > For `Result`/`Either` as error handling, see result-type. This pattern focuses on monadic composition (bind/chain) across any monad, not just error types.
 
+**Not this pattern:** `.map()` and `.filter()` on arrays, or `Promise.then()` chaining, is standard language usage. The monad pattern requires explicit monadic types (Either, TaskEither, Option, IO) composed via `bind`/`flatMap`/`chain` from a functional programming library. Ad-hoc `.map()` calls are not monadic composition.
+
 ### Confidence
 
-- **high** -- Explicit monadic types composed via `bind`/`flatMap`/`>>=` with `do` notation or for-comprehensions, and library usage (returns, fp-ts, cats)
-- **medium** -- `Option`/`Maybe` used consistently with `map`/`flatMap` chaining but no broader monadic composition
-- **low** -- Container types with `map()` but no `bind`/`flatMap`, or ad-hoc chaining without formal monadic structure
+- **high** -- Explicit FP library imports (fp-ts, cats, returns) with monadic types composed via `bind`/`flatMap`/`chain`/`pipe`
+- **medium** -- `Option`/`Maybe` used consistently with `map`/`flatMap` chaining, but from a less common library
+- **low** -- Custom container types with `map()` and `flatMap()` but no established FP library
 
 ## Architecture
 

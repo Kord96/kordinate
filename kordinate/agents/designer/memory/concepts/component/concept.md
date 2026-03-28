@@ -18,15 +18,17 @@ How to identify this pattern in code.
 
 - Self-contained UI components with props/state, composed into a tree
 - `render()`, `template`, or JSX/TSX returning UI markup from component logic
-- Component files: `.jsx`, `.tsx`, `.vue`, `.svelte`, or `@Component` decorators
+- Component files: `.jsx`, `.tsx`, `.vue`, `.svelte`, or Angular `@Component` decorators
 - Props passed down, events emitted up (unidirectional data flow within the tree)
-- Libraries: React, Vue, Svelte, Angular components, Web Components (`customElements.define`)
+- Libraries: React (`useState`, `useEffect`, functional components), Vue (`defineComponent`, `setup()`), Svelte, Angular, Web Components (`customElements.define`)
+
+**Not this pattern:** Backend classes or modules named "component" are not the component architecture pattern. This pattern is specifically about UI component trees with props/state/render lifecycle. A service class named `AuthComponent` or a data structure named `ComponentConfig` is not evidence of this pattern.
 
 ### Confidence
 
-- **high** -- Framework component files with explicit props interface, local state, and render function
+- **high** -- Framework component files (`.jsx`/`.tsx`/`.vue`/`.svelte`) with explicit props interface, local state, and render function
 - **medium** -- Reusable UI modules with encapsulated markup and behavior, but no formal component framework
-- **low** -- Any UI code organized into isolated, composable pieces with some form of data passing
+- **low** -- Web Components (`customElements.define`) with shadow DOM and observed attributes
 
 ## Architecture
 

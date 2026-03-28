@@ -16,20 +16,20 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Shared immutable objects to reduce memory footprint
-- Object pools keyed by intrinsic state
+- Factory returning cached immutable instances keyed by intrinsic state, with extrinsic state passed at usage time
 - `intern()` methods (string interning, symbol tables)
-- String interning (`sys.intern()`, `String.intern()`)
-- `__slots__` in Python to minimize per-instance memory
-- Factory methods returning cached instances instead of new objects
 - `WeakValueDictionary` or `WeakHashMap` for automatic eviction of unused flyweights
-- Separation of intrinsic (shared) and extrinsic (context-dependent) state
+- Separation of intrinsic (shared) and extrinsic (context-dependent) state in object design
+- Python: `__slots__` to minimize per-instance memory on high-volume objects
+- Object cache keyed by identity/intrinsic state returning shared instances
+
+**Not this pattern:** General caching (e.g., query cache, HTTP cache, memoization) is not the flyweight pattern. Flyweight specifically shares immutable object instances to reduce memory when many similar objects exist. A `Map<string, Result>` cache is cache-aside, not flyweight. Also, a `shared` variable or singleton instance is not flyweight unless it separates intrinsic from extrinsic state.
 
 ### Confidence
 
 - **high** -- Factory returning cached immutable instances keyed by intrinsic state, with extrinsic state passed in at usage time
 - **medium** -- Object pool or interning mechanism that reuses instances but without explicit intrinsic/extrinsic separation
-- **low** -- Caching or memoization that reduces object creation but is not structured as a flyweight
+- **low** -- Memoization that reduces object creation for identical inputs
 
 ## Architecture
 

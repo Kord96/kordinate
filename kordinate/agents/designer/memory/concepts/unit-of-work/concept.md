@@ -16,19 +16,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Transaction management wrapping multiple repository operations
-- Explicit `commit()` and `rollback()` methods on a unit-of-work object
-- Dirty object tracking: `register_new()`, `register_dirty()`, `register_deleted()`
-- SQLAlchemy `Session` used as a unit of work (add, flush, commit)
-- Django `transaction.atomic()` blocks coordinating multiple saves
-- Entity Framework `DbContext` with `SaveChanges()`
-- Context manager or decorator scoping a transaction boundary
+- Explicit `UnitOfWork` class or interface with `commit()`/`rollback()` controlling when changes flush
+- Dirty object tracking: `register_new()`, `register_dirty()`, `register_deleted()`, change set management
+- SQLAlchemy `Session` used explicitly as a unit of work (add, flush, commit across multiple repositories)
+- Entity Framework `DbContext` with `SaveChanges()` coordinating multiple entity changes
+- Context manager or decorator scoping a transactional boundary across multiple repository operations
+
+**Not this pattern:** A simple database `transaction()` or `transaction.atomic()` block around a single query is standard transaction management, not the unit-of-work pattern. UoW specifically tracks dirty/new/deleted entities across multiple repositories and batches all writes into a single coordinated commit. A single-table transaction is just a transaction.
 
 ### Confidence
 
-- **high** -- explicit UoW class tracking changes with `commit()`/`rollback()` controlling flush
+- **high** -- explicit UoW class tracking changes across multiple repositories with `commit()`/`rollback()` controlling flush
 - **medium** -- ORM session used transactionally across multiple repository calls within a single scope
-- **low** -- `transaction.atomic()` or `BEGIN`/`COMMIT` blocks without explicit change tracking
+- **low** -- `transaction.atomic()` or `BEGIN`/`COMMIT` blocks coordinating multiple table writes without explicit change tracking
 
 ## Architecture
 

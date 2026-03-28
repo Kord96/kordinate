@@ -16,13 +16,15 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- `version` column or field on database entities, incremented on each update
+- Dedicated `version` column on database entities, atomically incremented on each update
 - `@Version` annotation (JPA/Hibernate), `lock_version` (Rails), `__v` (Mongoose)
-- `ETag` response header paired with `If-Match` conditional request header
+- `ETag` response header paired with `If-Match` conditional request header for conflict detection
 - `UPDATE ... WHERE version = ?` or `UPDATE ... WHERE updated_at = ?` conditional writes
 - `StaleObjectError` (Rails), `OptimisticLockException` (JPA), `VersionError` exception handling
-- CAS (compare-and-swap) operations in distributed stores (Redis `WATCH`/`MULTI`, DynamoDB conditional expressions)
+- CAS (compare-and-swap) operations: Redis `WATCH`/`MULTI`, DynamoDB `ConditionExpression`
 - `ConditionalCheckFailedException` (DynamoDB), `cas` parameter in Consul/etcd
+
+**Not this pattern:** A generic `version` field for tracking software versions (e.g., `package.json` version, API versioning) or semantic versioning is not optimistic locking. Optimistic locking requires a version field on mutable entities used in conditional writes to detect concurrent modification conflicts.
 
 ### Confidence
 

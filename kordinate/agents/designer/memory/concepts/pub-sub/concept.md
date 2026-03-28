@@ -21,15 +21,17 @@ How to identify this pattern in code.
 - Topic or channel-based messaging: `publish(topic, message)`, `subscribe(topic, handler)`
 - Fan-out delivery: all subscribers receive every message on a topic
 - Topic declarations, channel names, or subject strings in configuration
-- Libraries: Redis Pub/Sub, NATS subjects, Google Pub/Sub, AWS SNS, MQTT, Kafka topics
-- Event emitters with `on(event_name, callback)` or `addEventListener` patterns
+- Libraries: Redis Pub/Sub (`redis.subscribe`, `redis.publish`), NATS subjects, Google Pub/Sub, AWS SNS, MQTT, Kafka topics
+- `PubSub` class or module implementing publish/subscribe lifecycle
 - Subscription management: subscribe, unsubscribe, subscription filters
+
+**Not this pattern:** EventEmitter `on()`/`emit()` within a single process is the observer pattern, not pub-sub. Pub-sub requires a message broker or bus that decouples publishers from subscribers -- they do not have direct references to each other. In-process callbacks are observers.
 
 ### Confidence
 
-- **high** -- explicit topic-based publish with multiple independent subscribers receiving every message
-- **medium** -- event emitter pattern with named events and multiple listeners
-- **low** -- broadcast mechanism where components receive notifications but routing is implicit
+- **high** -- explicit topic-based publish with multiple independent subscribers via a message broker (Redis, NATS, Kafka, SNS)
+- **medium** -- application-level event bus with named topics and decoupled publishers/subscribers
+- **low** -- broadcast mechanism where components receive notifications but routing is through a central dispatcher
 
 ## Architecture
 

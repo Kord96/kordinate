@@ -16,21 +16,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Python: `__iter__()` / `__next__()` protocol, `yield` generators, `itertools` usage
-- Python async: `__aiter__()` / `__anext__()`, `async for`, `AsyncIterator`, `AsyncGenerator`, `async def` with `yield`
-- JS/TS: `Symbol.iterator`, `next()` returning `{ value, done }`, generators with `function*`/`yield`
-- JS/TS async: `Symbol.asyncIterator`, `for await...of`, `AsyncGenerator`, `async function*`
-- Rust: `Iterator` trait with `next()` returning `Option<Item>`, `IntoIterator`, iterator adaptors
-- Rust async: `Stream` trait, `futures::stream`, `async_stream::stream!`
-- Go: `for range` over channels, iterator functions returning `func() (T, bool)`
-- Java: `Iterator<T>` interface, `Iterable<T>`, `Stream` API
-- Lazy evaluation: `itertools.chain`, `map`/`filter`/`reduce` chains, `Stream.of().filter().map()`
+- Custom iterator implementations: classes implementing `Symbol.iterator`/`Symbol.asyncIterator` (JS/TS), `__iter__`/`__next__` (Python), `Iterator` trait (Rust)
+- Generator functions: `function*`/`yield` (JS/TS), `def` with `yield` (Python), `async function*` for async iteration
+- Lazy evaluation chains: `itertools` (Python), Rust iterator adaptors (`.map().filter().collect()`), Java `Stream` API
+- Custom collection types that expose iteration without revealing internal structure
+- Cursor-based traversal over large data sets with `next()`/`hasNext()` protocol
+
+**Not this pattern:** Using `.forEach()`, `.map()`, `.filter()` on built-in arrays/collections is standard library usage, not the iterator pattern. The iterator pattern is about implementing custom lazy traversal over a data structure -- providing sequential access without exposing the underlying representation. Every language has `forEach`; that alone is not evidence of this pattern.
 
 ### Confidence
 
-- **high** -- class implementing the iterator protocol (`__iter__`/`__next__` or `Iterator` trait) with lazy element production
-- **medium** -- generator function using `yield` to produce elements on demand
-- **low** -- method returning a list that could be lazy but is eagerly evaluated
+- **high** -- custom class implementing the iterator protocol (`Symbol.iterator`, `__iter__`/`__next__`, `Iterator` trait) with lazy element production
+- **medium** -- generator function using `yield` to lazily produce elements on demand from a custom data source
+- **low** -- custom traversal method that hides internal structure but returns eagerly evaluated results
 
 ## Architecture
 

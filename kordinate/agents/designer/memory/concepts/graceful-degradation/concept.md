@@ -18,19 +18,20 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Fallback responses returned when a dependency is down or slow
-- Reduced functionality mode toggled by health state or feature flags
-- Cached responses served as fallback when the live source is unavailable
-- `try/except` or `try/catch` blocks returning a default value instead of propagating errors
-- Feature flags disabling non-essential features under load
-- Circuit breaker fallback handlers providing degraded responses
-- Graceful error pages or partial-content responses to the client
+- Explicit fallback responses returned when a named dependency is unavailable, with degraded but functional behavior
+- Reduced functionality mode toggled by health state or feature flags, with user-visible indicator
+- Cached responses served as stale fallback when the live source is unavailable (`stale-while-revalidate`, `stale-if-error`)
+- Circuit breaker fallback handlers providing alternative responses (see also: circuit-breaker)
+- Feature flags disabling non-essential features under load to preserve core functionality
+- Service mesh retry + fallback configuration (Istio `retries` + `fault.abort`)
+
+**Not this pattern:** Standard `try/catch` error handling that returns an error response or default value is not graceful degradation. The pattern requires intentional design of degraded functionality modes -- the system continues to serve users with reduced but meaningful capability, not just catching errors. A catch block that returns `null` or logs and rethrows is error handling, not degradation.
 
 ### Confidence
 
-- **high** -- explicit fallback paths defined per dependency with documented degraded behavior
-- **medium** -- some fallback logic exists but not consistently applied across all dependencies
-- **low** -- generic error handling that returns defaults but without intentional degradation strategy
+- **high** -- explicit fallback paths defined per dependency with documented degraded behavior and user notification
+- **medium** -- some fallback logic exists with cached/stale data served during outages
+- **low** -- catch-and-return-default logic that provides partial functionality but without intentional degradation design
 
 ## Architecture
 

@@ -17,19 +17,20 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Schema definition language files with `type Query {}`, `type Mutation {}`, `type Subscription {}`
+- Schema definition language files (`.graphql`, `.gql`) with `type Query {}`, `type Mutation {}`, `type Subscription {}`
 - Resolver functions mapping schema fields to data fetching logic
 - Single endpoint (typically `/graphql`) handling all queries and mutations
-- `.graphql` or `.gql` schema files
-- Libraries: `graphene` (Python), `apollo-server` (Node), `strawberry` (Python), `graphql-java`, `gqlgen` (Go)
+- Libraries: `graphene` (Python), `apollo-server`/`@apollo/server` (Node), `strawberry` (Python), `graphql-java`, `gqlgen` (Go), `type-graphql` (TS)
+- `buildSchema()`, `makeExecutableSchema()`, `typeDefs`, `resolvers` configuration
 - Query strings with selection sets: `query { user(id: 1) { name email } }`
-- DataLoader pattern for batching and caching nested field resolution
+
+**Not this pattern:** The word "query" alone does not indicate GraphQL. SQL query builders, database query methods, or any API that accepts query parameters are not GraphQL. Look for the specific GraphQL SDL schema format, GraphQL library imports, or the `/graphql` endpoint.
 
 ### Confidence
 
-- **high** -- SDL schema files with resolvers, single `/graphql` endpoint, query/mutation type definitions
-- **medium** -- GraphQL library imported with schema construction but mixed with REST endpoints
-- **low** -- single endpoint accepting JSON queries but no formal GraphQL schema or SDL files
+- **high** -- SDL schema files (`.graphql`/`.gql`) with resolvers, single `/graphql` endpoint, query/mutation type definitions
+- **medium** -- GraphQL library imported (`graphql`, `apollo-server`, `type-graphql`) with schema construction
+- **low** -- schema-driven API with selection sets but using a non-standard GraphQL implementation
 
 ## Architecture
 

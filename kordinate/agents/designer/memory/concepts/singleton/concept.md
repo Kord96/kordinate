@@ -16,20 +16,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Class variable `_instance`, `__instance`, or `instance`
-- Static method `getInstance()`, `get_instance()`, or `shared()`
-- Python: `__new__` override checking for existing instance, `@singleton` decorator, module-level instance
-- Python module-global variant: module-level `registry = ClassName()` or `_cache = CacheClass()` acting as the single shared instance, imported by other modules
-- Java/TS: `private constructor` with `static getInstance()`
-- Go: `sync.Once` with package-level `var instance`
-- Rust: `lazy_static!` or `once_cell::sync::Lazy`
-- JS/TS module-scope: `export const instance = new ClassName()` at module top-level, relying on module caching for singleton behavior
+- Class variable `_instance` with static `getInstance()` and private/protected constructor
+- Python: `__new__` override checking for existing instance, `@singleton` decorator
+- Java/TS: `private constructor` with `static getInstance()` enforcing single instance
+- Go: `sync.Once` with package-level `var instance` and `GetInstance()` function
+- Rust: `lazy_static!` or `once_cell::sync::Lazy` for shared global state
+
+**Not this pattern:** Module-level `export const logger = new Logger()` in Node.js/TypeScript is standard module scoping, not the singleton pattern. Node modules are cached by the runtime, making every module-level variable naturally "single instance" -- this is not intentional singleton design. The singleton pattern requires deliberate enforcement: private constructor, lazy initialization check, or thread-safe access control. Similarly, a global database connection or Redis client instantiated once is typical setup, not a design pattern choice.
 
 ### Confidence
 
 - **high** -- private constructor plus static `getInstance()` with lazy initialization and instance caching
-- **medium** -- module-level instance variable with no public constructor, or `__new__` override
-- **low** -- global variable used as a shared resource across the codebase
+- **medium** -- `__new__` override or registry-based instance management preventing multiple instantiations
+- **low** -- module-level instance explicitly documented as "the single shared instance" with no public constructor
 
 ## Architecture
 

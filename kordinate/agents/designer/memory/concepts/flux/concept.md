@@ -16,17 +16,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Central store holding application state as a single source of truth
-- Actions dispatched to describe state changes (`dispatch()`, action creators)
-- Reducers or mutations as pure functions transforming state in response to actions
-- `store`, `actions/`, `reducers/`, `mutations/`, `slices/` directories or files
-- Libraries: Redux, Vuex/Pinia, MobX (with actions), NgRx, Zustand, Recoil
+- Central store holding application state as a single source of truth with `dispatch(action)` API
+- Reducers or mutations as pure functions transforming state: `(state, action) => newState`
+- `actions/`, `reducers/`, `mutations/`, `slices/` directories containing state management code
+- `useSelector()`, `useDispatch()`, `connect()`, `mapState()`, `mapGetters()` in UI code
+- Libraries: Redux (`createStore`, `combineReducers`), Vuex (`createStore`, `mutations`), NgRx (`StoreModule`, `createReducer`), Redux Toolkit (`createSlice`, `configureStore`)
+
+**Not this pattern:** A backend `store` variable (e.g., key-value store, session store) is not the flux pattern. Flux/Redux is specifically a frontend unidirectional data flow pattern with actions, reducers/mutations, and a centralized store that UI components subscribe to. The presence of the word "store", "dispatch", or "action" alone in backend code does not indicate flux.
 
 ### Confidence
 
-- **high** -- Explicit store with `dispatch(action)`, reducer functions, and `connect()`/`useSelector()` bindings
-- **medium** -- Centralized state management with defined mutations and unidirectional flow, but non-standard naming
-- **low** -- Any pattern where UI state flows in one direction through a central container
+- **high** -- Redux/Vuex/NgRx library imports with explicit `dispatch(action)`, reducer functions, and component bindings
+- **medium** -- Custom centralized state management with defined mutations and unidirectional flow mimicking flux
+- **low** -- State container with event-driven updates that loosely follows unidirectional flow
 
 ## Architecture
 
