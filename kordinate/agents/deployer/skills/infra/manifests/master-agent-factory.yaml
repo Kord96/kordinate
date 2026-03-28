@@ -90,6 +90,8 @@ spec:
               # Claude credentials (shared PVC with workstation)
               [ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && rm -rf "$HOME/.claude"
               ln -sfn "$KORD_ROOT/claude-home" "$HOME/.claude"
+              # User-level config lives outside ~/.claude/ — symlink it too
+              ln -sfn "$KORD_ROOT/claude-home.json" "$HOME/.claude.json"
 
               # Install dependencies (safety net — node_modules are on PVC)
               MCP_SERVER="$KORDINATE_HOME/lib/mcp-agent-server"
