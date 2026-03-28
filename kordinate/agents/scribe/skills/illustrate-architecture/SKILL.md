@@ -65,12 +65,16 @@ Transform `architecture.yaml` into the JSON format described in [explorer-schema
 - Top-level `failure_modes` (not `failures`) for failure objects
 - Edges use `flowId` to associate with a data flow; edges without `flowId` are dependency edges
 
+**Hierarchy constraint — 3-5 top-level groups maximum.** The graph should feel spacious, not cluttered. Follow the C4 Container model: top-level groups are runtime boundaries (e.g., Server, Browser, External), not every module or directory. Everything else nests inside as children or grandchildren. If the architecture.yaml has more than 5 top-level components, consolidate them into broader containers. Groups beyond depth 2 should become regular component nodes, not groups — the user drills down by expanding, not by seeing a flat sea of boxes.
+
+Reference: the existing sous-storefront explorer uses 3 groups (Server, Browser, External) with 83 nodes nested inside. That's the right density.
+
 **Base transform** (from architecture.yaml alone):
 
-- Each **component** becomes a node: `{ id, name, description, type, parent, file, exports, hasChildren }`
-- Components that contain children become group nodes: `type: "group"`, `hasChildren: true`. Groups are nodes, not a separate top-level array.
+- **Top-level groups**: Create 3-5 group nodes representing runtime/deployment boundaries. Typical: `server` (SSR, API, loaders), `browser` (client app, UI, state), `external` (third-party services, APIs). Map each architecture.yaml component to the appropriate group based on where it runs.
+- Each **component** becomes a node: `{ id, name, description, type, parent, file, exports, hasChildren }`. Set `parent` to the containing group. Components that contain children become nested group nodes, but only at depth 1-2. At depth 3+, use regular nodes.
 - Each **depends_on** relationship becomes an edge: `{ source, target, label }`
-- Each **external_dependency** becomes a node with `type: "external"`, grouped under a parent `external-group` node
+- Each **external_dependency** becomes a node with `type: "external"`, grouped under the `external` top-level group
 - Each **data_flow** from the YAML becomes a `data_flows[]` entry with `{ id, name, description, trigger, steps[] }`. Each step: `{ component, action, data, to, technology }`. Also create edges with `flowId` linking the step components.
 - Each **state** entry becomes a `state[]` entry: `{ id, name, description, purpose, technology, component, persistence, readers[], writers[] }`
 - Each **failure_mode** becomes a `failure_modes[]` entry: `{ id, trigger, severity, impact, cascade[], detection[], recovery[] }`
