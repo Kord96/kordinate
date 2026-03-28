@@ -122,6 +122,13 @@ Write them as if you're explaining the entire system to a smart colleague who's 
 - **Decision anchors**: Explain *why* patterns were chosen, what was traded off, where debt is an open question
 - **Cross-references**: Flow narratives mention failure modes ("this call is protected by a circuit breaker — see the DummyJSON Down failure scenario"). Failure narratives reference flows ("when the SSR Prefetch flow hits this failure..."). State narratives reference flows that read/write them.
 
+**Formatting — narratives are rendered in a bottom drawer, not a document:**
+- Use short paragraphs (2-3 sentences max). Separate with `\n\n` in the JSON string. Long walls of text are unreadable in a drawer.
+- Use em dashes (—) not double hyphens (--) for parenthetical asides.
+- Each flow narrative should be 3-5 short paragraphs, not one long block.
+- Lead each paragraph with the action: "**root-loader** fires a prefetch..." not "The request arrives and then the root-loader fires..."
+- Keep total narrative per flow/failure/store to ~100-150 words. The drawer is narrow — brevity is clarity.
+
 **Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
 - Pattern badges from `patterns.md` → `node.patterns[]`
 - Debt markers from `debt-assessment.md` → `node.debt`
