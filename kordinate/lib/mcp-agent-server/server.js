@@ -140,8 +140,8 @@ async function invokeAgent(agent, prompt) {
 
       const timer = setTimeout(() => {
         child.kill('SIGTERM');
-        reject(new Error(`Timed out after 300s`));
-      }, 300000);
+        reject(new Error(`Timed out after 900s`));
+      }, 900000);
 
       child.on('close', (code) => {
         clearTimeout(timer);
