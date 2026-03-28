@@ -141,7 +141,14 @@ Improve-loop across all agents. Spawns each team agent to improve its own skills
 1. **Discover agents** — find all agents with skills directories and IDENTITY.md files.
 2. **Spawn per-agent improve loops** — for each agent, spawn a subagent using the prompt in [agents/improve-loop.md](agents/improve-loop.md). Each agent boots with its domain expertise and memories, then runs the full 3-phase loop (portfolio review → per-skill iteration → sleep). Limit concurrency to 2 agents at a time.
 3. **Monitor via manifests** — each agent writes progress to `$DATA_DIR/<agent>/manifest.json`. After context compaction, read these manifests to recover the state of all running agents.
-4. **Collect results** — aggregate summaries from all agents. Highlight cross-agent findings (misplacements, overlapping skills between agents, shared resource gaps).
+4. **Collect results** — aggregate summaries from all agents.
+5. **Cross-agent reconciliation** — after all agents report, resolve conflicts that no single agent can see:
+   - **Misplacement conflicts**: if agent A says "skill X belongs to agent B" and agent B didn't claim it, flag for human review.
+   - **Overlap resolution**: if agents A and B both cover the same domain, propose which agent should own it (based on identity alignment) or whether the skills should be merged.
+   - **Shared resource gaps**: if multiple agents flag the same missing resource (e.g., a shared script, a common schema), propose creating it once in `$KORDINATE_HOME/shared/` rather than duplicating per-agent.
+   - **Coverage map**: produce a matrix of responsibilities × agents showing which are covered, which have gaps, and which have redundant coverage.
+
+   This step runs in the orchestrator (the main improve agent), not in the per-agent subagents.
 
 ---
 

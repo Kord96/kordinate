@@ -150,14 +150,31 @@ Read results from Step 1.2 (web search) and Step 1.4 (Gemini review):
 - **Gemini review**: incorporate valid critiques. Discard opinions that contradict evidence
   from the actual codebase or your memory. Gemini's opinion is a second signal, not gospel.
 
-### Step 1.7 — Portfolio Decision
+### Step 1.7 — Check Improvement History
+
+Read `$DATA_DIR/<agent>/history.json` if it exists. This file accumulates findings across
+runs. Check for:
+
+- **Recurring findings** — the same gap or issue flagged in multiple runs means it's real
+  and hasn't been addressed. Escalate its priority.
+- **Previously proposed items** — findings that were "proposed" in past runs but never
+  acted on. Re-surface them with a note: "proposed N runs ago, still unresolved."
+- **Trends** — are skills improving or degrading over time? Are new gaps opening as the
+  agent's responsibilities grow?
+
+If the file doesn't exist, this is the first run — skip to Step 1.8.
+
+### Step 1.8 — Portfolio Decision
 
 Classify each finding:
 
 - **Immediate** — can be done during this improve run: staleness fixes, resource additions,
   minor refactoring, supporting file improvements. Execute these in Phase 2.
-- **Proposed** — requires human approval: new skills, agent reassignment, major splits/merges,
-  fundamental restructuring. Record for the summary.
+- **Scaffold** — new skills or skill splits that can be created now with a minimal SKILL.md.
+  These don't require human approval because they're additive — they don't change or remove
+  anything. Scaffold them in Phase 2 (see Step 2.8).
+- **Proposed** — requires human approval: agent reassignment, major merges, destructive
+  restructuring, responsibility changes. Record for the summary.
 
 Update the manifest: `phase: "per-skill-iteration"`, `portfolio_findings: [...]`.
 
@@ -182,19 +199,25 @@ split candidate" or "missing 3rd-layer resources").
 
 ### Step 2.2 — Test Against Real Repos
 
-If test repos were cloned in Step 1.5, run the skill (or simulate its procedure) against
-one of the cloned repos. Evaluate:
+If test repos were cloned in Step 1.5, test the skill against one of them. The test
+strategy depends on the skill type:
 
-- Does the skill produce the expected output?
-- Are there steps that fail or get stuck on real code?
-- Does the skill handle the repo's structure correctly?
-- Are there edge cases the skill doesn't account for?
+| Skill type | How to test | What to evaluate |
+|------------|-------------|-----------------|
+| **Scan/audit** (read-only: detect-concepts, scan-observability, assess-debt) | Run the skill's procedure against the repo. Collect the output. | Did it find real things? Did it miss obvious things? Did it produce false positives? Is the output format correct? |
+| **Generate** (document, architect, map-dependencies) | Run the skill's procedure against the repo. Inspect the artifact. | Is the output structurally valid? Does it reflect the repo's actual architecture? Are there hallucinated components? |
+| **Transform** (edit-based: refactoring, migration skills) | Dry-run or simulate on a copy of the repo. Do NOT modify the original. | Would the proposed changes compile/parse? Do they preserve behavior? Are edge cases handled? |
+| **Deploy/infra** (roll, bootstrap, migrate) | Do NOT run against test repos. Instead, trace through the procedure mentally against the repo's structure. | Are all referenced paths/tools real? Are prerequisites checked? Are rollback steps present? |
+| **Meta** (improve, train-detection) | Skip repo testing for meta-skills. They're tested by running them. | N/A |
+
+If the skill type is unclear, default to the scan/audit strategy (read-only, inspect output).
 
 Record results to `$DATA_DIR/<agent>/test-results/<skill>-<repo>.json`:
 ```json
 {
   "skill": "<name>",
   "repo": "<nameWithOwner>",
+  "test_strategy": "scan|generate|transform|trace|skipped",
   "tested_at": "ISO-8601",
   "success": true,
   "issues_found": [],
@@ -245,6 +268,20 @@ unless the structure itself is the problem.
 When adding 3rd-layer resources (scripts, templates, schemas), create them as supporting
 files referenced from SKILL.md, not inline content.
 
+### Step 2.5b — Gemini diff review (structural changes only)
+
+For structural changes that touch multiple files or alter a skill's procedure flow,
+send the diff to Gemini for a quick review before committing. Skip this for cosmetic-only
+or single-line fixes.
+
+```bash
+git diff --no-color > /tmp/improve-diff-<agent>-<skill>.patch
+gemini -m gemini-2.5-flash -p "Review this diff to a Claude Code skill definition. Flag: instructions that contradict themselves, steps that reference nonexistent tools or files, changes that break the skill's output format, or regressions (removing something that was correct). Be terse — just list issues or say 'looks good'." @/tmp/improve-diff-<agent>-<skill>.patch
+```
+
+Use `gemini-2.5-flash` (not pro) to keep this fast. If Gemini flags a real issue, fix it
+before proceeding. If it flags style preferences, ignore them.
+
 ### Step 2.6 — Anti-oscillation check
 
 Before committing to the changes, compare your diff against diffs from previous
@@ -262,6 +299,24 @@ Record for the final summary:
 Update manifest: add skill to `skills_completed`.
 
 Then proceed to the next iteration (or stop if conditions are met).
+
+### Step 2.8 — Scaffold New Skills
+
+After completing per-skill iteration, create any skills classified as "scaffold" in
+Step 1.8. For each new skill:
+
+1. Create the directory: `$KORDINATE_HOME/agents/<agent>/skills/<skill-name>/`
+2. Write a minimal `SKILL.md` with:
+   - Frontmatter: `name`, `description`, `curated: true`
+   - A clear statement of purpose (what and when)
+   - A numbered procedure with concrete steps
+   - Output format specification
+3. Keep it under 100 lines — this is a starting point, not a finished product. Future
+   improve runs will iterate on it.
+4. Reference it in the agent's IDENTITY.md skills table.
+
+Do NOT scaffold skills that duplicate existing functionality in other agents. If unsure,
+classify as "proposed" instead.
 
 ---
 
@@ -289,7 +344,34 @@ Append tested repos to the persistent database at `$DATA_DIR/repo-database.json`
 
 Create the file if it doesn't exist. Append to the array if it does.
 
-### Step 3.2 — Persist Portfolio Findings
+### Step 3.2 — Update Improvement History
+
+Append this run's summary to `$DATA_DIR/<agent>/history.json`. Each entry captures
+what was found and done, enabling trend analysis across runs:
+
+```json
+{
+  "run_id": "<timestamp>",
+  "date": "YYYY-MM-DD",
+  "portfolio_findings": {
+    "coverage_gaps": ["..."],
+    "split_candidates": ["..."],
+    "new_skills_scaffolded": ["..."],
+    "staleness_fixes": ["..."]
+  },
+  "per_skill_results": {
+    "skill-a": {"iterations": 2, "stop_reason": "cosmetic-only", "test_result": "pass"},
+    "skill-b": {"iterations": 1, "stop_reason": "no-changes", "test_result": "pass"}
+  },
+  "proposed_actions": ["..."],
+  "repos_tested": ["owner/repo-1", "owner/repo-2"]
+}
+```
+
+Create the file as `[]` if it doesn't exist. Append to the array. Keep the last 20 entries
+(trim oldest if over).
+
+### Step 3.3 — Persist Portfolio Findings
 
 For each finding classified as "proposed" (needs human approval):
 ```
@@ -301,7 +383,7 @@ For domain insights discovered during improvement:
 /kord remember <agent-name> learned during self-improvement: <insight>
 ```
 
-### Step 3.3 — Finalize Manifest
+### Step 3.4 — Finalize Manifest
 
 Update manifest:
 ```json
