@@ -28,6 +28,10 @@ How to identify this pattern in code.
 - Database table named `inbox`, `processed_messages`, or `received_events`
 - `message_id` column with a uniqueness constraint used for deduplication
 - `INSERT ... ON CONFLICT DO NOTHING` for idempotent message recording in an inbox table
+- Go: unique constraint on job args/key ensuring the same job is not enqueued twice
+- Go: `UniqueOpts`, `unique_key`, or `InsertOpts{UniqueOpts: ...}` for job deduplication
+- Java: `@IdempotentReceiver` or idempotent message handler with deduplication check
+- Any: `uniqueKey` or `deduplicationId` fields on message/job structs preventing duplicate processing
 - Consumer that writes the message ID to the inbox table in the same transaction as the business logic
 
 ### Negative signals (not sufficient for detection)

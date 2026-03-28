@@ -24,6 +24,10 @@ How to identify this pattern in code.
 - Java: `@Controller` or `@RestController` annotations with `@RequestMapping`, model+view separation
 - Java: Dropwizard/Quarkus resource classes (`*Resource.java`) paired with `model/` or `entity/` packages and template rendering
 - Java: JAX-RS resource classes serving as controllers when paired with separate model and view layers
+- Go: `handlers/` + `models/` (or `ent/`) + `templates/` directory structure
+- Go: Echo/Gin/Chi handler functions paired with HTML template rendering (`c.Render()`, `c.HTML()`)
+- Go: `pkg/handlers/` + `pkg/services/` + `templates/` three-tier structure in web applications
+- Go: server-side rendered templates with `html/template` package paired with handler and model layers
 
 ### Confidence
 

@@ -25,6 +25,11 @@ How to identify this pattern in code.
 - Concurrency configuration: `concurrency=N`, `prefetch_count`, `maxConcurrentConsumers`
 - SQS with multiple readers, Celery worker pool, Sidekiq processes
 - Auto-scaling consumer count based on queue depth
+- Go: multiple goroutines or worker instances fetching from a shared job queue (database-backed or channel-backed)
+- Go: `numWorkers` or `fetchConcurrency` config controlling how many job consumers run in parallel
+- Go: PostgreSQL `SELECT ... FOR UPDATE SKIP LOCKED` for competing job consumers
+- Java: Spring AMQP `SimpleMessageListenerContainer` with `setConcurrentConsumers(N)`
+- Any: horizontal scaling documentation showing multiple instances consuming from the same queue
 
 ### Confidence
 

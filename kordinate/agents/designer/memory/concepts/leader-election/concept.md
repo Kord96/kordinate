@@ -25,6 +25,11 @@ How to identify this pattern in code.
 - Only-leader-writes pattern (followers redirect or reject write operations)
 - Leader health monitoring with automatic re-election on failure
 - Libraries: `client-go/tools/leaderelection`, `curator` (ZooKeeper), `etcd/clientv3/concurrency`
+- Go: `leadership/` package implementing leader election with database advisory locks or distributed locks
+- Go: PostgreSQL advisory locks (`pg_try_advisory_lock`) for single-leader guarantees
+- Go: `Elector` interface, `LeaderElector` struct, `AttemptElect()` / `Resign()` methods
+- Java: Curator `LeaderLatch` or `LeaderSelector` for ZooKeeper-based leader election
+- Any: `leader`, `elector`, `leadership` as package/directory names with election protocol implementation
 
 ### Confidence
 

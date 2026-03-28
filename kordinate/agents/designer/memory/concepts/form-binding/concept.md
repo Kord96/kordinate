@@ -26,6 +26,10 @@ How to identify this pattern in code.
 - `zodResolver`, `yupResolver` connecting schema validation to form libraries
 - Form submission handlers: `onSubmit`, `handleSubmit`, `@submit.prevent`
 - Error display patterns: `errors.fieldName`, field-level error messages, touched state tracking
+- Go: `echo.Bind()`, `c.Bind(&form)`, `gin.ShouldBind()` for server-side form binding to structs
+- Go: `gorilla/schema` decoder for form data to struct mapping
+- Go: template form rendering with `{{.Form.FieldName}}` and struct tag-based binding
+- Java: Spring MVC `@ModelAttribute` and `BindingResult` for server-side form binding and validation
 
 ### Confidence
 
