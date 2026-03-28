@@ -1,6 +1,6 @@
 # Identity Template
 
-Level 3 resource for the onboard skill.
+Level 3 resource for the register skill.
 
 ## Template
 
@@ -14,6 +14,7 @@ color: <color>
 memory: user
 curated: true
 preloaded: <agent-name>
+scope: global
 ---
 
 # <Agent Name>
@@ -24,6 +25,11 @@ preloaded: <agent-name>
 
 | Skill | Purpose | Kord mode |
 |-------|---------|-----------|
+
+## Capabilities
+
+- Can <testable action> via <skill or mechanism>
+- Can <testable action> via <skill or mechanism>
 
 ## Rules
 
@@ -42,4 +48,5 @@ preloaded: <agent-name>
 - `tools`: list only what the agent needs
 - `model`: usually `inherit` (uses parent's model)
 - `memory: user` for global persistence via Claude native fallback
-- `curated: true`, `preloaded: <name>` — recall properties (stripped during sync to Claude native)
+- `curated: true`, `preloaded: <name>`, `scope: global` — kordinate properties (stripped during sync to Claude native)
+- `Capabilities`: testable assertions about what the agent can do. Used by `/eval health --e2e` for per-agent verification. Each entry: "Can <action> via <skill>". Only include capabilities that can be mechanically tested.
