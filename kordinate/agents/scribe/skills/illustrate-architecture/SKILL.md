@@ -2,9 +2,8 @@
 name: illustrate-architecture
 description: >
   Generate an interactive architecture explorer page from Designer's project analysis.
-  Reads architecture.yaml, concepts.md, dependencies.md, api-review.md, and debt-assessment.md
-  from project memory, then produces an Astro page with Cytoscape.js graph, narrative sidebar,
-  and side drawer for detail inspection.
+  Reads architecture.yaml v2 from project memory, then produces an Astro page with Cytoscape.js
+  graph, narrative sidebar, and side drawer for detail inspection.
 argument-hint: "<project> [--narrative <dir>]"
 curated: true
 context: fork
@@ -36,24 +35,20 @@ If not found, report which paths were checked and exit.
 Spawn a Designer subagent to analyze the project:
 
 ```
-Agent(subagent_type="designer", prompt="Run full project analysis on <project-path>. Execute in order: /detect-concepts, /map-dependencies, /review-api, /assess-debt, /architect. Write all outputs to <project-path>/.kord/agents/designer/memory/. Return a manifest of what was produced.")
+Agent(subagent_type="designer", prompt="Run /architect on <project-path>. Write output to <project-path>/.kord/agents/designer/memory/. Return the path when done.")
 ```
 
 Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/designer/memory/` and mark the report as `stale — Designer failed`.
 
 ### 3. Read project artifacts
 
-Read from `<project>/.kord/agents/designer/memory/` — this is the only authoritative location. Do not read from the project root, the docs site, or any other path.
+Read from `<project>/.kord/agents/designer/memory/` — this is the only authoritative location.
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `architecture.yaml` | **yes** | Core structure — abort if missing |
-| `concepts.md` | no | Enriches nodes with pattern badges |
-| `dependencies.md` | no | Enriches external service nodes |
-| `api-review.md` | no | Adds API endpoint mapping to nodes |
-| `debt-assessment.md` | no | Adds health coloring per node |
+| `architecture.yaml` | **yes** | Complete analysis (v2) — structure, concepts, deps, API, debt |
 
-If `architecture.yaml` is missing after the kord attempt, report and suggest running `/architect <project>` directly. Exit.
+If `architecture.yaml` is missing after the Designer attempt, report and suggest running `/architect <project>` directly. Exit.
 
 ### 4a. Produce architecture.json — write
 
@@ -129,11 +124,11 @@ Follow the voice, formatting, and structure rules in [narrative-style.md](narrat
 - Lead each paragraph with the action: "**root-loader** fires a prefetch..." not "The request arrives and then the root-loader fires..."
 - Keep total narrative per flow/failure/store to ~100-150 words. The drawer is narrow — brevity is clarity.
 
-**Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
-- Pattern badges from `concepts.md` → `node.patterns[]`
-- Debt markers from `debt-assessment.md` → `node.debt`
-- API endpoints from `api-review.md` → `node.endpoints[]`
-- External dep resilience from `dependencies.md` → `node.resilience`
+**Enrichments from architecture.yaml v2** (integrate into nodes, don't list separately):
+- Pattern badges from `concepts.detected_patterns` → `node.patterns[]` (matched via `components` field)
+- Debt markers from `debt.violations` → `node.debt` (matched via `violations[].components`)
+- API endpoints from `api_surface.endpoints` → `node.endpoints[]` (matched via `endpoints[].file` against `components[].modules`)
+- External dep resilience from `external_dependencies[].resilience` → `node.resilience` (already on the component)
 
 ### 4b. Annotate narratives — match paragraphs to structure
 

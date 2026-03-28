@@ -154,13 +154,13 @@ Every architectural entity becomes a node. The `type` field determines visual st
 
 ### Enrichment fields
 
-These fields are **null/empty by default** and populated only when the corresponding Designer memory file exists:
+These fields are **null/empty by default** and populated from `architecture.yaml` v2 sections:
 
-- `patterns` — from `concepts.md`. Array of `{ name, category }`. Detected architectural patterns for this component.
-- `debt` — from `debt-assessment.md`. Object with `severity` and `items` array. Technical debt associated with this component.
-- `endpoints` — from `api-review.md`. Array of `{ method, path, description }`. API endpoints exposed by this component.
-- `resilience` — from `dependencies.md`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description. Resilience characteristics of external dependencies.
-- `criticality` — from `dependencies.md` or `external_dependencies`. How critical this dependency is to the system.
+- `patterns` — from `concepts.detected_patterns`. Array of `{ name, category }`. Detected architectural patterns for this component.
+- `debt` — from `debt.violations`. Object with `severity` and `items` array. Technical debt associated with this component.
+- `endpoints` — from `api_surface.endpoints`. Array of `{ method, path, description }`. API endpoints exposed by this component.
+- `resilience` — from `external_dependencies[].resilience`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description.
+- `criticality` — from `external_dependencies[].criticality`. How critical this dependency is to the system.
 
 ### edges
 

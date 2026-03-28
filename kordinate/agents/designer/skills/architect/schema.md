@@ -1,11 +1,13 @@
-# architecture.yaml Schema
+# architecture.yaml Schema (v2)
 
-Level 3 resource for the architect skill. Referenced from step 9 (write and report). Defines the output format.
+Level 3 resource for the architect skill. Referenced from step 9 (write). Defines the output format.
+
+Version 2 adds four sections to the v1 schema: `concepts`, `module_graph`, `api_surface`, and `debt`. All v1 sections are unchanged.
 
 ## Schema
 
 ```yaml
-version: "1"
+version: "2"
 generated: "<YYYY-MM-DD>"
 project: "<project-name>"
 
@@ -17,6 +19,8 @@ stack:
     - name: "<framework name>"
       concepts: ["<concept-name>"]         # which concepts from the catalog this framework provides
   runtime: "<description of how it runs>"
+
+# ── Structure ────────────────────────────────────────────────────
 
 actors:
   - id: "<kebab-case>"
@@ -37,26 +41,28 @@ components:
     modules:
       - "<path/to/module>"
     depends_on: ["<component-id>"]
-    abstraction: ["<abstraction-name>"]  # optional, from abstractions.md — drives downstream viewpoints
-    patterns: ["<pattern-name>"]        # optional, from detect-concepts or concept catalog
-    deployment:                          # optional, for deployment viewpoint
+    abstraction: ["<abstraction-name>"]    # from abstractions.md
+    patterns: ["<pattern-name>"]           # always populated from inline detection
+    deployment:                             # optional, for deployment viewpoint
       namespace: "<k8s namespace>"
       kind: "<Deployment | StatefulSet | CronJob | Pod>"
       replicas: <count>
       node: "<node name or selector>"
-    children:                            # optional, recursive — same schema as parent
+    children:                               # optional, recursive — same schema as parent
       - id: "<kebab-case>"
         name: "<Human Readable Name>"
         description: "<one sentence>"
         type: "<same types as parent>"
         modules: ["<path>"]
-        abstraction: ["<abstraction-name>"]  # optional
+        abstraction: ["<abstraction-name>"]
         depends_on: ["<component-id>"]
-        children: [...]                  # can nest further
+        children: [...]
+
+# ── Behavior ─────────────────────────────────────────────────────
 
 data_flows:
   - id: "<kebab-case>"
-    actors: ["<actor-id>"]              # which actors trigger this flow
+    actors: ["<actor-id>"]
     name: "<Human Readable Flow Name>"
     description: "<what this flow accomplishes>"
     trigger: "<what starts it>"
@@ -64,8 +70,8 @@ data_flows:
       - component: "<component-id>"
         action: "<verb phrase>"
         data: "<what moves>"
-        to: "<component-id>"           # omit for terminal step
-        technology: "<protocol or transport: HTTP/JSON | gRPC | Kafka topic | localStorage | in-memory>"  # optional
+        to: "<component-id>"              # omit for terminal step
+        technology: "<protocol or transport>"
 
 state:
   - id: "<kebab-case>"
@@ -101,17 +107,160 @@ external_dependencies:
 failure_modes:
   - id: "<kebab-case>"
     trigger: "<what goes wrong>"
-    cascade:                               # ordered sequence of what breaks
+    cascade:
       - component: "<component-id>"
         effect: "<what happens to this component>"
     impact: "<what end users experience>"
-    detection:                             # ordered: how you know it happened
+    detection:
       - "<first signal — metric, log, error, or 'none'>"
-      - "<second signal>"
-    recovery:                              # ordered: what happens to recover
+    recovery:
       - "<first recovery step — automatic or manual>"
-      - "<second recovery step>"
     severity: critical | high | medium | low
+
+# ── Concepts (v2) ───────────────────────────────────────────────
+
+concepts:
+  detected_patterns:
+    - id: "<pattern-name>"                  # matches catalog name
+      category: "<category from index>"
+      confidence: high | medium | low
+      components: ["<component-id>"]        # which components exhibit this pattern
+      evidence:
+        files: ["<path>"]
+        method: grep | ast-grep | semgrep | questions | manual
+        note: "<one sentence>"
+
+  detected_anti_patterns:
+    - id: "<anti-pattern-name>"
+      category: "<category from index>"
+      confidence: high | medium | low
+      components: ["<component-id>"]
+      evidence:
+        files: ["<path>"]
+        method: grep | ast-grep | semgrep | questions | manual
+        note: "<one sentence>"
+
+  gaps:
+    - id: "<pattern-name>"
+      relevance: "<why it's expected>"
+      recommendation: "<what to do>"
+
+  scan_metadata:
+    catalog_size:
+      patterns: <N>
+      anti_patterns: <N>
+    tools_used: ["grep", "ast-grep", "semgrep"]
+    categories_scanned: ["<category>"]
+
+# ── Module Graph (v2) ────────────────────────────────────────────
+
+module_graph:
+  modules:
+    - id: "<module-path>"
+      imports: ["<module-path>"]
+      imported_by: ["<module-path>"]
+      role: hub | shared | leaf | standard
+
+  circular_dependencies:
+    - cycle: ["<module>", "<module>"]
+
+  hub_modules: ["<module-path>"]
+
+  infrastructure:
+    - resource: "<name>"
+      kind: "<PVC | ConfigMap | Secret | Service | StatefulSet | aws_rds_instance | ...>"
+      source: "<namespace or Terraform module>"
+      notes: "<detail>"
+
+  inter_service:
+    - service: "<name>"
+      discovered_in: "<file>"
+      pattern: "<*_URL | depends_on | connection string>"
+      value: "<the reference>"
+
+  reverse_dependencies:                     # only if --reverse was used
+    - project: "<sibling project name>"
+      reference_type: import | config | k8s-manifest
+      files: ["<path>"]
+
+  risks:
+    hardcoded_endpoints: ["<file:line>"]
+    missing_resilience:
+      - file: "<path>"
+        service_type: "<type>"
+        missing: ["timeout", "retry", "circuit_breaker"]
+    unversioned_deps: ["<description>"]
+
+# ── API Surface (v2) ─────────────────────────────────────────────
+
+api_surface:
+  style: REST | GraphQL | gRPC | WebSocket | SSE | mixed
+  frameworks:
+    - name: "<framework>"
+      version: "<version if known>"
+
+  endpoints:
+    - method: "<GET | POST | PUT | DELETE | PATCH>"
+      path: "</route>"
+      handler: "<function name>"
+      file: "<path:line>"
+      auth: yes | no | gateway | inherited
+      validation: yes | no | partial
+
+  findings:
+    critical:
+      - description: "<finding>"
+        files: ["<path:line>"]
+        count: <N>
+    recommended:
+      - description: "<finding>"
+        files: ["<path:line>"]
+        count: <N>
+    minor:
+      - description: "<finding>"
+        files: ["<path:line>"]
+        count: <N>
+
+  compliance:
+    gateway:
+      status: compliant | partial | non-compliant
+      notes: "<explanation>"
+    hexagonal:
+      status: compliant | partial | non-compliant
+      notes: "<explanation>"
+    external_gateway: "<Kong | AWS API Gateway | ... | null>"
+
+# ── Debt (v2) ────────────────────────────────────────────────────
+
+debt:
+  score: <N>
+  grade: A | B | C | D | F
+  grade_capped: true | false                # true if hard floor rule applied
+  interpretation: "<one sentence>"
+
+  by_category:
+    - category: Structural | Data | Integration | Resilience | Lifecycle
+      points: <N>
+      violations: <N>
+
+  violations:
+    - severity: CRITICAL | RECOMMENDED | MINOR
+      category: "<category>"
+      pattern: "<source pattern>"
+      anti_pattern: "<what was violated>"
+      components: ["<component-id>"]
+      files: ["<path>"]
+      detail: "<one sentence>"
+      points: <N>
+
+  recommendations:
+    - priority: <1-7>
+      title: "<short title>"
+      severity: CRITICAL | RECOMMENDED | MINOR
+      category: "<category>"
+      files: ["<path>"]
+      description: "<what to fix and why>"
+      fixes: ["<anti-pattern-id>"]
 ```
 
 ## Conventions
@@ -119,21 +268,22 @@ failure_modes:
 - All `id` fields are kebab-case, unique within their section
 - Cross-references use `id` strings, not indices
 - `concept` fields use generic infrastructure terms, `technology` fields name the specific tool
-- `abstraction` values come from `abstractions.md`. A component can have multiple (e.g., `[data, messaging]`). These drive which viewpoints include the component in downstream skills.
-- Component `type: store` covers any data persistence component (embedded databases, caches, file stores). External databases appear in `external_dependencies`, not as components, unless the project manages the database process itself.
-- Components should number 5-10 for most projects. If you have more than 12, you're probably not abstracting enough. If you have fewer than 4, you're probably over-abstracting.
-- Data flows trace the critical paths, not every possible code path. 2-4 flows for a typical project.
-- Failure modes should cover every external dependency and every stateful component. The question is always: "what happens if this goes down?"
-- Components can nest to any depth via `children`. Each level represents a meaningful architectural boundary (service → package → module). Don't nest deeper than the code's natural structure.
-- The `deployment` field on components enables the deployment viewpoint. Only add it to components that map to a k8s workload.
-- The `technology` field on flow steps enables annotated sequence diagrams. Use short labels: "HTTP/JSON", "gRPC :8815", "Kafka", "localStorage".
+- `abstraction` values come from `abstractions.md`
+- Component `type: store` covers embedded data persistence. External databases appear in `external_dependencies`
+- Components should number 5-10 for most projects. >12 means not abstracting enough. <4 means over-abstracting
+- Data flows trace critical paths, not every code path. 2-4 flows typical
+- Failure modes should cover every external dependency and stateful component
+- Components nest via `children`. Don't nest deeper than the code's natural structure
+- `deployment` field enables the deployment viewpoint. Only add to components that map to a k8s workload
+- `technology` on flow steps enables annotated sequence diagrams
+- Omit `events` if the project has none. Omit `module_graph.reverse_dependencies` if `--reverse` was not used
+- Omit `api_surface` entirely if no endpoints were found and the project is not an API
+- Omit empty severity lists in `api_surface.findings` and empty `debt.by_category` entries
 
 ## Minimal Skeleton
 
-Start from this and fill in sections as analysis progresses. Omit `events` if the project has none.
-
 ```yaml
-version: "1"
+version: "2"
 generated: "YYYY-MM-DD"
 project: "<name>"
 purpose: "<one sentence>"
@@ -148,246 +298,27 @@ data_flows: []
 state: []
 external_dependencies: []
 failure_modes: []
-```
-
-## Full Example
-
-A complete example for a stream-processing pipeline project:
-
-```yaml
-version: "1"
-generated: "2026-03-26"
-project: "stoik"
-
-purpose: "Stream processing framework — consumes from Kafka, buffers in memory, flushes to DuckDB, serves via FlightSQL and HTTP."
-
-stack:
-  languages: ["Python"]
-  frameworks:
-    - name: "confluent-kafka"
-      concepts: [message-queue, stream-to-store, pub-sub]
-    - name: "FastAPI"
-      concepts: [router, middleware, input-validation]
-    - name: "Apache Arrow Flight"
-      concepts: [grpc]
-    - name: "DuckDB"
-      concepts: [embedded-olap]
-    - name: "stoik"
-      concepts: [stream-to-store, backpressure, retry]
-  runtime: "Long-running Python process with consumer loop, embedded DuckDB, and FlightSQL/HTTP servers"
-
-actors:
-  - id: upstream-kafka
-    type: data-source
-    description: "Produces messages to Kafka topics that stoik consumes"
-  - id: query-client
-    type: service
-    description: "Queries stored data via FlightSQL (gRPC) or HTTP API"
-  - id: ops
-    type: user
-    description: "Monitors health via Prometheus /metrics endpoint"
-
-capabilities:
-  - id: stream-ingestion
-    description: "Consume messages from Kafka and buffer them for batch processing"
-    actors: ["upstream-kafka"]
-    components: ["kafka-consumer", "buffer"]
-  - id: batch-storage
-    description: "Flush buffered data to DuckDB with staging tables and merge"
-    actors: []
-    components: ["buffer", "duckdb-store"]
-  - id: query-serving
-    description: "Serve stored data via FlightSQL and HTTP with caching"
-    actors: ["query-client"]
-    components: ["flight-server", "http-api", "cache"]
-
-components:
-  - id: kafka-consumer
-    name: "Kafka Consumer"
-    description: "Connects to Kafka, polls messages in batches, deserializes with schema registry"
-    type: worker
-    modules: ["stoik/stream/kafka.py"]
-    depends_on: ["buffer"]
-    abstraction: [messaging, data]
-    patterns: ["stream-to-store"]
-  - id: buffer
-    name: "In-Memory Buffer"
-    description: "Accumulates records and triggers flush on size or time threshold"
-    type: library
-    modules: ["stoik/buffer.py"]
-    depends_on: ["duckdb-store"]
-  - id: consume-loop
-    name: "Consume Loop"
-    description: "Orchestrates the consumer-buffer-store lifecycle with heartbeat management"
-    type: service
-    modules: ["stoik/loop.py"]
-    depends_on: ["kafka-consumer", "buffer", "duckdb-store"]
-  - id: duckdb-store
-    name: "DuckDB Store"
-    description: "Writes Arrow batches to DuckDB via staging tables, handles lock contention with retry"
-    type: store
-    modules: ["stoik/storage/duckdb.py"]
-    depends_on: []
-    abstraction: [data]
-    patterns: ["retry"]
-  - id: flight-server
-    name: "FlightSQL Server"
-    description: "Serves SQL queries over Arrow Flight gRPC protocol"
-    type: api
-    modules: ["stoik/server/flight.py", "stoik/server/proxy.py"]
-    depends_on: ["duckdb-store"]
-  - id: http-api
-    name: "HTTP API"
-    description: "FastAPI server providing REST access to cached entity data"
-    type: api
-    modules: ["stoik/server/api.py"]
-    depends_on: ["cache", "flight-server"]
-    children:
-      - id: api-server
-        name: "API Server"
-        description: "Serves REST endpoints for entity queries"
-        type: api
-        modules: ["stoik/server/api.py"]
-        depends_on: ["cache"]
-      - id: cache-warmer
-        name: "Cache Warmer"
-        description: "Pre-fetches entity data into cache on startup"
-        type: worker
-        modules: ["stoik/server/cache.py"]
-        depends_on: ["flight-server"]
-  - id: cache
-    name: "Entity Cache"
-    description: "LRU cache with warm-up that pre-fetches entity data via FlightSQL"
-    type: library
-    modules: ["stoik/server/cache.py", "stoik/server/flight_pool.py"]
-    depends_on: ["flight-server"]
-
-data_flows:
-  - id: ingest-to-store
-    actors: ["upstream-kafka"]
-    name: "Kafka to DuckDB Pipeline"
-    description: "The primary write path — messages flow from Kafka through buffer to DuckDB"
-    trigger: "Messages arrive on Kafka topic"
-    steps:
-      - component: kafka-consumer
-        action: "Polls batch of messages, deserializes via schema registry"
-        data: "Raw Kafka messages → Arrow RecordBatch"
-        to: buffer
-      - component: buffer
-        action: "Accumulates records until size/time threshold reached"
-        data: "Arrow RecordBatch"
-        to: duckdb-store
-      - component: duckdb-store
-        action: "Inserts into staging table, merges into base table"
-        data: "Arrow RecordBatch → DuckDB rows"
-
-  - id: query-path
-    actors: ["query-client"]
-    name: "Query Serving Path"
-    description: "The read path — clients query via FlightSQL or HTTP"
-    trigger: "Client sends SQL query or HTTP request"
-    steps:
-      - component: http-api
-        action: "Receives HTTP request, checks cache"
-        data: "HTTP request"
-        to: cache
-      - component: cache
-        action: "Returns cached result or delegates to FlightSQL"
-        data: "Cache key → Arrow table"
-        to: flight-server
-      - component: flight-server
-        action: "Executes SQL against DuckDB, returns Arrow stream"
-        data: "SQL query → Arrow RecordBatch stream"
-
-state:
-  - id: duckdb-files
-    concept: embedded-olap
-    technology: DuckDB
-    component: duckdb-store
-    stores: "Entity data (nodes, edges, aggregations) in columnar format"
-    purpose: source-of-truth
-    persistence: persistent
-  - id: entity-cache
-    concept: in-memory
-    technology: "Python LRU dict"
-    component: cache
-    stores: "Pre-fetched entity lookup results"
-    purpose: cache
-    persistence: ephemeral
-
-events:
-  - id: kafka-ingest
-    type: topic
-    name: "Configured at runtime per consumer instance"
-    producer: kafka-consumer              # component that receives from external source
-    consumers: ["buffer"]
-    data: "Avro-encoded entity records"
-
-external_dependencies:
-  - id: kafka-broker
-    name: "Kafka Broker"
-    concept: message-broker
-    technology: "Apache Kafka (KRaft)"
-    components: ["kafka-consumer"]
-    purpose: "Source of streaming data"
-    criticality: critical
-    resilience:
-      timeout: true
-      retry: true
-      circuit_breaker: false
-      fallback: null
-  - id: schema-registry
-    name: "Schema Registry"
-    concept: http-api
-    technology: "Confluent Schema Registry"
-    components: ["kafka-consumer"]
-    purpose: "Avro schema resolution for deserialization"
-    criticality: important
-    resilience:
-      timeout: false
-      retry: false
-      circuit_breaker: false
-      fallback: null
-
-failure_modes:
-  - id: kafka-down
-    trigger: "Kafka broker becomes unreachable"
-    cascade:
-      - component: kafka-consumer
-        effect: "Consumer poll fails, reconnection loop starts"
-      - component: consume-loop
-        effect: "Buffer stops receiving records"
-      - component: buffer
-        effect: "No new data to flush, buffer empties"
-    impact: "Ingestion halts. No new data written to DuckDB. Query serving continues from existing data."
-    detection:
-      - "Consumer reconnection logs (librdkafka)"
-      - "kafka_consumer_lag metric flatlines"
-    recovery:
-      - "Consumer auto-reconnects with librdkafka backoff"
-      - "Buffer resumes on next successful poll"
-      - "No data loss — offsets not committed until flush"
-    severity: critical
-  - id: duckdb-lock-contention
-    trigger: "Multiple processes contend for DuckDB file lock"
-    cascade:
-      - component: duckdb-store
-        effect: "Write operations block waiting for file lock"
-    impact: "Write latency increases. Buffer grows in memory."
-    detection:
-      - "Retry count metrics in duckdb_store"
-    recovery:
-      - "Exponential backoff retry (60 attempts, jitter)"
-    severity: medium
-  - id: snapshot-module-missing
-    trigger: "Store.release() called with snapshot=True"
-    cascade:
-      - component: duckdb-store
-        effect: "ModuleNotFoundError raised during snapshot"
-    impact: "ModuleNotFoundError — process crashes"
-    detection:
-      - "none"
-    recovery:
-      - "none"
-    severity: high
+concepts:
+  detected_patterns: []
+  detected_anti_patterns: []
+  gaps: []
+  scan_metadata:
+    catalog_size: { patterns: 0, anti_patterns: 0 }
+    tools_used: []
+    categories_scanned: []
+module_graph:
+  modules: []
+  circular_dependencies: []
+  hub_modules: []
+  infrastructure: []
+  inter_service: []
+  risks: {}
+debt:
+  score: 0
+  grade: A
+  grade_capped: false
+  interpretation: ""
+  by_category: []
+  violations: []
+  recommendations: []
 ```

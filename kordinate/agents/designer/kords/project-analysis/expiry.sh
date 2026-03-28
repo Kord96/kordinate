@@ -10,10 +10,8 @@ PROJECT="$1"
 
 MEMORY="$PROJECT/.kord/agents/designer/memory"
 
-# Check that expected artifacts exist
+# Check that architecture.yaml v2 exists (single artifact since v2)
 [ -f "$MEMORY/architecture.yaml" ] || exit 1
-[ -f "$MEMORY/concepts.md" ] || exit 1
-[ -f "$MEMORY/dependencies.md" ] || exit 1
 
 # Build list of source directories that exist in the project
 SRC_DIRS=()
