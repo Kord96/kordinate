@@ -113,25 +113,35 @@ For rigorous A/B testing between two skill versions:
 
 ## Subcommand: agent
 
-Improve-loop on all of an agent's skills.
+Run the full improve loop on an agent: portfolio review, per-skill iteration with real-repo testing, and memory persistence. The agent boots with its own domain knowledge and evaluates whether its skills serve its identity.
 
 ### Procedure
 
 1. **Discover skills** — find all SKILL.md files under the agent's skills directory.
-2. **For each skill**, run the full `skill` subcommand procedure (eval + iterate).
-3. **Report** — aggregate results across all skills for the agent.
+2. **Resolve identity** — locate the agent's IDENTITY.md.
+3. **Spawn improve loop** — spawn a subagent using the prompt in [agents/improve-loop.md](agents/improve-loop.md) with `$SKILL_PATHS`, `$IDENTITY_PATH`, `$MAX_ITERATIONS`, and `$DATA_DIR` (`/data/improve`). The agent brings its own domain expertise, memories, and identity awareness.
+4. **The agent executes three phases**:
+   - **Phase 1 — Portfolio Review**: loads identity, inventories skills, launches background web research and Gemini peer review, analyzes alignment/gaps/splits/merges/staleness/resources, clones test repos, incorporates external input, classifies findings as immediate or proposed.
+   - **Phase 2 — Per-Skill Iteration**: for each skill, tests against cloned repos, reviews against quality criteria plus portfolio findings, applies structural fixes, checks for oscillation.
+   - **Phase 3 — Sleep**: updates the repo database at `$DATA_DIR/repo-database.json`, persists portfolio findings and domain insights to memory via `/kord remember`, finalizes the manifest.
+5. **Report** — the agent returns a structured summary covering portfolio findings, test repos used, per-skill iteration results, and what was persisted.
+
+### Progress Tracking
+
+The agent writes a manifest to `$DATA_DIR/<agent>/manifest.json` that survives context compaction. If the main agent loses track after compaction, read the manifest to recover state.
 
 ---
 
 ## Subcommand: all
 
-Improve-loop across all agents. Spawns each team agent to improve its own skills.
+Improve-loop across all agents. Spawns each team agent to improve its own skills portfolio.
 
 ### Procedure
 
-1. **Discover agents** — find all agents with skills directories.
-2. **Spawn per-agent improve loops** — for each agent, spawn a subagent using the prompt in [agents/improve-loop.md](agents/improve-loop.md). Each agent brings its own domain expertise and memories.
-3. **Collect results** — aggregate summaries from all agents.
+1. **Discover agents** — find all agents with skills directories and IDENTITY.md files.
+2. **Spawn per-agent improve loops** — for each agent, spawn a subagent using the prompt in [agents/improve-loop.md](agents/improve-loop.md). Each agent boots with its domain expertise and memories, then runs the full 3-phase loop (portfolio review → per-skill iteration → sleep). Limit concurrency to 2 agents at a time.
+3. **Monitor via manifests** — each agent writes progress to `$DATA_DIR/<agent>/manifest.json`. After context compaction, read these manifests to recover the state of all running agents.
+4. **Collect results** — aggregate summaries from all agents. Highlight cross-agent findings (misplacements, overlapping skills between agents, shared resource gaps).
 
 ---
 
