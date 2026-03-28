@@ -2,8 +2,9 @@
 // Kord — HTTP-inspired route protocol server for agent orchestration.
 //
 // Registers capability-based MCP tools from agent routes.yaml files.
-// Routes requests to the right agent by loading its identity and memory,
-// invoking Claude Code as that agent via --print, and returning the response.
+// Routes requests to the right agent. Two spawn modes:
+//   lightweight (--print): fast, single-turn, no tool access — for skill routes and cache reviews
+//   full (-p + worktree): isolated worktree, full tool access, merge on exit — for analysis routes
 //
 // Routes are declared per agent in routes.yaml. Each route becomes
 // an MCP tool with a capability-based name (no agent names visible).
@@ -149,69 +150,290 @@ function loadSystemPrompt(agent) {
   return parts.join('\n\n');
 }
 
-async function invokeAgent(agent, prompt) {
-  log(`INVOKE ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
+// ─── Worktree lifecycle ───
+
+function createWorktree(requestId) {
+  const wtPath = join(REPO_ROOT, '.worktrees', requestId);
+  const branch = `session/${requestId}`;
+  if (existsSync(wtPath)) return wtPath; // reuse
+  try {
+    execSync(`git worktree add "${wtPath}" -b "${branch}"`, {
+      cwd: REPO_ROOT, timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    mkdirSync(join(wtPath, '.claude', 'agent-state'), { recursive: true });
+  } catch (e) {
+    log(`Worktree create failed: ${e.message}`);
+    return null;
+  }
+  return wtPath;
+}
+
+function createKordWorktree(requestId) {
+  const wtPath = join(KORDINATE_HOME, '.worktrees', requestId);
+  const branch = `kord/${requestId}`;
+  if (existsSync(wtPath)) return wtPath;
+  try {
+    // Check if KORDINATE_HOME is a git repo
+    execSync(`git -C "${KORDINATE_HOME}" rev-parse --git-dir`, {
+      timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    execSync(`git -C "${KORDINATE_HOME}" worktree add "${wtPath}" -b "${branch}" main`, {
+      timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch {
+    return null; // not a git repo or failed — skip kord worktree
+  }
+  return wtPath;
+}
+
+function cleanupWorktree(requestId) {
+  const wtPath = join(REPO_ROOT, '.worktrees', requestId);
+  const branch = `session/${requestId}`;
+  if (!existsSync(wtPath)) return;
+
+  try {
+    // Commit any uncommitted work
+    const dirty = execSync(`git -C "${wtPath}" status --porcelain`, {
+      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
+    }).toString().trim();
+    if (dirty) {
+      execSync(`git -C "${wtPath}" add -A && git -C "${wtPath}" commit -m "kord: ${requestId} exit"`, {
+        timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'], shell: true,
+      });
+    }
+
+    // Check if branch has changes beyond main
+    const commits = execSync(`git -C "${REPO_ROOT}" log main.."${branch}" --oneline`, {
+      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
+    }).toString().trim();
+
+    if (!commits) {
+      // No changes — clean up
+      execSync(`git -C "${REPO_ROOT}" worktree remove "${wtPath}"`, {
+        timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      execSync(`git -C "${REPO_ROOT}" branch -d "${branch}"`, {
+        timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      log(`WORKTREE ${requestId}: cleaned up (no changes)`);
+    } else {
+      // Has changes — try fast-forward merge to main
+      try {
+        execSync(`git -C "${REPO_ROOT}" merge "${branch}" --ff-only`, {
+          timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        execSync(`git -C "${REPO_ROOT}" worktree remove "${wtPath}"`, {
+          timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        execSync(`git -C "${REPO_ROOT}" branch -d "${branch}"`, {
+          timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        log(`WORKTREE ${requestId}: merged to main and cleaned up`);
+      } catch {
+        log(`WORKTREE ${requestId}: preserved (merge needs manual resolution)`);
+      }
+    }
+  } catch (e) {
+    log(`WORKTREE ${requestId}: cleanup error — ${e.message}`);
+  }
+}
+
+function cleanupKordWorktree(requestId) {
+  const wtPath = join(KORDINATE_HOME, '.worktrees', requestId);
+  const branch = `kord/${requestId}`;
+  if (!existsSync(wtPath)) return;
+
+  try {
+    const dirty = execSync(`git -C "${wtPath}" status --porcelain`, {
+      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
+    }).toString().trim();
+    if (dirty) {
+      execSync(`git -C "${wtPath}" add -A && git -C "${wtPath}" commit -m "memory: ${requestId} exit"`, {
+        timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'], shell: true,
+      });
+    }
+
+    const commits = execSync(`git -C "${KORDINATE_HOME}" log main.."${branch}" --oneline`, {
+      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
+    }).toString().trim();
+
+    if (!commits) {
+      execSync(`git -C "${KORDINATE_HOME}" worktree remove "${wtPath}"`, {
+        timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      execSync(`git -C "${KORDINATE_HOME}" branch -d "${branch}"`, {
+        timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
+      });
+    } else {
+      try {
+        execSync(`git -C "${KORDINATE_HOME}" merge "${branch}" --ff-only`, {
+          timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        execSync(`git -C "${KORDINATE_HOME}" worktree remove "${wtPath}"`, {
+          timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        execSync(`git -C "${KORDINATE_HOME}" branch -d "${branch}"`, {
+          timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
+        });
+      } catch {
+        log(`KORD WORKTREE ${requestId}: preserved (merge needs resolution)`);
+      }
+    }
+  } catch (e) {
+    log(`KORD WORKTREE ${requestId}: cleanup error — ${e.message}`);
+  }
+}
+
+// ─── Agent invocation ───
+
+/** Spawn claude in a child process. Returns stdout. */
+function spawnClaude(args, cwd, env, timeoutMs = 900000) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('claude', args, {
+      cwd,
+      env: { ...process.env, ...env },
+      stdio: ['ignore', 'pipe', 'pipe'],
+      detached: true,
+    });
+
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (d) => { stdout += d; });
+    child.stderr.on('data', (d) => { stderr += d; });
+
+    const timer = setTimeout(() => {
+      child.kill('SIGTERM');
+      reject(new Error(`Timed out after ${timeoutMs / 1000}s`));
+    }, timeoutMs);
+
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        const err = new Error(`claude exited with code ${code}`);
+        err.stdout = stdout;
+        err.stderr = stderr;
+        reject(err);
+      }
+    });
+
+    child.on('error', (e) => {
+      clearTimeout(timer);
+      reject(e);
+    });
+
+    child.unref();
+  });
+}
+
+/**
+ * Lightweight invoke — --print mode, no worktree, no tool access.
+ * Used for: skill routes, cache reviews, simple queries.
+ */
+async function invokeLightweight(agent, prompt) {
+  log(`INVOKE-LIGHT ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
   const start = Date.now();
 
   regenerateMemory(agent);
   const systemPrompt = loadSystemPrompt(agent);
 
   const args = ['--print', '--dangerously-skip-permissions'];
-  if (systemPrompt) {
-    args.push('--system-prompt', systemPrompt);
-  }
+  if (systemPrompt) args.push('--system-prompt', systemPrompt);
   args.push(prompt);
 
   try {
-    const result = await new Promise((resolve, reject) => {
-      const child = spawn('claude', args, {
-        cwd: REPO_ROOT,
-        env: { ...process.env, HOME },
-        stdio: ['ignore', 'pipe', 'pipe'],
-        detached: true,
-      });
-
-      let stdout = '';
-      let stderr = '';
-      child.stdout.on('data', (d) => { stdout += d; });
-      child.stderr.on('data', (d) => { stderr += d; });
-
-      const timer = setTimeout(() => {
-        child.kill('SIGTERM');
-        reject(new Error('Timed out after 900s'));
-      }, 900000);
-
-      child.on('close', (code) => {
-        clearTimeout(timer);
-        if (code === 0) {
-          resolve({ stdout, stderr });
-        } else {
-          const err = new Error(`claude exited with code ${code}`);
-          err.stdout = stdout;
-          err.stderr = stderr;
-          reject(err);
-        }
-      });
-
-      child.on('error', (e) => {
-        clearTimeout(timer);
-        reject(e);
-      });
-
-      child.unref();
-    });
-
+    const result = await spawnClaude(args, REPO_ROOT, { HOME });
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-    log(`INVOKE ${agent}: done in ${elapsed}s, response ${result.stdout.length} chars`);
-    if (result.stderr) log(`INVOKE ${agent}: stderr: ${result.stderr.substring(0, 200)}`);
+    log(`INVOKE-LIGHT ${agent}: done in ${elapsed}s, ${result.stdout.length} chars`);
+    if (result.stderr) log(`INVOKE-LIGHT ${agent}: stderr: ${result.stderr.substring(0, 200)}`);
     return result.stdout.trim();
   } catch (e) {
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-    log(`INVOKE ${agent}: FAILED after ${elapsed}s — ${e.message}`);
-    if (e.stderr) log(`INVOKE ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
-    if (e.stdout) log(`INVOKE ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
+    log(`INVOKE-LIGHT ${agent}: FAILED after ${elapsed}s — ${e.message}`);
+    if (e.stderr) log(`INVOKE-LIGHT ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
+    if (e.stdout) log(`INVOKE-LIGHT ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
     throw e;
   }
+}
+
+/**
+ * Full invoke — -p mode with worktree isolation, full tool access, merge on exit.
+ * Used for: analysis routes, heavy POST routes, delegate.
+ */
+async function invokeFull(agent, prompt) {
+  const requestId = `kord-${agent}-${Date.now()}`;
+  log(`INVOKE-FULL ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
+  const start = Date.now();
+
+  // Create worktrees
+  const wtPath = createWorktree(requestId);
+  const kordWtPath = createKordWorktree(requestId);
+  const agentCwd = wtPath || REPO_ROOT;
+  const agentKordHome = kordWtPath || KORDINATE_HOME;
+
+  regenerateMemory(agent);
+  const systemPrompt = loadSystemPrompt(agent);
+
+  const args = ['-p', '--dangerously-skip-permissions'];
+  if (systemPrompt) args.push('--system-prompt', systemPrompt);
+  args.push(prompt);
+
+  try {
+    const result = await spawnClaude(args, agentCwd, {
+      HOME,
+      KORDINATE_HOME: agentKordHome,
+    });
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    log(`INVOKE-FULL ${agent}: done in ${elapsed}s, ${result.stdout.length} chars`);
+    if (result.stderr) log(`INVOKE-FULL ${agent}: stderr: ${result.stderr.substring(0, 200)}`);
+    return result.stdout.trim();
+  } catch (e) {
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    log(`INVOKE-FULL ${agent}: FAILED after ${elapsed}s — ${e.message}`);
+    if (e.stderr) log(`INVOKE-FULL ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
+    if (e.stdout) log(`INVOKE-FULL ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
+    throw e;
+  } finally {
+    // Cleanup worktrees — merge or preserve
+    if (wtPath) cleanupWorktree(requestId);
+    if (kordWtPath) cleanupKordWorktree(requestId);
+  }
+}
+
+/**
+ * In-place invoke — -p mode, no worktree, full tool access.
+ * Used for: skill routes that need to read/write files but make small targeted changes.
+ */
+async function invokeInPlace(agent, prompt) {
+  log(`INVOKE-INPLACE ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
+  const start = Date.now();
+
+  regenerateMemory(agent);
+  const systemPrompt = loadSystemPrompt(agent);
+
+  const args = ['-p', '--dangerously-skip-permissions'];
+  if (systemPrompt) args.push('--system-prompt', systemPrompt);
+  args.push(prompt);
+
+  try {
+    const result = await spawnClaude(args, REPO_ROOT, { HOME });
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    log(`INVOKE-INPLACE ${agent}: done in ${elapsed}s, ${result.stdout.length} chars`);
+    if (result.stderr) log(`INVOKE-INPLACE ${agent}: stderr: ${result.stderr.substring(0, 200)}`);
+    return result.stdout.trim();
+  } catch (e) {
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    log(`INVOKE-INPLACE ${agent}: FAILED after ${elapsed}s — ${e.message}`);
+    if (e.stderr) log(`INVOKE-INPLACE ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
+    if (e.stdout) log(`INVOKE-INPLACE ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
+    throw e;
+  }
+}
+
+/** Backward-compatible wrapper — defaults to lightweight. */
+async function invokeAgent(agent, prompt) {
+  return invokeLightweight(agent, prompt);
 }
 
 // ─── Cache helpers ───
@@ -470,7 +692,7 @@ async function handleRoute(route, message, ifNoneMatch) {
   activeRequests.set(requestId, { route: route.name, provider: route.provider, startedAt: new Date().toISOString() });
 
   try {
-    // Non-cached routes: always spawn agent
+    // Non-cached routes
     if (!route.cache) {
       const prompt = route.guidelines
         ? `${route.guidelines}\n\n---\n\n${message}`
@@ -478,7 +700,11 @@ async function handleRoute(route, message, ifNoneMatch) {
           ? `Run the /${route.skill} skill. Input: ${message}`
           : message;
 
-      const response = await invokeAgent(route.provider, prompt);
+      // Skill routes run in the main tree (need tool access but changes are small/targeted)
+      // Guideline routes get full worktree isolation (heavy analysis, may modify many files)
+      const response = route.skill
+        ? await invokeInPlace(route.provider, prompt)
+        : await invokeFull(route.provider, prompt);
       return { text: response, etag: computeETag(response), status: 200 };
     }
 
@@ -524,7 +750,11 @@ async function handleRoute(route, message, ifNoneMatch) {
         ? `Run the /${route.skill} skill. Input: ${message}`
         : message;
 
-    const response = await invokeAgent(route.provider, prompt);
+    // Cache regeneration with guidelines = full mode (worktree isolation)
+    // Cache regeneration with skill = in-place (tool access, no worktree)
+    const response = route.skill
+      ? await invokeInPlace(route.provider, prompt)
+      : await invokeFull(route.provider, prompt);
 
     // Cache the result
     try {
@@ -563,7 +793,7 @@ function registerTools(server) {
       const requestId = `${agent}-${Date.now()}`;
       activeRequests.set(requestId, { agent, startedAt: new Date().toISOString() });
       try {
-        const response = await invokeAgent(agent, prompt);
+        const response = await invokeFull(agent, prompt);
         return { content: [{ type: 'text', text: response }] };
       } catch (e) {
         log('TOOL delegate error', { agent, error: e.message });
