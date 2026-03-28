@@ -64,7 +64,26 @@ Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
 
 This installs:
 - **Unified guard** (`hooks/guard.sh`) on Write|Edit|Bash and mcp\_\_grafana — enforces scribe, deployer, sauron, and merge rules
-- **Subagent invocation gate** (`hooks/subagent-invocation-gate.sh`) on Agent — blocks direct spawning of kordinate agents, redirects to `/kord`
+- **Subagent invocation gate** (`hooks/subagent-invocation-gate.sh`) on Agent — blocks direct spawning of kordinate agents, redirects to kord capability tools
+
+### MCP Servers
+
+Ensure `~/.claude.json` has the kord MCP server configured under `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "kord": {
+      "type": "http",
+      "url": "http://kord.master.svc.cluster.local:3100/mcp"
+    }
+  }
+}
+```
+
+Read `~/.claude.json` first (it contains many other fields — only add/update the `mcpServers.kord` entry). If running off-cluster, adjust the URL to the Tailscale endpoint.
+
+This gives all sessions access to the kord capability tools (e.g., `analyze_architecture`, `write_memory`, `delegate`).
 
 ### KORD.md
 
@@ -72,4 +91,4 @@ Run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild 
 
 ## Report
 
-List what was linked: agents, skills, kords, CLAUDE.md, guard status.
+List what was linked: agents, skills, routes, CLAUDE.md, MCP servers, guard status.

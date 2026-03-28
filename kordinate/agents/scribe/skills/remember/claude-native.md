@@ -15,7 +15,9 @@ Level 3 resource for the remember skill.
 | `~/.claude/projects/<project>/memory/*.md` | Main session topic files — read on-demand | Claude (auto) |
 | `~/.claude/skills/<name>/SKILL.md` | Skills — discovered at startup, loaded when triggered | Developer / Scribe |
 | `~/.claude/settings.json` | Permissions, hooks, env vars | Developer |
-| `~/.claude/.mcp.json` | MCP server configuration | Developer |
+| `~/.claude.json` | Global user config — MCP servers (user scope), preferences | Developer |
+| `~/.claude/.mcp.json` | Project-scope MCP server configuration (deprecated — use `~/.claude.json` for global) | Developer |
+| `.mcp.json` | Project-scope MCP servers — checked into repo | Developer |
 | `~/.claude/rules/*.md` | Path-scoped rules — load when matching file globs | Developer |
 
 ## Key Behaviors
