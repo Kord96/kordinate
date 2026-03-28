@@ -26,11 +26,12 @@ How to identify this pattern in code.
 - RabbitMQ RPC: `reply_to` and `correlation_id` properties on AMQP messages
 - Timeout configuration for waiting on the reply
 - WebSocket/protocol request-reply: unique `messageId` sent with request, callbacks stored in a map (`requests.set(messageId, [resolve, reject])`), matched to incoming response by same ID
-- HTTP request-response cycle: server receives request, processes action, sends response back to same connection (basic but ubiquitous form)
 - OCPP/custom protocol: message array with `[messageType, messageId, action, payload]` where the ID correlates request to response
 - Java: `CompletableFuture`-based request with pending map keyed by request ID, completed when matching response arrives
 - Java: Undertow/Netty request-response exchange objects (`HttpServerExchange`, `ChannelHandlerContext.writeAndFlush`)
 - OPC UA: `RequestHeader`/`ResponseHeader` with matching request handles across transport
+
+**Not this pattern:** Standard HTTP request-response (browser sends GET, server returns HTML) is not request-reply. This pattern specifically addresses synchronous request-response semantics layered over an asynchronous transport (WebSocket, message broker, custom protocol) using correlation IDs.
 
 ### Confidence
 
