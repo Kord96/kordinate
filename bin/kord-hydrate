@@ -78,4 +78,11 @@ mcp['mcpServers']['beorn'] = {
 print(json.dumps(mcp, indent=2))
 " > "$OUTPUT_DIR/mcp.json"
 
-echo "Generated mcp.json at $OUTPUT_DIR/mcp.json"
+# Link into Claude Code's config directory so it picks up the generated config
+CLAUDE_MCP="$HOME/.claude/.mcp.json"
+if [ -f "$CLAUDE_MCP" ] && [ ! -L "$CLAUDE_MCP" ]; then
+  rm -f "$CLAUDE_MCP"
+fi
+ln -sfn "$OUTPUT_DIR/mcp.json" "$CLAUDE_MCP"
+
+echo "Generated mcp.json at $OUTPUT_DIR/mcp.json (linked to $CLAUDE_MCP)"
