@@ -76,7 +76,7 @@ Complete inventory of everything in kordinate — implemented and planned.
 
 ## Kubernetes Manifests
 
-Live at `agents/deployer/skills/infra/manifests/` (namespace-prefixed flat files). Images at `agents/deployer/skills/infra/images/`, dashboards at `agents/deployer/skills/infra/dashboards/`, topology at `agents/deployer/skills/infra/topology.yaml`. Kustomize overlays at `profile/overlays/<cluster>/`.
+Live at `agents/charon/skills/infra/manifests/` (namespace-prefixed flat files). Images at `agents/charon/skills/infra/images/`, dashboards at `agents/charon/skills/infra/dashboards/`, topology at `agents/charon/skills/infra/topology.yaml`. Kustomize overlays at `profile/overlays/<cluster>/`.
 
 ### Gateway Namespace
 

@@ -2,7 +2,7 @@
 
 Level 3 resource for the remember skill. Defines the expected format for Designer concept files.
 
-Use this template when writing a new concept file for the Designer agent at `agents/designer/memory/concepts/<concept-name>/pattern.md` (canonical path).
+Use this template when writing a new concept file for the Designer agent at `agents/augur/memory/concepts/<concept-name>/pattern.md` (canonical path).
 
 ## Frontmatter
 
@@ -35,7 +35,7 @@ abstraction: [<abstraction-1>, <abstraction-2>]
 | `observable` | no | Whether this concept has monitoring/observability signals |
 | `distributed` | no | Whether this concept involves distributed systems |
 | `graphable` | yes | `true` if the concept can be meaningfully represented as a diagram |
-| `abstraction` | yes | List of abstraction levels this concept belongs to. Valid values: architectural, design, data, integration, messaging, infrastructure, resilience, concurrency, security, api, lifecycle, deployment, observability, testing, frontend, error-handling, realtime, ml, compiler. See `agents/designer/memory/abstractions.md` for descriptions. |
+| `abstraction` | yes | List of abstraction levels this concept belongs to. Valid values: architectural, design, data, integration, messaging, infrastructure, resilience, concurrency, security, api, lifecycle, deployment, observability, testing, frontend, error-handling, realtime, ml, compiler. See `agents/augur/memory/abstractions.md` for descriptions. |
 
 ## Body Structure
 

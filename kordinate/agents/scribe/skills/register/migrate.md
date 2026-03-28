@@ -96,7 +96,7 @@ For modified files, list them so the user can review:
 
 ```
 Modified files (your edits preserved, flagged for review):
-  agents/designer/memory/scratchpad.md
+  agents/augur/memory/scratchpad.md
   agents/main/memory/scratchpad.md
   shared/credentials-protocol.md
 ```

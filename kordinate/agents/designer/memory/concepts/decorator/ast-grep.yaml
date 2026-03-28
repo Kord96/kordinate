@@ -1,4 +1,0 @@
-id: python-decorator
-language: Python
-rule:
-  kind: decorated_definition

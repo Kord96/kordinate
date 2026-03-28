@@ -1,9 +1,0 @@
-id: fastapi-depends
-language: Python
-rule:
-  pattern: 'Depends($$$ARGS)'
----
-id: inject-decorator
-language: Python
-rule:
-  pattern: '@inject'

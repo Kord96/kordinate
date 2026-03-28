@@ -5,7 +5,7 @@ Level 3 resource for the register skill. Define a new route — a capability exp
 ## Usage
 
 ```
-/register route deployer cluster-health "pre-deployment health checks" --skill infra --cache inputs=agents/deployer/memory/infra.md
+/register route deployer cluster-health "pre-deployment health checks" --skill infra --cache inputs=agents/charon/memory/infra.md
 /register route scribe write-memory "persist agent memories" --skill remember
 ```
 

@@ -24,10 +24,10 @@ flowchart LR
 | **agents/index.md** | `agents/*/IDENTITY.md` |
 | **agents/scribe.md** | `agents/scribe/IDENTITY.md`, `agents/scribe/skills/remember/SKILL.md` |
 | **agents/beorn.md** | `lib/mcp-agent-server/server.js` |
-| **infra/infrastructure.md** | `agents/deployer/IDENTITY.md`, `agents/deployer/skills/infra/manifests/` |
+| **infra/infrastructure.md** | `agents/charon/IDENTITY.md`, `agents/charon/skills/infra/manifests/` |
 | **infra/monitoring.md** | `agents/sauron/IDENTITY.md` |
-| **reference/patterns/** | `agents/designer/memory/patterns/` |
-| **reference/libraries/** | `agents/designer/memory/libraries/` |
+| **reference/patterns/** | `agents/augur/memory/patterns/` |
+| **reference/libraries/** | `agents/augur/memory/libraries/` |
 
 ## Ownership
 

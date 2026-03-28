@@ -1,0 +1,31 @@
+routes:
+  - name: get_cluster_topology
+    method: GET
+    description: Cluster topology, service endpoints, and networking — namespaces, services, ports, ingress routes
+    guidelines: |
+      Return the current cluster layout: namespaces, services, ports, and networking topology.
+      Draw from manifests and overlays, not live state. Keep under 50 lines.
+    cache:
+      max_age: 5d
+      inputs:
+        - agents/charon/skills/infra/manifests/
+        - agents/charon/skills/infra/topology.yaml
+        - profile/config.yaml
+        - profile/overlays/
+      threshold: 0.05
+      stale_threshold: 0.25
+
+  - name: get_deployment_status
+    method: GET
+    description: Live deployment status — pods, versions, health. Always queries live state, never cached.
+    guidelines: |
+      Return the current live state of the cluster: running pods, image versions,
+      resource usage, and health. This is always a live query — never return stale data.
+      Keep under 50 lines.
+
+  - name: setup_secrets
+    method: POST
+    description: Create Kubernetes secrets from pass store for a specific cluster
+    guidelines: |
+      Accept a cluster name. Read pass store entries and create corresponding
+      Kubernetes Secrets. Report what was created or updated.

@@ -345,7 +345,7 @@ if [ "${1:-}" = "--runtime" ]; then
     runtime_test \
       "Deployer reads memory" \
       "deployer" \
-      "List the filenames in $KORDINATE_HOME/agents/deployer/memory/. Just filenames, one per line." \
+      "List the filenames in $KORDINATE_HOME/agents/charon/memory/. Just filenames, one per line." \
       "infra.md"
 
     # Route cache directories

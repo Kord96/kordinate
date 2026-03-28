@@ -41,12 +41,12 @@ Example:
 ```markdown
 ## Agents
 
-- `agents/deployer/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded: deployer, template: identity)
-- `agents/deployer/memory/cluster-topology.md` — Current cluster layout and service endpoints
+- `agents/charon/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded: deployer, template: identity)
+- `agents/charon/memory/cluster-topology.md` — Current cluster layout and service endpoints
 
 ## Routes
 
-- `agents/deployer/routes.yaml` — Route definitions for deployer agent (cluster-health, deploy-service)
+- `agents/charon/routes.yaml` — Route definitions for deployer agent (cluster-health, deploy-service)
 - `agents/scribe/routes.yaml` — Route definitions for scribe agent (write-memory, register-agent)
 
 ## Team

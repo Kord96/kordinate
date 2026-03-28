@@ -60,7 +60,7 @@ Complement metrics with structured warning/error logs. Rate-limit to avoid storm
 
 ## Grafana Dashboard Provisioning
 
-Dashboards are stored as JSON in `agents/deployer/manifests/master/base/dashboards/` and provisioned via ConfigMaps:
+Dashboards are stored as JSON in `agents/charon/manifests/master/base/dashboards/` and provisioned via ConfigMaps:
 
 - `dashboards/cluster/` — per-cluster dashboards (loaded on all Grafana instances)
 - `dashboards/master/` — master-only dashboards (loaded on home Grafana only)

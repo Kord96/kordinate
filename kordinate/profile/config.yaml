@@ -19,10 +19,10 @@ clusters:
       - 10.0.0.2  # worker
     namespaces: [gateway, master, monitor]
     manifests:
-      gateway: agents/deployer/manifests/gateway
-      monitor: agents/deployer/manifests/monitor
-      master: agents/deployer/manifests/master
-      bootstrap: agents/deployer/manifests/bootstrap
+      gateway: agents/charon/manifests/gateway
+      monitor: agents/charon/manifests/monitor
+      master: agents/charon/manifests/master
+      bootstrap: agents/charon/manifests/bootstrap
     workloads: []
     services:
       postgres:

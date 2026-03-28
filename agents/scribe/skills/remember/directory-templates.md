@@ -6,7 +6,7 @@ When creating or validating a directory, check that all required files exist.
 
 ## Concept Directory
 
-Path: `agents/designer/memory/concepts/<concept-name>/` (canonical path)
+Path: `agents/augur/memory/concepts/<concept-name>/` (canonical path)
 
 | File | Required | Purpose |
 |------|----------|---------|

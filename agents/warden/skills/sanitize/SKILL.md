@@ -40,7 +40,7 @@ When sanitize is invoked on Kubernetes manifest files (`.yaml` in `manifests/`),
 
 ### Detection Rules
 
-Scan base manifests in `agents/deployer/skills/infra/manifests/` for:
+Scan base manifests in `agents/charon/skills/infra/manifests/` for:
 
 | Pattern | Severity | Action |
 |---------|----------|--------|
@@ -59,7 +59,7 @@ Scan base manifests in `agents/deployer/skills/infra/manifests/` for:
 
 ### Procedure for Manifest Validation
 
-1. Glob for `*.yaml` in `agents/deployer/skills/infra/manifests/`
+1. Glob for `*.yaml` in `agents/charon/skills/infra/manifests/`
 2. For each file, grep for domain patterns, IPs, and `.svc.cluster.local`
 3. Filter against the allowlist
 4. Cross-reference: if a value from `profile/config.yaml` (`network.*`, `clusters.*.services.*`) appears in a base manifest, flag it

@@ -26,7 +26,7 @@ Each kord specifies how the provider fulfills the request:
 ??? example "stateful — deployer-default"
 
     ```markdown
-    <!-- agents/deployer/kords/deployer-default/contract.md -->
+    <!-- agents/charon/kords/deployer-default/contract.md -->
     ---
     description: General deployment and cluster questions
     requester: any

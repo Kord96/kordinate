@@ -9,7 +9,7 @@ routes:
       max_age: 5d
       inputs:
         - agents/sauron/memory/
-        - agents/deployer/skills/infra/manifests/
+        - agents/charon/skills/infra/manifests/
       threshold: 0.05
       stale_threshold: 0.25
 

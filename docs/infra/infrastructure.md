@@ -46,8 +46,8 @@ Owns all infrastructure operations — the only agent authorized to write to clu
         gateway_lan_ip: 10.0.0.1
         nodes: [10.0.0.1, 10.0.0.2]
         namespaces: [gateway, dev, test, prod, monitor]
-        manifests: agents/deployer/skills/infra/manifests/
-        topology: agents/deployer/skills/infra/topology.yaml
+        manifests: agents/charon/skills/infra/manifests/
+        topology: agents/charon/skills/infra/topology.yaml
         overlays: profile/overlays/<cluster>/
         services:
           postgres: { port: 30632, user: myuser, database: mydb }

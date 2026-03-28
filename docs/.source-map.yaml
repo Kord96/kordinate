@@ -26,14 +26,14 @@ agents/beorn.md:
   - kordinate/lib/mcp-agent-server/server.js
 
 infra/infrastructure.md:
-  - kordinate/agents/deployer/IDENTITY.md
-  - kordinate/agents/deployer/skills/infra/manifests/
+  - kordinate/agents/charon/IDENTITY.md
+  - kordinate/agents/charon/skills/infra/manifests/
 
 infra/monitoring.md:
   - kordinate/agents/sauron/IDENTITY.md
 
 reference/patterns/index.md:
-  - kordinate/agents/designer/memory/patterns.md
+  - kordinate/agents/augur/memory/patterns.md
 
 reference/libraries/index.md:
-  - kordinate/agents/designer/memory/libraries.md
+  - kordinate/agents/augur/memory/libraries.md
