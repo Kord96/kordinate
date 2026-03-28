@@ -11,4 +11,7 @@ questions:
   - q: "Is Java ObjectInputStream.readObject() or PHP unserialize() called on user-supplied data?"
     weight: 2
     signals: ["readObject on network stream", "unserialize user data", "no ObjectInputFilter"]
-threshold: 7
+  - q: "Does the codebase use pickle as a default serializer for job queues, message bodies, or cache values, even if a custom serializer can be configured?"
+    weight: 2
+    signals: ["pickle.dumps/pickle.loads as default serializer", "Serializer type alias defaulting to pickle", "disable_insecure_serializers function present"]
+threshold: 6

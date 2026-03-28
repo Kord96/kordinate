@@ -11,4 +11,7 @@ questions:
   - q: "Are liveness and readiness probes distinct in behavior and purpose?"
     weight: 1
     signals: ["liveness checks process alive", "readiness checks dependencies available", "separate probe logic for live vs ready"]
-threshold: 6
+  - q: "Is there a Process or Application class with explicit initialize/start/stop/restart methods that control the ordered lifecycle of all registered subsystems (initializers, servers, workers)?"
+    weight: 3
+    signals: ["Process.initialize() then start() then stop()", "ordered startup of initializers then servers", "reverse-order shutdown draining connections"]
+threshold: 5

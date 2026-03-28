@@ -23,6 +23,12 @@ How to identify this pattern in code.
 - Factory selection based on configuration or runtime environment
 - Concrete factories implementing a shared factory interface with consistent product families
 
+### Negative signals (not sufficient for detection)
+
+- Java `abstract class *Factory` that is simply a base class for factory methods (single product type) is factory-method, not abstract-factory
+- The key distinction: abstract factory produces a *family* of related objects through multiple `create*()` methods, not just one product type
+- A class named `AbstractFactory` used as a simple base factory is not sufficient -- look for multiple `create*()` methods producing different but related types
+
 ### Confidence
 
 - **high** -- Factory interface with multiple `create*()` methods, concrete factory implementations producing families of related objects, factory selected at configuration time

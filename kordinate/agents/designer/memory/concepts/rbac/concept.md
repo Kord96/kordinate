@@ -22,6 +22,9 @@ How to identify this pattern in code.
 - Role-permission mapping tables in database schemas or config files
 - K8s RBAC: `Role`, `ClusterRole`, `RoleBinding`, `ClusterRoleBinding` manifests
 - User-role assignment logic or admin interfaces for role management
+- Java: `@RolesAllowed("admin")`, `@Secured("ROLE_USER")`, Spring Security `hasRole()`, `hasAuthority()`
+- Java: Jakarta Security `@DeclareRoles`, custom `Role` entity with user-role mapping table
+- Java: Quarkus `@RolesAllowed`, Undertow `SecurityContext.isUserInRole()`
 
 ### Confidence
 

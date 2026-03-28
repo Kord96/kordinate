@@ -25,6 +25,12 @@ How to identify this pattern in code.
 - Content negotiation middleware or request interceptors
 - `Vary: Accept` response header for cache correctness
 
+### Negative signals (not sufficient for detection)
+
+- Simply referencing `MediaType.APPLICATION_JSON` or `application/json` in API responses is standard REST formatting, not content negotiation
+- A single-format API that sets `Content-Type: application/json` on all responses does not perform negotiation
+- Import of `MediaType` class alone without multi-format dispatch or Accept header handling is not negotiation
+
 ### Confidence
 
 - **high** -- Explicit `Accept`/`Content-Type` handling with multiple format serializers and `406`/`415` responses

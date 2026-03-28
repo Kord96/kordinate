@@ -17,7 +17,10 @@ How to identify this pattern in code.
 ### Signatures
 
 - `@dataclass(frozen=True)` or `@attr.s(frozen=True)` in Python
-- `record` types in Java 16+ or C#
+- `record` types in Java 16+ or C# -- look for `public record ClassName(` declarations
+- Java: Lombok `@Value` annotation (creates immutable class with equals/hashCode by value)
+- Java: classes with `private final` fields only, `equals()`/`hashCode()` based on all fields, no setters
+- Kotlin: `data class` declarations (automatic value semantics)
 - `__eq__` and `__hash__` implemented based on all fields, not identity
 - No setter methods or mutating operations on the object
 - `frozenset` or `tuple` used instead of mutable collections

@@ -24,6 +24,8 @@ How to identify this anti-pattern in code.
 - Java `ObjectInputStream.readObject()` on network streams
 - `jsonpickle.decode()` on external input
 - `__reduce__` or `__setstate__` methods in classes used with pickle
+- Default serializer using `pickle.dumps`/`pickle.loads` for job payloads or message bodies (e.g., task queues defaulting to pickle when no explicit serializer configured)
+- `disable_insecure_serializers()` or `enable_insecure_serializers()` functions indicating the codebase is aware of the risk but pickle may still be available
 
 ### Confidence
 

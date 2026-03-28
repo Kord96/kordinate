@@ -23,6 +23,10 @@ How to identify this pattern in code.
 - Feature toggles and feature flag systems (`LaunchDarkly`, `Unleash`, custom flags)
 - Hierarchical config with overrides (default -> environment -> instance)
 - Config validation at startup with fail-fast on missing required values
+- Java: Quarkus `@ConfigMapping`, `@ConfigProperty`, `SmallRye Config` with profile support
+- Java: Micronaut `@ConfigurationProperties`, `@Property`
+- Java: Dropwizard `Configuration` class hierarchy with YAML loading and validation
+- Java: Custom config loaders (e.g., light-4j `Config.getInstance().getJsonMapConfig()`)
 
 ### Negative signals (not sufficient for detection)
 

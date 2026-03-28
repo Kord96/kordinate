@@ -28,6 +28,11 @@ How to identify this pattern in code.
 - Go: `func(http.Handler) http.Handler` wrapping pattern, gorilla/mux `MiddlewareFunc`, chi middleware chain
 - Go: interceptor/handler interfaces where each implementation wraps an inner handler, adding cross-cutting behavior (gRPC interceptors, custom interceptor chains)
 - Pipeline ordering: middleware registered in sequence with explicit ordering dependency
+- Java: `jakarta.servlet.Filter`/`javax.servlet.Filter` implementing `doFilter(request, response, chain)` with `chain.doFilter()` forwarding
+- Java: Undertow `HttpHandler` wrapping pattern, light-4j `MiddlewareHandler` interface extending `HttpHandler`
+- Java: Spring `HandlerInterceptor` with `preHandle`/`postHandle`/`afterCompletion`
+- Java: JAX-RS `ContainerRequestFilter`/`ContainerResponseFilter`
+- Java: Netty `ChannelHandler` pipeline with `ChannelPipeline.addLast()`
 
 **Not middleware:** Framework lifecycle hooks like Flask's `before_request`/`after_request`, Rails `before_action`/`after_action`, or Spring `@PostConstruct` are framework hooks, not the middleware pattern. Middleware requires an explicit composable pipeline with `next()` forwarding, not just hook registration on a framework lifecycle.
 

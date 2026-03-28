@@ -11,4 +11,7 @@ questions:
   - q: "Is the invoker decoupled from the concrete command types it triggers?"
     weight: 1
     signals: ["invoker holds abstract command", "command interface decoupling", "polymorphic dispatch of commands"]
-threshold: 6
+  - q: "Are operations encapsulated as data objects (handlers, effects, actions) bundling a function with its metadata (timeout, retries, filters) that are registered in a collection and invoked by a separate executor?"
+    weight: 3
+    signals: ["Handler dataclass with fn + timeout + retries fields", "Effect object with .done/.fail lifecycle events", "incomingRequestHandlers map dispatching commands to methods"]
+threshold: 5

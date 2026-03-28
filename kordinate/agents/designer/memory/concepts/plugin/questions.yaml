@@ -11,4 +11,7 @@ questions:
   - q: "Does the core application function correctly without any plugins loaded?"
     weight: 2
     signals: ["graceful degradation without plugins", "optional plugin hooks", "core runs standalone"]
-threshold: 6
+  - q: "Does the framework provide use_*() or register() methods that plug capability modules (CORS, auth, OpenAPI) into the core without modifying it?"
+    weight: 2
+    signals: ["app.use_cors() or app.use_authentication() adding capabilities", "app.assistant() plugging behavioral module", "config.plugins array loading from plugin directories"]
+threshold: 5

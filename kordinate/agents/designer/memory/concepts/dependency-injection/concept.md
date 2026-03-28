@@ -21,6 +21,8 @@ How to identify this pattern in code.
 - DI container or service registry: `Container`, `Injector`, `ServiceProvider`, `Registry`
 - Python: `dependency-injector` library (`providers`, `containers`), `injector` library, `fastapi.Depends`
 - Java/Kotlin: Spring `@Autowired`/`@Component`, Dagger `@Inject`/`@Module`, Guice
+- Java: Jakarta/javax `@Inject` (CDI), Quarkus `@ApplicationScoped`/`@RequestScoped`, Micronaut `@Singleton`
+- Java: HK2 `@Service`, Weld CDI, constructor injection with `final` fields and no `@Autowired` (implicit in Spring Boot)
 - JS/TS: Angular `@Injectable`, NestJS `@Inject`, InversifyJS, tsyringe
 - Go: `func New*()` constructors accepting interface parameters (constructor injection). Go rarely uses DI frameworks; `wire` (Google Wire) is the exception. The dominant Go idiom is explicit constructor injection with no container.
 

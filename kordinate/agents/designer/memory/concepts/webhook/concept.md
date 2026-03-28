@@ -25,6 +25,8 @@ How to identify this pattern in code.
 - `webhook_url` or `callback_url` in configuration or database models
 - Event delivery queue backing webhook dispatch
 - Signature verification on the receiving side (`hmac.compare_digest`)
+- Incoming webhook receiver: HTTP endpoint that accepts POST requests from external systems (e.g., Slack, GitHub, Stripe) with request signature verification (`verifyRequestSignature`, `X-Slack-Signature`)
+- Receiver classes that handle incoming webhook events from platform APIs: `HTTPReceiver`, `ExpressReceiver` with signature verification middleware
 
 ### Confidence
 

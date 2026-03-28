@@ -25,6 +25,12 @@ How to identify this pattern in code.
 - NATS request-reply: `nc.request(subject, payload, timeout)`
 - RabbitMQ RPC: `reply_to` and `correlation_id` properties on AMQP messages
 - Timeout configuration for waiting on the reply
+- WebSocket/protocol request-reply: unique `messageId` sent with request, callbacks stored in a map (`requests.set(messageId, [resolve, reject])`), matched to incoming response by same ID
+- HTTP request-response cycle: server receives request, processes action, sends response back to same connection (basic but ubiquitous form)
+- OCPP/custom protocol: message array with `[messageType, messageId, action, payload]` where the ID correlates request to response
+- Java: `CompletableFuture`-based request with pending map keyed by request ID, completed when matching response arrives
+- Java: Undertow/Netty request-response exchange objects (`HttpServerExchange`, `ChannelHandlerContext.writeAndFlush`)
+- OPC UA: `RequestHeader`/`ResponseHeader` with matching request handles across transport
 
 ### Confidence
 

@@ -21,6 +21,9 @@ How to identify this pattern in code.
 - Models managing data access and business logic, no rendering or request handling
 - Views/templates rendering output from model data, no business logic
 - Frameworks: Django (MTV variant), Rails, Spring MVC, ASP.NET MVC, Laravel
+- Java: `@Controller` or `@RestController` annotations with `@RequestMapping`, model+view separation
+- Java: Dropwizard/Quarkus resource classes (`*Resource.java`) paired with `model/` or `entity/` packages and template rendering
+- Java: JAX-RS resource classes serving as controllers when paired with separate model and view layers
 
 ### Confidence
 

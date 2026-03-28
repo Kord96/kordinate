@@ -26,6 +26,12 @@ How to identify this pattern in code.
 - Helper functions: `pagination_builder`, `paginate()`, `build_pagination`, `get_paginated`
 - Framework pagination: DRF `PageNumberPagination`, Flask `pagination_builder`, Spring `Pageable`/`Page<T>`
 
+### Negative signals (not sufficient for detection)
+
+- Internal use of `offset` in buffer/array indexing, byte offsets, or string parsing is not pagination
+- SQL `LIMIT` in a migration or data cleanup script without API exposure is not pagination
+- `pageSize` or `limit` in internal configuration (batch sizes, buffer limits) is not pagination
+
 ### Confidence
 
 - **high** -- Cursor-based pagination with `pageInfo`/`has_next_page` or keyset pagination with stable ordering

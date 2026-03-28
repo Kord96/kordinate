@@ -8,6 +8,7 @@ questions:
   - q: "Are structured logging libraries used consistently rather than printf-style formatting?"
     weight: 2
     signals: ["structlog or zap or pino imported", "key-value logging API used throughout", "no f-string interpolation in log calls"]
+    negative_signals: ["SLF4J LoggerFactory alone is NOT structured logging", "Go log.Println alone is NOT structured logging", "Python logging.getLogger alone is NOT structured logging"]
   - q: "Is sensitive data explicitly redacted from log output?"
     weight: 1
     signals: ["password field filtered from logs", "PII redaction in log processor", "no tokens logged in structured fields"]

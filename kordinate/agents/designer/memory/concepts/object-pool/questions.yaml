@@ -11,4 +11,7 @@ questions:
   - q: "Does the pool validate or evict stale resources before handing them to callers?"
     weight: 2
     signals: ["health check on acquire", "stale connection eviction", "validation before checkout"]
-threshold: 6
+  - q: "Is there a keyed or token-based pool that caches and reuses client/connection instances by key instead of creating new ones per request?"
+    weight: 2
+    signals: ["WebClientPool keyed by token", "ClientPool.get(key) reusing cached instance", "Resource base class with ConnectionPool/ChannelPool/ProducerPool subclasses"]
+threshold: 5

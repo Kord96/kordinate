@@ -22,6 +22,11 @@ How to identify this pattern in code.
 - Anti-corruption layer between bounded contexts or legacy systems (see also: anti-corruption-layer)
 - Import of external SDK with a thin local interface in front of it
 - `adapt()`, `convert()`, `translate()` functions bridging two APIs
+- TypeScript/JavaScript: `Receiver` interface implementations that adapt different HTTP frameworks (Express, native HTTP, AWS Lambda) to a common internal event interface (e.g., `ExpressReceiver`, `HTTPReceiver`, `AwsLambdaReceiver`)
+- TypeScript: `CommHandler` or `EndpointAdapter` classes that adapt framework-specific request/response to SDK-internal format
+- TypeScript: `AiAdapter` interfaces adapting different AI model providers (OpenAI, Anthropic, Gemini) to a uniform model interface
+- Python: `normalize_handler` functions that adapt user-provided functions with arbitrary signatures into a standard framework-expected callable interface
+- `attach()` or `mapParams()` functions wrapping existing operations to adapt their inputs for use in a different context
 
 ### Confidence
 

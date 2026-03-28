@@ -20,8 +20,13 @@ How to identify this pattern in code.
 - Pool size configuration: `max_size`, `min_idle`, `max_idle`, `pool_size`
 - Connection pool classes: `ConnectionPool`, `ThreadPool`, `WorkerPool`
 - Python: `asyncio.Queue` used as a pool, `multiprocessing.Pool`, `concurrent.futures.*Executor`
-- Java: `ExecutorService`, `HikariCP`, `Commons Pool`
+- Java: `ExecutorService`, `HikariCP`, `Commons Pool` (`GenericObjectPool`, `PooledObjectFactory`)
+- Java: `io.netty.buffer.PooledByteBufAllocator`, `io.netty.channel.pool.ChannelPool`
+- Java: custom pool with `ConcurrentLinkedQueue` or `BlockingQueue` as backing store with create/destroy lifecycle
 - Go: `sync.Pool`, buffered channels used as pools
+- TypeScript: keyed client pool (`WebClientPool`, `ClientPool`) that caches and reuses client instances by token or key instead of creating new ones per request
+- Python: `Resource` base class with `acquire()`/`release()` methods used by `ConnectionPool`, `ChannelPool`, `ProducerPool` (e.g., Kombu's `kombu.resource.Resource`)
+- Generic resource pool: class wrapping a queue/map of reusable objects with size limits, providing `get`/`put` or `acquire`/`release` semantics
 
 ### Confidence
 

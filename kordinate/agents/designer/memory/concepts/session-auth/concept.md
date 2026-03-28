@@ -26,6 +26,9 @@ How to identify this pattern in code.
 - CSRF tokens paired with sessions (`csrf_token`, `X-CSRF-Token` header)
 - Session expiry and idle timeout configuration
 - Libraries: `express-session`, `connect-redis`, `django.contrib.sessions`, `flask-session`, `gorilla/sessions`
+- Java: `HttpSession` interface, `request.getSession()`, `@SessionScoped`
+- Java: Quarkus/Jakarta session cookie handling, Undertow `SessionManager`, `SessionConfig`
+- Java: Spring Security form login with session-based authentication (`HttpSecurity.formLogin()`)
 
 ### Confidence
 

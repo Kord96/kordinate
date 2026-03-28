@@ -24,6 +24,9 @@ How to identify this pattern in code.
 - JS/TS: command classes with `execute()`/`undo()`, not Redux actions (those are flux, not command)
 - Go: structs implementing a `Command` interface with `Execute()` method
 - CLI command frameworks (e.g., `commander`, `yargs`, AdonisJS Ace `BaseCommand`) implementing `run()`
+- Handler/Action dataclass objects bundling a function reference with its metadata, filters, and execution context (e.g., kopf `Handler` objects with `fn`, `timeout`, `retries`, `when` fields) that are registered, stored, and invoked by a separate executor
+- Effect objects encapsulating an async operation as a first-class unit with its own lifecycle events (`.done`, `.fail`, `.finally`), passable and callable independently (e.g., effector `createEffect`)
+- Incoming request handler maps: a `Map<commandName, handlerFunction>` dispatching commands to handler methods (e.g., OCPP `incomingRequestHandlers`)
 
 **Not this pattern:** CLI subcommands in files named `commands/` that are just route handlers for a CLI framework are not the command pattern -- they are simply framework-organized entry points. The command pattern requires encapsulation of operations as first-class objects that can be queued, undone, or replayed. Also, Redux/Flux actions are the flux pattern, not command.
 

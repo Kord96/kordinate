@@ -25,6 +25,12 @@ How to identify this pattern in code.
 - Fallback logic from WebSocket or SSE to long polling
 - `ETag` or `If-None-Match` headers for change detection
 - `304 Not Modified` responses when no new data is available
+- Java: `DeferredResult`, `AsyncContext`, `SuspendableHttpServerExchange` for held-open HTTP responses
+
+### Negative signals (not sufficient for detection)
+
+- `DeferredResult` or `CompletableFuture` in Java used for async request processing (returning a future result) is not long polling unless the server explicitly holds the connection waiting for external data
+- `AsyncResponse` used for fire-and-forget async processing is not long polling
 
 ### Confidence
 

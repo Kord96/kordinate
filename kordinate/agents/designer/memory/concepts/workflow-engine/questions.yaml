@@ -11,4 +11,7 @@ questions:
   - q: "Is workflow state persisted so that execution can resume from the point of failure after a crash?"
     weight: 2
     signals: ["persistent workflow state", "resume from failure point", "crash recovery for workflows"]
-threshold: 6
+  - q: "Does a durable execution SDK provide step tools (step.run, step.sleep, step.waitForEvent) that pause and resume workflows across function invocations, replaying memoized step results on retries?"
+    weight: 3
+    signals: ["step.run/step.sleep/step.waitForEvent durable steps", "memoized step state replayed on retries", "InngestFunction/createFunction defining multi-step durable process"]
+threshold: 5

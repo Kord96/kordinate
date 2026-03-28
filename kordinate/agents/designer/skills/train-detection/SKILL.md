@@ -37,6 +37,18 @@ The training loop has four phases:
 
 Each round produces a scorecard. Over multiple runs, detection precision and recall improve.
 
+## Convergence and Early Exit
+
+After each round completes, compare the aggregate F1 against the previous round's F1 (read from `~/.kord/agents/designer/memory/training-log.json`):
+
+- **Plateau**: if F1 improvement < 0.02 for two consecutive rounds, stop early. Further rounds are unlikely to yield meaningful gains — the remaining gaps are likely concepts that need manual attention (new AST rules, fundamentally different detection approaches) rather than signature/question tuning.
+- **Target reached**: if aggregate F1 >= 0.90, stop. The system is performing well enough for production use.
+- **Diminishing returns**: if the number of improvements applied drops to zero for a round, stop. There's nothing left to fix at this detection tier.
+
+When exiting early, report why: "Stopped after round N: F1 plateaued at 0.88 (delta < 0.02 for 2 rounds)" or "Stopped: target F1 0.90 reached."
+
+The caller can override with `--no-early-exit` to force all rounds.
+
 ## Progress Tracking
 
 Training runs can be long-running and may survive context compression of the parent session. To ensure progress is never lost:

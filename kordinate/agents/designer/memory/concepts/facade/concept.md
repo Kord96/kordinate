@@ -31,6 +31,11 @@ How to identify this pattern in code.
 - Java: Spring `@Service` injecting 3+ other services and delegating without containing business logic
 - Java: BFF (Backend for Frontend) classes aggregating calls to multiple backend microservices into unified responses
 - Java: `*Parser.builder()` or factory methods returning a high-level API that hides complex internal wiring (e.g., `JavaParser` hiding lexer/AST/visitor pipeline)
+- Java: Quarkus/Jakarta `@ApplicationScoped` service class injecting 3+ other services and providing simplified API
+- Grep-friendly: classes ending in `Service` that inject 3+ collaborators and delegate without containing business logic are behavioral facades
+- TypeScript: SDK client class exposing `.send()`, `.createFunction()`, `.message()`, `.action()` while hiding internal comm handlers, middleware chains, execution engines, and API clients (e.g., `Inngest`, Slack `App`)
+- TypeScript: Central `Api` or `Application` object that aggregates references to all framework subsystems (`api.actions`, `api.connections`, `api.tasks`, `api.servers`) behind a single namespace
+- State management: `createDomain()` providing simplified interface for creating groups of related stores, events, and effects while hiding internal graph node wiring
 
 ### Confidence
 

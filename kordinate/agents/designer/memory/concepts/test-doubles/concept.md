@@ -25,6 +25,9 @@ How to identify this pattern in code.
 - `mockito`, `@Mock`, `@InjectMocks`, `when().thenReturn()` in Java tests
 - `Fake*` or `Mock*` or `Stub*` classes in test directories
 - Spy assertions on `.call_count`, `.called_with`, `.toHaveBeenCalledTimes()`
+- Java: custom `Fake*` or `InMemory*` classes in test source trees implementing production interfaces
+- Java: `@ExtendWith(MockitoExtension.class)` with `@Mock`/`@InjectMocks` in test files
+- NOTE: detection should scan test directories (src/test/) for this concept, unlike most others
 
 ### Negative signals (not sufficient for detection)
 

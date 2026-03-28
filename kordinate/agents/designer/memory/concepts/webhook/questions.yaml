@@ -11,4 +11,7 @@ questions:
   - q: "Are idempotency keys or event IDs included in payloads so receivers can deduplicate?"
     weight: 1
     signals: ["idempotency key in payload", "event_id for deduplication", "at-least-once with dedup support"]
-threshold: 6
+  - q: "Does the system receive incoming webhook events from external platforms (Slack, GitHub, Stripe) via HTTP POST endpoints with request signature verification?"
+    weight: 3
+    signals: ["HTTPReceiver/ExpressReceiver handling incoming webhooks", "verifyRequestSignature or X-Slack-Signature validation", "incoming HTTP POST from external platform with secret verification"]
+threshold: 5

@@ -23,6 +23,12 @@ How to identify this pattern in code.
 - Libraries: Go `sync.RWMutex`, Java `ReentrantReadWriteLock`, Rust `std::sync::RwLock`, C++ `std::shared_mutex`
 - Python has no stdlib RWLock; use `readerwriterlock` package or custom implementation
 
+### Negative signals (not sufficient for detection)
+
+- Java `ReentrantLock` (not ReadWriteLock) is a plain mutex, not a read-write lock
+- Go `sync.Mutex` without `sync.RWMutex` is not a read-write lock
+- Any locking that does not distinguish between read and write access paths is plain mutual exclusion
+
 ### Confidence
 
 - **high** -- Explicit `RWMutex` or `ReadWriteLock` with distinct read/write acquisition paths

@@ -26,6 +26,12 @@ How to identify this pattern in code.
 - Libraries: `authlib`, `passport` (Node), `jose`, `python-jose`, `next-auth`, `oauthlib`
 - Token refresh logic with `refresh_token` grant type
 
+### Negative signals (not sufficient for detection)
+
+- A library that *instruments* or *supports* OAuth (e.g., OpenTelemetry instrumenting OAuth endpoints) does not implement OAuth itself
+- Mere presence of the word "OAuth" or "OIDC" in configuration or dependency declarations without actual flow implementation is not this pattern
+- JWT token validation alone (without OAuth flows) is token-auth, not OAuth/OIDC
+
 ### Confidence
 
 - **high** -- authorization code flow with `/authorize` and `/token` endpoints, JWT validation, and OIDC discovery URL configured

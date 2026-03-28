@@ -24,6 +24,8 @@ How to identify this pattern in code.
 
 **Not this pattern:** Using `.forEach()`, `.map()`, `.filter()` on built-in arrays/collections is standard library usage, not the iterator pattern. The iterator pattern is about implementing custom lazy traversal over a data structure -- providing sequential access without exposing the underlying representation. Every language has `forEach`; that alone is not evidence of this pattern.
 
+**Not this pattern (Java):** Simply implementing `Iterable<T>` or `Iterator<T>` for a collection wrapper without custom traversal logic is standard Java. Look for custom traversal over non-trivial data structures (trees, graphs, streams, network cursors).
+
 ### Confidence
 
 - **high** -- custom class implementing the iterator protocol (`Symbol.iterator`, `__iter__`/`__next__`, `Iterator` trait) with lazy element production

@@ -14,4 +14,7 @@ questions:
   - q: "Are there module-level convenience functions (validate, parse, build) or a DAG/Pipeline class that internally creates objects, configures them, and runs multi-step operations in a single call?"
     weight: 2
     signals: ["validate() function creating validator and returning result", "DAG.build() coordinating render + execute + hooks", "module-level function hiding internal class instantiation"]
-threshold: 6
+  - q: "Does an SDK client or App class expose a small set of high-level methods (send, createFunction, message, action) while hiding internal comm handlers, middleware chains, execution engines, or API clients?"
+    weight: 2
+    signals: ["Inngest client hiding InngestCommHandler and InngestApi", "App class hiding middleware pipeline and receivers", "Api object aggregating subsystem references (api.actions, api.servers)"]
+threshold: 5

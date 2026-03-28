@@ -32,8 +32,10 @@ How to identify this pattern in code.
 
 ### Negative signals (not sufficient for detection)
 
-- Mere SLF4J `LoggerFactory.getLogger()` or `log.info()` usage is standard Java logging, not structured logging
+- Mere SLF4J `LoggerFactory.getLogger()` or `log.info()` usage is standard Java logging, not structured logging -- do NOT match on LoggerFactory alone
 - Using `Logger` without JSON output format or MDC context binding is unstructured (plain text) logging
+- Python `logging.getLogger()` without structlog or JSON formatter is plain logging
+- Go `log.Println()` without slog/zap/zerolog is plain logging
 
 ### Confidence
 

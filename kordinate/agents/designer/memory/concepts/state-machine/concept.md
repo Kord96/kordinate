@@ -25,6 +25,12 @@ How to identify this pattern in code.
 - JS/TS: XState (`createMachine`, `interpret`), state pattern with class-per-state
 - Go: state as `int`/`string` const with transition function, `looplab/fsm`
 - Rust: typestate pattern (different types per state), enum-based FSM
+- Java: Spring State Machine (`StateMachineBuilder`, `StateMachineConfigurer`), `enum State` with explicit transition methods
+
+### Negative signals (not sufficient for detection)
+
+- An `enum State` or `enum Status` used purely as a data label (e.g., `Status.ACTIVE`/`Status.INACTIVE`) without transition logic is not a state machine
+- Simple boolean or enum flags (`isProcessing`, `ConnectionState.OPEN`) that are set directly without guarded transitions are status tracking, not state machines
 
 ### Confidence
 

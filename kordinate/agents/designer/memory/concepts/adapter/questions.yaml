@@ -11,4 +11,7 @@ questions:
   - q: "Is the adapter stateless, holding only a reference to the adaptee without accumulating its own mutable state?"
     weight: 1
     signals: ["stateless wrapper", "passthrough delegation", "no adapter-owned state"]
+  - q: "Are there multiple Receiver, Handler, or Provider implementations that each adapt a different framework or vendor to a common internal interface?"
+    weight: 3
+    signals: ["ExpressReceiver/HTTPReceiver/SocketModeReceiver adapting to Receiver interface", "AiAdapter implementations for OpenAI/Anthropic/Gemini", "normalize_handler adapting arbitrary function signatures to framework-expected callable"]
 threshold: 5

@@ -20,9 +20,14 @@ How to identify this pattern in code.
 - Hook methods: `_do_step()`, `_on_before()`, `_on_after()`, `_process()`, `_validate()`
 - Subclasses override specific steps without changing the overall algorithm structure
 - Python: `ABC` with mix of concrete and `@abstractmethod` methods, `_hook()` naming convention
+- Python: Mixin classes with a `run()` loop calling overridable hooks like `on_consume_ready()`, `on_iteration()`, `on_consume_end()` (e.g., Kombu `ConsumerMixin`)
+- Python: Controller or base handler class defining `on_request()` / `on_response()` hooks that subclasses override to customize the request handling algorithm
+- TypeScript/JavaScript: Abstract class with concrete orchestrating method calling abstract methods (e.g., `OCPPRequestService` defining `internalSendMessage` calling abstract `requestHandler`)
+- TypeScript: Base middleware class defining lifecycle hooks (`onRunStart`, `onStepStart`, `transformInput`) that subclasses override selectively
 - Java: abstract class with `final` template method calling abstract `doStep()` methods
 - Go: embedded struct with interface for overridable steps
 - Rust: trait with default method implementations calling required methods
+- Framework processing pipelines: abstract service classes where a concrete `process`/`handle` method calls overridable `preProcess`, `doProcess`, `postProcess` hooks in sequence
 
 ### Confidence
 

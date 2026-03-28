@@ -23,6 +23,12 @@ How to identify this pattern in code.
 - Per-service database or schema ownership (no shared tables across services)
 - API contracts defined via OpenAPI specs, protobuf definitions, or AsyncAPI schemas
 
+### Negative signals (not sufficient for detection)
+
+- A library or framework that *supports* microservices (e.g., instrumentation for microservice architectures) is not itself a microservice
+- The word "microservice" in documentation or comments about supported deployment patterns does not mean the repo itself is a microservice architecture
+- A single deployable service is not microservices, even if it uses service-oriented patterns
+
 ### Confidence
 
 - **high** -- Multiple services with independent Dockerfiles, separate deployments, and inter-service HTTP/gRPC calls

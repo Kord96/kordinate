@@ -25,6 +25,9 @@ How to identify this pattern in code.
 - Workflow definition files (YAML/JSON DAGs, state machine definitions)
 - Step retry policies, timeout configuration, and conditional branching
 - `workflow_id` or `run_id` used for tracking execution instances
+- Durable execution SDKs: `step.run()`, `step.sleep()`, `step.waitForEvent()` that pause and resume workflows across function invocations with memoized step state
+- TypeScript: `InngestFunction`, `createFunction()` with step tools defining durable multi-step processes with automatic retry and state management
+- Execution engine classes managing workflow state through checkpoints, replaying completed steps from memoized state on retries
 
 ### Confidence
 

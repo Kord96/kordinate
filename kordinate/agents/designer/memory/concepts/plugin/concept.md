@@ -24,6 +24,9 @@ How to identify this pattern in code.
 - Plugin directories scanned at startup for auto-discovery (`plugins/`, `extensions/`)
 - `PluginManager` class coordinating plugin registration, initialization, and teardown
 - Plugin interface or base class that all plugins must implement
+- Framework `use_*()` methods that register services and add middleware to extend core functionality (e.g., `app.use_cors()`, `app.use_authentication()`, `app.use_openapi()`) -- each call plugs a capability into the application without modifying core code
+- TypeScript: `app.use()` or `assistant()` methods that register extension objects adding entire behavioral modules (e.g., Slack `App.assistant()` plugging conversational AI into the app)
+- Config-driven plugin loading: `config.plugins` array of paths scanned at startup, loading initializers/actions from each plugin directory
 
 ### Confidence
 

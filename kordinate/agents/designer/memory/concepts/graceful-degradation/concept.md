@@ -29,6 +29,8 @@ How to identify this pattern in code.
 
 **Not this pattern:** Graceful *shutdown* (signal handling, `server.Shutdown()`, drain-and-stop) is the service-manager pattern, not graceful degradation. Degradation means the service stays running with reduced functionality, not that it shuts down cleanly.
 
+**Not this pattern:** The word "fallback" appearing in SSL/TLS negotiation (protocol fallback), encoding fallback, or default configuration values is not graceful degradation. Look for fallback in the context of service-to-service calls or user-facing functionality degradation.
+
 ### Confidence
 
 - **high** -- explicit fallback paths defined per dependency with documented degraded behavior and user notification

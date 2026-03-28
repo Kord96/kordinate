@@ -24,6 +24,11 @@ How to identify this pattern in code.
 - Prototype registry or catalog of pre-configured instances
 - `Cloneable` interface (Java)
 
+### Negative signals (not sufficient for detection)
+
+- Java `clone()` on `Object` used for defensive copying of mutable fields is not the prototype pattern
+- `Cloneable` implemented on simple DTOs or data classes for shallow copying is not prototype pattern (look for template registry or prototype catalog)
+
 ### Confidence
 
 - **high** -- Explicit `clone()` method with a prototype registry that returns copies of pre-configured template objects

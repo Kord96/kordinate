@@ -11,4 +11,7 @@ questions:
   - q: "Are temporary reply queues cleaned up after the response is received or timeout fires?"
     weight: 1
     signals: ["reply queue deleted after response", "exclusive queue auto-deleted", "cleanup on timeout expiry"]
-threshold: 6
+  - q: "Is there a pending-requests map keyed by message ID, where outgoing messages store resolve/reject callbacks that are triggered when a matching response arrives?"
+    weight: 3
+    signals: ["requests.set(messageId, [resolve, reject])", "pendingRequests map with message ID keys", "callback stored with unique ID matched on response"]
+threshold: 5
