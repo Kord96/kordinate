@@ -65,7 +65,7 @@ Validate, diff, and regenerate kustomize overlays against profile/config.yaml. $
 
 1. Run validate first to confirm what will change.
 2. Show the diff so the user sees what is out of sync.
-3. Delegate to deployer: `/kord deployer generate overlays for <cluster>`.
+3. Delegate to charon: spawn charon to generate overlays for `<cluster>`.
 4. After generation completes, run validate again to confirm sync.
 5. Report result: success (now in sync) or remaining drift items.
 

@@ -13,4 +13,4 @@ Prioritize using Grafana renderer (curl to /render/d/...) for visual investigati
 
 **How to apply:** After making dashboard JSON edits, always render a screenshot to verify the result before reporting success.
 
-**Note:** For project-specific notes, use `/kord remember` to save memories.
+**Note:** For project-specific notes, use the `write_memory` tool to save memories.

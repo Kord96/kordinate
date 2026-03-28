@@ -11,17 +11,17 @@ Classify content and route it to the right place. $ARGUMENTS should include the 
 
 | Type | Indicators | Destination |
 |------|-----------|-------------|
-| **Config** | IPs, endpoints, hostnames, domains, ports, namespace names, storage classes | `/kord alfred` to update `profile/config.yaml` |
+| **Config** | IPs, endpoints, hostnames, domains, ports, namespace names, storage classes | `/config` to update `profile/config.yaml` |
 | **Credential** | Tokens, passwords, API keys, secrets, auth keys | `pass insert kordinate/<service>/<key>` |
-| **Memory** | Facts, observations, patterns, knowledge, decisions | `/kord remember` |
+| **Memory** | Facts, observations, patterns, knowledge, decisions | `write_memory` tool |
 
 ## Procedure
 
 1. **Analyze** — does the content contain config, credentials, or memory? A single input may contain all three.
 2. **Split** if mixed — "Cluster at 10.95.43.66 has DNS issues with token abc123":
-    - Config: IP `10.95.43.66` → `/kord alfred` to update config.yaml
+    - Config: IP `10.95.43.66` → `/config` to update config.yaml
     - Credential: token `abc123` → `pass`
-    - Memory: "DNS issues" → `/kord remember`
+    - Memory: "DNS issues" → `write_memory` tool
 3. **Route** each piece to its destination.
 4. **Validate manifests** — if the input is a Kubernetes manifest file (`.yaml` in a `manifests/` directory), run the Manifest Validation checks below.
 5. **Report** what went where (and any manifest validation findings).

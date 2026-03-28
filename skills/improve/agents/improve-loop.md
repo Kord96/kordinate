@@ -291,15 +291,17 @@ Create the file if it doesn't exist. Append to the array if it does.
 
 ### Step 3.2 — Persist Portfolio Findings
 
-For each finding classified as "proposed" (needs human approval):
+For each finding classified as "proposed" (needs human approval), save to memory:
 ```
-/kord remember <agent-name> portfolio review: <finding description>
+<agent-name> portfolio review: <finding description>
 ```
 
-For domain insights discovered during improvement:
+For domain insights discovered during improvement, save to memory:
 ```
-/kord remember <agent-name> learned during self-improvement: <insight>
+<agent-name> learned during self-improvement: <insight>
 ```
+
+Use the `write_memory` tool for each entry.
 
 ### Step 3.3 — Finalize Manifest
 
