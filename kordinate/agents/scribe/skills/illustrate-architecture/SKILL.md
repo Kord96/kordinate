@@ -111,10 +111,16 @@ Produce this as **one thought**, not a mechanical transform. Hold the full pictu
 
 **Hierarchy — 3-5 top-level groups maximum.** Follow the C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not modules. Everything nests inside. Groups beyond depth 2 become regular nodes.
 
-**Narrative approach:**
+**Narrative approach — all narratives are one coherent story:**
+
+The `overview`, `structure_narrative`, flow narratives, state narratives, and failure narratives are not independent texts. They are chapters of the same story, written in one pass. A flow narrative should reference what the structure narrative established. A failure narrative should reference the flows it disrupts. A state narrative should explain why a particular flow stores data the way it does.
+
+Write them as if you're explaining the entire system to a smart colleague who's never seen it. Start with the big picture (overview), zoom into how things are organized (structure), trace what happens when users interact (flows), explain where truth lives (state), and finally show what happens when things break (failures). Each section assumes the reader has read the previous ones.
+
 - **C4 multi-level**: Overview → containers → components, each level coherent on its own
 - **Scenario-driven**: Trace real user journeys through components. Name actors: "When Sarah adds to cart, **CartDrawer** dispatches to **cart-store**..."
 - **Decision anchors**: Explain *why* patterns were chosen, what was traded off, where debt is an open question
+- **Cross-references**: Flow narratives mention failure modes ("this call is protected by a circuit breaker — see the DummyJSON Down failure scenario"). Failure narratives reference flows ("when the SSR Prefetch flow hits this failure..."). State narratives reference flows that read/write them.
 
 **Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
 - Pattern badges from `patterns.md` → `node.patterns[]`
