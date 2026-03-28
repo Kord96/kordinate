@@ -2,9 +2,9 @@
 // Kord — HTTP-inspired route protocol server for agent orchestration.
 //
 // Registers capability-based MCP tools from agent routes.yaml files.
-// Routes requests to the right agent. Two spawn modes:
-//   lightweight (--print): fast, single-turn, no tool access — for skill routes and cache reviews
-//   full (-p + worktree): isolated worktree, full tool access, merge on exit — for analysis routes
+// Routes requests to the right agent. Every spawn gets an isolated worktree
+// (-p mode, full tool access, auto-merge on exit). Lightweight --print mode
+// is kept only for cache review prompts.
 //
 // Routes are declared per agent in routes.yaml. Each route becomes
 // an MCP tool with a capability-based name (no agent names visible).
@@ -401,39 +401,9 @@ async function invokeFull(agent, prompt) {
   }
 }
 
-/**
- * In-place invoke — -p mode, no worktree, full tool access.
- * Used for: skill routes that need to read/write files but make small targeted changes.
- */
-async function invokeInPlace(agent, prompt) {
-  log(`INVOKE-INPLACE ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
-  const start = Date.now();
-
-  regenerateMemory(agent);
-  const systemPrompt = loadSystemPrompt(agent);
-
-  const args = ['-p', '--dangerously-skip-permissions'];
-  if (systemPrompt) args.push('--system-prompt', systemPrompt);
-  args.push(prompt);
-
-  try {
-    const result = await spawnClaude(args, REPO_ROOT, { HOME });
-    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-    log(`INVOKE-INPLACE ${agent}: done in ${elapsed}s, ${result.stdout.length} chars`);
-    if (result.stderr) log(`INVOKE-INPLACE ${agent}: stderr: ${result.stderr.substring(0, 200)}`);
-    return result.stdout.trim();
-  } catch (e) {
-    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-    log(`INVOKE-INPLACE ${agent}: FAILED after ${elapsed}s — ${e.message}`);
-    if (e.stderr) log(`INVOKE-INPLACE ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
-    if (e.stdout) log(`INVOKE-INPLACE ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
-    throw e;
-  }
-}
-
-/** Backward-compatible wrapper — defaults to lightweight. */
+/** Backward-compatible wrapper — defaults to full. */
 async function invokeAgent(agent, prompt) {
-  return invokeLightweight(agent, prompt);
+  return invokeFull(agent, prompt);
 }
 
 // ─── Cache helpers ───
@@ -700,11 +670,7 @@ async function handleRoute(route, message, ifNoneMatch) {
           ? `Run the /${route.skill} skill. Input: ${message}`
           : message;
 
-      // Skill routes run in the main tree (need tool access but changes are small/targeted)
-      // Guideline routes get full worktree isolation (heavy analysis, may modify many files)
-      const response = route.skill
-        ? await invokeInPlace(route.provider, prompt)
-        : await invokeFull(route.provider, prompt);
+      const response = await invokeFull(route.provider, prompt);
       return { text: response, etag: computeETag(response), status: 200 };
     }
 
@@ -750,11 +716,7 @@ async function handleRoute(route, message, ifNoneMatch) {
         ? `Run the /${route.skill} skill. Input: ${message}`
         : message;
 
-    // Cache regeneration with guidelines = full mode (worktree isolation)
-    // Cache regeneration with skill = in-place (tool access, no worktree)
-    const response = route.skill
-      ? await invokeInPlace(route.provider, prompt)
-      : await invokeFull(route.provider, prompt);
+    const response = await invokeFull(route.provider, prompt);
 
     // Cache the result
     try {
