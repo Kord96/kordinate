@@ -32,46 +32,13 @@ If not found, report which paths were checked and exit.
 
 ### 2. Invoke Designer analysis
 
-Run this exact command:
+Spawn a Designer subagent to analyze the project:
 
-```bash
-bash -c '
-KORD_DIR="${KORDINATE_HOME:-$HOME/.kord}/agents/designer/kords/project-analysis"
-EXPIRY="$KORD_DIR/expiry.sh"
-if [ -x "$EXPIRY" ] && bash "$EXPIRY" "<project-path>" 2>/dev/null; then
-  echo "CACHE_FRESH"
-else
-  echo "CACHE_STALE — invoking Designer"
-fi
-'
+```
+Agent(subagent_type="designer", prompt="Run full project analysis on <project-path>. Execute in order: /detect-patterns, /map-dependencies, /review-api, /assess-debt, /architect. Write all outputs to <project-path>/.kord/agents/designer/memory/. Return a manifest of what was produced.")
 ```
 
-If the output is `CACHE_STALE`, invoke Beorn to run Designer:
-
-```bash
-curl -s http://agent-factory.master.svc.cluster.local:3100/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"scribe","version":"1.0"}}}'
-
-curl -s http://agent-factory.master.svc.cluster.local:3100/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"kord","arguments":{"kord_name":"project-analysis","message":"<project-path>"}}}'
-```
-
-Wait for the response. If it times out or errors, fall back to Beorn `delegate`:
-
-```bash
-curl -s http://agent-factory.master.svc.cluster.local:3100/mcp \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"delegate","arguments":{"agent":"designer","prompt":"Run full analysis on <project-path>. Write architecture.yaml, patterns.md, dependencies.md, api-review.md, debt-assessment.md to <project-path>/.kord/agents/designer/memory/"}}}'
-```
-
-If both fail, proceed with existing artifacts but mark the report as `stale — Designer unavailable`.
-
-If `CACHE_FRESH`, skip to step 3 — the cache decided, not you.
+Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/designer/memory/` and mark the report as `stale — Designer failed`.
 
 ### 3. Read project artifacts
 
@@ -149,16 +116,7 @@ Write one markdown file per tab into `<docs-content-dir>/<project>/narrative/`:
 
 Each heading in the narrative should use `{#component-id}` syntax to anchor it to a graph node for bidirectional linking. For example: `## API Layer {#api-gateway}`.
 
-**Gemini review** — after writing `structure.md`, run this exact command in the background:
-
-```bash
-cd <docs-content-dir>/<project>/narrative && \
-  /home/claude/.npm-global/bin/gemini -m gemini-2.5-pro -o json \
-  -p "Review this architecture narrative against the source data. Flag: inaccuracies, missing context, misleading simplifications, broken component name references, and bullet-list-instead-of-story." \
-  < structure.md > /tmp/gemini-review-narrative.json 2>/dev/null &
-```
-
-Continue writing `flows.md`, `data.md`, `resilience.md`. After all four are written, read `/tmp/gemini-review-narrative.json` and revise `structure.md` if it contains valid critiques. Then run the same command on the other three files if time permits.
+**Gemini review** — after writing `structure.md`, run a background Gemini review per the gemini-protocol (see `~/.kord/shared/gemini-protocol.md` for exact flags). Pipe `structure.md` to Gemini with the architecture.yaml as context. Continue writing the other tabs. Before finalizing, read the review and fix valid critiques.
 
 ### 6. Write the explorer page
 
