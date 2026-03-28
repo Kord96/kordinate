@@ -1,1 +1,2 @@
-# Intentionally empty — git-crypt removed
+# No encryption — private values stay in pass, config.yaml ships with placeholders.
+# Real config is written locally by alfred and hidden from git via assume-unchanged.

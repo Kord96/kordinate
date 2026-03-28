@@ -42,6 +42,9 @@ agent-state/
 # Agent runtime state
 kordinate/agents/*/deploys/
 
+# Site-specific profile data (generated from real config by alfred)
+kordinate/profile/overlays/
+
 # CLAUDE.md copies (created by scribe /onboard sync, not tracked)
 kordinate/agents/*/CLAUDE.md
 
