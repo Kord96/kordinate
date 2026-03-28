@@ -12,7 +12,7 @@ Review a project's API surface against REST conventions (or style-appropriate eq
 
 ## Arguments
 
-`$ARGUMENTS` -- Required: `<project>` (e.g., `logbd`, `stoik`). The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
+`$ARGUMENTS` -- Required: `<project>` (e.g., `logbd`, `stoik`). The project directory must exist at `~/<project>/`, `~/repos/<project>/`, or `~/test-repos/<project>/`.
 
 ## Steps
 
@@ -22,7 +22,7 @@ Review a project's API surface against REST conventions (or style-appropriate eq
    Example: /review-api stoik
    ```
 
-2. **Locate the project directory.** Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
+2. **Locate the project directory.** Check `~/<project>/`, then `~/repos/<project>/`, then `~/test-repos/<project>/`. If not found, report and exit.
 
 3. **Detect web framework** -- scan for imports, config files, and dependency manifests. Use the detection tables in `frameworks.md` to identify the framework(s) in use. If unrecognized, fall back to generic route pattern scanning and note the limitation. If multiple frameworks are detected, treat each as a separate API surface.
 
@@ -98,6 +98,10 @@ Review a project's API surface against REST conventions (or style-appropriate eq
    - CRITICAL if handler files import DB drivers, external SDKs, or infra modules directly (no port/adapter indirection exists)
    - RECOMMENDED if port/adapter structure exists but some handler files bypass it
 
+8. **Write the report** to `<project-repo>/.kord/agents/designer/memory/api-review.md` using the template in [Output](#output). Create the directory if it does not exist. Delegate to scribe if guard-md blocks.
+
+9. **Report** -- summarize findings to the caller: framework detected, endpoint count, critical/recommended/minor counts, and the path where the full report was written.
+
 ## Non-REST API Styles
 
 Some projects expose APIs that are not conventional REST. Adapt the review as follows:
@@ -111,7 +115,7 @@ If the project is purely one of these styles, skip inapplicable REST hygiene che
 
 ## Output
 
-Write the report to `<project-repo>/.kord/agents/designer/memory/api-review.md`. Create the directory if it does not exist. If the guard-md hook blocks you, delegate the `.md` write to scribe.
+Report template for `<project-repo>/.kord/agents/designer/memory/api-review.md`:
 
 ```markdown
 # <project> -- API Review
@@ -164,5 +168,3 @@ Write the report to `<project-repo>/.kord/agents/designer/memory/api-review.md`.
 
 <Optional. Cross-cutting observations that do not fit a specific finding or pattern: architectural strengths worth preserving, conventions the team follows well, testing observations, or context that would help a future reviewer. Keep brief -- 2-5 bullet points max. Omit this section entirely if there is nothing noteworthy beyond the findings above.>
 ```
-
-8. **Report** -- summarize findings to the caller: framework detected, endpoint count, critical/recommended/minor counts, and the path where the full report was written.

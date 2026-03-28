@@ -14,13 +14,13 @@ Build a dependency graph for a project -- internal modules, external services, i
 
 `$ARGUMENTS` -- Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound references, `[--depth N]` to limit internal module graph depth (default: unlimited).
 
-The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
+The project directory must exist at `~/<project>/`, `~/repos/<project>/`, or `~/test-repos/<project>/`.
 
 ## Steps
 
 1. Parse project name and flags from `$ARGUMENTS`. If project missing, show usage and exit.
 
-2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`. If not found, report the paths checked and exit.
+2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`, then `~/test-repos/<project>/`. If not found, report the paths checked and exit.
 
 3. **Detect project language** -- inspect the project root for language markers:
    - **Python**: `pyproject.toml`, `setup.py`, `requirements.txt`, `__init__.py`
@@ -33,7 +33,7 @@ The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
 4. **Discover modules and map imports** -- find internal modules and trace their dependencies using the patterns in [patterns.md](patterns.md) (Module Discovery and Import Patterns sections).
 
    Build a directed graph: `A -> B` means A depends on B. Respect `--depth N` if set -- stop traversal at depth N. Then flag:
-   - **Circular dependencies**: report the full cycle path. Cap detection at 5 levels deep -- beyond that, note total depth and move on.
+   - **Circular dependencies**: report the full cycle path. Cap detection at cycles of length 5 or fewer -- if longer cycles exist, note their presence and move on.
    - **Hub modules**: imported by >50% of other modules. These are coupling hotspots.
 
 5. **Detect external services** -- scan source files for client library usage per [patterns.md](patterns.md) (External Service Detection section). Also check ORM schema files (`prisma/schema.prisma`, `drizzle.config.ts`, `ormconfig.ts`) for declared providers and connection sources. For each service found, record: type (use concept vocabulary from [report-template.md](report-template.md): `database`, `cache`, `message-broker`, etc.), technology (PostgreSQL, Redis, Kafka, etc.), target (from connection strings, env vars, or config if visible), and which files use it.
@@ -52,7 +52,7 @@ The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
    - `depends_on` in docker-compose
    - Terraform `data` sources and `resource` outputs referencing other services
 
-8. **(--reverse only) Reverse dependency scan** -- scan sibling directories (`~/`, `~/repos/`) for imports or references to this project:
+8. **(--reverse only) Reverse dependency scan** -- scan sibling directories (`~/`, `~/repos/`, `~/test-repos/`) for imports or references to this project:
    - Language imports matching the project's module/package name
    - Config references (env vars, URLs containing the project name)
    - K8s manifest references (Service names, ExternalName entries)

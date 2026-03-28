@@ -1,6 +1,6 @@
 # architecture.yaml Schema
 
-Level 3 resource for the architect skill. Referenced from step 8 (write and report). Defines the output format.
+Level 3 resource for the architect skill. Referenced from step 9 (write and report). Defines the output format.
 
 ## Schema
 

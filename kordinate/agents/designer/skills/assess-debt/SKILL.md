@@ -12,7 +12,7 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>`. The project directory must exist at `~/<project>/` or `~/repos/<project>/`.
+`$ARGUMENTS` — Required: `<project>`. The project directory must exist at `~/<project>/`, `~/repos/<project>/`, or `~/test-repos/<project>/`.
 
 ## Dependency: detect-patterns
 
@@ -22,7 +22,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
 1. Parse project name from `$ARGUMENTS`. If missing, show usage and exit.
 
-2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
+2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`, then `~/test-repos/<project>/`. If not found, report and exit.
 
 3. **Determine applicable patterns** — check for `<project-repo>/.kord/agents/designer/memory/patterns.md`.
    - **If present** (preferred — detect-patterns does a thorough multi-pass scan):
@@ -41,7 +41,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
    If the `## Impact` section is absent, fall back to the `Confidence` column from the detect-patterns table as a proxy: high = CRITICAL, medium = RECOMMENDED, low = MINOR. These entries skip scanning and go directly into the violations list.
 
-5. **Scan for violations** — for each anti-pattern from step 4a, use Grep and Glob to search the project codebase. (Items from step 4b already have severity assigned and go directly into the violations list -- do not re-scan them.) Score each newly found violation by impact:
+5. **Scan for violations** — for each anti-pattern from step 4a, use Grep and Glob to search the project codebase. (Items from step 4b already have severity assigned and go directly into the violations list with the same point values below -- do not re-scan them.) Score each newly found violation by impact:
    - **CRITICAL** (5 pts) — structural violations that affect reliability or correctness. These represent real risk: data loss, outages, or bugs that are hard to trace. Examples: no fallback when circuit opens, retrying non-idempotent operations, shared mutable state across bounded contexts.
    - **RECOMMENDED** (2 pts) — design smells that increase maintenance cost over time. Not immediately dangerous, but they compound: each change in the area takes longer and carries more risk. Examples: anemic domain models, god services, tight coupling between adapters.
    - **MINOR** (1 pt) — style or convention violations. Low individual impact, but in aggregate they signal eroding standards. Examples: inconsistent naming, missing docs, unused abstractions.
@@ -117,7 +117,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
    ## Recommendations
 
-   1. **Add fallback behavior to circuit breaker** (CRITICAL, Integration) — `src/api/client.py` has a circuit breaker but no fallback when it opens. Add a fallback handler that returns a cached or degraded response instead of propagating `CircuitBreakerError`. While touching this client, also convert the fixed-delay retry in `src/jobs/sync.py` to exponential backoff with jitter — both violations involve the same downstream call path. *(Fixes: no fallback on open circuit + fixed-delay retries)*
+   1. **Add fallback behavior to circuit breaker** (CRITICAL, Resilience) — `src/api/client.py` has a circuit breaker but no fallback when it opens. Add a fallback handler that returns a cached or degraded response instead of propagating `CircuitBreakerError`. While touching this client, also convert the fixed-delay retry in `src/jobs/sync.py` to exponential backoff with jitter — both violations involve the same downstream call path. *(Fixes: no fallback on open circuit + fixed-delay retries)*
    2. **Parameterize SQL queries at API boundary** (CRITICAL, Data) — `src/api/routes.py` interpolates user input into SQL. Replace f-string interpolation with parameterized queries and add a pydantic schema to validate and whitelist the `sort_by` field. This is a quick win that eliminates an injection vector.
    3. **Isolate connection pools per service** (RECOMMENDED, Resilience) — `src/db/pool.py` uses a single shared pool. Create separate pools with individual limits so one slow consumer cannot starve others.
    ```
