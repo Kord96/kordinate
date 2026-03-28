@@ -197,52 +197,34 @@ For the stoik stream-processing project:
   "nodes": [
     {
       "id": "kafka-consumer",
-      "label": "Kafka Consumer",
+      "name": "Kafka Consumer",
       "type": "worker",
       "group": "stream-ingestion",
-      "parent": null,
       "description": "Connects to Kafka, polls messages in batches, deserializes with schema registry",
-      "modules": ["stoik/stream/kafka.py"],
+      "file": "stoik/stream/kafka.py",
       "patterns": [
         { "name": "stream-to-store", "category": "data" }
-      ],
-      "debt": null,
-      "endpoints": [],
-      "resilience": null,
-      "criticality": null
+      ]
     },
     {
       "id": "kafka-broker",
-      "label": "Kafka Broker",
+      "name": "Kafka Broker",
       "type": "external",
       "group": "external",
-      "parent": null,
       "description": "Source of streaming data",
-      "modules": [],
-      "patterns": [],
-      "debt": null,
-      "endpoints": [],
       "resilience": {
         "timeout": true,
         "retry": true,
-        "circuitBreaker": false,
-        "fallback": null
+        "circuitBreaker": false
       },
       "criticality": "critical"
     },
     {
       "id": "upstream-kafka",
-      "label": "Upstream Kafka",
+      "name": "Upstream Kafka",
       "type": "actor",
       "group": "actors",
-      "parent": null,
-      "description": "Produces messages to Kafka topics that stoik consumes",
-      "modules": [],
-      "patterns": [],
-      "debt": null,
-      "endpoints": [],
-      "resilience": null,
-      "criticality": null
+      "description": "Produces messages to Kafka topics that stoik consumes"
     }
   ],
   "edges": [

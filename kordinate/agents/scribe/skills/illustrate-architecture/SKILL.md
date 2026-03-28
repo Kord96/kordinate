@@ -8,6 +8,7 @@ description: >
 argument-hint: "<project> [--narrative <dir>]"
 curated: true
 scope: global
+context: fork
 ---
 
 Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a bottom drawer for detail inspection.
@@ -23,9 +24,8 @@ Generate an interactive architecture explorer page by reading all of Designer's 
 Parse project name from `$ARGUMENTS`. Extract `--narrative <dir>` if present.
 
 Locate the project directory by checking paths in order:
+- `/kord/projects/<project>/`
 - `~/<project>/`
-- `~/repos/<project>/`
-- `~/test-repos/<project>/`
 - If `$ARGUMENTS` starts with `/`, treat it as an absolute path
 
 If not found, report which paths were checked and exit.
@@ -36,9 +36,12 @@ Invoke `/kord designer project-analysis <project-path>` to ensure Designer's ana
 
 If the kord returns an error, check whether `architecture.yaml` already exists and proceed with stale data. Report the staleness in the final output.
 
-### 3. Read Designer memories
+### 3. Read project artifacts
 
-Read from `<project>/.kord/agents/designer/memory/`:
+Read from these locations (check both; prefer `.kord/` if it exists):
+
+**Primary**: `<project>/.kord/agents/designer/memory/`
+**Fallback**: `<project>/` (root — some projects keep `architecture.yaml` here)
 
 | File | Required | Purpose |
 |------|----------|---------|
@@ -52,26 +55,33 @@ If `architecture.yaml` is missing after the kord attempt, report and suggest run
 
 ### 4. Build architecture.json
 
-Transform `architecture.yaml` into the JSON format described in [explorer-schema.md](explorer-schema.md). This is the data file the explorer page consumes.
+Transform `architecture.yaml` into the JSON format described in [explorer-schema.md](explorer-schema.md). This is the data file the ArchExplorer component consumes at build time.
+
+**Key field names** — the component reads these exact keys:
+- Nodes use `name` (not `label`) for display text
+- Nodes use `hasChildren: true` for parent/group nodes, `parent` for nesting
+- Nodes use `file` (not `modules`) for source file path, `exports` for exported symbols
+- Top-level `data_flows` (not `flows`) for flow objects
+- Top-level `state` (not `stores`) for state/store objects
+- Top-level `failure_modes` (not `failures`) for failure objects
+- Edges use `flowId` to associate with a data flow; edges without `flowId` are dependency edges
 
 **Base transform** (from architecture.yaml alone):
 
-- Each **component** becomes a node with: `id`, `label` (from `name`), `type`, `group` (from capabilities or inferred tier), `dependsOn` array
-- Each **component with children** gets child nodes nested under `parent`
+- Each **component** becomes a node: `{ id, name, description, type, parent, file, exports, hasChildren }`
+- Components that contain children become group nodes: `type: "group"`, `hasChildren: true`. Groups are nodes, not a separate top-level array.
 - Each **depends_on** relationship becomes an edge: `{ source, target, label }`
-- Each **external_dependency** becomes a node with `type: "external"` and `group: "external"`
-- Each **actor** becomes a node with `type: "actor"` and `group: "actors"`
-- Each **data_flow** becomes a flow object with ordered steps
-- Each **state** entry becomes a node with `type: "store"` and metadata
-- Each **failure_mode** becomes a failure object with affected node IDs and severity
-- **capabilities** define the group boundaries for visual clustering
+- Each **external_dependency** becomes a node with `type: "external"`, grouped under a parent `external-group` node
+- Each **data_flow** from the YAML becomes a `data_flows[]` entry with `{ id, name, description, trigger, steps[] }`. Each step: `{ component, action, data, to, technology }`. Also create edges with `flowId` linking the step components.
+- Each **state** entry becomes a `state[]` entry: `{ id, name, description, purpose, technology, component, persistence, readers[], writers[] }`
+- Each **failure_mode** becomes a `failure_modes[]` entry: `{ id, trigger, severity, impact, cascade[], detection[], recovery[] }`
 
 **Enrichments** (from optional files):
 
-- **Pattern badges** (from `patterns.md`): For each detected pattern, find which components it maps to (from the "Where" / "Components" / mapping column). Add a `patterns` array to matching nodes with `{ name, category }`.
-- **Debt markers** (from `debt-assessment.md`): For each violation or debt item, map it to affected components. Add a `debt` object to matching nodes with `{ severity, items: [{ title, description }] }`. Severity drives node border coloring: critical = red, high = orange, medium = yellow.
-- **API endpoints** (from `api-review.md`): Map handler functions/routes to component nodes. Add an `endpoints` array to matching nodes with `{ method, path, description }`.
-- **External deps enrichment** (from `dependencies.md`): Ensure all external services from dependencies.md are represented as external nodes. Add `resilience` metadata (timeout, retry, circuit breaker) and `criticality` to external nodes.
+- **Pattern badges** (from `patterns.md`): Match patterns to component nodes. Add a `patterns` array with `{ name, category }`.
+- **Debt markers** (from `debt-assessment.md`): Map debt items to affected nodes. Add a `debt` object with `{ severity, items: [{ title, description }] }`. Severity drives node border coloring.
+- **API endpoints** (from `api-review.md`): Map routes to component nodes. Add `endpoints` array with `{ method, path, description }`.
+- **External deps enrichment** (from `dependencies.md`): Add `resilience` object `{ timeout, retry, circuitBreaker, fallback }` and `criticality` to external nodes.
 
 Write `architecture.json` to `<docs-content-dir>/<project>/architecture.json`. See step 7 for path resolution.
 

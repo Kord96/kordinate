@@ -61,6 +61,7 @@ Output from the grader agent. Located at `<run-dir>/grading.json`.
   "claims": [
     {"claim": "...", "type": "factual", "verified": true, "evidence": "..."}
   ],
+  "user_notes_summary": {"uncertainties": [], "needs_review": [], "workarounds": []},
   "eval_feedback": {
     "suggestions": [{"assertion": "...", "reason": "..."}],
     "overall": "..."
@@ -79,6 +80,8 @@ Output from benchmark mode. Located at `benchmarks/<timestamp>/benchmark.json`.
   "metadata": {
     "skill_name": "...",
     "skill_path": "...",
+    "executor_model": "...",
+    "analyzer_model": "...",
     "timestamp": "...",
     "evals_run": [1, 2, 3],
     "runs_per_configuration": 3
@@ -86,26 +89,26 @@ Output from benchmark mode. Located at `benchmarks/<timestamp>/benchmark.json`.
   "runs": [
     {
       "eval_id": 1,
-      "eval_name": "descriptive-name",
       "configuration": "with_skill",
       "run_number": 1,
       "result": {
         "pass_rate": 0.85, "passed": 6, "failed": 1, "total": 7,
         "time_seconds": 42.5, "tokens": 3800, "tool_calls": 18, "errors": 0
       },
-      "expectations": [{"text": "...", "passed": true, "evidence": "..."}]
+      "expectations": [{"text": "...", "passed": true, "evidence": "..."}],
+      "notes": ["Extracted from user_notes_summary"]
     }
   ],
   "run_summary": {
     "with_skill": {
-      "pass_rate": {"mean": 0.85, "stddev": 0.05},
-      "time_seconds": {"mean": 45.0, "stddev": 12.0},
-      "tokens": {"mean": 3800, "stddev": 400}
+      "pass_rate": {"mean": 0.85, "stddev": 0.05, "min": 0.71, "max": 1.0},
+      "time_seconds": {"mean": 45.0, "stddev": 12.0, "min": 30.0, "max": 55.0},
+      "tokens": {"mean": 3800, "stddev": 400, "min": 3200, "max": 4400}
     },
     "without_skill": {
-      "pass_rate": {"mean": 0.35, "stddev": 0.08},
-      "time_seconds": {"mean": 32.0, "stddev": 8.0},
-      "tokens": {"mean": 2100, "stddev": 300}
+      "pass_rate": {"mean": 0.35, "stddev": 0.08, "min": 0.28, "max": 0.43},
+      "time_seconds": {"mean": 32.0, "stddev": 8.0, "min": 22.0, "max": 40.0},
+      "tokens": {"mean": 2100, "stddev": 300, "min": 1700, "max": 2500}
     },
     "delta": {"pass_rate": "+0.50", "time_seconds": "+13.0", "tokens": "+1700"}
   },
@@ -132,6 +135,10 @@ Output from blind comparator. Located at `<grading-dir>/comparison-N.json`.
   "output_quality": {
     "A": {"score": 9, "strengths": [], "weaknesses": []},
     "B": {"score": 5, "strengths": [], "weaknesses": []}
+  },
+  "expectation_results": {
+    "A": {"passed": 5, "failed": 1, "total": 6},
+    "B": {"passed": 3, "failed": 3, "total": 6}
   }
 }
 ```

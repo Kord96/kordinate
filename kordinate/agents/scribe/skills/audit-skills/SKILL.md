@@ -1,7 +1,7 @@
 ---
 name: audit-skills
-description: Audit, test, benchmark, and improve SKILL.md files. Use when users want to check skill quality, run evals against skills, benchmark skill performance, optimize skill descriptions for triggering, or iteratively improve skills based on test results.
-argument-hint: "<mode> [--skill <name>] [--agent <name>] [--fix]"
+description: Audit, test, benchmark, and improve SKILL.md files. Use when users want to check skill quality, run a quality gate on skills, run evals against skills, benchmark skill performance, optimize skill descriptions for triggering, or iteratively improve skills based on test results.
+argument-hint: "<mode> [--skill <name>] [--agent <name>] [--fix (audit only)]"
 curated: true
 scope: global
 ---
@@ -36,12 +36,12 @@ Static analysis of all SKILL.md files for quality, completeness, and best practi
 
 2. **Discover skills** — find every `SKILL.md` under `$KORDINATE_HOME/agents/*/skills/` and `$KORDINATE_HOME/skills/`. Build inventory: skill name, agent, path, file size.
 
-3. **Run checks** — execute every check in [checks.md](checks.md) across three layers:
+3. **Run per-skill checks** — for each skill, run the Structure, Quality, and Security checks in [checks.md](checks.md):
    - **Structure** — frontmatter presence, required fields, file organization
    - **Quality** — description clarity, instruction completeness, supporting files
    - **Security** — tool restrictions, invocation control, argument validation
 
-4. **Cross-reference** — check for name collisions, orphaned supporting files, description budget overflow.
+4. **Run cross-reference checks** — after all skills are scanned, run the Cross-reference checks in [checks.md](checks.md): name collisions, orphaned supporting files, description budget overflow.
 
 5. **Group findings** by severity (`ERROR` > `WARNING` > `INFO`), then agent, then skill.
 
@@ -202,7 +202,7 @@ Use `disable-model-invocation: true` for destructive/deployment skills. Use `all
 
 ## Reference Files
 
-- [checks.md](checks.md) — Static audit check registry (17 checks across 4 categories)
+- [checks.md](checks.md) — Static audit check registry (20 checks across 4 categories)
 - [agents/grader.md](agents/grader.md) — Grading agent for evaluating skill outputs
 - [agents/comparator.md](agents/comparator.md) — Blind A/B comparison agent
 - [agents/analyzer.md](agents/analyzer.md) — Post-hoc analysis and benchmark analysis agent
