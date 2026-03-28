@@ -1,6 +1,6 @@
 # Improve Loop — Per-Agent Prompt
 
-Prompt for each team agent launched by `eval improve-all`. Each agent is
+Prompt for each team agent launched by `/improve all`. Each agent is
 spawned as its own `subagent_type` so it brings domain expertise and memories.
 
 ## Setup

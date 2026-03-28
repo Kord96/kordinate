@@ -1,6 +1,6 @@
 # Runtime Checks: Claude Code
 
-Level 3 resource for the eval skill (health mode). Checks specific to the Claude Code runtime. These verify that kordinate is correctly linked to `~/.claude/`.
+Level 3 resource for the doctor-k skill. Checks specific to the Claude Code runtime. These verify that kordinate is correctly linked to `~/.claude/`.
 
 Separate from structural health checks so kordinate can support other runtimes in the future without modifying the core checks.
 

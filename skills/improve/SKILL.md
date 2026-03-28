@@ -1,68 +1,31 @@
 ---
-name: eval
-description: Health-check the kordinate system, audit skill quality, run evals, benchmark, and improve skills. Use when users want to check system health, run structural checks, audit skill quality, run evals against skills, benchmark skill performance, optimize skill descriptions for triggering, or iteratively improve skills based on test results.
-argument-hint: "[health|audit|eval|benchmark|improve|optimize] [--skill <name>] [--agent <name>] [--fix (audit only)] [--scope global|project|all] [--stale-days 7]"
+name: improve
+description: Improve skills, agents, or the whole team — run evals, benchmark, iterate, and optimize. Use for skill quality testing, A/B benchmarks, iterative improvement loops, or description optimization.
+argument-hint: "skill <name> | agent <name> | all | optimize <skill> | audit [--fix] | benchmark <skill>"
 curated: true
 scope: global
 ---
 
-Health-check the kordinate runtime, audit skill quality, run evals, benchmark, and iteratively improve skills. Combines structural health checks with static quality analysis and eval-driven testing.
+Improve skills, agents, or the whole team. Combines static quality analysis, eval-driven testing, benchmarking, and iterative improvement loops.
 
-## Modes
+## Subcommands
 
-| Mode | Command | Purpose |
-|------|---------|---------|
-| `health` | `/eval` or `/eval health` | Structural health checks for the kordinate runtime |
-| `audit` | `/eval audit` | Static quality checks on SKILL.md files against best practices |
-| `eval` | `/eval eval <skill>` | Run skill against test prompts and grade results |
-| `benchmark` | `/eval benchmark <skill>` | With-skill vs baseline comparison with variance analysis |
-| `improve` | `/eval improve <skill>` | Iterative improvement loop with eval feedback |
-| `optimize` | `/eval optimize <skill>` | Optimize description for better triggering accuracy |
-
-Default mode is `health` when no mode is specified.
+| Subcommand | Command | Purpose |
+|------------|---------|---------|
+| `skill` | `/improve skill <name>` | Eval + iterate on one skill |
+| `agent` | `/improve agent <name>` | Improve-loop on all of an agent's skills |
+| `all` | `/improve all` | Improve-loop across all agents |
+| `optimize` | `/improve optimize <skill>` | Optimize description for triggering accuracy |
+| `audit` | `/improve audit [--fix]` | Static quality checks on skills |
+| `benchmark` | `/improve benchmark <skill>` | Multi-run benchmark with variance |
 
 Common flags: `--skill <name>`, `--agent <name>`, `--fix` (audit mode only).
 
-Health-mode flags: `--scope global|project|all` (default: all), `--stale-days N` (default: 7).
-
-If a required argument is missing (e.g. `eval` without a skill name), prompt the user for it rather than guessing. If the target skill path does not exist or has no SKILL.md, report the error clearly and exit.
+If a required argument is missing (e.g. `skill` without a skill name), prompt the user for it rather than guessing. If the target skill path does not exist or has no SKILL.md, report the error clearly and exit.
 
 ---
 
-## Mode: health
-
-Comprehensive health check for the kordinate runtime. Scans agents, skills, hooks, memory, settings, and kord contracts for structural problems, broken links, and configuration drift. Never modifies files.
-
-### Procedure
-
-1. **Parse arguments** — defaults: `scope=all`, `stale-days=7`, no agent filter (scan all agents).
-
-2. **Determine scan targets** based on `--scope`:
-    - `global` — scan `$KORDINATE_HOME` (`~/.kord/`)
-    - `project` — scan `.kord/` in the current project root
-    - `all` — scan both
-    - If `--agent <name>` is provided, restrict to that agent's directories only.
-
-3. **Run structural checks** — execute checks in [health-checks.md](health-checks.md) (runtime-agnostic).
-
-4. **Run runtime checks** — execute checks in [runtime-claude.md](runtime-claude.md) (Claude Code specific: MEMORY.md sync, agent alignment, hooks, CLAUDE.md, skills).
-
-5. **Run e2e checks** (if `--e2e` flag) — execute checks in [e2e-checks.md](e2e-checks.md). These actually invoke the system (spawn agents, route kords, write memories). Slower, has side effects. Skip if structural/runtime checks have ERRORs.
-
-6. **Group findings** — organize results by severity (`ERROR` first, then `WARNING`, then `INFO`), then by check category (structural, runtime, e2e).
-
-7. **Report** — print findings. Structural and runtime checks never modify files. E2e checks clean up after themselves.
-
-### Rules
-
-- Pure read-only — never create, edit, or delete any file.
-- `ERROR` = broken invariant that will cause runtime failures.
-- `WARNING` = likely problem that should be fixed.
-- `INFO` = potential improvement, informational only.
-
----
-
-## Mode: audit
+## Subcommand: audit
 
 Static analysis of all SKILL.md files for quality, completeness, and best practices. Read-only by default.
 
@@ -92,9 +55,9 @@ Static analysis of all SKILL.md files for quality, completeness, and best practi
 
 ---
 
-## Mode: eval
+## Subcommand: skill
 
-Run a skill against test prompts and grade the results.
+Run a skill against test prompts and grade the results, then iterate to improve it.
 
 ### Procedure
 
@@ -128,15 +91,57 @@ Run a skill against test prompts and grade the results.
 
 10. **Report** — present findings. Tell the user to review in the viewer.
 
+11. **Collect feedback** — read `feedback.json` from the viewer. Empty feedback = looks good.
+
+12. **Improve the skill** based on feedback. Key principles:
+    - **Generalize** from feedback — don't overfit to test cases. Use different metaphors or patterns rather than adding rigid constraints.
+    - **Keep it lean** — read transcripts to find unproductive steps. Remove what isn't pulling its weight.
+    - **Explain the why** — explain reasoning instead of heavy-handed MUSTs. Models with good theory of mind respond better to understanding than to commands.
+    - **Bundle repeated work** — if test transcripts all independently write similar scripts, bundle that script into the skill's `scripts/` directory.
+
+13. **Rerun** into `iteration-<N+1>/`. Launch viewer with `--previous-workspace` pointing at prior iteration.
+
+14. **Repeat** until: user is satisfied, feedback is empty, or improvements plateau.
+
+### Blind comparison (optional)
+
+For rigorous A/B testing between two skill versions:
+1. Spawn blind comparator per [agents/comparator.md](agents/comparator.md) — judges output quality without knowing which skill produced it.
+2. Run post-hoc analysis per [agents/analyzer.md](agents/analyzer.md) — unblinds results and generates improvement suggestions.
+
 ---
 
-## Mode: benchmark
+## Subcommand: agent
 
-Multi-run benchmark with variance analysis. Like `eval` but runs each test case multiple times (default 3) per configuration.
+Improve-loop on all of an agent's skills.
 
 ### Procedure
 
-1. **Locate skill and evals** — same as eval mode. Evals must have assertions.
+1. **Discover skills** — find all SKILL.md files under the agent's skills directory.
+2. **For each skill**, run the full `skill` subcommand procedure (eval + iterate).
+3. **Report** — aggregate results across all skills for the agent.
+
+---
+
+## Subcommand: all
+
+Improve-loop across all agents. Spawns each team agent to improve its own skills.
+
+### Procedure
+
+1. **Discover agents** — find all agents with skills directories.
+2. **Spawn per-agent improve loops** — for each agent, spawn a subagent using the prompt in [agents/improve-loop.md](agents/improve-loop.md). Each agent brings its own domain expertise and memories.
+3. **Collect results** — aggregate summaries from all agents.
+
+---
+
+## Subcommand: benchmark
+
+Multi-run benchmark with variance analysis. Like `skill` but runs each test case multiple times (default 3) per configuration.
+
+### Procedure
+
+1. **Locate skill and evals** — same as skill mode. Evals must have assertions.
 
 2. **Run N times per config** — spawn `runs_per_configuration` (default 3) runs for each test case in both `with_skill` and `without_skill` configs. Launch all in parallel.
 
@@ -152,35 +157,7 @@ Multi-run benchmark with variance analysis. Like `eval` but runs each test case 
 
 ---
 
-## Mode: improve
-
-Iterative improvement loop: test, review, improve, repeat.
-
-### Procedure
-
-1. **Run eval mode** (iteration 1) — full eval with viewer.
-
-2. **Collect feedback** — read `feedback.json` from the viewer. Empty feedback = looks good.
-
-3. **Improve the skill** based on feedback. Key principles:
-   - **Generalize** from feedback — don't overfit to test cases. Use different metaphors or patterns rather than adding rigid constraints.
-   - **Keep it lean** — read transcripts to find unproductive steps. Remove what isn't pulling its weight.
-   - **Explain the why** — explain reasoning instead of heavy-handed MUSTs. Models with good theory of mind respond better to understanding than to commands.
-   - **Bundle repeated work** — if test transcripts all independently write similar scripts, bundle that script into the skill's `scripts/` directory.
-
-4. **Rerun** into `iteration-<N+1>/`. Launch viewer with `--previous-workspace` pointing at prior iteration.
-
-5. **Repeat** until: user is satisfied, feedback is empty, or improvements plateau.
-
-### Blind comparison (optional)
-
-For rigorous A/B testing between two skill versions:
-1. Spawn blind comparator per [agents/comparator.md](agents/comparator.md) — judges output quality without knowing which skill produced it.
-2. Run post-hoc analysis per [agents/analyzer.md](agents/analyzer.md) — unblinds results and generates improvement suggestions.
-
----
-
-## Mode: optimize
+## Subcommand: optimize
 
 Optimize a skill's description for triggering accuracy.
 
@@ -209,7 +186,7 @@ Optimize a skill's description for triggering accuracy.
 
 ## Skill Writing Guide
 
-When improving skills (in `improve` or `fix` modes), follow these principles:
+When improving skills (in `skill`, `agent`, `all`, or `audit --fix` modes), follow these principles:
 
 ### Structure
 - Keep SKILL.md under 500 lines. Move reference material to supporting files.
@@ -238,13 +215,11 @@ Use `disable-model-invocation: true` for destructive/deployment skills. Use `all
 
 ## Reference Files
 
-- [health-checks.md](health-checks.md) — Structural health checks (runtime-agnostic: frontmatter, kords, manifest, tree sync)
-- [runtime-claude.md](runtime-claude.md) — Claude Code runtime checks (MEMORY.md, agent alignment, hooks, CLAUDE.md, skills)
-- [e2e-checks.md](e2e-checks.md) — End-to-end checks (spawn agents, lifecycle compliance, kord routing, memory persistence, guard enforcement)
 - [checks.md](checks.md) — Static audit check registry (20 checks across 4 categories)
 - [agents/grader.md](agents/grader.md) — Grading agent for evaluating skill outputs
 - [agents/comparator.md](agents/comparator.md) — Blind A/B comparison agent
 - [agents/analyzer.md](agents/analyzer.md) — Post-hoc analysis and benchmark analysis agent
+- [agents/improve-loop.md](agents/improve-loop.md) — Per-agent improve prompt for `all` mode
 - [references/schemas.md](references/schemas.md) — JSON schemas for evals, grading, benchmark, comparison, analysis
 - `eval-viewer/` — `generate_review.py` + `viewer.html` for interactive result review
 - `assets/eval_review.html` — Template for trigger eval query review

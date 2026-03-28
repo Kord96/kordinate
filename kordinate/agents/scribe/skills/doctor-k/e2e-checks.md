@@ -1,6 +1,6 @@
 # End-to-End Checks
 
-Level 3 resource for the eval skill (health mode). These checks actually invoke the system — spawning agents, routing kords, writing memories. They verify behavior, not just structure.
+Level 3 resource for the doctor-k skill. These checks actually invoke the system — spawning agents, routing kords, writing memories. They verify behavior, not just structure.
 
 Run these after structural and runtime checks pass. They have side effects (spawn agents, write temp memories) and take longer to execute.
 

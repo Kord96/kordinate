@@ -8,4 +8,5 @@ Skills available to all agents, not owned by any single agent.
 | [authenticate](authenticate/SKILL.md) | `/authenticate` | Copy lock file for guarded operations — authenticate once per task |
 | [kord](kord/SKILL.md) | `/kord <question>` | Route requests to other agents through kord contracts |
 | [merge](merge/SKILL.md) | `/merge` | Merge session branches into main and clean up stale worktrees |
+| [improve](improve/SKILL.md) | `/improve` | Improve skills, agents, or the whole team — run evals, benchmark, iterate, and optimize |
 | [install](install/SKILL.md) | `/install` | Install or reinstall kordinate — creates ~/.kord/, links runtime, optionally bootstraps infra |

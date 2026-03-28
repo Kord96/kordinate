@@ -1,6 +1,6 @@
 # JSON Schemas
 
-Defines the JSON schemas used by the eval skill's eval and benchmark modes.
+Defines the JSON schemas used by the improve skill's eval and benchmark modes.
 
 ---
 

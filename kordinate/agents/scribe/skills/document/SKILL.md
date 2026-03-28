@@ -1,11 +1,7 @@
 ---
-name: illustrate-architecture
-description: >
-  Generate an interactive architecture explorer page from Designer's project analysis.
-  Reads architecture.yaml, patterns.md, dependencies.md, api-review.md, and debt-assessment.md
-  from project memory, then produces an Astro page with Cytoscape.js graph, narrative sidebar,
-  and bottom drawer.
-argument-hint: "<project> [--narrative <dir>]"
+name: document
+description: Generate documentation — architecture diagrams, tutorials, and other doc artifacts. Use for generating visual docs, architecture explorers, or project documentation.
+argument-hint: "architecture <project> [--narrative <dir>] | (future: api, onboarding, narrative)"
 curated: true
 scope: global
 context: fork

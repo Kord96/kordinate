@@ -1,6 +1,6 @@
 # Health Checks
 
-Level 3 resource for the eval skill (health mode). Structural checks that verify kordinate's internal consistency. Runtime-agnostic — no assumptions about which runtime (Claude Code, etc.) is in use.
+Level 3 resource for the doctor-k skill. Structural checks that verify kordinate's internal consistency. Runtime-agnostic — no assumptions about which runtime (Claude Code, etc.) is in use.
 
 ## Frontmatter completeness
 

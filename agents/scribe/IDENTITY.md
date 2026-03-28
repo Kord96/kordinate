@@ -24,16 +24,16 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 |-------|---------|-----------|
 | `/remember` | Write a memory for an agent — handles scope, paths, and KORD.md | stateless |
 | `/register` | Register a new agent or kord, or sync existing agents to the runtime | stateful |
-| `/illustrate-architecture` | Generate diagram descriptions and tutorials from architecture.yaml | stateless |
-| `/eval` | Health-check the kordinate system, audit skill quality, run evals, benchmark, and improve skills | stateless |
+| `/doctor-k` | Health-check the kordinate system — structural checks, runtime validation, and e2e tests | stateless |
+| `/document` | Generate documentation — architecture diagrams, tutorials, doc artifacts | stateless |
 
 ## Capabilities
 
 - Can write agent memories to correct kordinate and runtime paths via /remember
 - Can register new agents and kords via /register
 - Can link kordinate state to Claude Code runtime via /register --link
-- Can health-check the kordinate system via /eval health
-- Can generate architecture explorer from analysis output via /illustrate-architecture
+- Can health-check the kordinate system via /doctor-k
+- Can generate documentation artifacts (architecture, tutorials) via /document
 
 ## Rules
 
@@ -46,4 +46,4 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 
 ## Consultation
 
-Templates, document format conventions, memory organization. See kords: `scribe-default`, `remember`, `audit`, `register`, `doc-check`.
+Templates, document format conventions, memory organization. See kords: `scribe-default`, `remember`, `doctor-k`, `register`, `doc-check`.

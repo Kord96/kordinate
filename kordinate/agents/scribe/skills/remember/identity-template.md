@@ -49,4 +49,4 @@ scope: global
 - `model`: usually `inherit` (uses parent's model)
 - `memory: user` for global persistence via Claude native fallback
 - `curated: true`, `preloaded: <name>`, `scope: global` — kordinate properties (stripped during sync to Claude native)
-- `Capabilities`: testable assertions about what the agent can do. Used by `/eval health --e2e` for per-agent verification. Each entry: "Can <action> via <skill>". Only include capabilities that can be mechanically tested.
+- `Capabilities`: testable assertions about what the agent can do. Used by `/doctor-k --e2e` for per-agent verification. Each entry: "Can <action> via <skill>". Only include capabilities that can be mechanically tested.
