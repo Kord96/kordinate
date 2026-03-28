@@ -18,7 +18,7 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
   "groups": [
     {
       "id": "<group-id>",
-      "label": "<Human Label>",
+      "name": "<Human Label>",
       "description": "<optional>"
     }
   ],
@@ -26,12 +26,14 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
   "nodes": [
     {
       "id": "<component-id>",
-      "label": "<Human Readable Name>",
+      "name": "<Human Readable Name>",
       "type": "service | library | worker | api | frontend | cli | store | gateway | broker | external | actor",
       "group": "<group-id>",
       "parent": "<parent-node-id | null>",
+      "hasChildren": false,
       "description": "<one sentence>",
-      "modules": ["<path/to/module>"],
+      "file": "<path/to/source>",
+      "exports": ["<exported-symbol>"],
       "patterns": [
         { "name": "<pattern-name>", "category": "<category>" }
       ],
@@ -64,13 +66,12 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
     }
   ],
 
-  "flows": [
+  "data_flows": [
     {
       "id": "<flow-id>",
       "name": "<Human Readable Flow Name>",
       "description": "<what this flow accomplishes>",
       "trigger": "<what starts it>",
-      "actors": ["<actor-id>"],
       "steps": [
         {
           "component": "<component-id>",
@@ -83,28 +84,29 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
     }
   ],
 
-  "stores": [
+  "state": [
     {
       "id": "<state-id>",
-      "concept": "<generic term>",
+      "name": "<Human Readable Name>",
+      "description": "<what this state holds>",
+      "purpose": "source-of-truth | cache | derived | staging",
       "technology": "<specific tool>",
       "component": "<component-id>",
-      "stores": "<what data>",
-      "purpose": "source-of-truth | cache | derived | staging",
-      "persistence": "persistent | ephemeral"
+      "persistence": "persistent | ephemeral",
+      "readers": ["<component-id>"],
+      "writers": ["<component-id>"]
     }
   ],
 
-  "failures": [
+  "failure_modes": [
     {
       "id": "<failure-id>",
       "trigger": "<what goes wrong>",
       "severity": "critical | high | medium | low",
-      "affectedNodes": ["<component-id>"],
+      "impact": "<user-visible effect>",
       "cascade": [
         { "component": "<component-id>", "effect": "<what happens>" }
       ],
-      "impact": "<user-visible effect>",
       "detection": ["<signal>"],
       "recovery": ["<step>"]
     }
@@ -152,7 +154,7 @@ Edges connect nodes. The `type` field distinguishes relationship kinds:
 | `data_flow` | Dashed line with arrow | architecture.yaml `data_flows` steps |
 | `event` | Dotted line | architecture.yaml `events` |
 
-### flows
+### data_flows
 
 Flow objects are used to animate the data flow view. When a user selects a flow from the sidebar, the graph highlights the path and the bottom drawer shows the step-by-step breakdown.
 
@@ -168,7 +170,7 @@ The Cytoscape.js compound node feature renders groups as background containers.
 
 - All `id` values match IDs from `architecture.yaml` verbatim
 - `null` or missing optional fields should be omitted from the JSON (not included as `null`)
-- Labels are short (3-5 words). Detail goes in `description` fields
+- `name` values are short (3-5 words). Detail goes in `description` fields
 - The `parent` field on nodes enables Cytoscape.js compound nodes for components with `children`
 - Debt severity on a parent node is the max severity of its children
 - Flow steps reference the same component IDs as nodes — this is how the explorer links graph interaction to flow animation
@@ -188,11 +190,11 @@ For the stoik stream-processing project:
     "runtime": "Long-running Python process"
   },
   "groups": [
-    { "id": "stream-ingestion", "label": "Stream Ingestion" },
-    { "id": "batch-storage", "label": "Batch Storage" },
-    { "id": "query-serving", "label": "Query Serving" },
-    { "id": "external", "label": "External" },
-    { "id": "actors", "label": "Actors" }
+    { "id": "stream-ingestion", "name": "Stream Ingestion" },
+    { "id": "batch-storage", "name": "Batch Storage" },
+    { "id": "query-serving", "name": "Query Serving" },
+    { "id": "external", "name": "External" },
+    { "id": "actors", "name": "Actors" }
   ],
   "nodes": [
     {
@@ -243,13 +245,12 @@ For the stoik stream-processing project:
       "type": "data_flow"
     }
   ],
-  "flows": [
+  "data_flows": [
     {
       "id": "ingest-to-store",
       "name": "Kafka to DuckDB Pipeline",
       "description": "The primary write path",
       "trigger": "Messages arrive on Kafka topic",
-      "actors": ["upstream-kafka"],
       "steps": [
         {
           "component": "kafka-consumer",
@@ -261,29 +262,30 @@ For the stoik stream-processing project:
       ]
     }
   ],
-  "stores": [
+  "state": [
     {
       "id": "duckdb-files",
-      "concept": "embedded-olap",
+      "name": "DuckDB Storage",
+      "description": "Entity data in columnar format",
+      "purpose": "source-of-truth",
       "technology": "DuckDB",
       "component": "duckdb-store",
-      "stores": "Entity data in columnar format",
-      "purpose": "source-of-truth",
-      "persistence": "persistent"
+      "persistence": "persistent",
+      "readers": ["query-engine"],
+      "writers": ["buffer"]
     }
   ],
-  "failures": [
+  "failure_modes": [
     {
       "id": "kafka-down",
       "trigger": "Kafka broker becomes unreachable",
       "severity": "critical",
-      "affectedNodes": ["kafka-consumer", "consume-loop", "buffer"],
+      "impact": "Ingestion halts. Query serving continues from existing data.",
       "cascade": [
         { "component": "kafka-consumer", "effect": "Consumer poll fails" },
         { "component": "consume-loop", "effect": "Buffer stops receiving" },
         { "component": "buffer", "effect": "No new data to flush" }
       ],
-      "impact": "Ingestion halts. Query serving continues from existing data.",
       "detection": ["Consumer reconnection logs", "kafka_consumer_lag flatlines"],
       "recovery": ["Consumer auto-reconnects", "Buffer resumes on next poll"]
     }

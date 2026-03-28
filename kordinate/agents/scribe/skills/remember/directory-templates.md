@@ -16,15 +16,16 @@ Path: `agents/designer/memory/concepts/<concept-name>/` (canonical path)
 
 ## Kord Directory
 
-Path: `kords/<kord-name>/`
+Path: `agents/<provider>/kords/<kord-name>/`
 
 | File | Required | Purpose |
 |------|----------|---------|
 | `contract.md` | yes | Frontmatter (description, requester, mode, skill, curated, cache_inputs) defining the consultation contract |
-| `data.md` | no | Cached state for stateful kords — stores last response with `.valid` timestamp |
-| `expiry.sh` | no | Script that checks if cached data is still valid — returns 0 (valid) or 1 (expired) |
+| `data.md` | stateful only | Cached state — stores last response with `.valid` timestamp |
+| `expiry.sh` | stateful only | Cache check script — delegates to `lib/kord-expiry.sh`. Exit 0 (fresh), 1 (stale), 2 (uncertain) |
+| `review.md` | stateful only | Prompt template for stage 2 agent review — must contain `{{DIFF}}` and `{{CACHED_DATA}}` placeholders |
 
-Stateless kords (like remember, sanitize) only need `contract.md`. Stateful kords (like deployer-default, pattern-review) need all three.
+Stateless kords (like remember, sanitize) only need `contract.md`. Stateful kords (like deployer-default, cluster-topology) need all four files.
 
 ## Agent Directory
 

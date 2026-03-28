@@ -2,7 +2,7 @@
 
 Level 3 resource for the remember skill. Prevents duplicate memory files.
 
-Before creating a new topic file, scan existing memory descriptions for duplicates. This step runs after sanitize (step 1) and before scope determination (step 3).
+Before creating a new topic file, scan existing memory descriptions for duplicates. This step runs after sanitize (step 1) and before classify memory type (step 3).
 
 ## Procedure
 
@@ -13,7 +13,7 @@ Before creating a new topic file, scan existing memory descriptions for duplicat
 3. **Decision matrix**:
     - **Exact match** — update the existing file instead of creating a new one. Append or merge the new content into the existing file's body. Preserve the existing frontmatter (update `description` only if the new content meaningfully expands the scope).
     - **Near match** — warn the caller with the existing file path and description. Ask: "Update existing `<filename>` or create new file?" Wait for response before proceeding.
-    - **No match** — proceed to step 3 (scope determination) normally.
+    - **No match** — proceed to step 3 (classify memory type) normally.
 
 4. **Scratchpad appends** — skip dedup entirely. Scratchpads accumulate by design and are not subject to duplicate detection.
 

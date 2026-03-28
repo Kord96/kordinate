@@ -2,6 +2,7 @@
 name: remember
 description: Write a memory for an agent. Handles scope, frontmatter properties, kordinate and Claude native paths, and KORD.md updates.
 curated: true
+scope: global
 ---
 
 Write a memory on behalf of an agent. Other agents are blocked from writing to memory/kord paths by the guard hook (`$KORDINATE_HOME/hooks/guard.sh`) and told to delegate here.
@@ -14,7 +15,7 @@ $ARGUMENTS should include the agent name and what to remember.
 
 For directory structure requirements, see [directory-templates.md](directory-templates.md).
 
-1. **Classify content** — run `/sanitize` first. It separates config, credentials, and memory. Only memory proceeds here.
+1. **Classify content** — run `/sanitize` first (warden skill). It classifies the content as config, credential, or memory. If classified as config or credential, `/sanitize` routes it to the appropriate destination and this procedure stops. Only content classified as memory proceeds to step 2.
 
 2. **Dedup check** (topic files only) — before creating a new topic file, check for duplicates. See [dedup.md](dedup.md) for the full procedure. Skip this step for scratchpad appends.
 

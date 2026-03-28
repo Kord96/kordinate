@@ -46,8 +46,8 @@ Example:
 
 ## Kords
 
-- `kord/deployer-default/contract.md` — General cluster questions (curated, template: contract)
-- `kord/deployer-default/data.md` — Cached cluster state (template: data, expiry: expiry.sh)
+- `agents/deployer/kords/deployer-default/contract.md` — General cluster questions (curated, template: contract)
+- `agents/deployer/kords/deployer-default/data.md` — Cached cluster state (template: data, expiry: expiry.sh)
 
 ## Team
 
