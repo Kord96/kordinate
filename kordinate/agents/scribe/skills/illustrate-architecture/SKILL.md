@@ -122,6 +122,13 @@ Write them as if you're explaining the entire system to a smart colleague who's 
 
 Follow the voice, formatting, and structure rules in [narrative-style.md](narrative-style.md). Read it before writing any narrative content. Key points: short paragraphs separated by `\n\n`, scenario-driven voice, lead with action, em dashes not hyphens, ~100-150 words per flow/failure/store narrative.
 
+**Formatting — narratives are rendered in a bottom drawer, not a document:**
+- Use short paragraphs (2-3 sentences max). Separate with `\n\n` in the JSON string. Long walls of text are unreadable in a drawer.
+- Use em dashes (—) not double hyphens (--) for parenthetical asides.
+- Each flow narrative should be 3-5 short paragraphs, not one long block.
+- Lead each paragraph with the action: "**root-loader** fires a prefetch..." not "The request arrives and then the root-loader fires..."
+- Keep total narrative per flow/failure/store to ~100-150 words. The drawer is narrow — brevity is clarity.
+
 **Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
 - Pattern badges from `patterns.md` → `node.patterns[]`
 - Debt markers from `debt-assessment.md` → `node.debt`
