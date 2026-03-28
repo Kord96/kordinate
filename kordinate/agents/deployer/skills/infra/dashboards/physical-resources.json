@@ -178,7 +178,7 @@
           "refId": "B"
         },
         {
-          "expr": "(max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)",
+          "expr": "(max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"}) < bool 0.80)",
           "legendFormat": "Node Disk",
           "refId": "C"
         }
@@ -255,7 +255,7 @@
       },
       "targets": [
         {
-          "expr": "min(((max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)) or ((max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.85)) or ((max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=\"/\"}) < bool 0.80)))",
+          "expr": "min(((max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.95) + (max(1 - avg by(node)(rate(node_cpu_seconds_total{component=\"node-exporter\",mode=\"idle\"}[5m]))) < bool 0.80)) or ((max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.95) + (max(1 - node_memory_MemAvailable_bytes{component=\"node-exporter\"} / node_memory_MemTotal_bytes{component=\"node-exporter\"}) < bool 0.85)) or ((max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"}) < bool 0.90) + (max(1 - node_filesystem_avail_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"} / node_filesystem_size_bytes{component=\"node-exporter\",mountpoint=~\"/|/mnt/data\"}) < bool 0.80)))",
           "legendFormat": "",
           "refId": "A"
         }
@@ -491,7 +491,7 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "max by (node) (node_filesystem_size_bytes{component=\"node-exporter\", mountpoint=\"/\"})",
+          "expr": "max by (node) (node_filesystem_size_bytes{component=\"node-exporter\", mountpoint=~\"/|/mnt/data\"})",
           "legendFormat": "",
           "refId": "C",
           "format": "table",
@@ -684,8 +684,8 @@
             "type": "prometheus",
             "uid": "${prometheus}"
           },
-          "expr": "(1 - node_filesystem_avail_bytes{component=\"node-exporter\", mountpoint=\"/\"} / node_filesystem_size_bytes{component=\"node-exporter\", mountpoint=\"/\"}) * 100",
-          "legendFormat": "{{node}}",
+          "expr": "(1 - node_filesystem_avail_bytes{component=\"node-exporter\", mountpoint=~\"/|/mnt/data\"} / node_filesystem_size_bytes{component=\"node-exporter\", mountpoint=~\"/|/mnt/data\"}) * 100",
+          "legendFormat": "{{node}} {{mountpoint}}",
           "refId": "A"
         }
       ]
