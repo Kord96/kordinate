@@ -117,17 +117,7 @@ The `overview`, `structure_narrative`, flow narratives, state narratives, and fa
 
 Write them as if you're explaining the entire system to a smart colleague who's never seen it. Start with the big picture (overview), zoom into how things are organized (structure), trace what happens when users interact (flows), explain where truth lives (state), and finally show what happens when things break (failures). Each section assumes the reader has read the previous ones.
 
-- **C4 multi-level**: Overview → containers → components, each level coherent on its own
-- **Scenario-driven**: Trace real user journeys through components. Name actors: "When Sarah adds to cart, **CartDrawer** dispatches to **cart-store**..."
-- **Decision anchors**: Explain *why* patterns were chosen, what was traded off, where debt is an open question
-- **Cross-references**: Flow narratives mention failure modes ("this call is protected by a circuit breaker — see the DummyJSON Down failure scenario"). Failure narratives reference flows ("when the SSR Prefetch flow hits this failure..."). State narratives reference flows that read/write them.
-
-**Formatting — narratives are rendered in a bottom drawer, not a document:**
-- Use short paragraphs (2-3 sentences max). Separate with `\n\n` in the JSON string. Long walls of text are unreadable in a drawer.
-- Use em dashes (—) not double hyphens (--) for parenthetical asides.
-- Each flow narrative should be 3-5 short paragraphs, not one long block.
-- Lead each paragraph with the action: "**root-loader** fires a prefetch..." not "The request arrives and then the root-loader fires..."
-- Keep total narrative per flow/failure/store to ~100-150 words. The drawer is narrow — brevity is clarity.
+Follow the voice, formatting, and structure rules in [narrative-style.md](narrative-style.md). Read it before writing any narrative content. Key points: short paragraphs separated by `\n\n`, scenario-driven voice, lead with action, em dashes not hyphens, ~100-150 words per flow/failure/store narrative.
 
 **Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
 - Pattern badges from `patterns.md` → `node.patterns[]`
