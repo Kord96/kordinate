@@ -399,9 +399,17 @@ async function invokeFull(agent, prompt) {
     if (e.stdout) log(`INVOKE-FULL ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
     throw e;
   } finally {
-    // Cleanup worktrees — merge or preserve
-    if (wtPath) cleanupWorktree(requestId);
-    if (kordWtPath) cleanupKordWorktree(requestId);
+    // Cleanup worktrees — merge or preserve. Never let cleanup block the response.
+    try {
+      if (wtPath) cleanupWorktree(requestId);
+    } catch (e) {
+      log(`INVOKE-FULL ${agent}: worktree cleanup error — ${e.message}`);
+    }
+    try {
+      if (kordWtPath) cleanupKordWorktree(requestId);
+    } catch (e) {
+      log(`INVOKE-FULL ${agent}: kord worktree cleanup error — ${e.message}`);
+    }
   }
 }
 

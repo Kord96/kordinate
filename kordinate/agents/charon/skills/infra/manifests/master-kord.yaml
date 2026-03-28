@@ -65,6 +65,12 @@ spec:
         app: kord
     spec:
       serviceAccountName: kord
+      securityContext:
+        sysctls:
+          - name: fs.inotify.max_user_watches
+            value: "65536"
+          - name: fs.inotify.max_user_instances
+            value: "512"
       containers:
         - name: kord
           image: REGISTRY/agent-factory:latest
@@ -72,6 +78,8 @@ spec:
           args:
             - |
               set -euo pipefail
+              # Bump file descriptor limits for concurrent agent spawns
+              ulimit -n 1048576 2>/dev/null || true
               export KORD_ROOT="${KORD_ROOT:-/kord}"
               export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
               export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"
