@@ -30,13 +30,48 @@ Locate the project directory by checking paths in order:
 
 If not found, report which paths were checked and exit.
 
-### 2. Ensure fresh analysis via kord
+### 2. Invoke Designer analysis
 
-**This step is mandatory — never skip it.** Invoke `/kord designer project-analysis <project-path>` to ensure Designer's analyses are up to date. The kord's expiry.sh handles caching: if the project source hasn't changed since the last analysis, Designer returns immediately without re-running. You do not decide whether to skip — the cache does.
+Run this exact command:
 
-Do not check for existing files, existing architecture.json in the docs site, or any other indicator to bypass this step. Always invoke the kord. The presence of old outputs does not mean they are fresh.
+```bash
+bash -c '
+KORD_DIR="${KORDINATE_HOME:-$HOME/.kord}/agents/designer/kords/project-analysis"
+EXPIRY="$KORD_DIR/expiry.sh"
+if [ -x "$EXPIRY" ] && bash "$EXPIRY" "<project-path>" 2>/dev/null; then
+  echo "CACHE_FRESH"
+else
+  echo "CACHE_STALE — invoking Designer"
+fi
+'
+```
 
-If the kord returns an error (e.g., Beorn unreachable), report the error and proceed with whatever artifacts already exist at the primary path. Mark the output as "stale — kord failed" in the final report.
+If the output is `CACHE_STALE`, invoke Beorn to run Designer:
+
+```bash
+curl -s http://agent-factory.master.svc.cluster.local:3100/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"scribe","version":"1.0"}}}'
+
+curl -s http://agent-factory.master.svc.cluster.local:3100/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"kord","arguments":{"kord_name":"project-analysis","message":"<project-path>"}}}'
+```
+
+Wait for the response. If it times out or errors, fall back to Beorn `delegate`:
+
+```bash
+curl -s http://agent-factory.master.svc.cluster.local:3100/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"delegate","arguments":{"agent":"designer","prompt":"Run full analysis on <project-path>. Write architecture.yaml, patterns.md, dependencies.md, api-review.md, debt-assessment.md to <project-path>/.kord/agents/designer/memory/"}}}'
+```
+
+If both fail, proceed with existing artifacts but mark the report as `stale — Designer unavailable`.
+
+If `CACHE_FRESH`, skip to step 3 — the cache decided, not you.
 
 ### 3. Read project artifacts
 
@@ -114,11 +149,16 @@ Write one markdown file per tab into `<docs-content-dir>/<project>/narrative/`:
 
 Each heading in the narrative should use `{#component-id}` syntax to anchor it to a graph node for bidirectional linking. For example: `## API Layer {#api-gateway}`.
 
-**Gemini review** — after writing the first tab's narrative, kick off a background review of it while you write the remaining tabs:
+**Gemini review** — after writing `structure.md`, run this exact command in the background:
+
 ```bash
-gemini -m gemini-2.5-pro -o json -p "Review this architecture narrative against the source data. Flag: inaccuracies (narrative says X but data shows Y), missing context (important components or flows not mentioned), misleading simplifications, and broken component name references. Also flag if the narrative reads like a bullet list instead of a story." @architecture.yaml < structure.md > /tmp/gemini-review-narrative.json &
+cd <docs-content-dir>/<project>/narrative && \
+  /home/claude/.npm-global/bin/gemini -m gemini-2.5-pro -o json \
+  -p "Review this architecture narrative against the source data. Flag: inaccuracies, missing context, misleading simplifications, broken component name references, and bullet-list-instead-of-story." \
+  < structure.md > /tmp/gemini-review-narrative.json 2>/dev/null &
 ```
-Continue writing `flows.md`, `data.md`, `resilience.md`. Before finalizing, read the Gemini review and revise the narrative where critiques are valid. Then kick off a review of the remaining tabs if time permits. The goal is not perfection — it's catching factual errors and blind spots that a second perspective reveals.
+
+Continue writing `flows.md`, `data.md`, `resilience.md`. After all four are written, read `/tmp/gemini-review-narrative.json` and revise `structure.md` if it contains valid critiques. Then run the same command on the other three files if time permits.
 
 ### 6. Write the explorer page
 
