@@ -32,7 +32,13 @@ Produce `architecture.yaml` — a structured map of a project's architecture tha
 
 7. **Identify failure modes** — for each external dependency and stateful component, trace cascading failures: what breaks, which components are affected, user impact, detection, recovery, severity. For detection: look for existing metrics, health checks, log patterns, or error handlers in the code; if none exist, write `"none"` (this itself is a finding). For recovery: document automatic recovery (retries, reconnects) found in code, or `"none"` if manual intervention is required. Think through chains: if A depends on B depends on external C, then C failing cascades through B to A.
 
-8. **Write and report** — assemble findings into [schema.md](schema.md) format. Set `version: "1"` and `generated` to today's date. Write to `$ROOT/.kord/agents/designer/memory/architecture.yaml` (create directory if needed). If a pre-commit hook prevents the write, ask scribe to write it instead. Report: purpose, capabilities, component names, flow count, dependency count, failure modes with severity, file path written.
+8. **Gemini review** (background) — before writing the final YAML, kick off a peer review. Feed the draft architecture and project source to Gemini:
+   ```bash
+   gemini -m gemini-2.5-pro -o json -p "Review this architecture.yaml against the source code. Flag: missing components that exist in code but not in the YAML, incorrect dependency edges, failure modes that were missed, flows that skip important steps, and any component descriptions that misrepresent what the code does. Be specific." @$ROOT/ < /tmp/architecture-draft.yaml > /tmp/gemini-review-arch.json &
+   ```
+   Continue to step 9 immediately. The `@$ROOT/` syntax feeds the full codebase to Gemini's context window for cross-referencing.
+
+9. **Write and report** — assemble findings into [schema.md](schema.md) format. Set `version: "1"` and `generated` to today's date. If the Gemini review from step 8 is available, incorporate valid critiques: add missing components, fix incorrect edges, add missed failure modes. Ignore critiques about style or naming — focus on factual errors. Write to `$ROOT/.kord/agents/designer/memory/architecture.yaml` (create directory if needed). If a pre-commit hook prevents the write, ask scribe to write it instead. Report: purpose, capabilities, component names, flow count, dependency count, failure modes with severity, whether Gemini review was incorporated, file path written.
 
 ## Example Report
 

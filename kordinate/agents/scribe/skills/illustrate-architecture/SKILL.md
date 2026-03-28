@@ -111,6 +111,12 @@ Write one markdown file per tab into `<docs-content-dir>/<project>/narrative/`:
 
 Each heading in the narrative should use `{#component-id}` syntax to anchor it to a graph node for bidirectional linking. For example: `## API Layer {#api-gateway}`.
 
+**Gemini review** — after writing the first tab's narrative, kick off a background review of it while you write the remaining tabs:
+```bash
+gemini -m gemini-2.5-pro -o json -p "Review this architecture narrative against the source data. Flag: inaccuracies (narrative says X but data shows Y), missing context (important components or flows not mentioned), misleading simplifications, and broken component name references. Also flag if the narrative reads like a bullet list instead of a story." @architecture.yaml < structure.md > /tmp/gemini-review-narrative.json &
+```
+Continue writing `flows.md`, `data.md`, `resilience.md`. Before finalizing, read the Gemini review and revise the narrative where critiques are valid. Then kick off a review of the remaining tabs if time permits. The goal is not perfection — it's catching factual errors and blind spots that a second perspective reveals.
+
 ### 6. Write the explorer page
 
 Write a self-contained Astro page to `<docs-pages-dir>/<project>/index.astro`.

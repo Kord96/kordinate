@@ -71,9 +71,15 @@ Scan a project's source code to identify which design patterns and anti-patterns
    2. **Stack-implied patterns.** Match the project's stack against expected patterns: web API implies input validation and rate limiting; async workers imply backpressure and dead-letter handling; microservices imply service discovery and distributed tracing; any service implies structured logging and health checks.
    3. **Catalog cross-references.** Review which detected patterns commonly pair together. If one half of a well-known pair is present but the other was not detected, flag it (e.g., event sourcing detected without CQRS, or circuit-breaker without retry).
 
-6. **Write the report** using the format in [Output Format](#output-format). Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
+6. **Gemini review** (background) — before writing the final report, kick off a peer review. Pipe the draft findings to Gemini CLI in the background:
+   ```bash
+   gemini -m gemini-2.5-pro -o json -p "Review this pattern analysis for a $STACK project. Flag: false positives (patterns listed but evidence is weak), missed patterns (common for this stack but not listed), incorrect categories, and gaps that should have been caught. Be specific — name the pattern and why." < /tmp/patterns-draft.md > /tmp/gemini-review-patterns.json &
+   ```
+   Continue to step 7 immediately — don't wait. If the review is back by the time you finish step 7, read it and incorporate valid critiques before writing the final report. If it hasn't returned yet, write the report without it and note "Gemini review pending" in the report header.
 
-7. **Report** -- summarize to the caller: pattern count, anti-pattern count, key gaps, and report location.
+7. **Write the report** using the format in [Output Format](#output-format). If the Gemini review from step 6 is available, incorporate valid critiques: add missed patterns with a note "(flagged by Gemini review)", adjust confidence levels, or add gaps. Ignore critiques that contradict tool evidence (ast-grep/semgrep matches outweigh Gemini opinions). Create the directory if it doesn't exist. Delegate the .md write to scribe if the guard-md hook blocks you.
+
+8. **Report** -- summarize to the caller: pattern count, anti-pattern count, key gaps, whether Gemini review was incorporated, and report location.
 
 ## Output Format
 
