@@ -35,17 +35,22 @@ Complete list of all checks performed by `/preflight`. Each check reports `[pass
 
 ## 3. Credential Availability
 
+The authoritative list of required credentials is the keys registry at [keys/registry.md](../keys/registry.md). The checks below mirror that registry's required entries. If the registry is updated, this table must be updated to match.
+
 | # | Check | Pass entry | Required | Readers |
 |---|-------|-----------|----------|---------|
-| K1 | Tailscale workstation auth | `kordinate/tailscale/auth_key_workstation` | yes | workstation entrypoint |
-| K2 | Tailscale API key | `kordinate/tailscale/api_key` | yes | deployer, infra bootstrap |
-| K3 | SSH authorized key | `kordinate/ssh/authorized_key` | yes | workstation, node access |
-| K4 | SSH password | `kordinate/ssh/password` | yes | workstation sudo |
-| K5 | MinIO root user | `kordinate/minio/root_user` | yes | MinIO deployment |
-| K6 | MinIO root password | `kordinate/minio/root_password` | yes | MinIO deployment |
-| K7 | Cloudflare tunnel token | `kordinate/cloudflare/tunnel_token` | yes | cloudflared deployment |
-| K8 | Grafana admin password | `kordinate/grafana_admin/password` | yes | Grafana deployment |
-| K9 | Claude credentials | `kordinate/claude/credentials` | yes | workstation agent auth |
+| K1 | GitHub token | `kordinate/github/token` | yes | installer, scribe |
+| K2 | Tailscale workstation auth | `kordinate/tailscale/auth_key_workstation` | yes | workstation entrypoint |
+| K3 | Tailscale gateway auth | `kordinate/tailscale/auth_key_gateway` | yes (per cluster) | deploy-cluster |
+| K4 | Tailscale API key | `kordinate/tailscale/api_key` | yes | workstation entrypoint |
+| K5 | SSH authorized key | `kordinate/ssh/authorized_key` | yes | workstation entrypoint |
+| K6 | SSH password | `kordinate/ssh/password` | yes | workstation entrypoint |
+| K7 | MinIO root user | `kordinate/minio/root_user` | yes (per cluster) | deploy-cluster |
+| K8 | MinIO root password | `kordinate/minio/root_password` | yes (per cluster) | deploy-cluster |
+| K9 | Cloudflare tunnel token | `kordinate/cloudflare/tunnel_token` | yes | deploy-cluster, migrate |
+| K10 | Grafana admin password | `kordinate/grafana_admin/password` | yes | deploy-cluster |
+| K11 | Grafana API key | `kordinate/grafana_admin/api_key` | yes | kord-hydrate, auth-check |
+| K12 | Claude credentials | `kordinate/claude/credentials` | yes | installer, beorn entrypoint |
 
 ### GPG Check
 

@@ -50,8 +50,10 @@ Optional flags:
 ### Step 3: Credential Availability
 
 1. Verify the pass store is initialized and a GPG key is available (`gpg --list-keys` succeeds).
-2. Check all required pass entries exist (from the credential registry in [checks.md](checks.md)):
+2. Check all required pass entries exist (from the keys registry at [keys/registry.md](../keys/registry.md)):
+   - `kordinate/github/token`
    - `kordinate/tailscale/auth_key_workstation`
+   - `kordinate/tailscale/auth_key_gateway`
    - `kordinate/tailscale/api_key`
    - `kordinate/ssh/authorized_key`
    - `kordinate/ssh/password`
@@ -59,6 +61,7 @@ Optional flags:
    - `kordinate/minio/root_password`
    - `kordinate/cloudflare/tunnel_token`
    - `kordinate/grafana_admin/password`
+   - `kordinate/grafana_admin/api_key`
    - `kordinate/claude/credentials`
 3. For each entry, run `pass ls kordinate/<service>/<key>` to verify existence. **Never display values.**
 
@@ -92,8 +95,8 @@ OVERLAYS
   [pass] No drift detected
 
 CREDENTIALS
-  [pass] 8/9 required keys present
-  [FAIL] Missing: kordinate/cloudflare/api_token
+  [pass] 11/12 required keys present
+  [FAIL] Missing: kordinate/grafana_admin/api_key
 
 MANIFESTS
   [pass] Base manifest directories exist
@@ -102,7 +105,7 @@ MANIFESTS
 NETWORK (skipped -- use --net to enable)
 
 Summary: 11 passed, 2 failed -- NOT READY
-  Fix: add monitor overlay, add cloudflare/api_token to pass store
+  Fix: add monitor overlay, add grafana_admin/api_key to pass store
 ```
 
 When all checks pass:
@@ -114,7 +117,7 @@ Summary: 13 passed, 0 failed -- READY
 ## Important Notes
 
 - This is a read-only operation -- preflight never modifies anything.
-- It combines checks from `/config validate`, `/overlay validate`, and `/keys audit` into one unified view.
+- It combines checks from `/config validate`, `/overlay validate`, and `/keys audit` into one unified view. The credential list comes from the keys registry ([keys/registry.md](../keys/registry.md)).
 - Network checks are opt-in because they require cluster access.
 - The goal is to catch issues BEFORE deployer starts a deployment.
 - Exit with clear "READY" or "NOT READY" verdict.
