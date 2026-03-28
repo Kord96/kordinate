@@ -16,8 +16,9 @@ Merge session branches back into main and garbage-collect stale worktrees left b
 
 1. **Discover + classify** — see [discover.md](discover.md).
 2. **Merge** branches with changes — see [merge-branches.md](merge-branches.md).
-3. **Cleanup** merged, empty, and stale branches — see [cleanup.md](cleanup.md).
-4. **Report**: merged (commits), conflicted (files), cleaned up (empty), skipped (active).
+3. **Merge kord branches** — for each merged session branch, check if a matching `session/*` branch exists in `$KORDINATE_HOME`. If so, merge it using the memory branch procedure in [merge-branches.md](merge-branches.md). This is automatic — no `--memory` flag needed.
+4. **Cleanup** merged, empty, and stale branches — see [cleanup.md](cleanup.md). Also clean up the corresponding kord branches.
+5. **Report**: merged (commits), conflicted (files), cleaned up (empty), skipped (active). Include kord merge results.
 
 ## Rules
 

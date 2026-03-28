@@ -54,6 +54,46 @@ create_worktree() {
   mkdir -p "$wt_path/.claude/agent-state"
 }
 
+# Create a parallel ~/.kord/ worktree for memory isolation.
+# Each session gets its own kord branch so agent memory writes don't conflict.
+KORD_HOME="${KORDINATE_HOME:-$HOME/.kord}"
+kord_branch=""
+create_kord_worktree() {
+  local sid="$1" branch_arg="$2"
+  # Only if ~/.kord/ is a git repo
+  git -C "$KORD_HOME" rev-parse --git-dir >/dev/null 2>&1 || return 0
+  kord_branch="session/${sid}"
+  local kord_wt="$KORD_HOME/.worktrees/${sid}"
+  if [ -d "$kord_wt" ]; then
+    return 0  # already exists (resume)
+  elif git -C "$KORD_HOME" show-ref --verify --quiet "refs/heads/$kord_branch" 2>/dev/null; then
+    # Branch exists but worktree gone — recreate
+    git -C "$KORD_HOME" worktree add "$kord_wt" "$kord_branch"
+  else
+    git -C "$KORD_HOME" worktree add "$kord_wt" $branch_arg
+  fi
+  export KORDINATE_HOME="$kord_wt"
+}
+
+cleanup_kord_worktree() {
+  local sid="$1"
+  git -C "$KORD_HOME" rev-parse --git-dir >/dev/null 2>&1 || return 0
+  local kord_wt="$KORD_HOME/.worktrees/${sid}"
+  local kord_branch="session/${sid}"
+  [ -d "$kord_wt" ] || return 0
+  # Commit any uncommitted memory changes
+  local kord_dirty=$(git -C "$kord_wt" status --porcelain 2>/dev/null)
+  if [ -n "$kord_dirty" ]; then
+    git -C "$kord_wt" add -A
+    git -C "$kord_wt" commit -m "memory: session $sid exit" 2>/dev/null || true
+  fi
+  local kord_commits=$(git -C "$KORD_HOME" log main.."$kord_branch" --oneline 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$kord_commits" -eq 0 ]; then
+    git -C "$KORD_HOME" worktree remove "$kord_wt" 2>/dev/null || true
+    git -C "$KORD_HOME" branch -d "$kord_branch" 2>/dev/null || true
+  fi
+}
+
 # Generate session ID: tmux-based (stable) or timestamp (fallback)
 if [ -n "$TMUX" ]; then
   tmux_window=$(tmux display-message -p '#{window_index}')
@@ -87,12 +127,14 @@ run_claude_continue() {
 
 # Reuse existing worktree if it exists (auto-resume)
 if [ -d "$worktree" ]; then
+  create_kord_worktree "$session_id" "$branch"
   echo "Resuming session: $worktree (branch: $branch)"
   cd "$worktree"
   run_claude_continue "$@"
 # Branch exists but worktree was cleaned up — recreate worktree and resume
 elif git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
   create_worktree "$worktree" "$branch"
+  create_kord_worktree "$session_id" "$branch"
   echo "Resuming session (worktree recreated): $worktree (branch: $branch)"
   cd "$worktree"
   run_claude_continue "$@"
@@ -100,6 +142,7 @@ elif git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch" 2>/dev/n
 else
   git -C "$repo_root" pull --ff-only 2>/dev/null || true
   create_worktree "$worktree" "-b $branch"
+  create_kord_worktree "$session_id" "-b session/${session_id}"
   echo "New session: $worktree (branch: $branch)"
   cd "$worktree"
   set +e
@@ -117,6 +160,7 @@ if [ "$commits" -eq 0 ] && [ -z "$dirty" ]; then
   cd "$repo_root"
   git worktree remove "$worktree" 2>/dev/null || true
   git branch -d "$branch" 2>/dev/null || true
+  cleanup_kord_worktree "$session_id"
 else
   # Commit any uncommitted work
   if [ -n "$dirty" ]; then
@@ -125,6 +169,8 @@ else
     git commit -m "wip: uncommitted changes at session exit"
   fi
 
+  # Commit kord worktree changes too
+  cleanup_kord_worktree "$session_id"
   echo "Session preserved at: $worktree (branch: $branch)"
 fi
 
