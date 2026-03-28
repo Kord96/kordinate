@@ -719,13 +719,17 @@ async function handleRoute(route, message, ifNoneMatch, caller) {
       // Main caller: return instructions to spawn locally (faster, visible)
       // Subagent caller: kord spawns remotely (subagents can't spawn subagents)
       if (isMain) {
+        const secret = readAuthSecret(route.provider);
         log(`ROUTE ${route.name}: local spawn instructions for main caller`);
         return {
           text: JSON.stringify({
             local: true,
             agent: route.provider,
             prompt,
-            instructions: `Spawn a subagent using the Agent tool with subagent_type="${route.provider}" and the prompt above. This runs locally in your session for better visibility and speed.`,
+            gate_secret: secret,
+            instructions: secret
+              ? `First run: echo '${secret}' > /tmp/.kord-gate-${route.provider} — then spawn a subagent using the Agent tool with subagent_type="${route.provider}" and the prompt above. The gate secret is one-time use and auto-consumed.`
+              : `Spawn a subagent using the Agent tool with subagent_type="${route.provider}" and the prompt above.`,
           }),
           status: 200,
         };
@@ -779,6 +783,7 @@ async function handleRoute(route, message, ifNoneMatch, caller) {
 
     // Main caller: return instructions to regenerate locally
     if (isMain) {
+      const secret = readAuthSecret(route.provider);
       log(`ROUTE ${route.name}: stale cache, local regeneration for main caller`);
       return {
         text: JSON.stringify({
@@ -786,7 +791,10 @@ async function handleRoute(route, message, ifNoneMatch, caller) {
           agent: route.provider,
           prompt,
           cache_stale: true,
-          instructions: `Cache is stale. Spawn a subagent using Agent tool with subagent_type="${route.provider}" and the prompt above. The result will be cached on next kord call.`,
+          gate_secret: secret,
+          instructions: secret
+            ? `Cache is stale. First run: echo '${secret}' > /tmp/.kord-gate-${route.provider} — then spawn a subagent using Agent tool with subagent_type="${route.provider}" and the prompt above.`
+            : `Cache is stale. Spawn a subagent using Agent tool with subagent_type="${route.provider}" and the prompt above.`,
         }),
         status: 200,
       };
@@ -832,6 +840,7 @@ function registerTools(server) {
       log('TOOL delegate called', { agent, caller: caller || 'main', prompt: prompt.substring(0, 100) });
 
       if (isMain) {
+        const secret = readAuthSecret(agent);
         return {
           content: [{
             type: 'text',
@@ -839,7 +848,10 @@ function registerTools(server) {
               local: true,
               agent,
               prompt,
-              instructions: `Spawn a subagent using the Agent tool with subagent_type="${agent}" and the prompt above. This runs locally in your session for better visibility and speed.`,
+              gate_secret: secret,
+              instructions: secret
+                ? `First run: echo '${secret}' > /tmp/.kord-gate-${agent} — then spawn a subagent using the Agent tool with subagent_type="${agent}" and the prompt above. The gate secret is one-time use and auto-consumed.`
+                : `Spawn a subagent using the Agent tool with subagent_type="${agent}" and the prompt above.`,
             }),
           }],
         };
