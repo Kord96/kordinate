@@ -194,6 +194,12 @@ When the caller launches multiple training agents in parallel (e.g., one per lan
 2. **Check manifest on recovery** — if you lose track of running agents, read `/tmp/train-results/manifest.json` to see which runs completed, which are in-progress, and which failed.
 3. **Limit concurrency** — run at most 2 training agents in parallel. Each agent reads many files and calls Gemini, creating heavy context load. 4 concurrent agents risk the parent losing track.
 4. **Sequential languages within one agent** — instead of 4 agents doing 1 language each, prefer 2 agents doing 2 languages each (sequentially). Fewer agents to track, same throughput.
+5. **Checkpoint to memory** — after each completed round, the caller should save a memory note via `/remember` with the cumulative training state: total repos analyzed, aggregate metrics, which languages/rounds are done, and what's remaining. Memory survives across sessions, so a new conversation can pick up where the last one left off. Example:
+   ```
+   /remember Training detection: 40/100 repos done. Rounds completed: Python R1-R3, TS R1, Java R1, Go R1.
+   Aggregate F1: Python 0.92, TS 0.58→improving, Java 0.57→improving, Go 0.92.
+   Next: TS R2, Java R2, Go R2, then 3 more rounds of 20.
+   ```
 
 ## Error Handling
 
