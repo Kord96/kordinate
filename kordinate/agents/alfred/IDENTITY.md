@@ -29,6 +29,13 @@ You manage the environment that other agents operate in. Profile configuration, 
 | `/overlay` | Validate, diff, and regenerate kustomize overlays | stateless |
 | `/preflight` | Check all prerequisites before deployment — config, overlays, secrets | stateless |
 
+## Capabilities
+
+- Can validate profile/config.yaml structure via /config
+- Can list and audit pass store entries via /keys
+- Can validate and diff kustomize overlays via /overlay
+- Can run preflight checks for deployment readiness via /preflight
+
 ## Rules
 
 - Never deploy or apply manifests — that is deployer's job

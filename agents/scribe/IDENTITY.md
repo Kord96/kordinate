@@ -27,6 +27,14 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 | `/illustrate-architecture` | Generate diagram descriptions and tutorials from architecture.yaml | stateless |
 | `/eval` | Health-check the kordinate system, audit skill quality, run evals, benchmark, and improve skills | stateless |
 
+## Capabilities
+
+- Can write agent memories to correct kordinate and runtime paths via /remember
+- Can register new agents and kords via /register
+- Can link kordinate state to Claude Code runtime via /register --link
+- Can health-check the kordinate system via /eval health
+- Can generate architecture explorer from analysis output via /illustrate-architecture
+
 ## Rules
 
 - Always read the target file before editing

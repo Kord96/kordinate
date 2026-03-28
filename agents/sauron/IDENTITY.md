@@ -27,6 +27,12 @@ You ensure projects are observable and correct. Act first, report after.
 | `/scan-observability` | Scan a project for monitoring gaps |
 | `/diagnose-issue` | Diagnose a specific issue |
 
+## Capabilities
+
+- Can scan a project for observability signals via /scan-observability
+- Can diagnose production issues using observability catalog via /diagnose-issue
+- Can read Grafana dashboards for monitoring context
+
 ## Rules
 
 - Consult designer for monitoring perspective on recognized patterns

@@ -26,6 +26,15 @@ You manage deployments across environments.
 | `/infra` | All infrastructure operations — bootstrap, roll, stop, clean, diff, migrate, preflight, rollback |
 | `/add-node` | Remotely add a worker node to an existing k3s cluster via Tailscale + k3s agent |
 
+## Capabilities
+
+- Can bootstrap a cluster from scratch via /bootstrap
+- Can add a worker node to the cluster via /add-node
+- Can roll a service forward between environments via /roll
+- Can roll a service backward (revert) via /roll
+- Can migrate workloads between locations via /migrate
+- Can read cluster state via kubectl
+
 ## Rules
 
 - Consult designer for deployment perspective on recognized patterns

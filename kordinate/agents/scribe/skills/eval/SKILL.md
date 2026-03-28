@@ -43,13 +43,15 @@ Comprehensive health check for the kordinate runtime. Scans agents, skills, hook
     - `all` — scan both
     - If `--agent <name>` is provided, restrict to that agent's directories only.
 
-3. **Run checks** — execute every check defined in [health-checks.md](health-checks.md) against the scan targets.
+3. **Run structural checks** — execute checks in [health-checks.md](health-checks.md) (runtime-agnostic).
 
-4. **Group findings** — organize results by severity (`ERROR` first, then `WARNING`, then `INFO`), then by agent within each severity level.
+4. **Run runtime checks** — execute checks in [runtime-claude.md](runtime-claude.md) (Claude Code specific: MEMORY.md sync, agent alignment, hooks, CLAUDE.md, skills).
 
-5. **Output structured report** — print findings as a table with summary counts. See [health-checks.md](health-checks.md) for the output format.
+5. **Run e2e checks** (if `--e2e` flag) — execute checks in [e2e-checks.md](e2e-checks.md). These actually invoke the system (spawn agents, route kords, write memories). Slower, has side effects. Skip if structural/runtime checks have ERRORs.
 
-6. **Report** — print findings. Never modify any files.
+6. **Group findings** — organize results by severity (`ERROR` first, then `WARNING`, then `INFO`), then by check category (structural, runtime, e2e).
+
+7. **Report** — print findings. Structural and runtime checks never modify files. E2e checks clean up after themselves.
 
 ### Rules
 
@@ -236,7 +238,9 @@ Use `disable-model-invocation: true` for destructive/deployment skills. Use `all
 
 ## Reference Files
 
-- [health-checks.md](health-checks.md) — Runtime health check registry (12 checks: frontmatter, memory, kords, hooks, alignment)
+- [health-checks.md](health-checks.md) — Structural health checks (runtime-agnostic: frontmatter, kords, manifest, tree sync)
+- [runtime-claude.md](runtime-claude.md) — Claude Code runtime checks (MEMORY.md, agent alignment, hooks, CLAUDE.md, skills)
+- [e2e-checks.md](e2e-checks.md) — End-to-end checks (spawn agents, lifecycle compliance, kord routing, memory persistence, guard enforcement)
 - [checks.md](checks.md) — Static audit check registry (20 checks across 4 categories)
 - [agents/grader.md](agents/grader.md) — Grading agent for evaluating skill outputs
 - [agents/comparator.md](agents/comparator.md) — Blind A/B comparison agent

@@ -1,6 +1,6 @@
 # Health Checks
 
-Level 3 resource for the eval skill (health mode). Defines all structural checks and their severity levels.
+Level 3 resource for the eval skill (health mode). Structural checks that verify kordinate's internal consistency. Runtime-agnostic — no assumptions about which runtime (Claude Code, etc.) is in use.
 
 ## Frontmatter completeness
 
@@ -22,26 +22,6 @@ Validate that frontmatter field values are within their allowed ranges:
 - `curated` must be `true` or `false`
 
 Severity: **ERROR** for any invalid value.
-
-## MEMORY.md sync
-
-For each agent's runtime MEMORY.md (`~/.claude/agent-memory/<name>/MEMORY.md`), verify two-way consistency:
-
-- **Broken link** — every entry in MEMORY.md references a target file path. That file must exist on disk.
-    - Severity: **ERROR**
-- **Missing entry** — every curated memory file (`curated: true`) in the agent's kordinate memory directory should have a corresponding entry in MEMORY.md.
-    - Severity: **WARNING**
-
-## MEMORY.md purity
-
-MEMORY.md files must be pure indexes — a list of links to memory files with one-line descriptions. They must not contain:
-
-- Inline memory content (more than one sentence per entry)
-- Lifecycle instructions (boot sequences, load-order directives, preload lists)
-- Agent identity or behavioral instructions
-
-Severity:
-- **WARNING** — MEMORY.md contains lifecycle instructions or inline content
 
 ## KORD.json sync
 
@@ -100,35 +80,20 @@ Scan all frontmatter `description` fields across all files in the scan targets.
 - **Exact match** — two or more files share the exact same description string: **WARNING**
 - **Substring relationship** — one file's description is a substring of another's: **INFO**
 
-## Hook validation
+## Manifest integrity
 
-Verify that hooks registered in `settings.json` are correctly configured:
+If `$KORDINATE_HOME/.manifest.json` exists:
+- All files listed in the manifest must exist on disk: **ERROR** if missing
+- Curated package files should have hashes matching the manifest: **WARNING** if drifted
 
-- **Hook file exists** — every `command` path referenced in `settings.json` hooks must resolve to an existing file.
-    - Severity: **ERROR**
-- **Hook is executable** — each referenced hook script must have the executable bit set (`-x`).
-    - Severity: **ERROR**
-- **Hooks README accuracy** — if a hooks README exists (`hooks/README.md`), each hook listed in it must match a hook registered in `settings.json`, and vice versa.
-    - Severity: **WARNING**
+If the manifest does not exist: **INFO** (migration may be needed).
 
-## Lifecycle compliance
+## Dev/installable tree sync
 
-Verify that kordinate skills and memory files follow lifecycle conventions:
-
-- **Lifecycle wrapper present** — every kord skill directory (`agents/*/kords/*/`) that has a `contract.md` with `mode: stateful` should have its lifecycle managed through `expiry.sh`, not through inline instructions in other files.
-    - Severity: **INFO**
-- **MEMORY.md is a pure index** — covered by the MEMORY.md purity check above.
-
-## Agent-runtime alignment
-
-Verify that kordinate agent definitions and runtime agent registrations are in sync:
-
-- **Agent directory exists in runtime** — every agent directory under `~/.kord/agents/` must have a corresponding directory under `~/.claude/agents/` (the runtime agent registration).
-    - Severity: **ERROR**
-- **Agent memory directory exists** — every agent listed in `~/.kord/agents/` must have a corresponding `~/.claude/agent-memory/<name>/` directory.
-    - Severity: **WARNING**
-- **Agent name consistency** — the `name` field in each agent's `IDENTITY.md` must match the directory name.
-    - Severity: **ERROR**
+If running from a dev repo (`.dev-source` exists), compare the dev tree (`agents/`) against the installable tree (`kordinate/agents/`):
+- Skills that exist in one tree but not the other: **WARNING**
+- Kords that exist in one tree but not the other: **WARNING**
+- IDENTITY.md content that differs between trees: **INFO**
 
 ## Output format
 
