@@ -37,6 +37,34 @@ The training loop has four phases:
 
 Each round produces a scorecard. Over multiple runs, detection precision and recall improve.
 
+## Progress Tracking
+
+Training runs can be long-running and may survive context compression of the parent session. To ensure progress is never lost:
+
+**On start:** Write a manifest to `/tmp/train-results/manifest.json`:
+```json
+{
+  "run_id": "<timestamp>",
+  "language": "python",
+  "status": "in-progress",
+  "repos_planned": 5,
+  "repos_completed": 0,
+  "started_at": "ISO-8601",
+  "completed_at": null,
+  "scorecard_path": null,
+  "commit_sha": null,
+  "improvements_count": 0
+}
+```
+
+**On each repo completion:** Update `repos_completed` count.
+
+**On finish:** Set `status` to `"complete"`, fill in `completed_at`, `scorecard_path`, `commit_sha`, and `improvements_count`.
+
+**On error:** Set `status` to `"failed"` with an `"error"` field.
+
+When a parent session launches multiple training agents, it should append each entry to `/tmp/train-results/manifest.json` as a JSON array. After context compression, the parent can read this file to recover the state of all runs without relying on notification memory.
+
 ## Steps
 
 ### Phase 1: Sample Repos
@@ -150,11 +178,22 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
     `~/.kord/agents/designer/memory/training-log.json`
     This allows tracking improvement over time across multiple runs.
 
-13. **Report** -- summarize: repos analyzed, aggregate precision/recall/F1, worst-performing concepts, improvements applied, whether Gemini review was incorporated, and where the scorecard was written.
+13. **Update manifest.** Update `/tmp/train-results/manifest.json` with `status: "complete"`, `completed_at`, `scorecard_path`, `commit_sha`, and `improvements_count`.
+
+14. **Report** -- summarize: repos analyzed, aggregate precision/recall/F1, worst-performing concepts, improvements applied, whether Gemini review was incorporated, and where the scorecard was written.
 
 ## Scorecard Schema
 
 See [scorecard-schema.md](scorecard-schema.md) for the full JSON schema.
+
+## Multi-Run Orchestration
+
+When the caller launches multiple training agents in parallel (e.g., one per language), follow these practices to survive context compression:
+
+1. **Create a task per agent** using TaskCreate with a descriptive name (e.g., "Train detection: Python round 3"). This persists independently of conversation context.
+2. **Check manifest on recovery** — if you lose track of running agents, read `/tmp/train-results/manifest.json` to see which runs completed, which are in-progress, and which failed.
+3. **Limit concurrency** — run at most 2 training agents in parallel. Each agent reads many files and calls Gemini, creating heavy context load. 4 concurrent agents risk the parent losing track.
+4. **Sequential languages within one agent** — instead of 4 agents doing 1 language each, prefer 2 agents doing 2 languages each (sequentially). Fewer agents to track, same throughput.
 
 ## Error Handling
 
