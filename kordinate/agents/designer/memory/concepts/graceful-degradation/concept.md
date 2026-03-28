@@ -27,6 +27,8 @@ How to identify this pattern in code.
 
 **Not this pattern:** Standard `try/catch` error handling that returns an error response or default value is not graceful degradation. The pattern requires intentional design of degraded functionality modes -- the system continues to serve users with reduced but meaningful capability, not just catching errors. A catch block that returns `null` or logs and rethrows is error handling, not degradation.
 
+**Not this pattern:** Graceful *shutdown* (signal handling, `server.Shutdown()`, drain-and-stop) is the service-manager pattern, not graceful degradation. Degradation means the service stays running with reduced functionality, not that it shuts down cleanly.
+
 ### Confidence
 
 - **high** -- explicit fallback paths defined per dependency with documented degraded behavior and user notification

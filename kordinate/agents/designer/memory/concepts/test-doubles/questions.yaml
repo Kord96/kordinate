@@ -1,7 +1,7 @@
 questions:
   - q: "Do test files contain mock, stub, fake, or spy classes that implement the same interface as production dependencies?"
     weight: 3
-    signals: ["custom Mock or Fake or Stub or InMemory classes in tests", "implements production interface with test-specific behavior", "hand-written test double matching real dependency (not just Mockito @Mock annotation)"]
+    signals: ["custom Mock or Fake or Stub or InMemory classes in tests", "implements production interface with test-specific behavior", "hand-written test double matching real dependency (not just Mockito @Mock annotation)", "Go: //go:generate mockgen directive or mock_*.go files or internal/test/ directory with mock structs"]
   - q: "Are spy assertions used to verify meaningful call behavior such as call counts or argument matching?"
     weight: 2
     signals: ["called_with assertions", "toHaveBeenCalledTimes", "call_count verification"]

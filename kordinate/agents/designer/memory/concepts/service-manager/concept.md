@@ -25,6 +25,9 @@ How to identify this pattern in code.
 - Process lifecycle management with explicit state transitions (starting, ready, draining, stopped)
 - Graceful shutdown logic draining in-flight requests and flushing buffers before exit
 - `terminationGracePeriodSeconds` configuration in pod specs
+- Go: goroutine lifecycle management with `sync.WaitGroup` and stop channel (`wg.Add(1)`, `defer wg.Done()`, `close(stopCh)` shutdown signaling)
+- Go: `signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)` with `context.WithCancel` for coordinated shutdown
+- Go: `http.Server.Shutdown(ctx)` for graceful HTTP server shutdown with in-flight request draining
 
 ### Confidence
 

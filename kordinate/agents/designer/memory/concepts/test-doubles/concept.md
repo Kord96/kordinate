@@ -20,6 +20,8 @@ How to identify this pattern in code.
 - `jest.fn()`, `jest.spyOn()` in JavaScript/TypeScript tests
 - `sinon.stub()`, `sinon.spy()`, `sinon.fake()` in Node.js tests
 - `gomock.NewController`, `mockgen` generated files in Go
+- Go: `//go:generate mockgen` directives, `*_mock.go` or `mock_*.go` files, `gomock.Controller`, `internal/test/` or `internal/mock/` directories with test helper types
+- Go: custom `Mock*` or `Fake*` structs in `*_test.go` files implementing production interfaces
 - `mockito`, `@Mock`, `@InjectMocks`, `when().thenReturn()` in Java tests
 - `Fake*` or `Mock*` or `Stub*` classes in test directories
 - Spy assertions on `.call_count`, `.called_with`, `.toHaveBeenCalledTimes()`

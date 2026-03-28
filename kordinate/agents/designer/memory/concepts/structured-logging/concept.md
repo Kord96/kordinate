@@ -19,7 +19,8 @@ How to identify this pattern in code.
 
 - JSON log output format instead of plain text lines
 - Key-value log fields: `logger.info("event", key=value)`, `log.With("key", value)`
-- Libraries: `structlog` (Python), `logrus` (Go), `zap` (Go), `slog` (Go), `pino` (Node), `winston` with JSON transport
+- Libraries: `structlog` (Python), `logrus` (Go), `zap` (Go), `slog` (Go stdlib), `zerolog` (Go), `pino` (Node), `winston` with JSON transport
+- Go stdlib: `log/slog` import with `slog.Info("msg", "key", value)`, `slog.With("key", value)` -- standard library structured logging since Go 1.21
 - Context binding: `logger = logger.bind(request_id=rid)`, `log.WithFields()`, `logger.With()`
 - Log level as a structured field (`"level": "info"`) not a format prefix (`INFO:`)
 - Correlation ID attached to every log entry

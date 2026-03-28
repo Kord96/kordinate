@@ -26,6 +26,8 @@ How to identify this pattern in code.
 - Java: Netty `ChannelPipeline` with `addLast()`/`addFirst()` ordered handler chain
 - Java: Spring `GatewayFilterChain`, Servlet `FilterChain`, Spring Security `SecurityFilterChain` with ordered filter execution
 - Java: Composite recipe/rule patterns where transforms are chained: `CompositeRecipe`, `RecipeList`, `addRecipe()`
+- Go: sequential interface wrapping chains where each stage takes an input interface and returns the same type with added processing (e.g., interceptor chains, `io.Reader`/`io.Writer` wrapping, gRPC interceptors)
+- Go: `for _, handler := range handlers { reader = handler.Process(reader) }` -- iterating a slice of handlers, each wrapping the previous result
 
 ### Confidence
 

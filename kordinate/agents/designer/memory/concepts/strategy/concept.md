@@ -22,6 +22,7 @@ How to identify this pattern in code.
 - Python: protocol/ABC with multiple implementations, function passed as strategy (callable)
 - Java/TS: interface with `execute()`/`apply()`/`process()` method and multiple implementations
 - Go: function type or interface with multiple implementations assigned at init
+- Go: interface type with 2+ concrete implementations in separate files, selected at construction time (e.g., `Pacer` interface with `LeakyBucketPacer`, `NoOpPacer` implementations; or `Storage` interface with `LocalStorage`, `RedisStorage`)
 
 ### Confidence
 

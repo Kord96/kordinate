@@ -22,6 +22,12 @@ How to identify this pattern in code.
 - Python: `dependency-injector` library (`providers`, `containers`), `injector` library, `fastapi.Depends`
 - Java/Kotlin: Spring `@Autowired`/`@Component`, Dagger `@Inject`/`@Module`, Guice
 - JS/TS: Angular `@Injectable`, NestJS `@Inject`, InversifyJS, tsyringe
+- Go: `func New*()` constructors accepting interface parameters (constructor injection). Go rarely uses DI frameworks; `wire` (Google Wire) is the exception. The dominant Go idiom is explicit constructor injection with no container.
+
+### Negative signals (not sufficient for detection)
+
+- Go: bare keyword `inject` in Go code without a DI framework import (`google/wire`, `uber-go/fx`, `uber-go/dig`) is NOT dependency injection -- the word appears in unrelated contexts (SQL injection, header injection, etc.)
+- Passing concrete structs to constructors without interface abstraction is configuration, not DI
 
 ### Confidence
 

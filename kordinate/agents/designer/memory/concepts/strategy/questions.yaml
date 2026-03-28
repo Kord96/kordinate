@@ -1,7 +1,7 @@
 questions:
   - q: "Is there an interface with one core method implemented by multiple interchangeable concrete classes?"
     weight: 3
-    signals: ["interface with execute or apply method", "multiple implementations of same protocol", "Strategy or Policy suffix on class names"]
+    signals: ["interface with execute or apply method", "multiple implementations of same protocol", "Strategy or Policy suffix on class names", "Go: interface type with 2+ concrete struct implementations in separate files"]
   - q: "Is strategy selection externalized via configuration, factory, or runtime parameter?"
     weight: 3
     signals: ["config-driven strategy selection", "factory returning strategy by name", "strategy chosen via environment variable"]

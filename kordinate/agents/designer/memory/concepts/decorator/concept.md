@@ -23,6 +23,8 @@ How to identify this pattern in code.
 - Classes named `*Decorator`, `*Wrapper`, `Logging*`, `Cached*`
 - Nested composition: `new AuthDecorator(new LoggingDecorator(new Service()))`
 - `functools.wraps`, higher-order functions returning enhanced versions of the input
+- Go: `func(http.Handler) http.Handler` wrapping pattern, middleware that takes and returns the same interface
+- Go: Interceptor Bind methods that accept and return the same interface type (e.g., `Bind(reader Reader) Reader`) adding behavior while preserving the contract
 
 ### Confidence
 

@@ -25,6 +25,8 @@ How to identify this pattern in code.
 - Redux middleware with `store => next => action` curried signature
 - Axios interceptors: `axios.interceptors.request.use()`, `axios.interceptors.response.use()`
 - ASP.NET `IMiddleware` or `app.Use()` / `app.UseMiddleware<T>()`
+- Go: `func(http.Handler) http.Handler` wrapping pattern, gorilla/mux `MiddlewareFunc`, chi middleware chain
+- Go: interceptor/handler interfaces where each implementation wraps an inner handler, adding cross-cutting behavior (gRPC interceptors, custom interceptor chains)
 - Pipeline ordering: middleware registered in sequence with explicit ordering dependency
 
 **Not middleware:** Framework lifecycle hooks like Flask's `before_request`/`after_request`, Rails `before_action`/`after_action`, or Spring `@PostConstruct` are framework hooks, not the middleware pattern. Middleware requires an explicit composable pipeline with `next()` forwarding, not just hook registration on a framework lifecycle.

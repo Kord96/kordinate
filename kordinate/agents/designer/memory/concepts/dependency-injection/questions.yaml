@@ -1,7 +1,7 @@
 questions:
   - q: "Are dependencies received through constructor or method parameters rather than constructed internally?"
     weight: 3
-    signals: ["constructor accepts interfaces not concrete classes", "no new ConcreteClass() inside business logic"]
+    signals: ["constructor accepts interfaces not concrete classes", "no new ConcreteClass() inside business logic", "Go: func New*() accepting interface parameters"]
   - q: "Is there a composition root or DI container that wires dependencies at startup?"
     weight: 3
     signals: ["Container or Injector class with bindings", "centralized binding configuration at app entry point"]
