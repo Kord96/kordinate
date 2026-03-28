@@ -14,7 +14,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
 import { spawn, execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
@@ -190,27 +190,6 @@ function parseContractFrontmatter(raw) {
   return fm;
 }
 
-function parseCacheInputPaths(raw) {
-  const match = raw.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return [];
-  const fm = match[1];
-  if (!fm.includes('cache_inputs:')) return [];
-  const paths = [];
-  let inPaths = false;
-  for (const line of fm.split('\n')) {
-    const s = line.trim();
-    if (s === 'paths:') { inPaths = true; continue; }
-    if (inPaths) {
-      if (s.startsWith('- ')) {
-        paths.push(join(KORDINATE_HOME, s.slice(2).trim()));
-      } else if (s && !s.startsWith('-')) {
-        inPaths = false;
-      }
-    }
-  }
-  return paths;
-}
-
 function extractGuidelines(raw) {
   const idx = raw.indexOf('## Provider Guidelines');
   return idx >= 0 ? raw.slice(idx + '## Provider Guidelines'.length).trim() : '';
@@ -232,118 +211,19 @@ function findKordDir(kordName) {
   return null;
 }
 
-function checkExpiry(kordDir) {
+function checkExpiry(kordDir, message) {
   const expiryScript = join(kordDir, 'expiry.sh');
-  if (!existsSync(expiryScript)) return 'stale';
+  if (!existsSync(expiryScript)) return false; // no expiry = stale
   try {
-    execSync(`bash "${expiryScript}"`, {
+    execSync(`bash "${expiryScript}" ${JSON.stringify(message || '')}`, {
       cwd: kordDir,
       timeout: 10000,
       env: { ...process.env, HOME, KORDINATE_HOME },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
-    return 'fresh';  // exit 0
-  } catch (e) {
-    if (e.status === 2) return 'uncertain';  // exit 2
-    return 'stale';  // exit 1
-  }
-}
-
-function runCacheReview(kordDir, provider) {
-  // Read the review.md template
-  const reviewPath = join(kordDir, 'review.md');
-  if (!existsSync(reviewPath)) return 'STALE';
-
-  let template = readFileSync(reviewPath, 'utf8');
-  // Strip frontmatter
-  template = template.replace(/^---\n[\s\S]*?\n---\n?/, '');
-
-  // Compute changed files: files newer than .snapshot (or .hash for compat)
-  const snapshotFile = join(kordDir, '.snapshot');
-  const hashFile = join(kordDir, '.hash');
-  const referenceFile = existsSync(snapshotFile) ? snapshotFile : hashFile;
-  let changedFiles = '';
-  if (existsSync(referenceFile)) {
-    try {
-      // Read contract to find cache input paths from frontmatter
-      const contractPath = join(kordDir, 'contract.md');
-      const contractRaw = existsSync(contractPath) ? readFileSync(contractPath, 'utf8') : '';
-      const inputPaths = parseCacheInputPaths(contractRaw).filter(p => existsSync(p));
-      if (inputPaths.length > 0) {
-        const dirs = inputPaths.map(p => `"${p}"`).join(' ');
-        changedFiles = execSync(
-          `find ${dirs} -newer "${referenceFile}" -type f 2>/dev/null | head -50`,
-          { timeout: 5000, env: { ...process.env, HOME, KORDINATE_HOME } },
-        ).toString().trim();
-      }
-    } catch { /* best-effort */ }
-  }
-  if (!changedFiles) changedFiles = '(unable to determine changed files)';
-
-  // Read cached data
-  const dataPath = join(kordDir, 'data.md');
-  const cachedData = existsSync(dataPath) ? readFileSync(dataPath, 'utf8') : '';
-
-  // Fill template placeholders
-  const prompt = template
-    .replace('{{DIFF}}', changedFiles)
-    .replace('{{CACHED_DATA}}', cachedData);
-
-  // Invoke the provider agent with the review prompt (lightweight)
-  try {
-    const result = execSync(
-      `claude --print --dangerously-skip-permissions ${JSON.stringify(prompt)}`,
-      {
-        cwd: REPO_ROOT,
-        timeout: 60000,
-        env: { ...process.env, HOME, KORDINATE_HOME },
-        stdio: ['ignore', 'pipe', 'pipe'],
-      },
-    ).toString().trim();
-
-    const firstLine = result.split('\n')[0].trim().toUpperCase();
-    return firstLine.startsWith('VALID') ? 'VALID' : 'STALE';
+    return true; // exit 0 = fresh
   } catch {
-    return 'STALE';  // review failed → treat as stale
-  }
-}
-
-function updateHash(kordDir) {
-  // Re-run cache_store to update the hash after a VALID review
-  try {
-    execSync(`bash -c 'source "$KORDINATE_HOME/lib/cache.sh" && cache_store "${join(kordDir, '.hash')}"'`, {
-      cwd: kordDir,
-      timeout: 5000,
-      env: { ...process.env, HOME, KORDINATE_HOME },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-  } catch { /* best-effort */ }
-
-  // Also update the snapshot for magnitude-based expiry
-  updateSnapshot(kordDir);
-}
-
-function updateSnapshot(kordDir) {
-  try {
-    const contractPath = join(kordDir, 'contract.md');
-    if (!existsSync(contractPath)) return;
-    const contractRaw = readFileSync(contractPath, 'utf8');
-    const inputPaths = parseCacheInputPaths(contractRaw);
-    if (inputPaths.length === 0) return;
-
-    const snapshotFile = join(kordDir, '.snapshot');
-    const pathArgs = inputPaths.map(p => `"${p}"`).join(' ');
-    execSync(
-      `bash -c 'source "$KORDINATE_HOME/lib/cache.sh" && cache_snapshot "${snapshotFile}" ${pathArgs}'`,
-      {
-        cwd: kordDir,
-        timeout: 10000,
-        env: { ...process.env, HOME, KORDINATE_HOME },
-        stdio: ['ignore', 'pipe', 'pipe'],
-      },
-    );
-  } catch (e) {
-    log(`Snapshot update failed for ${kordDir}: ${e.message}`);
+    return false; // exit 1 = stale
   }
 }
 
@@ -412,34 +292,19 @@ function registerTools(server) {
       const { dir: kordDir, provider } = found;
       const contractPath = join(kordDir, 'contract.md');
       const raw = readFileSync(contractPath, 'utf8');
-      const dataPath = join(kordDir, 'data.md');
 
-      // Check cache freshness — three states
-      const expiryState = checkExpiry(kordDir);
+      // Per-project data file for artifact kords — derive slug from message
+      const slug = message.split(/\s+/)[0].replace(/[^a-zA-Z0-9-]/g, '_').slice(-32);
+      const dataPath = join(kordDir, `data-${slug}.md`);
 
-      if (expiryState === 'fresh' && existsSync(dataPath)) {
+      // Check cache freshness (pass message so expiry.sh can hash project-specific inputs)
+      if (checkExpiry(kordDir, message) && existsSync(dataPath)) {
         const cached = readFileSync(dataPath, 'utf8');
-        log(`TOOL kord cache hit`, { kord_name, cachedLen: cached.length });
+        log(`TOOL kord cache hit`, { kord_name, slug, cachedLen: cached.length });
         return { content: [{ type: 'text', text: `[cached]\n\n${cached}` }] };
       }
 
-      if (expiryState === 'uncertain') {
-        // Stage 2: lightweight agent review
-        log(`TOOL kord uncertain`, { kord_name, provider });
-        const verdict = runCacheReview(kordDir, provider);
-        log(`TOOL kord review verdict`, { kord_name, verdict });
-
-        if (verdict === 'VALID') {
-          updateHash(kordDir);
-          const cached = readFileSync(dataPath, 'utf8');
-          log(`TOOL kord cache revalidated`, { kord_name, cachedLen: cached.length });
-          return { content: [{ type: 'text', text: `[cached:revalidated]\n\n${cached}` }] };
-        }
-        // verdict is STALE — fall through to full regeneration
-        log(`TOOL kord review stale, regenerating`, { kord_name });
-      }
-
-      // Stale or review-stale — spawn agent for full regeneration
+      // Stale or no cache — spawn agent
       const guidelines = extractGuidelines(raw);
       const fullPrompt = guidelines
         ? `${guidelines}\n\n---\n\n${message}`
@@ -448,12 +313,11 @@ function registerTools(server) {
       log(`TOOL kord spawning`, { kord_name, provider });
       const response = await invokeAgent(provider, fullPrompt);
 
-      // Cache result and snapshot inputs
+      // Cache result
       try {
         writeFileSync(dataPath, response);
         writeFileSync(join(kordDir, '.valid'), new Date().toISOString());
-        updateSnapshot(kordDir);
-        log(`TOOL kord cached`, { kord_name, responseLen: response.length });
+        log(`TOOL kord cached`, { kord_name, slug, responseLen: response.length });
       } catch (e) {
         log(`TOOL kord cache write failed`, { kord_name, error: e.message });
       }

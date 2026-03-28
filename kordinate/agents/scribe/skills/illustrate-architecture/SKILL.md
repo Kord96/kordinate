@@ -1,90 +1,188 @@
 ---
 name: illustrate-architecture
-description: Transform a project's architecture into interactive viewer JSON — reads architecture.yaml for structure, reads the code for all viewpoints.
+description: >
+  Generate an interactive architecture explorer page from Designer's project analysis.
+  Reads architecture.yaml, patterns.md, dependencies.md, api-review.md, and debt-assessment.md
+  from project memory, then produces an Astro page with Cytoscape.js graph, narrative sidebar,
+  and bottom drawer.
+argument-hint: "<project> [--narrative <dir>]"
 curated: true
 scope: global
 ---
 
-Transform a project's architecture into viewer-ready JSON for the ProjectExplorer component.
+Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a bottom drawer for detail inspection.
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>`. Optional: `--tutorial`.
-
-The project must have an `architecture.yaml` at `<project>/.claude/agent-memory/designer/architecture.yaml`. If not, suggest running `/designer:architect` first.
-
-## Inputs
-
-1. **architecture.yaml** — the structural map. Component hierarchy, root groups, `depends_on` edges. Your guide to what the pieces are.
-
-2. **patterns.md** (optional) — from `/detect-patterns`. Which patterns the code uses, anti-patterns present, and patterns MISSING.
-
-3. **The project source code** — the execution truth. Always read the code.
+`$ARGUMENTS` — Required: `<project>` (e.g., `logbd`, `stoik`, `sous-storefront`). Optional: `--narrative <dir>` to supply hand-written narrative markdown files instead of auto-generated stubs.
 
 ## Procedure
 
-### 1. Read everything
+### 1. Parse and locate
 
-Read architecture.yaml to understand the structure. Read patterns.md if it exists. Then use `modules` fields from the YAML to find key source files and read them. Build a unified understanding of how the system works before producing anything.
+Parse project name from `$ARGUMENTS`. Extract `--narrative <dir>` if present.
 
-### 2. Produce the viewer JSON in one pass
+Locate the project directory by checking paths in order:
+- `~/<project>/`
+- `~/repos/<project>/`
+- `~/test-repos/<project>/`
+- If `$ARGUMENTS` starts with `/`, treat it as an absolute path
 
-Produce `architecture.json` directly from your understanding. Don't use intermediate tools or converters — produce the complete JSON yourself. The output shape:
+If not found, report which paths were checked and exit.
 
-```json
-{
-  "nodes": [...],
-  "edges": [...],
-  "state": [...],
-  "failure_modes": [...],
-  "data_flows": [...]
-}
+### 2. Ensure fresh analysis via kord
+
+Invoke `/kord designer project-analysis <project-path>` to ensure Designer's analyses are up to date. This runs the full analysis suite (detect-patterns, map-dependencies, review-api, assess-debt, architect) with cache-aware skipping.
+
+If the kord returns an error, check whether `architecture.yaml` already exists and proceed with stale data. Report the staleness in the final output.
+
+### 3. Read Designer memories
+
+Read from `<project>/.kord/agents/designer/memory/`:
+
+| File | Required | Purpose |
+|------|----------|---------|
+| `architecture.yaml` | **yes** | Core structure — abort if missing |
+| `patterns.md` | no | Enriches nodes with pattern badges |
+| `dependencies.md` | no | Enriches external service nodes |
+| `api-review.md` | no | Adds API endpoint mapping to nodes |
+| `debt-assessment.md` | no | Adds health coloring per node |
+
+If `architecture.yaml` is missing after the kord attempt, report and suggest running `/designer:architect <project>` directly. Exit.
+
+### 4. Build architecture.json
+
+Transform `architecture.yaml` into the JSON format described in [explorer-schema.md](explorer-schema.md). This is the data file the explorer page consumes.
+
+**Base transform** (from architecture.yaml alone):
+
+- Each **component** becomes a node with: `id`, `label` (from `name`), `type`, `group` (from capabilities or inferred tier), `dependsOn` array
+- Each **component with children** gets child nodes nested under `parent`
+- Each **depends_on** relationship becomes an edge: `{ source, target, label }`
+- Each **external_dependency** becomes a node with `type: "external"` and `group: "external"`
+- Each **actor** becomes a node with `type: "actor"` and `group: "actors"`
+- Each **data_flow** becomes a flow object with ordered steps
+- Each **state** entry becomes a node with `type: "store"` and metadata
+- Each **failure_mode** becomes a failure object with affected node IDs and severity
+- **capabilities** define the group boundaries for visual clustering
+
+**Enrichments** (from optional files):
+
+- **Pattern badges** (from `patterns.md`): For each detected pattern, find which components it maps to (from the "Where" / "Components" / mapping column). Add a `patterns` array to matching nodes with `{ name, category }`.
+- **Debt markers** (from `debt-assessment.md`): For each violation or debt item, map it to affected components. Add a `debt` object to matching nodes with `{ severity, items: [{ title, description }] }`. Severity drives node border coloring: critical = red, high = orange, medium = yellow.
+- **API endpoints** (from `api-review.md`): Map handler functions/routes to component nodes. Add an `endpoints` array to matching nodes with `{ method, path, description }`.
+- **External deps enrichment** (from `dependencies.md`): Ensure all external services from dependencies.md are represented as external nodes. Add `resilience` metadata (timeout, retry, circuit breaker) and `criticality` to external nodes.
+
+Write `architecture.json` to `<docs-content-dir>/<project>/architecture.json`. See step 7 for path resolution.
+
+### 5. Read or generate narrative
+
+**If `--narrative <dir>` is provided**: read markdown files from that directory for each sidebar tab:
+- `structure.md` — system overview narrative
+- `flows.md` — data flow walkthroughs
+- `data.md` — state and storage narrative
+- `resilience.md` — failure modes and recovery narrative
+
+Missing files are replaced with auto-generated stubs. Extra files are ignored.
+
+**If no `--narrative` flag**: auto-generate section stubs from the architecture data:
+
+- **Structure**: list components grouped by capability, one paragraph per group describing what it does and how components relate
+- **Flows**: one subsection per data_flow, written as a narrative walkthrough ("When X happens, the Y component does Z, passing data to W...")
+- **Data**: one subsection per state entry, grouped by purpose (source-of-truth, cache, derived)
+- **Resilience**: one subsection per failure_mode ordered by severity, describing trigger, cascade, impact, and recovery
+
+Write narrative markdown as frontmatter-less `.md` files into `<docs-content-dir>/<project>/narrative/`.
+
+### 6. Write the explorer page
+
+Write a self-contained Astro page to `<docs-pages-dir>/<project>/index.astro`.
+
+The page structure:
+
+```
++------------------------------------------------------------------+
+|  [project name] Architecture Explorer          [tab1][tab2][tab3] |
++-------------------------------------------+----------------------+
+|                                           |                      |
+|                                           |  Narrative Sidebar   |
+|           Cytoscape.js Graph              |  (tabbed markdown)   |
+|           (interactive)                   |                      |
+|                                           |  - Structure         |
+|                                           |  - Flows             |
+|                                           |  - Data              |
+|                                           |  - Resilience        |
++-------------------------------------------+----------------------+
+|  Bottom Drawer (click a node to inspect)                         |
+|  - Component detail, patterns, debt, endpoints, failure modes    |
++------------------------------------------------------------------+
 ```
 
-All viewpoints are different lenses on the same understanding. Produce them together — a flow reveals state dependencies, state reveals failure cascades, failures reveal missing resilience in flows.
+**Graph panel** (Cytoscape.js):
+- Load `architecture.json` at build time via Astro's content layer or inline as a `<script>` data blob
+- Nodes colored by type: service=blue, library=gray, api=green, store=amber, frontend=purple, external=red, actor=teal, worker=indigo
+- Debt-affected nodes get a colored border ring (red/orange/yellow by severity)
+- Pattern badges shown as small pill labels below node name
+- Edges styled by relationship: solid for depends_on, dashed for async/event
+- Layout: `dagre` (top-to-bottom) for structural view, `breadthfirst` for flow view
+- Click a node to populate the bottom drawer
+- Hover shows tooltip with component description
+- Zoom, pan, fit-to-screen controls
 
-**Nodes** — from `components` + `children` in the YAML:
-- Walk recursively. Components with children → `type: "group"`, `hasChildren: true`
-- Leaf types: frontend→component, store→library, api/worker→service, gateway→external-service
-- `parent` from nesting. Top-level components have no parent.
-- `file` from `modules[0]`. `exports` if available.
-- Add `external_dependencies` as nodes under an "External" group.
-- Review: merge single-child root groups into neighbors. Prune root groups with no edges.
+**Narrative sidebar**:
+- Tabbed interface: Structure | Flows | Data | Resilience
+- Render the narrative markdown for each tab
+- Clicking a component name in the narrative highlights the node in the graph
 
-**Edges** — from `depends_on` + `data_flows`:
-- Flow edges from flow steps (label with flow name, set `flowId`)
-- Structural edges from `depends_on` (label "uses", `flowId: "dependency"`)
-- Skip dependency edges if a flow edge already connects the same pair
-- Bidirectional flows: keep both arrows, set `hideLabel: true` on the return edge
-- No render edges — containment communicates parent-child relationships
+**Bottom drawer**:
+- Hidden by default, slides up on node click
+- Shows: component name, description, type, patterns (as pills), debt items (as warnings), API endpoints (as a mini table), failure modes affecting this node, dependencies (in and out)
+- Close button to dismiss
 
-**Flows** — trace each data flow through the CODE (not just the YAML steps):
-- Include all participants: users, components, stores, browser APIs, framework internals
-- 5-12 steps per flow, ending at the user-visible outcome
-- Domain details: pagination params, delays, cache keys, guard conditions
-- Write a `mermaid` sequence diagram string for each flow (`sequenceDiagram` format with `participant` declarations, `->>` arrows, `Note over` annotations)
-- If patterns.md reports anti-patterns in a flow path, annotate them
+**Technical requirements for the Astro page**:
+- Self-contained: inline all JS/CSS, load Cytoscape.js and dagre layout from CDN (`https://unpkg.com/cytoscape@3/dist/cytoscape.min.js`, `https://unpkg.com/cytoscape-dagre@2/cytoscape-dagre.js`, `https://unpkg.com/dagre@0.8/dist/dagre.min.js`)
+- Use Astro's `<script>` tag for client-side interactivity
+- Use CSS custom properties for theming (works with Starlight's dark/light mode)
+- Responsive: sidebar collapses to overlay on mobile
+- The page should work both in dev mode and as a built static page
 
-**State** — for each store/cache:
-- Search the code for imports/usage of the store hook to find all readers and writers
-- Include: persistence mechanism, serialization, scope
+### 7. Path resolution for output
 
-**Failure modes** — for each failure:
-- Trace the cascade through the code
-- If patterns.md reports missing resilience (no timeout, no retry), surface prominently
+The docs site content lives at (resolve in order):
+1. If `$KORDINATE_HOME/../site/` exists, use it (PVC layout: `kordinate/site/`)
+2. If a `site/` directory exists in the kordinate repo root, use it
+3. Otherwise create output at `<project>/.kord/agents/scribe/output/architecture-explorer/`
 
-### 3. Write output
+Within the resolved docs root:
+- Pages: `src/pages/<project>/index.astro`
+- Content: `src/content/docs/<project>/architecture.json`
+- Narrative: `src/content/docs/<project>/narrative/*.md`
 
-Write `architecture.json` to the docs site content directory for the project.
+If the docs site path does not exist (option 3 fallback), write all files into the project-local output directory and report that the user should copy them to the docs site manually.
 
-### 4. Tutorial (if --tutorial)
+### 8. Report
 
-What is this, who uses it, how does it work (one section per flow), what's stored where, what can go wrong.
+Output a summary:
 
-### 5. Report
+```
+## Architecture Explorer: <project>
 
-Node count, edge count, root groups, flow step counts (target: average 8+), state reader/writer counts.
+**Page**: <path to index.astro>
+**Data**: <path to architecture.json>
+**Narrative**: <path to narrative dir> (N files)
 
-## Reference
+### Enrichments included
+- Patterns: yes/no (N patterns mapped to M nodes)
+- Debt: yes/no (N items across M nodes)
+- API endpoints: yes/no (N endpoints mapped)
+- External deps: yes/no (N services)
 
-[convert-to-viewer.py](convert-to-viewer.py) documents the mechanical conversion rules (hierarchy flattening, edge dedup, bidirectional handling). Use it as a reference for the JSON format, not as a required step.
+### Graph stats
+- Nodes: N (components: X, external: Y, actors: Z)
+- Edges: N
+- Flows: N
+- Failure modes: N
+
+### Notes
+- <any warnings, stale data notices, missing optional files>
+```
