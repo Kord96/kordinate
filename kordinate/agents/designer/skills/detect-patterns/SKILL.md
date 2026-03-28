@@ -77,7 +77,7 @@ Scan a project's source code to identify which design patterns and anti-patterns
 
 ## Output Format
 
-Write the report to `<project-repo>/.claude/agent-memory/designer/patterns.md` using this structure:
+Write the report to `<project-repo>/.kord/agents/designer/memory/patterns.md` using this structure:
 
 ```markdown
 # <project> -- Detected Patterns

@@ -16,7 +16,7 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
 
 ## Dependency: detect-patterns
 
-Reads `<project-repo>/.claude/agent-memory/designer/patterns.md` written by `/detect-patterns`. If that file is absent, step 3 falls back to a quick scan.
+Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/detect-patterns`. If that file is absent, step 3 falls back to a quick scan.
 
 ## Steps
 
@@ -24,7 +24,7 @@ Reads `<project-repo>/.claude/agent-memory/designer/patterns.md` written by `/de
 
 2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`. If not found, report and exit.
 
-3. **Determine applicable patterns** — check for `<project-repo>/.claude/agent-memory/designer/patterns.md`.
+3. **Determine applicable patterns** — check for `<project-repo>/.kord/agents/designer/memory/patterns.md`.
    - **If present** (preferred — detect-patterns does a thorough multi-pass scan):
      1. Read the `Pattern` column from the `## Detected Patterns` table. These are the patterns whose anti-patterns you will scan for in steps 4-5.
      2. Read the `## Detected Anti-Patterns` table. These are already-confirmed anti-patterns that skip the scan in step 5 and go straight into the violations list with the file paths and detail from the `Where` and `Notes` columns. Severity assignment for these entries happens in step 4 after loading pattern files.
@@ -82,7 +82,7 @@ Reads `<project-repo>/.claude/agent-memory/designer/patterns.md` written by `/de
    - **Anti-patterns detected but no patterns**: the `## Detected Anti-Patterns` table has entries but `## Detected Patterns` is empty. The already-confirmed anti-patterns still produce violations — score and grade them normally. Note in the report that no design patterns were detected, so the scan only covers the pre-identified anti-patterns and may undercount debt.
    - **Project uses patterns not in catalog**: some detected patterns may lack a `pattern.md` file or lack an Anti-patterns section. Skip those patterns and note them in the report header so the reader knows which areas had no anti-pattern coverage.
 
-10. **Write the report** to `<project-repo>/.claude/agent-memory/designer/debt-assessment.md`:
+10. **Write the report** to `<project-repo>/.kord/agents/designer/memory/debt-assessment.md`:
 
    ```markdown
    # <project> — Tech Debt Assessment

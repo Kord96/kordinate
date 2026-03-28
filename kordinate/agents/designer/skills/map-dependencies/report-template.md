@@ -1,6 +1,6 @@
 # Report Template
 
-Write to `<project-repo>/.claude/agent-memory/designer/dependencies.md`. Create the directory if needed. Delegate to scribe if guard-md blocks.
+Write to `<project-repo>/.kord/agents/designer/memory/dependencies.md`. Create the directory if needed. Delegate to scribe if guard-md blocks.
 
 This file is consumed by `/architect` (step 3) to populate `external_dependencies`, `state`, and component `depends_on` fields in `architecture.yaml`. Use the concept vocabulary below so architect can match entries without translation.
 

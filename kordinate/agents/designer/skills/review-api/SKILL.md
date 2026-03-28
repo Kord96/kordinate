@@ -111,7 +111,7 @@ If the project is purely one of these styles, skip inapplicable REST hygiene che
 
 ## Output
 
-Write the report to `<project-repo>/.claude/agent-memory/designer/api-review.md`. Create the directory if it does not exist. If the guard-md hook blocks you, delegate the `.md` write to scribe.
+Write the report to `<project-repo>/.kord/agents/designer/memory/api-review.md`. Create the directory if it does not exist. If the guard-md hook blocks you, delegate the `.md` write to scribe.
 
 ```markdown
 # <project> -- API Review
