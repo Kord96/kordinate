@@ -38,6 +38,7 @@ How to identify this pattern in code.
 - Go: `mapper` as a variable name or field name for generic transformation functions is not the data mapper pattern
 - The word `mapper` in test utilities, mock helpers, or build tools is not the pattern
 - `ToolMapper`, `MessageMapper`, `KeyMapper` -- functional mappers that convert between DTOs or API models without a domain-persistence boundary are converters, not data mappers
+- TypeScript: Drizzle ORM schemas or Prisma models with separate tRPC output types and explicit mapping between them is data-mapper. The pattern is common in monorepo TypeScript apps using `@myapp/db` with Prisma/Drizzle schemas mapped to API response types in `@myapp/api`
 
 ### Confidence
 

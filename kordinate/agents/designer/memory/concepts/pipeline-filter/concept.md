@@ -17,7 +17,7 @@ How to identify this pattern in code.
 ### Signatures
 
 - Ordered chain of transform functions where output of one feeds input of the next
-- Pipe operators (`|>`, `|`, `>>`) composing stages
+- Pipe operators: `|>` (Elixir/F#) composing functional stages
 - Functions named `pipeline()`, `pipe()`, `compose()`, or `chain()`
 - Filter chains with `addFilter()`, `addStage()`, or `addStep()`
 - Data flowing through sequential stages in a defined order

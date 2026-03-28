@@ -27,9 +27,11 @@ How to identify this pattern in code.
 - `WebSocketHandler`, `WebSocketServer`, `WebSocketClient` class names
 - `STOMP` or `SockJS` fallback configuration
 
+**Not this pattern (TypeScript):** The word `WebSocket` appearing in TypeScript type definitions, `@types/ws`, or bundled framework types (Next.js, Vite) does not mean the project uses WebSockets. Type definitions for WebSocket APIs are included in many TypeScript projects' `node_modules` without the project itself implementing WebSocket functionality. Only flag when the project's own source code creates WebSocket servers, connects WebSocket clients, or handles WebSocket messages. Similarly, `ws` as a substring in identifiers (e.g., `wss`, `ws_url`) appearing only in dependencies or type stubs is not sufficient.
+
 ### Confidence
 
-- **high** -- `ws://`/`wss://` URLs combined with message handler callbacks and upgrade headers
+- **high** -- `ws://`/`wss://` URLs combined with message handler callbacks and upgrade headers in the project's source code
 - **medium** -- WebSocket library imports with handler registration but no visible connection lifecycle
 - **low** -- Generic bidirectional messaging code without explicit WebSocket protocol references
 

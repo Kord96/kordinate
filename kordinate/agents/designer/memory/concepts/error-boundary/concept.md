@@ -26,6 +26,8 @@ How to identify this pattern in code.
 - `resetErrorBoundary` or retry mechanisms allowing recovery from errors
 - Per-route `+error.svelte`, `error.tsx`, or `error.vue` files in file-based routing
 
+**Not this pattern (TypeScript):** `componentDidCatch` or `getDerivedStateFromError` appearing in type definitions (`.d.ts` files) or `node_modules` is not evidence of the project using error boundaries. Next.js `error.tsx` files are only evidence when the project has custom error boundary components with fallback UI, not just the default Next.js error page. A global error handler class or `try/catch` in server code is server error handling, not the error boundary pattern (which is specifically about component-level UI error catching).
+
 ### Confidence
 
 - **high** -- Dedicated error boundary component wrapping a subtree with explicit fallback UI, error logging, and recovery mechanism

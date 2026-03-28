@@ -32,6 +32,8 @@ How to identify this pattern in code.
 - `Gauge` in automotive/industrial contexts (fuel gauge, pressure gauge) is domain terminology, not the pattern.
 - `Histogram` in image processing, statistical analysis, or data visualization is domain usage, not observability.
 - Java: Spring Boot Actuator auto-configuration providing `/actuator/metrics` is framework default behavior -- only count as the pattern if there are custom metrics registered beyond defaults.
+- TypeScript: The word `metrics` in a codebase that measures application-level data (user engagement metrics, performance scores, test coverage metrics) is domain logic, not the metrics-instrumentation pattern. Only flag when there is an actual observability library (`prom-client`, `@opentelemetry/api`, `dd-trace`) with registered metric types exposed for scraping.
+- TypeScript: `Counter`, `Gauge`, `Histogram` names in non-metrics contexts (e.g., game score counter, progress gauge, chart histogram) are not this pattern.
 
 ### Confidence
 

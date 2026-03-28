@@ -17,10 +17,9 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Enum or constants defining states: `State`, `Status`, `Phase`
-- Transition table/map: dict or map from `(state, event)` to `next_state`
+- Transition table/map: dict or map from (state, event) to next_state
 - Lifecycle hooks: `on_enter`, `on_exit`, `before_transition`, `after_transition`
-- State classes with `handle()` or `process()` methods
+- `StateMachine` class or interface with explicit transition methods
 - Python: `transitions` library, `statemachine` library, enum-based state tracking
 - JS/TS: XState (`createMachine`, `interpret`), state pattern with class-per-state
 - Go: state as `int`/`string` const with transition function, `looplab/fsm`

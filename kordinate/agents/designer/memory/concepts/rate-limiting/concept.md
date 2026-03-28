@@ -29,6 +29,8 @@ How to identify this pattern in code.
 **Not this pattern:**
 - Delegating rate-limit commands to an external system (e.g., exposing Celery's `rate_limit` API, calling a remote rate-limit service). The codebase must implement the counting or throttling logic itself.
 - Simply having a `rate_limit` field or API parameter that configures another system's rate limiting.
+- TypeScript: `@Throttle` decorator from NestJS throttler or `express-rate-limit` imported but only in `devDependencies` or example code is not sufficient. The project must actually implement or apply rate limiting middleware in its request handling.
+- TypeScript/Python: `rateLimit` or `throttle` as a function name for UI debouncing (e.g., Lodash `_.throttle()`, React event throttling) is UI optimization, not the rate-limiting architectural pattern.
 
 ### Confidence
 

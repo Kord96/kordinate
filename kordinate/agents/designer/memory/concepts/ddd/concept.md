@@ -17,11 +17,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- `Entity`, `ValueObject`, or `AggregateRoot` base classes or interfaces in domain layer
+- `AggregateRoot` or `ValueObject` base classes/interfaces in a domain layer
 - `DomainEvent` classes published from aggregate operations
-- `Repository` interfaces defined in the domain layer, implemented in infrastructure
-- `domain/` package or directory structure separating domain logic from infrastructure
-- Bounded context directories or modules with explicit boundaries (e.g., `ordering/`, `shipping/`, `inventory/`)
+- Java: packages named `domain.model`, `domain.service`, `domain.event` with DDD building blocks
+- Java: Axon Framework `@Aggregate`, `@AggregateIdentifier`, `@CommandHandler`, `@EventSourcingHandler`
+- Go: `domain/` package with entity, value object, and repository interface definitions separate from infrastructure
+- Bounded context directories with explicit boundaries (e.g., `ordering/`, `shipping/`, `identity/`)
+- Ubiquitous language: class/struct names that map directly to business domain concepts (not technical terms)
+
+### Negative signals (not sufficient for detection)
+
+- The word `Entity` alone (JPA `@Entity`, HTML entity, database entity) is NOT DDD. Look for DDD-specific building blocks like `AggregateRoot`, `ValueObject`, `DomainEvent`.
+- A `Repository` interface alone is the repository pattern, not necessarily DDD. DDD requires multiple building blocks together.
+- A `domain/` directory alone is not DDD -- many projects use `domain/` as a generic package name without DDD practices.
 
 ### Confidence
 

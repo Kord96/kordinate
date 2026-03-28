@@ -18,14 +18,14 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- `.proto` files with `service` and `rpc` declarations
-- Generated stub files (`*_pb2.py`, `*_pb2_grpc.py`, `*.pb.go`, `*_grpc.pb.go`)
-- Python: `grpcio` library import (`import grpc`)
-- Node: `@grpc/grpc-js` library import
-- Go: `google.golang.org/grpc` in `go.mod` or import statements
-- Java: `io.grpc` package imports (`io.grpc.ManagedChannel`, `io.grpc.ServerBuilder`, `io.grpc.stub`)
-- Java: `StreamObserver` interface usage in service implementations
-- gRPC server setup with `add_servicer_to_server` or equivalent registration
+- `.proto` files with gRPC service definitions (look for files ending in `.proto`)
+- Generated stub files: `*_pb2_grpc.py`, `*_grpc.pb.go` (gRPC-specific generated code)
+- Python: `import grpc` or `from grpc` import statements (grpcio library)
+- Node: `@grpc/grpc-js` in package.json dependencies
+- Go: `google.golang.org/grpc` in go.mod dependencies
+- Java: `io.grpc.ManagedChannel`, `io.grpc.ServerBuilder`, `io.grpc.stub` package imports
+- Java: `StreamObserver` interface usage in gRPC service implementations
+- gRPC server setup with `add_servicer_to_server` (Python) or `bindService()` (Java)
 
 ### Negative signals (not sufficient for detection)
 

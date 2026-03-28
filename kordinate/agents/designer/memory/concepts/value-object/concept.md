@@ -17,16 +17,20 @@ How to identify this pattern in code.
 ### Signatures
 
 - `@dataclass(frozen=True)` or `@attr.s(frozen=True)` in Python
-- `record` types in Java 16+ or C# -- look for `public record ClassName(` declarations
+- Java: `public record ClassName(` declarations (Java 16+ record types)
 - Java: Lombok `@Value` annotation (creates immutable class with equals/hashCode by value)
-- Java: classes with `private final` fields only, `equals()`/`hashCode()` based on all fields, no setters
+- Java: classes named `*Value` or `*ValueObject` with `private final` fields, custom `equals()`/`hashCode()`, no setters
 - Kotlin: `data class` declarations (automatic value semantics)
-- `__eq__` and `__hash__` implemented based on all fields, not identity
-- No setter methods or mutating operations on the object
-- `frozenset` or `tuple` used instead of mutable collections
-- Factory methods that return new instances instead of modifying existing ones
-- Classes named `*Value`, `*Amount`, `*Range`, `*Address`, `*Money`, `*Quantity`
-- Go: small structs with value semantics (passed by value, compared with `==`), no ID field
+- Python: `__eq__` and `__hash__` implemented based on all fields, not identity
+- Classes explicitly named `*ValueObject`, `*Money`, `*Amount`, `*Quantity` in DDD domain layer
+- Go: small structs explicitly used as value types in domain layer with no ID field
+
+### Negative signals (not sufficient for detection)
+
+- Java: `@Value` from Spring (`org.springframework.beans.factory.annotation.Value`) is property injection, NOT a value object. Only Lombok `@Value` (`lombok.Value`) indicates a value object.
+- Java: `record` keyword alone is not sufficient -- Java records are used for many purposes (DTOs, config holders). Only flag as value object when the record is in a domain layer and represents a DDD value concept.
+- Go: any struct without an ID field is not automatically a value object. Look for explicit value semantics in a domain context.
+- Classes named `*Value` in non-domain contexts (config values, return values, parameter values) are not the DDD value object pattern.
 
 ### Negative signals (not sufficient for detection)
 

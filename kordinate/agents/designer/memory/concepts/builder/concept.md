@@ -36,6 +36,7 @@ How to identify this pattern in code.
 - Java: `.builder()` in test code constructing simple objects (DTO, config) with Lombok or Proto builders is boilerplate, not the pattern. The pattern requires intentional multi-step construction with meaningful build logic.
 - Go: `func New*()` constructors are standard Go, not the builder pattern. Look for explicit `*Builder` struct with `Build()` method or functional options (`With*()` functions) as a conscious design choice.
 - The mere presence of `Builder` class names (e.g., `StringBuilder`, `ProcessBuilder`, `ServerBuilder`) from standard libraries or frameworks is framework usage, not an architectural pattern choice.
+- TypeScript: `.build()` on a schema or config object (e.g., `z.object({}).build()`, `schema.build()`, `createTRPCRouter({})`) is framework API, not the builder pattern. The builder pattern requires a separate Builder class with incremental `.with*()` or `.add*()` methods constructing a product.
 
 ### Confidence
 

@@ -34,6 +34,8 @@ How to identify this pattern in code.
 - Mere presence of `@Mock`, `Mockito.mock()`, `jest.fn()`, or `unittest.mock` imports is standard test tooling, not an architectural pattern
 - Only flag test doubles when custom `Fake*`, `Mock*`, `Stub*`, or `InMemory*` classes exist implementing production interfaces
 - Framework-provided mocking annotations (`@MockBean`, `@Mock`) without custom double implementations do not constitute the pattern
+- TypeScript: `jest.mock()` or `vi.mock()` appearing in a project's test files is standard testing practice in the TypeScript ecosystem. Nearly every TypeScript project with tests uses `jest.fn()` or Vitest mocking. This is only the test-doubles *pattern* when the project creates custom `Fake*`, `Mock*`, or `InMemory*` classes that implement production interfaces -- not when it uses standard framework mocking utilities
+- Python: `@pytest.fixture` with `monkeypatch` or basic `MagicMock()` usage is standard Python testing, not the test-doubles pattern. Look for custom Fake or InMemory implementations
 
 ### Confidence
 

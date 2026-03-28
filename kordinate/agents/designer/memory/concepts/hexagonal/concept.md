@@ -17,8 +17,8 @@ How to identify this pattern in code.
 ### Signatures
 
 - `ports/` and `adapters/` directory structure separating interface definitions from implementations
-- Interfaces or protocols with a `Port` suffix (`OrderRepositoryPort`, `NotificationPort`)
-- Classes with an `Adapter` suffix implementing port interfaces (`PostgresOrderRepositoryAdapter`)
+- Interfaces with a `Port` suffix AND adapter implementations: `OrderRepositoryPort` + `PostgresOrderRepositoryAdapter` (both must be present)
+- Classes explicitly named `*Port` paired with `*Adapter` implementations in separate packages
 - Domain layer with no framework imports (no `requests`, `boto3`, `flask`, or DB driver imports)
 - Explicit separation of "driving" (inbound) and "driven" (outbound) adapters
 - Dependency injection wiring adapters to ports at application startup
@@ -38,6 +38,8 @@ How to identify this pattern in code.
 - Java/Go: having an `adapter/` directory without corresponding `port/` interfaces is the adapter pattern, not hexagonal. Both must be present.
 - Go: `internal/` package structure alone is standard Go layout, not hexagonal. Look for explicit `port/` and `adapter/` subdirectories.
 - Java: `BytesIn`/`BytesOut` or I/O port references are serialization interfaces, not hexagonal ports.
+- TypeScript: `interface FooPort` or `class FooAdapter` alone does not confirm hexagonal. The words `Port` and `Adapter` appear frequently in TypeScript (network ports, design pattern adapters, WebSocket adapters, database adapters). Hexagonal requires *both* `Port` interfaces AND corresponding `Adapter` implementations in a deliberate ports-and-adapters directory structure. A single `Adapter` class wrapping a third-party library is the adapter GoF pattern.
+- TypeScript: `implements FooPort` must be paired with a domain layer free of framework imports. If the interface is just a standard TypeScript interface pattern (dependency inversion), it is DI, not hexagonal.
 
 ### Confidence
 

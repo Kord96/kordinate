@@ -16,11 +16,11 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Classes named `*Composite` with a `children` collection delegating operations recursively to child components that share the same interface
-- `Component` base class or interface with both `Leaf` and `Composite` subclasses implementing the same operations
-- Schema/rule composition: `allOf`, `anyOf`, `oneOf`, `not` combinators composing sub-schemas recursively
-- Java: Spring Batch `CompositeItemProcessor`, `CompositeItemWriter` composing multiple processors/writers into one
-- Java: Abstract class with `List<Self>` field and methods that iterate over children calling the same method on each
+- Classes named `*Composite` with a children collection delegating operations recursively to child components that share the same interface
+- Explicit `CompositeItemProcessor`, `CompositeItemWriter`, `CompositeCommand` classes composing multiple implementations of the same interface
+- Schema/rule composition: `allOf`, `anyOf`, `oneOf` combinators composing sub-schemas recursively
+- Java: `CompositeItemProcessor`, `CompositeItemWriter` (Spring Batch) composing multiple processors/writers
+- Java: abstract class with `List<SameInterface>` field and methods iterating children calling the same method
 
 ### Negative signals (not sufficient for detection)
 

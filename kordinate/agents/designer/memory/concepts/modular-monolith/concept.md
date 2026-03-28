@@ -26,6 +26,8 @@ How to identify this pattern in code.
 - Java: module-level `package-info.java` with visibility restrictions, `@ArchTest` (ArchUnit) enforcing module boundaries
 - Go: single `main.go` with `internal/` packages organized by domain (e.g., `internal/auth/`, `internal/billing/`, `internal/orders/`)
 - Python: single package with `__init__.py` subpackages organized by domain, single entry point
+- TypeScript: monorepo with `packages/` or `apps/` directory using Turborepo, Nx, or Lerna where all packages deploy as a single unit (e.g., Next.js app with shared packages for `@myapp/db`, `@myapp/auth`, `@myapp/api`)
+- TypeScript: tRPC or similar RPC framework connecting internal packages without network calls, shared `prisma` schema across packages, single `Dockerfile` or `next.config.js` entry point importing from multiple internal packages
 
 ### Structural indicators (presence of 2+ suggests modular monolith)
 
