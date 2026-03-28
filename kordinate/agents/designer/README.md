@@ -20,7 +20,7 @@ Architecture review and pattern authority — reviews design consistency and ide
 | File | Description |
 |------|-------------|
 | [app-contract.md](memory/app-contract.md) | App contract |
-| [patterns.md](memory/patterns.md) | Index of recognized architectural patterns by category |
+| [concepts.md](memory/concepts.md) | Index of recognized architectural concepts by category |
 | [patterns/](memory/patterns/) | 16 pattern references (circuit-breaker, saga, CQRS, DDD, hexagonal, etc.) |
 | [libraries.md](memory/libraries.md) | Index of shared libraries that implement patterns |
 | [libraries/](memory/libraries/) | Library references (klog, nokrashi-tools, orchestrator, stoik) |

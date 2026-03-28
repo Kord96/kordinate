@@ -156,7 +156,7 @@ Every architectural entity becomes a node. The `type` field determines visual st
 
 These fields are **null/empty by default** and populated only when the corresponding Designer memory file exists:
 
-- `patterns` — from `patterns.md`. Array of `{ name, category }`. Detected architectural patterns for this component.
+- `patterns` — from `concepts.md`. Array of `{ name, category }`. Detected architectural patterns for this component.
 - `debt` — from `debt-assessment.md`. Object with `severity` and `items` array. Technical debt associated with this component.
 - `endpoints` — from `api-review.md`. Array of `{ method, path, description }`. API endpoints exposed by this component.
 - `resilience` — from `dependencies.md`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description. Resilience characteristics of external dependencies.

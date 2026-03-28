@@ -16,7 +16,7 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
 
 ## Dependency: detect-concepts
 
-Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/detect-concepts`. If that file is absent, step 3 falls back to a quick scan.
+Reads `<project-repo>/.kord/agents/designer/memory/concepts.md` written by `/detect-concepts`. If that file is absent, step 3 falls back to a quick scan.
 
 ## Steps
 
@@ -24,7 +24,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
 2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`, then `~/test-repos/<project>/`. If not found, report and exit.
 
-3. **Determine applicable patterns** — check for `<project-repo>/.kord/agents/designer/memory/patterns.md`.
+3. **Determine applicable concepts** — check for `<project-repo>/.kord/agents/designer/memory/concepts.md`.
    - **If present** (preferred — detect-concepts does a thorough multi-pass scan):
      1. Read the `Pattern` column from the `## Detected Patterns` table. These are the patterns whose anti-patterns you will scan for in steps 4-5.
      2. Read the `## Detected Anti-Patterns` table. These are already-confirmed anti-patterns that skip the scan in step 5 and go straight into the violations list with the file paths and detail from the `Where` and `Notes` columns. Severity assignment for these entries happens in step 4 after loading pattern files.
@@ -32,7 +32,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
 
 4. **Load anti-patterns** — two sources of anti-patterns to load:
 
-   **a) From detected patterns:** for each pattern from step 3.1 (whether from `patterns.md` or the quick scan), read its `concept.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/concept.md`. Extract the `### Anti-patterns` section under `## Architecture`. This section is a bullet list where each bullet is one anti-pattern to scan for (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). Treat each bullet as a separate scannable anti-pattern. If a pattern's file has no Anti-patterns section, skip it and record it for the report header (see "Patterns detected but none have anti-patterns sections" in step 10).
+   **a) From detected patterns:** for each pattern from step 3.1 (whether from `concepts.md` or the quick scan), read its `concept.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/concept.md`. Extract the `### Anti-patterns` section under `## Architecture`. This section is a bullet list where each bullet is one anti-pattern to scan for (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). Treat each bullet as a separate scannable anti-pattern. If a pattern's file has no Anti-patterns section, skip it and record it for the report header (see "Patterns detected but none have anti-patterns sections" in step 10).
 
    **b) From already-confirmed anti-patterns:** for each entry carried forward from step 3.2, read the anti-pattern's `concept.md` from `~/.kord/agents/designer/memory/concepts/<anti-pattern>/concept.md` and check for a `## Impact` section. The Impact section is a prose sentence describing consequences, not an explicit severity keyword. Map it to a severity level using these heuristics:
    - **CRITICAL** — Impact mentions reliability, correctness, data loss, outages, security, or safety consequences (e.g., "invariants impossible to enforce," "invalid state transitions slip through").
@@ -81,7 +81,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
    Continue to step 10 immediately. Step 11 checks whether the review has returned before finalizing.
 
 10. **Handle edge cases**:
-   - **No patterns or anti-patterns detected** (no `patterns.md` and quick scan finds nothing, or `patterns.md` exists but both tables are empty): the project may be too small, too new, or use patterns not in the catalog. Report this clearly: "No recognized patterns detected. This can mean the project is very small, uses unconventional architecture, or the pattern catalog doesn't cover its stack. Run `/detect-concepts` for a more thorough scan." Write a minimal report with a Grade A (0 points) and a note explaining the situation.
+   - **No patterns or anti-patterns detected** (no `concepts.md` and quick scan finds nothing, or `concepts.md` exists but both tables are empty): the project may be too small, too new, or use patterns not in the catalog. Report this clearly: "No recognized patterns detected. This can mean the project is very small, uses unconventional architecture, or the pattern catalog doesn't cover its stack. Run `/detect-concepts` for a more thorough scan." Write a minimal report with a Grade A (0 points) and a note explaining the situation.
    - **Project too small for meaningful assessment** (fewer than ~10 source files or ~500 lines of code): note that the assessment has limited value at this scale. Small projects rarely have structural debt — most issues are code-level. Still produce the report, but caveat the grade.
    - **All violations are MINOR**: this is a good result. Report Grade A or B as appropriate, and frame the MINOR items as "polish" rather than "debt." Suggest addressing them during regular code review rather than dedicated refactoring time.
    - **Patterns detected but none have anti-patterns sections**: every detected pattern was found in the catalog but none of their `concept.md` files contain an `### Anti-patterns` section. This means the catalog has recognition data but no debt criteria for these patterns. If the `## Detected Anti-Patterns` table from step 3 has entries, the report can still include those. Otherwise, produce a minimal report noting which patterns were detected and that anti-pattern coverage is unavailable for them. Do not assign a misleading Grade A -- instead omit the grade and state that the assessment is incomplete.
@@ -94,7 +94,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/patterns.md` written by `/det
    # <project> — Tech Debt Assessment
 
    > Auto-generated by /designer:assess-debt. Last run: <date>
-   > Pattern source: patterns.md (full scan) | quick scan (limited)
+   > Pattern source: concepts.md (full scan) | quick scan (limited)
 
    <!-- Example below shows a concrete report. Replace all values with actuals from the scanned project. -->
 

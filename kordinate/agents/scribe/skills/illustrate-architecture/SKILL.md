@@ -2,7 +2,7 @@
 name: illustrate-architecture
 description: >
   Generate an interactive architecture explorer page from Designer's project analysis.
-  Reads architecture.yaml, patterns.md, dependencies.md, api-review.md, and debt-assessment.md
+  Reads architecture.yaml, concepts.md, dependencies.md, api-review.md, and debt-assessment.md
   from project memory, then produces an Astro page with Cytoscape.js graph, narrative sidebar,
   and side drawer for detail inspection.
 argument-hint: "<project> [--narrative <dir>]"
@@ -48,7 +48,7 @@ Read from `<project>/.kord/agents/designer/memory/` — this is the only authori
 | File | Required | Purpose |
 |------|----------|---------|
 | `architecture.yaml` | **yes** | Core structure — abort if missing |
-| `patterns.md` | no | Enriches nodes with pattern badges |
+| `concepts.md` | no | Enriches nodes with pattern badges |
 | `dependencies.md` | no | Enriches external service nodes |
 | `api-review.md` | no | Adds API endpoint mapping to nodes |
 | `debt-assessment.md` | no | Adds health coloring per node |
@@ -130,7 +130,7 @@ Follow the voice, formatting, and structure rules in [narrative-style.md](narrat
 - Keep total narrative per flow/failure/store to ~100-150 words. The drawer is narrow — brevity is clarity.
 
 **Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
-- Pattern badges from `patterns.md` → `node.patterns[]`
+- Pattern badges from `concepts.md` → `node.patterns[]`
 - Debt markers from `debt-assessment.md` → `node.debt`
 - API endpoints from `api-review.md` → `node.endpoints[]`
 - External dep resilience from `dependencies.md` → `node.resilience`

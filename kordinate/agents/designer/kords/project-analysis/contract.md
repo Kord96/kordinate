@@ -14,7 +14,7 @@ Run a full analysis suite against the target project. The message starts with th
 1. Parse the project path from the first word of the message
 
 2. **Parallel scan** — run these three simultaneously (they are independent):
-   - `/detect-concepts` — write patterns.md
+   - `/detect-concepts` — write concepts.md
    - `/map-dependencies` — write dependencies.md
    - `/review-api` — write api-review.md (skip if no HTTP endpoints detected)
 

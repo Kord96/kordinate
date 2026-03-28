@@ -1,5 +1,5 @@
 - [workflow.md](workflow.md) — Designer review workflow
 - [app-contract.md](app-contract.md) — App Contract
 - [tools.md](tools.md) — Designer tools reference
-- [patterns.md](patterns.md) — Index of recognized architectural patterns by category
+- [concepts.md](concepts.md) — Index of recognized architectural concepts by category
 - [abstractions.md](abstractions.md) — Index of abstraction levels used to classify concepts

@@ -15,7 +15,7 @@ Automated training loop for improving concept detection quality across the full 
 
 ## Dependency: detect-concepts
 
-Invokes `/detect-concepts` via a designer subagent on each sampled repo (step 3). The detect-concepts skill must be installed and functional. Results are read from each repo's `.kord/agents/designer/memory/patterns.md`.
+Invokes `/detect-concepts` via a designer subagent on each sampled repo (step 3). The detect-concepts skill must be installed and functional. Results are read from each repo's `.kord/agents/designer/memory/concepts.md`.
 
 ## Arguments
 
@@ -101,7 +101,7 @@ When a parent session launches multiple training agents, it should append each e
    ```
    Agent(subagent_type="designer", prompt="Run /detect-concepts on /tmp/train-repos/<repo>")
    ```
-   Collect the output `patterns.md` from each repo's `.kord/agents/designer/memory/patterns.md`.
+   Collect the output `concepts.md` from each repo's `.kord/agents/designer/memory/concepts.md`.
    Run repos in parallel where possible (up to 3 concurrent).
 
 ### Phase 3: Evaluate (Multi-Oracle Ground Truth)
