@@ -24,6 +24,13 @@ How to identify this pattern in code.
 - SDK client classes that hide REST/gRPC details behind method calls
 - Behavioral facade (unnamed): a class whose constructor initializes 3+ distinct subsystem objects and whose public methods delegate to combinations of them (e.g., a `Bot` class coordinating polling, API client, and dispatcher)
 - Framework entry points: `App`, `Bot`, `Engine`, or `Server` classes that unify subsystem wiring behind a simple `run()` or `start()`
+- Python: module-level convenience functions (`validate()`, `parse()`, `render()`) that hide complex internal machinery (create internal objects, configure, execute, return result)
+- DAG/Pipeline orchestrator classes with `build()`, `run()`, `execute()` methods that coordinate executor, task status, hooks, and rendering into one call
+- `__init__.py` that re-exports a minimal public API from a multi-module package (e.g., `from .validators import validate, Draft7Validator`)
+- Java: `*Client` or `*Manager` classes wrapping multiple subsystem calls behind simple method signatures (e.g., `ClientAndServer` coordinating lifecycle + API)
+- Java: Spring `@Service` injecting 3+ other services and delegating without containing business logic
+- Java: BFF (Backend for Frontend) classes aggregating calls to multiple backend microservices into unified responses
+- Java: `*Parser.builder()` or factory methods returning a high-level API that hides complex internal wiring (e.g., `JavaParser` hiding lexer/AST/visitor pipeline)
 
 ### Confidence
 

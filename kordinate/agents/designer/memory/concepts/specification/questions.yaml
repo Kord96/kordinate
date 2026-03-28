@@ -11,4 +11,7 @@ questions:
   - q: "Are the same specifications used for both in-memory filtering and query generation?"
     weight: 1
     signals: ["dual-purpose spec for validation and query", "specification translated to SQL predicate", "same rule for collection filter and database query"]
+  - q: "Are there lists of predicate functions (conditions, guards, validators) evaluated as boolean gates for state transitions, operations, or workflow steps?"
+    weight: 3
+    signals: ["conditions list with all(cond(instance) for cond in conditions)", "conditions_met evaluating predicate list", "guard conditions on state machine transitions", "precondition callables checked before operation"]
 threshold: 6

@@ -16,18 +16,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Tree structures where leaves and containers share the same interface
-- `children` list or collection on composite nodes
-- Recursive `render()`, `execute()`, `accept()`, or `calculate()` methods
-- File system tree implementations (files and directories as same type)
-- UI widget trees (containers holding other widgets)
-- Menu hierarchies with nested submenus
-- `Component` base class/interface with `Leaf` and `Composite` subclasses
+- Tree structures where leaf and composite nodes share the same interface (e.g., `Component` base with `Leaf` and `Container` subclasses)
+- `children` list/collection on composite nodes with recursive operation delegation
+- File system tree: files and directories implementing a common `FileSystemNode` interface
+- UI widget trees: containers holding child widgets and delegating render/layout to all children
+- Menu hierarchies with nested submenus sharing the same `MenuItem` interface
+- Schema/rule composition: `allOf`, `anyOf`, `oneOf`, `not` combinators composing sub-schemas recursively
+
+**Not this pattern:** Generic tree data structures (e.g., `IdMap2`, `IdMap3`, nested Maps) or hierarchical data without a shared component interface are not composite. The composite pattern requires a uniform interface across both individual elements and collections, enabling clients to treat single objects and compositions uniformly. A tree-shaped data structure used for storage is not composite unless it has polymorphic operations.
 
 ### Confidence
 
 - **high** -- Shared interface with `children` collection on composite nodes and recursive operation delegation to children
-- **medium** -- Tree structure with uniform operations on nodes but without an explicit component interface
+- **medium** -- Tree structure with uniform operations on leaf and container nodes but without an explicit component interface
 - **low** -- Nested data structures with recursive processing that resemble but do not formally implement the pattern
 
 ## Architecture

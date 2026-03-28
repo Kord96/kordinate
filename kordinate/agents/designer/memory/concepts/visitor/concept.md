@@ -16,20 +16,26 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- `accept(visitor)` method on element/node classes
+- `accept(visitor)` method on element/node classes dispatching to visitor
 - `visit_*(node)` methods on visitor classes: `visit_BinaryExpr`, `visit_Literal`, `visit_IfStmt`
 - Double dispatch: element calls `visitor.visit_X(self)` in its `accept()` method
-- AST walkers, tree traversals, compiler passes, serialization visitors
+- AST walkers with visitor interface: compiler passes, linters, code generators
 - Python: `ast.NodeVisitor` with `visit_*` methods, `generic_visit()` fallback
 - Java: `Visitor` interface with `visit()` overloads per element type
 - Rust: visitor traits in `syn` crate, `Visit`/`VisitMut` patterns
 - Go: `ast.Walk` with `ast.Visitor` interface
+- TS/JS: `ts.forEachChild` with visitor callback, Babel `visitor` object with node type keys
+
+**Not this pattern:**
+- Generic tree traversal functions (e.g., `visitTree`, `walkTree`, `traverse`) without the double-dispatch visitor interface are iterators, not the visitor pattern
+- Recursive schema/data validation (e.g., JSON Schema `descend()` calling sub-validators on nested structures) -- this is recursive validation, not visitor double-dispatch
+- The key differentiator is that the visitor pattern uses double dispatch: elements accept a visitor and call back into it with their specific type. If the caller drives the recursion (not the elements), it is not visitor.
 
 ### Confidence
 
 - **high** -- `accept(visitor)` on elements plus `visit_Type(element)` methods on visitors (classic double dispatch)
-- **medium** -- visitor class with `visit_*` methods dispatched by element type, without explicit `accept()`
-- **low** -- type-switch traversal over a union/enum of node types
+- **medium** -- visitor class/object with type-keyed `visit_*` methods dispatched by element type, without explicit `accept()`
+- **low** -- type-switch traversal over a union/enum of node types with distinct handling per type
 
 ## Architecture
 

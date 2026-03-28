@@ -11,4 +11,7 @@ questions:
   - q: "Are rate limits applied before expensive operations in the request pipeline?"
     weight: 1
     signals: ["rate limit middleware early in chain", "throttle check before handler", "limit applied at gateway layer"]
+  - q: "Is the rate-limiting logic implemented in this codebase, or merely delegated to an external system?"
+    weight: -2
+    signals: ["rate limit delegated to external service", "control.rate_limit() forwarding to Celery/Redis", "rate limit proxy to another system"]
 threshold: 6

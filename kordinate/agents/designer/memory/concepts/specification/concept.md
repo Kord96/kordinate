@@ -16,18 +16,22 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- `is_satisfied_by()` or `isSatisfiedBy()` methods on business rule objects
+- `is_satisfied_by()` or `isSatisfiedBy()` methods on dedicated business rule objects
 - `and_spec()`, `or_spec()`, `not_spec()` combinators for composing specifications
-- Classes named `*Specification`, `*Spec`, `*Rule`, `*Criteria`
-- Chainable query filters that compose boolean predicates: `.where()`, `.and()`, `.or()`
-- Predicate objects passed to repository or collection filtering methods
-- Specification interface with a single `is_satisfied_by(candidate)` method
+- Classes explicitly named `*Specification`, `*Spec` implementing a specification interface
+- Specification interface with a single `is_satisfied_by(candidate)` method and boolean composition
+- DDD-style composable predicates used across repository queries and domain validation
+- Transition guard conditions: list of predicate callables evaluated with `all()` / `any()` to gate operations (e.g., `conditions_met` checking `all(cond(instance) for cond in conditions)`)
+- Python: `conditions` list where each element is a callable predicate, combined via `all(map(lambda c: c(instance), conditions))` for transition or operation guards
+- Workflow/pipeline step preconditions: ordered list of boolean checks that must all pass before execution proceeds
+
+**Not this pattern:** Generic `.where().and().or()` query builder chains are the builder pattern (SQL query construction), not the specification pattern. The specification pattern is specifically about domain-level composable business rule objects, not database query conditions. Also, simple boolean methods (`isActive()`, `isValid()`) on entities are not specifications unless they are standalone composable objects.
 
 ### Confidence
 
-- **high** — Dedicated specification classes with `is_satisfied_by()`, composed via `and`/`or`/`not` combinators, used for domain validation or query building
-- **medium** — Predicate functions or lambda chains used for filtering, but without formal specification classes or combinators
-- **low** — Boolean methods on domain objects (`is_active()`, `is_eligible()`) that encode business rules but are not composable
+- **high** -- Dedicated specification classes with `is_satisfied_by()`, composed via `and`/`or`/`not` combinators, used for domain validation or query building
+- **medium** -- Predicate objects implementing a common interface, passed to filtering/validation methods
+- **low** -- Boolean methods on domain objects (`is_active()`, `is_eligible()`) used as reusable predicates but not formally composable
 
 ## Architecture
 

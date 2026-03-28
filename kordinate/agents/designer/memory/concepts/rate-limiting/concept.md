@@ -26,6 +26,10 @@ How to identify this pattern in code.
 - Redis-based counters with TTL for distributed rate limiting (`INCR` + `EXPIRE`, `SETNX`)
 - Nginx `limit_req` / `limit_conn` directives in configuration
 
+**Not this pattern:**
+- Delegating rate-limit commands to an external system (e.g., exposing Celery's `rate_limit` API, calling a remote rate-limit service). The codebase must implement the counting or throttling logic itself.
+- Simply having a `rate_limit` field or API parameter that configures another system's rate limiting.
+
 ### Confidence
 
 - **high** -- rate limit middleware with configurable thresholds, 429 responses with rate limit headers, and a counter store (Redis/in-memory)

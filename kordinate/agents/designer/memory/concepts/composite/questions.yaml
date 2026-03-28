@@ -11,4 +11,7 @@ questions:
   - q: "Are add/remove child operations defined only on composite nodes, not on leaves?"
     weight: 1
     signals: ["child management on composite only", "leaf has no add/remove", "safe no-op on leaf"]
+  - q: "Do compound elements (e.g., allOf/anyOf schemas, composite rules, nested validators) iterate over sub-elements and recursively apply the same validation or evaluation operation?"
+    weight: 3
+    signals: ["allOf iterating sub-schemas with same validator", "anyOf/oneOf combining sub-validator results", "compound rule delegating to child rules via same interface"]
 threshold: 6
