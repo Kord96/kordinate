@@ -1,9 +1,9 @@
 # RBAC for Claude agents — two tiers of cluster access.
 #
-# readonly: default for all agents (sauron, designer, etc.)
+# readonly: default for all agents (sauron, augur, etc.)
 #   - read all resources, exec into pods, read logs
 #
-# deployer: full admin for deployer agent only
+# charon: full admin for charon agent only
 #   - uses the existing k3s admin kubeconfig
 #
 # Bootstrap: bin/cluster-bootstrap applies this, generates readonly kubeconfig,

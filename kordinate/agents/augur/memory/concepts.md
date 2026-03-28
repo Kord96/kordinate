@@ -2,7 +2,7 @@
 description: Index of recognized architectural patterns by category
 curated: true
 scope: global
-preloaded: designer
+preloaded: augur
 ---
 # Patterns Index
 

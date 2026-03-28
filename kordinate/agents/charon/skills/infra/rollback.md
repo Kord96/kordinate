@@ -11,7 +11,7 @@ Optional flags:
 
 ## Prerequisites
 
-- A rollback snapshot must exist at `~/.kord/agents/deployer/memory/dynamic/rollback/<project>-<env>.json`
+- A rollback snapshot must exist at `~/.kord/agents/charon/memory/dynamic/rollback/<project>-<env>.json`
 - Authenticate before running: use `/authenticate`
 
 ## Snapshot Format
@@ -50,7 +50,7 @@ Note: ConfigMap/Secret content is NOT stored (credentials protocol — hashes on
 
 1. Parse project and env from `$ARGUMENTS`.
 
-2. **Load snapshot** — read `~/.kord/agents/deployer/memory/dynamic/rollback/<project>-<env>.json`. If no snapshot exists, report error: "No rollback snapshot found. Rollback is only available after a /infra roll." and exit.
+2. **Load snapshot** — read `~/.kord/agents/charon/memory/dynamic/rollback/<project>-<env>.json`. If no snapshot exists, report error: "No rollback snapshot found. Rollback is only available after a /infra roll." and exit.
 
 3. **Validate snapshot** — check timestamp is recent (within 7 days). If older, warn but allow proceeding.
 
@@ -100,5 +100,5 @@ Note: ConfigMap/Secret content is NOT stored (credentials protocol — hashes on
 - PVC data is NOT reverted — that's destructive and a separate concern
 - Git branch is NOT reverted — kubectl-level only. Use `git revert` separately if needed
 - ConfigMaps and Secrets are never automatically reverted — flag for manual review
-- Snapshot files live in dynamic memory (`~/.kord/agents/deployer/memory/dynamic/rollback/`) — survives pod restarts
+- Snapshot files live in dynamic memory (`~/.kord/agents/charon/memory/dynamic/rollback/`) — survives pod restarts
 - Used snapshots are archived (`.used-<timestamp>`) — never deleted

@@ -105,7 +105,7 @@ Roll checks for `/tmp/diff/manifest.json` and applies everything listed in it.
 ### Summary
 - Staged 8 diff files across 5 pods
 - Total delta: +5.2M rows, ~120MB staged
-- Apply with: /deployer:roll <project> <source> <target>
+- Apply with: /charon:roll <project> <source> <target>
 ```
 
 ## Rules
@@ -113,5 +113,5 @@ Roll checks for `/tmp/diff/manifest.json` and applies everything listed in it.
 - Always use read-only connections when querying source data.
 - Clean up temp files on the source pod and local machine after transfer.
 - Never modify existing data — diff only produces new delta files.
-- If target env is stopped, report "target pods not running — start with /deployer:roll first" and exit.
+- If target env is stopped, report "target pods not running — start with /charon:roll first" and exit.
 - If no delta exists (environments are in sync), report "no diff" and produce no files.

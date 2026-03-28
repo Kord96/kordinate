@@ -1,8 +1,8 @@
 ---
-description: Designer tools reference — Gemini MCP for architecture validation
+description: Augur tools reference — Gemini MCP for architecture validation
 curated: true
 scope: global
-preloaded: designer
+preloaded: augur
 ---
 # Tools
 

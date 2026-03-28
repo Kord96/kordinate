@@ -1,8 +1,8 @@
 ---
-description: Designer review workflow — identify, compare, review, report
+description: Augur review workflow — identify, compare, review, report
 curated: true
 scope: global
-preloaded: designer
+preloaded: augur
 ---
 # Workflow
 

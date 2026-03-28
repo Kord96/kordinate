@@ -16,7 +16,7 @@ Score tech debt by scanning a project against Anti-patterns sections from detect
 
 ## Dependency: detect-concepts
 
-Reads `<project-repo>/.kord/agents/designer/memory/concepts.md` written by `/detect-concepts`. If that file is absent, step 3 falls back to a quick scan.
+Reads `<project-repo>/.kord/agents/augur/memory/concepts.md` written by `/detect-concepts`. If that file is absent, step 3 falls back to a quick scan.
 
 ## Steps
 
@@ -24,7 +24,7 @@ Reads `<project-repo>/.kord/agents/designer/memory/concepts.md` written by `/det
 
 2. Locate the project directory. Check `~/<project>/`, then `~/repos/<project>/`, then `~/test-repos/<project>/`. If not found, report and exit.
 
-3. **Determine applicable concepts** — check for `<project-repo>/.kord/agents/designer/memory/concepts.md`.
+3. **Determine applicable concepts** — check for `<project-repo>/.kord/agents/augur/memory/concepts.md`.
    - **If present** (preferred — detect-concepts does a thorough multi-pass scan):
      1. Read the `Pattern` column from the `## Detected Patterns` table. These are the patterns whose anti-patterns you will scan for in steps 4-5.
      2. Read the `## Detected Anti-Patterns` table. These are already-confirmed anti-patterns that skip the scan in step 5 and go straight into the violations list with the file paths and detail from the `Where` and `Notes` columns. Severity assignment for these entries happens in step 4 after loading pattern files.
@@ -32,9 +32,9 @@ Reads `<project-repo>/.kord/agents/designer/memory/concepts.md` written by `/det
 
 4. **Load anti-patterns** — two sources of anti-patterns to load:
 
-   **a) From detected patterns:** for each pattern from step 3.1 (whether from `concepts.md` or the quick scan), read its `concept.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/concept.md`. Extract the `### Anti-patterns` section under `## Architecture`. This section is a bullet list where each bullet is one anti-pattern to scan for (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). Treat each bullet as a separate scannable anti-pattern. If a pattern's file has no Anti-patterns section, skip it and record it for the report header (see "Patterns detected but none have anti-patterns sections" in step 10).
+   **a) From detected patterns:** for each pattern from step 3.1 (whether from `concepts.md` or the quick scan), read its `concept.md` file from `~/.kord/agents/augur/memory/concepts/<pattern>/concept.md`. Extract the `### Anti-patterns` section under `## Architecture`. This section is a bullet list where each bullet is one anti-pattern to scan for (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). Treat each bullet as a separate scannable anti-pattern. If a pattern's file has no Anti-patterns section, skip it and record it for the report header (see "Patterns detected but none have anti-patterns sections" in step 10).
 
-   **b) From already-confirmed anti-patterns:** for each entry carried forward from step 3.2, read the anti-pattern's `concept.md` from `~/.kord/agents/designer/memory/concepts/<anti-pattern>/concept.md` and check for a `## Impact` section. The Impact section is a prose sentence describing consequences, not an explicit severity keyword. Map it to a severity level using these heuristics:
+   **b) From already-confirmed anti-patterns:** for each entry carried forward from step 3.2, read the anti-pattern's `concept.md` from `~/.kord/agents/augur/memory/concepts/<anti-pattern>/concept.md` and check for a `## Impact` section. The Impact section is a prose sentence describing consequences, not an explicit severity keyword. Map it to a severity level using these heuristics:
    - **CRITICAL** — Impact mentions reliability, correctness, data loss, outages, security, or safety consequences (e.g., "invariants impossible to enforce," "invalid state transitions slip through").
    - **RECOMMENDED** — Impact mentions maintainability, testability, comprehension, or velocity costs without immediate runtime risk (e.g., "impossible to test or modify in isolation," "business rules scattered across service classes").
    - **MINOR** — Impact mentions readability, convention, or cosmetic concerns only.
@@ -88,12 +88,12 @@ Reads `<project-repo>/.kord/agents/designer/memory/concepts.md` written by `/det
    - **Anti-patterns detected but no patterns**: the `## Detected Anti-Patterns` table has entries but `## Detected Patterns` is empty. The already-confirmed anti-patterns still produce violations — score and grade them normally. Note in the report that no design patterns were detected, so the scan only covers the pre-identified anti-patterns and may undercount debt.
    - **Project uses patterns not in catalog**: some detected patterns may lack a `concept.md` file or lack an Anti-patterns section. Skip those patterns and note them in the report header so the reader knows which areas had no anti-pattern coverage.
 
-11. **Write the report** to `<project-repo>/.kord/agents/designer/memory/debt-assessment.md`. If the Gemini review from step 9 has returned, incorporate valid critiques: adjust severity levels, add missed violations, fix clustering. Ignore critiques about scoring methodology -- the grading scale is fixed.
+11. **Write the report** to `<project-repo>/.kord/agents/augur/memory/debt-assessment.md`. If the Gemini review from step 9 has returned, incorporate valid critiques: adjust severity levels, add missed violations, fix clustering. Ignore critiques about scoring methodology -- the grading scale is fixed.
 
    ```markdown
    # <project> — Tech Debt Assessment
 
-   > Auto-generated by /designer:assess-debt. Last run: <date>
+   > Auto-generated by /augur:assess-debt. Last run: <date>
    > Pattern source: concepts.md (full scan) | quick scan (limited)
 
    <!-- Example below shows a concrete report. Replace all values with actuals from the scanned project. -->

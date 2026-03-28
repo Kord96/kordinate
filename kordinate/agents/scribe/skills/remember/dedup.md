@@ -29,7 +29,7 @@ Use LLM judgment, not scripted string comparison. Guidelines:
 
 | New description | Existing description | Verdict |
 |-----------------|---------------------|---------|
-| "Deployer tools reference" | "Deployer tools reference -- postgres.py" | Exact match (substring) |
+| "Charon tools reference" | "Charon tools reference -- postgres.py" | Exact match (substring) |
 | "Infrastructure cluster setup" | "Cluster infrastructure and setup" | Near match (same nouns) |
 | "Grafana dashboard conventions" | "Prometheus alerting rules" | No match |
 | "Sauron workflow and validation" | "Sauron workflow -- understand, implement, validate, report" | Exact match (substring) |

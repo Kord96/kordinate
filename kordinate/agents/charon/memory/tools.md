@@ -1,8 +1,8 @@
 ---
-description: Deployer tools reference — postgres.py and local utilities
+description: Charon tools reference — postgres.py and local utilities
 curated: true
 scope: global
-preloaded: deployer
+preloaded: charon
 ---
 # Tools
 

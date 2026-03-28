@@ -6,8 +6,8 @@ curated: true
 scope: global
 cache_inputs:
   paths:
-    - kordinate/agents/designer/memory/concepts/
-    - kordinate/agents/designer/memory/anti-patterns/
+    - kordinate/agents/augur/memory/concepts/
+    - kordinate/agents/augur/memory/anti-patterns/
   threshold: 0.03
   stale_threshold: 0.20
   max_age: 14d

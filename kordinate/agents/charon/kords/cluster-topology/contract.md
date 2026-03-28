@@ -6,8 +6,8 @@ curated: true
 scope: global
 cache_inputs:
   paths:
-    - kordinate/agents/deployer/skills/infra/manifests/
-    - kordinate/agents/deployer/skills/infra/topology.yaml
+    - kordinate/agents/charon/skills/infra/manifests/
+    - kordinate/agents/charon/skills/infra/topology.yaml
     - profile/config.yaml
     - profile/overlays/
   threshold: 0.05

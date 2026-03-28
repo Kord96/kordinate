@@ -2,7 +2,7 @@
 description: Infrastructure Reference
 curated: true
 scope: global
-preloaded: deployer
+preloaded: charon
 ---
 # Infrastructure Reference
 
@@ -45,7 +45,7 @@ Master: Master Alloy pulls Gateway Prom via :9090 /federate (metrics) through Ga
 `app` values defined in `profile/topology.yaml`:
 - `<product-app>` — product workload pods
 - `<platform-app>` — user-managed shared services (message queues, databases, caches)
-- `<system-app>` — system-critical infrastructure managed by deployer
+- `<system-app>` — system-critical infrastructure managed by charon
 
 ## Observability Signals
 
@@ -65,7 +65,7 @@ Prometheus: /federate for metrics pull (:9090). Loki: sidecar in each Loki pod q
 
 ## Manifests
 
-Framework manifests: `agents/deployer/manifests/`
+Framework manifests: `agents/charon/manifests/`
 User manifests: `profile/additions/`
 
 ## Credentials

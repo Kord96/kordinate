@@ -22,7 +22,7 @@ For directory structure requirements, see [directory-templates.md](directory-tem
     - **Scratchpad** — quick observations, operational notes, things the agent noticed while working. Append to the agent's `memory/scratchpad.md`. Not curated — agents accumulate these freely.
     - **Topic file** — structured knowledge worth keeping as its own file. Create a new file in `memory/` with a descriptive name. Curated — only created or updated when explicitly requested.
     - When unclear: if it's a one-liner or transient fact, scratchpad. If it's reference material someone would look up later, topic file.
-    - For Designer concept files, use the [concept-template.md](concept-template.md) format.
+    - For Augur concept files, use the [concept-template.md](concept-template.md) format.
 
 4. **Determine scope** — a single piece of information may belong in both:
     - **Global** (`$KORDINATE_HOME/agents/<name>/memory/`) — useful across projects. Cluster facts, tool patterns, general knowledge.

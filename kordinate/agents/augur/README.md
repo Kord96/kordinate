@@ -6,14 +6,14 @@ Architecture review and pattern authority — reviews design consistency and ide
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| [detect-concepts](skills/detect-concepts/SKILL.md) | `/designer:detect-concepts <project>` | Scan a project for recognized architectural patterns |
+| [detect-concepts](skills/detect-concepts/SKILL.md) | `/augur:detect-concepts <project>` | Scan a project for recognized architectural patterns |
 
 ## Kords Provided
 
 | Kord | Mode | Requesters | Description |
 |------|------|-----------|-------------|
-| [designer-default](../../kords/designer-default/contract.md) | stateful | any | General architecture and design questions — topology, patterns, data flow, failure modes |
-| [pattern-review](../../kords/pattern-review/contract.md) | stateful | deployer, sauron | Architecture review for deployment and monitoring changes — violations by severity |
+| [augur-default](../../kords/augur-default/contract.md) | stateful | any | General architecture and design questions — topology, patterns, data flow, failure modes |
+| [pattern-review](../../kords/pattern-review/contract.md) | stateful | charon, sauron | Architecture review for deployment and monitoring changes — violations by severity |
 
 ## Memory
 

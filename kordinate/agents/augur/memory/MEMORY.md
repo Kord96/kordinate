@@ -1,5 +1,5 @@
-- [workflow.md](workflow.md) — Designer review workflow
+- [workflow.md](workflow.md) — Augur review workflow
 - [app-contract.md](app-contract.md) — App Contract
-- [tools.md](tools.md) — Designer tools reference
+- [tools.md](tools.md) — Augur tools reference
 - [concepts.md](concepts.md) — Index of recognized architectural concepts by category
 - [abstractions.md](abstractions.md) — Index of abstraction levels used to classify concepts

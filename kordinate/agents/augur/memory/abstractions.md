@@ -2,7 +2,7 @@
 description: Index of abstraction levels used to classify concepts — each answers a distinct architectural question
 curated: true
 scope: global
-preloaded: designer
+preloaded: augur
 ---
 
 # Abstractions

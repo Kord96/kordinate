@@ -39,7 +39,7 @@ The environment order is: `main` (dev) → `test` → `prod`
    kubectl get configmap -n <namespace> -o json | sha256sum
    kubectl get secret -n <namespace> -o json | sha256sum
    ```
-   Write snapshot to `~/.kord/agents/deployer/memory/dynamic/rollback/<project>-<env>.json`.
+   Write snapshot to `~/.kord/agents/charon/memory/dynamic/rollback/<project>-<env>.json`.
    Create the directory if it doesn't exist.
 
 7. **Deploy** (method-specific last mile):
@@ -149,7 +149,7 @@ Optional flags:
 
 ## Prerequisites
 
-Pods must be stopped first (`/deployer:stop`). This command will refuse to run if pods are still active in the target namespace.
+Pods must be stopped first (`/charon:stop`). This command will refuse to run if pods are still active in the target namespace.
 
 ## Steps
 
@@ -159,7 +159,7 @@ Pods must be stopped first (`/deployer:stop`). This command will refuse to run i
    ```
    ssh <cluster> "kubectl get pods -n <namespace> -l app=<project> --field-selector=status.phase=Running"
    ```
-   If any app pods are running (or infra pods when `--include-infra`), refuse and report: "Stop pods first with /deployer:stop".
+   If any app pods are running (or infra pods when `--include-infra`), refuse and report: "Stop pods first with /charon:stop".
 
 3. **If `--diff-only`**: clean up staged diff files on all pods in the namespace:
    ```

@@ -30,25 +30,25 @@ Locate the project directory by checking paths in order:
 
 If not found, report which paths were checked and exit.
 
-### 2. Invoke Designer analysis
+### 2. Invoke Augur analysis
 
-Spawn a Designer subagent to analyze the project:
+Spawn a Augur subagent to analyze the project:
 
 ```
-Agent(subagent_type="designer", prompt="Run /architect on <project-path>. Write output to <project-path>/.kord/agents/designer/memory/. Return the path when done.")
+Agent(subagent_type="augur", prompt="Run /analyze on <project-path>. Write output to <project-path>/.kord/agents/augur/memory/. Return the path when done.")
 ```
 
-Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/designer/memory/` and mark the report as `stale — Designer failed`.
+Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/augur/memory/` and mark the report as `stale — Augur failed`.
 
 ### 3. Read project artifacts
 
-Read from `<project>/.kord/agents/designer/memory/` — this is the only authoritative location.
+Read from `<project>/.kord/agents/augur/memory/` — this is the only authoritative location.
 
 | File | Required | Purpose |
 |------|----------|---------|
 | `architecture.yaml` | **yes** | Complete analysis (v2) — structure, concepts, deps, API, debt |
 
-If `architecture.yaml` is missing after the Designer attempt, report and suggest running `/architect <project>` directly. Exit.
+If `architecture.yaml` is missing after the Augur attempt, report and suggest running `/analyze <project>` directly. Exit.
 
 ### 4a. Produce architecture.json — write
 

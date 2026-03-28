@@ -1,6 +1,6 @@
 Execute workstation migration — build image, create PVC, migrate data, deploy.
 
-Requires deployer authentication. The deployer executes all phases via SSH to the control plane.
+Requires charon authentication. The charon executes all phases via SSH to the control plane.
 The only human action is verifying from the new pod and running `/infra migrate-cleanup`.
 
 **Input**: $ARGUMENTS — target cluster (e.g. `home`, `vandc`)
@@ -41,7 +41,7 @@ ssh kkord@<IP> "sudo kubectl get sc longhorn -o jsonpath='{.provisioner}'"
 ### Phase 3: Build and import workstation image
 
 ```bash
-scp -r $KORDINATE_HOME/agents/deployer/skills/infra/images/workstation/ kkord@<IP>:/tmp/workstation-build/
+scp -r $KORDINATE_HOME/agents/charon/skills/infra/images/workstation/ kkord@<IP>:/tmp/workstation-build/
 ssh kkord@<IP> "
   sudo k3s ctr images tag docker.io/library/workstation:latest docker.io/library/workstation:pre-migration 2>/dev/null || true
   cd /tmp/workstation-build && docker build -t workstation:latest .

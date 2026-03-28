@@ -29,7 +29,7 @@ You ensure projects are observable and correct. Act first, report after.
 
 ## Rules
 
-- Consult designer for monitoring perspective on recognized patterns
+- Consult augur for monitoring perspective on recognized patterns
 - After editing dashboard JSON, auto-deploy to Grafana immediately
 
 ## Consultation

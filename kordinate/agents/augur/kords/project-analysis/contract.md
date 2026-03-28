@@ -1,7 +1,7 @@
 ---
 description: Full project analysis — architecture, concepts, dependencies, API surface, debt
 requester: scribe
-provider: designer
+provider: augur
 mode: stateful
 curated: true
 scope: global
@@ -13,7 +13,7 @@ Run a full project analysis. The message starts with the project path.
 
 1. Parse the project path from the first word of the message
 
-2. **Run `/architect`** — produces architecture.yaml v2, which includes concepts, dependencies, API surface, and debt assessment in a single pass.
+2. **Run `/analyze`** — produces architecture.yaml v2, which includes concepts, dependencies, API surface, and debt assessment in a single pass.
 
 3. **Verify** — confirm architecture.yaml was written. Re-read it and check:
    - Components section is populated (not empty)

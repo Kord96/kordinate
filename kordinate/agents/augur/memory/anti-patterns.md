@@ -2,7 +2,7 @@
 description: Index of recognized anti-patterns by category
 curated: true
 scope: global
-preloaded: designer
+preloaded: augur
 ---
 # Anti-Patterns Index
 

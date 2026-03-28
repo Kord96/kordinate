@@ -75,7 +75,7 @@ These require a live Claude session. Run [smoke-test.sh](smoke-test.sh) to verif
 - [ ] **Subagent spawning** — each agent spawns and responds with correct identity
 - [ ] **Boot** — `/boot` loads shared protocols and agent memory without errors
 - [ ] **Stateless kord** — `/kord remember <note>` writes to correct paths
-- [ ] **Stateful kord** — `/kord deployer <question>` spawns deployer and returns answer
+- [ ] **Stateful kord** — `/kord charon <question>` spawns charon and returns answer
 - [ ] **Cache** — second stateful kord call returns `[cached]` when data is fresh
 - [ ] **Cache invalidation** — removing `.valid` marker causes re-spawn on next call
 - [ ] **Agent memory** — agents can read their own memory from kordinate paths

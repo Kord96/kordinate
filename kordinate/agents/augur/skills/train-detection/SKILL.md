@@ -15,7 +15,7 @@ Automated training loop for improving concept detection quality across the full 
 
 ## Dependency: detect-concepts
 
-Invokes `/detect-concepts` via a designer subagent on each sampled repo (step 3). The detect-concepts skill must be installed and functional. Results are read from each repo's `.kord/agents/designer/memory/concepts.md`.
+Invokes `/detect-concepts` via a augur subagent on each sampled repo (step 3). The detect-concepts skill must be installed and functional. Results are read from each repo's `.kord/agents/augur/memory/concepts.md`.
 
 ## Arguments
 
@@ -39,7 +39,7 @@ Each round produces a scorecard. Over multiple runs, detection precision and rec
 
 ## Convergence and Early Exit
 
-After each round completes, compare the aggregate F1 against the previous round's F1 (read from `~/.kord/agents/designer/memory/training-log.json`):
+After each round completes, compare the aggregate F1 against the previous round's F1 (read from `~/.kord/agents/augur/memory/training-log.json`):
 
 - **Plateau**: if F1 improvement < 0.02 for two consecutive rounds, stop early. Further rounds are unlikely to yield meaningful gains — the remaining gaps are likely concepts that need manual attention (new AST rules, fundamentally different detection approaches) rather than signature/question tuning.
 - **Target reached**: if aggregate F1 >= 0.90, stop. The system is performing well enough for production use.
@@ -97,11 +97,11 @@ When a parent session launches multiple training agents, it should append each e
 
 ### Phase 2: Detect
 
-3. **Run detect-concepts** on each cloned repo. Use an Agent subagent with `subagent_type=designer`:
+3. **Run detect-concepts** on each cloned repo. Use an Agent subagent with `subagent_type=augur`:
    ```
-   Agent(subagent_type="designer", prompt="Run /detect-concepts on /tmp/train-repos/<repo>")
+   Agent(subagent_type="augur", prompt="Run /detect-concepts on /tmp/train-repos/<repo>")
    ```
-   Collect the output `concepts.md` from each repo's `.kord/agents/designer/memory/concepts.md`.
+   Collect the output `concepts.md` from each repo's `.kord/agents/augur/memory/concepts.md`.
    Run repos in parallel where possible (up to 3 concurrent).
 
 ### Phase 3: Evaluate (Multi-Oracle Ground Truth)
@@ -110,7 +110,7 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
 
 4. **Build ground truth.** For each repo, establish what concepts ACTUALLY exist using three oracles:
 
-   **Oracle 1: Gemini (primary).** Send the repo tree + key source files to Gemini. First, build the concept list from the same catalogs detect-concepts uses: extract the `Pattern | Description` column from `~/.kord/agents/designer/memory/concepts.md` and the `Anti-pattern | What to look for` column from `~/.kord/agents/designer/memory/anti-patterns.md`. Write the combined list to `/tmp/train-results/concept-list.txt`. The prompt provides this list and instructs: "Look for the BEHAVIOR, not the NAME. A strategy pattern might be called 'processor' or 'handler'."
+   **Oracle 1: Gemini (primary).** Send the repo tree + key source files to Gemini. First, build the concept list from the same catalogs detect-concepts uses: extract the `Pattern | Description` column from `~/.kord/agents/augur/memory/concepts.md` and the `Anti-pattern | What to look for` column from `~/.kord/agents/augur/memory/anti-patterns.md`. Write the combined list to `/tmp/train-results/concept-list.txt`. The prompt provides this list and instructs: "Look for the BEHAVIOR, not the NAME. A strategy pattern might be called 'processor' or 'handler'."
    ```bash
    gemini -m gemini-2.5-pro -o json -p "Analyze this codebase. For each concept in this list, answer present/absent with file-level evidence. Look for BEHAVIOR, not naming. $(cat /tmp/train-results/concept-list.txt)" @/tmp/train-repos/<repo>/src/ > /tmp/train-results/<repo>/oracle-gemini.json
    ```
@@ -187,7 +187,7 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
    If the Gemini review from step 10 has returned, incorporate valid critiques: drop changes flagged as overfitting, add constraints to broadened keywords. Ignore critiques that contradict the scorecard evidence (measured false negatives/positives outweigh opinions).
 
 12. **Accumulate results.** Append the scorecard to a persistent log at:
-    `~/.kord/agents/designer/memory/training-log.json`
+    `~/.kord/agents/augur/memory/training-log.json`
     This allows tracking improvement over time across multiple runs.
 
 13. **Update manifest.** Update `/tmp/train-results/manifest.json` with `status: "complete"`, `completed_at`, `scorecard_path`, `commit_sha`, and `improvements_count`.
@@ -218,5 +218,5 @@ When the caller launches multiple training agents in parallel (e.g., one per lan
 - **GitHub API rate limit:** Back off and retry, or use `--skip-clone` with existing repos.
 - **Repo too large:** Skip repos over 10000 files with a warning.
 - **detect-concepts fails:** Record the failure in the scorecard, continue with next repo.
-- **Gemini unavailable:** Fall back to running questions through the designer agent (Claude) instead. Slower but functional.
+- **Gemini unavailable:** Fall back to running questions through the augur agent (Claude) instead. Slower but functional.
 - **No questions.yaml:** Skip question-based evaluation for that concept. Flag it for question generation.

@@ -11,7 +11,7 @@ Authenticate before writing: use `/authenticate`.
 ## Usage
 
 ```
-/create-kord deployer-sauron "pre-deployment health checks"
+/create-kord charon-sauron "pre-deployment health checks"
 /create-kord pattern-review "architecture review for deployment changes"
 ```
 

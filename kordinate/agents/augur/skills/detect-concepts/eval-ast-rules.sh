@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # eval-ast-rules.sh — Deterministic evaluation of ast-grep rules against test codebases.
 # Runs every rule against every repo and collects match counts into eval-results.json.
-# The AUDIT step is done by the designer agent (see eval-audit.md), not this script.
+# The AUDIT step is done by the augur agent (see eval-audit.md), not this script.
 
 set -euo pipefail
 
@@ -163,5 +163,5 @@ if high_count:
         print(f'  {r[\"concept\"]:40s} total={r[\"total_matches\"]:6d}  ({repos})')
 print()
 print(f'Results written to: $RESULTS_FILE')
-print('Next step: designer agent runs eval-audit procedure to check for false positives.')
+print('Next step: augur agent runs eval-audit procedure to check for false positives.')
 "

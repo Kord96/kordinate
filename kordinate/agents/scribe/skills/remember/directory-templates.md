@@ -6,7 +6,7 @@ When creating or validating a directory, check that all required files exist.
 
 ## Concept Directory
 
-Path: `agents/designer/memory/concepts/<concept-name>/` (canonical path)
+Path: `agents/augur/memory/concepts/<concept-name>/` (canonical path)
 
 | File | Required | Purpose |
 |------|----------|---------|
@@ -25,7 +25,7 @@ Path: `agents/<provider>/kords/<kord-name>/`
 | `expiry.sh` | stateful only | Cache check script — delegates to `lib/kord-expiry.sh`. Exit 0 (fresh), 1 (stale), 2 (uncertain) |
 | `review.md` | stateful only | Prompt template for stage 2 agent review — must contain `{{DIFF}}` and `{{CACHED_DATA}}` placeholders |
 
-Stateless kords (like remember, sanitize) only need `contract.md`. Stateful kords (like deployer-default, cluster-topology) need all four files.
+Stateless kords (like remember, sanitize) only need `contract.md`. Stateful kords (like charon-default, cluster-topology) need all four files.
 
 ## Agent Directory
 

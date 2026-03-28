@@ -21,10 +21,10 @@ Scan a project's source code to identify which architectural concepts and anti-p
 2. **Locate the project directory.** Check `~/<project>/`, then `~/repos/<project>/`, then `~/test-repos/<project>/`. If none exist, see [Error Handling](#error-handling).
 
 3. **Load the catalogs and detect the stack.** Read both indexes:
-   - `~/.kord/agents/designer/memory/concepts.md` -- patterns index (columns: `Pattern | Description | Reference`)
-   - `~/.kord/agents/designer/memory/anti-patterns.md` -- anti-patterns index (columns: `Anti-pattern | What to look for | Reference`)
+   - `~/.kord/agents/augur/memory/concepts.md` -- patterns index (columns: `Pattern | Description | Reference`)
+   - `~/.kord/agents/augur/memory/anti-patterns.md` -- anti-patterns index (columns: `Anti-pattern | What to look for | Reference`)
 
-   Each index header states its entry and category counts -- use those numbers in the report, do not hardcode them. Both patterns and anti-patterns live in the same directory tree: `~/.kord/agents/designer/memory/concepts/<name>/concept.md`. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). Note: the two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) -- always pull the category from whichever index the entry appears in.
+   Each index header states its entry and category counts -- use those numbers in the report, do not hardcode them. Both patterns and anti-patterns live in the same directory tree: `~/.kord/agents/augur/memory/concepts/<name>/concept.md`. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). Note: the two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) -- always pull the category from whichever index the entry appears in.
 
    **Detect the stack.** Before scanning, identify the project's languages and frameworks so you can prioritize relevant categories:
    - Python: check for `requirements.txt`, `pyproject.toml`, `setup.py`, `Pipfile`; then grep for framework imports (`flask`, `fastapi`, `django`, `celery`, `sqlalchemy`, `httpx`, `requests`).
@@ -43,8 +43,8 @@ Scan a project's source code to identify which architectural concepts and anti-p
    **Batch by category:** Build one multi-pattern regex per category (e.g., `pybreaker|opossum|CircuitBreaker|resilience4j` for Resilience) instead of grepping entry-by-entry. This keeps the number of grep invocations to one per category (~24 for patterns, ~21 for anti-patterns) rather than one per entry (~216 total).
 
    **Pass 2 -- tool rules on candidates that have them.** For each candidate, check for a rule file:
-   - `~/.kord/agents/designer/memory/concepts/<name>/ast-grep.yaml` -- used by ~15 pattern entries (structural GoF patterns like factory, singleton, observer, decorator, strategy, builder, etc.)
-   - `~/.kord/agents/designer/memory/concepts/<name>/semgrep.yaml` -- used by ~8 anti-pattern entries (security and error-handling: hardcoded-credentials, sql-injection, swallowed-exception, race-condition, etc.)
+   - `~/.kord/agents/augur/memory/concepts/<name>/ast-grep.yaml` -- used by ~15 pattern entries (structural GoF patterns like factory, singleton, observer, decorator, strategy, builder, etc.)
+   - `~/.kord/agents/augur/memory/concepts/<name>/semgrep.yaml` -- used by ~8 anti-pattern entries (security and error-handling: hardcoded-credentials, sql-injection, swallowed-exception, race-condition, etc.)
 
    Most entries have neither. Each entry has at most one type -- no entry currently has both. Check file existence before running.
 
@@ -56,7 +56,7 @@ Scan a project's source code to identify which architectural concepts and anti-p
 
    **Pass 3 -- manual verification of remaining candidates.** For each candidate still unconfirmed after Pass 2 (no rule file exists, or the tool produced no matches), read its `## Recognition > ### Signatures` section from `concept.md` and verify with targeted Grep/Glob: specific imports, class names, directory layouts, config keys, naming conventions, or structural smells listed in the signatures.
 
-   **Pass 3.5 -- diagnostic question evaluation for remaining ambiguous candidates.** For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), check for a question file at `~/.kord/agents/designer/memory/concepts/<name>/questions.yaml`. If one exists, load it and evaluate:
+   **Pass 3.5 -- diagnostic question evaluation for remaining ambiguous candidates.** For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), check for a question file at `~/.kord/agents/augur/memory/concepts/<name>/questions.yaml`. If one exists, load it and evaluate:
    - For questions with `signals` hints, grep for those signals first. If all signals return zero results, answer "no" without further analysis.
    - For remaining questions, read relevant code and answer yes/no with a one-line justification.
    - Compute the weighted score (sum of weights for "yes" answers).
@@ -90,12 +90,12 @@ Scan a project's source code to identify which architectural concepts and anti-p
 
 ## Output Format
 
-Write the report to `<project-repo>/.kord/agents/designer/memory/concepts.md` using this structure:
+Write the report to `<project-repo>/.kord/agents/augur/memory/concepts.md` using this structure:
 
 ```markdown
 # <project> -- Detected Concepts
 
-> Auto-generated by /designer:detect-concepts. Last run: <date>
+> Auto-generated by /augur:detect-concepts. Last run: <date>
 > Scanned against: <N>-pattern + <M> anti-pattern catalog. Tools used: <list which of ast-grep, semgrep, grep were available>
 
 ## Detected Patterns

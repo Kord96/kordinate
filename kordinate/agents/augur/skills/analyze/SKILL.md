@@ -1,5 +1,5 @@
 ---
-name: architect
+name: analyze
 description: >
   Produce architecture.yaml v2 — components, flows, state, events, dependencies, failure modes,
   detected concepts, API surface, and debt assessment. One coherent pass over the codebase.
@@ -19,7 +19,7 @@ Produce `architecture.yaml` — a complete architectural understanding of a proj
 
 ## Steps
 
-1. **Locate, scan, and gather sources** — resolve the project directory (call it `$ROOT`). Check paths in order: `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`; if `$ARGUMENTS` is an absolute path, use it directly. If not found, report which paths were checked and exit. If found but empty or has no source files, produce a minimal `architecture.yaml` with just `project`, `purpose: "Empty or scaffold"`, and empty sections. Detect the stack: **languages** from package manifests (`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, etc.); **frameworks** from dependency lists (also using [frameworks.md](frameworks.md) for web framework detection); **runtime** from Dockerfile CMD/ENTRYPOINT, Procfile, or main entry point. Glob `$ROOT` for source files per [extractors.md](extractors.md). Read the concept catalogs: abstractions index (`~/.kord/agents/designer/memory/abstractions.md`), concepts index, anti-patterns index. For `concept` fields on `state` and `external_dependencies`, use the infrastructure terms listed in [schema.md](schema.md).
+1. **Locate, scan, and gather sources** — resolve the project directory (call it `$ROOT`). Check paths in order: `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`; if `$ARGUMENTS` is an absolute path, use it directly. If not found, report which paths were checked and exit. If found but empty or has no source files, produce a minimal `architecture.yaml` with just `project`, `purpose: "Empty or scaffold"`, and empty sections. Detect the stack: **languages** from package manifests (`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, etc.); **frameworks** from dependency lists (also using [frameworks.md](frameworks.md) for web framework detection); **runtime** from Dockerfile CMD/ENTRYPOINT, Procfile, or main entry point. Glob `$ROOT` for source files per [extractors.md](extractors.md). Read the concept catalogs: abstractions index (`~/.kord/agents/augur/memory/abstractions.md`), concepts index, anti-patterns index. For `concept` fields on `state` and `external_dependencies`, use the infrastructure terms listed in [schema.md](schema.md).
 
 2. **Detect concepts** — with the source files in context, run the concept catalog scan inline. See [detection.md](detection.md) for the full procedure: Pass 1 (batch grep per category), Pass 2 (ast-grep/semgrep rules), Pass 3 (manual signature verification), Pass 3.5 (diagnostic question evaluation). Assess confidence per concept. Identify gaps (external calls without resilience, stack-implied patterns, catalog cross-references). Hold the results — detected patterns, anti-patterns, and gaps feed into steps 5-7.
 
@@ -39,7 +39,7 @@ Produce `architecture.yaml` — a complete architectural understanding of a proj
    ```
    Continue to step 9 immediately.
 
-9. **Write architecture.yaml** — assemble all findings into [schema.md](schema.md) v2 format. Set `version: "2"` and `generated` to today's date. Incorporate valid Gemini critiques if available: add missing components, fix incorrect edges, add missed failure modes, adjust debt severities. Ignore critiques about style or naming. Write to `$ROOT/.kord/agents/designer/memory/architecture.yaml` (create directory if needed). If a pre-commit hook prevents the write, ask scribe to write it instead.
+9. **Write architecture.yaml** — assemble all findings into [schema.md](schema.md) v2 format. Set `version: "2"` and `generated` to today's date. Incorporate valid Gemini critiques if available: add missing components, fix incorrect edges, add missed failure modes, adjust debt severities. Ignore critiques about style or naming. Write to `$ROOT/.kord/agents/augur/memory/architecture.yaml` (create directory if needed). If a pre-commit hook prevents the write, ask scribe to write it instead.
 
 10. **Report** — summarize:
     ```

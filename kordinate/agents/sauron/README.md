@@ -14,7 +14,7 @@ Monitoring, observability, and code validation — ensures projects are observab
 | Kord | Mode | Requesters | Description |
 |------|------|-----------|-------------|
 | [sauron-default](../../kords/sauron-default/contract.md) | stateful | any | General monitoring and observability questions — metrics, health checks, dashboards, alerts |
-| [monitoring-impact](../../kords/monitoring-impact/contract.md) | stateful | deployer | Monitoring impact assessment for infrastructure changes — gaps, missing dashboards/metrics/alerts |
+| [monitoring-impact](../../kords/monitoring-impact/contract.md) | stateful | charon | Monitoring impact assessment for infrastructure changes — gaps, missing dashboards/metrics/alerts |
 
 ## Memory
 
@@ -29,5 +29,5 @@ Monitoring, observability, and code validation — ensures projects are observab
 
 ## Rules
 
-- Consult designer for monitoring perspective on recognized patterns
+- Consult augur for monitoring perspective on recognized patterns
 - After editing dashboard JSON, auto-deploy to Grafana immediately

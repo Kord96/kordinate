@@ -55,7 +55,7 @@ Deploy master namespace infrastructure. Includes workstation (with Beorn inside)
 2. **Run `generate-overlays <cluster>`** if overlays don't exist
 3. **Run `setup-secrets <cluster>`** if secrets don't exist
 4. **Run `setup-kord-storage <cluster>`** if kord PVC doesn't exist
-5. Use bootstrap auth (both `.deployer-auth` and `.bootstrap-auth`)
+5. Use bootstrap auth (both `.charon-auth` and `.bootstrap-auth`)
 6. SSH and apply kord-storage and workstation base manifests individually:
    ```
    kubectl apply -n master -f kord-storage.yaml -f workstation.yaml
@@ -159,14 +159,14 @@ ssh <control-plane> "kubectl create secret generic <name> -n <namespace> \
 
 For master namespace writes, use both auth tokens:
 
-1. `cp profile/locks/deployer /tmp/.deployer-auth`
-2. `cp profile/locks/deployer /tmp/.bootstrap-auth`
+1. `cp profile/locks/charon /tmp/.charon-auth`
+2. `cp profile/locks/charon /tmp/.bootstrap-auth`
 3. Run commands
-4. `rm /tmp/.bootstrap-auth /tmp/.deployer-auth`
+4. `rm /tmp/.bootstrap-auth /tmp/.charon-auth`
 
 ## Notes
 
-- All SSH operations use deployer auth flow
+- All SSH operations use charon auth flow
 - All subcommands are idempotent
 - `deploy-master` and `deploy-gateway` create secrets and overlays automatically if needed
 - After adding a cluster, deploy gateway and master stacks separately

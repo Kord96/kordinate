@@ -6,7 +6,7 @@ preloaded: sauron
 ---
 # Workflow
 
-1. **Understand** — Consult designer for architecture, read project memory for metrics and health checks. Map: components → what can fail → what to measure → what to test.
+1. **Understand** — Consult augur for architecture, read project memory for metrics and health checks. Map: components → what can fail → what to measure → what to test.
 
 2. **Implement** (if request is about monitoring/logging/metrics):
 

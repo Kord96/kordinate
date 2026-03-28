@@ -8,7 +8,7 @@ source "$KORDINATE_HOME/lib/cache.sh"
 PROJECT="$1"
 [ -n "$PROJECT" ] || exit 1
 
-MEMORY="$PROJECT/.kord/agents/designer/memory"
+MEMORY="$PROJECT/.kord/agents/augur/memory"
 
 # Check that architecture.yaml v2 exists (single artifact since v2)
 [ -f "$MEMORY/architecture.yaml" ] || exit 1

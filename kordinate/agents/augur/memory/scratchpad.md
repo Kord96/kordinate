@@ -1,5 +1,5 @@
 ---
-description: Designer working notes and observations
+description: Augur working notes and observations
 curated: false
 scope: global
 ---

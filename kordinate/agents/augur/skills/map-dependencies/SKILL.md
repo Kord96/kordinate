@@ -8,7 +8,7 @@ scope: global
 
 # map-dependencies
 
-Build a dependency graph for a project -- internal modules, external services, infrastructure resources, and reverse dependencies from sibling projects. Output is consumed by `/architect` to populate `architecture.yaml`.
+Build a dependency graph for a project -- internal modules, external services, infrastructure resources, and reverse dependencies from sibling projects. Output is consumed by `/analyze` to populate `architecture.yaml`.
 
 ## Arguments
 
@@ -71,7 +71,7 @@ The project directory must exist at `~/<project>/`, `~/repos/<project>/`, or `~/
     External: PostgreSQL, Redis, S3
     ```
 
-10. **Write the report** to `<project-repo>/.kord/agents/designer/memory/dependencies.md` using the template in [report-template.md](report-template.md). Overwrite any existing report -- this is a point-in-time snapshot, not cumulative. Create the directory if needed. Delegate to scribe if guard-md blocks. Include all sections that produced findings; omit Inter-service Dependencies if none found, omit Reverse Dependencies if `--reverse` was not used.
+10. **Write the report** to `<project-repo>/.kord/agents/augur/memory/dependencies.md` using the template in [report-template.md](report-template.md). Overwrite any existing report -- this is a point-in-time snapshot, not cumulative. Create the directory if needed. Delegate to scribe if guard-md blocks. Include all sections that produced findings; omit Inter-service Dependencies if none found, omit Reverse Dependencies if `--reverse` was not used.
 
 11. **Report** -- summarize to the user: module count, external service count, circular deps found (with cycle paths), hub modules (with names), detected language(s), and the report file path.
 

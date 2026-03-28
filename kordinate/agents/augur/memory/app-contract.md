@@ -2,7 +2,7 @@
 description: App Contract
 curated: true
 scope: global
-preloaded: designer
+preloaded: augur
 ---
 # App Contract
 
@@ -18,7 +18,7 @@ Required pod label:
 Allowed values are defined in `profile/topology.yaml` under `apps`. Typical categories:
 - `<product-app>` — product workload pods
 - `<platform-app>` — user-managed shared services that apps depend on (message queues, databases, caches)
-- `<system-app>` — system-critical infrastructure (gateway, master, grafana, workstation, node-exporter, KSM). Without these the entire system breaks. Managed by the deployer, not subject to the app contract.
+- `<system-app>` — system-critical infrastructure (gateway, master, grafana, workstation, node-exporter, KSM). Without these the entire system breaks. Managed by the charon, not subject to the app contract.
 
 Optional pod labels:
 - `component` — individual service name (e.g., `classifier`, `kafka`)
@@ -49,7 +49,7 @@ Gateway collects via Alloy. Master federates metrics via `:9090` /federate. Logs
 
 ## Enforcement
 
-The deployer validates the app contract on deployment:
+The charon validates the app contract on deployment:
 - `app` label must be present with an allowed value
 - `/metrics` endpoint must return valid Prometheus format
 - Log output must be structured JSON

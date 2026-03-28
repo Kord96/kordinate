@@ -6,7 +6,7 @@ curated: true
 scope: global
 cache_inputs:
   paths:
-    - kordinate/agents/designer/memory/
+    - kordinate/agents/augur/memory/
   threshold: 0.05
   stale_threshold: 0.30
   max_age: 7d

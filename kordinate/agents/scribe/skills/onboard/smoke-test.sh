@@ -277,7 +277,7 @@ if [ "${1:-}" = "--runtime" ]; then
     }
 
     # Subagent spawning
-    for agent in deployer scribe sauron designer; do
+    for agent in charon scribe sauron augur; do
       runtime_test \
         "Spawn $agent" \
         "$agent" \
@@ -294,14 +294,14 @@ if [ "${1:-}" = "--runtime" ]; then
 
     # Agent reads own memory
     runtime_test \
-      "Deployer reads memory" \
-      "deployer" \
-      "List the filenames in $KORDINATE_HOME/agents/deployer/memory/. Just filenames, one per line." \
+      "Charon reads memory" \
+      "charon" \
+      "List the filenames in $KORDINATE_HOME/agents/charon/memory/. Just filenames, one per line." \
       "infra.md"
 
     # Cache invalidation — expiry check
-    test_kord="deployer-default"
-    test_kord_dir="$KORDINATE_HOME/agents/deployer/kords/$test_kord"
+    test_kord="charon-default"
+    test_kord_dir="$KORDINATE_HOME/agents/charon/kords/$test_kord"
     if [ -d "$test_kord_dir" ]; then
       # Ensure stale state
       rm -f "$test_kord_dir/.valid"

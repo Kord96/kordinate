@@ -6,7 +6,7 @@ curated: true
 scope: global
 ---
 
-Full kordinate installation. Orchestrates scribe (linking) and deployer (infrastructure).
+Full kordinate installation. Orchestrates scribe (linking) and charon (infrastructure).
 
 ## Usage
 
@@ -57,7 +57,7 @@ Scribe handles: agents → `~/.claude/agents/`, skills → `~/.claude/skills/`, 
 
 Skip if `--local` flag is set. Otherwise ask: "Bootstrap cluster infrastructure? (y/n)"
 
-If yes: delegate to deployer — `/infra bootstrap`. This sets up k3s, namespaces, storage, and deploys the workstation pod (which runs Beorn).
+If yes: delegate to charon — `/infra bootstrap`. This sets up k3s, namespaces, storage, and deploys the workstation pod (which runs Beorn).
 
 ### 6. Verify
 

@@ -13,7 +13,7 @@ Use the detected patterns and anti-patterns from step 2 (inline detection result
 
 Two sources:
 
-**a) From detected patterns:** for each detected pattern, read its `concept.md` file from `~/.kord/agents/designer/memory/concepts/<pattern>/concept.md`. Extract the `### Anti-patterns` section under `## Architecture`. Each bullet is a separate scannable anti-pattern (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). If a pattern's file has no Anti-patterns section, skip it.
+**a) From detected patterns:** for each detected pattern, read its `concept.md` file from `~/.kord/agents/augur/memory/concepts/<pattern>/concept.md`. Extract the `### Anti-patterns` section under `## Architecture`. Each bullet is a separate scannable anti-pattern (e.g., `- No fallback — circuit opens and the caller gets raw exceptions`). If a pattern's file has no Anti-patterns section, skip it.
 
 **b) From already-confirmed anti-patterns:** for each detected anti-pattern, read its `concept.md` and check for a `## Impact` section. The Impact section is a prose sentence describing consequences, not an explicit severity keyword. Map it to severity:
 

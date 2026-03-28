@@ -49,9 +49,9 @@ Master Alloy reaches cluster services through Tailscale IPs:
 ### Monitoring Stack Configs (profile repo)
 | Config | Path |
 |--------|------|
-| Gateway Alloy | `~/.claude/agents/deployer/manifests/monitor/base/alloy.yaml` |
-| Master Alloy | `~/.claude/agents/deployer/manifests/master/base/alloy.yaml` |
-| Gateway Prometheus | `~/.claude/agents/deployer/manifests/monitor/base/prometheus.yaml` |
+| Gateway Alloy | `~/.claude/agents/charon/manifests/monitor/base/alloy.yaml` |
+| Master Alloy | `~/.claude/agents/charon/manifests/master/base/alloy.yaml` |
+| Gateway Prometheus | `~/.claude/agents/charon/manifests/monitor/base/prometheus.yaml` |
 
 ### Application Monitoring Configs (logBD repo)
 | Config | Path |
@@ -83,7 +83,7 @@ Pod logs    → Gateway Alloy tails   → Gateway Loki (30d)            → side
 
 ## Dashboard Provisioning
 
-Grafana dashboards are provisioned via ConfigMaps (GitOps-compatible). Sauron owns dashboard content; deployer creates the ConfigMaps and patches the Grafana deployment at deploy time.
+Grafana dashboards are provisioned via ConfigMaps (GitOps-compatible). Sauron owns dashboard content; charon creates the ConfigMaps and patches the Grafana deployment at deploy time.
 
 The base `grafana.yaml` is generic — no project-specific references. Dashboard volumes are added via a JSON patch from the project profile.
 
