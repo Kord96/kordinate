@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// Beorn — shape-shifting MCP agent server.
+// Kord — HTTP-inspired route protocol server for agent orchestration.
 //
-// A single pod that can become any kordinate agent on demand.
-// Loads the target agent's identity (IDENTITY.md) and memory, invokes
-// Claude Code as that agent via --print, returns the response.
+// Registers capability-based MCP tools from agent routes.yaml files.
+// Routes requests to the right agent by loading its identity and memory,
+// invoking Claude Code as that agent via --print, and returning the response.
 //
 // Routes are declared per agent in routes.yaml. Each route becomes
 // an MCP tool with a capability-based name (no agent names visible).
@@ -577,7 +577,7 @@ function registerTools(server) {
   // Status
   server.tool(
     'status',
-    'Return the current status of the beorn server — uptime, known agents, registered routes, active requests.',
+    'Return the current status of the kord server — uptime, known agents, registered routes, active requests.',
     {},
     async () => {
       const routes = [];
@@ -588,7 +588,7 @@ function registerTools(server) {
         content: [{
           type: 'text',
           text: JSON.stringify({
-            name: 'beorn',
+            name: 'kord',
             boot: BOOT_TIME,
             agents: KNOWN_AGENTS,
             routes,
@@ -640,9 +640,9 @@ function registerTools(server) {
 function log(msg, data) {
   const ts = new Date().toISOString().slice(11, 23);
   if (data) {
-    console.log(`[beorn ${ts}] ${msg}`, JSON.stringify(data));
+    console.log(`[kord ${ts}] ${msg}`, JSON.stringify(data));
   } else {
-    console.log(`[beorn ${ts}] ${msg}`);
+    console.log(`[kord ${ts}] ${msg}`);
   }
 }
 
@@ -661,7 +661,7 @@ app.use((req, _res, next) => {
 });
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', name: 'beorn', boot: BOOT_TIME, routes: routeRegistry.size });
+  res.json({ status: 'ok', name: 'kord', boot: BOOT_TIME, routes: routeRegistry.size });
 });
 
 // ─── MCP transport ───
@@ -671,7 +671,7 @@ app.post('/mcp', async (req, res) => {
   log(`MCP request: ${method}`);
 
   try {
-    const server = new McpServer({ name: 'beorn', version: '2.0.0' });
+    const server = new McpServer({ name: 'kord', version: '2.0.0' });
     registerTools(server);
 
     const transport = new StreamableHTTPServerTransport({

@@ -1,13 +1,13 @@
 ##
-## Agent Factory — MCP server that spawns beorn agents on demand.
-## Each beorn is Claude Code wearing a kordinate agent's identity.
-## Runs as a standalone Deployment in master namespace.
+## Kord — HTTP-inspired route protocol server for agent orchestration.
+## Registers capability-based MCP tools (e.g., analyze_architecture,
+## write_memory) and routes requests to the right agent.
 ##
 ## MCP endpoint: POST /mcp (StreamableHTTP transport)
 ## Health: GET /health
 ##
 ## Uses a slim Alpine image (Node.js + claude CLI + git + gnupg).
-## Shares the kord PVC for agent definitions, memory, and kord contracts.
+## Shares the kord PVC for agent definitions, memory, and route configs.
 ##
 ## KEDA ScaledObject scales 0→1 on HTTP traffic, back to 0 after idle.
 ## If KEDA is not installed, the Deployment runs with replicas: 0 and
@@ -17,32 +17,30 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: agent-factory
+  name: kord
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: agent-factory-readonly
+  name: kord-readonly
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: agent-readonly
 subjects:
   - kind: ServiceAccount
-    name: agent-factory
+    name: kord
     namespace: master
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-factory
+  name: kord
   labels:
-    app: agents
-    component: agent-factory
+    app: kord
 spec:
   selector:
-    app: agents
-    component: agent-factory
+    app: kord
   ports:
     - port: 3100
       targetPort: 3100
@@ -51,27 +49,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-factory
+  name: kord
   labels:
-    app: agents
-    component: agent-factory
+    app: kord
 spec:
   replicas: 0
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: agents
-      component: agent-factory
+      app: kord
   template:
     metadata:
       labels:
-        app: agents
-        component: agent-factory
+        app: kord
     spec:
-      serviceAccountName: agent-factory
+      serviceAccountName: kord
       containers:
-        - name: agent-factory
+        - name: kord
           image: REGISTRY/agent-factory:latest
           command: ["/bin/bash", "-c"]
           args:
@@ -90,14 +85,13 @@ spec:
               # Claude credentials (shared PVC with workstation)
               [ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && rm -rf "$HOME/.claude"
               ln -sfn "$KORD_ROOT/claude-home" "$HOME/.claude"
-              # User-level config lives outside ~/.claude/ — symlink it too
               ln -sfn "$KORD_ROOT/claude-home.json" "$HOME/.claude.json"
 
               # Install dependencies (safety net — node_modules are on PVC)
               MCP_SERVER="$KORDINATE_HOME/lib/mcp-agent-server"
               (cd "$MCP_SERVER" && npm install --production 2>/dev/null || true)
 
-              echo "Starting agent factory on port ${PORT:-3100}..."
+              echo "Starting kord server on port ${PORT:-3100}..."
               exec node "$MCP_SERVER/server.js"
           ports:
             - containerPort: 3100
@@ -140,18 +134,15 @@ spec:
             claimName: kord
 ---
 ## KEDA ScaledObject — scales Deployment 0→1 on HTTP requests.
-## Requires KEDA to be installed in the cluster.
-## Without KEDA, this resource is ignored (unknown CRD).
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-factory
+  name: kord
   labels:
-    app: agents
-    component: agent-factory
+    app: kord
 spec:
   scaleTargetRef:
-    name: agent-factory
+    name: kord
   minReplicaCount: 0
   maxReplicaCount: 1
   cooldownPeriod: 300
@@ -159,5 +150,5 @@ spec:
     - type: prometheus
       metadata:
         serverAddress: http://prometheus.master.svc.cluster.local:9191
-        query: sum(rate(http_requests_total{app="agents",component="agent-factory"}[2m]))
+        query: sum(rate(http_requests_total{app="kord"}[2m]))
         threshold: "0.01"
