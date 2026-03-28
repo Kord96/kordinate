@@ -23,6 +23,16 @@ How to identify this pattern in code.
 - `@Property` annotations with `jqwik` in Java tests
 - Strategy-based input generation (`st.builds()`, `fc.record()`, custom strategy composition)
 - Shrinking on failure: test output shows minimized counterexamples
+- Go: `rapid.Check()` from `pgregory.net/rapid`, `gopter` library
+- Rust: `proptest` or `quickcheck` crates
+
+**Not this pattern:** The Python `hypothesis` library has a common name -- only match `from hypothesis import` or `import hypothesis` with `@given`, not incidental uses of the word "hypothesis" in docstrings, comments, or variable names. The `st.\w+()` pattern must be from `hypothesis.strategies`, not from other uses of `st` as an abbreviation.
+
+### Negative signals (not sufficient for detection)
+
+- The word `Property` alone is NOT property testing. Java `@Property` must be from `jqwik`, not generic property annotations. Go `Property` in test files without `rapid` or `gopter` imports is not this pattern.
+- `quickcheck` as a word in comments or variable names without the corresponding library import is not property testing.
+- Fuzz testing (`go test -fuzz`) is related but distinct -- fuzz testing generates random byte inputs, while property testing generates structured inputs with shrinking.
 
 ### Confidence
 

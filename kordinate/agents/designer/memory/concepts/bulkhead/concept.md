@@ -26,6 +26,12 @@ How to identify this pattern in code.
 - `ThreadPoolBulkhead` configuration in Java resilience libraries
 - Separate thread pools or connection pools allocated per downstream dependency
 
+### Negative signals (not sufficient for detection)
+
+- Go `semaphore.NewWeighted()` used for general concurrency limiting (rate limiting, worker pool) is not bulkhead unless it isolates a specific dependency
+- A single `Semaphore` or bounded channel used for generic rate limiting is rate-limiting, not bulkhead
+- The bulkhead pattern specifically isolates failures -- look for per-dependency resource isolation, not general concurrency control
+
 ### Confidence
 
 - **high** -- named bulkhead instances per dependency with explicit pool sizing, rejection metrics, and fallback behavior

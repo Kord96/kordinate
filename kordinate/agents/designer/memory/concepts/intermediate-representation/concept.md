@@ -25,6 +25,8 @@ How to identify this pattern in code.
 - Bytecode emission as a compact IR targeting a virtual machine
 - Libraries/frameworks: LLVM IR, Cranelift, MLIR, WebAssembly, JVM bytecode, Python bytecode
 
+**Not this pattern:** Using Python's `ast` module to parse and transform Python source code is AST manipulation, not IR. IR is specifically a *lowered* representation between source-level AST and final output. A class named `*AST` is AST, not IR. Similarly, transforming data between formats (JSON to CSV, API response to domain model) is data mapping, not IR -- IR implies a compiler-like multi-stage pipeline with optimization passes.
+
 ### Confidence
 
 - **high** — SSA-form instructions in basic blocks with optimization passes and an `IRBuilder` or `emit()` API

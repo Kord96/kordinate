@@ -24,6 +24,13 @@ How to identify this pattern in code.
 - Remote flag evaluation endpoints or polling for flag state changes
 - Flag context objects passing user attributes for targeting rules
 
+### Negative signals (not sufficient for detection)
+
+- The words `feature` or `flag` alone are NOT feature flags. Many codebases use `feature` for feature descriptors, product features, feature detection (browser capabilities), or feature engineering (ML).
+- `toggle` in UI code (dark mode toggle, sidebar toggle, visibility toggle) is UI state, not feature flags.
+- Boolean configuration values (e.g., `enableMetrics=true`, `debugMode=false`) without a flag management system are standard configuration, not the feature-flag pattern.
+- Go CLI flags (`flag.Bool`, `pflag`) are command-line argument parsing, not feature flags.
+
 ### Confidence
 
 - **high** -- feature flag SDK initialized with flag evaluation calls gating code paths, plus a flag management config or service

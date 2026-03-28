@@ -29,6 +29,12 @@ How to identify this pattern in code.
 - TypeScript: `InngestFunction`, `createFunction()` with step tools defining durable multi-step processes with automatic retry and state management
 - Execution engine classes managing workflow state through checkpoints, replaying completed steps from memoized state on retries
 
+### Negative signals (not sufficient for detection)
+
+- The word "workflow" in documentation, CI/CD pipeline files (.github/workflows/), or task management UIs is not the workflow engine pattern
+- Go: a `DAG` struct used for dependency resolution in build tools or package managers is not a workflow engine unless it executes steps with state tracking
+- Simple sequential function calls or command chains are not a workflow engine -- look for explicit step definitions with dependency graphs, retry policies, and state persistence
+
 ### Confidence
 
 - **high** -- DAG definitions with explicit dependencies, a workflow engine library, and step state tracking with retry policies

@@ -24,6 +24,8 @@ How to identify this pattern in code.
 - Go: channel-based pub/sub, callback slices
 - Java: `java.util.Observer` (deprecated), Spring `ApplicationEvent`, Guava `EventBus`
 
+**Not this pattern (Python):** `Signal()` from Django signals or `.on_\w+()` hooks alone do not confirm observer -- look for explicit subscribe/emit pairs with a list of registered handlers. A single `.connect()` call to a framework signal is framework usage, not an architectural pattern choice. Similarly, `.subscribe()` on an HTTP client or `.notify()` on a threading condition is not observer.
+
 ### Confidence
 
 - **high** -- explicit subscribe/emit pair with named events and registered handlers

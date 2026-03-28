@@ -26,7 +26,15 @@ How to identify this pattern in code.
 - Deadline propagation across service boundaries via context or headers (`grpc-timeout`, `X-Request-Timeout`)
 - `AbortController` + `AbortSignal.timeout()` for fetch/request cancellation (JavaScript)
 
-**Not this pattern:** `setTimeout()` used for scheduling delayed execution (e.g., debouncing, animations, polling) is not the timeout resilience pattern. The timeout pattern is about protecting against hung external calls by enforcing a maximum wait time. Also, idle timeouts on connection pools or session expiry are lifecycle management, not the timeout resilience pattern.
+**Not this pattern:** `setTimeout()` used for scheduling delayed execution (e.g., debouncing, animations, polling) is not the timeout resilience pattern. The timeout pattern is about protecting against hung external calls by enforcing a maximum wait time. Also, idle timeouts on connection pools or session expiry are lifecycle management, not the timeout resilience pattern. Python: `timeout=` as a parameter in `requests.get()`, `httpx`, or `aiohttp` calls is standard library usage -- only flag as the timeout pattern when there is an *architectural* timeout strategy (dedicated timeout config, timeout middleware, or `asyncio.wait_for` wrapping business operations with fallback handling). Incidental `timeout=30` on a single HTTP call is not this pattern.
+
+### Negative signals (not sufficient for detection)
+
+- The word `timeout` alone is overwhelmingly common in all codebases and is NOT evidence of the timeout pattern. Look for architectural timeout strategies, not incidental timeout parameters.
+- Go `context.WithTimeout` used for test deadlines (`testing.T.Deadline()`) is test infrastructure, not the pattern.
+- Test timeout annotations (`@Timeout`, `timeout:` in test config) are test harness settings, not architectural resilience.
+- Session timeouts, lock timeouts, and idle timeouts are lifecycle management, not the timeout resilience pattern.
+- `context.WithDeadline` on a single operation without propagation strategy is Go standard practice, not an architectural pattern.
 
 ### Confidence
 

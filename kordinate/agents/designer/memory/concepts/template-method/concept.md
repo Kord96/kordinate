@@ -25,9 +25,19 @@ How to identify this pattern in code.
 - TypeScript/JavaScript: Abstract class with concrete orchestrating method calling abstract methods (e.g., `OCPPRequestService` defining `internalSendMessage` calling abstract `requestHandler`)
 - TypeScript: Base middleware class defining lifecycle hooks (`onRunStart`, `onStepStart`, `transformInput`) that subclasses override selectively
 - Java: abstract class with `final` template method calling abstract `doStep()` methods
-- Go: embedded struct with interface for overridable steps
+- Go: embedded struct with interface for overridable steps -- look for a struct that embeds an interface and has a concrete method calling the interface methods in sequence
+
+### Negative signals (not sufficient for detection)
+
+- Go: a simple interface definition is not template method -- look for a concrete orchestrating function/method that calls interface methods in a fixed sequence
+- Abstract base class that only defines abstract methods without any concrete orchestrating method is an interface, not template method
+- A class with hooks but no fixed algorithm sequence (hooks called independently) is observer/plugin, not template method
 - Rust: trait with default method implementations calling required methods
 - Framework processing pipelines: abstract service classes where a concrete `process`/`handle` method calls overridable `preProcess`, `doProcess`, `postProcess` hooks in sequence
+- Python: `@abstractmethod` alone is not template method. Many Python classes use `@abstractmethod` to define interfaces (strategy, adapter, plugin). Template method requires a *concrete* orchestrating method in the base class that calls the abstract methods in a fixed sequence. If there is no concrete orchestrating method, it is just an abstract base class or interface.
+- Python: `raise NotImplementedError` in a method is a common Python idiom for "subclass must override this" -- equivalent to an interface, not template method, unless the caller is a concrete method in the same class
+- TypeScript: `abstract` methods on a class are just interface definitions unless there is a concrete method in the same class that calls them in sequence. If all methods are abstract, it is an interface/strategy, not template method
+- A base class with 3+ subclasses alone is not template method -- it could be strategy, adapter, or simple inheritance. Template method specifically requires a concrete orchestrating method in the base class that defines the algorithm skeleton
 
 ### Confidence
 

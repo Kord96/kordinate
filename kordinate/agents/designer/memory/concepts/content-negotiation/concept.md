@@ -30,6 +30,8 @@ How to identify this pattern in code.
 - Simply referencing `MediaType.APPLICATION_JSON` or `application/json` in API responses is standard REST formatting, not content negotiation
 - A single-format API that sets `Content-Type: application/json` on all responses does not perform negotiation
 - Import of `MediaType` class alone without multi-format dispatch or Accept header handling is not negotiation
+- TypeScript/Python: Setting `Content-Type` headers in HTTP responses or checking `Content-Type` in request parsing is standard HTTP handling, not content negotiation. Content negotiation requires the server to choose between multiple response formats based on the client's `Accept` header
+- Parsing different request content types (JSON body vs form body) is input parsing, not content negotiation unless the response format also varies
 
 ### Confidence
 

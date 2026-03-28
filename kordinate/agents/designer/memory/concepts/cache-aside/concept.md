@@ -24,6 +24,19 @@ How to identify this pattern in code.
 - `@cache` or `@cached` decorators with expiration parameters
 - Pattern: `get from cache -> if nil -> fetch from DB -> set in cache -> return`
 - Cache invalidation on write paths: `cache.delete(key)` after updates
+- Java: `@Cacheable`, `@CacheEvict`, `CacheManager` (Spring Cache), Caffeine `Cache.get(key, loader)`, Guava `LoadingCache`
+- Go: `groupcache`, `bigcache`, `ristretto`, `go-cache` imports
+- Python: `cachetools`, `diskcache`, `dogpile.cache` libraries
+
+### Negative signals (not sufficient for detection)
+
+- The word `cache` alone (e.g., internal data structure caches, CPU cache references, freelist caches in databases) is NOT cache-aside. Look for cache-then-source read flow with TTL or invalidation.
+- Internal implementation caches (e.g., `map` used as lookup cache inside a data structure, `LRUCache` for page management in a DB engine) are LRU-cache, not the cache-aside application pattern.
+- Build/dependency caches (Gradle cache, npm cache, Docker layer cache) are tooling, not the pattern.
+- Python: `@lru_cache` or `functools.cache` on pure functions for memoization is lru-cache, not cache-aside. Cache-aside requires a separate cache store (Redis, Memcached, external cache) with explicit check-load-populate flow against a backing data source.
+- Python: `redis.get()` used for session storage or pub/sub is not cache-aside unless paired with a database fallback pattern.
+- TypeScript: `Cache` API, `Map`-based caches for storing request responses, or React query caching (`useQuery`) are not cache-aside unless there is an explicit check-then-load-then-populate flow against a separate data source. Client-side request caching libraries (alova, SWR, React Query) implement stale-while-revalidate, not cache-aside.
+- An in-memory `Map` or object used to store computed values without a backing data source is memoization, not cache-aside.
 
 ### Confidence
 

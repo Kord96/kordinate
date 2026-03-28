@@ -23,6 +23,11 @@ How to identify this pattern in code.
 - Java/TS: interface with `execute()`/`apply()`/`process()` method and multiple implementations
 - Go: function type or interface with multiple implementations assigned at init
 - Go: interface type with 2+ concrete implementations in separate files, selected at construction time (e.g., `Pacer` interface with `LeakyBucketPacer`, `NoOpPacer` implementations; or `Storage` interface with `LocalStorage`, `RedisStorage`)
+- Go: common pattern of interface defined in one package with implementations in sub-packages or sibling packages (e.g., `provider.Interface` with `aws.Provider`, `gcp.Provider`, `cloudflare.Provider`)
+- Go: function type variable assigned different implementations at init or construction time (e.g., `type ValidatorFunc func(r *Rule) error` with multiple implementations)
+- TypeScript: multiple classes/objects implementing the same interface or type, selected at runtime or config time (e.g., `requestAdapter` parameter accepting different HTTP adapters: fetch, XMLHttpRequest, axios). Does NOT require `implements` keyword -- duck typing and structural compatibility count
+- TypeScript: function parameter accepting different handler implementations (e.g., `createRouter({ before, after, finally })` where each stage accepts interchangeable handler functions)
+- Python/TypeScript: driver pattern -- `*Driver` classes (e.g., `SMTPDriver`, `MailgunDriver`, `FileDriver`, `RedisDriver`) implementing the same interface, selected by configuration, is the strategy pattern applied to infrastructure concerns
 
 ### Confidence
 

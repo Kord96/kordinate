@@ -26,6 +26,8 @@ How to identify this pattern in code.
 - `@task` or `@job` decorators dispatching work to a queue
 - Message serialization: JSON payloads, protobuf, or pickle
 
+**Not this pattern:** The word `Queue` alone does not indicate message queue. Python's `asyncio.Queue`, `queue.Queue`, or `collections.deque` used as in-process data structures are not message queues. TypeScript's `Array` used as a FIFO buffer is not a message queue. The message queue pattern requires a durable, often external, message broker or at minimum a persistent task queue with produce/consume semantics. A UI event queue, print queue, or animation queue is not this pattern. Similarly, `enqueue`/`dequeue` methods on an in-memory priority queue or scheduling queue are not message queues unless they connect to a broker.
+
 ### Confidence
 
 - **high** -- named queue with explicit produce/consume, ack/nack, and single-delivery semantics

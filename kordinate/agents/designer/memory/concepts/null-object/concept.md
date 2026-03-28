@@ -23,6 +23,12 @@ How to identify this pattern in code.
 - Dependency injection frameworks wiring null objects as defaults when no real implementation is configured
 - `DevNull*` or `Blackhole*` implementations for sinks (writers, loggers, event emitters)
 
+### Negative signals (not sufficient for detection)
+
+- Go: the word "noop" or "noOp" in test helper functions or test fixtures is not the null object pattern
+- A `noop` function used as a default callback is a default value, not the null object pattern (look for a struct implementing an interface with empty methods)
+- Variable names like `noop` or `noOp` without implementing a production interface are not null objects
+
 ### Confidence
 
 - **high** — Explicit null object classes implementing the same interface as their real counterparts, injected via DI or used as defaults

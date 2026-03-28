@@ -27,6 +27,8 @@ How to identify this pattern in code.
 - Token blacklist or revocation check for logout support
 - Query-param token variants: `access_token`, `api_token`, `token` as URL parameters (common in platform APIs like VK, Slack legacy, OAuth implicit flow)
 - Token passed via custom headers: `X-Auth-Token`, `X-Access-Token`
+
+**Not this pattern:** The word `token` alone in a codebase does not indicate token-based authentication. Lexer/parser tokens, CSRF tokens, serialization tokens, API key strings stored as `token` config fields, and message broker connection tokens are unrelated. Require at least one of: JWT decode/verify, `Authorization: Bearer`, or an explicit auth middleware that validates tokens against a signing key or auth server. A simple `token` field in a config file or API key header is more likely `api-key-auth`, not `token-auth`.
 - Java: `java-jwt` (auth0), `jjwt` (io.jsonwebtoken), `nimbus-jose-jwt` library imports
 - Java: Spring Security `JwtDecoder`, `JwtAuthenticationConverter`, `JwtAuthenticationToken`, `@EnableResourceServer`
 - Java: Keycloak adapter with `KeycloakWebSecurityConfigurerAdapter`, `keycloak.json`, `KeycloakAuthenticationToken`

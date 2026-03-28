@@ -30,6 +30,8 @@ How to identify this pattern in code.
 - The word "backpressure" in comments, documentation, or variable names without actual flow control implementation is not this pattern
 - A bounded `BlockingQueue` or buffered channel used simply as a work queue (producer-consumer) without explicit backpressure signaling to the producer is producer-consumer, not backpressure
 - TCP flow control at the transport layer is not application-level backpressure
+- Python: `Semaphore` or `BoundedSemaphore` used for concurrency limiting (e.g., limiting concurrent HTTP requests) is rate-limiting or connection-pooling, not backpressure unless the semaphore is used to signal the producer to slow down
+- Python: `asyncio.Queue(maxsize=N)` used as a simple work queue without producer-side awareness of queue fullness is producer-consumer, not backpressure
 
 ### Confidence
 

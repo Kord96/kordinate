@@ -25,6 +25,14 @@ How to identify this pattern in code.
 - `http.Agent({keepAlive: true, maxSockets:})` (Node.js)
 - Connection checkout/checkin lifecycle in application code
 - Pool exhaustion handling (`pool_timeout`, `QueuePool` overflow settings)
+- Go: `sql.DB` `SetMaxOpenConns`/`SetMaxIdleConns`, custom pool structs with acquire/release semantics
+
+### Negative signals (not sufficient for detection)
+
+- The word `pool` alone is NOT connection pooling. Many unrelated concepts use "pool": goroutine pools (worker-pool), memory pools, buffer pools, object pools, thread pools, page pools in databases.
+- `sync.Pool` in Go is an object pool for memory reuse, not a connection pool.
+- Internal buffer pools or page pools in storage engines (e.g., bbolt's page allocation) are memory management, not connection pooling.
+- `ConnectionPool` must involve network connections (DB, HTTP, Redis) -- not in-memory resource pools.
 
 ### Confidence
 

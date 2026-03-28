@@ -24,6 +24,8 @@ How to identify this pattern in code.
 - Grammar rules encoded as recursive descent functions or parser combinators
 - Libraries: ANTLR, tree-sitter, pest (Rust), PLY (Python), nom (Rust), yacc/bison, PEG.js, pyparsing
 
+**Not this pattern (Python):** Using `ast.parse()` to introspect Python source code is standard library usage (e.g., for linting, code generation, or metaprogramming). Only flag lexer-parser when the codebase implements its own lexer or parser -- `class Lexer`, `class Parser`, `class Tokenizer` with `next_token()` or `advance()` methods. PLY (`ply.lex`, `ply.yacc`) and `pyparsing` are genuine signal; bare `ast.parse()` is not.
+
 ### Confidence
 
 - **high** — `Lexer`/`Scanner` class producing `Token` values consumed by a `Parser` with `peek()`/`advance()`/`expect()` methods

@@ -19,12 +19,20 @@ How to identify this pattern in code.
 ### Signatures
 
 - `.proto` files with `service` and `rpc` declarations
-- Protobuf `message` definitions for request/response types
 - Generated stub files (`*_pb2.py`, `*_pb2_grpc.py`, `*.pb.go`, `*_grpc.pb.go`)
-- Bidirectional streaming: `stream` keyword in `.proto` rpc definitions
-- Libraries: `grpcio` (Python), `@grpc/grpc-js` (Node), `tonic` (Rust), `google.golang.org/grpc` (Go)
-- Channel creation and stub instantiation in client code
+- Python: `grpcio` library import (`import grpc`)
+- Node: `@grpc/grpc-js` library import
+- Go: `google.golang.org/grpc` in `go.mod` or import statements
+- Java: `io.grpc` package imports (`io.grpc.ManagedChannel`, `io.grpc.ServerBuilder`, `io.grpc.stub`)
+- Java: `StreamObserver` interface usage in service implementations
 - gRPC server setup with `add_servicer_to_server` or equivalent registration
+
+### Negative signals (not sufficient for detection)
+
+- The word `proto` alone (protocol, prototype, HTTP protocol version) is NOT gRPC. Look for `.proto` files or gRPC library imports.
+- `protobuf` used only for serialization without gRPC services (e.g., Protocol Buffers for storage, configuration, or wire format) indicates protobuf usage, not gRPC specifically.
+- `net/textproto` in Go is the text protocol package, not gRPC.
+- WAF rule files referencing "protocol_violation" or "protocol version" are HTTP protocol analysis, not gRPC.
 
 ### Confidence
 

@@ -28,6 +28,8 @@ How to identify this pattern in code.
 - Java `ReentrantLock` (not ReadWriteLock) is a plain mutex, not a read-write lock
 - Go `sync.Mutex` without `sync.RWMutex` is not a read-write lock
 - Any locking that does not distinguish between read and write access paths is plain mutual exclusion
+- `RWMutex` appearing only in generated code, vendored dependencies, or test helpers is incidental usage, not an architectural pattern
+- The mere presence of `sync.RWMutex` in a Go codebase is common Go idiom, not an architectural decision unless it protects a shared resource central to the system's design (e.g., a concurrent data store, shared state). A single RWMutex on a config struct is standard, not the pattern.
 
 ### Confidence
 

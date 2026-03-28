@@ -23,6 +23,13 @@ How to identify this pattern in code.
 - Classes named `*Proxy`, `Virtual*`, `Remote*`, `Lazy*`
 - Virtual proxy for expensive objects (large images, database connections)
 - Remote proxies hiding network communication behind a local interface
+- Go: `httputil.ReverseProxy` for HTTP reverse proxying
+- Go: struct implementing the same interface as the real object, holding a reference and adding cross-cutting behavior (logging, caching, auth checking)
+- Java: `java.lang.reflect.Proxy` dynamic proxy, Spring AOP proxies
+
+**Not this pattern:** JavaScript's `new Proxy()` used for reactive state tracking (Vue, MobX), property access interception for API ergonomics, or meta-programming (e.g., creating fluent APIs via `Proxy` handler traps) is not the GoF Proxy pattern. The GoF Proxy specifically requires a proxy class that implements the same interface as the real subject and controls access to it. A JavaScript `Proxy` used to intercept property gets/sets for reactivity or validation is closer to the observer or decorator pattern.
+
+**Not this pattern:** `__getattr__` in Python used to delegate attribute access to an inner object is not sufficient for the Proxy pattern unless the class implements the same interface as the delegated object and adds access control, caching, or lazy loading. A simple `__getattr__` delegation is just attribute forwarding.
 
 ### Confidence
 

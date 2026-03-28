@@ -26,6 +26,8 @@ How to identify this pattern in code.
 
 **Not this pattern:** The presence of `Either` from fp-ts in a codebase that also uses `pipe()`, `TaskEither`, and monadic composition is the monad pattern -- result-type specifically means using errors-as-values instead of exceptions as the primary error strategy. Also, `try/catch` blocks that return `{ success: true/false }` are not result-type unless they use a formal union type with distinct success/failure branches.
 
+**Not this pattern:** A class named `TaskiqResult`, `QueryResult`, `SearchResult`, `FetchResult`, or similar where `Result` is part of a domain noun (the result of a task/query/search) is not the Result/Either type pattern. The pattern requires a typed union with explicit success/failure branches used as a primary error-handling strategy across the codebase. A Pydantic model or dataclass named `*Result` that holds return data fields is just a response DTO.
+
 ### Confidence
 
 - **high** -- Consistent use of `Result`/`Either` across module boundaries, with `match`/`fold` at call sites and no exceptions for domain errors

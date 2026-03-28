@@ -19,11 +19,22 @@ How to identify this pattern in code.
 - Schema validation at the API boundary before business logic executes
 - `pydantic` BaseModel with field validators (Python)
 - `joi` or `zod` schemas (JavaScript/TypeScript)
-- `@Valid` or `@Validated` annotations (Java/Spring)
+- `@Valid` or `@Validated` annotations on controller method parameters (Java/Spring)
 - `marshmallow` or `cerberus` schema definitions (Python)
 - Request validation middleware in the HTTP pipeline
 - HTML input sanitization (DOMPurify, bleach)
 - SQL parameterized queries (`?` placeholders, `$1` bind parameters)
+- Java: `jakarta.validation` / `javax.validation` constraint annotations (`@NotNull`, `@Size`, `@Pattern`)
+- Go: `go-playground/validator`, `ozzo-validation` libraries
+
+### Negative signals (not sufficient for detection)
+
+- The word `validate` alone is NOT input validation. Many contexts use validation without API-boundary concerns: schema validation in tests, data integrity checks in domain logic, assertion helpers, config validation at startup.
+- `Validator` as a test or spec helper (e.g., Spock `Validator`, JUnit assertion helpers) is testing infrastructure, not the input-validation pattern.
+- Internal consistency checks (`validateState()`, `assertValid()`) within domain objects are invariant enforcement, not API input validation.
+- Go `validate` struct tags without an HTTP handler context may be domain validation, not the boundary pattern.
+- TypeScript/Python: `validate` or `Validator` in a cron expression validator, JSON schema validator library, or event validation utility is domain validation, not the input-validation architectural pattern. The pattern requires validation at the external API boundary (HTTP request, CLI input, user form) as a systematic practice, not just one-off value checks.
+- Pydantic `BaseModel` used purely as a data transfer object without being tied to API request parsing is serialization, not input validation.
 
 ### Confidence
 

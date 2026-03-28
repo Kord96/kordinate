@@ -36,6 +36,10 @@ How to identify this pattern in code.
 
 **Not middleware:** Framework lifecycle hooks like Flask's `before_request`/`after_request`, Rails `before_action`/`after_action`, or Spring `@PostConstruct` are framework hooks, not the middleware pattern. Middleware requires an explicit composable pipeline with `next()` forwarding, not just hook registration on a framework lifecycle.
 
+**Not middleware:** TypeScript/Python: the word `middleware` in documentation, comments, or variable names without an actual middleware pipeline implementation is not sufficient. A codebase that merely references middleware as a concept (e.g., "this could use middleware") but does not implement or use a middleware chain is not implementing the pattern. Similarly, a single function that wraps another function is a decorator, not middleware -- middleware requires a composable chain of multiple handlers with `next()` forwarding.
+
+**Not middleware:** Router `.use()` in TypeScript that registers route handlers or sub-routers is routing, not middleware, unless the handlers form a composable `next()`-based pipeline for cross-cutting concerns (auth, logging, CORS).
+
 ### Confidence
 
 - **high** -- Framework middleware API with `next()` call forwarding to the next handler in a pipeline, registered via `app.use()` or configuration array

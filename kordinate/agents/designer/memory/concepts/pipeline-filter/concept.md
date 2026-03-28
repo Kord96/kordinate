@@ -29,6 +29,8 @@ How to identify this pattern in code.
 - Go: sequential interface wrapping chains where each stage takes an input interface and returns the same type with added processing (e.g., interceptor chains, `io.Reader`/`io.Writer` wrapping, gRPC interceptors)
 - Go: `for _, handler := range handlers { reader = handler.Process(reader) }` -- iterating a slice of handlers, each wrapping the previous result
 
+**Not this pattern (Python):** A class named `*Pipeline` in a project that is not about data processing (e.g., CI/CD pipeline configuration, ML pipeline metadata, request pipeline in a web framework) may use the word "pipeline" without implementing the pipeline-filter pattern. The pattern requires sequential transform functions with a uniform interface. `pipe()` in RxPY or functional composition is pipeline-filter; `Pipeline` as a container for steps in a web framework's middleware chain is middleware, not pipeline-filter.
+
 ### Confidence
 
 - **high** -- Explicit `pipeline()` or `pipe()` call chaining multiple transform functions with typed stage interfaces

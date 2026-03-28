@@ -25,6 +25,13 @@ How to identify this pattern in code.
 - Contract broker configuration (Pact Broker URL, publish/verify steps in CI)
 - Spring Cloud Contract DSL files (`.groovy` or `.yml` stubs)
 
+### Negative signals (not sufficient for detection)
+
+- The word `Contract` alone (e.g., interface contracts, API contracts in documentation, design-by-contract assertions, Java `Contract` annotations in IDE tooling) is NOT contract testing. Look for Pact or Spring Cloud Contract libraries.
+- `ConsumerTest` as a class name without Pact/contract framework imports is just a test class name.
+- API schema validation using OpenAPI/Swagger in tests is schema testing, not consumer-driven contract testing.
+- Go: interface compliance checks (`var _ Interface = (*Struct)(nil)`) are compile-time checks, not contract tests.
+
 ### Confidence
 
 - **high** — Pact contract files present with both consumer-side generation and provider-side verification tests

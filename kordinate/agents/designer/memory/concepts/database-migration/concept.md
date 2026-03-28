@@ -24,6 +24,14 @@ How to identify this pattern in code.
 - Schema version tracking table: `alembic_version`, `flyway_schema_history`, `schema_migrations`
 - Migration generation commands: `alembic revision --autogenerate`, `knex migrate:make`
 
+### Negative signals (not sufficient for detection)
+
+- Go: the word "migrate" in code comments, variable names, or package paths without actual schema versioning is not this pattern (e.g., "migrate data from v1 to v2", cloud migration utilities)
+- A `migrations/` directory containing data transformation scripts (not schema changes) is ETL, not database migration
+- Go: `golang-migrate` in go.mod or `goose` import is a strong positive signal; bare "migrate" keyword is not
+- Python: `from X import migrate` or a function named `migrate()` that performs data transformation (not schema changes) is not database migration. Look for `alembic`, `django.db.migrations`, `RunSQL`, `RunPython`, or versioned migration files. The word "migration" in a library codebase may refer to API migration, version migration, or data format migration.
+- Python: A `migrations/` directory is only evidence if it contains versioned files with `upgrade()`/`downgrade()` or Django migration classes, not arbitrary scripts
+
 ### Confidence
 
 - **high** -- migration framework configured with versioned up/down scripts and a schema version tracking table

@@ -30,6 +30,9 @@ How to identify this pattern in code.
 - Java: Lombok `@Builder` on a simple DTO/entity without custom build logic is annotation-driven boilerplate, not the Builder pattern
 - Java: `Stream.builder()`, `StringBuilder`, `ProcessBuilder` are JDK utility builders, not architectural builder patterns
 - Mere presence of `.builder()` calls without a custom Builder class with multi-step construction is not sufficient
+- Python: `.build()` on Mailable, Notification, or Message classes that simply finalize configuration options is not builder -- it is just a setup/finalize lifecycle method. Builder requires a separate Builder class or multi-step fluent construction producing a different type
+- TypeScript/Python: `.build()` as a lifecycle method on a class (e.g., `mailable.build()`, `task.build()`) where the object configures itself is not builder pattern. Builder pattern requires constructing a separate product object through incremental steps
+- Query builders in ORMs (`.where().order_by().limit()`) are the builder pattern only when they construct a separate query object, not when they are simply method chaining on the query itself
 
 ### Confidence
 

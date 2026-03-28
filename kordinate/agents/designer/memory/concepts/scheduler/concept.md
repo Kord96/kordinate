@@ -25,6 +25,8 @@ How to identify this pattern in code.
 - Time-based trigger configuration in YAML, JSON, or environment variables
 - Functions named `*_job`, `*_task`, `run_periodic_*`, `scheduled_*`
 
+**Not this pattern:** `setInterval` / `setTimeout` in JavaScript/TypeScript for UI debouncing, animation frames, polling intervals, or retry delays is not the scheduler pattern. The scheduler pattern requires task registration with time-based triggers (cron expressions, fixed intervals) and lifecycle management (start, stop, list scheduled jobs). A single `setInterval` call in a utility function is just a timer.
+
 ### Confidence
 
 - **high** -- Cron expressions with a scheduler library, registered periodic tasks, and explicit job lifecycle management

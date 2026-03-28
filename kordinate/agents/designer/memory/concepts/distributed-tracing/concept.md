@@ -27,6 +27,13 @@ How to identify this pattern in code.
 - `TracerProvider` setup with exporter configuration (OTLP, Jaeger, Zipkin)
 - Libraries: OpenTelemetry, Jaeger client, Zipkin, DataDog `ddtrace`, AWS X-Ray SDK
 
+### Negative signals (not sufficient for detection)
+
+- The words `Tracer`, `Span`, or `tracing` alone are NOT distributed tracing. Many contexts use these words: Go `runtime/trace`, test span assertions, `tracing` used colloquially to mean logging, CSS `span` elements, HTML `<span>` tags.
+- `trace.Start` in Go's `runtime/trace` package is for profiling, not distributed tracing. Look for `go.opentelemetry.io/otel` or Jaeger/Zipkin client libraries.
+- Logging statements that include request IDs or correlation IDs are structured-logging or correlation-id, not distributed tracing (unless OpenTelemetry span context is involved).
+- WAF/security audit trace logs are audit-logging, not distributed tracing.
+
 ### Confidence
 
 - **high** -- TracerProvider configured, spans created with parent-child relationships, and context propagated across service boundaries

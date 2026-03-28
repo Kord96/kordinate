@@ -28,6 +28,12 @@ How to identify this pattern in code.
 - Go: goroutine lifecycle management with `sync.WaitGroup` and stop channel (`wg.Add(1)`, `defer wg.Done()`, `close(stopCh)` shutdown signaling)
 - Go: `signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)` with `context.WithCancel` for coordinated shutdown
 - Go: `http.Server.Shutdown(ctx)` for graceful HTTP server shutdown with in-flight request draining
+
+### Negative signals (not sufficient for detection)
+
+- Go: bare `signal.Notify` or `sync.WaitGroup` usage in a small CLI tool or simple program is standard Go, not the service-manager pattern
+- Service-manager requires coordinated lifecycle management of multiple subsystems -- a single `signal.Notify` + `http.Server.Shutdown()` in main.go is basic graceful shutdown, not service management
+- Look for explicit multi-phase startup/shutdown ordering, health reporting, or lifecycle state tracking to distinguish from basic signal handling
 - TypeScript: `Process` class with `initialize()`, `start()`, `stop()`, `restart()` methods controlling lifecycle of all registered initializers and servers
 - Application lifecycle manager that orchestrates ordered startup/shutdown of subsystems (e.g., first DB, then cache, then HTTP server; reverse on shutdown)
 

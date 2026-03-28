@@ -30,6 +30,13 @@ How to identify this pattern in code.
 - `INSERT ... ON CONFLICT DO NOTHING` for idempotent message recording in an inbox table
 - Consumer that writes the message ID to the inbox table in the same transaction as the business logic
 
+### Negative signals (not sufficient for detection)
+
+- The word `idempotent` in documentation, comments, or method javadocs describing a goal (e.g., "this operation should be idempotent") is NOT evidence of the idempotent consumer pattern -- it is a design intention, not an implementation.
+- `idempotent` in HTTP method semantics (e.g., "PUT is idempotent") is protocol documentation, not the pattern.
+- Upsert (`INSERT ON CONFLICT`) used for general data loading (not message deduplication) is standard SQL, not the pattern.
+- Go/Java: `Idempotent` in interface or method names without deduplication infrastructure is aspiration, not implementation.
+
 ### Confidence
 
 - **high** -- `processed_ids` table/set combined with message ID lookup before processing, or `Idempotency-Key` header handling with stored results

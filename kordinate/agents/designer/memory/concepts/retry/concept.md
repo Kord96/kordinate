@@ -27,6 +27,8 @@ How to identify this pattern in code.
 - `retry_on_exception` predicates distinguishing retryable from non-retryable errors
 - Dead letter queue routing on retry exhaustion (`DLQ`, `dead_letter`)
 
+**Not this pattern:** The word `backoff` in comments or variable names without an actual retry loop is not sufficient. Python: `max_retries` on an HTTP client (e.g., `requests.adapters.HTTPAdapter(max_retries=3)`) is standard client configuration, not the retry architectural pattern unless the codebase also configures backoff, jitter, and retry-on-specific-exceptions. A single `for attempt in range(3)` loop with no backoff is minimal error handling, not the retry pattern.
+
 ### Confidence
 
 - **high** -- Library-specific imports (`tenacity`, `polly`, `resilience4j-retry`) with exponential backoff configuration and max retry bounds

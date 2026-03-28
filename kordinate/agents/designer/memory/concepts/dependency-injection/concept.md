@@ -30,6 +30,9 @@ How to identify this pattern in code.
 
 - Go: bare keyword `inject` in Go code without a DI framework import (`google/wire`, `uber-go/fx`, `uber-go/dig`) is NOT dependency injection -- the word appears in unrelated contexts (SQL injection, header injection, etc.)
 - Passing concrete structs to constructors without interface abstraction is configuration, not DI
+- TypeScript: The word `inject` in CSS injection, HTML injection, or code injection contexts is not DI. Similarly, `Container` in Docker/OCI contexts, `IoC` mentioned in documentation without implementation, or React `Context.Provider` (which is React's context mechanism, not DI) are not DI
+- Python: `Container` or `bind`/`resolve` in non-DI contexts (e.g., UI containers, socket bind, DNS resolve) are not DI. Require explicit DI framework imports or a ServiceContainer/IoC class with interface-to-implementation bindings
+- Constructor parameters that accept concrete classes without abstraction (interfaces/protocols) is just parameterization, not dependency injection
 
 ### Confidence
 

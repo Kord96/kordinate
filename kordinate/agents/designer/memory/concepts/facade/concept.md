@@ -36,12 +36,23 @@ How to identify this pattern in code.
 - TypeScript: SDK client class exposing `.send()`, `.createFunction()`, `.message()`, `.action()` while hiding internal comm handlers, middleware chains, execution engines, and API clients (e.g., `Inngest`, Slack `App`)
 - TypeScript: Central `Api` or `Application` object that aggregates references to all framework subsystems (`api.actions`, `api.connections`, `api.tasks`, `api.servers`) behind a single namespace
 - State management: `createDomain()` providing simplified interface for creating groups of related stores, events, and effects while hiding internal graph node wiring
+- Go: struct with 3+ injected interfaces/services that delegates to combinations of them, providing a simplified public API (e.g., `WAF` struct coordinating rule engine, transaction manager, and audit logger)
+- TypeScript: `createRouter()`, `AutoRouter()`, `createServer()` factory functions that assemble multiple internal subsystems (handler chain, error handling, response formatting, CORS) into a single object with a simple API (`.fetch()`, `.handle()`)
+- TypeScript: Router/framework entry point that wraps middleware pipeline, route matching, error handling, and response formatting behind a single `.handle(request)` or `.fetch(request)` method
+- Python: `App` class that wraps connector, job manager, admin, and worker subsystems behind `task()` decorator and `run_worker()` (e.g., Procrastinate's `App`)
+
+### Grep-friendly detection (Python)
+
+- Classes named `*Client`, `*Service`, `*Manager`, `*Gateway`, or `*Facade` that wrap subsystems
+- Module-level functions in `__init__.py` that re-export from submodules: `from .internal import public_function`
+- `App`, `Application`, or `Server` classes with `run()` or `start()` that initialize multiple subsystems
+- Python: Look for `__init__.py` files with 5+ `from .X import Y` lines as evidence of API surface simplification
 
 ### Confidence
 
-- **high** — Class explicitly named Facade wrapping multiple subsystem classes with simplified methods
-- **medium** — Wrapper module/class providing high-level operations that delegate to multiple internal components
-- **low** — `__init__.py` with selective re-exports or a convenience function wrapping library calls
+- **high** -- Class explicitly named Facade wrapping multiple subsystem classes with simplified methods
+- **medium** -- Wrapper module/class providing high-level operations that delegate to multiple internal components, or `*Client`/`*Manager` classes coordinating 3+ subsystems
+- **low** -- `__init__.py` with selective re-exports or a convenience function wrapping library calls
 
 ## Architecture
 

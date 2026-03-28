@@ -21,11 +21,17 @@ How to identify this pattern in code.
 - Topic or channel-based messaging: `publish(topic, message)`, `subscribe(topic, handler)`
 - Fan-out delivery: all subscribers receive every message on a topic
 - Topic declarations, channel names, or subject strings in configuration
-- Libraries: Redis Pub/Sub (`redis.subscribe`, `redis.publish`), NATS subjects, Google Pub/Sub, AWS SNS, MQTT, Kafka topics
+- Libraries: Redis Pub/Sub (`redis.subscribe`, `redis.publish`), NATS subjects, Google Pub/Sub, AWS SNS, MQTT
 - `PubSub` class or module implementing publish/subscribe lifecycle
 - Subscription management: subscribe, unsubscribe, subscription filters
+- Java: Kafka `@KafkaListener` annotations consuming from topics, `KafkaTemplate.send(topic, message)` publishing
+- Java: Spring `ApplicationEventPublisher` with `@EventListener` for in-app pub-sub
+- Java: JMS `TopicSubscriber`, `TopicPublisher` for JMS topic-based messaging
+- Go: NATS `nc.Subscribe(subject, handler)` and `nc.Publish(subject, data)` patterns
+- Go: Redis pub/sub via `go-redis` `Subscribe()` / `Publish()` methods
+- Any language: Kafka producer/consumer with topic-based routing (detect via `KafkaProducer`, `KafkaConsumer`, `KafkaTemplate`, `sarama`, `confluent-kafka`)
 
-**Not this pattern:** EventEmitter `on()`/`emit()` within a single process is the observer pattern, not pub-sub. Pub-sub requires a message broker or bus that decouples publishers from subscribers -- they do not have direct references to each other. In-process callbacks are observers.
+**Not this pattern:** EventEmitter `on()`/`emit()` within a single process is the observer pattern, not pub-sub. Pub-sub requires a message broker or bus that decouples publishers from subscribers -- they do not have direct references to each other. In-process callbacks are observers. Python: `publish` or `subscribe` as method names on domain objects (e.g., "publish a blog post", "subscribe a user to a newsletter") are domain verbs, not the pub-sub messaging pattern. Only flag when there is a messaging broker (Redis, NATS, Kafka) or an event bus class mediating between publishers and subscribers.
 
 ### Confidence
 

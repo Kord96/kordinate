@@ -26,6 +26,13 @@ How to identify this pattern in code.
 - AWS Glue jobs or crawlers in infrastructure configuration
 - `pandas` pipelines with read/transform/write stages (e.g., `read_csv` -> transformations -> `to_sql`)
 
+### Negative signals (not sufficient for detection)
+
+- The acronym `ETL` or word `Extract` alone is NOT the ETL pattern. Look for dedicated pipeline framework imports or explicit extract-transform-load stages.
+- Method names like `extractValue()`, `extractField()`, `transformRequest()` are generic naming, not ETL.
+- Java: `import` statements, build tool configurations, or archive extraction utilities are not ETL.
+- Go: `extract` or `transform` as function names in non-data-pipeline contexts (config parsing, string manipulation) are not ETL.
+
 ### Confidence
 
 - **high** -- dedicated pipeline framework (Airflow, dbt, Dagster) with explicit extract, transform, and load stages, checkpoint tracking, and idempotent loads

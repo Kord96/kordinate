@@ -24,11 +24,13 @@ How to identify this pattern in code.
 - `FactoryBot.define` or `FactoryBot.create` in Ruby tests
 - Builder pattern with method chaining: `.with_name()`, `.with_status()`, `.build()`
 
+**Not this pattern (Python):** `@pytest.fixture` alone does not indicate the fixture-builder pattern. Every Python test suite using pytest has fixtures -- the pattern is specifically about *builder/factory* classes or functions that construct complex test data with defaults and overrides. A `conftest.py` with simple fixtures returning constants or database connections is standard pytest, not the fixture-builder pattern. Look for `factory_boy`, `Faker`, or custom builder classes with `.create()/.build()` methods in test directories.
+
 ### Confidence
 
-- **high** — Dedicated factory/builder classes with sensible defaults, overrides, and composition of nested objects
-- **medium** — Helper functions that construct test data but without a consistent builder API or factory library
-- **low** — Inline object construction in tests with repeated boilerplate that could benefit from a builder
+- **high** -- Dedicated factory/builder classes with sensible defaults, overrides, and composition of nested objects
+- **medium** -- Helper functions that construct test data but without a consistent builder API or factory library
+- **low** -- `conftest.py` with parametrized fixtures that return complex objects with default values
 
 ## Architecture
 

@@ -25,6 +25,15 @@ How to identify this pattern in code.
 - Event classes: `OrderCreated`, `UserRegistered`, `PaymentProcessed`
 - `events/` directory containing event definitions and handlers
 - Event metadata: event ID, timestamp, source, correlation ID
+- Java: `@EventHandler`, `@EventListener`, Spring `ApplicationEventPublisher` usage
+- Java: LMAX Disruptor `RingBuffer` with `EventHandler` interfaces for high-performance event processing
+- Java: Axon Framework `@EventSourcingHandler`, `EventBus`, `EventGateway`
+- Java: CDI `@Observes` for event observation, `Event<T>` injection
+- Go: event structs with `EventType` field and handler functions dispatching on event type
+- Go: channels used as event buses between goroutines with typed event structs
+- Kafka, RabbitMQ, or NATS consumers processing domain events (any language)
+
+**Not this pattern (Python):** `emit()` on a SocketIO or WebSocket object is WebSocket communication, not event-driven architecture. `Signal()` from `blinker` or `django.dispatch` is observer, not event-driven unless events are first-class domain objects with type/timestamp/payload. The word "event" in `on_event`, `event_handler`, or `EventLoop` in asyncio is framework plumbing, not event-driven architecture. Look for explicit domain event classes (`OrderCreated`, `UserRegistered`) or an event bus/dispatcher pattern.
 
 ### Confidence
 

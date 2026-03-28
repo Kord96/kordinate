@@ -24,12 +24,21 @@ How to identify this pattern in code.
 - Circuit breaker fallback handlers providing alternative responses (see also: circuit-breaker)
 - Feature flags disabling non-essential features under load to preserve core functionality
 - Service mesh retry + fallback configuration (Istio `retries` + `fault.abort`)
+- Java: `@HystrixCommand(fallbackMethod=)`, Resilience4j `Decorators.ofSupplier().withFallback()`, Spring Cloud `@CircuitBreaker(fallback=)`
+- Go: explicit secondary data source or cached-result return on primary failure with health-based switching
+
+### Negative signals (not sufficient for detection)
+
+- The word `fallback` alone is NOT graceful degradation. Many contexts use "fallback" without degradation intent: encoding fallbacks, TLS protocol negotiation, default configuration values, test fallback names, font fallbacks, DNS fallback servers.
+- `getFallbackName()`, `fallbackMockController`, `fallback to previous` in data recovery are not this pattern.
+- Graceful *shutdown* (signal handling, drain-and-stop) is service-manager, not degradation.
+- Default values in configuration (`orElse`, `getOrDefault`) are standard programming, not degradation.
 
 **Not this pattern:** Standard `try/catch` error handling that returns an error response or default value is not graceful degradation. The pattern requires intentional design of degraded functionality modes -- the system continues to serve users with reduced but meaningful capability, not just catching errors. A catch block that returns `null` or logs and rethrows is error handling, not degradation.
 
 **Not this pattern:** Graceful *shutdown* (signal handling, `server.Shutdown()`, drain-and-stop) is the service-manager pattern, not graceful degradation. Degradation means the service stays running with reduced functionality, not that it shuts down cleanly.
 
-**Not this pattern:** The word "fallback" appearing in SSL/TLS negotiation (protocol fallback), encoding fallback, or default configuration values is not graceful degradation. Look for fallback in the context of service-to-service calls or user-facing functionality degradation.
+**Not this pattern:** The word "fallback" appearing in SSL/TLS negotiation (protocol fallback), encoding fallback, font fallback, locale fallback, or default configuration values is not graceful degradation. Look for fallback in the context of service-to-service calls or user-facing functionality degradation. Python: `except` blocks returning a default value or falling back to a simpler algorithm do not qualify unless there is an intentional degraded mode with multiple dependencies having independent fallback paths.
 
 ### Confidence
 

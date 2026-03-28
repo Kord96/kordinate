@@ -21,6 +21,18 @@ How to identify this pattern in code.
 - Module-level dependency rules enforced by linting, architecture tests, or build constraints
 - Shared kernel or common module for cross-cutting types used by multiple modules
 - Single Dockerfile or deployment artifact containing all modules
+- Java: multi-module Gradle/Maven build (`settings.gradle` with `include` for multiple subprojects, parent `pom.xml` with `<modules>`) producing a single deployable artifact
+- Java: Gradle `buildSrc/` with shared build logic across modules, but single `application` plugin in one root module
+- Java: module-level `package-info.java` with visibility restrictions, `@ArchTest` (ArchUnit) enforcing module boundaries
+- Go: single `main.go` with `internal/` packages organized by domain (e.g., `internal/auth/`, `internal/billing/`, `internal/orders/`)
+- Python: single package with `__init__.py` subpackages organized by domain, single entry point
+
+### Structural indicators (presence of 2+ suggests modular monolith)
+
+- Multiple top-level domain directories (3+) within a single deployable unit
+- A `common/` or `shared/` module alongside domain modules
+- Single build output (one JAR/binary/container) from multi-module source
+- No service-to-service HTTP/gRPC calls between modules (distinguishes from microservices)
 
 ### Confidence
 

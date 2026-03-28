@@ -27,6 +27,14 @@ How to identify this pattern in code.
 - Java: `application/` + `domain/` + `infrastructure/` three-layer packaging (Clean Architecture / DDD layering)
 - Java: `usecase/` or `interactor/` packages separated from framework code
 - Java: Spring `@Repository` interfaces in domain packages, JPA/JDBC implementations in infrastructure packages
+- Go: `internal/domain/`, `internal/adapter/`, or `internal/port/` package structure
+
+### Negative signals (not sufficient for detection)
+
+- The word `port` alone (network ports, serial ports, HTTP port configuration, `PORT` env vars) is NOT hexagonal architecture. Look for `Port` as an interface suffix or `ports/` as a directory.
+- The word `adapter` alone (database adapter, HTTP adapter, API adapter) without a corresponding `port` interface is the adapter GoF pattern, not hexagonal. Hexagonal requires both ports AND adapters as a structural pattern.
+- `UseCase` classes without a ports/adapters directory structure may indicate clean architecture but not hexagonal specifically.
+- Package names like `import` or file paths containing `port` as part of a platform-specific name (e.g., `bolt_aix.go`, `solaris`) are not hexagonal.
 
 ### Confidence
 

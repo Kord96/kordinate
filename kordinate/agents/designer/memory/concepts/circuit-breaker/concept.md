@@ -26,6 +26,11 @@ How to identify this pattern in code.
 - Istio `DestinationRule` with `outlierDetection` settings in service mesh configuration
 - `opossum` circuit breaker library in Node.js applications
 - `tenacity` with stop conditions and retry state tracking (Python)
+- Go: `sony/gobreaker` library (`gobreaker.NewCircuitBreaker`, `gobreaker.Settings`)
+- Go: custom circuit breaker with `circuitbreaker` package or state tracking (Open/Closed/HalfOpen states)
+- Go: `sentinel-golang` circuit breaker module (`core/circuitbreaker` package, `circuitbreaker.Rule`)
+- Java: Spring Cloud Circuit Breaker abstraction (`@CircuitBreaker` annotation, `CircuitBreakerFactory`)
+- Any: package/directory named `circuitbreaker` or files containing `CircuitBreaker` type definitions
 
 ### Confidence
 

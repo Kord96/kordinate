@@ -16,15 +16,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Object wrapping another object while exposing the same interface
-- `@decorator` syntax in Python (function or class decorators)
-- Middleware wrapping in web frameworks (`app.use()`, handler chains)
-- Logging, caching, or auth wrappers around core logic
-- Classes named `*Decorator`, `*Wrapper`, `Logging*`, `Cached*`
+- Classes named `*Decorator`, `*Wrapper` implementing the same interface as the wrapped object
 - Nested composition: `new AuthDecorator(new LoggingDecorator(new Service()))`
-- `functools.wraps`, higher-order functions returning enhanced versions of the input
+- Python: `@decorator` syntax with `functools.wraps`, higher-order functions returning enhanced versions of the input
 - Go: `func(http.Handler) http.Handler` wrapping pattern, middleware that takes and returns the same interface
 - Go: Interceptor Bind methods that accept and return the same interface type (e.g., `Bind(reader Reader) Reader`) adding behavior while preserving the contract
+- Java: classes named `*Decorator` or `*Wrapper` implementing the same interface as the constructor argument
+
+### Negative signals (not sufficient for detection)
+
+- The word `Wrapper` or `wrap` alone (e.g., line wrapping, text wrapping, error wrapping) is NOT the decorator pattern
+- `Logging*` or `Cached*` class names without a shared interface with the wrapped object are utilities, not decorators
+- Java annotations like `@Override`, `@Component`, `@Bean` are not the decorator pattern -- look for classes that wrap another instance of the same interface
+- Middleware chains (`app.use()`, handler chains) are the middleware pattern, not decorator, unless each middleware implements the same interface as the handler it wraps
 
 ### Confidence
 

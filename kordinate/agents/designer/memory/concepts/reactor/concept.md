@@ -31,6 +31,9 @@ How to identify this pattern in code.
 - Java: Using Project Reactor (`Mono`, `Flux`) or Spring WebFlux is reactive programming, NOT the reactor/event loop pattern
 - Reactive Streams API usage (`Publisher`, `Subscriber`) is a different concept (reactive programming, not the reactor pattern)
 - Only flag reactor when there is an actual event loop multiplexing I/O, not just reactive type usage
+- Python: Simply using `asyncio` / `async def` / `await` in application code is NOT the reactor pattern -- it is merely using the language's async runtime. The reactor pattern is present only when the codebase **implements or configures** the event loop itself (e.g., custom EventLoopPolicy, `loop.run_forever()`, `select()`-based I/O multiplexing). A task queue or web framework that uses `async def` is just async, not reactor
+- TypeScript/Node.js: Using `async/await` or Promises in application code is NOT the reactor pattern. Node.js itself uses the reactor pattern internally (libuv), but application code sitting on top of it does not constitute implementing the pattern
+- The presence of `EventLoop` or `event_loop` in variable names used to obtain or pass the running asyncio loop is not evidence of the reactor pattern
 
 ### Confidence
 

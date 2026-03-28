@@ -24,6 +24,12 @@ How to identify this pattern in code.
 - Go: `http.Handler` wrapping with `ServeHTTP`, middleware functions returning `http.Handler`
 - Java: servlet filters, Spring interceptors
 
+### Negative signals (not sufficient for detection)
+
+- Go: `http.HandleFunc` registration is standard HTTP routing, not chain-of-responsibility (look for wrapping handlers that call next)
+- A class or struct named `Handler` without a chain/next mechanism is just a handler, not chain-of-responsibility
+- Go: `type Handler interface { Handle() }` without linked chain or next delegation is command pattern, not chain
+
 ### Confidence
 
 - **high** -- ordered list of handlers where each handler can process or pass to `next`, with explicit chain construction

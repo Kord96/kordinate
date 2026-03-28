@@ -24,6 +24,12 @@ How to identify this pattern in code.
 
 **Not this pattern:** A simple database `transaction()` or `transaction.atomic()` block around a single query is standard transaction management, not the unit-of-work pattern. UoW specifically tracks dirty/new/deleted entities across multiple repositories and batches all writes into a single coordinated commit. A single-table transaction is just a transaction.
 
+### Negative signals (not sufficient for detection)
+
+- The word `Transaction` or `transactional` alone is NOT unit of work. Basic `@Transactional` in Spring or `db.Transaction()` in Go is standard transaction management unless paired with explicit change tracking across multiple repositories.
+- `commit()` / `rollback()` on a database connection or transaction object is standard DB usage, not UoW.
+- Go: `db.Begin()` / `tx.Commit()` is transaction management, not UoW. Look for explicit dirty tracking or multi-repository coordination.
+
 ### Confidence
 
 - **high** -- explicit UoW class tracking changes across multiple repositories with `commit()`/`rollback()` controlling flush

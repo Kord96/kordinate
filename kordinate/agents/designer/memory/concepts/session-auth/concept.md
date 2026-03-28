@@ -30,6 +30,8 @@ How to identify this pattern in code.
 - Java: Quarkus/Jakarta session cookie handling, Undertow `SessionManager`, `SessionConfig`
 - Java: Spring Security form login with session-based authentication (`HttpSecurity.formLogin()`)
 
+**Not this pattern:** The word `session` alone in a codebase does not indicate session-based authentication. Database sessions (SQLAlchemy `Session`, `db.session`), async sessions (`aiohttp.ClientSession`), SSH sessions, WebSocket sessions, MCP sessions, testing sessions (`TestSession`), and agent/LLM sessions are unrelated. Require at least one of: server-side session store, `session_id` cookie, `req.session` / `request.session` in auth context, or session middleware. A `Session` class for database connections is not session-auth. Python grep must exclude `db.session`, `Session()` in ORM context, `ClientSession`, and `TestSession`.
+
 ### Confidence
 
 - **high** -- Session store configured (Redis/DB), `Set-Cookie` with `HttpOnly`/`Secure`/`SameSite`, session middleware registered, and CSRF protection enabled

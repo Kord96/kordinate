@@ -27,6 +27,12 @@ How to identify this pattern in code.
 - Framework `use_*()` methods that register services and add middleware to extend core functionality (e.g., `app.use_cors()`, `app.use_authentication()`, `app.use_openapi()`) -- each call plugs a capability into the application without modifying core code
 - TypeScript: `app.use()` or `assistant()` methods that register extension objects adding entire behavioral modules (e.g., Slack `App.assistant()` plugging conversational AI into the app)
 - Config-driven plugin loading: `config.plugins` array of paths scanned at startup, loading initializers/actions from each plugin directory
+- Go: `plugin` interface with `Register()` or `Init()` methods, and a plugin manager iterating over registered plugins
+- Go: `hashicorp/go-plugin` for gRPC-based plugin systems
+- Go: adapter/middleware registration with `Use()` or `Add()` methods allowing extensibility
+- Java: `ServiceLoader` SPI mechanism (`META-INF/services/` directory) for service provider discovery
+- Java: Spring Boot auto-configuration with `@ConditionalOnClass` for plugin-like modularity
+- Java: Explicit `Plugin` interface with `register()`, `initialize()`, `destroy()` lifecycle methods
 
 ### Confidence
 

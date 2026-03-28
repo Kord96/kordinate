@@ -16,14 +16,19 @@ How to identify this pattern in code.
 
 ### Signatures
 
-- Tree structures where leaf and composite nodes share the same interface (e.g., `Component` base with `Leaf` and `Container` subclasses)
-- `children` list/collection on composite nodes with recursive operation delegation
-- File system tree: files and directories implementing a common `FileSystemNode` interface
-- UI widget trees: containers holding child widgets and delegating render/layout to all children
-- Menu hierarchies with nested submenus sharing the same `MenuItem` interface
+- Classes named `*Composite` with a `children` collection delegating operations recursively to child components that share the same interface
+- `Component` base class or interface with both `Leaf` and `Composite` subclasses implementing the same operations
 - Schema/rule composition: `allOf`, `anyOf`, `oneOf`, `not` combinators composing sub-schemas recursively
+- Java: Spring Batch `CompositeItemProcessor`, `CompositeItemWriter` composing multiple processors/writers into one
+- Java: Abstract class with `List<Self>` field and methods that iterate over children calling the same method on each
 
-**Not this pattern:** Generic tree data structures (e.g., `IdMap2`, `IdMap3`, nested Maps) or hierarchical data without a shared component interface are not composite. The composite pattern requires a uniform interface across both individual elements and collections, enabling clients to treat single objects and compositions uniformly. A tree-shaped data structure used for storage is not composite unless it has polymorphic operations.
+### Negative signals (not sufficient for detection)
+
+- Generic tree data structures (e.g., `IdMap2`, `IdMap3`, nested Maps) or hierarchical data without a shared component interface are not composite
+- The composite pattern requires a uniform interface across both individual elements and collections, enabling clients to treat single objects and compositions uniformly
+- A tree-shaped data structure used for storage is not composite unless it has polymorphic operations
+- The word `Composite` as a class name suffix alone is not sufficient -- look for the tree + shared interface + recursive delegation structure
+- `children` or `child` as a field name in parent-child data relationships (e.g., database tree, organizational hierarchy) is data modeling, not the composite pattern
 
 ### Confidence
 

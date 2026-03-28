@@ -26,10 +26,12 @@ How to identify this pattern in code.
 - `@Cacheable` with eviction policy in Spring
 - Node.js `lru-cache` or `quick-lru` packages
 
+**Not this pattern (Python):** A single `@lru_cache` on a utility function for memoization (e.g., `@lru_cache(maxsize=None)` on a pure function) is standard Python optimization, not the LRU cache architectural pattern. The pattern is about using LRU eviction as an architectural caching strategy -- multiple cached data access points, explicit capacity management, cache invalidation on writes. One `@lru_cache` decorator is Python idiom, not architecture.
+
 ### Confidence
 
-- **high** -- Bounded cache with explicit LRU eviction, `maxsize` configuration, and hit/miss tracking
-- **medium** -- `@lru_cache` decorator or `LinkedHashMap` usage without explicit eviction monitoring
+- **high** -- Bounded cache with explicit LRU eviction, `maxsize` configuration, and hit/miss tracking across multiple call sites
+- **medium** -- `@lru_cache` decorator or `LinkedHashMap` used on multiple strategic caching points without explicit eviction monitoring
 - **low** -- Dictionary/map used as a cache with manual size checks that may implement LRU
 
 ## Architecture

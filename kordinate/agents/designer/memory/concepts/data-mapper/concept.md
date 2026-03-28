@@ -25,11 +25,19 @@ How to identify this pattern in code.
 - Domain objects are plain classes or dataclasses with no ORM base class
 - Java: MapStruct `@Mapper` annotation with `@Mapping` field definitions
 - Java: ModelMapper, Dozer, or Orika mapper configuration
+- Java: JPA `@Entity` classes alongside separate domain model classes with explicit mapping between them
+- Java: Spring Data JPA entity-to-domain mapping methods (`toDomain()`, `toEntity()`, `fromJpaEntity()`)
+- Go: `ent` or `sqlc` generated models with separate domain structs and explicit mapping functions
+- Go: methods named `ToDomain()`, `ToModel()`, `FromRow()` on persistence structs
+- Go: separate `model/` and `ent/` (or `db/`) packages with mapping functions between them
 
 ### Negative signals (not sufficient for detection)
 
 - Classes named `*Mapper` that perform non-mapping operations (e.g., Jackson `ObjectMapper` for JSON serialization, MyBatis SQL mappers, codec/converter classes)
 - Generic `Mapper` suffix on utility classes that transform data formats rather than mapping between domain and persistence layers
+- Go: `mapper` as a variable name or field name for generic transformation functions is not the data mapper pattern
+- The word `mapper` in test utilities, mock helpers, or build tools is not the pattern
+- `ToolMapper`, `MessageMapper`, `KeyMapper` -- functional mappers that convert between DTOs or API models without a domain-persistence boundary are converters, not data mappers
 
 ### Confidence
 
