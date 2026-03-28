@@ -3,7 +3,7 @@
 #
 # Enforces domain boundaries:
 #   scribe   → curated .kord/ files
-#   charon → git push (test/prod), kubectl writes
+#   deployer → git push (test/prod), kubectl writes
 #   sauron   → Grafana dashboards, API, MCP
 #   merge    → git push to main (FF check — blocks if rebase needed)
 #
@@ -190,8 +190,8 @@ guard_bash() {
           allow
           ;;
         test|prod)
-          check_auth charon && allow
-          deny "Push to '$branch' requires charon authentication. Use /roll."
+          check_auth deployer && allow
+          deny "Push to '$branch' requires deployer authentication. Use /infra roll."
           ;;
       esac
       ;;
@@ -205,8 +205,8 @@ guard_bash() {
         if echo "$cmd" | grep -qE 'deploy(ment)?[/ ]workstation|kubectl\s+drain|kubectl\s+cordon'; then
           deny "Blocked: workstation deployment self-modification and node drain are never allowed from inside the pod."
         fi
-        check_auth charon && allow
-        deny "kubectl write operations require charon authentication. Use /roll or /bootstrap."
+        check_auth deployer && allow
+        deny "kubectl write operations require deployer authentication. Use /infra."
       fi
       ;;
   esac

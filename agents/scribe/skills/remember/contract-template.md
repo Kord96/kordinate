@@ -32,7 +32,7 @@ Invalidate when:
 
 ## Modes
 
-- **stateless** — the requester runs the provider's skill directly in its own context. No agent spawn. Fast. The `skill` field specifies which skill to stateless. Scribe adds the skill to requester agents during onboard/sync.
+- **stateless** — the requester runs the provider's skill directly in its own context. No agent spawn. Fast. The `skill` field specifies which skill to stateless. Scribe adds the skill to requester agents during register/sync.
 - **stateful** — the requester hands off to the full provider agent (via Beorn or native subagent). The agent has identity, memory, skills, full context.
 
 ## Template Rules

@@ -72,10 +72,6 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
       "name": "<Human Readable Flow Name>",
       "description": "<what this flow accomplishes>",
       "trigger": "<what starts it>",
-      "narrative": "<scenario-driven prose, paragraphs separated by \\n\\n>",
-      "narrative_map": [
-        { "text": "<paragraph text>", "steps": [1, 2, 3] }
-      ],
       "steps": [
         {
           "component": "<component-id>",
@@ -97,10 +93,6 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
       "technology": "<specific tool>",
       "component": "<component-id>",
       "persistence": "persistent | ephemeral",
-      "narrative": "<scenario-driven prose, paragraphs separated by \\n\\n>",
-      "narrative_map": [
-        { "text": "<paragraph text>", "refs": ["<component-id>"] }
-      ],
       "readers": ["<component-id>"],
       "writers": ["<component-id>"]
     }
@@ -112,22 +104,12 @@ Level 3 resource for the illustrate-architecture skill. Defines the JSON format 
       "trigger": "<what goes wrong>",
       "severity": "critical | high | medium | low",
       "impact": "<user-visible effect>",
-      "narrative": "<scenario-driven prose, paragraphs separated by \\n\\n>",
-      "narrative_map": [
-        { "text": "<paragraph text>", "cascade_steps": [1, 2], "refs": ["<component-id>"] }
-      ],
       "cascade": [
         { "component": "<component-id>", "effect": "<what happens>" }
       ],
       "detection": ["<signal>"],
       "recovery": ["<step>"]
     }
-  ],
-
-  "overview": "<C4 Context paragraph — what this system does, who uses it. 2-3 sentences.>",
-  "structure_narrative": "<How the system is organized. 3-5 paragraphs with headings, separated by \\n\\n.>",
-  "structure_narrative_map": [
-    { "text": "<paragraph text>", "refs": ["<node-id>"] }
   ]
 }
 ```
@@ -154,13 +136,13 @@ Every architectural entity becomes a node. The `type` field determines visual st
 
 ### Enrichment fields
 
-These fields are **null/empty by default** and populated from `architecture.yaml` v2 sections:
+These fields are **null/empty by default** and populated only when the corresponding Designer memory file exists:
 
-- `patterns` — from `concepts.detected_patterns`. Array of `{ name, category }`. Detected architectural patterns for this component.
-- `debt` — from `debt.violations`. Object with `severity` and `items` array. Technical debt associated with this component.
-- `endpoints` — from `api_surface.endpoints`. Array of `{ method, path, description }`. API endpoints exposed by this component.
-- `resilience` — from `external_dependencies[].resilience`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description.
-- `criticality` — from `external_dependencies[].criticality`. How critical this dependency is to the system.
+- `patterns` — from `patterns.md`. Array of `{ name, category }`. Rendered as small pill badges below the node label.
+- `debt` — from `debt-assessment.md`. Object with `severity` and `items` array. Drives the colored border ring on the node (red = critical, orange = high, yellow = medium).
+- `endpoints` — from `api-review.md`. Array of `{ method, path, description }`. Shown in the bottom drawer when the node is selected.
+- `resilience` — from `dependencies.md`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description. Applied to external nodes.
+- `criticality` — from `dependencies.md` or `external_dependencies`. Shown as a badge on external nodes.
 
 ### edges
 
@@ -174,7 +156,7 @@ Edges connect nodes. The `type` field distinguishes relationship kinds:
 
 ### data_flows
 
-Flow objects describe data movement through the system. Each flow has ordered steps linking components.
+Flow objects are used to animate the data flow view. When a user selects a flow from the sidebar, the graph highlights the path and the bottom drawer shows the step-by-step breakdown.
 
 ### groups
 

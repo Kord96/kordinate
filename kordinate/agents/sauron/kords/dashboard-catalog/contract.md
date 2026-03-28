@@ -7,8 +7,8 @@ scope: global
 cache_inputs:
   paths:
     - kordinate/agents/sauron/memory/
-    - kordinate/agents/charon/skills/infra/manifests/
-    - kordinate/agents/charon/skills/infra/dashboards/
+    - kordinate/agents/deployer/skills/infra/manifests/
+    - kordinate/agents/deployer/skills/infra/dashboards/
   threshold: 0.05
   stale_threshold: 0.25
   max_age: 5d
@@ -16,7 +16,7 @@ cache_inputs:
 
 ## Provider Guidelines
 
-Return the catalog of configured dashboards, scraped metrics, and active alert rules. Draw from sauron memory and charon infra manifests. Keep under 50 lines.
+Return the catalog of configured dashboards, scraped metrics, and active alert rules. Draw from sauron memory and deployer infra manifests. Keep under 50 lines.
 
 ### Response Format
 

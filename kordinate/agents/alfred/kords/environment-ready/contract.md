@@ -1,6 +1,6 @@
 ---
 description: Deployment preflight check — is a cluster environment ready?
-requester: charon
+requester: deployer
 mode: stateful
 curated: true
 scope: global

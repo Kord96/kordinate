@@ -6,7 +6,7 @@ Core framework for coordinating specialized AI agents into a team.
 
 | Directory | Purpose |
 |-----------|---------|
-| [agents/](agents/) | Four specialized agents — charon, augur, sauron, scribe |
+| [agents/](agents/) | Four specialized agents — deployer, designer, sauron, scribe |
 | [skills/](skills/) | Global skills available to all agents — boot, authenticate, kord, merge, install |
 | [kords/](kords/) | Inter-agent contracts defining how agents consult each other |
 | [hooks/](hooks/) | Pre/post-tool enforcement — guards for kubectl, git, Grafana, markdown |

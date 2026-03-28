@@ -1,6 +1,6 @@
 # Directory Templates
 
-Level 3 resource for the remember, onboard, and create-kord skills. Defines the expected directory structure for each type of kordinate entity.
+Level 3 resource for the remember, register, and create-kord skills. Defines the expected directory structure for each type of kordinate entity.
 
 When creating or validating a directory, check that all required files exist.
 
@@ -10,7 +10,7 @@ Path: `agents/designer/memory/concepts/<concept-name>/` (canonical path)
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `concept.md` | yes | Core concept definition — frontmatter + Recognition + Architecture sections. See [concept-template.md](concept-template.md). |
+| `pattern.md` | yes | Core concept definition — frontmatter + Recognition + Architecture sections. See [concept-template.md](concept-template.md). |
 | `README.md` | no | Extended documentation for the human-facing docs site |
 | `<impl>.md` | no | Implementation-specific reference (e.g., `stoik.md` for stream-to-store, `orchestrator.md` for service-manager) |
 

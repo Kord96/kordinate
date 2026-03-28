@@ -115,4 +115,4 @@ Any agent can be invoked as root (the main session) or as a subagent through [be
 
     | Type | Name | Purpose |
     |------|------|---------|
-    | skill | `/detect-concepts` | Scan a project for recognized patterns |
+    | skill | `/detect-patterns` | Scan a project for recognized patterns |

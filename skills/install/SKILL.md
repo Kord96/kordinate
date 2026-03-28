@@ -49,7 +49,7 @@ If no: local-only git, no remote. Worktrees still work.
 
 ### 4. Link to runtime
 
-Delegate to scribe — invoke the linking procedure at `$KORDINATE_HOME/agents/scribe/skills/onboard/link.md`.
+Delegate to scribe — invoke the linking procedure at `$KORDINATE_HOME/agents/scribe/skills/register/link.md`.
 
 Scribe handles: agents → `~/.claude/agents/`, skills → `~/.claude/skills/`, memory indexes → `~/.claude/agent-memory/`, CLAUDE.md, guard hook, KORD.md generation.
 
@@ -61,7 +61,7 @@ If yes: delegate to deployer — `/infra bootstrap`. This sets up k3s, namespace
 
 ### 6. Verify
 
-Run `$KORDINATE_HOME/agents/scribe/skills/onboard/smoke-test.sh` for structural checks.
+Run `$KORDINATE_HOME/agents/scribe/skills/register/smoke-test.sh` for structural checks.
 
 ## Report
 

@@ -1,6 +1,6 @@
 ---
 description: Pre-deployment readiness check — config, overlays, credentials validated
-requester: charon
+requester: deployer
 mode: stateless
 skill: preflight
 curated: true
@@ -11,4 +11,4 @@ scope: global
 
 Run the preflight check for the specified cluster.
 Return READY or NOT READY with specific failures.
-This is the gate that charon should call before `/bootstrap` or `/roll`.
+This is the gate that deployer should call before `/infra bootstrap` or `/infra roll`.

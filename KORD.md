@@ -22,784 +22,784 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/deployer/memory/troubleshooting.md` — Common deployment issues and their fixes
 - `agents/designer/memory/abstractions.md` — Index of abstraction levels used to classify concepts — each answers a distinct architectural question
 - `agents/designer/memory/anti-patterns.md` — Index of recognized anti-patterns by category
-- `agents/designer/memory/anti-patterns/anemic-domain-model/concept.md` — Anemic Domain Model anti-pattern
-- `agents/designer/memory/anti-patterns/big-ball-of-mud/concept.md` — Big Ball of Mud anti-pattern
-- `agents/designer/memory/anti-patterns/callback-hell/concept.md` — Callback Hell anti-pattern
-- `agents/designer/memory/anti-patterns/cargo-cult/concept.md` — Cargo Cult Programming anti-pattern
-- `agents/designer/memory/anti-patterns/chatty-api/concept.md` — Chatty API anti-pattern
-- `agents/designer/memory/anti-patterns/circular-dependency/concept.md` — Circular Dependency anti-pattern
-- `agents/designer/memory/anti-patterns/config-sprawl/concept.md` — Configuration Sprawl anti-pattern
-- `agents/designer/memory/anti-patterns/deadlock/concept.md` — Deadlock anti-pattern
-- `agents/designer/memory/anti-patterns/god-endpoint/concept.md` — God Endpoint anti-pattern
-- `agents/designer/memory/anti-patterns/god-object/concept.md` — God Object/Class anti-pattern
-- `agents/designer/memory/anti-patterns/golden-hammer/concept.md` — Golden Hammer anti-pattern
-- `agents/designer/memory/anti-patterns/lava-flow/concept.md` — Lava Flow (Dead Code) anti-pattern
-- `agents/designer/memory/anti-patterns/leaky-abstraction/concept.md` — Leaky Abstraction anti-pattern
-- `agents/designer/memory/anti-patterns/log-and-throw/concept.md` — Log and Throw anti-pattern
-- `agents/designer/memory/anti-patterns/magic-numbers/concept.md` — Magic Numbers/Strings anti-pattern
-- `agents/designer/memory/anti-patterns/n-plus-one/concept.md` — N+1 Queries anti-pattern
-- `agents/designer/memory/anti-patterns/premature-optimization/concept.md` — Premature Optimization anti-pattern
-- `agents/designer/memory/anti-patterns/race-condition/concept.md` — Race Condition anti-pattern
-- `agents/designer/memory/anti-patterns/spaghetti-code/concept.md` — Spaghetti Code anti-pattern
-- `agents/designer/memory/anti-patterns/stringly-typed/concept.md` — Stringly Typed anti-pattern
-- `agents/designer/memory/anti-patterns/swallowed-exception/concept.md` — Swallowed Exception anti-pattern
-- `agents/designer/memory/anti-patterns/tight-coupling/concept.md` — Tight Coupling anti-pattern
+- `agents/designer/memory/anti-patterns/anemic-domain-model/pattern.md` — Anemic Domain Model anti-pattern
+- `agents/designer/memory/anti-patterns/big-ball-of-mud/pattern.md` — Big Ball of Mud anti-pattern
+- `agents/designer/memory/anti-patterns/callback-hell/pattern.md` — Callback Hell anti-pattern
+- `agents/designer/memory/anti-patterns/cargo-cult/pattern.md` — Cargo Cult Programming anti-pattern
+- `agents/designer/memory/anti-patterns/chatty-api/pattern.md` — Chatty API anti-pattern
+- `agents/designer/memory/anti-patterns/circular-dependency/pattern.md` — Circular Dependency anti-pattern
+- `agents/designer/memory/anti-patterns/config-sprawl/pattern.md` — Configuration Sprawl anti-pattern
+- `agents/designer/memory/anti-patterns/deadlock/pattern.md` — Deadlock anti-pattern
+- `agents/designer/memory/anti-patterns/god-endpoint/pattern.md` — God Endpoint anti-pattern
+- `agents/designer/memory/anti-patterns/god-object/pattern.md` — God Object/Class anti-pattern
+- `agents/designer/memory/anti-patterns/golden-hammer/pattern.md` — Golden Hammer anti-pattern
+- `agents/designer/memory/anti-patterns/lava-flow/pattern.md` — Lava Flow (Dead Code) anti-pattern
+- `agents/designer/memory/anti-patterns/leaky-abstraction/pattern.md` — Leaky Abstraction anti-pattern
+- `agents/designer/memory/anti-patterns/log-and-throw/pattern.md` — Log and Throw anti-pattern
+- `agents/designer/memory/anti-patterns/magic-numbers/pattern.md` — Magic Numbers/Strings anti-pattern
+- `agents/designer/memory/anti-patterns/n-plus-one/pattern.md` — N+1 Queries anti-pattern
+- `agents/designer/memory/anti-patterns/premature-optimization/pattern.md` — Premature Optimization anti-pattern
+- `agents/designer/memory/anti-patterns/race-condition/pattern.md` — Race Condition anti-pattern
+- `agents/designer/memory/anti-patterns/spaghetti-code/pattern.md` — Spaghetti Code anti-pattern
+- `agents/designer/memory/anti-patterns/stringly-typed/pattern.md` — Stringly Typed anti-pattern
+- `agents/designer/memory/anti-patterns/swallowed-exception/pattern.md` — Swallowed Exception anti-pattern
+- `agents/designer/memory/anti-patterns/tight-coupling/pattern.md` — Tight Coupling anti-pattern
 - `agents/designer/memory/app-contract.md` — App Contract
 - `agents/designer/memory/architect-cytoscape-hierarchy.md` — /architect skill must produce hierarchical architecture data for the Cytoscape viewer, not flat component inventories
 - `agents/designer/memory/concepts.md` — Index of recognized architectural patterns by category
 - `agents/designer/memory/concepts/AST-RULES.md` — AST rule coverage catalog — scores, methodology, and quality criteria for ast-grep pattern detection rules
-- `agents/designer/memory/concepts/abstract-factory/concept.md` — Abstract Factory architectural pattern
+- `agents/designer/memory/concepts/abstract-factory/pattern.md` — Abstract Factory architectural pattern
 - `agents/designer/memory/concepts/abstract-factory/testing.md` — Abstract Factory — testing guidance
-- `agents/designer/memory/concepts/active-record/concept.md` — Active Record architectural pattern
+- `agents/designer/memory/concepts/active-record/pattern.md` — Active Record architectural pattern
 - `agents/designer/memory/concepts/active-record/testing.md` — Active Record — testing guidance
 - `agents/designer/memory/concepts/actor-model/deployment.md` — Actor Model — deployment guidance
 - `agents/designer/memory/concepts/actor-model/monitoring.md` — Actor Model — monitoring guidance
-- `agents/designer/memory/concepts/actor-model/concept.md` — Actor Model architectural pattern
+- `agents/designer/memory/concepts/actor-model/pattern.md` — Actor Model architectural pattern
 - `agents/designer/memory/concepts/actor-model/testing.md` — Actor Model — testing guidance
-- `agents/designer/memory/concepts/adapter/concept.md` — Adapter architectural pattern
+- `agents/designer/memory/concepts/adapter/pattern.md` — Adapter architectural pattern
 - `agents/designer/memory/concepts/adapter/testing.md` — Adapter — testing guidance
-- `agents/designer/memory/concepts/aggregate/concept.md` — Aggregate Root architectural pattern
+- `agents/designer/memory/concepts/aggregate/pattern.md` — Aggregate Root architectural pattern
 - `agents/designer/memory/concepts/aggregate/testing.md` — Aggregate Root — testing guidance
-- `agents/designer/memory/concepts/anemic-domain-model/concept.md` — Anemic Domain Model anti-pattern
-- `agents/designer/memory/concepts/anti-corruption-layer/concept.md` — Anti-Corruption Layer architectural pattern
+- `agents/designer/memory/concepts/anemic-domain-model/pattern.md` — Anemic Domain Model anti-pattern
+- `agents/designer/memory/concepts/anti-corruption-layer/pattern.md` — Anti-Corruption Layer architectural pattern
 - `agents/designer/memory/concepts/anti-corruption-layer/testing.md` — Anti-Corruption Layer — testing guidance
 - `agents/designer/memory/concepts/api-gateway/deployment.md` — API Gateway — deployment guidance
 - `agents/designer/memory/concepts/api-gateway/monitoring.md` — API Gateway — monitoring guidance
-- `agents/designer/memory/concepts/api-gateway/concept.md` — API Gateway architectural pattern
+- `agents/designer/memory/concepts/api-gateway/pattern.md` — API Gateway architectural pattern
 - `agents/designer/memory/concepts/api-gateway/testing.md` — API Gateway — testing guidance
 - `agents/designer/memory/concepts/api-key-auth/monitoring.md` — API Key Authentication — monitoring guidance
-- `agents/designer/memory/concepts/api-key-auth/concept.md` — API Key Authentication architectural pattern
+- `agents/designer/memory/concepts/api-key-auth/pattern.md` — API Key Authentication architectural pattern
 - `agents/designer/memory/concepts/api-key-auth/testing.md` — API Key Authentication — testing guidance
-- `agents/designer/memory/concepts/ast/concept.md` — Abstract Syntax Tree (AST) architectural pattern
+- `agents/designer/memory/concepts/ast/pattern.md` — Abstract Syntax Tree (AST) architectural pattern
 - `agents/designer/memory/concepts/ast/testing.md` — Abstract Syntax Tree (AST) — testing guidance
 - `agents/designer/memory/concepts/audit-logging/monitoring.md` — Audit Logging — monitoring guidance
-- `agents/designer/memory/concepts/audit-logging/concept.md` — Audit Logging architectural pattern
+- `agents/designer/memory/concepts/audit-logging/pattern.md` — Audit Logging architectural pattern
 - `agents/designer/memory/concepts/audit-logging/testing.md` — Audit Logging — testing guidance
 - `agents/designer/memory/concepts/backpressure/deployment.md` — Backpressure — deployment guidance
 - `agents/designer/memory/concepts/backpressure/monitoring.md` — Backpressure — monitoring guidance
-- `agents/designer/memory/concepts/backpressure/concept.md` — Backpressure architectural pattern
+- `agents/designer/memory/concepts/backpressure/pattern.md` — Backpressure architectural pattern
 - `agents/designer/memory/concepts/backpressure/testing.md` — Backpressure — testing guidance
-- `agents/designer/memory/concepts/batch-loader/concept.md` — Batch Loader (N+1 Prevention) architectural pattern
+- `agents/designer/memory/concepts/batch-loader/pattern.md` — Batch Loader (N+1 Prevention) architectural pattern
 - `agents/designer/memory/concepts/batch-loader/testing.md` — Batch Loader (N+1 Prevention) — testing guidance
 - `agents/designer/memory/concepts/bff/deployment.md` — Backend for Frontend — deployment guidance
 - `agents/designer/memory/concepts/bff/monitoring.md` — Backend for Frontend — monitoring guidance
-- `agents/designer/memory/concepts/bff/concept.md` — Backend for Frontend architectural pattern
+- `agents/designer/memory/concepts/bff/pattern.md` — Backend for Frontend architectural pattern
 - `agents/designer/memory/concepts/bff/testing.md` — Backend for Frontend — testing guidance
-- `agents/designer/memory/concepts/big-ball-of-mud/concept.md` — Big Ball of Mud anti-pattern
-- `agents/designer/memory/concepts/bloom-filter/concept.md` — Bloom Filter architectural pattern
+- `agents/designer/memory/concepts/big-ball-of-mud/pattern.md` — Big Ball of Mud anti-pattern
+- `agents/designer/memory/concepts/bloom-filter/pattern.md` — Bloom Filter architectural pattern
 - `agents/designer/memory/concepts/bloom-filter/testing.md` — Bloom Filter — testing guidance
 - `agents/designer/memory/concepts/blue-green/deployment.md` — Blue-Green Deployment — deployment guidance
 - `agents/designer/memory/concepts/blue-green/monitoring.md` — Blue-Green Deployment — monitoring guidance
-- `agents/designer/memory/concepts/blue-green/concept.md` — Blue-Green Deployment architectural pattern
-- `agents/designer/memory/concepts/boolean-blindness/concept.md` — Boolean Blindness anti-pattern
-- `agents/designer/memory/concepts/breaking-changes/concept.md` — Breaking Changes anti-pattern
-- `agents/designer/memory/concepts/bridge/concept.md` — Bridge architectural pattern
+- `agents/designer/memory/concepts/blue-green/pattern.md` — Blue-Green Deployment architectural pattern
+- `agents/designer/memory/concepts/boolean-blindness/pattern.md` — Boolean Blindness anti-pattern
+- `agents/designer/memory/concepts/breaking-changes/pattern.md` — Breaking Changes anti-pattern
+- `agents/designer/memory/concepts/bridge/pattern.md` — Bridge architectural pattern
 - `agents/designer/memory/concepts/bridge/testing.md` — Bridge — testing guidance
-- `agents/designer/memory/concepts/builder/concept.md` — Builder architectural pattern
+- `agents/designer/memory/concepts/builder/pattern.md` — Builder architectural pattern
 - `agents/designer/memory/concepts/builder/testing.md` — Builder — testing guidance
 - `agents/designer/memory/concepts/bulkhead/deployment.md` — Bulkhead — deployment guidance
 - `agents/designer/memory/concepts/bulkhead/monitoring.md` — Bulkhead — monitoring guidance
-- `agents/designer/memory/concepts/bulkhead/concept.md` — Bulkhead architectural pattern
+- `agents/designer/memory/concepts/bulkhead/pattern.md` — Bulkhead architectural pattern
 - `agents/designer/memory/concepts/bulkhead/testing.md` — Bulkhead — testing guidance
-- `agents/designer/memory/concepts/busy-waiting/concept.md` — Busy Waiting anti-pattern
+- `agents/designer/memory/concepts/busy-waiting/pattern.md` — Busy Waiting anti-pattern
 - `agents/designer/memory/concepts/cache-aside/monitoring.md` — Cache-Aside — monitoring guidance
-- `agents/designer/memory/concepts/cache-aside/concept.md` — Cache-Aside architectural pattern
+- `agents/designer/memory/concepts/cache-aside/pattern.md` — Cache-Aside architectural pattern
 - `agents/designer/memory/concepts/cache-aside/testing.md` — Cache-Aside — testing guidance
 - `agents/designer/memory/concepts/cache-stampede-prevention/monitoring.md` — Cache Stampede Prevention — monitoring guidance
-- `agents/designer/memory/concepts/cache-stampede-prevention/concept.md` — Cache Stampede Prevention architectural pattern
+- `agents/designer/memory/concepts/cache-stampede-prevention/pattern.md` — Cache Stampede Prevention architectural pattern
 - `agents/designer/memory/concepts/cache-stampede-prevention/testing.md` — Cache Stampede Prevention — testing guidance
-- `agents/designer/memory/concepts/callback-hell/concept.md` — Callback Hell anti-pattern
+- `agents/designer/memory/concepts/callback-hell/pattern.md` — Callback Hell anti-pattern
 - `agents/designer/memory/concepts/canary/deployment.md` — Canary Release — deployment guidance
 - `agents/designer/memory/concepts/canary/monitoring.md` — Canary Release — monitoring guidance
-- `agents/designer/memory/concepts/canary/concept.md` — Canary Release architectural pattern
-- `agents/designer/memory/concepts/cargo-cult/concept.md` — Cargo Cult Programming anti-pattern
-- `agents/designer/memory/concepts/chain-of-responsibility/concept.md` — Chain of Responsibility architectural pattern
+- `agents/designer/memory/concepts/canary/pattern.md` — Canary Release architectural pattern
+- `agents/designer/memory/concepts/cargo-cult/pattern.md` — Cargo Cult Programming anti-pattern
+- `agents/designer/memory/concepts/chain-of-responsibility/pattern.md` — Chain of Responsibility architectural pattern
 - `agents/designer/memory/concepts/chain-of-responsibility/testing.md` — Chain of Responsibility — testing guidance
 - `agents/designer/memory/concepts/change-data-capture/deployment.md` — Change Data Capture (CDC) — deployment guidance
 - `agents/designer/memory/concepts/change-data-capture/monitoring.md` — Change Data Capture (CDC) — monitoring guidance
-- `agents/designer/memory/concepts/change-data-capture/concept.md` — Change Data Capture (CDC) architectural pattern
+- `agents/designer/memory/concepts/change-data-capture/pattern.md` — Change Data Capture (CDC) architectural pattern
 - `agents/designer/memory/concepts/change-data-capture/testing.md` — Change Data Capture (CDC) — testing guidance
-- `agents/designer/memory/concepts/chatty-api/concept.md` — Chatty API anti-pattern
+- `agents/designer/memory/concepts/chatty-api/pattern.md` — Chatty API anti-pattern
 - `agents/designer/memory/concepts/choreography/deployment.md` — Choreography — deployment guidance
 - `agents/designer/memory/concepts/choreography/monitoring.md` — Choreography — monitoring guidance
-- `agents/designer/memory/concepts/choreography/concept.md` — Choreography architectural pattern
+- `agents/designer/memory/concepts/choreography/pattern.md` — Choreography architectural pattern
 - `agents/designer/memory/concepts/choreography/testing.md` — Choreography — testing guidance
 - `agents/designer/memory/concepts/circuit-breaker/deployment.md` — Circuit Breaker — deployment guidance
 - `agents/designer/memory/concepts/circuit-breaker/monitoring.md` — Circuit Breaker — monitoring guidance
-- `agents/designer/memory/concepts/circuit-breaker/concept.md` — Circuit Breaker architectural pattern
+- `agents/designer/memory/concepts/circuit-breaker/pattern.md` — Circuit Breaker architectural pattern
 - `agents/designer/memory/concepts/circuit-breaker/testing.md` — Circuit Breaker — testing guidance
-- `agents/designer/memory/concepts/circular-dependency/concept.md` — Circular Dependency anti-pattern
+- `agents/designer/memory/concepts/circular-dependency/pattern.md` — Circular Dependency anti-pattern
 - `agents/designer/memory/concepts/claim-check/deployment.md` — Claim Check — deployment guidance
-- `agents/designer/memory/concepts/claim-check/concept.md` — Claim Check architectural pattern
+- `agents/designer/memory/concepts/claim-check/pattern.md` — Claim Check architectural pattern
 - `agents/designer/memory/concepts/claim-check/testing.md` — Claim Check — testing guidance
-- `agents/designer/memory/concepts/command/concept.md` — Command architectural pattern
+- `agents/designer/memory/concepts/command/pattern.md` — Command architectural pattern
 - `agents/designer/memory/concepts/command/testing.md` — Command — testing guidance
 - `agents/designer/memory/concepts/competing-consumers/deployment.md` — Competing Consumers — deployment guidance
 - `agents/designer/memory/concepts/competing-consumers/monitoring.md` — Competing Consumers — monitoring guidance
-- `agents/designer/memory/concepts/competing-consumers/concept.md` — Competing Consumers architectural pattern
+- `agents/designer/memory/concepts/competing-consumers/pattern.md` — Competing Consumers architectural pattern
 - `agents/designer/memory/concepts/competing-consumers/testing.md` — Competing Consumers — testing guidance
-- `agents/designer/memory/concepts/component-slot/concept.md` — Component Slot — parent-controlled content injection into child components
-- `agents/designer/memory/concepts/component/concept.md` — Component Architecture architectural pattern
+- `agents/designer/memory/concepts/component-slot/pattern.md` — Component Slot — parent-controlled content injection into child components
+- `agents/designer/memory/concepts/component/pattern.md` — Component Architecture architectural pattern
 - `agents/designer/memory/concepts/component/testing.md` — Component Architecture — testing guidance
-- `agents/designer/memory/concepts/composite/concept.md` — Composite architectural pattern
+- `agents/designer/memory/concepts/composite/pattern.md` — Composite architectural pattern
 - `agents/designer/memory/concepts/composite/testing.md` — Composite — testing guidance
-- `agents/designer/memory/concepts/config-management/concept.md` — Configuration Management architectural pattern
+- `agents/designer/memory/concepts/config-management/pattern.md` — Configuration Management architectural pattern
 - `agents/designer/memory/concepts/config-management/testing.md` — Configuration Management — testing guidance
-- `agents/designer/memory/concepts/config-sprawl/concept.md` — Configuration Sprawl anti-pattern
+- `agents/designer/memory/concepts/config-sprawl/pattern.md` — Configuration Sprawl anti-pattern
 - `agents/designer/memory/concepts/connection-pooling/monitoring.md` — Connection Pooling — monitoring guidance
-- `agents/designer/memory/concepts/connection-pooling/concept.md` — Connection Pooling architectural pattern
+- `agents/designer/memory/concepts/connection-pooling/pattern.md` — Connection Pooling architectural pattern
 - `agents/designer/memory/concepts/connection-pooling/testing.md` — Connection Pooling — testing guidance
-- `agents/designer/memory/concepts/content-negotiation/concept.md` — Content/Protocol Negotiation architectural pattern
+- `agents/designer/memory/concepts/content-negotiation/pattern.md` — Content/Protocol Negotiation architectural pattern
 - `agents/designer/memory/concepts/content-negotiation/testing.md` — Content/Protocol Negotiation — testing guidance
 - `agents/designer/memory/concepts/contract-testing/deployment.md` — Contract Testing — deployment guidance
-- `agents/designer/memory/concepts/contract-testing/concept.md` — Contract Testing architectural pattern
+- `agents/designer/memory/concepts/contract-testing/pattern.md` — Contract Testing architectural pattern
 - `agents/designer/memory/concepts/contract-testing/testing.md` — Contract Testing — testing guidance
-- `agents/designer/memory/concepts/copy-paste-programming/concept.md` — Copy-Paste Programming anti-pattern
+- `agents/designer/memory/concepts/copy-paste-programming/pattern.md` — Copy-Paste Programming anti-pattern
 - `agents/designer/memory/concepts/correlation-id/deployment.md` — Correlation ID — deployment guidance
 - `agents/designer/memory/concepts/correlation-id/monitoring.md` — Correlation ID — monitoring guidance
-- `agents/designer/memory/concepts/correlation-id/concept.md` — Correlation ID architectural pattern
+- `agents/designer/memory/concepts/correlation-id/pattern.md` — Correlation ID architectural pattern
 - `agents/designer/memory/concepts/correlation-id/testing.md` — Correlation ID — testing guidance
-- `agents/designer/memory/concepts/cors/concept.md` — CORS architectural pattern
+- `agents/designer/memory/concepts/cors/pattern.md` — CORS architectural pattern
 - `agents/designer/memory/concepts/cors/testing.md` — CORS — testing guidance
 - `agents/designer/memory/concepts/cqrs/deployment.md` — CQRS — deployment guidance
 - `agents/designer/memory/concepts/cqrs/monitoring.md` — CQRS — monitoring guidance
-- `agents/designer/memory/concepts/cqrs/concept.md` — CQRS architectural pattern
+- `agents/designer/memory/concepts/cqrs/pattern.md` — CQRS architectural pattern
 - `agents/designer/memory/concepts/cqrs/testing.md` — CQRS — testing guidance
-- `agents/designer/memory/concepts/data-mapper/concept.md` — Data Mapper architectural pattern
+- `agents/designer/memory/concepts/data-mapper/pattern.md` — Data Mapper architectural pattern
 - `agents/designer/memory/concepts/data-mapper/testing.md` — Data Mapper — testing guidance
-- `agents/designer/memory/concepts/database-migration/concept.md` — Database Migration architectural pattern
+- `agents/designer/memory/concepts/database-migration/pattern.md` — Database Migration architectural pattern
 - `agents/designer/memory/concepts/database-migration/testing.md` — Database Migration — testing guidance
 - `agents/designer/memory/concepts/ddd/deployment.md` — Domain-Driven Design — deployment guidance
 - `agents/designer/memory/concepts/ddd/monitoring.md` — Domain-Driven Design — monitoring guidance
-- `agents/designer/memory/concepts/ddd/concept.md` — Domain-Driven Design architectural pattern
+- `agents/designer/memory/concepts/ddd/pattern.md` — Domain-Driven Design architectural pattern
 - `agents/designer/memory/concepts/ddd/testing.md` — Domain-Driven Design — testing guidance
 - `agents/designer/memory/concepts/dead-letter/deployment.md` — Dead Letter Queue — deployment guidance
 - `agents/designer/memory/concepts/dead-letter/monitoring.md` — Dead Letter Queue — monitoring guidance
-- `agents/designer/memory/concepts/dead-letter/concept.md` — Dead Letter Queue architectural pattern
+- `agents/designer/memory/concepts/dead-letter/pattern.md` — Dead Letter Queue architectural pattern
 - `agents/designer/memory/concepts/dead-letter/testing.md` — Dead Letter Queue — testing guidance
 - `agents/designer/memory/concepts/deadlock/monitoring.md` — Deadlock — monitoring guidance
-- `agents/designer/memory/concepts/deadlock/concept.md` — Deadlock anti-pattern
+- `agents/designer/memory/concepts/deadlock/pattern.md` — Deadlock anti-pattern
 - `agents/designer/memory/concepts/deadlock/testing.md` — Deadlock — testing guidance
-- `agents/designer/memory/concepts/decorator/concept.md` — Decorator/Wrapper architectural pattern
+- `agents/designer/memory/concepts/decorator/pattern.md` — Decorator/Wrapper architectural pattern
 - `agents/designer/memory/concepts/decorator/testing.md` — Decorator/Wrapper — testing guidance
-- `agents/designer/memory/concepts/deep-nesting/concept.md` — Deep Nesting anti-pattern
-- `agents/designer/memory/concepts/dependency-injection/concept.md` — Dependency Injection/IoC architectural pattern
+- `agents/designer/memory/concepts/deep-nesting/pattern.md` — Deep Nesting anti-pattern
+- `agents/designer/memory/concepts/dependency-injection/pattern.md` — Dependency Injection/IoC architectural pattern
 - `agents/designer/memory/concepts/dependency-injection/testing.md` — Dependency Injection/IoC — testing guidance
 - `agents/designer/memory/concepts/distributed-lock/deployment.md` — Distributed Lock — deployment guidance
 - `agents/designer/memory/concepts/distributed-lock/monitoring.md` — Distributed Lock — monitoring guidance
-- `agents/designer/memory/concepts/distributed-lock/concept.md` — Distributed Lock architectural pattern
+- `agents/designer/memory/concepts/distributed-lock/pattern.md` — Distributed Lock architectural pattern
 - `agents/designer/memory/concepts/distributed-lock/testing.md` — Distributed Lock — testing guidance
-- `agents/designer/memory/concepts/distributed-monolith/concept.md` — Distributed Monolith anti-pattern
+- `agents/designer/memory/concepts/distributed-monolith/pattern.md` — Distributed Monolith anti-pattern
 - `agents/designer/memory/concepts/distributed-tracing/deployment.md` — Distributed Tracing Instrumentation — deployment guidance
 - `agents/designer/memory/concepts/distributed-tracing/monitoring.md` — Distributed Tracing Instrumentation — monitoring guidance
-- `agents/designer/memory/concepts/distributed-tracing/concept.md` — Distributed Tracing Instrumentation architectural pattern
+- `agents/designer/memory/concepts/distributed-tracing/pattern.md` — Distributed Tracing Instrumentation architectural pattern
 - `agents/designer/memory/concepts/distributed-tracing/testing.md` — Distributed Tracing Instrumentation — testing guidance
-- `agents/designer/memory/concepts/dual-writes/concept.md` — Dual Writes anti-pattern
-- `agents/designer/memory/concepts/entity-component-system/concept.md` — Entity-Component-System (ECS) architectural pattern
+- `agents/designer/memory/concepts/dual-writes/pattern.md` — Dual Writes anti-pattern
+- `agents/designer/memory/concepts/entity-component-system/pattern.md` — Entity-Component-System (ECS) architectural pattern
 - `agents/designer/memory/concepts/entity-component-system/testing.md` — Entity-Component-System (ECS) — testing guidance
-- `agents/designer/memory/concepts/environment-parity-gap/concept.md` — Environment Parity Gap anti-pattern
-- `agents/designer/memory/concepts/error-boundary/concept.md` — Error Boundary — component-level error catching and fallback rendering
-- `agents/designer/memory/concepts/error-code-returns/concept.md` — Error Code Returns anti-pattern
+- `agents/designer/memory/concepts/environment-parity-gap/pattern.md` — Environment Parity Gap anti-pattern
+- `agents/designer/memory/concepts/error-boundary/pattern.md` — Error Boundary — component-level error catching and fallback rendering
+- `agents/designer/memory/concepts/error-code-returns/pattern.md` — Error Code Returns anti-pattern
 - `agents/designer/memory/concepts/etl/deployment.md` — ETL — deployment guidance
 - `agents/designer/memory/concepts/etl/monitoring.md` — ETL — monitoring guidance
-- `agents/designer/memory/concepts/etl/concept.md` — ETL architectural pattern
+- `agents/designer/memory/concepts/etl/pattern.md` — ETL architectural pattern
 - `agents/designer/memory/concepts/etl/testing.md` — ETL — testing guidance
 - `agents/designer/memory/concepts/event-carried-state/deployment.md` — Event-Carried State Transfer — deployment guidance
-- `agents/designer/memory/concepts/event-carried-state/concept.md` — Event-Carried State Transfer architectural pattern
+- `agents/designer/memory/concepts/event-carried-state/pattern.md` — Event-Carried State Transfer architectural pattern
 - `agents/designer/memory/concepts/event-carried-state/testing.md` — Event-Carried State Transfer — testing guidance
 - `agents/designer/memory/concepts/event-driven/deployment.md` — Event-Driven — deployment guidance
 - `agents/designer/memory/concepts/event-driven/monitoring.md` — Event-Driven — monitoring guidance
-- `agents/designer/memory/concepts/event-driven/concept.md` — Event-Driven architectural pattern
+- `agents/designer/memory/concepts/event-driven/pattern.md` — Event-Driven architectural pattern
 - `agents/designer/memory/concepts/event-driven/testing.md` — Event-Driven — testing guidance
 - `agents/designer/memory/concepts/event-notification/deployment.md` — Event Notification — deployment guidance
-- `agents/designer/memory/concepts/event-notification/concept.md` — Event Notification architectural pattern
+- `agents/designer/memory/concepts/event-notification/pattern.md` — Event Notification architectural pattern
 - `agents/designer/memory/concepts/event-notification/testing.md` — Event Notification — testing guidance
 - `agents/designer/memory/concepts/event-sourcing/deployment.md` — Event Sourcing — deployment guidance
 - `agents/designer/memory/concepts/event-sourcing/monitoring.md` — Event Sourcing — monitoring guidance
-- `agents/designer/memory/concepts/event-sourcing/concept.md` — Event Sourcing architectural pattern
+- `agents/designer/memory/concepts/event-sourcing/pattern.md` — Event Sourcing architectural pattern
 - `agents/designer/memory/concepts/event-sourcing/testing.md` — Event Sourcing — testing guidance
 - `agents/designer/memory/concepts/experiment-framework/monitoring.md` — A/B Experiment Framework — monitoring guidance
-- `agents/designer/memory/concepts/experiment-framework/concept.md` — A/B Experiment Framework architectural pattern
+- `agents/designer/memory/concepts/experiment-framework/pattern.md` — A/B Experiment Framework architectural pattern
 - `agents/designer/memory/concepts/experiment-framework/testing.md` — A/B Experiment Framework — testing guidance
-- `agents/designer/memory/concepts/facade/concept.md` — Facade architectural pattern
+- `agents/designer/memory/concepts/facade/pattern.md` — Facade architectural pattern
 - `agents/designer/memory/concepts/facade/testing.md` — Facade — testing guidance
-- `agents/designer/memory/concepts/factory/concept.md` — Factory Method architectural pattern
+- `agents/designer/memory/concepts/factory/pattern.md` — Factory Method architectural pattern
 - `agents/designer/memory/concepts/factory/testing.md` — Factory Method — testing guidance
-- `agents/designer/memory/concepts/feature-envy/concept.md` — Feature Envy anti-pattern
+- `agents/designer/memory/concepts/feature-envy/pattern.md` — Feature Envy anti-pattern
 - `agents/designer/memory/concepts/feature-envy/testing.md` — Feature Envy — testing guidance
 - `agents/designer/memory/concepts/feature-flag/monitoring.md` — Feature Flag/Toggle — monitoring guidance
-- `agents/designer/memory/concepts/feature-flag/concept.md` — Feature Flag/Toggle architectural pattern
+- `agents/designer/memory/concepts/feature-flag/pattern.md` — Feature Flag/Toggle architectural pattern
 - `agents/designer/memory/concepts/feature-flag/testing.md` — Feature Flag/Toggle — testing guidance
 - `agents/designer/memory/concepts/feature-store/deployment.md` — Feature Store — deployment guidance
 - `agents/designer/memory/concepts/feature-store/monitoring.md` — Feature Store — monitoring guidance
-- `agents/designer/memory/concepts/feature-store/concept.md` — Feature Store architectural pattern
+- `agents/designer/memory/concepts/feature-store/pattern.md` — Feature Store architectural pattern
 - `agents/designer/memory/concepts/feature-store/testing.md` — Feature Store — testing guidance
-- `agents/designer/memory/concepts/fire-and-forget/concept.md` — Fire and Forget anti-pattern
-- `agents/designer/memory/concepts/fixture-builder/concept.md` — Test Fixture / Data Builder architectural pattern
+- `agents/designer/memory/concepts/fire-and-forget/pattern.md` — Fire and Forget anti-pattern
+- `agents/designer/memory/concepts/fixture-builder/pattern.md` — Test Fixture / Data Builder architectural pattern
 - `agents/designer/memory/concepts/fixture-builder/testing.md` — Test Fixture / Data Builder — testing guidance
 - `agents/designer/memory/concepts/flaky-tests/monitoring.md` — Flaky Tests — monitoring guidance
-- `agents/designer/memory/concepts/flaky-tests/concept.md` — Flaky Tests anti-pattern
+- `agents/designer/memory/concepts/flaky-tests/pattern.md` — Flaky Tests anti-pattern
 - `agents/designer/memory/concepts/flaky-tests/testing.md` — Flaky Tests — testing guidance
-- `agents/designer/memory/concepts/flux/concept.md` — Flux/Redux (Unidirectional Data Flow) architectural pattern
+- `agents/designer/memory/concepts/flux/pattern.md` — Flux/Redux (Unidirectional Data Flow) architectural pattern
 - `agents/designer/memory/concepts/flux/testing.md` — Flux/Redux — testing guidance
-- `agents/designer/memory/concepts/flyweight/concept.md` — Flyweight architectural pattern
+- `agents/designer/memory/concepts/flyweight/pattern.md` — Flyweight architectural pattern
 - `agents/designer/memory/concepts/flyweight/testing.md` — Flyweight — testing guidance
-- `agents/designer/memory/concepts/form-binding/concept.md` — Form Binding — two-way or controlled data binding between form inputs and state
-- `agents/designer/memory/concepts/future-promise/concept.md` — Future/Promise architectural pattern
+- `agents/designer/memory/concepts/form-binding/pattern.md` — Form Binding — two-way or controlled data binding between form inputs and state
+- `agents/designer/memory/concepts/future-promise/pattern.md` — Future/Promise architectural pattern
 - `agents/designer/memory/concepts/future-promise/testing.md` — Future/Promise — testing guidance
-- `agents/designer/memory/concepts/game-loop/concept.md` — Game Loop architectural pattern
+- `agents/designer/memory/concepts/game-loop/pattern.md` — Game Loop architectural pattern
 - `agents/designer/memory/concepts/game-loop/testing.md` — Game Loop — testing guidance
 - `agents/designer/memory/concepts/gitops/deployment.md` — GitOps — deployment guidance
-- `agents/designer/memory/concepts/gitops/concept.md` — GitOps architectural pattern
-- `agents/designer/memory/concepts/god-endpoint/concept.md` — God Endpoint anti-pattern
-- `agents/designer/memory/concepts/god-object/concept.md` — God Object/Class anti-pattern
-- `agents/designer/memory/concepts/golden-hammer/concept.md` — Golden Hammer anti-pattern
+- `agents/designer/memory/concepts/gitops/pattern.md` — GitOps architectural pattern
+- `agents/designer/memory/concepts/god-endpoint/pattern.md` — God Endpoint anti-pattern
+- `agents/designer/memory/concepts/god-object/pattern.md` — God Object/Class anti-pattern
+- `agents/designer/memory/concepts/golden-hammer/pattern.md` — Golden Hammer anti-pattern
 - `agents/designer/memory/concepts/graceful-degradation/deployment.md` — Graceful Degradation — deployment guidance
 - `agents/designer/memory/concepts/graceful-degradation/monitoring.md` — Graceful Degradation — monitoring guidance
-- `agents/designer/memory/concepts/graceful-degradation/concept.md` — Graceful Degradation architectural pattern
+- `agents/designer/memory/concepts/graceful-degradation/pattern.md` — Graceful Degradation architectural pattern
 - `agents/designer/memory/concepts/graceful-degradation/testing.md` — Graceful Degradation — testing guidance
 - `agents/designer/memory/concepts/graphql/monitoring.md` — GraphQL — monitoring guidance
-- `agents/designer/memory/concepts/graphql/concept.md` — GraphQL architectural pattern
+- `agents/designer/memory/concepts/graphql/pattern.md` — GraphQL architectural pattern
 - `agents/designer/memory/concepts/graphql/testing.md` — GraphQL — testing guidance
 - `agents/designer/memory/concepts/grpc/deployment.md` — gRPC/RPC — deployment guidance
 - `agents/designer/memory/concepts/grpc/monitoring.md` — gRPC/RPC — monitoring guidance
-- `agents/designer/memory/concepts/grpc/concept.md` — gRPC/RPC architectural pattern
+- `agents/designer/memory/concepts/grpc/pattern.md` — gRPC/RPC architectural pattern
 - `agents/designer/memory/concepts/grpc/testing.md` — gRPC/RPC — testing guidance
-- `agents/designer/memory/concepts/hardcoded-credentials/concept.md` — Hardcoded Credentials anti-pattern
+- `agents/designer/memory/concepts/hardcoded-credentials/pattern.md` — Hardcoded Credentials anti-pattern
 - `agents/designer/memory/concepts/hardcoded-credentials/testing.md` — Hardcoded Credentials — testing guidance
-- `agents/designer/memory/concepts/hardcoded-urls/concept.md` — Hardcoded URLs anti-pattern
+- `agents/designer/memory/concepts/hardcoded-urls/pattern.md` — Hardcoded URLs anti-pattern
 - `agents/designer/memory/concepts/hardcoded-urls/testing.md` — Hardcoded URLs — testing guidance
 - `agents/designer/memory/concepts/health-check/deployment.md` — Health Check — deployment guidance
 - `agents/designer/memory/concepts/health-check/monitoring.md` — Health Check — monitoring guidance
-- `agents/designer/memory/concepts/health-check/concept.md` — Health Check architectural pattern
+- `agents/designer/memory/concepts/health-check/pattern.md` — Health Check architectural pattern
 - `agents/designer/memory/concepts/health-check/testing.md` — Health Check — testing guidance
 - `agents/designer/memory/concepts/hexagonal/deployment.md` — Hexagonal — deployment guidance
 - `agents/designer/memory/concepts/hexagonal/monitoring.md` — Hexagonal — monitoring guidance
-- `agents/designer/memory/concepts/hexagonal/concept.md` — Hexagonal architectural pattern
+- `agents/designer/memory/concepts/hexagonal/pattern.md` — Hexagonal architectural pattern
 - `agents/designer/memory/concepts/hexagonal/testing.md` — Hexagonal — testing guidance
-- `agents/designer/memory/concepts/hidden-side-effects/concept.md` — Hidden Side Effects anti-pattern
-- `agents/designer/memory/concepts/hydration/concept.md` — Hydration — transferring server-rendered state to the client for interactive rendering
-- `agents/designer/memory/concepts/ice-cream-cone/concept.md` — Ice Cream Cone anti-pattern
+- `agents/designer/memory/concepts/hidden-side-effects/pattern.md` — Hidden Side Effects anti-pattern
+- `agents/designer/memory/concepts/hydration/pattern.md` — Hydration — transferring server-rendered state to the client for interactive rendering
+- `agents/designer/memory/concepts/ice-cream-cone/pattern.md` — Ice Cream Cone anti-pattern
 - `agents/designer/memory/concepts/idempotent-consumer/deployment.md` — Idempotent Consumer — deployment guidance
 - `agents/designer/memory/concepts/idempotent-consumer/monitoring.md` — Idempotent Consumer — monitoring guidance
-- `agents/designer/memory/concepts/idempotent-consumer/concept.md` — Idempotent Consumer architectural pattern
+- `agents/designer/memory/concepts/idempotent-consumer/pattern.md` — Idempotent Consumer architectural pattern
 - `agents/designer/memory/concepts/idempotent-consumer/testing.md` — Idempotent Consumer — testing guidance
 - `agents/designer/memory/concepts/immutable-infra/deployment.md` — Immutable Infrastructure — deployment guidance
-- `agents/designer/memory/concepts/immutable-infra/concept.md` — Immutable Infrastructure architectural pattern
-- `agents/designer/memory/concepts/inbox/concept.md` — Inbox architectural pattern
-- `agents/designer/memory/concepts/inconsistent-naming/concept.md` — Inconsistent Naming anti-pattern
-- `agents/designer/memory/concepts/infrastructure-as-code/concept.md` — Infrastructure as Code architectural pattern
+- `agents/designer/memory/concepts/immutable-infra/pattern.md` — Immutable Infrastructure architectural pattern
+- `agents/designer/memory/concepts/inbox/pattern.md` — Inbox architectural pattern
+- `agents/designer/memory/concepts/inconsistent-naming/pattern.md` — Inconsistent Naming anti-pattern
+- `agents/designer/memory/concepts/infrastructure-as-code/pattern.md` — Infrastructure as Code architectural pattern
 - `agents/designer/memory/concepts/infrastructure-as-code/testing.md` — Infrastructure as Code — testing guidance
-- `agents/designer/memory/concepts/input-validation/concept.md` — Input Validation architectural pattern
+- `agents/designer/memory/concepts/input-validation/pattern.md` — Input Validation architectural pattern
 - `agents/designer/memory/concepts/input-validation/testing.md` — Input Validation — testing guidance
-- `agents/designer/memory/concepts/insecure-deserialization/concept.md` — Insecure Deserialization anti-pattern
+- `agents/designer/memory/concepts/insecure-deserialization/pattern.md` — Insecure Deserialization anti-pattern
 - `agents/designer/memory/concepts/insecure-deserialization/testing.md` — Insecure Deserialization — testing guidance
-- `agents/designer/memory/concepts/intermediate-representation/concept.md` — Intermediate Representation (IR) architectural pattern
+- `agents/designer/memory/concepts/intermediate-representation/pattern.md` — Intermediate Representation (IR) architectural pattern
 - `agents/designer/memory/concepts/intermediate-representation/testing.md` — Intermediate Representation — testing guidance
-- `agents/designer/memory/concepts/iterator/concept.md` — Iterator architectural pattern
+- `agents/designer/memory/concepts/iterator/pattern.md` — Iterator architectural pattern
 - `agents/designer/memory/concepts/iterator/testing.md` — Iterator — testing guidance
-- `agents/designer/memory/concepts/lava-flow/concept.md` — Lava Flow (Dead Code) anti-pattern
-- `agents/designer/memory/concepts/lazy-loading/concept.md` — Lazy Loading — deferring component or module loading until needed to reduce initial bundle size
+- `agents/designer/memory/concepts/lava-flow/pattern.md` — Lava Flow (Dead Code) anti-pattern
+- `agents/designer/memory/concepts/lazy-loading/pattern.md` — Lazy Loading — deferring component or module loading until needed to reduce initial bundle size
 - `agents/designer/memory/concepts/leader-election/deployment.md` — Leader Election — deployment guidance
 - `agents/designer/memory/concepts/leader-election/monitoring.md` — Leader Election — monitoring guidance
-- `agents/designer/memory/concepts/leader-election/concept.md` — Leader Election architectural pattern
+- `agents/designer/memory/concepts/leader-election/pattern.md` — Leader Election architectural pattern
 - `agents/designer/memory/concepts/leader-election/testing.md` — Leader Election — testing guidance
-- `agents/designer/memory/concepts/leaky-abstraction/concept.md` — Leaky Abstraction anti-pattern
-- `agents/designer/memory/concepts/lexer-parser/concept.md` — Lexer/Parser architectural pattern
+- `agents/designer/memory/concepts/leaky-abstraction/pattern.md` — Leaky Abstraction anti-pattern
+- `agents/designer/memory/concepts/lexer-parser/pattern.md` — Lexer/Parser architectural pattern
 - `agents/designer/memory/concepts/lexer-parser/testing.md` — Lexer/Parser — testing guidance
-- `agents/designer/memory/concepts/log-and-throw/concept.md` — Log and Throw anti-pattern
-- `agents/designer/memory/concepts/log-spam/concept.md` — Log Spam anti-pattern
+- `agents/designer/memory/concepts/log-and-throw/pattern.md` — Log and Throw anti-pattern
+- `agents/designer/memory/concepts/log-spam/pattern.md` — Log Spam anti-pattern
 - `agents/designer/memory/concepts/long-polling/monitoring.md` — Long Polling — monitoring guidance
-- `agents/designer/memory/concepts/long-polling/concept.md` — Long Polling architectural pattern
+- `agents/designer/memory/concepts/long-polling/pattern.md` — Long Polling architectural pattern
 - `agents/designer/memory/concepts/long-polling/testing.md` — Long Polling — testing guidance
-- `agents/designer/memory/concepts/long-transactions/concept.md` — Long Transactions anti-pattern
+- `agents/designer/memory/concepts/long-transactions/pattern.md` — Long Transactions anti-pattern
 - `agents/designer/memory/concepts/lru-cache/monitoring.md` — LRU Cache — monitoring guidance
-- `agents/designer/memory/concepts/lru-cache/concept.md` — LRU Cache architectural pattern
+- `agents/designer/memory/concepts/lru-cache/pattern.md` — LRU Cache architectural pattern
 - `agents/designer/memory/concepts/lru-cache/testing.md` — LRU Cache — testing guidance
-- `agents/designer/memory/concepts/magic-numbers/concept.md` — Magic Numbers/Strings anti-pattern
+- `agents/designer/memory/concepts/magic-numbers/pattern.md` — Magic Numbers/Strings anti-pattern
 - `agents/designer/memory/concepts/mapreduce/deployment.md` — MapReduce — deployment guidance
 - `agents/designer/memory/concepts/mapreduce/monitoring.md` — MapReduce — monitoring guidance
-- `agents/designer/memory/concepts/mapreduce/concept.md` — MapReduce architectural pattern
+- `agents/designer/memory/concepts/mapreduce/pattern.md` — MapReduce architectural pattern
 - `agents/designer/memory/concepts/mapreduce/testing.md` — MapReduce — testing guidance
 - `agents/designer/memory/concepts/materialized-view/monitoring.md` — Materialized View — monitoring guidance
-- `agents/designer/memory/concepts/materialized-view/concept.md` — Materialized View architectural pattern
+- `agents/designer/memory/concepts/materialized-view/pattern.md` — Materialized View architectural pattern
 - `agents/designer/memory/concepts/materialized-view/testing.md` — Materialized View — testing guidance
-- `agents/designer/memory/concepts/mediator/concept.md` — Mediator architectural pattern
+- `agents/designer/memory/concepts/mediator/pattern.md` — Mediator architectural pattern
 - `agents/designer/memory/concepts/mediator/testing.md` — Mediator — testing guidance
-- `agents/designer/memory/concepts/memento/concept.md` — Memento architectural pattern
+- `agents/designer/memory/concepts/memento/pattern.md` — Memento architectural pattern
 - `agents/designer/memory/concepts/memento/testing.md` — Memento — testing guidance
-- `agents/designer/memory/concepts/memory-leak/concept.md` — Memory Leak anti-pattern
+- `agents/designer/memory/concepts/memory-leak/pattern.md` — Memory Leak anti-pattern
 - `agents/designer/memory/concepts/message-queue/deployment.md` — Message Queue — deployment guidance
 - `agents/designer/memory/concepts/message-queue/monitoring.md` — Message Queue — monitoring guidance
-- `agents/designer/memory/concepts/message-queue/concept.md` — Message Queue architectural pattern
+- `agents/designer/memory/concepts/message-queue/pattern.md` — Message Queue architectural pattern
 - `agents/designer/memory/concepts/message-queue/testing.md` — Message Queue — testing guidance
-- `agents/designer/memory/concepts/metric-cardinality-explosion/concept.md` — Metric Cardinality Explosion anti-pattern
+- `agents/designer/memory/concepts/metric-cardinality-explosion/pattern.md` — Metric Cardinality Explosion anti-pattern
 - `agents/designer/memory/concepts/metrics-instrumentation/monitoring.md` — Metrics Instrumentation — monitoring guidance
-- `agents/designer/memory/concepts/metrics-instrumentation/concept.md` — Metrics Instrumentation architectural pattern
+- `agents/designer/memory/concepts/metrics-instrumentation/pattern.md` — Metrics Instrumentation architectural pattern
 - `agents/designer/memory/concepts/metrics-instrumentation/testing.md` — Metrics Instrumentation — testing guidance
 - `agents/designer/memory/concepts/micro-frontend/deployment.md` — Micro-Frontend — deployment guidance
-- `agents/designer/memory/concepts/micro-frontend/concept.md` — Micro-Frontend architectural pattern
+- `agents/designer/memory/concepts/micro-frontend/pattern.md` — Micro-Frontend architectural pattern
 - `agents/designer/memory/concepts/micro-frontend/testing.md` — Micro-Frontend — testing guidance
-- `agents/designer/memory/concepts/microservices/concept.md` — Microservices architectural pattern
-- `agents/designer/memory/concepts/middleware/concept.md` — Middleware — request/response pipeline interceptors for cross-cutting concerns
-- `agents/designer/memory/concepts/misleading-names/concept.md` — Misleading Names anti-pattern
-- `agents/designer/memory/concepts/missing-log-context/concept.md` — Missing Log Context anti-pattern
+- `agents/designer/memory/concepts/microservices/pattern.md` — Microservices architectural pattern
+- `agents/designer/memory/concepts/middleware/pattern.md` — Middleware — request/response pipeline interceptors for cross-cutting concerns
+- `agents/designer/memory/concepts/misleading-names/pattern.md` — Misleading Names anti-pattern
+- `agents/designer/memory/concepts/missing-log-context/pattern.md` — Missing Log Context anti-pattern
 - `agents/designer/memory/concepts/model-registry/monitoring.md` — Model Registry — monitoring guidance
-- `agents/designer/memory/concepts/model-registry/concept.md` — Model Registry architectural pattern
+- `agents/designer/memory/concepts/model-registry/pattern.md` — Model Registry architectural pattern
 - `agents/designer/memory/concepts/model-registry/testing.md` — Model Registry — testing guidance
-- `agents/designer/memory/concepts/modular-monolith/concept.md` — Modular Monolith architectural pattern
-- `agents/designer/memory/concepts/monad/concept.md` — Monad/Railway-Oriented Programming architectural pattern
+- `agents/designer/memory/concepts/modular-monolith/pattern.md` — Modular Monolith architectural pattern
+- `agents/designer/memory/concepts/monad/pattern.md` — Monad/Railway-Oriented Programming architectural pattern
 - `agents/designer/memory/concepts/monad/testing.md` — Monad — testing guidance
 - `agents/designer/memory/concepts/mtls/deployment.md` — Mutual TLS — deployment guidance
 - `agents/designer/memory/concepts/mtls/monitoring.md` — Mutual TLS — monitoring guidance
-- `agents/designer/memory/concepts/mtls/concept.md` — Mutual TLS architectural pattern
+- `agents/designer/memory/concepts/mtls/pattern.md` — Mutual TLS architectural pattern
 - `agents/designer/memory/concepts/mtls/testing.md` — Mutual TLS — testing guidance
-- `agents/designer/memory/concepts/mvc/concept.md` — Model-View-Controller architectural pattern
+- `agents/designer/memory/concepts/mvc/pattern.md` — Model-View-Controller architectural pattern
 - `agents/designer/memory/concepts/mvc/testing.md` — MVC — testing guidance
-- `agents/designer/memory/concepts/mvvm/concept.md` — Model-View-ViewModel architectural pattern
+- `agents/designer/memory/concepts/mvvm/pattern.md` — Model-View-ViewModel architectural pattern
 - `agents/designer/memory/concepts/mvvm/testing.md` — MVVM — testing guidance
-- `agents/designer/memory/concepts/n-plus-one/concept.md` — N+1 Queries anti-pattern
-- `agents/designer/memory/concepts/null-object/concept.md` — Null Object architectural pattern
+- `agents/designer/memory/concepts/n-plus-one/pattern.md` — N+1 Queries anti-pattern
+- `agents/designer/memory/concepts/null-object/pattern.md` — Null Object architectural pattern
 - `agents/designer/memory/concepts/null-object/testing.md` — Null Object — testing guidance
 - `agents/designer/memory/concepts/oauth-oidc/deployment.md` — OAuth2/OpenID Connect — deployment guidance
 - `agents/designer/memory/concepts/oauth-oidc/monitoring.md` — OAuth2/OpenID Connect — monitoring guidance
-- `agents/designer/memory/concepts/oauth-oidc/concept.md` — OAuth2/OpenID Connect architectural pattern
+- `agents/designer/memory/concepts/oauth-oidc/pattern.md` — OAuth2/OpenID Connect architectural pattern
 - `agents/designer/memory/concepts/oauth-oidc/testing.md` — OAuth2/OpenID Connect — testing guidance
-- `agents/designer/memory/concepts/object-pool/concept.md` — Object Pool architectural pattern
+- `agents/designer/memory/concepts/object-pool/pattern.md` — Object Pool architectural pattern
 - `agents/designer/memory/concepts/object-pool/testing.md` — Object Pool — testing guidance
-- `agents/designer/memory/concepts/observer/concept.md` — Observer/Event Emitter architectural pattern
+- `agents/designer/memory/concepts/observer/pattern.md` — Observer/Event Emitter architectural pattern
 - `agents/designer/memory/concepts/observer/testing.md` — Observer — testing guidance
-- `agents/designer/memory/concepts/optimistic-locking/concept.md` — Optimistic Locking architectural pattern
+- `agents/designer/memory/concepts/optimistic-locking/pattern.md` — Optimistic Locking architectural pattern
 - `agents/designer/memory/concepts/optimistic-locking/testing.md` — Optimistic Locking — testing guidance
-- `agents/designer/memory/concepts/optimistic-update/concept.md` — Optimistic Update — immediately reflecting expected state changes in the UI before server confirmation
+- `agents/designer/memory/concepts/optimistic-update/pattern.md` — Optimistic Update — immediately reflecting expected state changes in the UI before server confirmation
 - `agents/designer/memory/concepts/outbox/deployment.md` — Outbox — deployment guidance
 - `agents/designer/memory/concepts/outbox/monitoring.md` — Outbox — monitoring guidance
-- `agents/designer/memory/concepts/outbox/concept.md` — Outbox architectural pattern
+- `agents/designer/memory/concepts/outbox/pattern.md` — Outbox architectural pattern
 - `agents/designer/memory/concepts/outbox/testing.md` — Outbox — testing guidance
-- `agents/designer/memory/concepts/over-under-fetching/concept.md` — Over/Under-Fetching anti-pattern
-- `agents/designer/memory/concepts/pagination/concept.md` — Pagination architectural pattern
+- `agents/designer/memory/concepts/over-under-fetching/pattern.md` — Over/Under-Fetching anti-pattern
+- `agents/designer/memory/concepts/pagination/pattern.md` — Pagination architectural pattern
 - `agents/designer/memory/concepts/pagination/testing.md` — Pagination — testing guidance
-- `agents/designer/memory/concepts/pipeline-filter/concept.md` — Pipeline/Filter architectural pattern
+- `agents/designer/memory/concepts/pipeline-filter/pattern.md` — Pipeline/Filter architectural pattern
 - `agents/designer/memory/concepts/pipeline-filter/testing.md` — Pipeline/Filter — testing guidance
 - `agents/designer/memory/concepts/plugin/deployment.md` — Plugin Architecture — deployment guidance
 - `agents/designer/memory/concepts/plugin/monitoring.md` — Plugin Architecture — monitoring guidance
-- `agents/designer/memory/concepts/plugin/concept.md` — Plugin architectural pattern
+- `agents/designer/memory/concepts/plugin/pattern.md` — Plugin architectural pattern
 - `agents/designer/memory/concepts/plugin/testing.md` — Plugin Architecture — testing guidance
-- `agents/designer/memory/concepts/pokemon-exception/concept.md` — Pokemon Exception anti-pattern
-- `agents/designer/memory/concepts/premature-optimization/concept.md` — Premature Optimization anti-pattern
-- `agents/designer/memory/concepts/primitive-obsession/concept.md` — Primitive Obsession anti-pattern
+- `agents/designer/memory/concepts/pokemon-exception/pattern.md` — Pokemon Exception anti-pattern
+- `agents/designer/memory/concepts/premature-optimization/pattern.md` — Premature Optimization anti-pattern
+- `agents/designer/memory/concepts/primitive-obsession/pattern.md` — Primitive Obsession anti-pattern
 - `agents/designer/memory/concepts/producer-consumer/monitoring.md` — Producer-Consumer — monitoring guidance
-- `agents/designer/memory/concepts/producer-consumer/concept.md` — Producer-Consumer architectural pattern
+- `agents/designer/memory/concepts/producer-consumer/pattern.md` — Producer-Consumer architectural pattern
 - `agents/designer/memory/concepts/producer-consumer/testing.md` — Producer-Consumer — testing guidance
-- `agents/designer/memory/concepts/prop-drilling/concept.md` — Prop Drilling anti-pattern
-- `agents/designer/memory/concepts/property-testing/concept.md` — Property-Based Testing architectural pattern
+- `agents/designer/memory/concepts/prop-drilling/pattern.md` — Prop Drilling anti-pattern
+- `agents/designer/memory/concepts/property-testing/pattern.md` — Property-Based Testing architectural pattern
 - `agents/designer/memory/concepts/property-testing/testing.md` — Property-Based Testing — testing guidance
-- `agents/designer/memory/concepts/prototype/concept.md` — Prototype architectural pattern
+- `agents/designer/memory/concepts/prototype/pattern.md` — Prototype architectural pattern
 - `agents/designer/memory/concepts/prototype/testing.md` — Prototype — testing guidance
-- `agents/designer/memory/concepts/proxy/concept.md` — Proxy architectural pattern
+- `agents/designer/memory/concepts/proxy/pattern.md` — Proxy architectural pattern
 - `agents/designer/memory/concepts/proxy/testing.md` — Proxy — testing guidance
 - `agents/designer/memory/concepts/pub-sub/deployment.md` — Publish-Subscribe — deployment guidance
 - `agents/designer/memory/concepts/pub-sub/monitoring.md` — Publish-Subscribe — monitoring guidance
-- `agents/designer/memory/concepts/pub-sub/concept.md` — Publish-Subscribe architectural pattern
+- `agents/designer/memory/concepts/pub-sub/pattern.md` — Publish-Subscribe architectural pattern
 - `agents/designer/memory/concepts/pub-sub/testing.md` — Publish-Subscribe — testing guidance
-- `agents/designer/memory/concepts/race-condition/concept.md` — Race Condition anti-pattern
+- `agents/designer/memory/concepts/race-condition/pattern.md` — Race Condition anti-pattern
 - `agents/designer/memory/concepts/race-condition/testing.md` — Race Condition — testing guidance
 - `agents/designer/memory/concepts/rate-limiting/deployment.md` — Rate Limiting — deployment guidance
 - `agents/designer/memory/concepts/rate-limiting/monitoring.md` — Rate Limiting — monitoring guidance
-- `agents/designer/memory/concepts/rate-limiting/concept.md` — Rate Limiting/Throttling architectural pattern
+- `agents/designer/memory/concepts/rate-limiting/pattern.md` — Rate Limiting/Throttling architectural pattern
 - `agents/designer/memory/concepts/rate-limiting/testing.md` — Rate Limiting — testing guidance
-- `agents/designer/memory/concepts/rbac/concept.md` — Role-Based Access Control architectural pattern
+- `agents/designer/memory/concepts/rbac/pattern.md` — Role-Based Access Control architectural pattern
 - `agents/designer/memory/concepts/rbac/testing.md` — Role-Based Access Control — testing guidance
-- `agents/designer/memory/concepts/reactive-store/concept.md` — Reactive Store — client-side state container with reactive subscriptions
+- `agents/designer/memory/concepts/reactive-store/pattern.md` — Reactive Store — client-side state container with reactive subscriptions
 - `agents/designer/memory/concepts/reactor/monitoring.md` — Reactor/Event Loop — monitoring guidance
-- `agents/designer/memory/concepts/reactor/concept.md` — Reactor/Event Loop architectural pattern
+- `agents/designer/memory/concepts/reactor/pattern.md` — Reactor/Event Loop architectural pattern
 - `agents/designer/memory/concepts/reactor/testing.md` — Reactor/Event Loop — testing guidance
 - `agents/designer/memory/concepts/read-through/monitoring.md` — Read-Through Cache — monitoring guidance
-- `agents/designer/memory/concepts/read-through/concept.md` — Read-Through Cache architectural pattern
+- `agents/designer/memory/concepts/read-through/pattern.md` — Read-Through Cache architectural pattern
 - `agents/designer/memory/concepts/read-through/testing.md` — Read-Through Cache — testing guidance
-- `agents/designer/memory/concepts/read-write-lock/concept.md` — Read-Write Lock architectural pattern
+- `agents/designer/memory/concepts/read-write-lock/pattern.md` — Read-Write Lock architectural pattern
 - `agents/designer/memory/concepts/read-write-lock/testing.md` — Read-Write Lock — testing guidance
 - `agents/designer/memory/concepts/refresh-ahead/monitoring.md` — Refresh-Ahead Cache — monitoring guidance
-- `agents/designer/memory/concepts/refresh-ahead/concept.md` — Refresh-Ahead Cache architectural pattern
+- `agents/designer/memory/concepts/refresh-ahead/pattern.md` — Refresh-Ahead Cache architectural pattern
 - `agents/designer/memory/concepts/refresh-ahead/testing.md` — Refresh-Ahead Cache — testing guidance
-- `agents/designer/memory/concepts/reinventing-the-wheel/concept.md` — Reinventing the Wheel anti-pattern
-- `agents/designer/memory/concepts/repository/concept.md` — Repository architectural pattern
+- `agents/designer/memory/concepts/reinventing-the-wheel/pattern.md` — Reinventing the Wheel anti-pattern
+- `agents/designer/memory/concepts/repository/pattern.md` — Repository architectural pattern
 - `agents/designer/memory/concepts/repository/testing.md` — Repository — testing guidance
 - `agents/designer/memory/concepts/request-reply/deployment.md` — Request-Reply — deployment guidance
 - `agents/designer/memory/concepts/request-reply/monitoring.md` — Request-Reply — monitoring guidance
-- `agents/designer/memory/concepts/request-reply/concept.md` — Request-Reply architectural pattern
+- `agents/designer/memory/concepts/request-reply/pattern.md` — Request-Reply architectural pattern
 - `agents/designer/memory/concepts/request-reply/testing.md` — Request-Reply — testing guidance
 - `agents/designer/memory/concepts/rest/monitoring.md` — REST API — monitoring guidance
-- `agents/designer/memory/concepts/rest/concept.md` — REST API architectural pattern
+- `agents/designer/memory/concepts/rest/pattern.md` — REST API architectural pattern
 - `agents/designer/memory/concepts/rest/testing.md` — REST API — testing guidance
-- `agents/designer/memory/concepts/result-type/concept.md` — Result/Either Type architectural pattern
+- `agents/designer/memory/concepts/result-type/pattern.md` — Result/Either Type architectural pattern
 - `agents/designer/memory/concepts/result-type/testing.md` — Result/Either Type — testing guidance
 - `agents/designer/memory/concepts/retry/deployment.md` — Retry with Backoff — deployment guidance
 - `agents/designer/memory/concepts/retry/monitoring.md` — Retry with Backoff — monitoring guidance
-- `agents/designer/memory/concepts/retry/concept.md` — Retry architectural pattern
+- `agents/designer/memory/concepts/retry/pattern.md` — Retry architectural pattern
 - `agents/designer/memory/concepts/retry/testing.md` — Retry with Backoff — testing guidance
-- `agents/designer/memory/concepts/ring-buffer/concept.md` — Ring Buffer architectural pattern
+- `agents/designer/memory/concepts/ring-buffer/pattern.md` — Ring Buffer architectural pattern
 - `agents/designer/memory/concepts/ring-buffer/testing.md` — Ring Buffer — testing guidance
-- `agents/designer/memory/concepts/route-guard/concept.md` — Route Guard — conditional access control on route navigation
-- `agents/designer/memory/concepts/router/concept.md` — Router — URL-based navigation and view switching
-- `agents/designer/memory/concepts/saga-orchestrator/concept.md` — Saga Orchestrator architectural pattern
+- `agents/designer/memory/concepts/route-guard/pattern.md` — Route Guard — conditional access control on route navigation
+- `agents/designer/memory/concepts/router/pattern.md` — Router — URL-based navigation and view switching
+- `agents/designer/memory/concepts/saga-orchestrator/pattern.md` — Saga Orchestrator architectural pattern
 - `agents/designer/memory/concepts/saga/deployment.md` — Saga — deployment guidance
 - `agents/designer/memory/concepts/saga/monitoring.md` — Saga — monitoring guidance
-- `agents/designer/memory/concepts/saga/concept.md` — Saga architectural pattern
+- `agents/designer/memory/concepts/saga/pattern.md` — Saga architectural pattern
 - `agents/designer/memory/concepts/saga/testing.md` — Saga — testing guidance
 - `agents/designer/memory/concepts/scheduler/monitoring.md` — Cron/Scheduler — monitoring guidance
-- `agents/designer/memory/concepts/scheduler/concept.md` — Cron/Scheduler architectural pattern
+- `agents/designer/memory/concepts/scheduler/pattern.md` — Cron/Scheduler architectural pattern
 - `agents/designer/memory/concepts/scheduler/testing.md` — Cron/Scheduler — testing guidance
-- `agents/designer/memory/concepts/schema-on-read/concept.md` — Schema-on-Read anti-pattern
+- `agents/designer/memory/concepts/schema-on-read/pattern.md` — Schema-on-Read anti-pattern
 - `agents/designer/memory/concepts/schema-on-read/testing.md` — Schema-on-Read — testing guidance
-- `agents/designer/memory/concepts/secret-management/concept.md` — Secret Management architectural pattern
+- `agents/designer/memory/concepts/secret-management/pattern.md` — Secret Management architectural pattern
 - `agents/designer/memory/concepts/secret-management/testing.md` — Secret Management — testing guidance
 - `agents/designer/memory/concepts/select-star/monitoring.md` — Select Star — monitoring guidance
-- `agents/designer/memory/concepts/select-star/concept.md` — Select Star anti-pattern
+- `agents/designer/memory/concepts/select-star/pattern.md` — Select Star anti-pattern
 - `agents/designer/memory/concepts/select-star/testing.md` — Select Star — testing guidance
-- `agents/designer/memory/concepts/server-prefetch/concept.md` — Server Prefetch — fetching data on the server before client rendering
+- `agents/designer/memory/concepts/server-prefetch/pattern.md` — Server Prefetch — fetching data on the server before client rendering
 - `agents/designer/memory/concepts/server-sent-events/monitoring.md` — Server-Sent Events — monitoring guidance
-- `agents/designer/memory/concepts/server-sent-events/concept.md` — Server-Sent Events architectural pattern
+- `agents/designer/memory/concepts/server-sent-events/pattern.md` — Server-Sent Events architectural pattern
 - `agents/designer/memory/concepts/server-sent-events/testing.md` — Server-Sent Events — testing guidance
-- `agents/designer/memory/concepts/serverless/concept.md` — Serverless / FaaS architectural pattern
+- `agents/designer/memory/concepts/serverless/pattern.md` — Serverless / FaaS architectural pattern
 - `agents/designer/memory/concepts/service-discovery/deployment.md` — Service Discovery — deployment guidance
 - `agents/designer/memory/concepts/service-discovery/monitoring.md` — Service Discovery — monitoring guidance
-- `agents/designer/memory/concepts/service-discovery/concept.md` — Service Discovery architectural pattern
+- `agents/designer/memory/concepts/service-discovery/pattern.md` — Service Discovery architectural pattern
 - `agents/designer/memory/concepts/service-discovery/testing.md` — Service Discovery — testing guidance
 - `agents/designer/memory/concepts/service-manager/deployment.md` — Service Manager — deployment guidance
 - `agents/designer/memory/concepts/service-manager/monitoring.md` — Service Manager — monitoring guidance
 - `agents/designer/memory/concepts/service-manager/orchestrator.md` — orchestrator library reference
-- `agents/designer/memory/concepts/service-manager/concept.md` — Service Manager architectural pattern
+- `agents/designer/memory/concepts/service-manager/pattern.md` — Service Manager architectural pattern
 - `agents/designer/memory/concepts/service-manager/testing.md` — Service Manager — testing guidance
 - `agents/designer/memory/concepts/service-mesh/deployment.md` — Service Mesh — deployment guidance
 - `agents/designer/memory/concepts/service-mesh/monitoring.md` — Service Mesh — monitoring guidance
-- `agents/designer/memory/concepts/service-mesh/concept.md` — Service Mesh architectural pattern
+- `agents/designer/memory/concepts/service-mesh/pattern.md` — Service Mesh architectural pattern
 - `agents/designer/memory/concepts/session-auth/monitoring.md` — Session-Based Authentication — monitoring guidance
-- `agents/designer/memory/concepts/session-auth/concept.md` — Session-Based Authentication architectural pattern
+- `agents/designer/memory/concepts/session-auth/pattern.md` — Session-Based Authentication architectural pattern
 - `agents/designer/memory/concepts/session-auth/testing.md` — Session-Based Authentication — testing guidance
 - `agents/designer/memory/concepts/sharding/deployment.md` — Sharding — deployment guidance
 - `agents/designer/memory/concepts/sharding/monitoring.md` — Sharding — monitoring guidance
-- `agents/designer/memory/concepts/sharding/concept.md` — Sharding architectural pattern
+- `agents/designer/memory/concepts/sharding/pattern.md` — Sharding architectural pattern
 - `agents/designer/memory/concepts/sharding/testing.md` — Sharding — testing guidance
-- `agents/designer/memory/concepts/shotgun-surgery/concept.md` — Shotgun Surgery anti-pattern
+- `agents/designer/memory/concepts/shotgun-surgery/pattern.md` — Shotgun Surgery anti-pattern
 - `agents/designer/memory/concepts/shotgun-surgery/testing.md` — Shotgun Surgery — testing guidance
-- `agents/designer/memory/concepts/side-effect-hook/concept.md` — Side Effect Hook — lifecycle-bound execution of effects in component frameworks
+- `agents/designer/memory/concepts/side-effect-hook/pattern.md` — Side Effect Hook — lifecycle-bound execution of effects in component frameworks
 - `agents/designer/memory/concepts/sidecar/deployment.md` — Sidecar — deployment guidance
 - `agents/designer/memory/concepts/sidecar/monitoring.md` — Sidecar — monitoring guidance
-- `agents/designer/memory/concepts/sidecar/concept.md` — Sidecar architectural pattern
+- `agents/designer/memory/concepts/sidecar/pattern.md` — Sidecar architectural pattern
 - `agents/designer/memory/concepts/sidecar/testing.md` — Sidecar — testing guidance
-- `agents/designer/memory/concepts/singleton/concept.md` — Singleton architectural pattern
+- `agents/designer/memory/concepts/singleton/pattern.md` — Singleton architectural pattern
 - `agents/designer/memory/concepts/singleton/testing.md` — Singleton — testing guidance
-- `agents/designer/memory/concepts/snapshot-testing/concept.md` — Snapshot Testing architectural pattern
+- `agents/designer/memory/concepts/snapshot-testing/pattern.md` — Snapshot Testing architectural pattern
 - `agents/designer/memory/concepts/snapshot-testing/testing.md` — Snapshot Testing — testing guidance
-- `agents/designer/memory/concepts/snowflake-server/concept.md` — Snowflake Server anti-pattern
-- `agents/designer/memory/concepts/soft-delete/concept.md` — Soft Delete architectural pattern
+- `agents/designer/memory/concepts/snowflake-server/pattern.md` — Snowflake Server anti-pattern
+- `agents/designer/memory/concepts/soft-delete/pattern.md` — Soft Delete architectural pattern
 - `agents/designer/memory/concepts/soft-delete/testing.md` — Soft Delete — testing guidance
-- `agents/designer/memory/concepts/spaghetti-code/concept.md` — Spaghetti Code anti-pattern
-- `agents/designer/memory/concepts/spatial-partitioning/concept.md` — Spatial Partitioning architectural pattern
+- `agents/designer/memory/concepts/spaghetti-code/pattern.md` — Spaghetti Code anti-pattern
+- `agents/designer/memory/concepts/spatial-partitioning/pattern.md` — Spatial Partitioning architectural pattern
 - `agents/designer/memory/concepts/spatial-partitioning/testing.md` — Spatial Partitioning — testing guidance
-- `agents/designer/memory/concepts/specification/concept.md` — Specification Pattern architectural pattern
+- `agents/designer/memory/concepts/specification/pattern.md` — Specification Pattern architectural pattern
 - `agents/designer/memory/concepts/specification/testing.md` — Specification Pattern — testing guidance
-- `agents/designer/memory/concepts/sql-injection/concept.md` — SQL Injection anti-pattern
+- `agents/designer/memory/concepts/sql-injection/pattern.md` — SQL Injection anti-pattern
 - `agents/designer/memory/concepts/sql-injection/testing.md` — SQL Injection — testing guidance
 - `agents/designer/memory/concepts/state-machine/monitoring.md` — State Machine — monitoring guidance
-- `agents/designer/memory/concepts/state-machine/concept.md` — State Machine architectural pattern
+- `agents/designer/memory/concepts/state-machine/pattern.md` — State Machine architectural pattern
 - `agents/designer/memory/concepts/state-machine/testing.md` — State Machine — testing guidance
 - `agents/designer/memory/concepts/strangler-fig/deployment.md` — Strangler Fig — deployment guidance
-- `agents/designer/memory/concepts/strangler-fig/concept.md` — Strangler Fig architectural pattern
+- `agents/designer/memory/concepts/strangler-fig/pattern.md` — Strangler Fig architectural pattern
 - `agents/designer/memory/concepts/strangler-fig/testing.md` — Strangler Fig — testing guidance
-- `agents/designer/memory/concepts/strategy/concept.md` — Strategy architectural pattern
+- `agents/designer/memory/concepts/strategy/pattern.md` — Strategy architectural pattern
 - `agents/designer/memory/concepts/strategy/testing.md` — Strategy — testing guidance
 - `agents/designer/memory/concepts/stream-to-store/deployment.md` — Stream-to-Store — deployment guidance
 - `agents/designer/memory/concepts/stream-to-store/monitoring.md` — Stream-to-Store — monitoring guidance
-- `agents/designer/memory/concepts/stream-to-store/concept.md` — Stream To Store architectural pattern
+- `agents/designer/memory/concepts/stream-to-store/pattern.md` — Stream To Store architectural pattern
 - `agents/designer/memory/concepts/stream-to-store/stoik.md` — stoik library reference
 - `agents/designer/memory/concepts/stream-to-store/testing.md` — Stream-to-Store — testing guidance
-- `agents/designer/memory/concepts/stringly-typed/concept.md` — Stringly Typed anti-pattern
+- `agents/designer/memory/concepts/stringly-typed/pattern.md` — Stringly Typed anti-pattern
 - `agents/designer/memory/concepts/structured-logging/monitoring.md` — Structured Logging — monitoring guidance
-- `agents/designer/memory/concepts/structured-logging/concept.md` — Structured Logging architectural pattern
+- `agents/designer/memory/concepts/structured-logging/pattern.md` — Structured Logging architectural pattern
 - `agents/designer/memory/concepts/structured-logging/testing.md` — Structured Logging — testing guidance
-- `agents/designer/memory/concepts/suspense-boundary/concept.md` — Suspense Boundary — declarative loading state management for async component trees
-- `agents/designer/memory/concepts/swallowed-exception/concept.md` — Swallowed Exception anti-pattern
-- `agents/designer/memory/concepts/sync-in-async/concept.md` — Sync-in-Async anti-pattern
+- `agents/designer/memory/concepts/suspense-boundary/pattern.md` — Suspense Boundary — declarative loading state management for async component trees
+- `agents/designer/memory/concepts/swallowed-exception/pattern.md` — Swallowed Exception anti-pattern
+- `agents/designer/memory/concepts/sync-in-async/pattern.md` — Sync-in-Async anti-pattern
 - `agents/designer/memory/concepts/sync-in-async/testing.md` — Sync-in-Async — testing guidance
-- `agents/designer/memory/concepts/template-method/concept.md` — Template Method architectural pattern
+- `agents/designer/memory/concepts/template-method/pattern.md` — Template Method architectural pattern
 - `agents/designer/memory/concepts/template-method/testing.md` — Template Method — testing guidance
-- `agents/designer/memory/concepts/temporal-coupling/concept.md` — Temporal Coupling anti-pattern
+- `agents/designer/memory/concepts/temporal-coupling/pattern.md` — Temporal Coupling anti-pattern
 - `agents/designer/memory/concepts/tenant-isolation/deployment.md` — Tenant Isolation — deployment guidance
 - `agents/designer/memory/concepts/tenant-isolation/monitoring.md` — Tenant Isolation — monitoring guidance
-- `agents/designer/memory/concepts/tenant-isolation/concept.md` — Tenant Isolation architectural pattern
+- `agents/designer/memory/concepts/tenant-isolation/pattern.md` — Tenant Isolation architectural pattern
 - `agents/designer/memory/concepts/tenant-isolation/testing.md` — Tenant Isolation — testing guidance
 - `agents/designer/memory/concepts/tenant-routing/deployment.md` — Tenant-Aware Routing — deployment guidance
 - `agents/designer/memory/concepts/tenant-routing/monitoring.md` — Tenant-Aware Routing — monitoring guidance
-- `agents/designer/memory/concepts/tenant-routing/concept.md` — Tenant-Aware Routing architectural pattern
+- `agents/designer/memory/concepts/tenant-routing/pattern.md` — Tenant-Aware Routing architectural pattern
 - `agents/designer/memory/concepts/tenant-routing/testing.md` — Tenant-Aware Routing — testing guidance
-- `agents/designer/memory/concepts/test-doubles/concept.md` — Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
+- `agents/designer/memory/concepts/test-doubles/pattern.md` — Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
 - `agents/designer/memory/concepts/test-doubles/testing.md` — Test Doubles — testing guidance
-- `agents/designer/memory/concepts/test-pollution/concept.md` — Test Pollution anti-pattern
+- `agents/designer/memory/concepts/test-pollution/pattern.md` — Test Pollution anti-pattern
 - `agents/designer/memory/concepts/test-pollution/testing.md` — Test Pollution — testing guidance
-- `agents/designer/memory/concepts/tick-simulation/concept.md` — Tick-Based Simulation architectural pattern
+- `agents/designer/memory/concepts/tick-simulation/pattern.md` — Tick-Based Simulation architectural pattern
 - `agents/designer/memory/concepts/tick-simulation/testing.md` — Tick-Based Simulation — testing guidance
-- `agents/designer/memory/concepts/tight-coupling/concept.md` — Tight Coupling anti-pattern
+- `agents/designer/memory/concepts/tight-coupling/pattern.md` — Tight Coupling anti-pattern
 - `agents/designer/memory/concepts/timeout/deployment.md` — Timeout — deployment guidance
 - `agents/designer/memory/concepts/timeout/monitoring.md` — Timeout — monitoring guidance
-- `agents/designer/memory/concepts/timeout/concept.md` — Timeout architectural pattern
+- `agents/designer/memory/concepts/timeout/pattern.md` — Timeout architectural pattern
 - `agents/designer/memory/concepts/timeout/testing.md` — Timeout — testing guidance
 - `agents/designer/memory/concepts/token-auth/monitoring.md` — Token-Based Authentication (JWT) — monitoring guidance
-- `agents/designer/memory/concepts/token-auth/concept.md` — Token-Based Authentication (JWT) architectural pattern
+- `agents/designer/memory/concepts/token-auth/pattern.md` — Token-Based Authentication (JWT) architectural pattern
 - `agents/designer/memory/concepts/token-auth/testing.md` — Token-Based Authentication (JWT) — testing guidance
-- `agents/designer/memory/concepts/train-wreck/concept.md` — Train Wreck anti-pattern
+- `agents/designer/memory/concepts/train-wreck/pattern.md` — Train Wreck anti-pattern
 - `agents/designer/memory/concepts/training-pipeline/monitoring.md` — Training Pipeline — monitoring guidance
-- `agents/designer/memory/concepts/training-pipeline/concept.md` — Training Pipeline architectural pattern
+- `agents/designer/memory/concepts/training-pipeline/pattern.md` — Training Pipeline architectural pattern
 - `agents/designer/memory/concepts/training-pipeline/testing.md` — Training Pipeline — testing guidance
-- `agents/designer/memory/concepts/trie/concept.md` — Trie (Prefix Tree) architectural pattern
+- `agents/designer/memory/concepts/trie/pattern.md` — Trie (Prefix Tree) architectural pattern
 - `agents/designer/memory/concepts/trie/testing.md` — Trie (Prefix Tree) — testing guidance
-- `agents/designer/memory/concepts/unbounded-growth/concept.md` — Unbounded Growth anti-pattern
-- `agents/designer/memory/concepts/unit-of-work/concept.md` — Unit of Work architectural pattern
+- `agents/designer/memory/concepts/unbounded-growth/pattern.md` — Unbounded Growth anti-pattern
+- `agents/designer/memory/concepts/unit-of-work/pattern.md` — Unit of Work architectural pattern
 - `agents/designer/memory/concepts/unit-of-work/testing.md` — Unit of Work — testing guidance
-- `agents/designer/memory/concepts/value-object/concept.md` — Value Object architectural pattern
+- `agents/designer/memory/concepts/value-object/pattern.md` — Value Object architectural pattern
 - `agents/designer/memory/concepts/value-object/testing.md` — Value Object — testing guidance
-- `agents/designer/memory/concepts/visitor/concept.md` — Visitor architectural pattern
+- `agents/designer/memory/concepts/visitor/pattern.md` — Visitor architectural pattern
 - `agents/designer/memory/concepts/visitor/testing.md` — Visitor — testing guidance
 - `agents/designer/memory/concepts/webhook/deployment.md` — Webhook — deployment guidance
 - `agents/designer/memory/concepts/webhook/monitoring.md` — Webhook — monitoring guidance
-- `agents/designer/memory/concepts/webhook/concept.md` — Webhook architectural pattern
+- `agents/designer/memory/concepts/webhook/pattern.md` — Webhook architectural pattern
 - `agents/designer/memory/concepts/webhook/testing.md` — Webhook — testing guidance
 - `agents/designer/memory/concepts/websocket/deployment.md` — WebSocket — deployment guidance
 - `agents/designer/memory/concepts/websocket/monitoring.md` — WebSocket — monitoring guidance
-- `agents/designer/memory/concepts/websocket/concept.md` — WebSocket architectural pattern
+- `agents/designer/memory/concepts/websocket/pattern.md` — WebSocket architectural pattern
 - `agents/designer/memory/concepts/websocket/testing.md` — WebSocket — testing guidance
 - `agents/designer/memory/concepts/worker-pool/monitoring.md` — Worker/Thread Pool — monitoring guidance
-- `agents/designer/memory/concepts/worker-pool/concept.md` — Worker/Thread Pool architectural pattern
+- `agents/designer/memory/concepts/worker-pool/pattern.md` — Worker/Thread Pool architectural pattern
 - `agents/designer/memory/concepts/worker-pool/testing.md` — Worker/Thread Pool — testing guidance
 - `agents/designer/memory/concepts/workflow-engine/deployment.md` — Workflow Engine — deployment guidance
 - `agents/designer/memory/concepts/workflow-engine/monitoring.md` — Workflow Engine — monitoring guidance
-- `agents/designer/memory/concepts/workflow-engine/concept.md` — Workflow Engine architectural pattern
+- `agents/designer/memory/concepts/workflow-engine/pattern.md` — Workflow Engine architectural pattern
 - `agents/designer/memory/concepts/workflow-engine/testing.md` — Workflow Engine — testing guidance
 - `agents/designer/memory/concepts/write-behind/monitoring.md` — Write-Behind — monitoring guidance
-- `agents/designer/memory/concepts/write-behind/concept.md` — Write-Behind architectural pattern
+- `agents/designer/memory/concepts/write-behind/pattern.md` — Write-Behind architectural pattern
 - `agents/designer/memory/concepts/write-behind/testing.md` — Write-Behind — testing guidance
 - `agents/designer/memory/patterns.md` — Index of recognized architectural patterns by category
-- `agents/designer/memory/patterns/abstract-factory/concept.md` — Abstract Factory architectural pattern
-- `agents/designer/memory/patterns/active-record/concept.md` — Active Record architectural pattern
-- `agents/designer/memory/patterns/actor-model/concept.md` — Actor Model architectural pattern
-- `agents/designer/memory/patterns/adapter/concept.md` — Adapter architectural pattern
-- `agents/designer/memory/patterns/aggregate/concept.md` — Aggregate Root architectural pattern
-- `agents/designer/memory/patterns/anemic-domain-model/concept.md` — Anemic Domain Model anti-pattern
-- `agents/designer/memory/patterns/anti-corruption-layer/concept.md` — Anti-Corruption Layer architectural pattern
-- `agents/designer/memory/patterns/api-gateway/concept.md` — API Gateway architectural pattern
-- `agents/designer/memory/patterns/api-key-auth/concept.md` — API Key Authentication architectural pattern
-- `agents/designer/memory/patterns/ast/concept.md` — Abstract Syntax Tree (AST) architectural pattern
-- `agents/designer/memory/patterns/audit-logging/concept.md` — Audit Logging architectural pattern
-- `agents/designer/memory/patterns/backpressure/concept.md` — Backpressure architectural pattern
-- `agents/designer/memory/patterns/batch-loader/concept.md` — Batch Loader (N+1 Prevention) architectural pattern
-- `agents/designer/memory/patterns/bff/concept.md` — Backend for Frontend architectural pattern
-- `agents/designer/memory/patterns/big-ball-of-mud/concept.md` — Big Ball of Mud anti-pattern
-- `agents/designer/memory/patterns/bloom-filter/concept.md` — Bloom Filter architectural pattern
-- `agents/designer/memory/patterns/blue-green/concept.md` — Blue-Green Deployment architectural pattern
-- `agents/designer/memory/patterns/boolean-blindness/concept.md` — Boolean Blindness anti-pattern
-- `agents/designer/memory/patterns/breaking-changes/concept.md` — Breaking Changes anti-pattern
-- `agents/designer/memory/patterns/bridge/concept.md` — Bridge architectural pattern
-- `agents/designer/memory/patterns/builder/concept.md` — Builder architectural pattern
-- `agents/designer/memory/patterns/bulkhead/concept.md` — Bulkhead architectural pattern
-- `agents/designer/memory/patterns/busy-waiting/concept.md` — Busy Waiting anti-pattern
-- `agents/designer/memory/patterns/cache-aside/concept.md` — Cache-Aside architectural pattern
-- `agents/designer/memory/patterns/cache-stampede-prevention/concept.md` — Cache Stampede Prevention architectural pattern
-- `agents/designer/memory/patterns/callback-hell/concept.md` — Callback Hell anti-pattern
-- `agents/designer/memory/patterns/canary/concept.md` — Canary Release architectural pattern
-- `agents/designer/memory/patterns/cargo-cult/concept.md` — Cargo Cult Programming anti-pattern
-- `agents/designer/memory/patterns/chain-of-responsibility/concept.md` — Chain of Responsibility architectural pattern
-- `agents/designer/memory/patterns/change-data-capture/concept.md` — Change Data Capture (CDC) architectural pattern
-- `agents/designer/memory/patterns/chatty-api/concept.md` — Chatty API anti-pattern
-- `agents/designer/memory/patterns/choreography/concept.md` — Choreography architectural pattern
-- `agents/designer/memory/patterns/circuit-breaker/concept.md` — Circuit Breaker architectural pattern
-- `agents/designer/memory/patterns/circular-dependency/concept.md` — Circular Dependency anti-pattern
-- `agents/designer/memory/patterns/claim-check/concept.md` — Claim Check architectural pattern
-- `agents/designer/memory/patterns/command/concept.md` — Command architectural pattern
-- `agents/designer/memory/patterns/competing-consumers/concept.md` — Competing Consumers architectural pattern
-- `agents/designer/memory/patterns/component/concept.md` — Component Architecture architectural pattern
-- `agents/designer/memory/patterns/composite/concept.md` — Composite architectural pattern
-- `agents/designer/memory/patterns/config-management/concept.md` — Configuration Management architectural pattern
-- `agents/designer/memory/patterns/config-sprawl/concept.md` — Configuration Sprawl anti-pattern
-- `agents/designer/memory/patterns/connection-pooling/concept.md` — Connection Pooling architectural pattern
-- `agents/designer/memory/patterns/content-negotiation/concept.md` — Content/Protocol Negotiation architectural pattern
-- `agents/designer/memory/patterns/contract-testing/concept.md` — Contract Testing architectural pattern
-- `agents/designer/memory/patterns/copy-paste-programming/concept.md` — Copy-Paste Programming anti-pattern
-- `agents/designer/memory/patterns/correlation-id/concept.md` — Correlation ID architectural pattern
-- `agents/designer/memory/patterns/cors/concept.md` — CORS architectural pattern
-- `agents/designer/memory/patterns/cqrs/concept.md` — CQRS architectural pattern
-- `agents/designer/memory/patterns/data-mapper/concept.md` — Data Mapper architectural pattern
-- `agents/designer/memory/patterns/database-migration/concept.md` — Database Migration architectural pattern
-- `agents/designer/memory/patterns/ddd/concept.md` — Domain-Driven Design architectural pattern
-- `agents/designer/memory/patterns/dead-letter/concept.md` — Dead Letter Queue architectural pattern
-- `agents/designer/memory/patterns/deadlock/concept.md` — Deadlock anti-pattern
-- `agents/designer/memory/patterns/decorator/concept.md` — Decorator/Wrapper architectural pattern
-- `agents/designer/memory/patterns/deep-nesting/concept.md` — Deep Nesting anti-pattern
-- `agents/designer/memory/patterns/dependency-injection/concept.md` — Dependency Injection/IoC architectural pattern
-- `agents/designer/memory/patterns/distributed-lock/concept.md` — Distributed Lock architectural pattern
-- `agents/designer/memory/patterns/distributed-monolith/concept.md` — Distributed Monolith anti-pattern
-- `agents/designer/memory/patterns/distributed-tracing/concept.md` — Distributed Tracing Instrumentation architectural pattern
-- `agents/designer/memory/patterns/dual-writes/concept.md` — Dual Writes anti-pattern
-- `agents/designer/memory/patterns/entity-component-system/concept.md` — Entity-Component-System (ECS) architectural pattern
-- `agents/designer/memory/patterns/environment-parity-gap/concept.md` — Environment Parity Gap anti-pattern
-- `agents/designer/memory/patterns/error-code-returns/concept.md` — Error Code Returns anti-pattern
-- `agents/designer/memory/patterns/etl/concept.md` — ETL architectural pattern
-- `agents/designer/memory/patterns/event-carried-state/concept.md` — Event-Carried State Transfer architectural pattern
-- `agents/designer/memory/patterns/event-driven/concept.md` — Event-Driven architectural pattern
-- `agents/designer/memory/patterns/event-notification/concept.md` — Event Notification architectural pattern
-- `agents/designer/memory/patterns/event-sourcing/concept.md` — Event Sourcing architectural pattern
-- `agents/designer/memory/patterns/experiment-framework/concept.md` — A/B Experiment Framework architectural pattern
-- `agents/designer/memory/patterns/facade/concept.md` — Facade architectural pattern
-- `agents/designer/memory/patterns/factory/concept.md` — Factory Method architectural pattern
-- `agents/designer/memory/patterns/feature-envy/concept.md` — Feature Envy anti-pattern
-- `agents/designer/memory/patterns/feature-flag/concept.md` — Feature Flag/Toggle architectural pattern
-- `agents/designer/memory/patterns/feature-store/concept.md` — Feature Store architectural pattern
-- `agents/designer/memory/patterns/fire-and-forget/concept.md` — Fire and Forget anti-pattern
-- `agents/designer/memory/patterns/fixture-builder/concept.md` — Test Fixture / Data Builder architectural pattern
-- `agents/designer/memory/patterns/flaky-tests/concept.md` — Flaky Tests anti-pattern
-- `agents/designer/memory/patterns/flux/concept.md` — Flux/Redux (Unidirectional Data Flow) architectural pattern
-- `agents/designer/memory/patterns/flyweight/concept.md` — Flyweight architectural pattern
-- `agents/designer/memory/patterns/future-promise/concept.md` — Future/Promise architectural pattern
-- `agents/designer/memory/patterns/game-loop/concept.md` — Game Loop architectural pattern
-- `agents/designer/memory/patterns/gitops/concept.md` — GitOps architectural pattern
-- `agents/designer/memory/patterns/god-endpoint/concept.md` — God Endpoint anti-pattern
-- `agents/designer/memory/patterns/god-object/concept.md` — God Object/Class anti-pattern
-- `agents/designer/memory/patterns/golden-hammer/concept.md` — Golden Hammer anti-pattern
-- `agents/designer/memory/patterns/graceful-degradation/concept.md` — Graceful Degradation architectural pattern
-- `agents/designer/memory/patterns/graphql/concept.md` — GraphQL architectural pattern
-- `agents/designer/memory/patterns/grpc/concept.md` — gRPC/RPC architectural pattern
-- `agents/designer/memory/patterns/hardcoded-credentials/concept.md` — Hardcoded Credentials anti-pattern
-- `agents/designer/memory/patterns/hardcoded-urls/concept.md` — Hardcoded URLs anti-pattern
-- `agents/designer/memory/patterns/health-check/concept.md` — Health Check architectural pattern
-- `agents/designer/memory/patterns/hexagonal/concept.md` — Hexagonal architectural pattern
-- `agents/designer/memory/patterns/hidden-side-effects/concept.md` — Hidden Side Effects anti-pattern
-- `agents/designer/memory/patterns/ice-cream-cone/concept.md` — Ice Cream Cone anti-pattern
-- `agents/designer/memory/patterns/idempotent-consumer/concept.md` — Idempotent Consumer architectural pattern
-- `agents/designer/memory/patterns/immutable-infra/concept.md` — Immutable Infrastructure architectural pattern
-- `agents/designer/memory/patterns/inbox/concept.md` — Inbox architectural pattern
-- `agents/designer/memory/patterns/inconsistent-naming/concept.md` — Inconsistent Naming anti-pattern
-- `agents/designer/memory/patterns/infrastructure-as-code/concept.md` — Infrastructure as Code architectural pattern
-- `agents/designer/memory/patterns/input-validation/concept.md` — Input Validation architectural pattern
-- `agents/designer/memory/patterns/insecure-deserialization/concept.md` — Insecure Deserialization anti-pattern
-- `agents/designer/memory/patterns/intermediate-representation/concept.md` — Intermediate Representation (IR) architectural pattern
-- `agents/designer/memory/patterns/iterator/concept.md` — Iterator architectural pattern
-- `agents/designer/memory/patterns/lava-flow/concept.md` — Lava Flow (Dead Code) anti-pattern
-- `agents/designer/memory/patterns/leader-election/concept.md` — Leader Election architectural pattern
-- `agents/designer/memory/patterns/leaky-abstraction/concept.md` — Leaky Abstraction anti-pattern
-- `agents/designer/memory/patterns/lexer-parser/concept.md` — Lexer/Parser architectural pattern
-- `agents/designer/memory/patterns/log-and-throw/concept.md` — Log and Throw anti-pattern
-- `agents/designer/memory/patterns/log-spam/concept.md` — Log Spam anti-pattern
-- `agents/designer/memory/patterns/long-polling/concept.md` — Long Polling architectural pattern
-- `agents/designer/memory/patterns/long-transactions/concept.md` — Long Transactions anti-pattern
-- `agents/designer/memory/patterns/lru-cache/concept.md` — LRU Cache architectural pattern
-- `agents/designer/memory/patterns/magic-numbers/concept.md` — Magic Numbers/Strings anti-pattern
-- `agents/designer/memory/patterns/mapreduce/concept.md` — MapReduce architectural pattern
-- `agents/designer/memory/patterns/materialized-view/concept.md` — Materialized View architectural pattern
-- `agents/designer/memory/patterns/mediator/concept.md` — Mediator architectural pattern
-- `agents/designer/memory/patterns/memento/concept.md` — Memento architectural pattern
-- `agents/designer/memory/patterns/memory-leak/concept.md` — Memory Leak anti-pattern
-- `agents/designer/memory/patterns/message-queue/concept.md` — Message Queue architectural pattern
-- `agents/designer/memory/patterns/metric-cardinality-explosion/concept.md` — Metric Cardinality Explosion anti-pattern
-- `agents/designer/memory/patterns/metrics-instrumentation/concept.md` — Metrics Instrumentation architectural pattern
-- `agents/designer/memory/patterns/micro-frontend/concept.md` — Micro-Frontend architectural pattern
-- `agents/designer/memory/patterns/microservices/concept.md` — Microservices architectural pattern
-- `agents/designer/memory/patterns/misleading-names/concept.md` — Misleading Names anti-pattern
-- `agents/designer/memory/patterns/missing-log-context/concept.md` — Missing Log Context anti-pattern
-- `agents/designer/memory/patterns/model-registry/concept.md` — Model Registry architectural pattern
-- `agents/designer/memory/patterns/modular-monolith/concept.md` — Modular Monolith architectural pattern
-- `agents/designer/memory/patterns/monad/concept.md` — Monad/Railway-Oriented Programming architectural pattern
-- `agents/designer/memory/patterns/mtls/concept.md` — Mutual TLS architectural pattern
-- `agents/designer/memory/patterns/mvc/concept.md` — Model-View-Controller architectural pattern
-- `agents/designer/memory/patterns/mvvm/concept.md` — Model-View-ViewModel architectural pattern
-- `agents/designer/memory/patterns/n-plus-one/concept.md` — N+1 Queries anti-pattern
-- `agents/designer/memory/patterns/null-object/concept.md` — Null Object architectural pattern
-- `agents/designer/memory/patterns/oauth-oidc/concept.md` — OAuth2/OpenID Connect architectural pattern
-- `agents/designer/memory/patterns/object-pool/concept.md` — Object Pool architectural pattern
-- `agents/designer/memory/patterns/observer/concept.md` — Observer/Event Emitter architectural pattern
-- `agents/designer/memory/patterns/optimistic-locking/concept.md` — Optimistic Locking architectural pattern
-- `agents/designer/memory/patterns/outbox/concept.md` — Outbox architectural pattern
-- `agents/designer/memory/patterns/over-under-fetching/concept.md` — Over/Under-Fetching anti-pattern
-- `agents/designer/memory/patterns/pagination/concept.md` — Pagination architectural pattern
-- `agents/designer/memory/patterns/pipeline-filter/concept.md` — Pipeline/Filter architectural pattern
-- `agents/designer/memory/patterns/plugin/concept.md` — Plugin architectural pattern
-- `agents/designer/memory/patterns/pokemon-exception/concept.md` — Pokemon Exception anti-pattern
-- `agents/designer/memory/patterns/premature-optimization/concept.md` — Premature Optimization anti-pattern
-- `agents/designer/memory/patterns/primitive-obsession/concept.md` — Primitive Obsession anti-pattern
-- `agents/designer/memory/patterns/producer-consumer/concept.md` — Producer-Consumer architectural pattern
-- `agents/designer/memory/patterns/prop-drilling/concept.md` — Prop Drilling anti-pattern
-- `agents/designer/memory/patterns/property-testing/concept.md` — Property-Based Testing architectural pattern
-- `agents/designer/memory/patterns/prototype/concept.md` — Prototype architectural pattern
-- `agents/designer/memory/patterns/proxy/concept.md` — Proxy architectural pattern
-- `agents/designer/memory/patterns/pub-sub/concept.md` — Publish-Subscribe architectural pattern
-- `agents/designer/memory/patterns/race-condition/concept.md` — Race Condition anti-pattern
-- `agents/designer/memory/patterns/rate-limiting/concept.md` — Rate Limiting/Throttling architectural pattern
-- `agents/designer/memory/patterns/rbac/concept.md` — Role-Based Access Control architectural pattern
-- `agents/designer/memory/patterns/reactor/concept.md` — Reactor/Event Loop architectural pattern
-- `agents/designer/memory/patterns/read-through/concept.md` — Read-Through Cache architectural pattern
-- `agents/designer/memory/patterns/read-write-lock/concept.md` — Read-Write Lock architectural pattern
-- `agents/designer/memory/patterns/refresh-ahead/concept.md` — Refresh-Ahead Cache architectural pattern
-- `agents/designer/memory/patterns/reinventing-the-wheel/concept.md` — Reinventing the Wheel anti-pattern
-- `agents/designer/memory/patterns/repository/concept.md` — Repository architectural pattern
-- `agents/designer/memory/patterns/request-reply/concept.md` — Request-Reply architectural pattern
-- `agents/designer/memory/patterns/rest/concept.md` — REST API architectural pattern
-- `agents/designer/memory/patterns/result-type/concept.md` — Result/Either Type architectural pattern
-- `agents/designer/memory/patterns/retry/concept.md` — Retry architectural pattern
-- `agents/designer/memory/patterns/ring-buffer/concept.md` — Ring Buffer architectural pattern
-- `agents/designer/memory/patterns/saga-orchestrator/concept.md` — Saga Orchestrator architectural pattern
-- `agents/designer/memory/patterns/saga/concept.md` — Saga architectural pattern
-- `agents/designer/memory/patterns/scheduler/concept.md` — Cron/Scheduler architectural pattern
-- `agents/designer/memory/patterns/schema-on-read/concept.md` — Schema-on-Read anti-pattern
-- `agents/designer/memory/patterns/secret-management/concept.md` — Secret Management architectural pattern
-- `agents/designer/memory/patterns/select-star/concept.md` — Select Star anti-pattern
-- `agents/designer/memory/patterns/server-sent-events/concept.md` — Server-Sent Events architectural pattern
-- `agents/designer/memory/patterns/serverless/concept.md` — Serverless / FaaS architectural pattern
-- `agents/designer/memory/patterns/service-discovery/concept.md` — Service Discovery architectural pattern
+- `agents/designer/memory/patterns/abstract-factory/pattern.md` — Abstract Factory architectural pattern
+- `agents/designer/memory/patterns/active-record/pattern.md` — Active Record architectural pattern
+- `agents/designer/memory/patterns/actor-model/pattern.md` — Actor Model architectural pattern
+- `agents/designer/memory/patterns/adapter/pattern.md` — Adapter architectural pattern
+- `agents/designer/memory/patterns/aggregate/pattern.md` — Aggregate Root architectural pattern
+- `agents/designer/memory/patterns/anemic-domain-model/pattern.md` — Anemic Domain Model anti-pattern
+- `agents/designer/memory/patterns/anti-corruption-layer/pattern.md` — Anti-Corruption Layer architectural pattern
+- `agents/designer/memory/patterns/api-gateway/pattern.md` — API Gateway architectural pattern
+- `agents/designer/memory/patterns/api-key-auth/pattern.md` — API Key Authentication architectural pattern
+- `agents/designer/memory/patterns/ast/pattern.md` — Abstract Syntax Tree (AST) architectural pattern
+- `agents/designer/memory/patterns/audit-logging/pattern.md` — Audit Logging architectural pattern
+- `agents/designer/memory/patterns/backpressure/pattern.md` — Backpressure architectural pattern
+- `agents/designer/memory/patterns/batch-loader/pattern.md` — Batch Loader (N+1 Prevention) architectural pattern
+- `agents/designer/memory/patterns/bff/pattern.md` — Backend for Frontend architectural pattern
+- `agents/designer/memory/patterns/big-ball-of-mud/pattern.md` — Big Ball of Mud anti-pattern
+- `agents/designer/memory/patterns/bloom-filter/pattern.md` — Bloom Filter architectural pattern
+- `agents/designer/memory/patterns/blue-green/pattern.md` — Blue-Green Deployment architectural pattern
+- `agents/designer/memory/patterns/boolean-blindness/pattern.md` — Boolean Blindness anti-pattern
+- `agents/designer/memory/patterns/breaking-changes/pattern.md` — Breaking Changes anti-pattern
+- `agents/designer/memory/patterns/bridge/pattern.md` — Bridge architectural pattern
+- `agents/designer/memory/patterns/builder/pattern.md` — Builder architectural pattern
+- `agents/designer/memory/patterns/bulkhead/pattern.md` — Bulkhead architectural pattern
+- `agents/designer/memory/patterns/busy-waiting/pattern.md` — Busy Waiting anti-pattern
+- `agents/designer/memory/patterns/cache-aside/pattern.md` — Cache-Aside architectural pattern
+- `agents/designer/memory/patterns/cache-stampede-prevention/pattern.md` — Cache Stampede Prevention architectural pattern
+- `agents/designer/memory/patterns/callback-hell/pattern.md` — Callback Hell anti-pattern
+- `agents/designer/memory/patterns/canary/pattern.md` — Canary Release architectural pattern
+- `agents/designer/memory/patterns/cargo-cult/pattern.md` — Cargo Cult Programming anti-pattern
+- `agents/designer/memory/patterns/chain-of-responsibility/pattern.md` — Chain of Responsibility architectural pattern
+- `agents/designer/memory/patterns/change-data-capture/pattern.md` — Change Data Capture (CDC) architectural pattern
+- `agents/designer/memory/patterns/chatty-api/pattern.md` — Chatty API anti-pattern
+- `agents/designer/memory/patterns/choreography/pattern.md` — Choreography architectural pattern
+- `agents/designer/memory/patterns/circuit-breaker/pattern.md` — Circuit Breaker architectural pattern
+- `agents/designer/memory/patterns/circular-dependency/pattern.md` — Circular Dependency anti-pattern
+- `agents/designer/memory/patterns/claim-check/pattern.md` — Claim Check architectural pattern
+- `agents/designer/memory/patterns/command/pattern.md` — Command architectural pattern
+- `agents/designer/memory/patterns/competing-consumers/pattern.md` — Competing Consumers architectural pattern
+- `agents/designer/memory/patterns/component/pattern.md` — Component Architecture architectural pattern
+- `agents/designer/memory/patterns/composite/pattern.md` — Composite architectural pattern
+- `agents/designer/memory/patterns/config-management/pattern.md` — Configuration Management architectural pattern
+- `agents/designer/memory/patterns/config-sprawl/pattern.md` — Configuration Sprawl anti-pattern
+- `agents/designer/memory/patterns/connection-pooling/pattern.md` — Connection Pooling architectural pattern
+- `agents/designer/memory/patterns/content-negotiation/pattern.md` — Content/Protocol Negotiation architectural pattern
+- `agents/designer/memory/patterns/contract-testing/pattern.md` — Contract Testing architectural pattern
+- `agents/designer/memory/patterns/copy-paste-programming/pattern.md` — Copy-Paste Programming anti-pattern
+- `agents/designer/memory/patterns/correlation-id/pattern.md` — Correlation ID architectural pattern
+- `agents/designer/memory/patterns/cors/pattern.md` — CORS architectural pattern
+- `agents/designer/memory/patterns/cqrs/pattern.md` — CQRS architectural pattern
+- `agents/designer/memory/patterns/data-mapper/pattern.md` — Data Mapper architectural pattern
+- `agents/designer/memory/patterns/database-migration/pattern.md` — Database Migration architectural pattern
+- `agents/designer/memory/patterns/ddd/pattern.md` — Domain-Driven Design architectural pattern
+- `agents/designer/memory/patterns/dead-letter/pattern.md` — Dead Letter Queue architectural pattern
+- `agents/designer/memory/patterns/deadlock/pattern.md` — Deadlock anti-pattern
+- `agents/designer/memory/patterns/decorator/pattern.md` — Decorator/Wrapper architectural pattern
+- `agents/designer/memory/patterns/deep-nesting/pattern.md` — Deep Nesting anti-pattern
+- `agents/designer/memory/patterns/dependency-injection/pattern.md` — Dependency Injection/IoC architectural pattern
+- `agents/designer/memory/patterns/distributed-lock/pattern.md` — Distributed Lock architectural pattern
+- `agents/designer/memory/patterns/distributed-monolith/pattern.md` — Distributed Monolith anti-pattern
+- `agents/designer/memory/patterns/distributed-tracing/pattern.md` — Distributed Tracing Instrumentation architectural pattern
+- `agents/designer/memory/patterns/dual-writes/pattern.md` — Dual Writes anti-pattern
+- `agents/designer/memory/patterns/entity-component-system/pattern.md` — Entity-Component-System (ECS) architectural pattern
+- `agents/designer/memory/patterns/environment-parity-gap/pattern.md` — Environment Parity Gap anti-pattern
+- `agents/designer/memory/patterns/error-code-returns/pattern.md` — Error Code Returns anti-pattern
+- `agents/designer/memory/patterns/etl/pattern.md` — ETL architectural pattern
+- `agents/designer/memory/patterns/event-carried-state/pattern.md` — Event-Carried State Transfer architectural pattern
+- `agents/designer/memory/patterns/event-driven/pattern.md` — Event-Driven architectural pattern
+- `agents/designer/memory/patterns/event-notification/pattern.md` — Event Notification architectural pattern
+- `agents/designer/memory/patterns/event-sourcing/pattern.md` — Event Sourcing architectural pattern
+- `agents/designer/memory/patterns/experiment-framework/pattern.md` — A/B Experiment Framework architectural pattern
+- `agents/designer/memory/patterns/facade/pattern.md` — Facade architectural pattern
+- `agents/designer/memory/patterns/factory/pattern.md` — Factory Method architectural pattern
+- `agents/designer/memory/patterns/feature-envy/pattern.md` — Feature Envy anti-pattern
+- `agents/designer/memory/patterns/feature-flag/pattern.md` — Feature Flag/Toggle architectural pattern
+- `agents/designer/memory/patterns/feature-store/pattern.md` — Feature Store architectural pattern
+- `agents/designer/memory/patterns/fire-and-forget/pattern.md` — Fire and Forget anti-pattern
+- `agents/designer/memory/patterns/fixture-builder/pattern.md` — Test Fixture / Data Builder architectural pattern
+- `agents/designer/memory/patterns/flaky-tests/pattern.md` — Flaky Tests anti-pattern
+- `agents/designer/memory/patterns/flux/pattern.md` — Flux/Redux (Unidirectional Data Flow) architectural pattern
+- `agents/designer/memory/patterns/flyweight/pattern.md` — Flyweight architectural pattern
+- `agents/designer/memory/patterns/future-promise/pattern.md` — Future/Promise architectural pattern
+- `agents/designer/memory/patterns/game-loop/pattern.md` — Game Loop architectural pattern
+- `agents/designer/memory/patterns/gitops/pattern.md` — GitOps architectural pattern
+- `agents/designer/memory/patterns/god-endpoint/pattern.md` — God Endpoint anti-pattern
+- `agents/designer/memory/patterns/god-object/pattern.md` — God Object/Class anti-pattern
+- `agents/designer/memory/patterns/golden-hammer/pattern.md` — Golden Hammer anti-pattern
+- `agents/designer/memory/patterns/graceful-degradation/pattern.md` — Graceful Degradation architectural pattern
+- `agents/designer/memory/patterns/graphql/pattern.md` — GraphQL architectural pattern
+- `agents/designer/memory/patterns/grpc/pattern.md` — gRPC/RPC architectural pattern
+- `agents/designer/memory/patterns/hardcoded-credentials/pattern.md` — Hardcoded Credentials anti-pattern
+- `agents/designer/memory/patterns/hardcoded-urls/pattern.md` — Hardcoded URLs anti-pattern
+- `agents/designer/memory/patterns/health-check/pattern.md` — Health Check architectural pattern
+- `agents/designer/memory/patterns/hexagonal/pattern.md` — Hexagonal architectural pattern
+- `agents/designer/memory/patterns/hidden-side-effects/pattern.md` — Hidden Side Effects anti-pattern
+- `agents/designer/memory/patterns/ice-cream-cone/pattern.md` — Ice Cream Cone anti-pattern
+- `agents/designer/memory/patterns/idempotent-consumer/pattern.md` — Idempotent Consumer architectural pattern
+- `agents/designer/memory/patterns/immutable-infra/pattern.md` — Immutable Infrastructure architectural pattern
+- `agents/designer/memory/patterns/inbox/pattern.md` — Inbox architectural pattern
+- `agents/designer/memory/patterns/inconsistent-naming/pattern.md` — Inconsistent Naming anti-pattern
+- `agents/designer/memory/patterns/infrastructure-as-code/pattern.md` — Infrastructure as Code architectural pattern
+- `agents/designer/memory/patterns/input-validation/pattern.md` — Input Validation architectural pattern
+- `agents/designer/memory/patterns/insecure-deserialization/pattern.md` — Insecure Deserialization anti-pattern
+- `agents/designer/memory/patterns/intermediate-representation/pattern.md` — Intermediate Representation (IR) architectural pattern
+- `agents/designer/memory/patterns/iterator/pattern.md` — Iterator architectural pattern
+- `agents/designer/memory/patterns/lava-flow/pattern.md` — Lava Flow (Dead Code) anti-pattern
+- `agents/designer/memory/patterns/leader-election/pattern.md` — Leader Election architectural pattern
+- `agents/designer/memory/patterns/leaky-abstraction/pattern.md` — Leaky Abstraction anti-pattern
+- `agents/designer/memory/patterns/lexer-parser/pattern.md` — Lexer/Parser architectural pattern
+- `agents/designer/memory/patterns/log-and-throw/pattern.md` — Log and Throw anti-pattern
+- `agents/designer/memory/patterns/log-spam/pattern.md` — Log Spam anti-pattern
+- `agents/designer/memory/patterns/long-polling/pattern.md` — Long Polling architectural pattern
+- `agents/designer/memory/patterns/long-transactions/pattern.md` — Long Transactions anti-pattern
+- `agents/designer/memory/patterns/lru-cache/pattern.md` — LRU Cache architectural pattern
+- `agents/designer/memory/patterns/magic-numbers/pattern.md` — Magic Numbers/Strings anti-pattern
+- `agents/designer/memory/patterns/mapreduce/pattern.md` — MapReduce architectural pattern
+- `agents/designer/memory/patterns/materialized-view/pattern.md` — Materialized View architectural pattern
+- `agents/designer/memory/patterns/mediator/pattern.md` — Mediator architectural pattern
+- `agents/designer/memory/patterns/memento/pattern.md` — Memento architectural pattern
+- `agents/designer/memory/patterns/memory-leak/pattern.md` — Memory Leak anti-pattern
+- `agents/designer/memory/patterns/message-queue/pattern.md` — Message Queue architectural pattern
+- `agents/designer/memory/patterns/metric-cardinality-explosion/pattern.md` — Metric Cardinality Explosion anti-pattern
+- `agents/designer/memory/patterns/metrics-instrumentation/pattern.md` — Metrics Instrumentation architectural pattern
+- `agents/designer/memory/patterns/micro-frontend/pattern.md` — Micro-Frontend architectural pattern
+- `agents/designer/memory/patterns/microservices/pattern.md` — Microservices architectural pattern
+- `agents/designer/memory/patterns/misleading-names/pattern.md` — Misleading Names anti-pattern
+- `agents/designer/memory/patterns/missing-log-context/pattern.md` — Missing Log Context anti-pattern
+- `agents/designer/memory/patterns/model-registry/pattern.md` — Model Registry architectural pattern
+- `agents/designer/memory/patterns/modular-monolith/pattern.md` — Modular Monolith architectural pattern
+- `agents/designer/memory/patterns/monad/pattern.md` — Monad/Railway-Oriented Programming architectural pattern
+- `agents/designer/memory/patterns/mtls/pattern.md` — Mutual TLS architectural pattern
+- `agents/designer/memory/patterns/mvc/pattern.md` — Model-View-Controller architectural pattern
+- `agents/designer/memory/patterns/mvvm/pattern.md` — Model-View-ViewModel architectural pattern
+- `agents/designer/memory/patterns/n-plus-one/pattern.md` — N+1 Queries anti-pattern
+- `agents/designer/memory/patterns/null-object/pattern.md` — Null Object architectural pattern
+- `agents/designer/memory/patterns/oauth-oidc/pattern.md` — OAuth2/OpenID Connect architectural pattern
+- `agents/designer/memory/patterns/object-pool/pattern.md` — Object Pool architectural pattern
+- `agents/designer/memory/patterns/observer/pattern.md` — Observer/Event Emitter architectural pattern
+- `agents/designer/memory/patterns/optimistic-locking/pattern.md` — Optimistic Locking architectural pattern
+- `agents/designer/memory/patterns/outbox/pattern.md` — Outbox architectural pattern
+- `agents/designer/memory/patterns/over-under-fetching/pattern.md` — Over/Under-Fetching anti-pattern
+- `agents/designer/memory/patterns/pagination/pattern.md` — Pagination architectural pattern
+- `agents/designer/memory/patterns/pipeline-filter/pattern.md` — Pipeline/Filter architectural pattern
+- `agents/designer/memory/patterns/plugin/pattern.md` — Plugin architectural pattern
+- `agents/designer/memory/patterns/pokemon-exception/pattern.md` — Pokemon Exception anti-pattern
+- `agents/designer/memory/patterns/premature-optimization/pattern.md` — Premature Optimization anti-pattern
+- `agents/designer/memory/patterns/primitive-obsession/pattern.md` — Primitive Obsession anti-pattern
+- `agents/designer/memory/patterns/producer-consumer/pattern.md` — Producer-Consumer architectural pattern
+- `agents/designer/memory/patterns/prop-drilling/pattern.md` — Prop Drilling anti-pattern
+- `agents/designer/memory/patterns/property-testing/pattern.md` — Property-Based Testing architectural pattern
+- `agents/designer/memory/patterns/prototype/pattern.md` — Prototype architectural pattern
+- `agents/designer/memory/patterns/proxy/pattern.md` — Proxy architectural pattern
+- `agents/designer/memory/patterns/pub-sub/pattern.md` — Publish-Subscribe architectural pattern
+- `agents/designer/memory/patterns/race-condition/pattern.md` — Race Condition anti-pattern
+- `agents/designer/memory/patterns/rate-limiting/pattern.md` — Rate Limiting/Throttling architectural pattern
+- `agents/designer/memory/patterns/rbac/pattern.md` — Role-Based Access Control architectural pattern
+- `agents/designer/memory/patterns/reactor/pattern.md` — Reactor/Event Loop architectural pattern
+- `agents/designer/memory/patterns/read-through/pattern.md` — Read-Through Cache architectural pattern
+- `agents/designer/memory/patterns/read-write-lock/pattern.md` — Read-Write Lock architectural pattern
+- `agents/designer/memory/patterns/refresh-ahead/pattern.md` — Refresh-Ahead Cache architectural pattern
+- `agents/designer/memory/patterns/reinventing-the-wheel/pattern.md` — Reinventing the Wheel anti-pattern
+- `agents/designer/memory/patterns/repository/pattern.md` — Repository architectural pattern
+- `agents/designer/memory/patterns/request-reply/pattern.md` — Request-Reply architectural pattern
+- `agents/designer/memory/patterns/rest/pattern.md` — REST API architectural pattern
+- `agents/designer/memory/patterns/result-type/pattern.md` — Result/Either Type architectural pattern
+- `agents/designer/memory/patterns/retry/pattern.md` — Retry architectural pattern
+- `agents/designer/memory/patterns/ring-buffer/pattern.md` — Ring Buffer architectural pattern
+- `agents/designer/memory/patterns/saga-orchestrator/pattern.md` — Saga Orchestrator architectural pattern
+- `agents/designer/memory/patterns/saga/pattern.md` — Saga architectural pattern
+- `agents/designer/memory/patterns/scheduler/pattern.md` — Cron/Scheduler architectural pattern
+- `agents/designer/memory/patterns/schema-on-read/pattern.md` — Schema-on-Read anti-pattern
+- `agents/designer/memory/patterns/secret-management/pattern.md` — Secret Management architectural pattern
+- `agents/designer/memory/patterns/select-star/pattern.md` — Select Star anti-pattern
+- `agents/designer/memory/patterns/server-sent-events/pattern.md` — Server-Sent Events architectural pattern
+- `agents/designer/memory/patterns/serverless/pattern.md` — Serverless / FaaS architectural pattern
+- `agents/designer/memory/patterns/service-discovery/pattern.md` — Service Discovery architectural pattern
 - `agents/designer/memory/patterns/service-manager/orchestrator.md` — orchestrator library reference
-- `agents/designer/memory/patterns/service-manager/concept.md` — Service Manager architectural pattern
-- `agents/designer/memory/patterns/service-mesh/concept.md` — Service Mesh architectural pattern
-- `agents/designer/memory/patterns/session-auth/concept.md` — Session-Based Authentication architectural pattern
-- `agents/designer/memory/patterns/sharding/concept.md` — Sharding architectural pattern
-- `agents/designer/memory/patterns/shotgun-surgery/concept.md` — Shotgun Surgery anti-pattern
-- `agents/designer/memory/patterns/sidecar/concept.md` — Sidecar architectural pattern
-- `agents/designer/memory/patterns/singleton/concept.md` — Singleton architectural pattern
-- `agents/designer/memory/patterns/snapshot-testing/concept.md` — Snapshot Testing architectural pattern
-- `agents/designer/memory/patterns/snowflake-server/concept.md` — Snowflake Server anti-pattern
-- `agents/designer/memory/patterns/soft-delete/concept.md` — Soft Delete architectural pattern
-- `agents/designer/memory/patterns/spaghetti-code/concept.md` — Spaghetti Code anti-pattern
-- `agents/designer/memory/patterns/spatial-partitioning/concept.md` — Spatial Partitioning architectural pattern
-- `agents/designer/memory/patterns/specification/concept.md` — Specification Pattern architectural pattern
-- `agents/designer/memory/patterns/sql-injection/concept.md` — SQL Injection anti-pattern
-- `agents/designer/memory/patterns/state-machine/concept.md` — State Machine architectural pattern
-- `agents/designer/memory/patterns/strangler-fig/concept.md` — Strangler Fig architectural pattern
-- `agents/designer/memory/patterns/strategy/concept.md` — Strategy architectural pattern
-- `agents/designer/memory/patterns/stream-to-store/concept.md` — Stream To Store architectural pattern
+- `agents/designer/memory/patterns/service-manager/pattern.md` — Service Manager architectural pattern
+- `agents/designer/memory/patterns/service-mesh/pattern.md` — Service Mesh architectural pattern
+- `agents/designer/memory/patterns/session-auth/pattern.md` — Session-Based Authentication architectural pattern
+- `agents/designer/memory/patterns/sharding/pattern.md` — Sharding architectural pattern
+- `agents/designer/memory/patterns/shotgun-surgery/pattern.md` — Shotgun Surgery anti-pattern
+- `agents/designer/memory/patterns/sidecar/pattern.md` — Sidecar architectural pattern
+- `agents/designer/memory/patterns/singleton/pattern.md` — Singleton architectural pattern
+- `agents/designer/memory/patterns/snapshot-testing/pattern.md` — Snapshot Testing architectural pattern
+- `agents/designer/memory/patterns/snowflake-server/pattern.md` — Snowflake Server anti-pattern
+- `agents/designer/memory/patterns/soft-delete/pattern.md` — Soft Delete architectural pattern
+- `agents/designer/memory/patterns/spaghetti-code/pattern.md` — Spaghetti Code anti-pattern
+- `agents/designer/memory/patterns/spatial-partitioning/pattern.md` — Spatial Partitioning architectural pattern
+- `agents/designer/memory/patterns/specification/pattern.md` — Specification Pattern architectural pattern
+- `agents/designer/memory/patterns/sql-injection/pattern.md` — SQL Injection anti-pattern
+- `agents/designer/memory/patterns/state-machine/pattern.md` — State Machine architectural pattern
+- `agents/designer/memory/patterns/strangler-fig/pattern.md` — Strangler Fig architectural pattern
+- `agents/designer/memory/patterns/strategy/pattern.md` — Strategy architectural pattern
+- `agents/designer/memory/patterns/stream-to-store/pattern.md` — Stream To Store architectural pattern
 - `agents/designer/memory/patterns/stream-to-store/stoik.md` — stoik library reference
-- `agents/designer/memory/patterns/stringly-typed/concept.md` — Stringly Typed anti-pattern
-- `agents/designer/memory/patterns/structured-logging/concept.md` — Structured Logging architectural pattern
-- `agents/designer/memory/patterns/swallowed-exception/concept.md` — Swallowed Exception anti-pattern
-- `agents/designer/memory/patterns/sync-in-async/concept.md` — Sync-in-Async anti-pattern
-- `agents/designer/memory/patterns/template-method/concept.md` — Template Method architectural pattern
-- `agents/designer/memory/patterns/temporal-coupling/concept.md` — Temporal Coupling anti-pattern
-- `agents/designer/memory/patterns/tenant-isolation/concept.md` — Tenant Isolation architectural pattern
-- `agents/designer/memory/patterns/tenant-routing/concept.md` — Tenant-Aware Routing architectural pattern
-- `agents/designer/memory/patterns/test-doubles/concept.md` — Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
-- `agents/designer/memory/patterns/test-pollution/concept.md` — Test Pollution anti-pattern
-- `agents/designer/memory/patterns/tick-simulation/concept.md` — Tick-Based Simulation architectural pattern
-- `agents/designer/memory/patterns/tight-coupling/concept.md` — Tight Coupling anti-pattern
-- `agents/designer/memory/patterns/timeout/concept.md` — Timeout architectural pattern
-- `agents/designer/memory/patterns/token-auth/concept.md` — Token-Based Authentication (JWT) architectural pattern
-- `agents/designer/memory/patterns/train-wreck/concept.md` — Train Wreck anti-pattern
-- `agents/designer/memory/patterns/training-pipeline/concept.md` — Training Pipeline architectural pattern
-- `agents/designer/memory/patterns/trie/concept.md` — Trie (Prefix Tree) architectural pattern
-- `agents/designer/memory/patterns/unbounded-growth/concept.md` — Unbounded Growth anti-pattern
-- `agents/designer/memory/patterns/unit-of-work/concept.md` — Unit of Work architectural pattern
-- `agents/designer/memory/patterns/value-object/concept.md` — Value Object architectural pattern
-- `agents/designer/memory/patterns/visitor/concept.md` — Visitor architectural pattern
-- `agents/designer/memory/patterns/webhook/concept.md` — Webhook architectural pattern
-- `agents/designer/memory/patterns/websocket/concept.md` — WebSocket architectural pattern
-- `agents/designer/memory/patterns/worker-pool/concept.md` — Worker/Thread Pool architectural pattern
-- `agents/designer/memory/patterns/workflow-engine/concept.md` — Workflow Engine architectural pattern
-- `agents/designer/memory/patterns/write-behind/concept.md` — Write-Behind architectural pattern
+- `agents/designer/memory/patterns/stringly-typed/pattern.md` — Stringly Typed anti-pattern
+- `agents/designer/memory/patterns/structured-logging/pattern.md` — Structured Logging architectural pattern
+- `agents/designer/memory/patterns/swallowed-exception/pattern.md` — Swallowed Exception anti-pattern
+- `agents/designer/memory/patterns/sync-in-async/pattern.md` — Sync-in-Async anti-pattern
+- `agents/designer/memory/patterns/template-method/pattern.md` — Template Method architectural pattern
+- `agents/designer/memory/patterns/temporal-coupling/pattern.md` — Temporal Coupling anti-pattern
+- `agents/designer/memory/patterns/tenant-isolation/pattern.md` — Tenant Isolation architectural pattern
+- `agents/designer/memory/patterns/tenant-routing/pattern.md` — Tenant-Aware Routing architectural pattern
+- `agents/designer/memory/patterns/test-doubles/pattern.md` — Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
+- `agents/designer/memory/patterns/test-pollution/pattern.md` — Test Pollution anti-pattern
+- `agents/designer/memory/patterns/tick-simulation/pattern.md` — Tick-Based Simulation architectural pattern
+- `agents/designer/memory/patterns/tight-coupling/pattern.md` — Tight Coupling anti-pattern
+- `agents/designer/memory/patterns/timeout/pattern.md` — Timeout architectural pattern
+- `agents/designer/memory/patterns/token-auth/pattern.md` — Token-Based Authentication (JWT) architectural pattern
+- `agents/designer/memory/patterns/train-wreck/pattern.md` — Train Wreck anti-pattern
+- `agents/designer/memory/patterns/training-pipeline/pattern.md` — Training Pipeline architectural pattern
+- `agents/designer/memory/patterns/trie/pattern.md` — Trie (Prefix Tree) architectural pattern
+- `agents/designer/memory/patterns/unbounded-growth/pattern.md` — Unbounded Growth anti-pattern
+- `agents/designer/memory/patterns/unit-of-work/pattern.md` — Unit of Work architectural pattern
+- `agents/designer/memory/patterns/value-object/pattern.md` — Value Object architectural pattern
+- `agents/designer/memory/patterns/visitor/pattern.md` — Visitor architectural pattern
+- `agents/designer/memory/patterns/webhook/pattern.md` — Webhook architectural pattern
+- `agents/designer/memory/patterns/websocket/pattern.md` — WebSocket architectural pattern
+- `agents/designer/memory/patterns/worker-pool/pattern.md` — Worker/Thread Pool architectural pattern
+- `agents/designer/memory/patterns/workflow-engine/pattern.md` — Workflow Engine architectural pattern
+- `agents/designer/memory/patterns/write-behind/pattern.md` — Write-Behind architectural pattern
 - `agents/designer/memory/pending/klog.md` — klog library reference
 - `agents/designer/memory/pending/nokrashi-tools.md` — nokrashi-tools library reference
 - `agents/designer/memory/scratchpad.md` — Designer working notes and observations

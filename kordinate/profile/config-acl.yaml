@@ -4,13 +4,13 @@
 #
 # Example: editing clusters.vandc.services.grafana checks:
 #   1. clusters.*.services.grafana → sauron (match)
-#   2. clusters.*.services → charon (less specific)
-#   3. clusters.* → charon (least specific)
+#   2. clusters.*.services → deployer (less specific)
+#   3. clusters.* → deployer (least specific)
 
-clusters: charon
-clusters.*: charon
+clusters: deployer
+clusters.*: deployer
 clusters.*.services.grafana: sauron
 
-network: charon
-cloudflare: charon
-node_hostnames: charon
+network: deployer
+cloudflare: deployer
+node_hostnames: deployer

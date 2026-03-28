@@ -6,7 +6,7 @@ curated: true
 scope: global
 ---
 
-Full kordinate installation. Orchestrates scribe (linking) and charon (infrastructure).
+Full kordinate installation. Orchestrates scribe (linking) and deployer (infrastructure).
 
 ## Usage
 
@@ -49,7 +49,7 @@ If no: local-only git, no remote. Worktrees still work.
 
 ### 4. Link to runtime
 
-Delegate to scribe — invoke the linking procedure at `$KORDINATE_HOME/agents/scribe/skills/onboard/link.md`.
+Delegate to scribe — invoke the linking procedure at `$KORDINATE_HOME/agents/scribe/skills/register/link.md`.
 
 Scribe handles: agents → `~/.claude/agents/`, skills → `~/.claude/skills/`, memory indexes → `~/.claude/agent-memory/`, CLAUDE.md, guard hook, KORD.md generation.
 
@@ -57,11 +57,11 @@ Scribe handles: agents → `~/.claude/agents/`, skills → `~/.claude/skills/`, 
 
 Skip if `--local` flag is set. Otherwise ask: "Bootstrap cluster infrastructure? (y/n)"
 
-If yes: delegate to charon — `/bootstrap`. This sets up k3s, namespaces, storage, and deploys the workstation pod (which runs Beorn).
+If yes: delegate to deployer — `/infra bootstrap`. This sets up k3s, namespaces, storage, and deploys the workstation pod (which runs Beorn).
 
 ### 6. Verify
 
-Run `$KORDINATE_HOME/agents/scribe/skills/onboard/smoke-test.sh` for structural checks.
+Run `$KORDINATE_HOME/agents/scribe/skills/register/smoke-test.sh` for structural checks.
 
 ## Report
 

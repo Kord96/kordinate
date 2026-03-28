@@ -20,14 +20,14 @@ Produce a structured architectural understanding of a project.
 3. **Gather file contents** — collect source files for analysis. See [extractors.md](extractors.md) for include/exclude patterns. For each file, read its contents. Cap at 100KB per file. If the project is too large (>500 files after filtering), prioritize: entry points, hub modules, config files, manifests, README.
 
 4. **Gather existing analysis** — read from `<project>/.claude/agent-memory/designer/` if available:
-   - `patterns.md` (from `/detect-concepts`)
+   - `patterns.md` (from `/detect-patterns`)
    - `dependencies.md` (from `/map-dependencies`)
    - `api-review.md` (from `/review-api`)
    - `debt-assessment.md` (from `/assess-debt`)
 
    Also read the concept catalog:
    - `agents/designer/memory/abstractions.md` — the 19 abstraction levels and their descriptions
-   - `agents/designer/memory/concepts/*/concept.md` — scan Recognition signatures to match detected imports against known concepts
+   - `agents/designer/memory/concepts/*/pattern.md` — scan Recognition signatures to match detected imports against known concepts
 
    Use concept names from the catalog as the vocabulary for `state[].concept`, `external_dependencies[].concept`, and `components[].patterns`. Do not invent ad-hoc terms — if a concept exists in the catalog, use its name.
 

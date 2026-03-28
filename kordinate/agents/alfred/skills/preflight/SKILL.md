@@ -9,7 +9,7 @@ scope: global
 
 Run all prerequisite checks before a deployment. If no cluster specified, check all clusters.
 
-This is the pre-deploy gate -- charon should call this (or be advised to call this) before any `/bootstrap` or `/roll`.
+This is the pre-deploy gate -- deployer should call this (or be advised to call this) before any `/infra bootstrap` or `/infra roll`.
 
 ## Arguments
 
@@ -119,7 +119,7 @@ Summary: 13 passed, 0 failed -- READY
 - This is a read-only operation -- preflight never modifies anything.
 - It combines checks from `/config validate`, `/overlay validate`, and `/keys audit` into one unified view. The credential list comes from the keys registry ([keys/registry.md](../keys/registry.md)).
 - Network checks are opt-in because they require cluster access.
-- The goal is to catch issues BEFORE charon starts a deployment.
+- The goal is to catch issues BEFORE deployer starts a deployment.
 - Exit with clear "READY" or "NOT READY" verdict.
 - Alfred never deploys -- after identifying failures, advise which commands to run to fix them.
 - Use `$KORDINATE_HOME` to reference the kordinate root (resolves to `/kord/kordinate` at runtime).

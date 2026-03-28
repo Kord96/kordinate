@@ -11,7 +11,7 @@ Complete inventory of everything in kordinate — implemented and planned.
 | scribe | IDENTITY.md | /remember, /onboard, /create-kord | workflow.md, tools.md, scratchpad.md |
 | deployer | IDENTITY.md | /infra (bootstrap, deploy, roll, stop, clean, diff, migrate, generate-overlays) | infra.md, migration.md, tools.md, troubleshooting.md, scratchpad.md |
 | sauron | IDENTITY.md | /scan, /diagnose | monitoring.md, logging.md, tools.md, workflow.md, scratchpad.md |
-| designer | IDENTITY.md | /detect-concepts | patterns/ (16), libraries/ (4), tools.md, workflow.md, app-contract.md |
+| designer | IDENTITY.md | /detect-patterns | patterns/ (16), libraries/ (4), tools.md, workflow.md, app-contract.md |
 
 ### Global Skills
 

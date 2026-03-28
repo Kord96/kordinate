@@ -15,7 +15,7 @@ Compare what secrets exist on Kubernetes clusters against what is stored in the 
 
 1. **Load cluster config** — read `$KORDINATE_HOME/profile/config.yaml` for cluster IPs and namespaces.
 2. **List pass store** — run `pass ls kordinate/` to get all local credential entries.
-3. **List cluster secrets** — invoke `/kord charon` to SSH to each cluster node and run `kubectl get secrets --all-namespaces`. Parse namespace, name, and key count.
+3. **List cluster secrets** — invoke `/kord deployer` to SSH to each cluster node and run `kubectl get secrets --all-namespaces`. Parse namespace, name, and key count.
 4. **Cross-reference cluster vs pass** — for each cluster secret, check if a corresponding `pass` entry exists under `kordinate/<service>/`. For each `pass` entry, check if a matching cluster secret exists.
 5. **Check manifest references** — scan manifests for `secretKeyRef` entries that use a `MUST_BE_SET` placeholder (meaning the value is expected to come from pass). Verify each referenced secret has a `pass` entry.
 6. **Report** findings in four categories (see Output Format below).

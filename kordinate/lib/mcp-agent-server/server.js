@@ -49,7 +49,7 @@ function loadAgentNames() {
       .map(d => d.name);
   } catch { /* fall through */ }
 
-  return ['charon', 'sauron', 'augur', 'scribe'];
+  return ['deployer', 'sauron', 'designer', 'scribe'];
 }
 
 const KNOWN_AGENTS = loadAgentNames();
@@ -234,7 +234,7 @@ function registerTools(server) {
     'delegate',
     'Delegate a prompt to a kordinate agent. Beorn loads the agent identity, invokes Claude Code as that agent, and returns the response.',
     {
-      agent: z.enum(KNOWN_AGENTS).describe('The agent to invoke (charon, sauron, augur, scribe)'),
+      agent: z.enum(KNOWN_AGENTS).describe('The agent to invoke (deployer, sauron, designer, scribe)'),
       prompt: z.string().describe('The prompt to send to the agent'),
     },
     async ({ agent, prompt }) => {
@@ -278,7 +278,7 @@ function registerTools(server) {
     'kord',
     'Route a stateful request through a kord contract. Handles contract lookup, cache/expiry checking, agent spawning, and result caching.',
     {
-      kord_name: z.string().describe('The kord contract name (e.g., charon-default, pattern-review)'),
+      kord_name: z.string().describe('The kord contract name (e.g., deployer-default, pattern-review)'),
       message: z.string().describe('The message/question to send to the provider'),
     },
     async ({ kord_name, message }) => {

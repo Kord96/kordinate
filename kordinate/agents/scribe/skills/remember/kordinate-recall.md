@@ -41,13 +41,13 @@ Example:
 ```markdown
 ## Agents
 
-- `agents/charon/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded: charon, template: identity)
-- `agents/charon/memory/cluster-topology.md` — Current cluster layout and service endpoints
+- `agents/deployer/identity.md` — Infrastructure operations, sole kubectl authority (curated, preloaded: deployer, template: identity)
+- `agents/deployer/memory/cluster-topology.md` — Current cluster layout and service endpoints
 
 ## Kords
 
-- `agents/charon/kords/charon-default/contract.md` — General cluster questions (curated, template: contract)
-- `agents/charon/kords/charon-default/data.md` — Cached cluster state (template: data, expiry: expiry.sh)
+- `agents/deployer/kords/deployer-default/contract.md` — General cluster questions (curated, template: contract)
+- `agents/deployer/kords/deployer-default/data.md` — Cached cluster state (template: data, expiry: expiry.sh)
 
 ## Team
 

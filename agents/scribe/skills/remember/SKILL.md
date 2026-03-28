@@ -43,17 +43,18 @@ For directory structure requirements, see [directory-templates.md](directory-tem
 6. **Write to kordinate path** — the source of truth.
     See [kordinate-recall.md](kordinate-recall.md) for paths and properties.
 
-7. **Update runtime index** — update the agent's `MEMORY.md` in the runtime so it appears on next spawn.
+7. **Update runtime index** — regenerate the agent's `MEMORY.md` in the runtime using the [memory-index-template.md](memory-index-template.md) format.
 
-    How Claude's subagent memory works: `~/.claude/agent-memory/<name>/MEMORY.md` is auto-loaded (first 200 lines) when the subagent spawns. It is a **single flat file** — no topic files, no auto-discovery of linked files. The `/boot` skill reads the full kordinate memory later, but MEMORY.md gives the agent immediate awareness of what it knows.
+    How Claude's subagent memory works: `~/.claude/agent-memory/<name>/MEMORY.md` is auto-loaded (first 200 lines) when the subagent spawns. It is a **single flat file** — no topic files, no auto-discovery of linked files.
 
     Rules:
-    - **New topic file** → add one index line to MEMORY.md: `- [filename.md](<absolute-kordinate-path>) — description`
+    - **New topic file** → add one index line to the Memory Index: `- [filename.md](<absolute-kordinate-path>) — description`
     - **Scratchpad append** → no MEMORY.md change needed (scratchpad entry already in index)
     - **Global scope** → update `~/.claude/agent-memory/<name>/MEMORY.md`
     - **Project scope** → update `.claude/agent-memory/<name>/MEMORY.md` (create dir if needed)
     - **200-line limit** — check line count after adding. If over, remove the least relevant entries (the files still exist in kordinate — only the index preview is trimmed)
     - **Never copy full content** into MEMORY.md — it is an index of pointers, not a knowledge base
+    - Preserve the **Notes** section at the bottom if it already exists
 
 8. **Regenerate KORD.md** — run [generate-kord.sh](generate-kord.sh) to rebuild the index from frontmatter. Never edit KORD.md manually.
 

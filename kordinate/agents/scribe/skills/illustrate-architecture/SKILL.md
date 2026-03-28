@@ -2,16 +2,16 @@
 name: illustrate-architecture
 description: >
   Generate an interactive architecture explorer page from Designer's project analysis.
-  Reads architecture.yaml v2 from project memory, then produces an Astro page with Cytoscape.js
-  graph, narrative sidebar, and side drawer for detail inspection.
+  Reads architecture.yaml, patterns.md, dependencies.md, api-review.md, and debt-assessment.md
+  from project memory, then produces an Astro page with Cytoscape.js graph, narrative sidebar,
+  and bottom drawer.
 argument-hint: "<project> [--narrative <dir>]"
 curated: true
+scope: global
 context: fork
 ---
 
-Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a side drawer for detail inspection.
-
-Every node should have a meaningful `description` and at least one entry in `modules` for leaf nodes. The viewer uses these for detail inspection.
+Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a bottom drawer for detail inspection.
 
 ## Arguments
 
@@ -30,25 +30,29 @@ Locate the project directory by checking paths in order:
 
 If not found, report which paths were checked and exit.
 
-### 2. Invoke Augur analysis
+### 2. Invoke Designer analysis
 
-Spawn a Augur subagent to analyze the project:
+Spawn a Designer subagent to analyze the project:
 
 ```
-Agent(subagent_type="augur", prompt="Run /analyze on <project-path>. Write output to <project-path>/.kord/agents/augur/memory/. Return the path when done.")
+Agent(subagent_type="designer", prompt="Run full project analysis on <project-path>. Execute in order: /detect-patterns, /map-dependencies, /review-api, /assess-debt, /architect. Write all outputs to <project-path>/.kord/agents/designer/memory/. Return a manifest of what was produced.")
 ```
 
-Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/augur/memory/` and mark the report as `stale — Augur failed`.
+Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/designer/memory/` and mark the report as `stale — Designer failed`.
 
 ### 3. Read project artifacts
 
-Read from `<project>/.kord/agents/augur/memory/` — this is the only authoritative location.
+Read from `<project>/.kord/agents/designer/memory/` — this is the only authoritative location. Do not read from the project root, the docs site, or any other path.
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `architecture.yaml` | **yes** | Complete analysis (v2) — structure, concepts, deps, API, debt |
+| `architecture.yaml` | **yes** | Core structure — abort if missing |
+| `patterns.md` | no | Enriches nodes with pattern badges |
+| `dependencies.md` | no | Enriches external service nodes |
+| `api-review.md` | no | Adds API endpoint mapping to nodes |
+| `debt-assessment.md` | no | Adds health coloring per node |
 
-If `architecture.yaml` is missing after the Augur attempt, report and suggest running `/analyze <project>` directly. Exit.
+If `architecture.yaml` is missing after the kord attempt, report and suggest running `/architect <project>` directly. Exit.
 
 ### 4a. Produce architecture.json — write
 
@@ -105,9 +109,7 @@ Produce this as **one thought**, not a mechanical transform. Hold the full pictu
 - Every `readers[]` and `writers[]` in state must exist in `nodes[].id`
 - Do not reference components that don't exist in the nodes array
 
-**Hierarchy — 3-5 top-level groups maximum. This is a hard constraint, not a guideline.** Follow the C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not code modules. The synthetic `external` and `actors` groups count toward this limit. Everything nests inside top-level groups. Groups beyond depth 2 become regular nodes.
-
-**Enforcing the group limit:** After drafting nodes and groups, count the top-level groups. If there are more than 5, merge the two most closely related groups into one before proceeding. For example, if a project has Server, Browser, External, Actors, and two remaining groups like "Storage" and "Processing", combine them into a single "Backend" group. Repeat until you have at most 5. Small projects (under 15 nodes) should aim for 3 groups. The rule of thumb: if two groups would have only 1-2 nodes each, they belong together.
+**Hierarchy — 3-5 top-level groups maximum.** Follow the C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not modules. Everything nests inside. Groups beyond depth 2 become regular nodes.
 
 **Narrative approach — all narratives are one coherent story:**
 
@@ -117,18 +119,11 @@ Write them as if you're explaining the entire system to a smart colleague who's 
 
 Follow the voice, formatting, and structure rules in [narrative-style.md](narrative-style.md). Read it before writing any narrative content. Key points: short paragraphs separated by `\n\n`, scenario-driven voice, lead with action, em dashes not hyphens, ~100-150 words per flow/failure/store narrative.
 
-**Formatting — narratives are rendered in a bottom drawer, not a document:**
-- Use short paragraphs (2-3 sentences max). Separate with `\n\n` in the JSON string. Long walls of text are unreadable in a drawer.
-- Use em dashes (—) not double hyphens (--) for parenthetical asides.
-- Each flow narrative should be 3-5 short paragraphs, not one long block.
-- Lead each paragraph with the action: "**root-loader** fires a prefetch..." not "The request arrives and then the root-loader fires..."
-- Keep total narrative per flow/failure/store to ~100-150 words. The drawer is narrow — brevity is clarity.
-
-**Enrichments from architecture.yaml v2** (integrate into nodes, don't list separately):
-- Pattern badges from `concepts.detected_patterns` → `node.patterns[]` (matched via `components` field)
-- Debt markers from `debt.violations` → `node.debt` (matched via `violations[].components`)
-- API endpoints from `api_surface.endpoints` → `node.endpoints[]` (matched via `endpoints[].file` against `components[].modules`)
-- External dep resilience from `external_dependencies[].resilience` → `node.resilience` (already on the component)
+**Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
+- Pattern badges from `patterns.md` → `node.patterns[]`
+- Debt markers from `debt-assessment.md` → `node.debt`
+- API endpoints from `api-review.md` → `node.endpoints[]`
+- External dep resilience from `dependencies.md` → `node.resilience`
 
 ### 4b. Annotate narratives — match paragraphs to structure
 
@@ -174,7 +169,7 @@ For `structure_narrative`, add a top-level `structure_narrative_map`:
 
 Write to `<docs-content-dir>/<project>/architecture.json`.
 
-### 5. Write the explorer page
+### 6. Write the explorer page
 
 Write a self-contained Astro page to `<docs-pages-dir>/<project>/index.astro`.
 
@@ -226,7 +221,7 @@ The page structure:
 - Responsive: sidebar collapses to overlay on mobile
 - The page should work both in dev mode and as a built static page
 
-### 6. Path resolution for output
+### 7. Path resolution for output
 
 The docs site content lives at (resolve in order):
 1. If `$KORDINATE_HOME/../site/` exists, use it (PVC layout: `kordinate/site/`)
@@ -240,7 +235,7 @@ Within the resolved docs root:
 
 If the docs site path does not exist (option 3 fallback), write all files into the project-local output directory and report that the user should copy them to the docs site manually.
 
-### 7. Report
+### 8. Report
 
 Output a summary:
 

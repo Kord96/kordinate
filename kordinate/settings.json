@@ -21,15 +21,6 @@
             "command": "$KORDINATE_HOME/hooks/guard.sh"
           }
         ]
-      },
-      {
-        "matcher": "Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$KORDINATE_HOME/hooks/agent-memory.sh"
-          }
-        ]
       }
     ],
     "PostToolUse": [
@@ -39,10 +30,6 @@
           {
             "type": "command",
             "command": "$KORDINATE_HOME/hooks/worktree-push.sh"
-          },
-          {
-            "type": "command",
-            "command": "$KORDINATE_HOME/hooks/worktree-sync.sh"
           }
         ]
       }

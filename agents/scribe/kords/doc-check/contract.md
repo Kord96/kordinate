@@ -2,13 +2,13 @@
 description: Verify documentation reflects current code/config state
 requester: any
 mode: stateless
-skill: audit-kordinate
+skill: eval
 curated: true
 scope: global
 ---
 
 ## Provider Guidelines
 
-Run the audit-kordinate health check.
+Run the eval health check (`/eval health`).
 Focus on memory and kordinate system consistency.
 Return pass/fail with specific issues.

@@ -37,15 +37,20 @@ Handle locally — no Beorn, no agent spawn:
 
 ### Stateful (`mode: stateful`)
 
-Delegate to Beorn's `kord` tool:
+Wrap the caller's message with the lifecycle checklist from [lifecycle-wrapper.md](lifecycle-wrapper.md), then spawn the agent.
 
-1. Call Beorn MCP tool `kord` with `kord_name` and `message`.
-2. Beorn handles: contract lookup, expiry/cache check, agent spawning, result caching.
-3. If Beorn returns `[cached]` prefix, the result came from cache.
-4. Return the result.
+**Spawn strategy** — try Beorn first, fall back to local:
 
-Beorn is the sole agent host for stateful kords. It creates a git worktree per agent spawn in `$KORDINATE_HOME`, so memory writes are isolated per agent and merged back into main on completion.
+1. **Beorn available** (on-cluster or via Tailscale):
+   - Call Beorn MCP tool `kord` with `kord_name` and the wrapped message.
+   - Beorn handles: expiry/cache check, worktree creation, agent spawning, memory isolation, merge on completion.
+   - If Beorn returns `[cached]` prefix, the result came from cache (lifecycle wrapper was not applied).
+
+2. **Beorn unreachable** (offline, no Tailscale, local dev):
+   - Spawn via Agent tool with `subagent_type` set to the provider agent name.
+   - Pass the wrapped message as the `prompt`.
+   - Memory writes go directly to `$KORDINATE_HOME` (no worktree isolation).
 
 **Connection**: on-cluster via cluster DNS (`beorn.kordinate.svc.cluster.local`), off-cluster via Tailscale.
 
-**No fallback**: if Beorn is unreachable, report the error to the caller. Do NOT fall back to native subagent spawning — stateful kords require Beorn's lifecycle management (worktree creation, memory isolation, merge on completion).
+Return the result.

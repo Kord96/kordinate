@@ -121,7 +121,7 @@ Kord-specific fields:
 
 Designer's pattern catalog. Recall properties plus concept-specific fields.
 
-**Pattern file** (`concept.md`):
+**Pattern file** (`pattern.md`):
 ```yaml
 ---
 description: Circuit Breaker architectural pattern

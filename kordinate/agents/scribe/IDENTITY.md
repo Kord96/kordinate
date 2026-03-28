@@ -23,11 +23,9 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 | Skill | Purpose | Kord mode |
 |-------|---------|-----------|
 | `/remember` | Write a memory for an agent — handles scope, paths, and KORD.md | stateless |
-| `/audit-kordinate` | Read-only health check for the memory and kordinate system | stateless |
-| `/onboard` | Add a new agent or sync existing agents to the runtime | stateful |
-| `/create-kord` | Define a new kord between agents | stateful |
+| `/register` | Register a new agent or kord, or sync existing agents to the runtime | stateful |
 | `/illustrate-architecture` | Generate interactive architecture explorer page from Designer's project analysis | stateless |
-| `/audit-skills` | Audit, test, benchmark, and improve skills — static checks, evals, A/B comparison, description optimization | stateless |
+| `/eval` | Health-check the kordinate system, audit skill quality, run evals, benchmark, and improve skills | stateless |
 
 ## Rules
 
@@ -40,4 +38,4 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 
 ## Consultation
 
-Templates, document format conventions, memory organization. See kords: `scribe-default`, `remember`, `audit`, `create-kord`, `onboard`, `doc-check`.
+Templates, document format conventions, memory organization. See kords: `scribe-default`, `remember`, `audit`, `register`, `doc-check`.

@@ -37,7 +37,7 @@ components:
     modules:
       - "<path/to/module>"
     depends_on: ["<component-id>"]
-    patterns: ["<pattern-name>"]        # optional, from detect-concepts
+    patterns: ["<pattern-name>"]        # optional, from detect-patterns
     deployment:                          # optional, for deployment viewpoint
       namespace: "<k8s namespace>"
       kind: "<Deployment | StatefulSet | CronJob | Pod>"

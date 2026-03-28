@@ -131,7 +131,7 @@ Systems that need redeployment:
   - <reader 1>
   - <reader 2>
 
-Run `/roll` or redeploy affected services to pick up the new credential.
+Run `/infra roll` or redeploy affected services to pick up the new credential.
 ```
 
 ## Important Notes
@@ -141,7 +141,7 @@ Run `/roll` or redeploy affected services to pick up the new credential.
 - The pass store is GPG-encrypted under `~/.password-store/`.
 - All operations go through the `pass` CLI.
 - Use `$KORDINATE_HOME` to reference the kordinate root (resolves to `/kord/kordinate` at runtime).
-- Alfred never deploys -- after `rotate`, remind the user to use charon to apply changes.
+- Alfred never deploys -- after `rotate`, remind the user to use deployer to apply changes.
 
 ## Resources
 

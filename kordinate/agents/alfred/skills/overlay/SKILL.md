@@ -14,7 +14,7 @@ Validate, diff, and regenerate kustomize overlays against profile/config.yaml. $
 | `validate <cluster>` | Check overlays match config.yaml -- no drift |
 | `diff <cluster>` | Show what would change if overlays were regenerated |
 | `status` | Show overlay status for all clusters -- up-to-date, stale, missing |
-| `regenerate <cluster>` | Regenerate overlays from config (delegates to charon) |
+| `regenerate <cluster>` | Regenerate overlays from config (delegates to deployer) |
 
 ## Procedure: `validate`
 
@@ -65,18 +65,18 @@ Validate, diff, and regenerate kustomize overlays against profile/config.yaml. $
 
 1. Run validate first to confirm what will change.
 2. Show the diff so the user sees what is out of sync.
-3. Delegate to charon: `/kord charon generate overlays for <cluster>`.
+3. Delegate to deployer: `/kord deployer generate overlays for <cluster>`.
 4. After generation completes, run validate again to confirm sync.
 5. Report result: success (now in sync) or remaining drift items.
 
 ## Important Notes
 
-- Alfred validates and diffs -- charon generates. Never write overlay files directly.
+- Alfred validates and diffs -- deployer generates. Never write overlay files directly.
 - Overlay paths: `$KORDINATE_HOME/profile/overlays/<cluster>/`.
 - Base manifest paths: referenced in config.yaml under `clusters.<name>.manifests`.
 - Secrets are NOT in overlays -- they are created at deploy time from `pass`.
 - If config.yaml changes, overlays become stale until regenerated.
-- The `regenerate` subcommand is a delegation -- alfred identifies the drift, charon does the actual file generation.
+- The `regenerate` subcommand is a delegation -- alfred identifies the drift, deployer does the actual file generation.
 
 ## Resources
 

@@ -1,6 +1,6 @@
 # Identity Template
 
-Level 3 resource for the onboard skill.
+Level 3 resource for the register skill.
 
 ## Template
 
