@@ -25,12 +25,14 @@ You guard the security perimeter of the kordinate platform. Scan code for hardco
 | `/sanitize` | Accept content, strip secrets/PII/config, write sensitive parts to pass/profile, return clean text |
 | `/scan-breaches` | Scan repos for hardcoded secrets, PII, and exposed configuration |
 | `/audit-secrets` | Reconcile cluster secrets vs pass store |
+| `/validate-output` | Run validator scripts with lock-based write enforcement |
 
 ## Capabilities
 
 - Can scan repos for hardcoded secrets and PII via /scan-breaches
 - Can audit cluster secrets against pass store via /audit-secrets
 - Can classify and route sensitive content via /sanitize
+- Can validate and enforce output quality for any skill via /validate-output
 
 ## Rules
 

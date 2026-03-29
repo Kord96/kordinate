@@ -8,3 +8,8 @@ routes:
     method: POST
     description: Classify content as config, credential, or memory — routes to the correct destination
     skill: sanitize
+
+  - name: validate_output
+    method: POST
+    description: Run a validator script against an output directory with lock-based write enforcement
+    skill: validate-output

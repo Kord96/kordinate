@@ -50,15 +50,21 @@ Full structural inventory. JSON, version `"3"`. See [schema.md](schema.md) for t
 
 ---
 
-## Stories
+## Story Tree
 
-Each story is a YAML file assembled from building blocks. See [story-schema.md](story-schema.md) for the full schema.
+Stories form a tree mirroring the atlas group hierarchy. See [story-schema.md](story-schema.md) for the full schema.
+
+### Tree structure
+
+- **Root stories** (3-5, one per atlas group) — high-level view, `parent: null`
+- **Child stories** (2-5 per root) — zoom into specific concerns, `parent: "<root-id>"`
+- Max depth: 2. The root stories ARE the architecture overview.
 
 ### Building blocks
 
 | Block | Purpose | Multiple? |
 |-------|---------|----------|
-| **summary** | 1-2 paragraphs (~50-80 words) | No (required) |
+| **summary** | Short paragraphs (depth-dependent length) | No (required) |
 | **structures** | Nested components + typed edges | Yes |
 | **flows** | Ordered steps, typed | Yes |
 | **observations** | Evidence-backed findings | One list, multi-attached |
@@ -66,26 +72,24 @@ Each story is a YAML file assembled from building blocks. See [story-schema.md](
 
 ### Key properties
 
-- **Types are freeform** — structures and flows have a `type` string that augur sets freely (e.g., "component topology", "failure cascade", "data lineage")
-- **Multiple structures and flows per story** — e.g., component view + data view, or happy path + failure cascade
-- **Observations attach at three levels** — story-wide, on structure nodes, on flow steps (via `observation_ids`)
-- **Nesting** — structure nodes can have `children` referencing atlas child components
-- **All node references** are atlas node IDs, not inline definitions
-
-### Narrative constraints
-
-- ~50-80 words per summary
-- Every `**bold ref**` resolves to an atlas node ID
-- Scenario-driven, lead with action, em dashes
+- **Stories nest** — `parent`/`children` fields form a tree. Primary navigation.
+- **Types are freeform** — structures and flows have a `type` string
+- **Multiple structures and flows per story**
+- **Observations attach at three levels** — story-wide, on nodes, on flow steps
+- **Cross-group references allowed** — child stories can reference nodes outside parent's group
+- **Verbosity scales with depth** — root: 2 paragraphs max (~50-80 words), child: 3 paragraphs max (~80-120 words)
 
 ---
 
 ## Journeys
 
-Ordered reading paths through stories. See [story-schema.md](story-schema.md) for the schema.
+Thin cross-cutting paths through the story tree. Only created when a concern spans multiple root groups. See [story-schema.md](story-schema.md).
 
-**Guarantees:**
-- `overview` journey always exists
+**Properties:**
+- Just ordered lists of story IDs — no content of their own
+- Pull from any level of the tree (root or child, any group)
+- Only created for cross-cutting concerns (resilience review, onboarding)
+- NOT needed for within-group navigation (tree handles that) or overview (root stories handle that)
 - Every story ID in a journey exists in `stories/`
 - 3-8 stories per journey
 - Augur creates journeys beyond the defaults as the codebase warrants

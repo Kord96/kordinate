@@ -66,28 +66,26 @@ If `--detect-only`: skip Phase 2, go to Report.
 
 With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-schema.md](story-schema.md).
 
-### Step 5 — Compose stories and journeys
+### Step 5 — Compose the story tree
 
-Think about the codebase as a whole. What are the important things to understand? Who needs to understand them? Let the journeys guide which stories to tell.
+Build a tree of stories that mirrors the atlas structure. Top-down per [story-schema.md](story-schema.md):
 
-Start with the **overview journey** (always required). As you identify each architectural concern worth explaining, write the story AND place it in the appropriate journey(s) simultaneously. If composing a journey reveals a gap between two stories, write a bridging story right there.
+**1. Root stories (3-5, one per atlas group).** For each group, write a root story that orients the reader: what components this group contains, how they relate, why this grouping exists. Root summaries are 2 paragraphs max, ~50-80 words. Set `parent: null`, list `children`.
 
-**Teaching order**: within each journey, sequence stories from most foundational to most dependent. Each story should build on what the previous established. Ask "what does the reader need to understand before this story makes sense?" and order accordingly.
+**2. Child stories (2-5 per root).** For each root, identify the concerns worth zooming into — a key flow, a data store, a failure mode, a design decision. Write a child story for each. Child summaries are 3 paragraphs max, ~80-120 words. Set `parent: "<root-id>"`. Children can reference atlas nodes from outside the parent's group when the concern crosses boundaries.
 
-Each story is assembled from building blocks per [story-schema.md](story-schema.md):
-- **summary** (required) — 1-2 short paragraphs, ~50-80 words
-- **structures** — nested components + typed edges (component topology, data lineage, infrastructure, or any type augur sees fit)
-- **flows** — ordered steps, typed (request paths, failure cascades, data pipelines, or any type augur sees fit)
-- **observations** — evidence-backed findings, attachable to specific structure nodes or flow steps
-- **rationale** — design decisions, trade-offs, alternatives considered
+**3. Journeys (only for cross-cutting concerns).** If a concern spans multiple root groups (resilience across API + data + external, onboarding path across frontend + backend), create a thin journey — just an ordered list of story IDs from anywhere in the tree. Don't create journeys for within-group navigation (the tree handles that) or for overviews (the root stories ARE the overview).
 
-Stories are **short orienting sections**. The summary orients the reader; the structures and flows carry the detail; observations point to evidence. All prose follows [writing-guide.md](writing-guide.md): state facts about code, not facts about the document.
+Each story is assembled from building blocks:
+- **summary** (required) — short paragraphs, depth-dependent length
+- **structures** — nested components + typed edges
+- **flows** — ordered steps, typed
+- **observations** — evidence-backed findings
+- **rationale** — design decisions, trade-offs, alternatives
 
-For failure flows: include trigger, severity, detection, recovery. `detection: ["none"]` or `recovery: ["none"]` should generate a gap observation automatically.
+All prose follows [writing-guide.md](writing-guide.md). For failure flows: include trigger, severity, detection, recovery. For data structures: use `reads`/`writes` edge types.
 
-For data structures: use `reads`/`writes` edge types and inherit `purpose`/`persistence` from atlas nodes.
-
-**Typical output:** 8-15 stories across 2-4 journeys. Each story has a summary and 1-3 building blocks.
+**Typical output:** 3-5 root stories, 8-20 child stories, 0-3 journeys.
 
 ### Step 6 — Refine (Detect-Compose-Refine)
 

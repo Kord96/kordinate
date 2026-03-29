@@ -71,6 +71,8 @@ These can be verified immediately — no session restart required.
 - [ ] Guard blocks `git push` to test/prod without deployer auth
 - [ ] Guard blocks kubectl write ops without deployer auth
 - [ ] Guard blocks Grafana ops without sauron auth
+- [ ] PreToolUse on `Write|Edit` → `$KORDINATE_HOME/hooks/validate-lock-hook.sh`
+- [ ] PostToolUse on `Bash` → `$KORDINATE_HOME/hooks/validate-post-hook.sh`
 
 ### Manifest
 
