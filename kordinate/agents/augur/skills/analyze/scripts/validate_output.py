@@ -2,14 +2,13 @@
 """Validate all augur analysis output: atlas.json, stories, journeys, directory structure.
 
 Usage:
-    python validate_output.py <project-memory-dir> [--lock]
+    python validate_output.py <project-memory-dir>
 
     <project-memory-dir> is the path containing atlas.json, stories/, journeys/
     e.g., /path/to/project/.kord/agents/augur/memory/
 
-    --lock: create a lock file on failure, remove on success.
-            Lock path: <project-memory-dir>/.validate-lock
-            A hook can check for this lock to block writes until validation passes.
+Lock management is automatic when VALIDATE_LOCK=1 is set in the environment.
+This is used by the hook infrastructure, not by the agent directly.
 
 Checks:
     Phase 1 (atlas):
@@ -49,6 +48,7 @@ Exit codes:
 """
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -316,7 +316,7 @@ def main():
         sys.exit(2)
 
     mem_dir = Path(sys.argv[1])
-    use_lock = "--lock" in sys.argv
+    use_lock = os.environ.get("VALIDATE_LOCK") == "1"
     lock_path = mem_dir / ".validate-lock"
 
     if not mem_dir.exists():

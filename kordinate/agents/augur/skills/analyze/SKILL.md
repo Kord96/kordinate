@@ -97,14 +97,14 @@ Review each story. If a summary makes a claim not directly observed in Phase 1, 
 
 Run validation first. **Do not proceed until validation passes.**
 
-1. **Output validation** (run the script with --lock):
+1. **Output validation** (run the script):
    ```bash
-   python $SKILL_DIR/scripts/validate_output.py $ROOT/.kord/agents/augur/memory --lock
+   python $SKILL_DIR/scripts/validate_output.py $ROOT/.kord/agents/augur/memory
    ```
    This checks atlas.json, stories/*.yaml, journeys/*.yaml, and directory structure.
-   If errors are found, the script creates a lock file. **Fix the errors and rerun validation.**
-   The lock blocks further writes to the output directory until validation passes.
-   Loop up to 3 times. If still failing after 3 attempts, report the remaining errors and stop.
+   If errors are found, **fix them and rerun validation**. Repeat until validation passes
+   or you've attempted 3 fixes. If still failing after 3 attempts, report the remaining
+   errors and stop.
 
 2. **Groundedness verification**: for each observation and story claim with `grounded_in` references, re-read the cited source files and verify the claim holds at those locations. This catches hallucinations at the source — not "does the atlas agree?" (circular) but "does the code agree?" (ground truth). Target: >= 0.85.
 

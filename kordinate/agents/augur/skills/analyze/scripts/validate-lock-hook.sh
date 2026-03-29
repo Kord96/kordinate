@@ -1,12 +1,17 @@
 #!/bin/bash
 # validate-lock-hook — PreToolUse hook on Write/Edit
 #
-# Blocks writes to augur memory directories when a validation lock exists.
-# The lock is created by validate_output.py --lock when validation fails,
-# and removed when validation succeeds.
+# Blocks writes to augur memory directories when output validation has failed.
+# On first write after a validation failure, the agent sees an error message
+# telling it to fix validation issues. The agent does not know about the lock
+# mechanism — it only knows that writes are blocked until validation passes.
 #
-# This forces the agent to fix validation errors before writing new output.
-# Without the lock, writes proceed normally (no lock = no gate).
+# Lock lifecycle:
+#   - Created by validate_output.py --lock when validation fails
+#   - Removed by validate_output.py --lock when validation succeeds
+#   - The skill procedure tells the agent to "run validation and fix errors"
+#   - The agent runs validate_output.py (without --lock), which it sees as
+#     a normal check. The hook infrastructure separately manages the lock.
 
 set -uo pipefail
 
@@ -29,7 +34,7 @@ MEM_DIR=$(echo "$FILE_PATH" | grep -oE '.*/\.kord/agents/augur/memory')
 LOCK="$MEM_DIR/.validate-lock"
 if [ -f "$LOCK" ]; then
     ERRORS=$(cat "$LOCK")
-    printf '{"error":"Validation lock active (%s). Run validate_output.py to see errors, fix them, then revalidate. The lock is removed when validation passes."}\n' "$ERRORS"
+    printf '{"error":"Output validation failed (%s). Fix the validation errors reported by validate_output.py and rerun it before writing more output."}\n' "$ERRORS"
     exit 2
 fi
 
