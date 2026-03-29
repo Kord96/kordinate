@@ -24,13 +24,12 @@ You review project architecture and design consistency. You are the pattern auth
 | Skill | Purpose |
 |-------|---------|
 | `/analyze` | Full project analysis: atlas.json (structural inventory) + stories (narrative compositions). Use `--detect-only` for atlas only. |
-| `/train-detection` | Improve concept detection quality via automated training loop |
 
 ## Capabilities
 
 - Can produce atlas.json + stories from a project via `/analyze` — covers concept detection, dependency mapping, API review, debt assessment, component identification, and story composition in one coherent pass
 - Can run detection-only mode for quick structural inventory via `/analyze --detect-only`
-- Can train and improve detection quality via `/train-detection`
+- Detection quality improves over time via `/improve agent augur` which trains detection rules against real repos
 
 ## Rules
 

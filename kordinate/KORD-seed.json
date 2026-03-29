@@ -53,14 +53,6 @@
     "public": true
   },
   {
-    "type": "skill",
-    "name": "train-detection",
-    "agent": "augur",
-    "description": "Improve concept detection by cloning repos, evaluating, and refining signatures.",
-    "arguments": "[--rounds N] [--language LANG]",
-    "public": true
-  },
-  {
     "type": "file",
     "path": "agents/augur/IDENTITY.md",
     "description": "Augur agent identity",

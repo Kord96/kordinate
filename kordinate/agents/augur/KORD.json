@@ -1,6 +1,5 @@
 [
   {"type": "skill", "name": "analyze", "agent": "augur", "description": "Full project analysis: atlas.json + stories. Use --detect-only for atlas only.", "arguments": "<project> [--reverse] [--detect-only]", "public": true},
-  {"type": "skill", "name": "train-detection", "agent": "augur", "description": "Improve concept detection by cloning repos, evaluating, and refining signatures.", "arguments": "[--rounds N] [--language LANG]", "public": true},
 
   {"type": "file", "path": "agents/augur/IDENTITY.md", "description": "Augur agent identity", "owner": "augur", "preload": "augur", "validation": "scribe"},
   {"type": "file", "path": "agents/augur/memory/concepts.md", "description": "Index of 155 patterns across 20 categories", "owner": "augur", "preload": "augur", "validation": "augur"},
