@@ -248,62 +248,24 @@
     "type": "skill",
     "name": "document",
     "agent": "scribe",
-    "description": "Render stories into interactive documentation pages.",
-    "arguments": "<project>",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "illustrate-architecture",
-    "agent": "scribe",
-    "description": "Generate interactive architecture explorer from augur's analysis.",
-    "arguments": "<project>",
+    "description": "Render stories into interactive documentation using pre-built Astro components.",
+    "arguments": "<project> [--atlas-only]",
     "public": true
   },
   {
     "type": "skill",
     "name": "register",
     "agent": "scribe",
-    "description": "Register a runtime, agent, or kord \u2014 or re-link after changes.",
+    "description": "Register runtime, agent, or kord \u2014 setup, creation, and re-linking.",
     "arguments": "runtime|agent|kord [args]",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "onboard",
-    "agent": "scribe",
-    "description": "Add a new agent or sync existing agents to the runtime.",
-    "arguments": "<agent-name>",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "create-kord",
-    "agent": "scribe",
-    "description": "Define a new kord \u2014 a consultation contract between agents.",
-    "arguments": "<agent> <kord-name>",
     "public": true
   },
   {
     "type": "skill",
     "name": "doctor-k",
     "agent": "scribe",
-    "description": "Health-check the kordinate system.",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "audit-kordinate",
-    "agent": "scribe",
-    "description": "Read-only health check for memory and kordinate system.",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "audit-skills",
-    "agent": "scribe",
-    "description": "Audit, test, benchmark, and improve SKILL.md files.",
-    "arguments": "[--agent <name>] [--fix]",
+    "description": "Health-check the kordinate system \u2014 structural, runtime, and e2e tests.",
+    "arguments": "[--scope global|project|all] [--e2e]",
     "public": true
   },
   {
