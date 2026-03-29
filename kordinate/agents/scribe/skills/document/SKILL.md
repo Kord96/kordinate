@@ -26,29 +26,28 @@ Locate the project directory by checking paths in order:
 
 If not found, report which paths were checked and exit.
 
-### 2. Invoke Designer analysis
+### 2. Invoke Augur analysis
 
-Spawn a Designer subagent to analyze the project:
+Spawn an Augur subagent to analyze the project:
 
 ```
-Agent(subagent_type="designer", prompt="Run full project analysis on <project-path>. Execute in order: /detect-patterns, /map-dependencies, /review-api, /assess-debt, /architect. Write all outputs to <project-path>/.kord/agents/augur/memory/. Return a manifest of what was produced.")
+Agent(subagent_type="augur", prompt="Run /analyze on <project-path>")
 ```
 
-Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/augur/memory/` and mark the report as `stale — Designer failed`.
+Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/augur/memory/` and mark the report as `stale — Augur failed`.
 
 ### 3. Read project artifacts
 
-Read from `<project>/.kord/agents/augur/memory/` — this is the only authoritative location. Do not read from the project root, the docs site, or any other path.
+Read from `<project>/.kord/agents/augur/memory/` — this is the only authoritative location.
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `architecture.yaml` | **yes** | Core structure — abort if missing |
-| `patterns.md` | no | Enriches nodes with pattern badges |
-| `dependencies.md` | no | Enriches external service nodes |
-| `api-review.md` | no | Adds API endpoint mapping to nodes |
-| `debt-assessment.md` | no | Adds health coloring per node |
+| `atlas.json` | **yes** | Full structural inventory — components, groups, flows, state, failures, concepts, deps, API, debt. All enrichments are inline. |
+| `stories/*.yaml` | no | Scoped narrative compositions. If present, use for sidebar narratives instead of generating inline. |
 
-If `architecture.yaml` is missing after the kord attempt, report and suggest running `/architect <project>` directly. Exit.
+If `atlas.json` is missing after the Augur attempt, report and suggest running `/analyze <project>` directly. Exit.
+
+Atlas.json v3 contains everything that was previously split across architecture.yaml, patterns.md, dependencies.md, api-review.md, and debt-assessment.md. See [augur-output-contract.md](../../augur/skills/analyze/augur-output-contract.md) for the full schema.
 
 ### 4a. Produce architecture.json — write
 

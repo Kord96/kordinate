@@ -1,6 +1,6 @@
 # Component Identification Guidance
 
-Level 3 resource for the architect skill. Referenced from step 4 (identify components). Defines what to extract and how to filter.
+Level 3 resource for the analyze skill. Referenced from step 5 (identify components and groups). Defines what to extract, how to filter, and how to assign groups.
 
 ## Filtering Criteria
 
@@ -24,7 +24,7 @@ For each component, capture:
 - **description**: one sentence of what it does
 - **modules**: source files that implement it
 - **abstraction**: levels from `abstractions.md` (e.g., `[data, messaging]`) -- these drive which viewpoints downstream skills generate
-- **patterns**: from detect-patterns output or concept catalog
+- **patterns**: from detect-concepts output or concept catalog
 - **depends_on**: other component ids (directional: A depends_on B means A calls/imports/consumes from B)
 
 ## Relationship Mapping
@@ -36,3 +36,18 @@ For each component, capture:
 - **No**: A and B happen to run in the same process (co-location, not dependency)
 
 For richer relationship detail (what flows, transport, direction), use `data_flows` and `events` rather than trying to encode it in `depends_on`.
+
+## Group Assignment
+
+After identifying components, assign each to exactly one of **3-5 top-level groups**. This is a hard constraint.
+
+Groups are structural clusters — not business capabilities, not deployment units. A group should contain components that share a deployment boundary, data flow path, or architectural concern.
+
+Rules:
+- Follow C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not code modules
+- Synthetic `external` and `actors` groups count toward the 3-5 limit
+- Small projects (<15 nodes) should aim for 3 groups
+- If two groups have only 1-2 nodes each, they belong together
+- After drafting, count groups. If >5, merge the two most closely related. Repeat until ≤5
+
+Each group becomes a structure story in Phase 2. The groups you create here directly determine how the architecture is narrated — choose groupings that tell a coherent story about the system's shape.

@@ -161,8 +161,24 @@ runs. Check for:
   acted on. Re-surface them with a note: "proposed N runs ago, still unresolved."
 - **Trends** — are skills improving or degrading over time? Are new gaps opening as the
   agent's responsibilities grow?
+- **Plateau detection** — compare this run's portfolio findings against the last 2 runs.
+  If all three runs produced the same findings (same gaps, same split/merge candidates,
+  same staleness issues) and no new findings emerged, the portfolio is stable. Set
+  `plateau: true` in the manifest.
 
 If the file doesn't exist, this is the first run — skip to Step 1.8.
+
+#### Early Stop — Portfolio Plateau
+
+If `plateau: true` and no "immediate" or "scaffold" findings differ from prior runs:
+
+1. Skip Phase 2 entirely — there is nothing new to improve.
+2. Go directly to Phase 3 (Sleep) to update history with the plateau observation.
+3. Report: "Portfolio stable — no new findings in N consecutive runs. Stopping early."
+
+This prevents burning tokens re-reviewing skills that haven't changed. The plateau
+breaks when: the agent's identity changes, new skills are added externally, or a
+skill file is edited outside the improve loop.
 
 ### Step 1.8 — Portfolio Decision
 
@@ -197,33 +213,131 @@ for cross-reference (overlaps, inconsistencies, shared patterns).
 Pull in any Phase 1 findings relevant to this skill (e.g., "this skill was flagged as a
 split candidate" or "missing 3rd-layer resources").
 
-### Step 2.2 — Test Against Real Repos
+### Step 2.2 — Test Against Real Repos and Assess Output Quality
 
-If test repos were cloned in Step 1.5, test the skill against one of them. The test
-strategy depends on the skill type:
+If test repos were cloned in Step 1.5, run the skill against one of them AND evaluate
+whether the output is correct. Running the skill is not enough — you must assess the
+quality of what it produces.
 
-| Skill type | How to test | What to evaluate |
-|------------|-------------|-----------------|
-| **Scan/audit** (read-only: detect-concepts, scan-observability, assess-debt) | Run the skill's procedure against the repo. Collect the output. | Did it find real things? Did it miss obvious things? Did it produce false positives? Is the output format correct? |
-| **Generate** (document, architect, map-dependencies) | Run the skill's procedure against the repo. Inspect the artifact. | Is the output structurally valid? Does it reflect the repo's actual architecture? Are there hallucinated components? |
-| **Transform** (edit-based: refactoring, migration skills) | Dry-run or simulate on a copy of the repo. Do NOT modify the original. | Would the proposed changes compile/parse? Do they preserve behavior? Are edge cases handled? |
-| **Deploy/infra** (roll, bootstrap, migrate) | Do NOT run against test repos. Instead, trace through the procedure mentally against the repo's structure. | Are all referenced paths/tools real? Are prerequisites checked? Are rollback steps present? |
-| **Meta** (improve, train-detection) | Skip repo testing for meta-skills. They're tested by running them. | N/A |
+#### 2.2a — Run the Skill
 
-If the skill type is unclear, default to the scan/audit strategy (read-only, inspect output).
+Execute the skill's procedure against a cloned repo. Capture the full output (save to
+`$DATA_DIR/<agent>/test-outputs/<skill>-<repo>/`).
 
-Record results to `$DATA_DIR/<agent>/test-results/<skill>-<repo>.json`:
+| Skill type | How to run |
+|------------|-----------|
+| **Scan/detect** (detect-concepts, detect-patterns, scan-observability, assess-debt) | Run the full procedure. Save the output artifact (concepts.md, patterns report, etc.) |
+| **Generate** (architect, analyze, map-dependencies, review-api) | Run the full procedure. Save the generated artifact (architecture.yaml, dependency graph, API report) |
+| **Transform** (edit-based skills) | Dry-run on a copy of the repo. Save proposed changes as a patch. |
+| **Deploy/infra** | Skip — trace the procedure mentally instead. |
+| **Meta** (improve, train-detection) | Skip — these are tested by running them. |
+
+#### 2.2b — Build Ground Truth
+
+For each skill output, build independent ground truth to compare against. Use multiple
+oracles to avoid circularity (the agent both running the skill AND judging its own output
+is circular). At least two oracles must agree for high-confidence ground truth.
+
+**Oracle 1 — Gemini (primary).** Send the repo's key source files to Gemini with a
+targeted prompt. Run in background:
+
+```bash
+gemini -m gemini-2.5-pro -o json -p "<oracle prompt for skill type>" \
+  @/tmp/improve-repos/<repo>/src/ > $DATA_DIR/<agent>/ground-truth/<skill>-<repo>-gemini.json &
+```
+
+Oracle prompts by skill type:
+
+| Skill | Gemini oracle prompt |
+|-------|---------------------|
+| **detect-concepts** | "List every architectural concept, pattern, and anti-pattern present in this codebase. For each, cite the specific file and line range as evidence. Look for BEHAVIOR, not naming." |
+| **detect-patterns** | Same as detect-concepts (they share the same catalog). |
+| **review-api** | "List every API endpoint in this codebase — method, path, handler function, file. Note any inconsistencies in naming, authentication, error handling, or response format." |
+| **assess-debt** | "Identify every instance of tech debt in this codebase — code smells, anti-patterns, missing tests, hardcoded values, dead code. For each, cite the file and describe the impact." |
+| **map-dependencies** | "List every dependency: internal module imports, external packages, infrastructure services (databases, caches, queues), and external API calls. Cite the import statement or connection string." |
+| **architect/analyze** | "Describe the architecture of this codebase: main components, their responsibilities, how data flows between them, state management, and failure modes. Cite specific files for each component." |
+| **scan-observability** | "List every observability signal: log statements (with level and message), metrics (with names), health check endpoints, and tracing spans. Cite file and line." |
+
+**Oracle 2 — Mechanical verification.** Use grep/glob/AST to independently verify
+specific claims. This catches hallucinations from both the skill and Gemini:
+
+| Skill | Mechanical checks |
+|-------|------------------|
+| **detect-concepts** | Grep for import statements, decorators, config files that confirm/deny each detected concept |
+| **review-api** | Grep for route decorators (`@app.get`, `@router.post`, `http.HandleFunc`, etc.) and count — does the skill's endpoint count match? |
+| **assess-debt** | Verify cited files exist. Grep for the specific patterns flagged (e.g., `TODO`, hardcoded strings, bare excepts) |
+| **map-dependencies** | Parse `requirements.txt`/`go.mod`/`package.json` — does the skill's external dep list match? Grep for imports — does the internal module list match? |
+| **architect/analyze** | Verify every component name maps to a real file/directory. Check that stated data flows have matching import/call chains. |
+| **scan-observability** | Grep for `log.`, `logger.`, `metrics.`, `/health`, `/ready` — does the count match the skill's output? |
+
+**Oracle 3 — Cross-skill validation.** If multiple skills ran on the same repo, their
+outputs should be consistent:
+- Components in `architect` output should appear in `map-dependencies` output
+- Endpoints in `review-api` should align with routes found by `detect-concepts`
+- Debt flagged by `assess-debt` should reference real components from `architect`
+
+#### 2.2c — Score
+
+Compare the skill's output against ground truth. Compute per-item:
+
+- **True Positive** — skill found it AND ground truth confirms it
+- **False Positive** — skill found it BUT ground truth says it's not there (hallucination)
+- **False Negative** — skill missed it BUT ground truth says it exists (gap)
+- **True Negative** — neither found it (not applicable for most skills)
+
+Compute:
+- **Precision** = TP / (TP + FP) — "when the skill says something, is it right?"
+- **Recall** = TP / (TP + FN) — "does the skill find everything that's there?"
+- **F1** = 2 * (P * R) / (P + R) — balanced score
+
+For skills where items aren't countable (e.g., architect produces a narrative), score
+on a rubric instead:
+
+| Dimension | 1 (poor) | 3 (adequate) | 5 (excellent) |
+|-----------|----------|-------------|--------------|
+| **Completeness** | Major components missing | Most components present, some gaps | All components identified |
+| **Accuracy** | Multiple hallucinated components | Minor inaccuracies | All claims verifiable in code |
+| **Specificity** | Vague descriptions, no file refs | Some file refs, some vague | Every claim cites specific files |
+| **Consistency** | Contradicts other skill outputs | Mostly consistent | Fully consistent with other skills |
+
+#### 2.2d — Record Results
+
+Save to `$DATA_DIR/<agent>/test-results/<skill>-<repo>.json`:
+
 ```json
 {
   "skill": "<name>",
   "repo": "<nameWithOwner>",
-  "test_strategy": "scan|generate|transform|trace|skipped",
   "tested_at": "ISO-8601",
-  "success": true,
-  "issues_found": [],
+  "ground_truth": {
+    "gemini_oracle": "<path to gemini output>",
+    "mechanical_checks": {"endpoints_found": 12, "skill_reported": 10, "match": false},
+    "cross_skill": {"consistent_with": ["architect", "map-dependencies"], "conflicts": []}
+  },
+  "scores": {
+    "precision": 0.85,
+    "recall": 0.70,
+    "f1": 0.77
+  },
+  "rubric_scores": null,
+  "false_positives": ["skill claimed X but it doesn't exist"],
+  "false_negatives": ["skill missed Y which is clearly present at path/to/file.py"],
+  "issues_found": ["step 3 failed to detect FastAPI routes using include_router()"],
   "notes": ""
 }
 ```
+
+The `false_positives` and `false_negatives` lists are the most actionable — they tell
+you exactly what to fix in the skill's detection logic, grep patterns, or procedure steps.
+
+#### 2.2e — Feed Scores Back to Skill Improvement
+
+If F1 < 0.70 (or rubric average < 3), the skill has significant quality issues. In Step
+2.3 (Review), prioritize the specific false positives and false negatives over general
+quality criteria. The test results tell you exactly what's wrong — fix those first.
+
+If F1 >= 0.90 (or rubric average >= 4.5), the skill is performing well. Focus Step 2.3
+on resource gaps and edge cases rather than core logic.
 
 ### Step 2.3 — Review
 
@@ -383,7 +497,21 @@ For domain insights discovered during improvement:
 /kord remember <agent-name> learned during self-improvement: <insight>
 ```
 
-### Step 3.4 — Finalize Manifest
+### Step 3.4 — Commit and Push
+
+Commit all changes and push. The worktree-push hook will automatically merge
+to main on push.
+
+```bash
+git -C $KORDINATE_HOME add -A
+git -C $KORDINATE_HOME commit -m "improve: <agent> — <one-line summary of changes>"
+git -C $KORDINATE_HOME push 2>/dev/null || true
+```
+
+If the push triggers a merge conflict, the hook will report it. The next `/merge`
+run will resolve it.
+
+### Step 3.5 — Finalize Manifest
 
 Update manifest:
 ```json
@@ -434,6 +562,23 @@ Skill: <skill-name>
   Iterations: <N>/<MAX>
   Stop reason: no-changes
   Changes: —
+
+## Cross-Cutting Analysis
+
+Synthesize findings across all skills and all repos. This is the most valuable part
+of the report — patterns that only emerge when looking at the portfolio as a whole:
+
+- **Common weaknesses**: issues that appeared in 3+ skills (e.g., "most skills lack
+  error handling guidance", "no skill specifies output format")
+- **Repo-specific patterns**: did certain repos expose more issues than others? Why?
+  (e.g., "Go repos exposed missing language-specific steps in 4 skills")
+- **Structural themes**: are the issues mostly completeness, correctness, clarity, or
+  resources? This tells the agent where to focus next time.
+- **Test coverage assessment**: which skills were testable vs. skipped? What would make
+  untestable skills testable?
+- **Improvement velocity**: how many structural issues were found and fixed vs. how many
+  remain as proposed? Is the agent getting better or accumulating debt?
+- **Top 3 recommendations**: the single most impactful thing to do next, ranked.
 
 ## Persisted
   Memories written: <count>
