@@ -91,34 +91,31 @@ All prose follows [writing-guide.md](writing-guide.md). For failure flows: inclu
 
 Review each story. If a summary makes a claim not directly observed in Phase 1, re-read the specific source file(s) to verify or correct it. Only re-read files that an ungrounded claim references.
 
-### Step 7 — Validate and evaluate
+### Step 7 — Validate
 
-Run validation first. **Do not proceed until validation passes.**
+Request validation from warden. **You need a completion token to finish.**
 
-1. **Output validation** (run the script):
+```
+/kord warden validate-output $ROOT/.kord/agents/augur/memory/
+```
+
+If warden returns errors: read them, fix the output files, call warden again. Repeat until warden returns a **completion token**. Record it.
+
+### Step 8 — Evaluate
+
+With validated output, run quality checks:
+
+1. **Groundedness**: for each observation with `grounded_in` references, re-read the cited source files and verify the claim holds. The code is ground truth, not the atlas. Target: >= 0.85.
+
+2. **Coverage**: critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
+
+3. **Gemini story review** (background) — review against the **codebase**:
    ```bash
-   python $SKILL_DIR/scripts/validate_output.py $ROOT/.kord/agents/augur/memory
+   gemini -m gemini-2.5-pro -o json -p "Review these stories against the SOURCE CODE. The atlas is context, code is authority. Rules: root summaries 50-80 words, child 80-120, facts about code not meta-text. Check: accurate? unsupported claims? missing concerns? teaching order?" @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
    ```
-   This checks atlas.json, stories/*.yaml, journeys/*.yaml, and directory structure.
-   If errors are found, **fix them and rerun validation**. Repeat until validation passes
-   or you've attempted 3 fixes. If still failing after 3 attempts, report the remaining
-   errors and stop.
+   If changes are made after Gemini feedback, **call warden again** for a fresh token.
 
-2. **Groundedness verification**: for each observation and story claim with `grounded_in` references, re-read the cited source files and verify the claim holds at those locations. This catches hallucinations at the source — not "does the atlas agree?" (circular) but "does the code agree?" (ground truth). Target: >= 0.85.
-
-3. **Coverage**: critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
-
-4. **Gemini story review** (background) — review stories against the **codebase** (ground truth), using the atlas as supporting context:
-   ```bash
-   gemini -m gemini-2.5-pro -o json -p "Review these architectural stories against the SOURCE CODE (ground truth). The atlas.json is provided as context for what augur detected — but the code is the authority, not the atlas. Our rules: summaries 50-80 words max, state facts about code not about the document, no meta-text like 'this story covers...', journeys 3-8 stories ordered foundational to dependent. Check: do stories accurately describe what the code does? Are any claims not supported by the actual source? Are important architectural concerns missing? Is the teaching order sensible for someone new to this codebase?" @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
-   ```
-   Incorporate valid critiques before writing final output. Ignore opinions that contradict our constraints.
-
-If groundedness is low, fix the claims at the source. If schema is invalid, fix the structure. If coverage is low, add stories for uncovered components.
-
-### Step 8 — Write
-
-Write stories to `$ROOT/.kord/agents/augur/memory/stories/<id>.yaml`. Write journeys to `$ROOT/.kord/agents/augur/memory/journeys/<id>.yaml`. Create directories if needed. Update `metadata.story_ids` in atlas.json.
+If groundedness is low, fix claims. If coverage is low, add stories. Always revalidate after changes.
 
 ---
 
@@ -136,16 +133,17 @@ Write stories to `$ROOT/.kord/agents/augur/memory/stories/<id>.yaml`. Write jour
 **Debt**: Score N — Grade X. <interpretation>
 **External** (N): <names with criticality>
 **Failures** (N): <names with severity>
-**Stories** (N): <titles>
-**Journeys** (N): <titles>
+**Stories**: N root, N child
+**Journeys** (N): <titles> (if any)
 **Groundedness**: <min>-<max> across stories
 **Coverage**: <percentage> of critical components
+**Validation token**: <token from warden>
 **Top recommendations**: 1. ... 2. ... 3. ...
 
 Written to:
   atlas: <path>
   stories: <path> (N files)
-  journeys: <path> (N files)
+  journeys: <path> (N files, if any)
 ```
 
-If `--detect-only`, omit the Stories/Journeys/Groundedness/Coverage lines.
+If `--detect-only`, omit Stories/Journeys/Groundedness/Coverage/Validation lines.

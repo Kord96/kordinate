@@ -1,68 +1,87 @@
 ---
 name: validate-output
 description: >
-  Run a validator script against an output directory, manage validation locks,
-  and report results. Any skill can request validation — warden handles enforcement.
-argument-hint: "<dir> --validator <script>"
+  Validate output against a registered validator. Returns a completion token on success
+  that the calling skill needs to include in its report. Without the token, the output
+  is considered unvalidated.
+argument-hint: "<dir>"
 curated: true
 scope: global
 ---
 
-Run a validator script against an output directory, manage the validation lock, and report results. Skills call this to validate their output — they never interact with locks directly.
+Validate an agent's output directory. On success, return a completion token. On failure, return errors. The calling skill cannot finish without the token — this is the enforcement mechanism.
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<dir>` (directory containing output to validate). Required: `--validator <script>` (path to a validator script that accepts `<dir>` as its first argument and exits 0 on success, non-zero on failure).
+`$ARGUMENTS` — Required: `<dir>` (directory containing output to validate, e.g., `<project>/.kord/agents/augur/memory/`).
 
-## How It Works
+## Registry
 
-### For calling skills
+Warden maintains a registry of validators per agent output directory. Registration happens during install. The registry maps output path patterns to validator scripts:
 
-Skills request validation:
-
+```yaml
+# $KORDINATE_HOME/agents/warden/skills/validate-output/registry.yaml
+validators:
+  - pattern: ".kord/agents/augur/memory/"
+    script: "$KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py"
+    agent: augur
 ```
-/kord warden validate-output <dir> --validator <script>
-```
 
-If validation fails, the skill sees the errors and fixes them. The skill does not know about locks — it just knows writes are blocked until validation passes.
-
-### Lock mechanism
-
-Warden manages `.validate-lock` files transparently via two hooks:
-
-- **PreToolUse** (Write/Edit): if `.validate-lock` exists in the target directory, the write is blocked with an error telling the agent to fix validation errors first.
-- **PostToolUse** (Bash): after any validator script run, the hook silently re-runs it with `VALIDATE_LOCK=1` to create or remove the lock based on the result.
-
-The agent never creates, checks, or removes locks. The hooks do it automatically.
-
-### Validator contract
-
-A validator script must:
-
-1. Accept a directory path as its first argument
-2. Print human-readable errors/warnings to stdout
-3. Exit 0 if valid, non-zero if errors found
-4. When `VALIDATE_LOCK=1` is set: create `<dir>/.validate-lock` on failure, remove it on success (the orchestrator script handles this, so custom validators only need to support the env var if they want custom lock paths)
+If no validator is registered for the given directory, warden reports "no validator registered" and returns no token.
 
 ## Procedure
 
-1. **Parse** `<dir>` and `--validator <script>` from `$ARGUMENTS`. If either is missing, show usage and exit.
-2. **Verify** the directory exists and the validator script exists and is executable.
-3. **Run** the validator:
+1. **Match** the `<dir>` against the registry to find the validator script. If no match, report and exit.
+
+2. **Run** the validator:
    ```bash
-   python3 <script> <dir>    # or bash <script> <dir>, detected from shebang/extension
+   python3 <script> <dir>
    ```
-4. **Report** the output to the calling agent.
-5. If validation fails: the PostToolUse hook silently manages the lock. The calling agent sees the errors and should fix them, then re-run validation.
-6. If validation passes: the PostToolUse hook removes the lock. Writes to `<dir>` are unblocked.
 
-## Integration
+3. **If validation fails** (non-zero exit):
+   - Return the errors to the calling agent
+   - Include a clear instruction: "Fix these errors and call `/kord warden validate-output <dir>` again"
+   - Do NOT return a token
 
-To add validation to a skill:
+4. **If validation passes** (exit 0):
+   - Compute a completion token: `sha256` hash of the concatenated content of all validated files (atlas.json + sorted story files + sorted journey files)
+   - Return the token and a success message:
+     ```
+     VALIDATED — token: <sha256-hex>
+     Include this token in your report to confirm validation passed.
+     ```
 
-1. Write a validator script that checks your output format (see augur's `validate_output.py` as an example)
-2. In your SKILL.md procedure, add a validation step:
-   ```bash
-   python3 $SKILL_DIR/scripts/validate_output.py $OUTPUT_DIR
-   ```
-3. The shared hooks detect the validator run and manage locks automatically. No hook registration needed per-skill — the hooks are global.
+## Token Properties
+
+- The token is a SHA-256 hash of the validated content
+- It's tied to the specific files that were validated — if the agent edits after validation and uses the old token, the hash won't match
+- The improve loop can verify: `sha256(current files) == reported token`
+- The token cannot be guessed or hallucinated — it depends on file content
+
+## How Calling Skills Use This
+
+In the skill's procedure:
+
+```
+Step N — Validate:
+  Call /kord warden validate-output <dir>
+  If errors: fix them, call again. Repeat until you receive a token.
+  Record the token for your report.
+
+Step N+1 — Report:
+  Include the validation token in the report.
+```
+
+The skill doesn't know about locks, hooks, or enforcement mechanics. It just knows: "I need a token from warden to finish."
+
+## Verification
+
+The improve loop or any downstream consumer can verify the token:
+
+```bash
+# Compute expected hash
+find <dir> -name "*.json" -o -name "*.yaml" | sort | xargs cat | sha256sum
+# Compare with the token in the report
+```
+
+If they don't match, the output was modified after validation or the token was fabricated.
