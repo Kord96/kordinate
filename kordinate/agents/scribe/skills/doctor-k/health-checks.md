@@ -1,95 +1,122 @@
 # Health Checks
 
-Level 3 resource for the doctor-k skill. Structural checks that verify kordinate's internal consistency. Runtime-agnostic — no assumptions about which runtime (Claude Code, etc.) is in use.
+Level 3 resource for the doctor-k skill. Structural checks that verify kordinate's internal consistency. Updated for the KORD.json central manifest system.
 
-## Frontmatter completeness
+Also used by `/install` as the post-install verification step.
 
-Every `.md` file under `agents/` must have a `description` field in its YAML frontmatter.
+## KORD.json integrity
 
-Additional required fields by file type:
-- **IDENTITY.md** — must also have `curated`, `scope`, `preloaded`
-- **Memory files** (`agents/*/memory/*.md`) — must have `description` and `curated`
+KORD.json is the central manifest. Verify:
 
-Severity:
-- **ERROR** — `description` missing on IDENTITY.md or contract files
-- **WARNING** — `description` or `curated` missing on memory files
+- KORD.json exists at `$KORDINATE_HOME/KORD.json`: **ERROR** if missing
+- KORD.json is valid JSON: **ERROR** if parse fails
+- KORD-seed.json exists (factory reset baseline): **WARNING** if missing
+- No duplicate skill names across agents: **ERROR** if duplicates
+- No overlapping guard patterns: **WARNING** if two guards match the same command
+- All dir patterns match at least one file on disk: **WARNING** if orphaned
 
-## Frontmatter validity
+## KORD.json file sync
 
-Validate that frontmatter field values are within their allowed ranges:
-- `scope` must be `global` or `project`
-- `preloaded` must be `all`, `none`, or a valid agent name (check against `agents/` subdirectories)
-- `curated` must be `true` or `false`
+Compare KORD.json file entries against actual files on disk:
 
-Severity: **ERROR** for any invalid value.
+- **Orphaned entry** — KORD.json has an entry but the file doesn't exist: **ERROR**
+- **Missing entry** — file exists in `agents/*/memory/` with content but no KORD.json entry: **WARNING**
+- Every `preload` value must be `all`, `none`, or a valid agent name: **ERROR** if invalid
+- Every `owner` must be a valid agent name, `team`, or `main`: **ERROR** if invalid
+- Every `validation` must be an agent name or a script path that exists: **ERROR** if invalid
 
-## KORD.json sync
+## Agent memory separation
 
-Compare KORD.json entries against actual files on disk:
+Each agent should have its own memory isolated from other agents:
 
-- **Orphaned entry** — an entry exists in KORD.json but the referenced file does not exist on disk (check both memory files and route entries).
-    - Severity: **ERROR**
-- **Missing entry** — a file exists on disk with a `description` in its frontmatter but has no corresponding entry in KORD.json. Routes defined in `routes.yaml` files should also appear.
-    - Severity: **WARNING**
+- Agent memory files are in `agents/<name>/memory/`: **ERROR** if files in wrong agent's dir
+- Agent memory KORD.json entries have `owner` matching the agent name: **ERROR** if mismatch
+- Agents with `preload` entries should have at least one preloaded file: **WARNING** if none
+
+## Boot preload
+
+Verify boot can load preloaded files:
+
+- `team/scripts/preload.py` exists and is executable: **ERROR** if missing
+- For each agent, run preload.py and verify it produces output: **WARNING** if empty
+- Shared protocols (`preload: all`) exist and are non-empty: **ERROR** if missing
+
+## Project memory
+
+Verify project-scoped memory works:
+
+- If `.kord/` exists in the current project root, it should have an `agents/` directory: **WARNING** if malformed
+- Project memory files should not duplicate global memory files exactly: **INFO** if duplicates found
+
+## Framework file protection
+
+Verify KORD.json dir entries protect framework files:
+
+- All IDENTITY.md files are covered by a `dir` entry with `validation: scribe`: **ERROR** if unprotected
+- All SKILL.md files are under a protected dir pattern: **ERROR** if unprotected
+- All hooks are under a protected dir pattern: **ERROR** if unprotected
+- `settings.json` has a file entry with validation: **ERROR** if unprotected
+- KORD.json and KORD-seed.json have guard entries: **ERROR** if unprotected
+
+## Warden validation
+
+Verify the validation token system:
+
+- Warden validate skill exists: **ERROR** if missing
+- Registered validator scripts exist on disk: **ERROR** if missing
+
+## Subagent communication
+
+Verify agents can call other agents:
+
+- Kord MCP server is configured in `~/.claude.json`: **ERROR** if missing
+- Agent-gate hook exists and is executable: **ERROR** if missing
+- Agent lock files exist for each agent in `profile/locks/`: **WARNING** if missing
+
+## Install hygiene
+
+Verify no stale files from previous installs:
+
+- No `skills/` directory at `$KORDINATE_HOME` root (old global skills): **ERROR** if exists
+- No `KORD.md` at `$KORDINATE_HOME` root (deprecated): **WARNING** if exists
+- No `routes.yaml` in agent directories (replaced by KORD.json): **INFO** if exists
+- No stale agent skills in `~/.claude/skills/` (only team skills belong there): **ERROR** if agent skills found
+- No stale agent definitions in `~/.claude/agents/` for agents not in `$KORDINATE_HOME/agents/`: **ERROR**
+
+## Sanitize push guard
+
+Verify secrets scanning works:
+
+- `sanitize-scan.py` exists in warden's sanitize skill: **ERROR** if missing
+- `patterns.yaml` exists and has patterns: **ERROR** if missing or empty
+- Git push guard entry exists in KORD.json: **WARNING** if missing
 
 ## Scratchpad staleness
 
-Check the modification date of `memory/scratchpad.md` files for each agent. Use `stat` to read the file's mtime.
+Check modification date of `memory/scratchpad.md` for each agent:
 
-- If the scratchpad has not been modified in more than `--stale-days` days (default: 7): **WARNING**
+- Not modified in `--stale-days` days (default: 7): **WARNING**
 
 ## File size
 
 Check all `.md` files under `agents/`:
 
-- File larger than 20KB: **WARNING**
-- File larger than 10KB (but under 20KB): **INFO**
-
-## Route registry validation
-
-Every agent that has skills should have a `routes.yaml` defining its routes.
-
-### Route file presence
-
-For each agent directory that contains a `skills/` subdirectory, check for `routes.yaml`:
-- **ERROR** — agent has skills but no `routes.yaml`
-
-### Route name uniqueness
-
-Collect all route `name` fields across all `routes.yaml` files:
-- **ERROR** — two or more routes share the same name (even across different agents)
-
-### Cache input paths
-
-For each route with a `cache` section, validate that `inputs` paths resolve to existing files or directories:
-- **WARNING** — a cache input path does not exist on disk
-
-### Skill references
-
-For each route, verify the `skill` field references a skill directory that exists under the agent's `skills/` or under global `skills/`:
-- **ERROR** — route references a skill that does not exist
+- Larger than 20KB: **WARNING**
+- Larger than 10KB: **INFO**
 
 ## Duplicate descriptions
 
-Scan all frontmatter `description` fields across all files in the scan targets.
+Scan KORD.json `description` fields:
 
-- **Exact match** — two or more files share the exact same description string: **WARNING**
-- **Substring relationship** — one file's description is a substring of another's: **INFO**
+- Two or more entries share the exact same description: **WARNING**
 
 ## Manifest integrity
 
 If `$KORDINATE_HOME/.manifest.json` exists:
-- All files listed in the manifest must exist on disk: **ERROR** if missing
-- Curated package files should have hashes matching the manifest: **WARNING** if drifted
+- All listed files must exist on disk: **ERROR** if missing
+- Empty manifest: **WARNING**
 
-If the manifest does not exist: **INFO** (migration may be needed).
-
-## Dev/installable tree sync
-
-If running from a dev repo (`.dev-source` exists), compare the dev tree (`agents/`) against the installable tree (`kordinate/agents/`):
-- Skills that exist in one tree but not the other: **WARNING**
-- Routes defined in one tree but not the other: **WARNING**
-- IDENTITY.md content that differs between trees: **INFO**
+If manifest does not exist: **INFO**
 
 ## Output format
 
@@ -100,8 +127,7 @@ Present findings as a table, grouped by severity then agent:
 |----------|-------|-------|------|--------|
 ```
 
-Follow the table with a summary line:
-
+Summary line:
 ```
 Summary: X errors, Y warnings, Z info
 ```

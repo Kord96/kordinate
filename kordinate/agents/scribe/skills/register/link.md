@@ -110,8 +110,8 @@ Read `~/.claude.json` first — only add/update `mcpServers.kord`. Off-cluster: 
 
 ### 9. Verify
 
-Run the install checklist: [install-checklist.md](../../install/install-checklist.md)
+Run `/kord scribe doctor-k --scope global` to verify the installation. Doctor-k checks: KORD.json integrity, file sync, framework protection, boot preload, subagent communication, install hygiene, sanitize guard, and more. Fix any errors before reporting.
 
 ## Report
 
-Summary: agents linked, team skills copied, KORD.json assembled, hooks installed, backup location.
+Summary: agents linked, team skills copied, KORD.json assembled, hooks installed, doctor-k results, backup location.
