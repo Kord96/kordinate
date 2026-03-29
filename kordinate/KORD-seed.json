@@ -194,8 +194,8 @@
     "type": "skill",
     "name": "monitor",
     "agent": "sauron",
-    "description": "Scan for observability signals, identify gaps, diagnose live issues. Depends on augur's atlas.",
-    "arguments": "<project> [--diagnose <symptom>] [--scan-only]",
+    "description": "Monitor a running system \u2014 read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.",
+    "arguments": "<project> [--diagnose <symptom>] [--check] [--scan-code]",
     "public": true
   },
   {

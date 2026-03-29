@@ -1,90 +1,128 @@
 ---
 name: monitor
 description: >
-  Scan a project for observability signals, identify monitoring gaps, and diagnose live issues.
-  Combines static codebase scanning with live system debugging. Depends on augur's atlas
-  for architectural context.
-argument-hint: "<project> [--diagnose <symptom>] [--scan-only]"
+  Monitor a running system — read metrics, logs, dashboards, and health checks.
+  Detect anomalies, diagnose issues, trace failures. Depends on augur's atlas for
+  architecture context and charon's config for cluster access.
+argument-hint: "<project> [--diagnose <symptom>] [--check] [--scan-code]"
 scope: global
 ---
 
-Scan a project for observability signals and diagnose issues. Uses augur's atlas to understand what components exist and what should be monitored.
+Monitor a running system. Reads Prometheus metrics, Loki logs, Grafana dashboards, and health endpoints. Uses augur's atlas to understand which components to watch and charon's config for cluster access.
 
 ## Arguments
 
 `$ARGUMENTS` — Required: `<project>`. Optional:
-- `--diagnose <symptom>` — switch to diagnosis mode: trace a live issue using the observability catalog
-- `--scan-only` — produce the catalog only, skip gap analysis
+- `--diagnose <symptom>` — trace a specific issue: "API returning 503s", "queue backing up", "high latency on /checkout"
+- `--check` — quick health check: hit all health endpoints, check key metrics for anomalies
+- `--scan-code` — also scan the codebase for observability signals (static analysis, slower)
+
+Default (no flags): full monitoring review — read all available signals, report status and anomalies.
 
 ## Dependencies
 
-This skill depends on augur's analysis for architectural context:
+1. **Augur** — architectural context:
+   Read atlas from `<project>/.kord/agents/augur/memory/atlas.json`. Provides: components (what to check), flows (what paths to trace), failure modes (what cascades to look for), external dependencies (what external health to verify).
 
-```
-/kord augur analyze --detect-only <project>
-```
+2. **Charon/Alfred** — cluster access:
+   ```
+   /kord alfred get config <cluster>
+   ```
+   Provides: Tailscale IPs, namespaces, service ports, kubeconfig context.
 
-Read the atlas from `<project>/.kord/agents/augur/memory/atlas.json`. The atlas provides: components (what to monitor), flows (what paths to trace), failure modes (what breaks), external dependencies (what to watch).
-
-If the atlas doesn't exist, ask the user to run `/analyze` first.
+If atlas doesn't exist, ask user to run `/analyze` first. If cluster config is unavailable, report what can be checked without live access.
 
 ## Procedure
 
-### Phase 1 — Scan
+### Step 1 — Load context
 
-1. **Load atlas** — read atlas.json. Build a list of components, external dependencies, and failure modes. Each is a monitoring target.
+Read atlas.json for component inventory. Get cluster config for access details. Build a monitoring checklist: each component × signal types (metrics, logs, health, traces).
 
-2. **Scan observability signals** — for each source file in the project, find:
-   - **Metrics**: Prometheus counters/gauges/histograms/summaries, StatsD calls, custom metric emissions
-   - **Log events**: structured log calls with levels, log patterns (what gets logged at error/warn/info)
-   - **Health checks**: `/health`, `/ready`, `/live` endpoints, health check functions
-   - **Tracing**: OpenTelemetry spans, distributed tracing instrumentation
-   - **Alerting**: alert rule definitions, PagerDuty/Slack integrations
+### Step 2 — Check health endpoints
 
-3. **Map signals to components** — using the atlas, map each discovered signal to the component it belongs to. A metric in `src/api/routes.py` maps to the `api` component.
+For each component with a known health endpoint (from atlas or convention):
+```bash
+curl -s http://<tailscale-ip>:<port>/health
+curl -s http://<tailscale-ip>:<port>/ready
+```
+Record: status, response time, any error details.
 
-4. **Identify gaps** — for each atlas component and external dependency:
-   - Has metrics? If not → gap
-   - Has health check? If not → gap
-   - Has error logging? If not → gap
-   - Has failure detection? (from atlas failure modes) If detection is `["none"]` → critical gap
-   - Has recovery mechanism? If recovery is `["none"]` → gap
+### Step 3 — Read Prometheus metrics
 
-5. **Produce catalog** — write `<project>/.kord/agents/sauron/memory/observability-catalog.yaml` with: signals by component, gaps by severity, coverage percentage.
+Query Prometheus for each component's key signals:
+- **Request rate**: `rate(http_requests_total{app="<component>"}[5m])`
+- **Error rate**: `rate(http_requests_total{app="<component>",status=~"5.."}[5m])`
+- **Latency**: `histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{app="<component>"}[5m]))`
+- **Saturation**: CPU, memory, connection pool utilization
 
-### Phase 2 — Diagnose (only with `--diagnose`)
+Use Grafana MCP tools if available, or direct PromQL via API.
 
-6. **Load catalog** — read the observability catalog (from phase 1 or a previous scan).
+### Step 4 — Read recent logs
 
-7. **Trace the symptom** — starting from the reported symptom:
-   - Which component is affected? (match against atlas components)
-   - What signals does that component have? (from catalog)
-   - What flows pass through it? (from atlas data_flows)
-   - What failure modes affect it? (from atlas failure_modes)
+Query Loki for each component's recent error and warning logs:
+```
+{app="<component>"} |= "error" or |= "ERROR" | logfmt
+```
+Look for: error spikes, repeated patterns, new error types, correlation with metric changes.
 
-8. **Check live signals** — if cluster access is available:
-   - Query Prometheus/Grafana for the component's metrics
-   - Check recent logs via Loki for error patterns
-   - Check health endpoints
+### Step 5 — Check external dependencies
 
-9. **Propose root cause** — trace the failure cascade using atlas failure modes. Identify: trigger, cascade path, detection signals that fired (or should have), recovery steps.
+For each external dependency in the atlas:
+- Is it reachable? (health check or ping)
+- What's the current latency? (from metrics)
+- Is the circuit breaker open? (from metrics or logs)
+- Any resilience patterns firing? (retries, fallbacks)
 
-10. **Report** — structured diagnosis: symptom → affected component → signals checked → likely root cause → recommended fix.
+### Step 6 — Diagnose (with `--diagnose`)
 
-## Report (scan mode)
+Starting from the reported symptom:
+1. **Identify affected component** — match symptom to atlas component
+2. **Check its signals** — metrics (is error rate up?), logs (what errors?), health (is it responding?)
+3. **Trace the flow** — follow the atlas data_flow that the symptom relates to. Check each component in the flow path.
+4. **Check cascade** — match against atlas failure_modes. Is this a known failure pattern? What's the expected cascade?
+5. **Propose root cause** — based on signal evidence: which component broke first, what cascaded, what's the fix.
+
+### Step 7 — Scan code (with `--scan-code`)
+
+Static analysis of the codebase for observability signals:
+- Grep for metric definitions (Counter, Gauge, Histogram)
+- Grep for structured log calls
+- Find health check endpoints
+- Find tracing spans
+- Map each signal to its atlas component
+- Identify gaps (components with no signals)
+
+Write catalog to `<project>/.kord/agents/sauron/memory/observability-catalog.yaml`.
+
+### Step 8 — Report
 
 ```
-## Observability: <project>
+## Monitor: <project> (<timestamp>)
 
-**Components scanned**: N
-**Signals found**: N metrics, N log events, N health checks, N traces
-**Coverage**: X% of components have metrics, Y% have health checks
-**Gaps**: N critical, N recommended
+### Health
+| Component | Status | Response | Latency |
+|-----------|--------|----------|---------|
 
-### Critical gaps
-| Component | Missing | Impact |
-|-----------|---------|--------|
-| ...       | ...     | ...    |
+### Metrics (last 5m)
+| Component | Request Rate | Error Rate | p99 Latency |
+|-----------|-------------|------------|-------------|
 
-### Catalog written to: <path>
+### External Dependencies
+| Dependency | Reachable | Latency | Circuit Breaker |
+|-----------|-----------|---------|-----------------|
+
+### Anomalies
+- <component>: error rate 5x above baseline
+- <dependency>: latency spike to 2s (normally 50ms)
+
+### Log Events (errors, last 1h)
+| Component | Count | Pattern |
+|-----------|-------|---------|
+
+### Diagnosis (if --diagnose)
+**Symptom**: <reported symptom>
+**Root cause**: <component> — <what happened>
+**Evidence**: <metrics/logs that support this>
+**Cascade**: <what else was affected>
+**Fix**: <recommended action>
 ```

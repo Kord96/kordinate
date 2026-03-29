@@ -1,5 +1,5 @@
 [
-  {"type": "skill", "name": "monitor", "agent": "sauron", "description": "Scan for observability signals, identify gaps, diagnose live issues. Depends on augur's atlas.", "arguments": "<project> [--diagnose <symptom>] [--scan-only]", "public": true},
+  {"type": "skill", "name": "monitor", "agent": "sauron", "description": "Monitor a running system — read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.", "arguments": "<project> [--diagnose <symptom>] [--check] [--scan-code]", "public": true},
   {"type": "skill", "name": "design-monitoring", "agent": "sauron", "description": "Design a monitoring system — metrics, logs, health checks, dashboards, alerts. Depends on augur + charon.", "arguments": "<project> [--scope full|metrics|alerts|dashboards]", "public": true},
 
   {"type": "guard", "pattern": "mcp__grafana*", "tool": "mcp", "validation": "sauron", "description": "Grafana operations require sauron"},
