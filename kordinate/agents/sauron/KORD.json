@@ -28,5 +28,40 @@
     "description": "Working notes",
     "owner": "sauron",
     "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/sauron/memory/grafana_renderer.md",
+    "description": "Grafana renderer notes",
+    "owner": "sauron",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/sauron/memory/logging.md",
+    "description": "Logging patterns",
+    "owner": "sauron",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/sauron/memory/monitoring.md",
+    "description": "Monitoring knowledge",
+    "owner": "sauron",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/sauron/memory/tools.md",
+    "description": "Tool reference",
+    "owner": "sauron",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/sauron/memory/workflow.md",
+    "description": "Workflow reference",
+    "owner": "sauron",
+    "preload": "none"
   }
 ]

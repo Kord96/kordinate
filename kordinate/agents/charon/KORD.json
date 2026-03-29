@@ -65,5 +65,40 @@
     "description": "Working notes",
     "owner": "charon",
     "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/charon/memory/infra.md",
+    "description": "Infrastructure knowledge",
+    "owner": "charon",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/charon/memory/migration.md",
+    "description": "Migration procedures",
+    "owner": "charon",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/charon/memory/monitoring-topology.md",
+    "description": "Monitoring topology",
+    "owner": "charon",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/charon/memory/tools.md",
+    "description": "Tool reference",
+    "owner": "charon",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/charon/memory/troubleshooting.md",
+    "description": "Troubleshooting notes",
+    "owner": "charon",
+    "preload": "none"
   }
 ]
