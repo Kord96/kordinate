@@ -1,0 +1,17 @@
+[
+  {"type": "skill", "name": "boot", "agent": "team", "description": "Load memory and shared protocols on spawn.", "public": true},
+  {"type": "skill", "name": "kord", "agent": "team", "description": "Send a request to another agent through a kord contract.", "arguments": "<agent> [kord-name] <message>", "public": true},
+  {"type": "skill", "name": "merge", "agent": "team", "description": "Merge session or memory branches into main, resolve conflicts.", "public": true},
+  {"type": "skill", "name": "install", "agent": "team", "description": "Install or reinstall kordinate — create ~/.kord/, link to runtime.", "arguments": "[--local] [--restore <url>]", "public": true},
+  {"type": "skill", "name": "authenticate", "agent": "team", "description": "Authenticate as an agent for guarded operations.", "arguments": "<agent-name>", "public": true},
+  {"type": "skill", "name": "improve", "agent": "team", "description": "Improve skills, agents, or the whole team — run evals, benchmark, iterate.", "arguments": "skill|agent|all|optimize|audit|benchmark <name>", "public": true},
+  {"type": "skill", "name": "remember", "agent": "team", "description": "Write a memory for any agent. Handles scope, paths, and indexes.", "arguments": "<agent> <what to remember>", "public": true},
+
+  {"type": "guard", "pattern": "git push * main", "tool": "Bash", "validation": "merge", "description": "Push to main requires fast-forward check via /merge"},
+
+  {"type": "file", "path": "shared/auth-protocol.md", "description": "Authentication protocol for guarded operations", "owner": "team", "preload": "all", "validation": "scribe"},
+  {"type": "file", "path": "shared/credentials-protocol.md", "description": "Credentials management via pass store", "owner": "team", "preload": "all", "validation": "scribe"},
+  {"type": "file", "path": "shared/memory-protocol.md", "description": "Memory writing protocol", "owner": "team", "preload": "all", "validation": "scribe"},
+  {"type": "file", "path": "shared/gemini-protocol.md", "description": "Gemini CLI usage and flags", "owner": "team", "preload": "all", "validation": "scribe"},
+  {"type": "file", "path": "agents/main/memory/scratchpad.md", "description": "Main session working notes", "owner": "main", "preload": "none"}
+]

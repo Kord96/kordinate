@@ -20,10 +20,10 @@
 ## Guard-kubectl.sh still blocks self-modification from inside the pod.
 ##
 ## Image: built from workstation/Dockerfile, pushed to cluster registry.
-## RBAC: agent-readonly (read-only cluster access). Deployer agent uses
+## RBAC: agent-readonly (read-only cluster access). Charon agent uses
 ## the k3s admin kubeconfig via SSH for write operations.
 ##
-## Secret 'cloudflared-tunnel' is created by deployer from pass store at deploy time.
+## Secret 'cloudflared-tunnel' is created by charon from pass store at deploy time.
 ## Do not include it here — MUST_BE_SET placeholder overwrites the real token on apply.
 ##
 ## Caddyfile ConfigMap: generated in overlay (profile/overlays/<cluster>/master/).

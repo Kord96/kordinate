@@ -1,0 +1,13 @@
+[
+  {"type": "skill", "name": "analyze", "agent": "augur", "description": "Full project analysis: atlas.json + stories. Use --detect-only for atlas only.", "arguments": "<project> [--reverse] [--detect-only]", "public": true},
+  {"type": "skill", "name": "train-detection", "agent": "augur", "description": "Improve concept detection by cloning repos, evaluating, and refining signatures.", "arguments": "[--rounds N] [--language LANG]", "public": true},
+
+  {"type": "file", "path": "agents/augur/IDENTITY.md", "description": "Augur agent identity", "owner": "augur", "preload": "augur", "validation": "scribe"},
+  {"type": "file", "path": "agents/augur/memory/concepts.md", "description": "Index of 155 patterns across 20 categories", "owner": "augur", "preload": "augur", "validation": "augur"},
+  {"type": "file", "path": "agents/augur/memory/anti-patterns.md", "description": "Index of anti-patterns by category", "owner": "augur", "preload": "augur", "validation": "augur"},
+  {"type": "file", "path": "agents/augur/memory/abstractions.md", "description": "Canonical abstraction names for components", "owner": "augur", "preload": "augur", "validation": "augur"},
+  {"type": "file", "path": "agents/augur/memory/app-contract.md", "description": "Pod labels, annotations, observability contract", "owner": "augur", "preload": "augur", "validation": "augur"},
+  {"type": "file", "path": "agents/augur/memory/tools.md", "description": "Tool reference (ast-grep, semgrep, grep)", "owner": "augur", "preload": "augur", "validation": "augur"},
+  {"type": "file", "path": "agents/augur/memory/workflow.md", "description": "4-step review workflow", "owner": "augur", "preload": "augur", "validation": "augur"},
+  {"type": "file", "path": "agents/augur/memory/scratchpad.md", "description": "Working notes and observations", "owner": "augur", "preload": "none"}
+]

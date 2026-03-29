@@ -1,6 +1,6 @@
 Upgrade a PVC from local-path/RWO to Longhorn/RWX.
 
-Requires deployer authentication. Uses rolling update strategy when the PVC is mounted by a Deployment.
+Requires charon authentication. Uses rolling update strategy when the PVC is mounted by a Deployment.
 
 **Input**: $ARGUMENTS — `<pvc-name> <namespace>` (e.g. `kord master`, `grafana-data master`)
 

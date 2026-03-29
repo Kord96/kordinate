@@ -1,0 +1,9 @@
+[
+  {"type": "skill", "name": "scan-observability", "agent": "sauron", "description": "Scan a project for all observability signals — metrics, logs, health checks.", "arguments": "<project>", "public": true},
+  {"type": "skill", "name": "diagnose-issue", "agent": "sauron", "description": "Debug a production issue using the project's observability catalog.", "arguments": "<issue>", "public": true},
+
+  {"type": "guard", "pattern": "mcp__grafana*", "tool": "mcp", "validation": "sauron", "description": "Grafana operations require sauron"},
+
+  {"type": "file", "path": "agents/sauron/IDENTITY.md", "description": "Sauron agent identity", "owner": "sauron", "preload": "sauron", "validation": "scribe"},
+  {"type": "file", "path": "agents/sauron/memory/scratchpad.md", "description": "Working notes", "owner": "sauron", "preload": "none"}
+]

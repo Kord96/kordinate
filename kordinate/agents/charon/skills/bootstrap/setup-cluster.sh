@@ -163,9 +163,9 @@ install_agent_tainted() {
     log "k3s tainted agent installed and joined cluster via tailnet"
 }
 
-## post-install is handled by the deployer agent:
-##   /deployer:bootstrap setup-namespaces
-##   /deployer:bootstrap setup-storage
+## post-install is handled by the charon agent:
+##   /charon:bootstrap setup-namespaces
+##   /charon:bootstrap setup-storage
 
 usage() {
     echo "Usage: $0 <command> [args]"
@@ -174,7 +174,7 @@ usage() {
     echo "  server                Install k3s server node"
     echo "  agent <server-ip>     Install k3s agent and join cluster"
     echo "  agent-tainted <ip>    Install tainted agent (PreferNoSchedule)"
-    echo "  (post-install is handled by deployer: /deployer:bootstrap setup-namespaces + setup-storage)"
+    echo "  (post-install is handled by charon: /charon:bootstrap setup-namespaces + setup-storage)"
     echo
     echo "Environment variables:"
     echo "  TS_AUTHKEY    Tailscale ephemeral pre-auth key (required for agent/agent-tainted)"
@@ -196,9 +196,9 @@ case "${1:-}" in
         install_agent_tainted "$2"
         ;;
     post-install)
-        echo "post-install is now handled by the deployer agent."
-        echo "Use: /deployer:bootstrap setup-namespaces"
-        echo "     /deployer:bootstrap setup-storage"
+        echo "post-install is now handled by the charon agent."
+        echo "Use: /charon:bootstrap setup-namespaces"
+        echo "     /charon:bootstrap setup-storage"
         exit 1
         ;;
     *)
