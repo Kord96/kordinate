@@ -1,191 +1,221 @@
 # Story Schema
 
-Level 3 resource for the analyze skill. Referenced from Phase 2 (story composition). Defines the output format for story YAML files.
+Level 3 resource for the analyze skill. Referenced from Phase 2 (compose). Defines story, journey, and building block formats.
 
-## Story Types
+## Design Principle
 
-| Type | Centers on | Count | Required dimensions |
-|------|-----------|-------|-------------------|
-| **structure** | Component group and its internal organization | 3-5 (one per group) | structure |
-| **flow** | Data/request path through components | 2-4 (one per critical flow) | flows |
-| **data** | State store cluster and its readers/writers | 0+ | data |
-| **resilience** | Failure mode and its cascade | 0+ | resilience |
-| **highlight** | Notable pattern, decision, or finding | 0+ | highlights |
+A story is a **short scoped section** about one architectural concern. Its value is in scoping (which components, which path, which decision) and referencing (atlas nodes, observations, other stories). Think README section, not essay.
 
-All other dimensions are optional enrichments on any story type.
+Stories and journeys are composed together — the journey structure informs which stories to tell.
 
-## Schema
+## Building Blocks
+
+Every story is assembled from these blocks. Only `summary` is required.
+
+| Block | Purpose | Multiple per story? |
+|-------|---------|-------------------|
+| **summary** | 1-2 short paragraphs orienting the reader | No |
+| **structure** | Nested components + typed edges | Yes |
+| **flow** | Ordered steps through components, typed | Yes |
+| **observations** | Evidence-backed findings, attachable to nodes and steps | One list |
+| **rationale** | Design decisions, trade-offs, alternatives | Yes |
+
+### Why these blocks
+
+- **Structure** covers component topology, data store lineage, infrastructure layout, security boundaries — anything that's "things and their relationships." What was previously `data` is a structure with `type: "data lineage"` and edges typed `reads`/`writes`.
+- **Flow** covers request paths, data pipelines, failure cascades, deployment sequences, event chains — anything that's "things happening in order." What was previously `resilience` is a flow with `type: "failure cascade"` and extra metadata (trigger, severity, detection, recovery).
+- **Rationale** captures the "why" — decisions, trade-offs, alternatives considered. This was previously missing entirely.
+- **Observations** are findings that attach to the story, to specific structure nodes, or to specific flow steps.
+
+## Story Schema
 
 ```yaml
 # ── Identity ──────────────────────────────────────────────────────
 
-type: structure | flow | data | resilience | highlight
 id: "<kebab-case>"                        # unique across all stories
 title: "<Human Readable Title>"
 teaches: "<one sentence — what the reader learns>"
-group: "<atlas-group-id>"                 # which structural group this centers on
-audience: ["<role>"]                      # optional: new-developer, frontend, backend, devops
-prerequisites: ["<story-id>"]            # optional: stories that should be read first
+tags: ["<freeform>"]                     # for filtering and indexing
 
-# ── Dimensions (include what's relevant) ──────────────────────────
+# ── Summary (required) ────────────────────────────────────────────
 
-structure:
-  nodes: ["<atlas-node-id>"]             # scoped subset of atlas — only this story's cast
-  edges:
-    - source: "<node-id>"
-      target: "<node-id>"
-      label: "<short description>"
-  narrative: |
-    <prose — 3-5 paragraphs, ~200 words>
-    <**bold refs** must resolve to atlas node IDs>
-  narrative_map:
-    - text: "<paragraph text>"
-      refs: ["<node-id>"]               # which nodes this paragraph describes
+summary: |
+  <1-2 short paragraphs, ~50-80 words total>
+  <orient the reader: what is this about, why does it matter>
+  <**bold refs** resolve to atlas node IDs>
 
-flows:
-  - id: "<flow-id>"                      # matches atlas data_flows[].id
-    name: "<Human Readable Name>"
-    steps:
+# ── Structures (0+) ──────────────────────────────────────────────
+
+structures:
+  - id: "<kebab-case>"
+    title: "<Human Readable>"
+    type: "<freeform — see suggested types below>"
+    nodes:
+      - id: "<atlas-node-id>"            # reference, not definition
+        children: ["<atlas-node-id>"]    # subset of atlas children relevant to this story
+        observation_ids: ["<obs-id>"]    # findings on this node
+    edges:
       - from: "<node-id>"
         to: "<node-id>"
-        action: "<verb phrase>"
-        technology: "<protocol>"         # optional
-    narrative: |
-      <prose — 3-5 paragraphs, ~100-150 words>
-    narrative_map:
-      - text: "<paragraph text>"
-        steps: [1, 2]                    # 1-based step indices this paragraph covers
+        label: "<short>"
+        type: "<freeform: depends_on, reads, writes, contains, calls, publishes, subscribes, ...>"
 
-data:
-  stores:
-    - id: "<state-id>"                   # matches atlas state[].id
-      name: "<Human Readable Name>"
-      purpose: "source-of-truth | cache | derived | staging"
-      readers: ["<node-id>"]
-      writers: ["<node-id>"]
-  narrative: |
-    <prose — 2-3 paragraphs, ~80-120 words>
-  narrative_map:
-    - text: "<paragraph text>"
-      refs: ["<node-id>"]
+# ── Flows (0+) ────────────────────────────────────────────────────
 
-resilience:
-  failures:
-    - id: "<failure-id>"                 # matches atlas failure_modes[].id
-      trigger: "<what goes wrong>"
-      severity: critical | high | medium | low
-      cascade:
-        - component: "<node-id>"
-          effect: "<what happens>"
-      detection: ["<signal or 'none'>"]
-      recovery: ["<step or 'none'>"]
-  narrative: |
-    <prose — 3-4 paragraphs, ~100-150 words>
-  narrative_map:
-    - text: "<paragraph text>"
-      refs: ["<node-id>"]
-      cascade_steps: [1, 2]              # optional: which cascade steps
+flows:
+  - id: "<kebab-case>"
+    title: "<Human Readable>"
+    type: "<freeform — see suggested types below>"
+    # Extra metadata — include what's relevant to the flow type:
+    trigger: "<what starts this flow>"              # optional
+    severity: "<critical|high|medium|low>"          # optional, for failure flows
+    detection: ["<signal or 'none'>"]               # optional, for failure flows
+    recovery: ["<step or 'none'>"]                  # optional, for failure flows
+    steps:
+      - node: "<atlas-node-id>"
+        action: "<what it does>"                    # for request/data flows
+        effect: "<what happens to it>"              # for failure cascades
+        to: "<atlas-node-id>"                       # optional, next node
+        technology: "<protocol>"                    # optional
+        observation_ids: ["<obs-id>"]               # findings on this step
+
+# ── Observations (0+) ─────────────────────────────────────────────
 
 observations:
   - id: "<obs-id>"
-    type: pattern-match | anti-pattern | gap | api-finding | debt | structural | dependency
-    confidence: high | medium | low
-    component: "<node-id>"
+    finding: "<one sentence>"
+    confidence: "<high|medium|low>"
+    component: "<atlas-node-id>"
     evidence:
       file: "<path relative to project root>"
       lines: [14, 28]                   # optional
-      snippet: "<code snippet>"          # optional
-    finding: "<one sentence>"
+      snippet: "<code>"                  # optional
     tags: ["<freeform>"]
-    detection_method: grep | ast-grep | semgrep | questions | manual
-    recommendation: "<what to do>"       # optional, for gaps and debt
+    detection_method: "<grep|ast-grep|semgrep|questions|manual>"
+    recommendation: "<what to do>"       # optional
     related: ["<obs-id>"]               # links to related observations
 
-highlights:
-  - "<key takeaway sentence>"
+# ── Rationale (0+) ────────────────────────────────────────────────
 
-# ── Self-Assessment ───────────────────────────────────────────────
+rationale:
+  - id: "<kebab-case>"
+    decision: "<what was decided>"
+    context: "<why this decision was needed>"
+    trade_offs: "<what was gained and what was given up>"
+    alternatives: ["<rejected alternative and why>"]
+
+# ── Evaluation ────────────────────────────────────────────────────
 
 evaluation:
-  groundedness: 0.92                     # claims traced to atlas / total claims
-  coverage: 0.85                         # critical nodes referenced / total critical nodes
+  groundedness: 0.92
+  coverage: 0.85
   claim_count: 15
-  ungrounded_claims: []                  # any claims that could not be traced
+  ungrounded_claims: []
 ```
+
+## Suggested Types
+
+Types are freeform strings. Augur can invent new ones. These are common starting points:
+
+**Structure types:**
+- `component topology` — how components are organized and depend on each other
+- `data lineage` — stores, readers, writers, persistence model
+- `infrastructure` — deployment, k8s resources, cloud services
+- `security boundary` — auth zones, trust boundaries, permission model
+- `module graph` — internal code organization, import relationships
+
+**Flow types:**
+- `request path` — user/API request through the system
+- `data pipeline` — data transformation or ETL sequence
+- `failure cascade` — what breaks when a component fails
+- `event chain` — async event propagation
+- `deployment sequence` — how code gets to production
+- `config resolution` — how configuration is loaded and resolved
+
+Scribe uses the type to choose rendering strategy (sequence diagram vs cascade timeline vs topology graph). Unknown types fall back to generic rendering.
+
+## Failure Flow Conventions
+
+When a flow has cascade semantics (failure propagation), include:
+- `trigger` — what starts the failure
+- `severity` — how bad it is
+- `detection` — what signals exist. `["none"]` means no detection — this itself becomes an observation
+- `recovery` — what to do. `["none"]` means no recovery — also becomes an observation
+- Use `effect` on steps instead of `action` (what happens to the component, not what it does)
+
+Absence of detection/recovery is a finding. If `detection: ["none"]`, augur should auto-generate a gap observation.
+
+## Data Structure Conventions
+
+When a structure has data lineage semantics, use:
+- `reads` and `writes` edge types instead of generic `depends_on`
+- Node annotations from atlas: `purpose` (source-of-truth, cache, derived, staging), `persistence` (persistent, ephemeral)
+- These are inherited from the atlas node, not redefined in the story
 
 ## Narrative Constraints
 
-Narratives follow [narrative-style.md](../../scribe/skills/document/narrative-style.md) principles. Key rules:
+Summaries are the only prose. Keep them short.
 
-**Voice:**
-- Scenario-driven — trace real journeys, name concrete actors/actions
-- Lead with action — start paragraphs with what happens, not setup
-- Decision anchors — explain WHY when mentioning patterns/choices
+- **~50-80 words** total per summary
+- **Scenario-driven** — trace real journeys, name concrete actors
+- **Lead with action** — start with what happens, not setup
+- **Decision anchors** — explain WHY when mentioning patterns
+- Every `**bold ref**` must resolve to an atlas node ID
+- Em dashes (—) not hyphens
 
-**Formatting:**
-- 2-3 sentences per paragraph, separated by `\n\n`
-- Em dashes (—) not double hyphens (--)
-- Periods to end sentences, not semicolons
+## Observation Attachment
 
-**References:**
-- Every `**bold text**` must match an atlas `nodes[].id` or `nodes[].name`
-- These render as clickable links in the UI — don't bold non-component text
-- Cross-reference other dimensions: flow narratives mention failure modes, failure narratives reference flows they disrupt, state narratives reference flows that read/write
+Observations are defined once in the story's `observations` list. They attach at three levels:
+1. **Story-wide** — the observation exists in the list (default)
+2. **Structure node** — referenced via `observation_ids` on a node
+3. **Flow step** — referenced via `observation_ids` on a step
 
-**Length targets:**
-- Structure narrative: 3-5 paragraphs (~200 words)
-- Flow narrative: 3-5 paragraphs (~100-150 words)
-- Data narrative: 2-3 paragraphs (~80-120 words)
-- Resilience narrative: 3-4 paragraphs (~100-150 words)
+This avoids duplication while preserving context (which node or step this finding applies to).
 
-## narrative_map Contract
+---
 
-Every narrative must have a companion `narrative_map`. Rules:
+## Journey Schema
 
-1. Every paragraph in the narrative appears in exactly one `narrative_map` entry
-2. Every `refs[]` value must exist in the story's `structure.nodes` or in the atlas
-3. Every `steps[]` index must be a valid step in the flow (1-based)
-4. Every `cascade_steps[]` index must be a valid cascade entry (1-based)
+A journey is an ordered reading path through stories. Stories and journeys are composed together — the journey informs which stories to tell.
 
-This enables cross-highlighting: hover paragraph → highlight graph nodes/flow steps.
-
-## Observation Types
-
-| Type | Source methodology | Example |
-|------|-------------------|---------|
-| `pattern-match` | 4-pass concept detection | "Circuit breaker wraps DummyJSON calls via pybreaker" |
-| `anti-pattern` | Concept catalog anti-patterns | "God object in utils.py — 78% of codebase imports it" |
-| `gap` | Gap identification (3 checks) | "No rate limiting on public-facing endpoints" |
-| `api-finding` | REST hygiene + gateway/hexagonal | "POST used for read-only operation on /users/search" |
-| `debt` | Debt scoring | "Hardcoded API URL in 3 files — RECOMMENDED severity" |
-| `structural` | Dependency analysis | "Hub module imported by 78% of codebase" |
-| `dependency` | Dependency tracing | "Undeclared external dependency on Redis via env var" |
-
-## Evaluation Criteria
-
-**Groundedness** — for each sentence that asserts something about code behavior:
-- Can it be traced to a specific detection finding in the atlas? (concepts, api_surface, debt, module_graph)
-- Does it reference a valid atlas node ID?
-- `groundedness = grounded_claims / total_claims`
-- Target: >= 0.85. Below this, revise ungrounded claims.
-
-**Coverage** — across all stories for a project:
-- What percentage of "critical" atlas nodes appear in at least one story?
-- Critical = components + external_dependencies with criticality=critical + state with purpose=source-of-truth
-- `coverage = referenced_critical_nodes / total_critical_nodes`
-- Target: >= 0.80. Below this, add highlight stories for uncovered components.
-
-## File Naming
-
-Stories are written to `<project>/.kord/agents/augur/memory/stories/`:
-
-```
-<type>-<id>.yaml
+```yaml
+id: "<kebab-case>"
+title: "<Human Readable Title>"
+description: "<one sentence — what the reader achieves>"
+audience: ["<role>"]
+stories:
+  - "<story-id>"                         # ordered sequence
+  - "<story-id>"
 ```
 
-Examples:
-- `structure-api-layer.yaml`
-- `flow-ssr-prefetch.yaml`
-- `data-query-cache.yaml`
-- `resilience-external-api-down.yaml`
-- `highlight-zero-waterfall.yaml`
+### Journey design rules
+
+- **3-8 stories** per journey. Shorter is better.
+- Stories can belong to **multiple journeys**.
+- The first story should orient the reader (typically shows the high-level structure).
+- Journeys for different audiences can share stories but sequence them differently.
+
+### Suggested journeys
+
+| Journey | Audience | Typical content |
+|---------|----------|----------------|
+| **overview** | New team member | High-level structure → key flows → notable decisions |
+| **backend onboarding** | Backend developer | Server structure → request path → persistence → failure modes |
+| **frontend onboarding** | Frontend developer | Client structure → rendering flow → state management |
+| **resilience review** | SRE, on-call | Failure cascades → gap observations → recovery procedures |
+| **API consumer** | External integrator | API structure → key request paths → auth/rate-limit observations |
+
+Augur can create journeys beyond this list based on what the codebase warrants.
+
+## File Layout
+
+```
+<project>/.kord/agents/augur/memory/
+  atlas.json
+  stories/
+    <id>.yaml
+  journeys/
+    <id>.yaml
+```
+
+Story filenames use the story `id`, not `type-id`. The type is inside the file.

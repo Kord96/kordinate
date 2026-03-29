@@ -1,20 +1,22 @@
 ---
 name: document
 description: >
-  Render stories into interactive documentation pages. Reads Augur's atlas + stories
-  and produces an Astro docs site with per-story pages, an atlas explorer, journey
-  navigation, and a facts index. All visualization decisions are Scribe's.
+  Render stories into interactive documentation. Reads Augur's atlas + stories + journeys
+  and produces documentation pages. Stories render as short sections within journey pages.
+  All visualization decisions are Scribe's.
 argument-hint: "<project> [--atlas-only]"
 curated: true
 scope: global
 context: fork
 ---
 
-Render a project's stories and atlas into an interactive documentation site. Scribe makes all visualization decisions — Augur's stories carry analytical content with zero rendering hints.
+Render a project's stories and atlas into interactive documentation. Scribe makes all visualization decisions — stories carry analytical content with zero rendering hints.
+
+Stories are **short sections**, not full pages. A journey page contains its stories as sequential sections. Each story section has a summary and 1-3 visual building blocks.
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>` (e.g., `sous-storefront`, `stoik`). Optional: `--atlas-only` to render only the atlas page (skip story pages).
+`$ARGUMENTS` — Required: `<project>` (e.g., `sous-storefront`, `stoik`). Optional: `--atlas-only` to render only the atlas page.
 
 ## Input
 
@@ -23,234 +25,182 @@ Read from `<project>/.kord/agents/augur/memory/`:
 | File | Required | Purpose |
 |------|----------|---------|
 | `atlas.json` | **yes** | Full structural inventory — abort if missing |
-| `stories/*.yaml` | **yes** (unless `--atlas-only`) | Story files — abort if directory empty |
+| `stories/*.yaml` | **yes** (unless `--atlas-only`) | Story files |
+| `journeys/*.yaml` | no | Reading paths — auto-generate if missing |
 
-If `atlas.json` is missing, report and suggest running `/analyze <project>`. Exit.
-
-If stories/ is empty (and not `--atlas-only`), report and suggest running `/analyze <project>` (without `--detect-only`). Exit.
+If `atlas.json` is missing, suggest running `/analyze <project>`. Exit.
 
 ## Procedure
 
 ### 1. Load and validate
 
-Read `atlas.json`. Build lookup indices:
-- `nodeMap`: node.id → node
-- `groupMap`: group.id → group
-- `stateMap`: state.id → state
-- `failureMap`: failure_modes.id → failure
+Read `atlas.json`. Build lookup indices: `nodeMap`, `groupMap`, `stateMap`, `failureMap`.
 
 Read all `stories/*.yaml`. For each story, validate:
-- Every `structure.nodes[]` ID exists in atlas
-- Every `structure.edges[]` source/target exists in story's nodes
-- Every `**bold ref**` in narratives resolves to an atlas node ID
-- Every `flows[].steps[].from/to` exists in story's nodes
-- Every `data.stores[].readers/writers` exist in story's nodes
-- Every `resilience.failures[].cascade[].component` exists in story's nodes
+- Every node ID in `structures[].nodes[].id` exists in atlas
+- Every edge `from`/`to` exists in story's nodes
+- Every `**bold ref**` in summary resolves to an atlas node ID
+- Every `flows[].steps[].node` and `.to` exists in atlas
 - Every `observations[].component` exists in atlas
-- Every `narrative_map` entry covers a real paragraph
+- Every `observation_ids` reference points to a defined observation
 
-Report validation errors and continue with valid stories.
+Read `journeys/*.yaml`. If none exist, auto-generate a default journey from all stories.
 
-### 2. Build cross-reference indices
+### 2. Build indices
 
-- **storyByNode**: atlas node ID → list of stories that reference it
-- **storyByStory**: story ID → list of stories that reference it (via prerequisites or observation.related)
-- **factIndex**: all observations + highlights across all stories, each tagged with source story ID
-- **coverage**: which critical atlas nodes (components + external deps with criticality=critical + state with purpose=source-of-truth) appear in at least one story
+- **storyByNode**: atlas node ID → stories referencing it
+- **factIndex**: all observations across all stories, tagged with source story
+- **coverage**: critical atlas nodes appearing in at least one story
 
-### 3. Choose visualizations per story
+### 3. Choose visualizations per building block
 
-For each story, examine the dimensions present and decide how to render each one. These are guidelines, not rules — adapt to the content.
+For each story, examine its building blocks and decide rendering. The block `type` field guides the choice — unknown types get generic rendering.
 
-**Structure dimension:**
+**Structures:**
 
-| Content shape | Visualization |
-|---------------|---------------|
-| 2-4 nodes in a chain | Dagre graph, left-to-right |
-| 5-10 nodes with hierarchy | Cose-bilkent graph with parent grouping |
-| 10+ nodes | Cose-bilkent with collapsed groups, expand on click |
-| 1-2 nodes | No graph — inline description cards |
+| Type | Visualization |
+|------|---------------|
+| `component topology` | Cytoscape graph (dagre or cose-bilkent based on node count) |
+| `data lineage` | Cytoscape graph with colored read/write edges |
+| `infrastructure` | Cytoscape graph with k8s-style icons |
+| `security boundary` | Cytoscape graph with zone shading |
+| `module graph` | Compact dependency list or dagre graph |
+| _(unknown type)_ | Dagre graph |
 
-**Flows dimension:**
+Sizing by node count:
+- 1-3 nodes: inline diagram, no interactive graph
+- 4-8 nodes: small dagre graph
+- 9+ nodes: full cose-bilkent with expand/collapse
 
-| Content shape | Visualization |
-|---------------|---------------|
-| 2-5 step linear flow | Mermaid sequence diagram |
-| 6+ steps or branching | Full-width Mermaid sequence diagram with participant grouping |
-| Single request-response | Inline step table (no diagram) |
+**Flows:**
 
-**Data dimension:**
-
-| Content shape | Visualization |
-|---------------|---------------|
-| 1 store, 1-2 readers/writers | Inline table |
-| 2+ stores or 3+ readers/writers | Cytoscape store graph (barrel nodes, read/write colored edges) |
-| Stores across purposes | Store graph with purpose group containers |
-
-**Resilience dimension:**
-
-| Content shape | Visualization |
-|---------------|---------------|
-| 1 failure, simple cascade | Inline callout card with cascade list |
-| 2+ failures or deep cascades | Timeline cards (trigger → cascade → detection → recovery) |
+| Type | Visualization |
+|------|---------------|
+| `request path` | Mermaid sequence diagram |
+| `data pipeline` | Mermaid sequence diagram |
+| `failure cascade` | Timeline card (trigger → cascade steps → detection → recovery) |
+| `event chain` | Mermaid sequence diagram |
+| `deployment sequence` | Numbered step list |
+| `config resolution` | Numbered step list |
+| _(unknown type)_ | Mermaid sequence diagram |
 
 **Observations:**
+- With code snippet: evidence card (finding + syntax-highlighted code + confidence badge)
+- Without snippet: compact card (finding + file:line + confidence badge)
+- Gap with recommendation: warning card with action
+- Attached to a node/step: rendered inline near that node/step, not in a separate section
 
-| Content shape | Visualization |
-|---------------|---------------|
-| Observation with snippet | Evidence card: finding + syntax-highlighted code + confidence badge |
-| Observation without snippet | Compact card: finding + file:line link + confidence badge |
-| Gap observation | Warning-styled card with recommendation |
+**Rationale:**
+- Decision card: what was decided + context + trade-offs
+- Alternatives shown as dismissed options
 
-**Highlights:**
+### 4. Render journey pages
 
-Always render as callout cards at the top of the story page. Use severity-style coloring:
-- Positive findings (pattern matches, good decisions): blue/green
-- Warnings (gaps, missing patterns): amber
-- Critical issues: red
+Each journey becomes **one page**. Stories are sections within it.
 
-### 4. Render story pages
-
-For each story, produce a self-contained Astro page at `<docs-pages-dir>/<project>/stories/<story-id>/index.astro`.
+Output: `<docs-dir>/<project>/index.astro` (default journey) and `<docs-dir>/<project>/<journey-id>.astro` (additional journeys).
 
 **Page layout:**
 
 ```
 +------------------------------------------------------------------+
-|  [project] / [story title]                     [journey: N of M]  |
+|  [project name]                          [journey selector ▼]     |
 +------------------------------------------------------------------+
 |                                                                    |
-|  [Highlights — callout cards]                                      |
+|  ┌─ Story 1: MCP Agent Servers ────────────────────────────────┐  |
+|  │  Summary paragraph (50-80 words)                            │  |
+|  │                                                              │  |
+|  │  [structure graph: 4 nodes]     [observation card]           │  |
+|  │                                                              │  |
+|  │  [rationale: why Express+MCP]                                │  |
+|  └──────────────────────────────────────────────────────────────┘  |
 |                                                                    |
-|  ## Structure                                                      |
-|  [graph/cards]  [narrative with cross-highlighting]                |
+|  ┌─ Story 2: Agent Delegation Flow ────────────────────────────┐  |
+|  │  Summary paragraph                                          │  |
+|  │                                                              │  |
+|  │  [sequence diagram: 5 steps]                                │  |
+|  │                                                              │  |
+|  │  [2 observation cards]                                       │  |
+|  └──────────────────────────────────────────────────────────────┘  |
 |                                                                    |
-|  ## How Data Flows                     (only if flows dimension)   |
-|  [sequence diagram]  [narrative with step badges]                  |
+|  ┌─ Story 3: ... ──────────────────────────────────────────────┐  |
+|  │  ...                                                         │  |
+|  └──────────────────────────────────────────────────────────────┘  |
 |                                                                    |
-|  ## Where Data Lives                   (only if data dimension)    |
-|  [store graph/table]  [narrative]                                  |
-|                                                                    |
-|  ## What Can Break                     (only if resilience dim)    |
-|  [timeline cards/callouts]  [narrative]                            |
-|                                                                    |
-|  ## What We Found                      (only if observations)      |
-|  [evidence cards]                                                  |
-|                                                                    |
-|  [← Previous story]              [Next story →]                    |
 +------------------------------------------------------------------+
 ```
 
-**Section order**: Highlights → Structure → Flows → Data → Resilience → Observations. Skip sections for dimensions not present in the story.
+**Story section rendering:**
 
-**Section headings**: Use descriptive headings, not dimension names. "How Data Flows" not "Flows". "What Can Break" not "Resilience". Adapt the heading to the story content — a story about auth might use "Authentication Flow" instead of "How Data Flows".
+Each story section contains:
+1. **Title** — story title as a heading with anchor ID
+2. **Summary** — the prose summary with bold node refs as clickable links
+3. **Building blocks** — structures, flows, observations, rationale rendered per step 3
+4. Blocks render in order: structures first, then flows, then rationale. Observations render inline where they're attached (via `observation_ids`), with unattached observations at the end.
 
-### 5. Implement cross-highlighting
+**Section styling:**
+- Each story is a card with a subtle border
+- Story sections are separated by whitespace
+- Structures and flows take the full card width
+- Observation cards are compact (one line: finding + badge + file link)
+- Rationale cards are compact (decision + trade-off in two lines)
 
-The core interaction pattern preserved from the current explorer:
+### 5. Implement interactions
 
-**Narrative → Graph:**
-- Parse `**bold text**` in narratives into `<span class="node-ref" data-node-id="...">` elements
-- On click, highlight the corresponding node in the nearest graph (add `hover-glow` class)
-- On hover, show a tooltip with node description
+**Bold refs → graph nodes:**
+- Parse `**bold text**` in summaries into `<span class="node-ref" data-node-id="...">` elements
+- On click, scroll to and highlight the corresponding node in the nearest structure graph
+- On hover, show tooltip with node description
 
-**Narrative → Flow steps (narrative_map):**
-- Render step badges (`<span class="step-badge">1–3</span>`) on each paragraph
-- On paragraph hover, highlight corresponding rows in the step table
-- On step row hover, highlight the paragraph that covers those steps
+**Flow step → sequence diagram:**
+- Steps with `observation_ids` show a small badge on the corresponding diagram step
 
-**Graph → Bottom panel:**
-- On node click, show a detail panel: name, type, description, file, patterns, debt, endpoints, observations about this node
-- Panel slides up from bottom or appears inline below the graph
+**Story navigation:**
+- Sticky table of contents on the side (desktop) listing story titles
+- Click to scroll to story section
+- Journey selector dropdown switches between journey pages
 
 ### 6. Render the atlas page
 
-Produce `<docs-pages-dir>/<project>/atlas/index.astro`.
+Output: `<docs-dir>/<project>/atlas/index.astro`
 
-This is the full interactive graph — migrated from the current ArchExplorer structure tab. It uses the same Cytoscape.js configuration:
-
-- Cose-bilkent layout with expand/collapse hierarchy
-- Node types colored by `typeConfig` (service=blue, external=red, store=amber, etc.)
+Full interactive Cytoscape graph with:
+- Cose-bilkent layout, expand/collapse hierarchy
+- Node types colored by typeConfig
 - Debt rings, pattern badges, tooltips
-- Breadcrumb navigation for graph hierarchy
-- Zoom, pan, fit-to-screen controls
+- Story overlay: hovering a node shows "In N stories" badge
+- Coverage indicator: undocumented nodes get dashed border
 
-**New additions for story integration:**
-- Hovering a node shows "Referenced in N stories" badge
-- Clicking a node shows a detail panel with "Stories about this component" links
-- A "Story lens" dropdown: selecting a story highlights only its nodes, dimming the rest
-- Coverage indicator: nodes not referenced by any story get a dashed border
+### 7. Render the facts index
 
-### 7. Render the journey index
+Output: `<docs-dir>/<project>/facts/index.astro`
 
-Produce `<docs-pages-dir>/<project>/index.astro`.
+Searchable table of all observations across all stories:
+- Finding text, source story (linked), component, evidence file:line, confidence badge, tags
+- Text search, filter by tag/story/type/confidence
 
-Read journey files from `<project>/.kord/agents/augur/memory/journeys/*.yaml` if they exist. If no journey files, auto-generate a default journey ordered: structure stories → flow stories → data stories → resilience stories → highlight stories.
+### 8. Path resolution
 
-**Layout:** Cards grouped by journey. Each card shows:
-- Story title
-- `teaches` summary
-- Audience tags as pills
-- Dimension icons (which dimensions the story covers)
-- Prerequisites shown as "Requires: [story links]"
-
-### 8. Render the facts index
-
-Produce `<docs-pages-dir>/<project>/facts/index.astro`.
-
-Build from the `factIndex` (step 2). Each entry shows:
-- Finding text
-- Source story (linked)
-- Component (linked to atlas)
-- Evidence file:line (if available)
-- Confidence badge
-- Tags as pills
-
-The page includes:
-- Text search across findings
-- Filter by tag, by story, by observation type, by confidence
-- Sort by confidence (default), by component, by story
-
-### 9. Graph rendering strategy
-
-**Build time** (Astro build):
-- For each graph block, run Cytoscape layout headless (cose-bilkent or dagre depending on step 3 decision)
-- Serialize computed node positions
-- Emit a static SVG with correct colors, shapes, edge paths, and labels
-- Embed SVG inline in the page
-
-**Runtime** (on interaction):
-- When user hovers or clicks the SVG, lazy-load Cytoscape.js + dagre from CDN
-- Initialize with pre-computed positions (`layout: { name: 'preset' }`) — instant, no layout cost
-- Enable: hover tooltips, click-to-select, node-ref highlighting, detail panel
-- Only one graph interactive at a time per page (destroy when scrolled past)
-
-**Mobile** (<768px):
-- SVG only, no Cytoscape upgrade
-- Pinch-to-zoom on SVGs
-- Sequence diagrams: horizontal scroll
-- Atlas page: show static overview SVG with "View on desktop for interactive atlas" message
-
-### 10. Path resolution
-
-Resolve docs site location (in order):
-1. If `$KORDINATE_HOME/../site/` exists → use it
-2. If `site/` exists in the kordinate repo root → use it
+Resolve docs output location (in order):
+1. `$KORDINATE_HOME/../site/` → use it
+2. `site/` in kordinate repo root → use it
 3. Fallback: `<project>/.kord/agents/scribe/output/docs/`
 
-Within the resolved docs root:
-- Pages: `src/pages/<project>/` (index, atlas/, stories/, facts/)
-- Content: `src/content/docs/<project>/` (atlas.json copy, story data)
+Within resolved root:
+- `src/pages/<project>/index.astro` (default journey)
+- `src/pages/<project>/<journey-id>.astro` (additional journeys)
+- `src/pages/<project>/atlas/index.astro`
+- `src/pages/<project>/facts/index.astro`
 
-### 11. Technical requirements
+### 9. Technical requirements
 
-**Astro pages:**
-- Self-contained: inline all JS/CSS
-- Load Cytoscape.js, dagre layout, and Mermaid from CDN (lazy, on interaction)
-- CSS custom properties for theming (dark/light mode)
-- Responsive: story pages work on mobile, atlas degrades gracefully
+**Shared across all pages:**
+- Self-contained: inline CSS/JS
+- CDN: Cytoscape.js + dagre (lazy, on interaction), Mermaid (lazy, on tab visibility)
+- CSS custom properties for dark/light mode
+- Responsive: stories stack vertically on mobile, atlas degrades to static SVG
 
-**Node type styling** (carried over):
+**Node type styling:**
 
 | Type | Color | Shape |
 |------|-------|-------|
@@ -259,45 +209,33 @@ Within the resolved docs root:
 | `worker` | Indigo (#6366F1) | Rounded rectangle |
 | `api` | Green (#22C55E) | Rounded rectangle |
 | `frontend` | Purple (#A855F7) | Rounded rectangle |
-| `cli` | Slate (#64748B) | Diamond |
 | `store` | Amber (#F59E0B) | Cylinder |
 | `gateway` | Rose (#F43F5E) | Hexagon |
 | `broker` | Orange (#F97316) | Hexagon |
 | `external` | Red (#EF4444) | Octagon |
 | `actor` | Teal (#14B8A6) | Ellipse |
 
-**Severity colors:**
-- Critical: Red (#EF4444)
-- High: Orange (#F97316)
-- Medium: Amber (#F59E0B)
-- Low: Green (#22C55E)
+**Severity colors:** Critical=#EF4444, High=#F97316, Medium=#F59E0B, Low=#22C55E
 
-**Confidence badges:**
-- High: solid green pill
-- Medium: outline amber pill
-- Low: outline gray pill
+**Confidence badges:** High=solid green, Medium=outline amber, Low=outline gray
 
-### 12. Report
+### 10. Report
 
 ```
 ## Documentation: <project>
 
+**Default journey**: <path> (N stories)
+**Additional journeys**: <list>
 **Atlas page**: <path>
-**Story pages**: <path> (N stories)
-**Journey index**: <path>
-**Facts index**: <path> (N observations indexed)
+**Facts index**: <path> (N observations)
 
 ### Stories rendered
-| Story | Type | Dimensions | Visualizations chosen |
-|-------|------|------------|----------------------|
-| SSR Hydration | flow | structure, flows, data, observations | dagre graph, sequence diagram, inline table, 2 evidence cards |
-| Cart Lifecycle | flow | structure, flows, data, resilience | cose-bilkent graph, sequence diagram, store graph, timeline card |
-| ... | ... | ... | ... |
+| Story | Blocks | Visualizations |
+|-------|--------|---------------|
+| MCP Agent Servers | 1 structure (4 nodes), 2 observations | dagre graph, evidence cards |
+| Agent Delegation | 1 flow (5 steps), 1 rationale | sequence diagram, decision card |
 
 ### Coverage
-- Atlas nodes: N total, M referenced in stories (<percentage>%)
+- Atlas nodes: N total, M in stories (<percentage>%)
 - Undocumented critical nodes: [list or "none"]
-
-### Notes
-- <any warnings, validation errors, missing stories>
 ```

@@ -1,231 +1,115 @@
-# Input Schema: Atlas + Stories
+# Input Schema: Atlas + Stories + Journeys
 
 Level 3 resource for the document skill. Defines the formats Scribe consumes from Augur's `/analyze` output.
 
-For the full output contract and guarantees, see `augur-output-contract.md` in Augur's analyze skill.
+For the full output contract, see `augur-output-contract.md` in Augur's analyze skill.
 
 ## atlas.json
 
-The structural inventory of the entire codebase. Scribe uses this for:
-- The atlas page (full interactive graph)
-- Resolving node references from stories
-- Coverage tracking (which nodes have stories)
-- Node metadata in detail panels (patterns, debt, endpoints, resilience)
+Full structural inventory. Scribe uses this for the atlas page, resolving node references, coverage tracking, and node metadata in detail panels.
 
-### Top-level shape
+See [augur-output-contract.md] for the complete atlas schema. Key sections:
 
-```json
-{
-  "version": "3",
-  "generated": "YYYY-MM-DD",
-  "project": "<name>",
-  "purpose": "<one sentence>",
-
-  "stack": {
-    "languages": ["<lang>"],
-    "frameworks": [{"name": "<framework>", "concepts": ["<concept>"]}],
-    "runtime": "<description>"
-  },
-
-  "groups": [
-    {"id": "<kebab>", "name": "<Human Label>", "description": "...", "components": ["<component-id>"]}
-  ],
-
-  "actors": [
-    {"id": "<kebab>", "type": "user|service|cron|cli|data-source|external", "description": "..."}
-  ],
-
-  "components": [
-    {
-      "id": "<kebab>",
-      "name": "<Human Name>",
-      "description": "<one sentence>",
-      "type": "service|library|worker|api|frontend|cli|scheduler|store|gateway|broker",
-      "group": "<group-id>",
-      "modules": ["<path>"],
-      "depends_on": ["<component-id>"],
-      "abstraction": ["<abstraction-name>"],
-      "patterns": ["<pattern-name>"],
-      "children": []
-    }
-  ],
-
-  "data_flows": [
-    {
-      "id": "<kebab>",
-      "name": "<Human Name>",
-      "description": "<what it accomplishes>",
-      "trigger": "<what starts it>",
-      "actors": ["<actor-id>"],
-      "steps": [
-        {"component": "<id>", "action": "<verb>", "data": "<what moves>", "to": "<id>", "technology": "<protocol>"}
-      ]
-    }
-  ],
-
-  "state": [
-    {
-      "id": "<kebab>",
-      "concept": "relational-db|document-store|embedded-olap|cache|object-store|message-broker|filesystem|in-memory",
-      "technology": "<specific tool>",
-      "component": "<component-id>",
-      "stores": "<what data>",
-      "purpose": "source-of-truth|cache|derived|staging",
-      "persistence": "persistent|ephemeral",
-      "readers": ["<component-id>"],
-      "writers": ["<component-id>"]
-    }
-  ],
-
-  "events": [
-    {"id": "<kebab>", "type": "topic|signal|webhook|cron|pubsub", "name": "...", "producer": "<id>", "consumers": ["<id>"], "data": "..."}
-  ],
-
-  "external_dependencies": [
-    {
-      "id": "<kebab>",
-      "name": "<Human Name>",
-      "concept": "http-api|message-broker|database|cache|object-store|dns|smtp|nfs|grpc|auth-provider|cdn",
-      "technology": "<specific>",
-      "components": ["<component-id>"],
-      "purpose": "<why needed>",
-      "criticality": "critical|important|optional",
-      "resilience": {"timeout": true, "retry": false, "circuit_breaker": false, "fallback": null}
-    }
-  ],
-
-  "failure_modes": [
-    {
-      "id": "<kebab>",
-      "trigger": "<what goes wrong>",
-      "severity": "critical|high|medium|low",
-      "impact": "<user-visible effect>",
-      "cascade": [{"component": "<id>", "effect": "<what happens>"}],
-      "detection": ["<signal or 'none'>"],
-      "recovery": ["<step or 'none'>"]
-    }
-  ],
-
-  "concepts": {
-    "detected_patterns": [
-      {"id": "<name>", "category": "<cat>", "confidence": "high|medium|low", "components": ["<id>"], "evidence": {"files": ["<path>"], "method": "...", "note": "..."}}
-    ],
-    "detected_anti_patterns": [],
-    "gaps": [{"id": "<name>", "relevance": "...", "recommendation": "..."}]
-  },
-
-  "debt": {
-    "score": 15,
-    "grade": "C",
-    "interpretation": "<one sentence>",
-    "violations": [
-      {"severity": "CRITICAL|RECOMMENDED|MINOR", "category": "...", "anti_pattern": "...", "components": ["<id>"], "files": ["<path>"], "detail": "...", "points": 5}
-    ],
-    "recommendations": [
-      {"priority": 1, "title": "...", "severity": "...", "description": "...", "files": ["<path>"]}
-    ]
-  },
-
-  "metadata": {
-    "story_ids": ["structure-api-layer", "flow-ssr-prefetch"]
-  }
-}
-```
+- `components[]` — nodes with id, name, type, group, modules, patterns, children
+- `data_flows[]` — flows with steps
+- `state[]` — stores with readers/writers
+- `external_dependencies[]` — with criticality and resilience
+- `failure_modes[]` — with cascade, detection, recovery
+- `concepts` — detected patterns, anti-patterns, gaps
+- `debt` — score, grade, violations, recommendations
 
 ### Node type styling
 
-| Type | Color | Shape | Used for |
-|------|-------|-------|----------|
-| `service` | Blue (#3B82F6) | Rounded rectangle | Backend services, API servers |
-| `library` | Slate (#64748B) | Rounded rectangle | Shared libraries, utilities |
-| `worker` | Indigo (#6366F1) | Rounded rectangle | Background workers, consumers |
-| `api` | Green (#22C55E) | Rounded rectangle | API endpoints, route handlers |
-| `frontend` | Purple (#A855F7) | Rounded rectangle | UI components, pages |
-| `cli` | Slate (#64748B) | Diamond | CLI tools, scripts |
-| `store` | Amber (#F59E0B) | Cylinder | Data stores, caches |
-| `gateway` | Rose (#F43F5E) | Hexagon | API gateways, load balancers |
-| `broker` | Orange (#F97316) | Hexagon | Message brokers, event buses |
-| `external` | Red (#EF4444) | Octagon | External dependencies |
-| `actor` | Teal (#14B8A6) | Ellipse | Users, external services, cron |
-
-### Guarantees from Augur
-
-| Guarantee | Value |
-|-----------|-------|
-| Top-level groups | 3-5 (hard) |
-| Components | 5-10, acceptable 4-12 |
-| Critical data flows | 2-4 |
-| All cross-references | resolve to existing IDs |
-| Empty sections | omitted, not null |
+| Type | Color | Shape |
+|------|-------|-------|
+| `service` | Blue (#3B82F6) | Rounded rectangle |
+| `library` | Slate (#64748B) | Rounded rectangle |
+| `worker` | Indigo (#6366F1) | Rounded rectangle |
+| `api` | Green (#22C55E) | Rounded rectangle |
+| `frontend` | Purple (#A855F7) | Rounded rectangle |
+| `store` | Amber (#F59E0B) | Cylinder |
+| `gateway` | Rose (#F43F5E) | Hexagon |
+| `broker` | Orange (#F97316) | Hexagon |
+| `external` | Red (#EF4444) | Octagon |
+| `actor` | Teal (#14B8A6) | Ellipse |
 
 ---
 
 ## Story YAML
 
-Each story is a scoped analytical unit. Stories carry no visualization hints — Scribe decides how to render each dimension.
+Stories are short scoped sections. Each is assembled from building blocks.
 
-### Shape
+### Building blocks
+
+| Block | Purpose | Required? | Multiple? |
+|-------|---------|-----------|-----------|
+| `summary` | 1-2 paragraphs orienting the reader (~50-80 words) | Yes | No |
+| `structures` | Components + typed edges | No | Yes |
+| `flows` | Ordered steps through components, typed | No | Yes |
+| `observations` | Evidence-backed findings | No | One list |
+| `rationale` | Design decisions, trade-offs | No | Yes |
+
+### Schema
 
 ```yaml
-type: structure | flow | data | resilience | highlight
 id: "<kebab-case>"
 title: "<Human Readable Title>"
 teaches: "<one sentence>"
-group: "<atlas-group-id>"
-audience: ["<role>"]                      # optional
-prerequisites: ["<story-id>"]            # optional
+tags: ["<freeform>"]
 
-structure:                                # required for all stories
-  nodes: ["<atlas-node-id>"]
-  edges:
-    - { source: "<node-id>", target: "<node-id>", label: "<short>" }
-  narrative: "<prose with **bold node refs**>"
-  narrative_map:
-    - { text: "<paragraph>", refs: ["<node-id>"] }
+summary: |
+  <1-2 paragraphs, ~50-80 words, **bold refs** resolve to atlas nodes>
 
-flows:                                    # optional
-  - id: "<flow-id>"
-    name: "<Human Name>"
+structures:
+  - id: "<kebab>"
+    title: "<Human Readable>"
+    type: "<freeform: component topology, data lineage, infrastructure, security boundary, module graph, ...>"
+    nodes:
+      - id: "<atlas-node-id>"
+        children: ["<atlas-node-id>"]
+        observation_ids: ["<obs-id>"]
+    edges:
+      - from: "<node-id>"
+        to: "<node-id>"
+        label: "<short>"
+        type: "<freeform: depends_on, reads, writes, contains, calls, publishes, subscribes, ...>"
+
+flows:
+  - id: "<kebab>"
+    title: "<Human Readable>"
+    type: "<freeform: request path, failure cascade, data pipeline, event chain, deployment sequence, ...>"
+    trigger: "<optional>"
+    severity: "<optional, for failure flows>"
+    detection: ["<optional>"]
+    recovery: ["<optional>"]
     steps:
-      - { from: "<node-id>", to: "<node-id>", action: "<verb>", technology: "<protocol>" }
-    narrative: "<prose>"
-    narrative_map:
-      - { text: "<paragraph>", steps: [1, 2] }
+      - node: "<atlas-node-id>"
+        action: "<what it does>"
+        effect: "<what happens to it>"
+        to: "<atlas-node-id>"
+        technology: "<protocol>"
+        observation_ids: ["<obs-id>"]
 
-data:                                     # optional
-  stores:
-    - { id: "<state-id>", name: "<name>", purpose: "<purpose>",
-        readers: ["<node-id>"], writers: ["<node-id>"] }
-  narrative: "<prose>"
-  narrative_map:
-    - { text: "<paragraph>", refs: ["<node-id>"] }
-
-resilience:                               # optional
-  failures:
-    - { id: "<failure-id>", trigger: "<what>", severity: "critical|high|medium|low",
-        cascade: [{ component: "<node-id>", effect: "<what>" }],
-        detection: ["<signal>"], recovery: ["<step>"] }
-  narrative: "<prose>"
-  narrative_map:
-    - { text: "<paragraph>", refs: ["<node-id>"], cascade_steps: [1, 2] }
-
-observations:                             # optional
+observations:
   - id: "<obs-id>"
-    type: pattern-match | anti-pattern | gap | api-finding | debt | structural | dependency
-    confidence: high | medium | low
-    component: "<node-id>"
+    finding: "<one sentence>"
+    confidence: "<high|medium|low>"
+    component: "<atlas-node-id>"
     evidence:
       file: "<path>"
-      lines: [14, 28]                    # optional
-      snippet: "<code>"                   # optional
-    finding: "<one sentence>"
+      lines: [14, 28]
+      snippet: "<code>"
     tags: ["<freeform>"]
-    detection_method: grep | ast-grep | semgrep | questions | manual
-    recommendation: "<what to do>"        # optional
+    detection_method: "<grep|ast-grep|semgrep|questions|manual>"
+    recommendation: "<optional>"
     related: ["<obs-id>"]
 
-highlights:                               # optional
-  - "<key takeaway sentence>"
+rationale:
+  - id: "<kebab>"
+    decision: "<what was decided>"
+    context: "<why needed>"
+    trade_offs: "<gained vs given up>"
+    alternatives: ["<rejected and why>"]
 
 evaluation:
   groundedness: 0.92
@@ -234,33 +118,63 @@ evaluation:
   ungrounded_claims: []
 ```
 
-### Story types and required dimensions
+### How types guide rendering
 
-| Type | Required | Typical extras |
-|------|----------|---------------|
-| `structure` | structure | observations, highlights |
-| `flow` | flows | structure, data, observations |
-| `data` | data | structure, observations |
-| `resilience` | resilience | structure, flows, observations |
-| `highlight` | highlights | structure, observations |
+**Structure types → graph style:**
 
-### narrative_map contract
+| Type | Scribe renders as |
+|------|------------------|
+| `component topology` | Dagre or cose-bilkent graph |
+| `data lineage` | Graph with colored read/write edges |
+| `infrastructure` | Graph with k8s-style grouping |
+| `security boundary` | Graph with zone shading |
+| `module graph` | Compact dependency list or dagre |
+| _(unknown)_ | Dagre graph |
 
-Every narrative has a companion `narrative_map`. Scribe depends on these for cross-highlighting:
+**Flow types → diagram style:**
 
-- Every paragraph appears in exactly one entry
-- `refs[]` values exist in the story's `structure.nodes` or atlas
-- `steps[]` are 1-based indices into the flow's steps array
-- `cascade_steps[]` are 1-based indices into the failure's cascade array
+| Type | Scribe renders as |
+|------|------------------|
+| `request path` | Mermaid sequence diagram |
+| `data pipeline` | Mermaid sequence diagram |
+| `failure cascade` | Timeline card (trigger → cascade → detection → recovery) |
+| `event chain` | Mermaid sequence diagram |
+| `deployment sequence` | Numbered step list |
+| _(unknown)_ | Mermaid sequence diagram |
 
-### Observation types
+### Observation attachment
 
-| Type | Rendered as | Visual treatment |
-|------|------------|-----------------|
-| `pattern-match` | Evidence card | Blue/green — positive finding |
-| `anti-pattern` | Warning card | Amber — concern |
-| `gap` | Warning card with recommendation | Amber with action |
-| `api-finding` | Evidence card | Severity-colored |
-| `debt` | Warning card | Severity-colored |
-| `structural` | Evidence card | Blue — neutral finding |
-| `dependency` | Evidence card | Blue — neutral finding |
+Observations are defined once in the story's `observations` list. They attach at three levels:
+1. **Story-wide** — exists in the list (default)
+2. **Structure node** — via `observation_ids` on a node
+3. **Flow step** — via `observation_ids` on a step
+
+Scribe renders attached observations inline near the node/step. Unattached ones appear at the end of the story section.
+
+---
+
+## Journey YAML
+
+An ordered reading path through stories.
+
+```yaml
+id: "<kebab>"
+title: "<Human Readable>"
+description: "<one sentence>"
+audience: ["<role>"]
+stories:
+  - "<story-id>"
+  - "<story-id>"
+```
+
+Journeys render as **single pages** with stories as sequential sections. The default journey becomes the project index page.
+
+### Guarantees from Augur
+
+| Guarantee | Value |
+|-----------|-------|
+| Stories per journey | 3-8 |
+| Summary length | ~50-80 words |
+| Building blocks per story | 1-3 typical |
+| All node refs | resolve to atlas |
+| All observation_ids | resolve to defined observations |
