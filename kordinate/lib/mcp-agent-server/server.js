@@ -39,43 +39,47 @@ const TRACKED_EXTS = new Set(['.md', '.yaml', '.yml', '.json', '.sh', '.js']);
 
 function loadRouteRegistry() {
   const registry = new Map();
-  const agentsDir = join(KORDINATE_HOME, 'agents');
+  const kordJsonPath = join(KORDINATE_HOME, 'KORD.json');
 
-  let agents;
-  try {
-    agents = readdirSync(agentsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory());
-  } catch {
-    log('WARN: could not read agents directory');
+  if (!existsSync(kordJsonPath)) {
+    log('WARN: KORD.json not found, no routes registered');
     return registry;
   }
 
-  for (const agent of agents) {
-    const routesPath = join(agentsDir, agent.name, 'routes.yaml');
-    if (!existsSync(routesPath)) continue;
+  try {
+    const entries = JSON.parse(readFileSync(kordJsonPath, 'utf8'));
 
-    try {
-      const raw = readFileSync(routesPath, 'utf8');
-      const doc = yaml.load(raw);
-      if (!doc?.routes || !Array.isArray(doc.routes)) continue;
-
-      for (const route of doc.routes) {
-        if (!route.name || !route.method || !route.description) {
-          log(`WARN: skipping invalid route in ${agent.name}/routes.yaml`, route);
-          continue;
-        }
-        if (registry.has(route.name)) {
-          log(`WARN: duplicate route name "${route.name}" in ${agent.name} (already registered by ${registry.get(route.name).provider})`);
-          continue;
-        }
-        registry.set(route.name, {
-          ...route,
-          provider: agent.name,
-        });
+    // Load skill entries as routes
+    for (const entry of entries) {
+      if (entry.type !== 'skill' || !entry.public) continue;
+      if (!entry.name || !entry.agent) {
+        log(`WARN: skipping invalid skill entry`, entry);
+        continue;
       }
-    } catch (e) {
-      log(`WARN: failed to parse ${agent.name}/routes.yaml: ${e.message}`);
+
+      // Convert skill entry to route format
+      const routeName = entry.agent === 'team'
+        ? entry.name
+        : `${entry.agent}_${entry.name}`.replace(/-/g, '_');
+
+      if (registry.has(routeName)) {
+        log(`WARN: duplicate route "${routeName}" (already registered)`);
+        continue;
+      }
+
+      registry.set(routeName, {
+        name: routeName,
+        method: 'POST',
+        description: entry.description,
+        provider: entry.agent,
+        skill: entry.name,
+        arguments: entry.arguments,
+      });
     }
+
+    log(`Loaded ${registry.size} routes from KORD.json`);
+  } catch (e) {
+    log(`WARN: failed to parse KORD.json: ${e.message}`);
   }
 
   return registry;
