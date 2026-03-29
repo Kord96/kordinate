@@ -313,6 +313,13 @@
     "description": "KORD-seed.json requires warden auth"
   },
   {
+    "type": "guard",
+    "pattern": "git push",
+    "tool": "Bash",
+    "validation": "sanitize",
+    "description": "Scan diff for secrets before pushing \u2014 blocks if credentials, tokens, or PII found in new lines"
+  },
+  {
     "type": "file",
     "path": "agents/warden/IDENTITY.md",
     "description": "Warden agent identity",

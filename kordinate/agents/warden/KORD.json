@@ -6,6 +6,7 @@
 
   {"type": "guard", "pattern": "KORD.json", "tool": "Write", "validation": "warden", "description": "KORD.json requires warden auth"},
   {"type": "guard", "pattern": "KORD-seed.json", "tool": "Write", "validation": "warden", "description": "KORD-seed.json requires warden auth"},
+  {"type": "guard", "pattern": "git push", "tool": "Bash", "validation": "sanitize", "description": "Scan diff for secrets before pushing — blocks if credentials, tokens, or PII found in new lines"},
 
   {"type": "file", "path": "agents/warden/IDENTITY.md", "description": "Warden agent identity", "owner": "warden", "preload": "warden", "validation": "scribe"},
   {"type": "file", "path": "agents/warden/memory/scratchpad.md", "description": "Working notes", "owner": "warden", "preload": "none"}
