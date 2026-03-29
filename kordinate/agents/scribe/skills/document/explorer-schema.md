@@ -1,294 +1,180 @@
-# Explorer Schema: architecture.json
+# Input Schema: Atlas + Stories + Journeys
 
-Level 3 resource for the illustrate-architecture skill. Defines the JSON format consumed by the Astro explorer page.
+Level 3 resource for the document skill. Defines the formats Scribe consumes from Augur's `/analyze` output.
 
-## Schema
+For the full output contract, see `augur-output-contract.md` in Augur's analyze skill.
 
-```json
-{
-  "project": "<project-name>",
-  "generated": "<YYYY-MM-DD>",
-  "purpose": "<one sentence>",
-  "stack": {
-    "languages": ["<lang>"],
-    "frameworks": ["<framework>"],
-    "runtime": "<description>"
-  },
+## atlas.json
 
-  "groups": [
-    {
-      "id": "<group-id>",
-      "name": "<Human Label>",
-      "description": "<optional>"
-    }
-  ],
+Full structural inventory. Scribe uses this for the atlas page, resolving node references, coverage tracking, and node metadata in detail panels.
 
-  "nodes": [
-    {
-      "id": "<component-id>",
-      "name": "<Human Readable Name>",
-      "type": "service | library | worker | api | frontend | cli | store | gateway | broker | external | actor",
-      "group": "<group-id>",
-      "parent": "<parent-node-id | null>",
-      "hasChildren": false,
-      "description": "<one sentence>",
-      "file": "<path/to/source>",
-      "exports": ["<exported-symbol>"],
-      "patterns": [
-        { "name": "<pattern-name>", "category": "<category>" }
-      ],
-      "debt": {
-        "severity": "critical | high | medium | low",
-        "items": [
-          { "title": "<short title>", "description": "<detail>" }
-        ]
-      },
-      "endpoints": [
-        { "method": "GET | POST | PUT | DELETE | PATCH", "path": "</route>", "description": "<what it does>" }
-      ],
-      "resilience": {
-        "timeout": true,
-        "retry": true,
-        "circuitBreaker": false,
-        "fallback": "<description | null>"
-      },
-      "criticality": "critical | important | optional"
-    }
-  ],
+See [augur-output-contract.md] for the complete atlas schema. Key sections:
 
-  "edges": [
-    {
-      "source": "<node-id>",
-      "target": "<node-id>",
-      "label": "<short description>",
-      "style": "solid | dashed",
-      "type": "depends_on | data_flow | event"
-    }
-  ],
+- `components[]` — nodes with id, name, type, group, modules, patterns, children
+- `data_flows[]` — flows with steps
+- `state[]` — stores with readers/writers
+- `external_dependencies[]` — with criticality and resilience
+- `failure_modes[]` — with cascade, detection, recovery
+- `concepts` — detected patterns, anti-patterns, gaps
+- `debt` — score, grade, violations, recommendations
 
-  "data_flows": [
-    {
-      "id": "<flow-id>",
-      "name": "<Human Readable Flow Name>",
-      "description": "<what this flow accomplishes>",
-      "trigger": "<what starts it>",
-      "steps": [
-        {
-          "component": "<component-id>",
-          "action": "<verb phrase>",
-          "data": "<what moves>",
-          "to": "<component-id | null>",
-          "technology": "<protocol>"
-        }
-      ]
-    }
-  ],
+### Node type styling
 
-  "state": [
-    {
-      "id": "<state-id>",
-      "name": "<Human Readable Name>",
-      "description": "<what this state holds>",
-      "purpose": "source-of-truth | cache | derived | staging",
-      "technology": "<specific tool>",
-      "component": "<component-id>",
-      "persistence": "persistent | ephemeral",
-      "readers": ["<component-id>"],
-      "writers": ["<component-id>"]
-    }
-  ],
+| Type | Color | Shape |
+|------|-------|-------|
+| `service` | Blue (#3B82F6) | Rounded rectangle |
+| `library` | Slate (#64748B) | Rounded rectangle |
+| `worker` | Indigo (#6366F1) | Rounded rectangle |
+| `api` | Green (#22C55E) | Rounded rectangle |
+| `frontend` | Purple (#A855F7) | Rounded rectangle |
+| `store` | Amber (#F59E0B) | Cylinder |
+| `gateway` | Rose (#F43F5E) | Hexagon |
+| `broker` | Orange (#F97316) | Hexagon |
+| `external` | Red (#EF4444) | Octagon |
+| `actor` | Teal (#14B8A6) | Ellipse |
 
-  "failure_modes": [
-    {
-      "id": "<failure-id>",
-      "trigger": "<what goes wrong>",
-      "severity": "critical | high | medium | low",
-      "impact": "<user-visible effect>",
-      "cascade": [
-        { "component": "<component-id>", "effect": "<what happens>" }
-      ],
-      "detection": ["<signal>"],
-      "recovery": ["<step>"]
-    }
-  ]
-}
+---
+
+## Story YAML
+
+Stories are short scoped sections. Each is assembled from building blocks.
+
+### Building blocks
+
+| Block | Purpose | Required? | Multiple? |
+|-------|---------|-----------|-----------|
+| `summary` | 1-2 paragraphs orienting the reader (~50-80 words) | Yes | No |
+| `structures` | Components + typed edges | No | Yes |
+| `flows` | Ordered steps through components, typed | No | Yes |
+| `observations` | Evidence-backed findings | No | One list |
+| `rationale` | Design decisions, trade-offs | No | Yes |
+
+### Schema
+
+```yaml
+id: "<kebab-case>"
+title: "<Human Readable Title>"
+teaches: "<one sentence>"
+tags: ["<freeform>"]
+
+summary: |
+  <1-2 paragraphs, ~50-80 words, **bold refs** resolve to atlas nodes>
+
+structures:
+  - id: "<kebab>"
+    title: "<Human Readable>"
+    type: "<freeform: component topology, data lineage, infrastructure, security boundary, module graph, ...>"
+    nodes:
+      - id: "<atlas-node-id>"
+        children: ["<atlas-node-id>"]
+        observation_ids: ["<obs-id>"]
+    edges:
+      - from: "<node-id>"
+        to: "<node-id>"
+        label: "<short>"
+        type: "<freeform: depends_on, reads, writes, contains, calls, publishes, subscribes, ...>"
+
+flows:
+  - id: "<kebab>"
+    title: "<Human Readable>"
+    type: "<freeform: request path, failure cascade, data pipeline, event chain, deployment sequence, ...>"
+    trigger: "<optional>"
+    severity: "<optional, for failure flows>"
+    detection: ["<optional>"]
+    recovery: ["<optional>"]
+    steps:
+      - node: "<atlas-node-id>"
+        action: "<what it does>"
+        effect: "<what happens to it>"
+        to: "<atlas-node-id>"
+        technology: "<protocol>"
+        observation_ids: ["<obs-id>"]
+
+observations:
+  - id: "<obs-id>"
+    finding: "<one sentence>"
+    confidence: "<high|medium|low>"
+    component: "<atlas-node-id>"
+    evidence:
+      file: "<path>"
+      lines: [14, 28]
+      snippet: "<code>"
+    tags: ["<freeform>"]
+    detection_method: "<grep|ast-grep|semgrep|questions|manual>"
+    recommendation: "<optional>"
+    related: ["<obs-id>"]
+
+rationale:
+  - id: "<kebab>"
+    decision: "<what was decided>"
+    context: "<why needed>"
+    trade_offs: "<gained vs given up>"
+    alternatives: ["<rejected and why>"]
+
+evaluation:
+  groundedness: 0.92
+  coverage: 0.85
+  claim_count: 15
+  ungrounded_claims: []
 ```
 
-## Field Reference
+### How types guide rendering
 
-### nodes
+**Structure types → graph style:**
 
-Every architectural entity becomes a node. The `type` field determines visual styling:
+| Type | Scribe renders as |
+|------|------------------|
+| `component topology` | Dagre or cose-bilkent graph |
+| `data lineage` | Graph with colored read/write edges |
+| `infrastructure` | Graph with k8s-style grouping |
+| `security boundary` | Graph with zone shading |
+| `module graph` | Compact dependency list or dagre |
+| _(unknown)_ | Dagre graph |
 
-| Type | Color | Shape | Source |
-|------|-------|-------|--------|
-| `service` | Blue (#3B82F6) | Rounded rectangle | architecture.yaml components |
-| `library` | Slate (#64748B) | Rounded rectangle | architecture.yaml components |
-| `worker` | Indigo (#6366F1) | Rounded rectangle | architecture.yaml components |
-| `api` | Green (#22C55E) | Rounded rectangle | architecture.yaml components |
-| `frontend` | Purple (#A855F7) | Rounded rectangle | architecture.yaml components |
-| `cli` | Slate (#64748B) | Diamond | architecture.yaml components |
-| `store` | Amber (#F59E0B) | Cylinder | architecture.yaml state |
-| `gateway` | Rose (#F43F5E) | Hexagon | architecture.yaml components |
-| `broker` | Orange (#F97316) | Hexagon | architecture.yaml components |
-| `external` | Red (#EF4444) | Octagon | architecture.yaml external_dependencies |
-| `actor` | Teal (#14B8A6) | Ellipse | architecture.yaml actors |
+**Flow types → diagram style:**
 
-### Enrichment fields
+| Type | Scribe renders as |
+|------|------------------|
+| `request path` | Mermaid sequence diagram |
+| `data pipeline` | Mermaid sequence diagram |
+| `failure cascade` | Timeline card (trigger → cascade → detection → recovery) |
+| `event chain` | Mermaid sequence diagram |
+| `deployment sequence` | Numbered step list |
+| _(unknown)_ | Mermaid sequence diagram |
 
-These fields are **null/empty by default** and populated only when the corresponding Designer memory file exists:
+### Observation attachment
 
-- `patterns` — from `patterns.md`. Array of `{ name, category }`. Rendered as small pill badges below the node label.
-- `debt` — from `debt-assessment.md`. Object with `severity` and `items` array. Drives the colored border ring on the node (red = critical, orange = high, yellow = medium).
-- `endpoints` — from `api-review.md`. Array of `{ method, path, description }`. Shown in the bottom drawer when the node is selected.
-- `resilience` — from `dependencies.md`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description. Applied to external nodes.
-- `criticality` — from `dependencies.md` or `external_dependencies`. Shown as a badge on external nodes.
+Observations are defined once in the story's `observations` list. They attach at three levels:
+1. **Story-wide** — exists in the list (default)
+2. **Structure node** — via `observation_ids` on a node
+3. **Flow step** — via `observation_ids` on a step
 
-### edges
+Scribe renders attached observations inline near the node/step. Unattached ones appear at the end of the story section.
 
-Edges connect nodes. The `type` field distinguishes relationship kinds:
+---
 
-| Type | Style | Source |
-|------|-------|--------|
-| `depends_on` | Solid line | architecture.yaml `depends_on` arrays |
-| `data_flow` | Dashed line with arrow | architecture.yaml `data_flows` steps |
-| `event` | Dotted line | architecture.yaml `events` |
+## Journey YAML
 
-### data_flows
+An ordered reading path through stories.
 
-Flow objects are used to animate the data flow view. When a user selects a flow from the sidebar, the graph highlights the path and the bottom drawer shows the step-by-step breakdown.
-
-### groups
-
-Groups define visual clusters in the graph layout. They correspond to capabilities from architecture.yaml plus two synthetic groups:
-- `external` — all external dependencies and their connections
-- `actors` — all actors
-
-The Cytoscape.js compound node feature renders groups as background containers.
-
-## Conventions
-
-- All `id` values match IDs from `architecture.yaml` verbatim
-- `null` or missing optional fields should be omitted from the JSON (not included as `null`)
-- `name` values are short (3-5 words). Detail goes in `description` fields
-- The `parent` field on nodes enables Cytoscape.js compound nodes for components with `children`
-- Debt severity on a parent node is the max severity of its children
-- Flow steps reference the same component IDs as nodes — this is how the explorer links graph interaction to flow animation
-
-## Example
-
-For the stoik stream-processing project:
-
-```json
-{
-  "project": "stoik",
-  "generated": "2026-03-27",
-  "purpose": "Stream processing — Kafka to DuckDB with FlightSQL/HTTP serving.",
-  "stack": {
-    "languages": ["Python"],
-    "frameworks": ["confluent-kafka", "FastAPI", "Apache Arrow Flight", "DuckDB"],
-    "runtime": "Long-running Python process"
-  },
-  "groups": [
-    { "id": "stream-ingestion", "name": "Stream Ingestion" },
-    { "id": "batch-storage", "name": "Batch Storage" },
-    { "id": "query-serving", "name": "Query Serving" },
-    { "id": "external", "name": "External" },
-    { "id": "actors", "name": "Actors" }
-  ],
-  "nodes": [
-    {
-      "id": "kafka-consumer",
-      "name": "Kafka Consumer",
-      "type": "worker",
-      "group": "stream-ingestion",
-      "description": "Connects to Kafka, polls messages in batches, deserializes with schema registry",
-      "file": "stoik/stream/kafka.py",
-      "patterns": [
-        { "name": "stream-to-store", "category": "data" }
-      ]
-    },
-    {
-      "id": "kafka-broker",
-      "name": "Kafka Broker",
-      "type": "external",
-      "group": "external",
-      "description": "Source of streaming data",
-      "resilience": {
-        "timeout": true,
-        "retry": true,
-        "circuitBreaker": false
-      },
-      "criticality": "critical"
-    },
-    {
-      "id": "upstream-kafka",
-      "name": "Upstream Kafka",
-      "type": "actor",
-      "group": "actors",
-      "description": "Produces messages to Kafka topics that stoik consumes"
-    }
-  ],
-  "edges": [
-    {
-      "source": "kafka-consumer",
-      "target": "buffer",
-      "label": "batch records",
-      "style": "solid",
-      "type": "depends_on"
-    },
-    {
-      "source": "upstream-kafka",
-      "target": "kafka-consumer",
-      "label": "messages",
-      "style": "dashed",
-      "type": "data_flow"
-    }
-  ],
-  "data_flows": [
-    {
-      "id": "ingest-to-store",
-      "name": "Kafka to DuckDB Pipeline",
-      "description": "The primary write path",
-      "trigger": "Messages arrive on Kafka topic",
-      "steps": [
-        {
-          "component": "kafka-consumer",
-          "action": "Polls batch of messages",
-          "data": "Raw Kafka messages -> Arrow RecordBatch",
-          "to": "buffer",
-          "technology": "Kafka"
-        }
-      ]
-    }
-  ],
-  "state": [
-    {
-      "id": "duckdb-files",
-      "name": "DuckDB Storage",
-      "description": "Entity data in columnar format",
-      "purpose": "source-of-truth",
-      "technology": "DuckDB",
-      "component": "duckdb-store",
-      "persistence": "persistent",
-      "readers": ["query-engine"],
-      "writers": ["buffer"]
-    }
-  ],
-  "failure_modes": [
-    {
-      "id": "kafka-down",
-      "trigger": "Kafka broker becomes unreachable",
-      "severity": "critical",
-      "impact": "Ingestion halts. Query serving continues from existing data.",
-      "cascade": [
-        { "component": "kafka-consumer", "effect": "Consumer poll fails" },
-        { "component": "consume-loop", "effect": "Buffer stops receiving" },
-        { "component": "buffer", "effect": "No new data to flush" }
-      ],
-      "detection": ["Consumer reconnection logs", "kafka_consumer_lag flatlines"],
-      "recovery": ["Consumer auto-reconnects", "Buffer resumes on next poll"]
-    }
-  ]
-}
+```yaml
+id: "<kebab>"
+title: "<Human Readable>"
+description: "<one sentence>"
+audience: ["<role>"]
+stories:
+  - "<story-id>"
+  - "<story-id>"
 ```
+
+Journeys render as **single pages** with stories as sequential sections. The default journey becomes the project index page.
+
+### Guarantees from Augur
+
+| Guarantee | Value |
+|-----------|-------|
+| Stories per journey | 3-8 |
+| Summary length | ~50-80 words |
+| Building blocks per story | 1-3 typical |
+| All node refs | resolve to atlas |
+| All observation_ids | resolve to defined observations |

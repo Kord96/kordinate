@@ -8,7 +8,7 @@ All domain enforcement lives in a single script: [`guard.sh`](../../kordinate/ho
 
 | Tool trigger | Condition | Auth required | Deny message |
 |---|---|---|---|
-| Write/Edit to `*/.kord/*` | `curated: true` in KORD.json | `/tmp/.scribe-auth` | Use `/kord remember` |
+| Write/Edit to `*/.kord/*` | `curated: true` in KORD.json | `/tmp/.scribe-auth` | Use the `write_memory` tool |
 | Write/Edit to `*/dashboards/*.json` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 | Bash `git push` to main | branch has diverged | — | Use `/merge` to rebase |
 | Bash `git push` to test/prod | any | `/tmp/.deployer-auth` | Use `/infra roll` |

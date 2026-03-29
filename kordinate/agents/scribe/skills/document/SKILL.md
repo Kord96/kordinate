@@ -1,258 +1,245 @@
 ---
 name: document
-description: Generate documentation — architecture diagrams, tutorials, and other doc artifacts. Use for generating visual docs, architecture explorers, or project documentation.
-argument-hint: "architecture <project> [--narrative <dir>] | (future: api, onboarding, narrative)"
+description: >
+  Render stories into interactive documentation. Reads Augur's atlas + stories + journeys,
+  maps them into pre-built Astro components, and writes pages to the docs site. Stories
+  render as short sections within journey pages. Visualization decisions are Scribe's.
+argument-hint: "<project> [--atlas-only]"
 curated: true
 scope: global
 context: fork
 ---
 
-Generate an interactive architecture explorer page by reading all of Designer's project memory artifacts and producing a self-contained Astro page with a Cytoscape.js graph, a narrative sidebar, and a bottom drawer for detail inspection.
+Render a project's stories and atlas into interactive documentation using **pre-built components**. Scribe does NOT generate HTML from scratch — it maps story data into templates and makes rendering decisions (which graph layout, which diagram type) via a manifest.
+
+Stories are **short sections** within journey pages. Each story section has a summary and 1-3 visual building blocks rendered by reusable Astro components.
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>` (e.g., `logbd`, `stoik`, `sous-storefront`). Optional: `--narrative <dir>` to supply hand-written narrative markdown files instead of auto-generated stubs.
+`$ARGUMENTS` — Required: `<project>` (e.g., `sous-storefront`, `stoik`). Optional: `--atlas-only` to render only the atlas page.
 
-## Procedure
+## Input
 
-### 1. Parse and locate
-
-Parse project name from `$ARGUMENTS`. Extract `--narrative <dir>` if present.
-
-Locate the project directory by checking paths in order:
-- `/kord/projects/<project>/`
-- `~/<project>/`
-- If `$ARGUMENTS` starts with `/`, treat it as an absolute path
-
-If not found, report which paths were checked and exit.
-
-### 2. Invoke Augur analysis
-
-Spawn an Augur subagent to analyze the project:
-
-```
-Agent(subagent_type="augur", prompt="Run /analyze on <project-path>")
-```
-
-Wait for the result. If the agent fails or times out, proceed with whatever artifacts already exist at `<project>/.kord/agents/augur/memory/` and mark the report as `stale — Augur failed`.
-
-### 3. Read project artifacts
-
-Read from `<project>/.kord/agents/augur/memory/` — this is the only authoritative location.
+Read from `<project>/.kord/agents/augur/memory/`:
 
 | File | Required | Purpose |
 |------|----------|---------|
-| `atlas.json` | **yes** | Full structural inventory — components, groups, flows, state, failures, concepts, deps, API, debt. All enrichments are inline. |
-| `stories/*.yaml` | no | Scoped narrative compositions. If present, use for sidebar narratives instead of generating inline. |
+| `atlas.json` | **yes** | Full structural inventory — abort if missing |
+| `stories/*.yaml` | **yes** (unless `--atlas-only`) | Story files |
+| `journeys/*.yaml` | no | Reading paths — auto-generate if missing |
 
-If `atlas.json` is missing after the Augur attempt, report and suggest running `/analyze <project>` directly. Exit.
+If `atlas.json` is missing, suggest running `/analyze <project>`. Exit.
 
-Atlas.json v3 contains everything that was previously split across architecture.yaml, patterns.md, dependencies.md, api-review.md, and debt-assessment.md. See [augur-output-contract.md](../../augur/skills/analyze/augur-output-contract.md) for the full schema.
+## Procedure
 
-### 4a. Produce architecture.json — write
+### 1. Load and validate
 
-This is the core creative step. Prose quality is the priority — write first, annotate in step 4b.
+Read `atlas.json`. Build lookup indices: `nodeMap`, `groupMap`, `stateMap`, `failureMap`.
 
-Produce this as **one thought**, not a mechanical transform. Hold the full picture and express it as a single coherent artifact.
+Read all `stories/*.yaml`. For each story, validate:
+- Every node ID in `structures[].nodes[].id` exists in atlas
+- Every edge `from`/`to` exists in story's nodes
+- Every `**bold ref**` in summary resolves to an atlas node ID
+- Every `flows[].steps[].node` and `.to` exists in atlas
+- Every `observations[].component` exists in atlas
+- Every `observation_ids` reference points to a defined observation
 
-**Output structure:**
+Read `journeys/*.yaml`. If none exist, auto-generate a default journey from all stories.
 
-```json
-{
-  "nodes": [...],
-  "edges": [...],
-  "data_flows": [
-    {
-      "id": "flow-id",
-      "name": "Human-readable name",
-      "narrative": "When a shopper opens the home page, **root-loader** fires...",
-      "steps": [
-        { "component": "root-loader", "action": "fetches categories", "to": "api-client" }
-      ]
-    }
-  ],
-  "state": [
-    {
-      "id": "store-id",
-      "name": "Cart Store",
-      "narrative": "Cart state lives in **localStorage** rather than server-side...",
-      "purpose": "source-of-truth",
-      "readers": ["cart-drawer", "checkout-page"],
-      "writers": ["add-to-cart-handler"]
-    }
-  ],
-  "failure_modes": [
-    {
-      "id": "failure-id",
-      "severity": "critical",
-      "narrative": "At 2am, DummyJSON starts returning 503s. The **circuit-breaker** opens...",
-      "cascade": [{ "component": "api-client", "effect": "..." }],
-      "detection": [...],
-      "recovery": [...]
-    }
-  ],
-  "overview": "Brief C4 Context paragraph — what this system does, who uses it.",
-  "structure_narrative": "The system runs across **server**, **browser**, and **external**..."
-}
-```
+### 2. Build indices
 
-**Constraints — every reference must resolve:**
-- Every `component` in a flow step must exist in `nodes[].id`
-- Every flow step pair (step N → step N+1) creates an edge with `flowId` — do not create flows without connected edges
-- Every `**bold-text**` in any narrative must match a `nodes[].id` or `nodes[].name`
-- Every `cascade[].component` in failure modes must exist in `nodes[].id`
-- Every `readers[]` and `writers[]` in state must exist in `nodes[].id`
-- Do not reference components that don't exist in the nodes array
+- **storyByNode**: atlas node ID → stories referencing it
+- **factIndex**: all observations across all stories, tagged with source story
+- **coverage**: critical atlas nodes appearing in at least one story
 
-**Hierarchy — 3-5 top-level groups maximum.** Follow the C4 Container model: top-level groups are runtime boundaries (Server, Browser, External), not modules. Everything nests inside. Groups beyond depth 2 become regular nodes.
+### 3. Choose visualizations per building block
 
-**Narrative approach — all narratives are one coherent story:**
+For each story, examine its building blocks and decide rendering. The block `type` field guides the choice — unknown types get generic rendering.
 
-The `overview`, `structure_narrative`, flow narratives, state narratives, and failure narratives are not independent texts. They are chapters of the same story, written in one pass. A flow narrative should reference what the structure narrative established. A failure narrative should reference the flows it disrupts. A state narrative should explain why a particular flow stores data the way it does.
+**Structures:**
 
-Write them as if you're explaining the entire system to a smart colleague who's never seen it. Start with the big picture (overview), zoom into how things are organized (structure), trace what happens when users interact (flows), explain where truth lives (state), and finally show what happens when things break (failures). Each section assumes the reader has read the previous ones.
+| Type | Visualization |
+|------|---------------|
+| `component topology` | Cytoscape graph (dagre or cose-bilkent based on node count) |
+| `data lineage` | Cytoscape graph with colored read/write edges |
+| `infrastructure` | Cytoscape graph with k8s-style icons |
+| `security boundary` | Cytoscape graph with zone shading |
+| `module graph` | Compact dependency list or dagre graph |
+| _(unknown type)_ | Dagre graph |
 
-Follow the voice, formatting, and structure rules in [narrative-style.md](narrative-style.md). Read it before writing any narrative content. Key points: short paragraphs separated by `\n\n`, scenario-driven voice, lead with action, em dashes not hyphens, ~100-150 words per flow/failure/store narrative.
+Sizing by node count:
+- 1-3 nodes: inline diagram, no interactive graph
+- 4-8 nodes: small dagre graph
+- 9+ nodes: full cose-bilkent with expand/collapse
 
-**Enrichments from Designer artifacts** (integrate into nodes, don't list separately):
-- Pattern badges from `patterns.md` → `node.patterns[]`
-- Debt markers from `debt-assessment.md` → `node.debt`
-- API endpoints from `api-review.md` → `node.endpoints[]`
-- External dep resilience from `dependencies.md` → `node.resilience`
+**Flows:**
 
-### 4b. Annotate narratives — match paragraphs to structure
+| Type | Visualization |
+|------|---------------|
+| `request path` | Mermaid sequence diagram |
+| `data pipeline` | Mermaid sequence diagram |
+| `failure cascade` | Timeline card (trigger → cascade steps → detection → recovery) |
+| `event chain` | Mermaid sequence diagram |
+| `deployment sequence` | Numbered step list |
+| `config resolution` | Numbered step list |
+| _(unknown type)_ | Mermaid sequence diagram |
 
-Re-read all narratives from step 4a. For each one, produce a `narrative_map` array that tags each paragraph with the structural elements it describes. **Do not change the prose** — just annotate it.
+**Observations:**
+- With code snippet: evidence card (finding + syntax-highlighted code + confidence badge)
+- Without snippet: compact card (finding + file:line + confidence badge)
+- Gap with recommendation: warning card with action
+- Attached to a node/step: rendered inline near that node/step, not in a separate section
 
-Split each narrative on `\n\n` into paragraphs. For each paragraph, identify what it covers:
+**Rationale:**
+- Decision card: what was decided + context + trade-offs
+- Alternatives shown as dismissed options
 
-- **Flow narratives** → `"steps": [1, 2, 3]` — which step indices (1-based) the paragraph describes. A paragraph covers a step if it mentions any component involved in that step.
-- **State narratives** → `"refs": ["cart-drawer", "checkout-page"]` — which component IDs the paragraph references.
-- **Failure narratives** → `"cascade_steps": [1, 2]` and/or `"refs": [...]` — which cascade steps and components.
-- **Structure narrative** → `"refs": ["server", "root-loader"]` — which node IDs (groups or components).
+### 4. Write the rendering manifest
 
-Add `narrative_map` alongside the existing `narrative` string:
+Scribe's core output is a **rendering manifest** — a JSON file that maps each story to its visualization decisions. The pre-built Astro components consume this manifest.
+
+For each story, produce an entry:
 
 ```json
 {
-  "narrative": "para1\n\npara2\n\npara3",
-  "narrative_map": [
-    { "text": "para1", "steps": [1, 2, 3] },
-    { "text": "para2", "steps": [4, 5] },
-    { "text": "para3", "steps": [6, 7, 8] }
+  "storyId": "mcp-servers",
+  "blocks": [
+    { "type": "structure", "sourceId": "server-topology", "render": "dagre", "nodeCount": 4 },
+    { "type": "observation", "sourceId": "obs-no-retry", "render": "warning-card" },
+    { "type": "rationale", "sourceId": "why-express-mcp", "render": "decision-card" }
   ]
 }
 ```
 
-For `structure_narrative`, add a top-level `structure_narrative_map`:
+Write the manifest to `<docs-content-dir>/<project>/manifest.json`.
 
-```json
-{
-  "structure_narrative_map": [
-    { "text": "The system runs across three boundaries...", "refs": ["server", "browser", "external"] },
-    { "text": "The **Agent System** coordinates...", "refs": ["agent-system", "main-agent"] }
-  ]
-}
+### 5. Write journey pages using templates
+
+Each journey becomes **one page** using the `JourneyPage.astro` template. Write an Astro page that imports the template and passes data:
+
+```astro
+---
+import JourneyPage from '<components>/JourneyPage.astro';
+import atlas from './<project>/atlas.json';
+import stories from './<project>/stories/*.yaml';  // loaded at build time
+---
+<JourneyPage project="<name>" journey={journey} stories={orderedStories} atlas={atlas} allJourneys={allJourneys} rendering={manifest} />
 ```
 
-**Validation:**
-- Every paragraph must appear in `narrative_map`
-- Every step/cascade index must be covered by at least one paragraph
-- Every `refs[]` value must exist in `nodes[].id`
+Output: `<docs-pages-dir>/<project>/index.astro` (default journey) and `<docs-pages-dir>/<project>/<journey-id>/index.astro` (additional journeys).
 
-**Gemini review** — after completing both 4a and 4b, run a background Gemini review per `~/.kord/shared/gemini-protocol.md`. Verify: references resolve, narrative is a story not a list, step ranges are correct. Fix valid critiques.
+### 6. Component inventory
 
-Write to `<docs-content-dir>/<project>/architecture.json`.
+Pre-built components in `components/` (do NOT regenerate these — they are stable code):
 
-### 6. Write the explorer page
+| Component | Purpose | Rendered by |
+|-----------|---------|-------------|
+| `JourneyPage.astro` | Page shell: header, TOC sidebar, journey selector, story sections | Top-level page |
+| `StoryCard.astro` | One story section: title, summary, blocks | JourneyPage |
+| `GraphBlock.astro` | Cytoscape graph for structures (lazy-loads on hover) | StoryCard |
+| `SequenceDiagram.astro` | Mermaid sequence diagram for flows | StoryCard |
+| `TimelineCard.astro` | Failure cascade timeline | StoryCard |
+| `ObservationCard.astro` | Evidence/warning card for observations | StoryCard |
+| `RationaleCard.astro` | Design decision card | StoryCard |
+| `AtlasPage.astro` | Full interactive graph with story lens | Atlas page |
 
-Write a self-contained Astro page to `<docs-pages-dir>/<project>/index.astro`.
+Supporting files in `lib/`:
+| File | Purpose |
+|------|---------|
+| `cytoscape-config.ts` | typeConfig, node styles, severity colors, flow colors |
+| `narrative.ts` | Bold-ref parsing, HTML escaping, narrative rendering |
 
-The page structure:
+### 5. Implement interactions
+
+**Bold refs → graph nodes:**
+- Parse `**bold text**` in summaries into `<span class="node-ref" data-node-id="...">` elements
+- On click, scroll to and highlight the corresponding node in the nearest structure graph
+- On hover, show tooltip with node description
+
+**Flow step → sequence diagram:**
+- Steps with `observation_ids` show a small badge on the corresponding diagram step
+
+**Story navigation:**
+- Sticky table of contents on the side (desktop) listing story titles
+- Click to scroll to story section
+- Journey selector dropdown switches between journey pages
+
+### 6. Render the atlas page
+
+Output: `<docs-dir>/<project>/atlas/index.astro`
+
+Full interactive Cytoscape graph with:
+- Cose-bilkent layout, expand/collapse hierarchy
+- Node types colored by typeConfig
+- Debt rings, pattern badges, tooltips
+- Story overlay: hovering a node shows "In N stories" badge
+- Coverage indicator: undocumented nodes get dashed border
+
+### 7. Render the facts index
+
+Output: `<docs-dir>/<project>/facts/index.astro`
+
+Searchable table of all observations across all stories:
+- Finding text, source story (linked), component, evidence file:line, confidence badge, tags
+- Text search, filter by tag/story/type/confidence
+
+### 8. Path resolution
+
+Resolve docs output location (in order):
+1. `$KORDINATE_HOME/../site/` → use it
+2. `site/` in kordinate repo root → use it
+3. Fallback: `<project>/.kord/agents/scribe/output/docs/`
+
+Within resolved root:
+- `src/pages/<project>/index.astro` (default journey)
+- `src/pages/<project>/<journey-id>.astro` (additional journeys)
+- `src/pages/<project>/atlas/index.astro`
+- `src/pages/<project>/facts/index.astro`
+
+### 9. Technical requirements
+
+**Shared across all pages:**
+- Self-contained: inline CSS/JS
+- CDN: Cytoscape.js + dagre (lazy, on interaction), Mermaid (lazy, on tab visibility)
+- CSS custom properties for dark/light mode
+- Responsive: stories stack vertically on mobile, atlas degrades to static SVG
+
+**Node type styling:**
+
+| Type | Color | Shape |
+|------|-------|-------|
+| `service` | Blue (#3B82F6) | Rounded rectangle |
+| `library` | Slate (#64748B) | Rounded rectangle |
+| `worker` | Indigo (#6366F1) | Rounded rectangle |
+| `api` | Green (#22C55E) | Rounded rectangle |
+| `frontend` | Purple (#A855F7) | Rounded rectangle |
+| `store` | Amber (#F59E0B) | Cylinder |
+| `gateway` | Rose (#F43F5E) | Hexagon |
+| `broker` | Orange (#F97316) | Hexagon |
+| `external` | Red (#EF4444) | Octagon |
+| `actor` | Teal (#14B8A6) | Ellipse |
+
+**Severity colors:** Critical=#EF4444, High=#F97316, Medium=#F59E0B, Low=#22C55E
+
+**Confidence badges:** High=solid green, Medium=outline amber, Low=outline gray
+
+### 10. Report
 
 ```
-+------------------------------------------------------------------+
-|  [project name] Architecture Explorer          [tab1][tab2][tab3] |
-+-------------------------------------------+----------------------+
-|                                           |                      |
-|                                           |  Narrative Sidebar   |
-|           Cytoscape.js Graph              |  (tabbed markdown)   |
-|           (interactive)                   |                      |
-|                                           |  - Structure         |
-|                                           |  - Flows             |
-|                                           |  - Data              |
-|                                           |  - Resilience        |
-+-------------------------------------------+----------------------+
-|  Bottom Drawer (click a node to inspect)                         |
-|  - Component detail, patterns, debt, endpoints, failure modes    |
-+------------------------------------------------------------------+
-```
+## Documentation: <project>
 
-**Graph panel** (Cytoscape.js):
-- Load `architecture.json` at build time via Astro's content layer or inline as a `<script>` data blob
-- Nodes colored by type: service=blue, library=gray, api=green, store=amber, frontend=purple, external=red, actor=teal, worker=indigo
-- Debt-affected nodes get a colored border ring (red/orange/yellow by severity)
-- Pattern badges shown as small pill labels below node name
-- Edges styled by relationship: solid for depends_on, dashed for async/event
-- Layout: `dagre` (top-to-bottom) for structural view, `breadthfirst` for flow view
-- Click a node to populate the bottom drawer
-- Hover shows tooltip with component description
-- Zoom, pan, fit-to-screen controls
+**Default journey**: <path> (N stories)
+**Additional journeys**: <list>
+**Atlas page**: <path>
+**Facts index**: <path> (N observations)
 
-**Narrative sidebar**:
-- Tabbed interface: Structure | Flows | Data | Resilience
-- Render the narrative markdown for each tab
-- Clicking a component name in the narrative highlights the node in the graph
+### Stories rendered
+| Story | Blocks | Visualizations |
+|-------|--------|---------------|
+| MCP Agent Servers | 1 structure (4 nodes), 2 observations | dagre graph, evidence cards |
+| Agent Delegation | 1 flow (5 steps), 1 rationale | sequence diagram, decision card |
 
-**Bottom drawer**:
-- Hidden by default, slides up on node click
-- Shows: component name, description, type, patterns (as pills), debt items (as warnings), API endpoints (as a mini table), failure modes affecting this node, dependencies (in and out)
-- Close button to dismiss
-
-**Technical requirements for the Astro page**:
-- Self-contained: inline all JS/CSS, load Cytoscape.js and dagre layout from CDN (`https://unpkg.com/cytoscape@3/dist/cytoscape.min.js`, `https://unpkg.com/cytoscape-dagre@2/cytoscape-dagre.js`, `https://unpkg.com/dagre@0.8/dist/dagre.min.js`)
-- Use Astro's `<script>` tag for client-side interactivity
-- Use CSS custom properties for theming (works with Starlight's dark/light mode)
-- Responsive: sidebar collapses to overlay on mobile
-- The page should work both in dev mode and as a built static page
-
-### 7. Path resolution for output
-
-The docs site content lives at (resolve in order):
-1. If `$KORDINATE_HOME/../site/` exists, use it (PVC layout: `kordinate/site/`)
-2. If a `site/` directory exists in the kordinate repo root, use it
-3. Otherwise create output at `<project>/.kord/agents/scribe/output/architecture-explorer/`
-
-Within the resolved docs root:
-- Pages: `src/pages/<project>/index.astro`
-- Content: `src/content/docs/<project>/architecture.json`
-- Narrative: `src/content/docs/<project>/narrative/*.md`
-
-If the docs site path does not exist (option 3 fallback), write all files into the project-local output directory and report that the user should copy them to the docs site manually.
-
-### 8. Report
-
-Output a summary:
-
-```
-## Architecture Explorer: <project>
-
-**Page**: <path to index.astro>
-**Data**: <path to architecture.json>
-**Narrative**: <path to narrative dir> (N files)
-
-### Enrichments included
-- Patterns: yes/no (N patterns mapped to M nodes)
-- Debt: yes/no (N items across M nodes)
-- API endpoints: yes/no (N endpoints mapped)
-- External deps: yes/no (N services)
-
-### Graph stats
-- Nodes: N (components: X, external: Y, actors: Z)
-- Edges: N
-- Flows: N
-- Failure modes: N
-
-### Notes
-- <any warnings, stale data notices, missing optional files>
+### Coverage
+- Atlas nodes: N total, M in stories (<percentage>%)
+- Undocumented critical nodes: [list or "none"]
 ```

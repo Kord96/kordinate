@@ -54,6 +54,22 @@ Run /boot before starting work.
 @~/.kord/shared/credentials-protocol.md
 ```
 
+### Agent Lock Files
+
+For each agent in `$KORDINATE_HOME/agents/` (except `main`), ensure a lock file exists at `$KORDINATE_HOME/profile/locks/<name>`:
+
+```bash
+mkdir -p "$KORDINATE_HOME/profile/locks"
+for agent in "$KORDINATE_HOME"/agents/*/; do
+  name=$(basename "$agent")
+  [ "$name" = "main" ] && continue
+  [ -f "$KORDINATE_HOME/profile/locks/$name" ] && continue
+  head -c 16 /dev/urandom | md5sum | cut -d' ' -f1 > "$KORDINATE_HOME/profile/locks/$name"
+done
+```
+
+These secrets are used by the guard hook (auth delegation) and the subagent gate (one-time spawn authorization via kord).
+
 ### Guard and Hooks
 
 Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
@@ -64,7 +80,26 @@ Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
 
 This installs:
 - **Unified guard** (`hooks/guard.sh`) on Write|Edit|Bash and mcp\_\_grafana — enforces scribe, deployer, sauron, and merge rules
-- **Subagent invocation gate** (`hooks/subagent-invocation-gate.sh`) on Agent — blocks direct spawning of kordinate agents, redirects to `/kord`
+- **Subagent invocation gate** (`hooks/subagent-invocation-gate.sh`) on Agent — blocks direct spawning of kordinate agents, redirects to kord capability tools
+
+### MCP Servers
+
+Ensure `~/.claude.json` has the kord MCP server configured under `mcpServers`:
+
+```json
+{
+  "mcpServers": {
+    "kord": {
+      "type": "http",
+      "url": "http://kord.master.svc.cluster.local:3100/mcp"
+    }
+  }
+}
+```
+
+Read `~/.claude.json` first (it contains many other fields — only add/update the `mcpServers.kord` entry). If running off-cluster, adjust the URL to the Tailscale endpoint.
+
+This gives all sessions access to the kord capability tools (e.g., `analyze_architecture`, `write_memory`, `delegate`).
 
 ### KORD.md
 
@@ -72,4 +107,4 @@ Run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild 
 
 ## Report
 
-List what was linked: agents, skills, kords, CLAUDE.md, guard status.
+List what was linked: agents, skills, routes, CLAUDE.md, MCP servers, guard status.

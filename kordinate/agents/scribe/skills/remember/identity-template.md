@@ -33,7 +33,7 @@ scope: global
 
 ## Rules
 
-- Never write to kordinate or memory paths directly — use /kord remember
+- Never write to kordinate or memory paths directly — use the `write_memory` tool
 - <agent-specific rules>
 
 ## Consultation

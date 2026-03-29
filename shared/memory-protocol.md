@@ -1,15 +1,11 @@
 ---
-description: Instructs agents to save insights via /kord remember before finishing
+description: Instructs agents to save insights to memory before finishing
 preloaded: all
 curated: true
 scope: global
 ---
 
-Before finishing your task, save any new insights worth keeping:
-
-```
-/kord remember <what you learned>
-```
+Before finishing your task, save any new insights worth keeping using the `write_memory` tool (provided by Beorn).
 
 Scribe decides scope (global vs project) and where to write. You don't need to think about paths.
 

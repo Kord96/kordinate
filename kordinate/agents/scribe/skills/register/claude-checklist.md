@@ -98,13 +98,13 @@ These require a live Claude session. Run [smoke-test.sh](smoke-test.sh) to verif
 
 - [ ] **Subagent spawning** — each agent spawns and responds with correct identity
 - [ ] **Boot** — `/boot` loads shared protocols and agent memory without errors
-- [ ] **Stateless kord** — `/kord remember <note>` writes to correct paths
-- [ ] **Stateful kord** — `/kord deployer <question>` spawns deployer and returns answer
+- [ ] **Memory write** — `write_memory` tool writes to correct paths
+- [ ] **Stateful kord** — spawning an agent with a question returns an answer
 - [ ] **Cache** — second stateful kord call returns `[cached]` when data is fresh
 - [ ] **Cache invalidation** — removing `.valid` marker causes re-spawn on next call
 - [ ] **Agent memory** — agents can read their own memory from kordinate paths
 - [ ] **Memory index sync** — new memory written via `/remember` appears in both `~/.kord/` and `~/.claude/agent-memory/` MEMORY.md
-- [ ] **Lifecycle compliance** — `/kord <agent> <task>` spawns agent that creates task checklist, reads memory, does work, and runs `/kord remember` before returning
+- [ ] **Lifecycle compliance** — agent spawns, creates task checklist, reads memory, does work, and saves to memory before returning
 - [ ] **Manifest integrity** — `manifest_update --dry-run` reports no unexpected drift
 - [ ] **Guard enforcement** — direct write to curated kordinate file is blocked
 - [ ] **Template enforcement** — templated files reject edits that remove required sections

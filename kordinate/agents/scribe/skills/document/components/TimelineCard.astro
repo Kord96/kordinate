@@ -1,0 +1,112 @@
+---
+/**
+ * Renders a failure cascade as a compact timeline card.
+ * Shows: trigger → cascade steps → detection → recovery
+ */
+interface CascadeStep {
+  component: string;
+  effect: string;
+}
+
+interface Props {
+  title: string;
+  trigger: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  cascade: CascadeStep[];
+  detection: string[];
+  recovery: string[];
+}
+
+const { title, trigger, severity, cascade, detection, recovery } = Astro.props;
+
+const severityColors: Record<string, string> = {
+  critical: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#22c55e'
+};
+const color = severityColors[severity] || '#64748b';
+---
+
+<div class="timeline-card" style={`border-left-color: ${color}`}>
+  <div class="tc-header">
+    <span class="tc-title">{title || trigger}</span>
+    <span class="tc-severity" style={`background:${color}33;color:${color}`}>{severity}</span>
+  </div>
+  <div class="tc-trigger">▸ {trigger}</div>
+  {cascade.length > 0 && (
+    <div class="tc-cascade">
+      {cascade.map((step, i) => (
+        <div class="tc-step">
+          <span class="tc-step-num">{i + 1}</span>
+          <span class="node-ref" data-node-id={step.component}>{step.component}</span>
+          <span class="tc-effect">— {step.effect}</span>
+        </div>
+      ))}
+    </div>
+  )}
+  <div class="tc-footer">
+    <span class="tc-label">detection:</span>
+    <span class={detection[0] === 'none' ? 'tc-none' : ''}>{detection.join(', ')}</span>
+    <span class="tc-sep">·</span>
+    <span class="tc-label">recovery:</span>
+    <span class={recovery[0] === 'none' ? 'tc-none' : ''}>{recovery.join(', ')}</span>
+  </div>
+</div>
+
+<style>
+  .timeline-card {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--border, #475569);
+    border-left: 3px solid;
+    border-radius: 6px;
+    background: var(--bg-secondary, #1e293b);
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .tc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .tc-title {
+    font-weight: 600;
+    color: var(--text-primary, #f1f5f9);
+  }
+  .tc-severity {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 9999px;
+  }
+  .tc-trigger {
+    margin-top: 0.25rem;
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.8rem;
+  }
+  .tc-cascade {
+    margin: 0.35rem 0;
+    padding-left: 0.25rem;
+  }
+  .tc-step {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    padding: 0.1rem 0;
+  }
+  .tc-step-num {
+    color: var(--text-muted, #64748b);
+    font-size: 0.7rem;
+    min-width: 1rem;
+  }
+  .tc-effect {
+    color: var(--text-secondary, #94a3b8);
+  }
+  .tc-footer {
+    font-size: 0.75rem;
+    color: var(--text-muted, #64748b);
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+  .tc-label { font-weight: 500; }
+  .tc-sep { opacity: 0.5; }
+  .tc-none { color: #ef4444; }
+</style>

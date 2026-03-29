@@ -123,7 +123,7 @@ Run the full improve loop on an agent: portfolio review, per-skill iteration wit
 4. **The agent executes three phases**:
    - **Phase 1 — Portfolio Review**: loads identity, inventories skills, launches background web research and Gemini peer review, analyzes alignment/gaps/splits/merges/staleness/resources, clones test repos, incorporates external input, classifies findings as immediate or proposed.
    - **Phase 2 — Per-Skill Iteration**: for each skill, tests against cloned repos, reviews against quality criteria plus portfolio findings, applies structural fixes, checks for oscillation.
-   - **Phase 3 — Sleep**: updates the repo database at `$DATA_DIR/repo-database.json`, persists portfolio findings and domain insights to memory via `/kord remember`, finalizes the manifest.
+   - **Phase 3 — Sleep**: updates the repo database at `$DATA_DIR/repo-database.json`, persists portfolio findings and domain insights to memory via the `write_memory` tool, finalizes the manifest.
 5. **Report** — the agent returns a structured summary covering portfolio findings, test repos used, per-skill iteration results, and what was persisted.
 
 ### Progress Tracking

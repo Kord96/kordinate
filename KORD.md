@@ -834,4 +834,4 @@ Auto-generated from frontmatter. Do not edit manually.
 
 - `shared/auth-protocol.md` — Instructs agents to authenticate before guarded operations
 - `shared/credentials-protocol.md` — All credentials managed through pass store — never hardcoded in manifests or config
-- `shared/memory-protocol.md` — Instructs agents to save insights via /kord remember before finishing
+- `shared/memory-protocol.md` — Instructs agents to save insights to memory before finishing
