@@ -1,8 +1,7 @@
 [
   {"type": "skill", "name": "bootstrap", "agent": "charon", "description": "Set up a cluster from scratch — namespaces, storage, overlays, deploy stacks.", "arguments": "<cluster>", "public": true},
   {"type": "skill", "name": "roll", "agent": "charon", "description": "Deploy between environments (forward) or revert (backward).", "arguments": "<project> <source> <target> | back <project> <env>", "public": true},
-  {"type": "skill", "name": "stop", "agent": "charon", "description": "Scale down an environment.", "arguments": "<project> <env>", "public": true},
-  {"type": "skill", "name": "migrate", "agent": "charon", "description": "Move a resource to a new location.", "arguments": "workstation | pvc <name> <namespace>", "public": true},
+{"type": "skill", "name": "migrate", "agent": "charon", "description": "Move a resource to a new location.", "arguments": "workstation | pvc <name> <namespace>", "public": true},
   {"type": "skill", "name": "add-node", "agent": "charon", "description": "Add a worker node to an existing k3s cluster.", "arguments": "<node-name> <tailscale-ip>", "public": true},
 
   {"type": "guard", "pattern": "kubectl *", "tool": "Bash", "validation": "charon", "description": "Cluster operations require charon"},

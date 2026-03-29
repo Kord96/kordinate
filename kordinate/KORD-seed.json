@@ -141,14 +141,6 @@
   },
   {
     "type": "skill",
-    "name": "stop",
-    "agent": "charon",
-    "description": "Scale down an environment.",
-    "arguments": "<project> <env>",
-    "public": true
-  },
-  {
-    "type": "skill",
     "name": "migrate",
     "agent": "charon",
     "description": "Move a resource to a new location.",
