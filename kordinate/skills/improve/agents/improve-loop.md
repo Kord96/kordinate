@@ -97,6 +97,8 @@ honestly — the goal is self-awareness, not self-congratulation:
 | **Misplacements** | Do any of my skills belong to a different agent's domain? Do other agents have skills that belong to me? |
 | **Staleness** | Do any skills reference tools, paths, commands, or patterns that no longer exist or have changed? |
 | **Resource gaps** | Are my 3rd-layer resources (scripts, templates, schemas, reference docs) sufficient? Am I missing automation that would make skills more reliable? |
+| **Resource extraction** | Does any SKILL.md contain methodology or reference material that should be its own supporting file? A SKILL.md should be orchestration (what to do in what order), not methodology (how to do each thing). If a section could be loaded independently, it should be a separate file. |
+| **Resource unification** | Are any supporting files duplicating content across skills? Do small files (<60 lines) that are always used together belong in one file? Does any supporting file repeat content from another instead of referencing it? |
 | **Quality of thought** | Do my skills explain *why* behind their instructions, or do they just list rigid steps? Would an intelligent agent understand the reasoning? |
 
 Check your memory (loaded at boot) for evidence. Past scratchpad entries about recurring

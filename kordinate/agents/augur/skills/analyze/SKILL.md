@@ -19,61 +19,46 @@ Produce `atlas.json` and stories — a complete architectural understanding of a
 
 ---
 
-## Phase 1 — Detect
+## Phase 1 — Understand the Codebase
 
-Run all detection methodologies in one pass. Output: atlas.json.
+Read the codebase and build a holistic understanding. This is one coherent thought — as you discover patterns, you're already forming opinions about components; as you trace dependencies, you're already seeing failure modes. The checklist below ensures completeness, not a sequential mental pass.
 
-### Step 1 — Locate, scan, and gather sources
+### Step 1 — Locate and gather
 
-Resolve the project directory (call it `$ROOT`). Check paths in order: `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`; if `$ARGUMENTS` is an absolute path, use it directly. If not found, report which paths were checked and exit.
+Resolve the project directory (`$ROOT`). Check: `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, or absolute path. If not found, report and exit. If empty, produce minimal atlas.json.
 
-If found but empty or has no source files, produce a minimal atlas.json with just `project`, `purpose: "Empty or scaffold"`, and empty sections.
+Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runtime). Glob source files per [source-gathering.md](source-gathering.md). Load concept catalogs (abstractions, concepts, anti-patterns indexes).
 
-Detect the stack: **languages** from package manifests; **frameworks** from dependency lists + [frameworks.md](frameworks.md); **runtime** from Dockerfile/Procfile/entry point. Glob `$ROOT` for source files per [extractors.md](extractors.md). Read the concept catalogs: abstractions index, concepts index, anti-patterns index. For `concept` fields on `state` and `external_dependencies`, use the infrastructure terms listed in [schema.md](schema.md).
+### Step 2 — Read and analyze
 
-### Step 2 — Detect concepts
+Read the source code. As you build your understanding, make sure you cover all of these concerns. They inform each other — don't treat them as separate passes.
 
-Run the concept catalog scan inline per [detection.md](detection.md): Pass 1 (batch grep per category), Pass 2 (ast-grep/semgrep rules), Pass 3 (manual signature verification), Pass 3.5 (diagnostic question evaluation). Assess confidence per concept. Identify gaps (external calls without resilience, stack-implied patterns, catalog cross-references). Hold results — they feed into steps 5-7.
+**Completeness checklist:**
 
-### Step 3 — Map dependencies
+| Concern | Methodology | Reference |
+|---------|-------------|-----------|
+| **Patterns and concepts** | 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. | [detection.md](detection.md) |
+| **Dependencies** | Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. | [dep-analysis.md](dep-analysis.md) |
+| **API surface** | Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. | [api-review.md](api-review.md), [frameworks.md](frameworks.md) |
+| **Components** | 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. | [source-gathering.md](source-gathering.md) |
+| **Actors and flows** | External actors. 2-4 critical data flows. Events (omit if none). | [schema.md](schema.md) |
+| **State** | Stores with concept vocabulary, readers/writers, persistence model. | [dep-analysis.md](dep-analysis.md) |
+| **Failure modes** | Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent. | [schema.md](schema.md) |
+| **Debt** | Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. | [debt.md](debt.md) |
 
-Inline dependency analysis per [dep-analysis.md](dep-analysis.md). Discover internal modules, trace imports, detect external services from client libraries and ORM schemas, scan infrastructure manifests, discover inter-service config references, flag circular dependencies and hub modules. If `--reverse`, scan sibling projects for inbound references. Hold results.
+### Step 3 — Gemini review (background)
 
-### Step 4 — Review API surface
-
-Inline API review per [api-review.md](api-review.md). Detect web framework(s) using [frameworks.md](frameworks.md). Discover all route/endpoint definitions with auth and validation columns. Run the REST hygiene checklist (7 concerns). Assess gateway pattern and hexagonal architecture compliance. Handle non-REST styles (GraphQL, gRPC, WebSocket, SSE). Hold results.
-
-### Step 5 — Identify components and groups
-
-Using all intermediate state from steps 2-4, identify **5-10 top-level components** per [guidance.md](guidance.md). Annotate each component with: detected patterns (step 2), dependency info (step 3), and API endpoints (step 4). Use `children` to nest sub-components.
-
-**Assign components to 3-5 groups.** Groups are structural clusters — runtime boundaries (Server, Browser, External), not code modules. This is a hard constraint. If you have >5 groups, merge the two most closely related. If <3, the project may be too small for grouping. Small projects (<15 nodes) aim for 3 groups. Synthetic `external` and `actors` groups count toward the limit. See [guidance.md](guidance.md) for group assignment rules.
-
-Map relationships grounded in actual code. Shared utility imports are incidental coupling, not architectural relationships.
-
-### Step 6 — Map actors, flows, events, state, and external dependencies
-
-Identify external actors (users, services, cron, data sources). Trace **2-4 critical data flows** — not every code path. Map events (omit if none). Catalog state stores with concept vocabulary from [dep-analysis.md](dep-analysis.md), including `readers` and `writers` arrays. Catalog external dependencies with criticality and resilience assessment informed by concept detection from step 2.
-
-### Step 7 — Failure modes and debt assessment
-
-For each external dependency and stateful component, trace cascading failures: what breaks, cascade, user impact, detection, recovery, severity. For detection signals: look for existing metrics, health checks, log patterns in code; write `"none"` if absent.
-
-Then run debt assessment inline per [debt.md](debt.md): load anti-patterns from detected concept files, scan for violations, calculate score and grade (A-F with hard floor rule), categorize, prioritize 3-7 recommendations. Failure modes and debt share a natural boundary — a missing resilience pattern is both a failure mode and a debt item.
-
-### Step 8 — Gemini review (background)
-
-Feed the draft atlas and project source to Gemini:
+Feed the draft atlas and source to Gemini:
 ```bash
-gemini -m gemini-2.5-pro -o json -p "Review this atlas.json against the source code. Flag: missing components, incorrect dependency edges, missed failure modes, concept detection false positives, severity misclassifications in debt, API findings that were missed, group coherence (are the 3-5 groups natural?). Be specific." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
+gemini -m gemini-2.5-pro -o json -p "Review this atlas.json against the source code. Flag: missing components, incorrect edges, missed failure modes, false positives, severity misclassifications, missed API findings, group coherence. Be specific." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
 ```
-Continue to step 9 immediately.
+Continue immediately.
 
-### Step 9 — Write atlas.json
+### Step 4 — Write atlas.json
 
-Assemble all findings into [schema.md](schema.md) v3 format. Set `version: "3"` and `generated` to today's date. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json` (create directory if needed).
+Assemble into [schema.md](schema.md) v3 format. Set `version: "3"` and `generated` to today. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
 
-If `--detect-only`: skip Phase 2, go directly to step 14 (Report).
+If `--detect-only`: skip Phase 2, go to Report.
 
 ---
 
@@ -81,7 +66,7 @@ If `--detect-only`: skip Phase 2, go directly to step 14 (Report).
 
 With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-schema.md](story-schema.md).
 
-### Step 10 — Compose stories and journeys
+### Step 5 — Compose stories and journeys
 
 Think about the codebase as a whole. What are the important things to understand? Who needs to understand them? Let the journeys guide which stories to tell.
 
@@ -102,11 +87,11 @@ For data structures: use `reads`/`writes` edge types and inherit `purpose`/`pers
 
 **Typical output:** 8-15 stories across 2-4 journeys. Each story has a summary and 1-3 building blocks.
 
-### Step 11 — Refine (Detect-Compose-Refine)
+### Step 6 — Refine (Detect-Compose-Refine)
 
 Review each story. If a summary makes a claim not directly observed in Phase 1, re-read the specific source file(s) to verify or correct it. Only re-read files that an ungrounded claim references.
 
-### Step 12 — Evaluate
+### Step 7 — Evaluate
 
 For each story, compute:
 - **Groundedness**: claims traced to atlas findings + node IDs / total claims. Target: >= 0.85.
@@ -114,13 +99,13 @@ For each story, compute:
 
 If groundedness is low, revise ungrounded claims. If coverage is low, add stories for uncovered critical components.
 
-### Step 13 — Write
+### Step 8 — Write
 
 Write stories to `$ROOT/.kord/agents/augur/memory/stories/<id>.yaml`. Write journeys to `$ROOT/.kord/agents/augur/memory/journeys/<id>.yaml`. Create directories if needed. Update `metadata.story_ids` in atlas.json.
 
 ---
 
-## Step 14 — Report
+## Step 9 — Report
 
 ```
 ## Analysis: <project>
