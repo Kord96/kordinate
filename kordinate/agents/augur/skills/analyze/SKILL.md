@@ -48,9 +48,9 @@ Read the source code. As you build your understanding, make sure you cover all o
 
 ### Step 3 — Gemini review (background)
 
-Feed the draft atlas and source to Gemini:
+Feed the draft atlas, source code, and our constraints to Gemini:
 ```bash
-gemini -m gemini-2.5-pro -o json -p "Review this atlas.json against the source code. Flag: missing components, incorrect edges, missed failure modes, false positives, severity misclassifications, missed API findings, group coherence. Be specific." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
+gemini -m gemini-2.5-pro -o json -p "Review this atlas.json against the source code. Our constraints: MUST have 3-5 groups (hard limit), 5-10 components (4-12 acceptable), 2-4 critical flows. Every entry needs grounded_in file references. Flag: missing components, incorrect edges, missed failure modes, false positives, severity misclassifications, API findings missed, groups that should merge or split to hit 3-5. Be specific — cite file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
 ```
 Continue immediately.
 
@@ -95,13 +95,23 @@ Review each story. If a summary makes a claim not directly observed in Phase 1, 
 
 ### Step 7 — Evaluate
 
-Three checks:
+Three mechanical checks, then a Gemini review:
 
-1. **Groundedness verification**: for each observation and story claim, check the `grounded_in` file references. Re-read the cited source files and verify the claim holds at those locations. This catches hallucinations at the source — not "does the atlas agree?" (circular) but "does the code agree?" (ground truth). Target: >= 0.85.
+1. **Schema validation** (run the script):
+   ```bash
+   python $SKILL_DIR/scripts/validate_atlas.py $ROOT/.kord/agents/augur/memory/atlas.json
+   ```
+   The script checks: required fields, kebab-case IDs, unique IDs, all cross-references resolve, 3-5 groups, 5-10 components, `grounded_in` non-empty. Fix any errors before proceeding.
 
-2. **Schema validation**: verify atlas.json conforms to [schema.md](schema.md) (required fields, unique IDs, cross-references resolve, 3-5 groups, 5-10 components). Verify stories conform to [story-schema.md](story-schema.md) (summary present, bold refs resolve, observation_ids valid).
+2. **Groundedness verification**: for each observation and story claim with `grounded_in` references, re-read the cited source files and verify the claim holds at those locations. This catches hallucinations at the source — not "does the atlas agree?" (circular) but "does the code agree?" (ground truth). Target: >= 0.85.
 
 3. **Coverage**: critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
+
+4. **Gemini story review** (background):
+   ```bash
+   gemini -m gemini-2.5-pro -o json -p "Review these architectural stories against the atlas and our writing rules. Rules: summaries must be 50-80 words max, state facts about code not facts about the document, every **bold ref** must match an atlas node ID, no meta-text like 'this story covers...' Story building blocks: summary (required), structures, flows, observations, rationale. Journeys: 3-8 stories each, ordered from foundational to dependent. Check: do stories cover important concerns? Teaching order sensible? Summaries factual and specific? Any critical components missing from all stories?" @$ROOT/.kord/agents/augur/memory/stories/ < $ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
+   ```
+   Incorporate valid critiques before writing final output. Ignore opinions that contradict our constraints.
 
 If groundedness is low, fix the claims at the source. If schema is invalid, fix the structure. If coverage is low, add stories for uncovered components.
 
