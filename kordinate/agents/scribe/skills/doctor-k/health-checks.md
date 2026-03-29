@@ -91,6 +91,48 @@ Verify secrets scanning works:
 - `patterns.yaml` exists and has patterns: **ERROR** if missing or empty
 - Git push guard entry exists in KORD.json: **WARNING** if missing
 
+## Content audit (with `--deep`)
+
+These checks read file content, not just metadata. Slower but catches semantic staleness. Skip unless `--deep` is passed.
+
+### Framework file staleness
+
+For files in KORD-seed.json (the framework skeleton):
+- Scan for references to deleted agents (deployer, designer): **WARNING**
+- Scan for references to deleted skills (/detect-concepts, /architect, /infra, /assess-debt, /map-dependencies, /review-api, /train-detection): **WARNING**
+- Scan for references to removed tools (write_memory, Beorn): **WARNING**
+- Scan for stale frontmatter fields (curated, scope, preloaded still present): **WARNING**
+- Scan for references to KORD.md or generate-kord.sh: **WARNING**
+- Scan for references to routes.yaml: **WARNING**
+
+### Template compliance
+
+Check files against their expected structure:
+- **IDENTITY.md** — must have: Skills table, Capabilities section, Rules section, Consultation section: **WARNING** if missing sections
+- **SKILL.md** — must have: name and description in frontmatter, Arguments or procedure section: **WARNING** if missing
+- **Concept files** (`concepts/*/concept.md`) — must have: Recognition > Signatures section: **INFO** if missing
+
+### Preload audit
+
+Review preload configuration:
+- Preloaded files not modified in 30+ days: **INFO** — still relevant?
+- Preloaded files larger than 10KB: **WARNING** — expensive context, consider trimming
+- Total preload size per agent (sum of all preloaded files): **WARNING** if > 50KB
+- Memory files frequently written to but not preloaded: **INFO** — consider preloading
+
+### Cross-reference validity
+
+Check that text content references valid system state:
+- Agent names mentioned in file content should exist in `$KORDINATE_HOME/agents/`: **WARNING** if referencing nonexistent agent
+- Skill names mentioned (e.g., `/analyze`, `/monitor`) should exist in KORD.json skill entries: **WARNING** if stale
+- File paths mentioned should resolve: **WARNING** if path doesn't exist
+- KORD.json descriptions should roughly match file content: **INFO** if description seems outdated
+
+### Description accuracy
+
+For each KORD.json file entry, compare description against file's first heading or first paragraph:
+- Description says something significantly different from content: **INFO**
+
 ## Scratchpad staleness
 
 Check modification date of `memory/scratchpad.md` for each agent:
