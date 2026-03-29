@@ -269,7 +269,7 @@
   },
   {
     "type": "skill",
-    "name": "validate-output",
+    "name": "validate",
     "agent": "warden",
     "description": "Validate output against registered validator. Returns completion token.",
     "arguments": "<dir>",
@@ -277,17 +277,10 @@
   },
   {
     "type": "skill",
-    "name": "scan-breaches",
+    "name": "scan-secrets",
     "agent": "warden",
-    "description": "Scan repos for hardcoded secrets, PII, and exposed configuration.",
-    "arguments": "<project>",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "audit-secrets",
-    "agent": "warden",
-    "description": "Reconcile cluster Kubernetes secrets against the pass store.",
+    "description": "Scan repos for secrets, PII, exposed config. With --reconcile: check k8s secrets vs pass store.",
+    "arguments": "<project> [--reconcile]",
     "public": true
   },
   {
@@ -317,7 +310,7 @@
     "pattern": "git push",
     "tool": "Bash",
     "validation": "sanitize",
-    "description": "Scan diff for secrets before pushing \u2014 blocks if credentials, tokens, or PII found in new lines"
+    "description": "Scan diff for secrets before pushing"
   },
   {
     "type": "file",

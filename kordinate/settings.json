@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$KORDINATE_HOME/hooks/guard.sh"
+            "command": "$KORDINATE_HOME/hooks/kord-guard.sh"
           }
         ]
       },
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$KORDINATE_HOME/hooks/subagent-invocation-gate.sh"
+            "command": "$KORDINATE_HOME/hooks/agent-gate.sh"
           }
         ]
       }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$KORDINATE_HOME/hooks/worktree-push.sh"
+            "command": "$KORDINATE_HOME/hooks/auto-merge.sh"
           }
         ]
       }
