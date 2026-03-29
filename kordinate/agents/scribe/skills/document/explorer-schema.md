@@ -1,294 +1,266 @@
-# Explorer Schema: architecture.json
+# Input Schema: Atlas + Stories
 
-Level 3 resource for the illustrate-architecture skill. Defines the JSON format consumed by the Astro explorer page.
+Level 3 resource for the document skill. Defines the formats Scribe consumes from Augur's `/analyze` output.
 
-## Schema
+For the full output contract and guarantees, see `augur-output-contract.md` in Augur's analyze skill.
+
+## atlas.json
+
+The structural inventory of the entire codebase. Scribe uses this for:
+- The atlas page (full interactive graph)
+- Resolving node references from stories
+- Coverage tracking (which nodes have stories)
+- Node metadata in detail panels (patterns, debt, endpoints, resilience)
+
+### Top-level shape
 
 ```json
 {
-  "project": "<project-name>",
-  "generated": "<YYYY-MM-DD>",
+  "version": "3",
+  "generated": "YYYY-MM-DD",
+  "project": "<name>",
   "purpose": "<one sentence>",
+
   "stack": {
     "languages": ["<lang>"],
-    "frameworks": ["<framework>"],
+    "frameworks": [{"name": "<framework>", "concepts": ["<concept>"]}],
     "runtime": "<description>"
   },
 
   "groups": [
-    {
-      "id": "<group-id>",
-      "name": "<Human Label>",
-      "description": "<optional>"
-    }
+    {"id": "<kebab>", "name": "<Human Label>", "description": "...", "components": ["<component-id>"]}
   ],
 
-  "nodes": [
+  "actors": [
+    {"id": "<kebab>", "type": "user|service|cron|cli|data-source|external", "description": "..."}
+  ],
+
+  "components": [
     {
-      "id": "<component-id>",
-      "name": "<Human Readable Name>",
-      "type": "service | library | worker | api | frontend | cli | store | gateway | broker | external | actor",
-      "group": "<group-id>",
-      "parent": "<parent-node-id | null>",
-      "hasChildren": false,
+      "id": "<kebab>",
+      "name": "<Human Name>",
       "description": "<one sentence>",
-      "file": "<path/to/source>",
-      "exports": ["<exported-symbol>"],
-      "patterns": [
-        { "name": "<pattern-name>", "category": "<category>" }
-      ],
-      "debt": {
-        "severity": "critical | high | medium | low",
-        "items": [
-          { "title": "<short title>", "description": "<detail>" }
-        ]
-      },
-      "endpoints": [
-        { "method": "GET | POST | PUT | DELETE | PATCH", "path": "</route>", "description": "<what it does>" }
-      ],
-      "resilience": {
-        "timeout": true,
-        "retry": true,
-        "circuitBreaker": false,
-        "fallback": "<description | null>"
-      },
-      "criticality": "critical | important | optional"
-    }
-  ],
-
-  "edges": [
-    {
-      "source": "<node-id>",
-      "target": "<node-id>",
-      "label": "<short description>",
-      "style": "solid | dashed",
-      "type": "depends_on | data_flow | event"
+      "type": "service|library|worker|api|frontend|cli|scheduler|store|gateway|broker",
+      "group": "<group-id>",
+      "modules": ["<path>"],
+      "depends_on": ["<component-id>"],
+      "abstraction": ["<abstraction-name>"],
+      "patterns": ["<pattern-name>"],
+      "children": []
     }
   ],
 
   "data_flows": [
     {
-      "id": "<flow-id>",
-      "name": "<Human Readable Flow Name>",
-      "description": "<what this flow accomplishes>",
+      "id": "<kebab>",
+      "name": "<Human Name>",
+      "description": "<what it accomplishes>",
       "trigger": "<what starts it>",
+      "actors": ["<actor-id>"],
       "steps": [
-        {
-          "component": "<component-id>",
-          "action": "<verb phrase>",
-          "data": "<what moves>",
-          "to": "<component-id | null>",
-          "technology": "<protocol>"
-        }
+        {"component": "<id>", "action": "<verb>", "data": "<what moves>", "to": "<id>", "technology": "<protocol>"}
       ]
     }
   ],
 
   "state": [
     {
-      "id": "<state-id>",
-      "name": "<Human Readable Name>",
-      "description": "<what this state holds>",
-      "purpose": "source-of-truth | cache | derived | staging",
+      "id": "<kebab>",
+      "concept": "relational-db|document-store|embedded-olap|cache|object-store|message-broker|filesystem|in-memory",
       "technology": "<specific tool>",
       "component": "<component-id>",
-      "persistence": "persistent | ephemeral",
+      "stores": "<what data>",
+      "purpose": "source-of-truth|cache|derived|staging",
+      "persistence": "persistent|ephemeral",
       "readers": ["<component-id>"],
       "writers": ["<component-id>"]
     }
   ],
 
+  "events": [
+    {"id": "<kebab>", "type": "topic|signal|webhook|cron|pubsub", "name": "...", "producer": "<id>", "consumers": ["<id>"], "data": "..."}
+  ],
+
+  "external_dependencies": [
+    {
+      "id": "<kebab>",
+      "name": "<Human Name>",
+      "concept": "http-api|message-broker|database|cache|object-store|dns|smtp|nfs|grpc|auth-provider|cdn",
+      "technology": "<specific>",
+      "components": ["<component-id>"],
+      "purpose": "<why needed>",
+      "criticality": "critical|important|optional",
+      "resilience": {"timeout": true, "retry": false, "circuit_breaker": false, "fallback": null}
+    }
+  ],
+
   "failure_modes": [
     {
-      "id": "<failure-id>",
+      "id": "<kebab>",
       "trigger": "<what goes wrong>",
-      "severity": "critical | high | medium | low",
+      "severity": "critical|high|medium|low",
       "impact": "<user-visible effect>",
-      "cascade": [
-        { "component": "<component-id>", "effect": "<what happens>" }
-      ],
-      "detection": ["<signal>"],
-      "recovery": ["<step>"]
+      "cascade": [{"component": "<id>", "effect": "<what happens>"}],
+      "detection": ["<signal or 'none'>"],
+      "recovery": ["<step or 'none'>"]
     }
-  ]
-}
-```
+  ],
 
-## Field Reference
-
-### nodes
-
-Every architectural entity becomes a node. The `type` field determines visual styling:
-
-| Type | Color | Shape | Source |
-|------|-------|-------|--------|
-| `service` | Blue (#3B82F6) | Rounded rectangle | architecture.yaml components |
-| `library` | Slate (#64748B) | Rounded rectangle | architecture.yaml components |
-| `worker` | Indigo (#6366F1) | Rounded rectangle | architecture.yaml components |
-| `api` | Green (#22C55E) | Rounded rectangle | architecture.yaml components |
-| `frontend` | Purple (#A855F7) | Rounded rectangle | architecture.yaml components |
-| `cli` | Slate (#64748B) | Diamond | architecture.yaml components |
-| `store` | Amber (#F59E0B) | Cylinder | architecture.yaml state |
-| `gateway` | Rose (#F43F5E) | Hexagon | architecture.yaml components |
-| `broker` | Orange (#F97316) | Hexagon | architecture.yaml components |
-| `external` | Red (#EF4444) | Octagon | architecture.yaml external_dependencies |
-| `actor` | Teal (#14B8A6) | Ellipse | architecture.yaml actors |
-
-### Enrichment fields
-
-These fields are **null/empty by default** and populated only when the corresponding Designer memory file exists:
-
-- `patterns` — from `patterns.md`. Array of `{ name, category }`. Rendered as small pill badges below the node label.
-- `debt` — from `debt-assessment.md`. Object with `severity` and `items` array. Drives the colored border ring on the node (red = critical, orange = high, yellow = medium).
-- `endpoints` — from `api-review.md`. Array of `{ method, path, description }`. Shown in the bottom drawer when the node is selected.
-- `resilience` — from `dependencies.md`. Object with boolean fields for timeout/retry/circuitBreaker and a fallback description. Applied to external nodes.
-- `criticality` — from `dependencies.md` or `external_dependencies`. Shown as a badge on external nodes.
-
-### edges
-
-Edges connect nodes. The `type` field distinguishes relationship kinds:
-
-| Type | Style | Source |
-|------|-------|--------|
-| `depends_on` | Solid line | architecture.yaml `depends_on` arrays |
-| `data_flow` | Dashed line with arrow | architecture.yaml `data_flows` steps |
-| `event` | Dotted line | architecture.yaml `events` |
-
-### data_flows
-
-Flow objects are used to animate the data flow view. When a user selects a flow from the sidebar, the graph highlights the path and the bottom drawer shows the step-by-step breakdown.
-
-### groups
-
-Groups define visual clusters in the graph layout. They correspond to capabilities from architecture.yaml plus two synthetic groups:
-- `external` — all external dependencies and their connections
-- `actors` — all actors
-
-The Cytoscape.js compound node feature renders groups as background containers.
-
-## Conventions
-
-- All `id` values match IDs from `architecture.yaml` verbatim
-- `null` or missing optional fields should be omitted from the JSON (not included as `null`)
-- `name` values are short (3-5 words). Detail goes in `description` fields
-- The `parent` field on nodes enables Cytoscape.js compound nodes for components with `children`
-- Debt severity on a parent node is the max severity of its children
-- Flow steps reference the same component IDs as nodes — this is how the explorer links graph interaction to flow animation
-
-## Example
-
-For the stoik stream-processing project:
-
-```json
-{
-  "project": "stoik",
-  "generated": "2026-03-27",
-  "purpose": "Stream processing — Kafka to DuckDB with FlightSQL/HTTP serving.",
-  "stack": {
-    "languages": ["Python"],
-    "frameworks": ["confluent-kafka", "FastAPI", "Apache Arrow Flight", "DuckDB"],
-    "runtime": "Long-running Python process"
+  "concepts": {
+    "detected_patterns": [
+      {"id": "<name>", "category": "<cat>", "confidence": "high|medium|low", "components": ["<id>"], "evidence": {"files": ["<path>"], "method": "...", "note": "..."}}
+    ],
+    "detected_anti_patterns": [],
+    "gaps": [{"id": "<name>", "relevance": "...", "recommendation": "..."}]
   },
-  "groups": [
-    { "id": "stream-ingestion", "name": "Stream Ingestion" },
-    { "id": "batch-storage", "name": "Batch Storage" },
-    { "id": "query-serving", "name": "Query Serving" },
-    { "id": "external", "name": "External" },
-    { "id": "actors", "name": "Actors" }
-  ],
-  "nodes": [
-    {
-      "id": "kafka-consumer",
-      "name": "Kafka Consumer",
-      "type": "worker",
-      "group": "stream-ingestion",
-      "description": "Connects to Kafka, polls messages in batches, deserializes with schema registry",
-      "file": "stoik/stream/kafka.py",
-      "patterns": [
-        { "name": "stream-to-store", "category": "data" }
-      ]
-    },
-    {
-      "id": "kafka-broker",
-      "name": "Kafka Broker",
-      "type": "external",
-      "group": "external",
-      "description": "Source of streaming data",
-      "resilience": {
-        "timeout": true,
-        "retry": true,
-        "circuitBreaker": false
-      },
-      "criticality": "critical"
-    },
-    {
-      "id": "upstream-kafka",
-      "name": "Upstream Kafka",
-      "type": "actor",
-      "group": "actors",
-      "description": "Produces messages to Kafka topics that stoik consumes"
-    }
-  ],
-  "edges": [
-    {
-      "source": "kafka-consumer",
-      "target": "buffer",
-      "label": "batch records",
-      "style": "solid",
-      "type": "depends_on"
-    },
-    {
-      "source": "upstream-kafka",
-      "target": "kafka-consumer",
-      "label": "messages",
-      "style": "dashed",
-      "type": "data_flow"
-    }
-  ],
-  "data_flows": [
-    {
-      "id": "ingest-to-store",
-      "name": "Kafka to DuckDB Pipeline",
-      "description": "The primary write path",
-      "trigger": "Messages arrive on Kafka topic",
-      "steps": [
-        {
-          "component": "kafka-consumer",
-          "action": "Polls batch of messages",
-          "data": "Raw Kafka messages -> Arrow RecordBatch",
-          "to": "buffer",
-          "technology": "Kafka"
-        }
-      ]
-    }
-  ],
-  "state": [
-    {
-      "id": "duckdb-files",
-      "name": "DuckDB Storage",
-      "description": "Entity data in columnar format",
-      "purpose": "source-of-truth",
-      "technology": "DuckDB",
-      "component": "duckdb-store",
-      "persistence": "persistent",
-      "readers": ["query-engine"],
-      "writers": ["buffer"]
-    }
-  ],
-  "failure_modes": [
-    {
-      "id": "kafka-down",
-      "trigger": "Kafka broker becomes unreachable",
-      "severity": "critical",
-      "impact": "Ingestion halts. Query serving continues from existing data.",
-      "cascade": [
-        { "component": "kafka-consumer", "effect": "Consumer poll fails" },
-        { "component": "consume-loop", "effect": "Buffer stops receiving" },
-        { "component": "buffer", "effect": "No new data to flush" }
-      ],
-      "detection": ["Consumer reconnection logs", "kafka_consumer_lag flatlines"],
-      "recovery": ["Consumer auto-reconnects", "Buffer resumes on next poll"]
-    }
-  ]
+
+  "debt": {
+    "score": 15,
+    "grade": "C",
+    "interpretation": "<one sentence>",
+    "violations": [
+      {"severity": "CRITICAL|RECOMMENDED|MINOR", "category": "...", "anti_pattern": "...", "components": ["<id>"], "files": ["<path>"], "detail": "...", "points": 5}
+    ],
+    "recommendations": [
+      {"priority": 1, "title": "...", "severity": "...", "description": "...", "files": ["<path>"]}
+    ]
+  },
+
+  "metadata": {
+    "story_ids": ["structure-api-layer", "flow-ssr-prefetch"]
+  }
 }
 ```
+
+### Node type styling
+
+| Type | Color | Shape | Used for |
+|------|-------|-------|----------|
+| `service` | Blue (#3B82F6) | Rounded rectangle | Backend services, API servers |
+| `library` | Slate (#64748B) | Rounded rectangle | Shared libraries, utilities |
+| `worker` | Indigo (#6366F1) | Rounded rectangle | Background workers, consumers |
+| `api` | Green (#22C55E) | Rounded rectangle | API endpoints, route handlers |
+| `frontend` | Purple (#A855F7) | Rounded rectangle | UI components, pages |
+| `cli` | Slate (#64748B) | Diamond | CLI tools, scripts |
+| `store` | Amber (#F59E0B) | Cylinder | Data stores, caches |
+| `gateway` | Rose (#F43F5E) | Hexagon | API gateways, load balancers |
+| `broker` | Orange (#F97316) | Hexagon | Message brokers, event buses |
+| `external` | Red (#EF4444) | Octagon | External dependencies |
+| `actor` | Teal (#14B8A6) | Ellipse | Users, external services, cron |
+
+### Guarantees from Augur
+
+| Guarantee | Value |
+|-----------|-------|
+| Top-level groups | 3-5 (hard) |
+| Components | 5-10, acceptable 4-12 |
+| Critical data flows | 2-4 |
+| All cross-references | resolve to existing IDs |
+| Empty sections | omitted, not null |
+
+---
+
+## Story YAML
+
+Each story is a scoped analytical unit. Stories carry no visualization hints — Scribe decides how to render each dimension.
+
+### Shape
+
+```yaml
+type: structure | flow | data | resilience | highlight
+id: "<kebab-case>"
+title: "<Human Readable Title>"
+teaches: "<one sentence>"
+group: "<atlas-group-id>"
+audience: ["<role>"]                      # optional
+prerequisites: ["<story-id>"]            # optional
+
+structure:                                # required for all stories
+  nodes: ["<atlas-node-id>"]
+  edges:
+    - { source: "<node-id>", target: "<node-id>", label: "<short>" }
+  narrative: "<prose with **bold node refs**>"
+  narrative_map:
+    - { text: "<paragraph>", refs: ["<node-id>"] }
+
+flows:                                    # optional
+  - id: "<flow-id>"
+    name: "<Human Name>"
+    steps:
+      - { from: "<node-id>", to: "<node-id>", action: "<verb>", technology: "<protocol>" }
+    narrative: "<prose>"
+    narrative_map:
+      - { text: "<paragraph>", steps: [1, 2] }
+
+data:                                     # optional
+  stores:
+    - { id: "<state-id>", name: "<name>", purpose: "<purpose>",
+        readers: ["<node-id>"], writers: ["<node-id>"] }
+  narrative: "<prose>"
+  narrative_map:
+    - { text: "<paragraph>", refs: ["<node-id>"] }
+
+resilience:                               # optional
+  failures:
+    - { id: "<failure-id>", trigger: "<what>", severity: "critical|high|medium|low",
+        cascade: [{ component: "<node-id>", effect: "<what>" }],
+        detection: ["<signal>"], recovery: ["<step>"] }
+  narrative: "<prose>"
+  narrative_map:
+    - { text: "<paragraph>", refs: ["<node-id>"], cascade_steps: [1, 2] }
+
+observations:                             # optional
+  - id: "<obs-id>"
+    type: pattern-match | anti-pattern | gap | api-finding | debt | structural | dependency
+    confidence: high | medium | low
+    component: "<node-id>"
+    evidence:
+      file: "<path>"
+      lines: [14, 28]                    # optional
+      snippet: "<code>"                   # optional
+    finding: "<one sentence>"
+    tags: ["<freeform>"]
+    detection_method: grep | ast-grep | semgrep | questions | manual
+    recommendation: "<what to do>"        # optional
+    related: ["<obs-id>"]
+
+highlights:                               # optional
+  - "<key takeaway sentence>"
+
+evaluation:
+  groundedness: 0.92
+  coverage: 0.85
+  claim_count: 15
+  ungrounded_claims: []
+```
+
+### Story types and required dimensions
+
+| Type | Required | Typical extras |
+|------|----------|---------------|
+| `structure` | structure | observations, highlights |
+| `flow` | flows | structure, data, observations |
+| `data` | data | structure, observations |
+| `resilience` | resilience | structure, flows, observations |
+| `highlight` | highlights | structure, observations |
+
+### narrative_map contract
+
+Every narrative has a companion `narrative_map`. Scribe depends on these for cross-highlighting:
+
+- Every paragraph appears in exactly one entry
+- `refs[]` values exist in the story's `structure.nodes` or atlas
+- `steps[]` are 1-based indices into the flow's steps array
+- `cascade_steps[]` are 1-based indices into the failure's cascade array
+
+### Observation types
+
+| Type | Rendered as | Visual treatment |
+|------|------------|-----------------|
+| `pattern-match` | Evidence card | Blue/green — positive finding |
+| `anti-pattern` | Warning card | Amber — concern |
+| `gap` | Warning card with recommendation | Amber with action |
+| `api-finding` | Evidence card | Severity-colored |
+| `debt` | Warning card | Severity-colored |
+| `structural` | Evidence card | Blue — neutral finding |
+| `dependency` | Evidence card | Blue — neutral finding |
