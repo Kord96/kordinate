@@ -17,9 +17,13 @@ After running `/analyze <project>`, augur writes to:
     data-*.yaml         # one per state cluster (0+ files)
     resilience-*.yaml   # one per failure mode cluster (0+ files)
     highlight-*.yaml    # notable findings (0+ files)
+  journeys/
+    overview.yaml       # architecture overview (always present)
+    onboard-*.yaml      # audience-specific reading paths (0+ files)
+    resilience-review.yaml  # if failure modes exist (0-1 file)
 ```
 
-`--detect-only` produces only `atlas.json` (no stories).
+`--detect-only` produces only `atlas.json` (no stories or journeys).
 
 ---
 
@@ -320,7 +324,7 @@ All other dimensions are optional enrichments.
 - **2-3 sentences per paragraph**, separated by `\n\n`
 - **Every `**bold ref**`** must resolve to an atlas node ID
 - **Em dashes** (—) not hyphens
-- **Length targets**: 100-200 words per narrative section
+- **Short narratives**: stories are orienting paragraphs, not essays. Structure: ~50-80 words. Flows: ~50-80 words. Data: ~30-50 words. Resilience: ~50-70 words.
 
 ### narrative_map contract
 
@@ -348,20 +352,45 @@ Each story carries self-assessment scores. These are computed by augur during st
 
 ---
 
+## Journey Format
+
+A journey is an ordered reading path through stories for a specific audience.
+
+```yaml
+id: "<kebab-case>"
+title: "<Human Readable Title>"
+description: "<one sentence — what the reader achieves>"
+audience: ["<role>"]
+stories:
+  - "<story-id>"    # ordered sequence
+  - "<story-id>"
+```
+
+**Guarantees:**
+- `overview` journey always exists (all structure stories + 1-2 key flows)
+- Every story ID in a journey exists in `stories/`
+- Journeys contain 3-8 stories
+- First story is always a structure story
+
+---
+
 ## What Scribe Can Depend On
 
 1. **atlas.json always exists** after `/analyze` completes
 2. **stories/ directory exists** (may be empty if `--detect-only`)
-3. **All IDs are kebab-case and unique** within their section
-4. **All cross-references resolve** — node IDs in stories exist in atlas, observation component refs exist in atlas
-5. **3-5 groups** — hard constraint, always met
-6. **narrative_map covers every paragraph** in every narrative
-7. **Bold refs in narratives match atlas node IDs** — no unresolvable references
-8. **Observation evidence includes file paths** — real paths relative to project root
+3. **journeys/ directory exists** with at least `overview.yaml` (empty if `--detect-only`)
+4. **All IDs are kebab-case and unique** within their section
+5. **All cross-references resolve** — node IDs in stories exist in atlas, story IDs in journeys exist in stories/
+6. **3-5 groups** — hard constraint, always met
+7. **narrative_map covers every paragraph** in every narrative
+8. **Bold refs in narratives match atlas node IDs** — no unresolvable references
+9. **Observation evidence includes file paths** — real paths relative to project root
+10. **Journeys are ordered** — render stories in the sequence given
 
 ## What May Change (Not Stable)
 
 - Number of stories per type (depends on project complexity)
+- Number and types of journeys (depends on project)
 - Specific observation types (may add new types)
 - Detection methodology internals (pass ordering, confidence thresholds)
 - Evaluation score thresholds (may adjust as we calibrate)

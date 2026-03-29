@@ -1,6 +1,12 @@
 # Story Schema
 
-Level 3 resource for the analyze skill. Referenced from Phase 2 (story composition). Defines the output format for story YAML files.
+Level 3 resource for the analyze skill. Referenced from Phase 2 (story composition). Defines the output format for story and journey YAML files.
+
+## Design Principle
+
+A story is a **short orienting section** — not an essay. Its value is in scoping (which components, which flow, which failure) and referencing (links to atlas nodes, observations, other stories). The narrative is a brief paragraph that orients the reader, not a comprehensive explanation.
+
+Think of a story like a README section: enough to understand the concern, with pointers to the evidence.
 
 ## Story Types
 
@@ -14,7 +20,7 @@ Level 3 resource for the analyze skill. Referenced from Phase 2 (story compositi
 
 All other dimensions are optional enrichments on any story type.
 
-## Schema
+## Story Schema
 
 ```yaml
 # ── Identity ──────────────────────────────────────────────────────
@@ -35,9 +41,7 @@ structure:
     - source: "<node-id>"
       target: "<node-id>"
       label: "<short description>"
-  narrative: |
-    <prose — 3-5 paragraphs, ~200 words>
-    <**bold refs** must resolve to atlas node IDs>
+  narrative: "<1-2 short paragraphs orienting the reader>"
   narrative_map:
     - text: "<paragraph text>"
       refs: ["<node-id>"]               # which nodes this paragraph describes
@@ -50,8 +54,7 @@ flows:
         to: "<node-id>"
         action: "<verb phrase>"
         technology: "<protocol>"         # optional
-    narrative: |
-      <prose — 3-5 paragraphs, ~100-150 words>
+    narrative: "<1-2 short paragraphs tracing the path>"
     narrative_map:
       - text: "<paragraph text>"
         steps: [1, 2]                    # 1-based step indices this paragraph covers
@@ -63,8 +66,7 @@ data:
       purpose: "source-of-truth | cache | derived | staging"
       readers: ["<node-id>"]
       writers: ["<node-id>"]
-  narrative: |
-    <prose — 2-3 paragraphs, ~80-120 words>
+  narrative: "<1 short paragraph — where truth lives and why>"
   narrative_map:
     - text: "<paragraph text>"
       refs: ["<node-id>"]
@@ -79,8 +81,7 @@ resilience:
           effect: "<what happens>"
       detection: ["<signal or 'none'>"]
       recovery: ["<step or 'none'>"]
-  narrative: |
-    <prose — 3-4 paragraphs, ~100-150 words>
+  narrative: "<1-2 short paragraphs — what breaks and what happens>"
   narrative_map:
     - text: "<paragraph text>"
       refs: ["<node-id>"]
@@ -115,11 +116,18 @@ evaluation:
 
 ## Narrative Constraints
 
-Narratives follow [narrative-style.md](../../scribe/skills/document/narrative-style.md) principles. Key rules:
+Stories are short. The narrative is the **orienting paragraph**, not the full explanation. The structure (nodes, edges, steps, stores, failures) and observations carry the detail.
+
+**Length targets:**
+- Structure narrative: 2-4 sentences (~50-80 words)
+- Flow narrative: 2-4 sentences (~50-80 words)
+- Data narrative: 1-2 sentences (~30-50 words)
+- Resilience narrative: 2-3 sentences (~50-70 words)
+- Highlight: 1 sentence each
 
 **Voice:**
 - Scenario-driven — trace real journeys, name concrete actors/actions
-- Lead with action — start paragraphs with what happens, not setup
+- Lead with action — start with what happens, not setup
 - Decision anchors — explain WHY when mentioning patterns/choices
 
 **Formatting:**
@@ -129,14 +137,7 @@ Narratives follow [narrative-style.md](../../scribe/skills/document/narrative-st
 
 **References:**
 - Every `**bold text**` must match an atlas `nodes[].id` or `nodes[].name`
-- These render as clickable links in the UI — don't bold non-component text
-- Cross-reference other dimensions: flow narratives mention failure modes, failure narratives reference flows they disrupt, state narratives reference flows that read/write
-
-**Length targets:**
-- Structure narrative: 3-5 paragraphs (~200 words)
-- Flow narrative: 3-5 paragraphs (~100-150 words)
-- Data narrative: 2-3 paragraphs (~80-120 words)
-- Resilience narrative: 3-4 paragraphs (~100-150 words)
+- Cross-reference other stories by ID where relevant: "see flow-ssr-prefetch for the request path"
 
 ## narrative_map Contract
 
@@ -175,13 +176,63 @@ This enables cross-highlighting: hover paragraph → highlight graph nodes/flow 
 - `coverage = referenced_critical_nodes / total_critical_nodes`
 - Target: >= 0.80. Below this, add highlight stories for uncovered components.
 
-## File Naming
+---
 
-Stories are written to `<project>/.kord/agents/augur/memory/stories/`:
+## Journey Schema
+
+A journey is an ordered reading path through stories — a curated sequence for a specific audience or goal.
+
+```yaml
+id: "<kebab-case>"
+title: "<Human Readable Title>"
+description: "<one sentence — what the reader achieves by completing this journey>"
+audience: ["<role>"]                     # who this journey is for
+stories:
+  - "<story-id>"                         # ordered — read in this sequence
+  - "<story-id>"
+  - "<story-id>"
+```
+
+### Journey design rules
+
+- A journey is **3-8 stories** long. Shorter is better — enough to understand one concern, not everything.
+- Stories can belong to **multiple journeys**. A structure story might appear in both "Backend Onboarding" and "Architecture Overview."
+- The first story in a journey should be a **structure** story (orient the reader to the components involved).
+- Flow and data stories follow structure (now the reader knows the cast, show them what happens).
+- Resilience stories come last (now the reader knows the happy path, show them what breaks).
+- Highlight stories can appear anywhere — they're punctuation, not chapters.
+
+### Journey types
+
+| Journey | Audience | Typical sequence |
+|---------|----------|-----------------|
+| **Architecture overview** | New team member, architect | structure stories (all groups) → 1-2 key flows |
+| **Backend onboarding** | New backend developer | structure (server group) → flow (request lifecycle) → data (persistence) → resilience (external deps) |
+| **Frontend onboarding** | New frontend developer | structure (client group) → flow (rendering pipeline) → data (state management) |
+| **Resilience review** | SRE, on-call | resilience stories (all) → highlights (gaps, debt) |
+| **API consumer guide** | External integrator | structure (API group) → flow (key endpoints) → highlights (auth, rate limits) |
+
+### File layout
+
+Journeys are written alongside stories:
 
 ```
-<type>-<id>.yaml
+<project>/.kord/agents/augur/memory/
+  atlas.json
+  stories/
+    structure-api-layer.yaml
+    flow-ssr-prefetch.yaml
+    ...
+  journeys/
+    overview.yaml
+    onboard-backend.yaml
+    onboard-frontend.yaml
+    resilience-review.yaml
 ```
+
+## Story File Naming
+
+Stories: `<project>/.kord/agents/augur/memory/stories/<type>-<id>.yaml`
 
 Examples:
 - `structure-api-layer.yaml`
@@ -189,3 +240,10 @@ Examples:
 - `data-query-cache.yaml`
 - `resilience-external-api-down.yaml`
 - `highlight-zero-waterfall.yaml`
+
+Journeys: `<project>/.kord/agents/augur/memory/journeys/<id>.yaml`
+
+Examples:
+- `overview.yaml`
+- `onboard-backend.yaml`
+- `resilience-review.yaml`

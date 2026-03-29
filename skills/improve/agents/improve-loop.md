@@ -133,7 +133,7 @@ Check the repo database at `$DATA_DIR/repo-database.json` — avoid repos alread
 in the last 30 days (to broaden coverage). Clone:
 
 ```bash
-git clone --depth 1 https://github.com/<nameWithOwner>.git /tmp/improve-repos/<owner>--<name>
+git clone --depth 1 https://github.com/<nameWithOwner>.git /data/repos/<owner>--<name>
 ```
 
 Record each repo in the manifest's `test_repos` array:
@@ -243,7 +243,7 @@ targeted prompt. Run in background:
 
 ```bash
 gemini -m gemini-2.5-pro -o json -p "<oracle prompt for skill type>" \
-  @/tmp/improve-repos/<repo>/src/ > $DATA_DIR/<agent>/ground-truth/<skill>-<repo>-gemini.json &
+  @/data/repos/<repo>/src/ > $DATA_DIR/<agent>/ground-truth/<skill>-<repo>-gemini.json &
 ```
 
 Oracle prompts by skill type:

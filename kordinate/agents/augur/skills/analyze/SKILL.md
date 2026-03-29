@@ -95,7 +95,7 @@ Work through each story type:
 
 **e. Highlight stories** (optional): For findings that stand out — exemplary patterns, unusual choices, critical cross-cutting gaps — write a highlight story. These are for findings that don't fit neatly into structure/flow/data/resilience.
 
-All narratives follow the narrative constraints in [story-schema.md](story-schema.md): scenario-driven, lead with action, 2-3 sentences per paragraph, bold refs resolve to atlas node IDs, 100-200 words per section.
+Stories are **short orienting sections**, not essays. Each narrative is 1-2 paragraphs that orient the reader and point to the structural evidence (nodes, edges, steps, observations). The detail lives in the structure, not the prose. Follow [story-schema.md](story-schema.md) for length targets and formatting.
 
 ### Step 11 — Selective re-read (Detect-Compose-Refine)
 
@@ -112,13 +112,24 @@ For each story, compute:
 
 Record scores in each story's `evaluation` section.
 
-### Step 13 — Write stories
+### Step 13 — Compose journeys
 
-Write each story to `$ROOT/.kord/agents/augur/memory/stories/<type>-<id>.yaml`. Create the directory if needed. Update `metadata.story_ids` in atlas.json with the list of story IDs.
+Group stories into 2-4 journeys per [story-schema.md](story-schema.md). Each journey is an ordered reading path for a specific audience:
+
+- **Architecture overview** (always): all structure stories → 1-2 key flows. For new team members.
+- **Backend onboarding** (if applicable): server structure → request flow → persistence → resilience.
+- **Frontend onboarding** (if applicable): client structure → rendering flow → state management.
+- **Resilience review** (if failure modes exist): all resilience stories → gap highlights.
+
+Keep journeys to 3-8 stories each. The first story should always be a structure story.
+
+### Step 14 — Write stories and journeys
+
+Write stories to `$ROOT/.kord/agents/augur/memory/stories/<type>-<id>.yaml`. Write journeys to `$ROOT/.kord/agents/augur/memory/journeys/<id>.yaml`. Create directories if needed. Update `metadata.story_ids` in atlas.json.
 
 ---
 
-## Step 14 — Report
+## Step 15 — Report
 
 ```
 ## Analysis: <project>
@@ -133,6 +144,7 @@ Write each story to `$ROOT/.kord/agents/augur/memory/stories/<type>-<id>.yaml`. 
 **External** (N): <names with criticality>
 **Failures** (N): <names with severity>
 **Stories** (N): N structure, N flow, N data, N resilience, N highlight
+**Journeys** (N): <names>
 **Groundedness**: <min>-<max> across stories
 **Coverage**: <percentage> of critical components
 **Top recommendations**: 1. ... 2. ... 3. ...
@@ -140,6 +152,7 @@ Write each story to `$ROOT/.kord/agents/augur/memory/stories/<type>-<id>.yaml`. 
 Written to:
   atlas: <path>
   stories: <path> (N files)
+  journeys: <path> (N files)
 ```
 
 If `--detect-only`, omit the Stories/Groundedness/Coverage lines and the stories path.
