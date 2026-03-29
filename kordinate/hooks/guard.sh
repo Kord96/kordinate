@@ -102,13 +102,15 @@ guard_bash() {
         allow
       fi
 
-      # Special: sanitize validation = scan diff for secrets before push
+      # Special: sanitize validation = run scan script on diff
       if [ "$validation" = "sanitize" ]; then
-        # Get the diff of what's being pushed (staged + committed changes)
-        local secrets_found
-        secrets_found=$(git diff HEAD~1..HEAD --no-color 2>/dev/null | grep -E '^\+' | grep -v '^\+\+\+' | grep -iE 'password|secret|token|api_key|apikey|auth_key|private_key|AWS_SECRET|GITHUB_TOKEN|pass insert' | head -5)
-        if [ -n "$secrets_found" ]; then
-          deny "Potential secrets found in diff. Move credentials to pass store via /kord alfred store key <path> <value>. Lines flagged: $(echo "$secrets_found" | head -3 | tr '\n' ' ')"
+        local scan_script="$KORD_HOME/agents/warden/skills/sanitize/sanitize-scan.py"
+        if [ -f "$scan_script" ]; then
+          local scan_output
+          scan_output=$(python3 "$scan_script" 2>&1)
+          if [ $? -ne 0 ]; then
+            deny "Push blocked by sanitize scan. $scan_output"
+          fi
         fi
         allow
       fi

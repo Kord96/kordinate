@@ -1,0 +1,140 @@
+# Sanitize patterns — loaded by sanitize-scan.py on git push
+# Scans new/modified lines for secrets, credentials, and hardcoded config
+#
+# Severity:
+#   critical — blocks push. Likely a real secret.
+#   warning  — blocks push. Hardcoded config that should be externalized.
+#   info     — reported but doesn't block. Might be intentional.
+
+# === Credentials & Secrets ===
+
+- name: api-key-assignment
+  regex: '(?i)(api[_-]?key|apikey)\s*[:=]\s*["\x27]?[A-Za-z0-9_\-]{20,}'
+  severity: critical
+  message: "API key assigned inline — use pass store via /kord alfred store key"
+
+- name: password-assignment
+  regex: '(?i)(password|passwd|secret|token)\s*[:=]\s*["\x27][^"\x27]{8,}'
+  severity: critical
+  message: "Password/secret assigned inline — use pass store"
+
+- name: aws-access-key
+  regex: 'AKIA[0-9A-Z]{16}'
+  severity: critical
+  message: "AWS access key — must be in pass store"
+
+- name: aws-secret-key
+  regex: '(?i)aws_secret_access_key\s*[:=]\s*[A-Za-z0-9/+=]{40}'
+  severity: critical
+  message: "AWS secret key — must be in pass store"
+
+- name: private-key-header
+  regex: '-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----'
+  severity: critical
+  message: "Private key — must not be in source"
+
+- name: github-token
+  regex: 'gh[ps]_[A-Za-z0-9_]{36,}'
+  severity: critical
+  message: "GitHub token — use pass store"
+
+- name: bearer-token
+  regex: '(?i)(bearer|authorization)\s*[:=]\s*["\x27]?[A-Za-z0-9_\-\.]{20,}'
+  severity: critical
+  message: "Bearer/auth token inline — use pass store"
+
+- name: jwt-token
+  regex: 'eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.'
+  severity: critical
+  message: "JWT token — must not be hardcoded"
+
+- name: connection-string
+  regex: '(?i)(mongodb|postgres|mysql|redis|amqp)://[^\s"]{10,}'
+  severity: critical
+  message: "Connection string with credentials — use env var or pass store"
+
+# === Hardcoded Config ===
+
+- name: hardcoded-ip
+  regex: '\b(?:10|172\.(?:1[6-9]|2[0-9]|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b'
+  severity: warning
+  message: "Private IP address hardcoded — should be in config.yaml or env var"
+
+- name: hardcoded-port
+  regex: '(?i)(port|listen)\s*[:=]\s*\d{4,5}\b'
+  severity: info
+  message: "Port number hardcoded — consider env var"
+
+- name: hardcoded-hostname
+  regex: '(?i)(host|hostname|endpoint|url)\s*[:=]\s*["\x27]((?!localhost|127\.0\.0\.1|0\.0\.0\.0)[a-z0-9][a-z0-9\-\.]+\.[a-z]{2,})["\x27]'
+  severity: warning
+  message: "Hostname hardcoded — should be in config.yaml or env var"
+
+- name: hardcoded-namespace
+  regex: '(?i)namespace\s*[:=]\s*["\x27]((?!default|kube-system|kube-public)[a-z][a-z0-9\-]+)["\x27]'
+  severity: info
+  message: "K8s namespace hardcoded — consider config.yaml"
+
+- name: hardcoded-bucket
+  regex: '(?i)(bucket|s3_bucket|storage_bucket)\s*[:=]\s*["\x27][a-z0-9][a-z0-9\-\.]+["\x27]'
+  severity: warning
+  message: "Storage bucket hardcoded — should be in config or env var"
+
+- name: hardcoded-email
+  regex: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+  severity: info
+  message: "Email address hardcoded — consider config if user-specific"
+
+- name: env-var-default
+  regex: '(?i)os\.(environ|getenv)\s*[\[\(]\s*["\x27][A-Z_]+["\x27]\s*[,\]]\s*["\x27][^"\x27]{8,}'
+  severity: warning
+  message: "Environment variable with long default — the default may be a secret"
+
+# === Kubernetes Manifests & Overlays ===
+
+- name: manifest-inline-secret
+  regex: '(?i)value:\s*["\x27]?[A-Za-z0-9_\-/+=]{20,}'
+  severity: warning
+  message: "Long value in manifest — if this is a secret, use secretKeyRef instead of inline value"
+  files: ["*.yaml", "*.yml"]
+  context: manifests
+
+- name: manifest-hardcoded-image-tag
+  regex: 'image:\s*[^\s]+:(?!latest|v\d)[a-f0-9]{7,40}'
+  severity: info
+  message: "Hardcoded image SHA/commit tag — consider using a version tag"
+  files: ["*.yaml", "*.yml"]
+
+- name: overlay-hardcoded-replica
+  regex: '(?i)replicas:\s*\d+'
+  severity: info
+  message: "Replica count in overlay — should differ per environment, verify this is intentional"
+  files: ["*/overlays/*"]
+
+- name: manifest-plaintext-secret
+  regex: '(?i)kind:\s*Secret[\s\S]{0,200}stringData:'
+  severity: critical
+  message: "Plaintext Secret manifest — secrets must come from pass store at deploy time, not be in source"
+  files: ["*.yaml", "*.yml"]
+
+- name: overlay-hardcoded-host
+  regex: '(?i)(host|hostname|url):\s*["\x27]?[a-z0-9][a-z0-9\-\.]+\.(local|svc|cluster|internal)["\x27]?'
+  severity: warning
+  message: "Cluster-internal hostname in overlay — should be templated from config"
+  files: ["*/overlays/*"]
+
+# === Exclude patterns ===
+# Files matching these globs are skipped entirely
+exclude:
+  - "*.md"
+  - "patterns.yaml"
+  - "*.test.*"
+  - "*_test.*"
+  - "test_*"
+  - "tests/*"
+  - "__tests__/*"
+  - "*.spec.*"
+  - "*.example"
+  - "*.sample"
+  - ".env.example"
+  - ".env.sample"
