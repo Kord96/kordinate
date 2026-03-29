@@ -2,62 +2,89 @@
 
 Level 3 resource for the register and install skills.
 
-Link kordinate state to the Claude Code runtime. Scribe owns this procedure — it understands both kordinate's recall system and the runtime's native filesystem.
-
-Useful after: first install, adding an agent, updating kordinate files, or a Claude Code update.
-
-See [claude-native.md](../remember/claude-native.md) for the runtime's paths.
+Link kordinate to the Claude Code runtime. Wipes stale files before copying to prevent drift.
 
 ## Procedure
 
-### Agents
+### 0. Backup and wipe
 
-**Dev-mode source resolution**: If `$KORDINATE_HOME/.dev-source` exists, read its contents to get the dev repo path. For each agent, check whether `<dev-repo-path>/kordinate/agents/<name>/` exists -- if so, it is a package agent and its `IDENTITY.md` and `memory/` should be read from the dev repo path instead of `$KORDINATE_HOME`. User-created agents (those not present in the dev repo's `kordinate/agents/` directory) continue to resolve from `$KORDINATE_HOME` as normal.
+**Backup** (if `~/.claude/agents/` or `~/.claude/skills/` exist):
+```bash
+tar czf ~/.kord/backups/claude-runtime-$(date +%Y%m%d-%H%M%S).tar.gz \
+  ~/.claude/agents/ ~/.claude/skills/ ~/.claude/agent-memory/ 2>/dev/null
+mkdir -p ~/.kord/backups
+```
 
-For each agent in `$KORDINATE_HOME/agents/`:
+**Wipe runtime** (prevents stale files from previous installs):
+```bash
+rm -rf ~/.claude/agents/ ~/.claude/skills/ ~/.claude/agent-memory/
+mkdir -p ~/.claude/agents ~/.claude/skills ~/.claude/agent-memory
+```
+
+**Preserve**: `~/.claude/projects/` (user auto-memory), `~/.claude/settings.json` (user config), `~/.claude/CLAUDE.md` (will be rewritten).
+
+### 1. Agents
+
+For each agent in `$KORDINATE_HOME/agents/` (except `main`):
 
 1. Read `IDENTITY.md`
-2. **Subagents** (have `tools:` in frontmatter):
-   - Write to `~/.claude/agents/<name>.md` — strip recall properties (`curated`, `preloaded`) from frontmatter, keep Claude fields (`name`, `description`, `tools`, `model`, `color`, `memory`)
-   - Create `~/.claude/agent-memory/<name>/MEMORY.md` — an **index** (not a copy) that points to the actual memory files at `$KORDINATE_HOME/agents/<name>/memory/`. For each memory file, read its frontmatter `description` and add an entry: `- [filename](absolute-path) — description`. The 200-line limit applies to this index, not to the underlying files.
-   - Copy agent skills to `~/.claude/skills/` (entire directory including Level 3 resources)
-3. **Main session** (no `tools:` in frontmatter, e.g. `main`):
-   - Do NOT write to `~/.claude/agents/` (not a subagent)
-   - Do NOT create `~/.claude/agent-memory/` index (main session uses auto-memory)
-   - Surface kordinate memories by adding `@` imports to `~/.claude/CLAUDE.md` for each `.md` file in `$KORDINATE_HOME/agents/main/memory/`
+2. Write to `~/.claude/agents/<name>.md` — keep Claude fields (`name`, `description`, `tools`, `model`, `color`, `memory`), drop kordinate-only fields.
+3. Create `~/.claude/agent-memory/<name>/MEMORY.md` — index pointing to memory files. Use descriptions from KORD.json entries (not frontmatter scanning). The 200-line limit applies.
 
-### Global Skills
+**Main session** (no `tools:` in frontmatter):
+- Do NOT write to `~/.claude/agents/`
+- Surface kordinate memories by adding `@` imports to `~/.claude/CLAUDE.md`
 
-Copy from `$KORDINATE_HOME/skills/` to `~/.claude/skills/`:
+### 2. Skills
 
-- `boot/`
-- `authenticate/`
-- `merge/`
-- `install/`
-- `improve/`
+**Team skills only** → copy to `~/.claude/skills/`:
+```bash
+cp -r $KORDINATE_HOME/team/skills/* ~/.claude/skills/
+```
 
-### Binaries
+**Agent skills are NOT copied to `~/.claude/skills/`.** They are accessed via `/kord <agent> <skill>` — the kord MCP server routes based on KORD.json skill entries.
 
-Copy from `$KORDINATE_HOME/bin/` to the runtime. These are user-facing scripts (session management, import/export, config hydration).
+### 3. KORD.json
 
-Ensure `$KORDINATE_HOME/bin/` is in PATH — typically via `/kord/kordinate/bin` symlink or shell RC entry.
+Assemble the global KORD.json:
+```bash
+python3 $KORDINATE_HOME/team/scripts/assemble-kord.py $KORDINATE_HOME
+```
 
-### CLAUDE.md
+This merges all agent KORD.json + team/KORD.json into the global manifest.
 
-Ensure `~/.claude/CLAUDE.md` contains:
+### 4. CLAUDE.md
 
+Write `~/.claude/CLAUDE.md`:
 ```
 Run /boot before starting work.
 
 @~/.kord/shared/memory-protocol.md
 @~/.kord/shared/auth-protocol.md
 @~/.kord/shared/credentials-protocol.md
+@~/.kord/shared/gemini-protocol.md
+
+@~/.kord/agents/main/memory/scratchpad.md
 ```
 
-### Agent Lock Files
+### 5. Hooks
 
-For each agent in `$KORDINATE_HOME/agents/` (except `main`), ensure a lock file exists at `$KORDINATE_HOME/profile/locks/<name>`:
+Copy hooks to `$KORDINATE_HOME/hooks/`:
+- `kord-guard.sh` — data-driven enforcement from KORD.json
+- `agent-gate.sh` — subagent spawn control
+- `auto-merge.sh` — merge session to main on commit/push
 
+### 6. Settings
+
+Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
+
+1. Read existing `~/.claude/settings.json` (preserve user settings)
+2. Set `env.KORDINATE_HOME` to absolute path
+3. Replace the `hooks` section with kordinate's hooks
+
+### 7. Agent lock files
+
+For each agent (except `main`), ensure a lock file at `$KORDINATE_HOME/profile/locks/<name>`:
 ```bash
 mkdir -p "$KORDINATE_HOME/profile/locks"
 for agent in "$KORDINATE_HOME"/agents/*/; do
@@ -68,43 +95,19 @@ for agent in "$KORDINATE_HOME"/agents/*/; do
 done
 ```
 
-These secrets are used by the guard hook (auth delegation) and the subagent gate (one-time spawn authorization via kord).
+### 8. MCP servers
 
-### Guard and Hooks
-
-Merge hooks from `$KORDINATE_HOME/settings.json` into `~/.claude/settings.json`:
-
-1. Read existing `~/.claude/settings.json` (preserve user-specific settings like `extraKnownMarketplaces`)
-2. Set `env.KORDINATE_HOME` to the absolute path of `$KORDINATE_HOME`
-3. Replace the `hooks` section with the one from `$KORDINATE_HOME/settings.json`, expanding `$KORDINATE_HOME` to the absolute path
-
-This installs:
-- **Unified guard** (`hooks/guard.sh`) on Write|Edit|Bash and mcp\_\_grafana — enforces scribe, deployer, sauron, and merge rules
-- **Subagent invocation gate** (`hooks/subagent-invocation-gate.sh`) on Agent — blocks direct spawning of kordinate agents, redirects to kord capability tools
-
-### MCP Servers
-
-Ensure `~/.claude.json` has the kord MCP server configured under `mcpServers`:
-
+Ensure `~/.claude.json` has the kord MCP server:
 ```json
-{
-  "mcpServers": {
-    "kord": {
-      "type": "http",
-      "url": "http://kord.master.svc.cluster.local:3100/mcp"
-    }
-  }
-}
+{"mcpServers": {"kord": {"type": "http", "url": "http://kord.master.svc.cluster.local:3100/mcp"}}}
 ```
 
-Read `~/.claude.json` first (it contains many other fields — only add/update the `mcpServers.kord` entry). If running off-cluster, adjust the URL to the Tailscale endpoint.
+Read `~/.claude.json` first — only add/update `mcpServers.kord`. Off-cluster: use Tailscale endpoint.
 
-This gives all sessions access to the kord capability tools (e.g., `analyze_architecture`, `write_memory`, `delegate`).
+### 9. Verify
 
-### KORD.md
-
-Run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index. This scans `routes.yaml` files and memory frontmatter to produce the global registry.
+Run the install checklist: [install-checklist.md](../../install/install-checklist.md)
 
 ## Report
 
-List what was linked: agents, skills, routes, CLAUDE.md, MCP servers, guard status.
+Summary: agents linked, team skills copied, KORD.json assembled, hooks installed, backup location.

@@ -15,12 +15,18 @@ Your agent name is the `name` field from your own frontmatter. Use it wherever `
     ```
     Skip if no remote is configured.
 
-1. **Load preloaded files** — run the preload script to get all files marked for you in one read:
+1. **Load global preloaded files** — run the preload script for global memory:
     ```bash
     python3 $KORDINATE_HOME/team/scripts/preload.py <your-name> > /tmp/boot-<your-name>.md
     ```
-    Read `/tmp/boot-<your-name>.md`. This contains shared protocols and all memory files where `preload` matches your name or `all` in KORD.json. Faster than scanning frontmatter.
+    Read `/tmp/boot-<your-name>.md`. Contains shared protocols and all global memory files where `preload` matches your name or `all` in KORD.json.
 
-2. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
+2. **Load project memory** — if `.kord/` exists in the current project root AND has a KORD.json:
+    ```bash
+    python3 $KORDINATE_HOME/team/scripts/preload.py <your-name> <project-root>/.kord > /tmp/boot-<your-name>-project.md
+    ```
+    Read `/tmp/boot-<your-name>-project.md`. If `.kord/` doesn't exist, skip.
 
-3. **Proceed with your assigned task.**
+3. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
+
+4. **Proceed with your assigned task.**
