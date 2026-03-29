@@ -2,9 +2,9 @@
 // Kord — HTTP-inspired route protocol server for agent orchestration.
 //
 // Registers capability-based MCP tools from agent routes.yaml files.
-// Routes requests to the right agent. Every spawn gets an isolated worktree
-// (-p mode, full tool access, auto-merge on exit). Lightweight --print mode
-// is kept only for cache review prompts.
+// Routes requests to the right agent. No worktree isolation — agents run
+// in the current directory. KORD.json ownership model handles protection.
+// Lightweight --print mode for cache, -p mode for full tool access.
 //
 // Routes are declared per agent in routes.yaml. Each route becomes
 // an MCP tool with a capability-based name (no agent names visible).
@@ -150,139 +150,10 @@ function loadSystemPrompt(agent) {
   return parts.join('\n\n');
 }
 
-// ─── Worktree lifecycle ───
+// ─── Worktree lifecycle (removed) ───
+// Worktree isolation removed. KORD.json ownership model handles write
+// protection. Agents run in the current working directory.
 
-function createWorktree(requestId) {
-  const wtPath = join(REPO_ROOT, '.worktrees', requestId);
-  const branch = `session/${requestId}`;
-  if (existsSync(wtPath)) return wtPath; // reuse
-  try {
-    execSync(`git worktree add "${wtPath}" -b "${branch}"`, {
-      cwd: REPO_ROOT, timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    mkdirSync(join(wtPath, '.claude', 'agent-state'), { recursive: true });
-  } catch (e) {
-    log(`Worktree create failed: ${e.message}`);
-    return null;
-  }
-  return wtPath;
-}
-
-function createKordWorktree(requestId) {
-  const wtPath = join(KORDINATE_HOME, '.worktrees', requestId);
-  const branch = `kord/${requestId}`;
-  if (existsSync(wtPath)) return wtPath;
-  try {
-    // Check if KORDINATE_HOME is a git repo
-    execSync(`git -C "${KORDINATE_HOME}" rev-parse --git-dir`, {
-      timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    execSync(`git -C "${KORDINATE_HOME}" worktree add "${wtPath}" -b "${branch}" main`, {
-      timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
-    });
-  } catch {
-    return null; // not a git repo or failed — skip kord worktree
-  }
-  return wtPath;
-}
-
-function cleanupWorktree(requestId) {
-  const wtPath = join(REPO_ROOT, '.worktrees', requestId);
-  const branch = `session/${requestId}`;
-  if (!existsSync(wtPath)) return;
-
-  try {
-    // Commit any uncommitted work
-    const dirty = execSync(`git -C "${wtPath}" status --porcelain`, {
-      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
-    }).toString().trim();
-    if (dirty) {
-      execSync(`git -C "${wtPath}" add -A && git -C "${wtPath}" commit -m "kord: ${requestId} exit"`, {
-        timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'], shell: true,
-      });
-    }
-
-    // Check if branch has changes beyond main
-    const commits = execSync(`git -C "${REPO_ROOT}" log main.."${branch}" --oneline`, {
-      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
-    }).toString().trim();
-
-    if (!commits) {
-      // No changes — clean up
-      execSync(`git -C "${REPO_ROOT}" worktree remove "${wtPath}"`, {
-        timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      execSync(`git -C "${REPO_ROOT}" branch -d "${branch}"`, {
-        timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      log(`WORKTREE ${requestId}: cleaned up (no changes)`);
-    } else {
-      // Has changes — try fast-forward merge to main
-      try {
-        execSync(`git -C "${REPO_ROOT}" merge "${branch}" --ff-only`, {
-          timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        execSync(`git -C "${REPO_ROOT}" worktree remove "${wtPath}"`, {
-          timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        execSync(`git -C "${REPO_ROOT}" branch -d "${branch}"`, {
-          timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        log(`WORKTREE ${requestId}: merged to main and cleaned up`);
-      } catch {
-        log(`WORKTREE ${requestId}: preserved (merge needs manual resolution)`);
-      }
-    }
-  } catch (e) {
-    log(`WORKTREE ${requestId}: cleanup error — ${e.message}`);
-  }
-}
-
-function cleanupKordWorktree(requestId) {
-  const wtPath = join(KORDINATE_HOME, '.worktrees', requestId);
-  const branch = `kord/${requestId}`;
-  if (!existsSync(wtPath)) return;
-
-  try {
-    const dirty = execSync(`git -C "${wtPath}" status --porcelain`, {
-      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
-    }).toString().trim();
-    if (dirty) {
-      execSync(`git -C "${wtPath}" add -A && git -C "${wtPath}" commit -m "memory: ${requestId} exit"`, {
-        timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'], shell: true,
-      });
-    }
-
-    const commits = execSync(`git -C "${KORDINATE_HOME}" log main.."${branch}" --oneline`, {
-      timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'],
-    }).toString().trim();
-
-    if (!commits) {
-      execSync(`git -C "${KORDINATE_HOME}" worktree remove "${wtPath}"`, {
-        timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
-      });
-      execSync(`git -C "${KORDINATE_HOME}" branch -d "${branch}"`, {
-        timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
-      });
-    } else {
-      try {
-        execSync(`git -C "${KORDINATE_HOME}" merge "${branch}" --ff-only`, {
-          timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        execSync(`git -C "${KORDINATE_HOME}" worktree remove "${wtPath}"`, {
-          timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        execSync(`git -C "${KORDINATE_HOME}" branch -d "${branch}"`, {
-          timeout: 5000, stdio: ['ignore', 'pipe', 'pipe'],
-        });
-      } catch {
-        log(`KORD WORKTREE ${requestId}: preserved (merge needs resolution)`);
-      }
-    }
-  } catch (e) {
-    log(`KORD WORKTREE ${requestId}: cleanup error — ${e.message}`);
-  }
-}
 
 // ─── Agent invocation ───
 
@@ -365,19 +236,12 @@ async function invokeLightweight(agent, prompt) {
 }
 
 /**
- * Full invoke — -p mode with worktree isolation, full tool access, merge on exit.
- * Used for: analysis routes, heavy POST routes, delegate.
+ * Full invoke — -p mode with tool access. No worktree isolation.
+ * Agents run in the current working directory. KORD.json ownership handles protection.
  */
 async function invokeFull(agent, prompt) {
-  const requestId = `kord-${agent}-${Date.now()}`;
   log(`INVOKE-FULL ${agent}: ${prompt.substring(0, 100)}${prompt.length > 100 ? '...' : ''}`);
   const start = Date.now();
-
-  // Create worktrees
-  const wtPath = createWorktree(requestId);
-  const kordWtPath = createKordWorktree(requestId);
-  const agentCwd = wtPath || REPO_ROOT;
-  const agentKordHome = kordWtPath || KORDINATE_HOME;
 
   regenerateMemory(agent);
   const systemPrompt = loadSystemPrompt(agent);
@@ -387,9 +251,9 @@ async function invokeFull(agent, prompt) {
   args.push(prompt);
 
   try {
-    const result = await spawnClaude(args, agentCwd, {
+    const result = await spawnClaude(args, REPO_ROOT, {
       HOME,
-      KORDINATE_HOME: agentKordHome,
+      KORDINATE_HOME,
     });
     const elapsed = ((Date.now() - start) / 1000).toFixed(1);
     log(`INVOKE-FULL ${agent}: done in ${elapsed}s, ${result.stdout.length} chars`);
@@ -401,18 +265,6 @@ async function invokeFull(agent, prompt) {
     if (e.stderr) log(`INVOKE-FULL ${agent}: stderr: ${e.stderr.substring(0, 500)}`);
     if (e.stdout) log(`INVOKE-FULL ${agent}: stdout: ${e.stdout.substring(0, 500)}`);
     throw e;
-  } finally {
-    // Cleanup worktrees — merge or preserve. Never let cleanup block the response.
-    try {
-      if (wtPath) cleanupWorktree(requestId);
-    } catch (e) {
-      log(`INVOKE-FULL ${agent}: worktree cleanup error — ${e.message}`);
-    }
-    try {
-      if (kordWtPath) cleanupKordWorktree(requestId);
-    } catch (e) {
-      log(`INVOKE-FULL ${agent}: kord worktree cleanup error — ${e.message}`);
-    }
   }
 }
 
