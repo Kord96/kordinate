@@ -88,7 +88,7 @@ This gives the user a baseline to diff against and a safety net for recovery.
 
 ### 7. Link to runtime
 
-Delegate to [link.md](link.md) — this writes agent files, skills, hooks, CLAUDE.md, and KORD.md to the Claude Code native paths.
+Delegate to [link.md](link.md) — this writes agent files, skills, hooks, CLAUDE.md, and KORD.json to the Claude Code native paths.
 
 ### 8. Git backup (optional)
 

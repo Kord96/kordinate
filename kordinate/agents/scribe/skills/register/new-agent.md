@@ -46,7 +46,7 @@ Level 3 resource for the register skill.
 
 7. **Link to runtime** — write this agent to the runtime's native paths per [link.md](link.md) (single agent, not full re-link).
 
-8. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh`.
+8. **Reassemble KORD.json** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh`.
 
 9. **Report** what was created and next steps:
     - "Agent `<name>` registered. Files: ..."

@@ -6,7 +6,7 @@ Documentation gate and runtime linker — sole authority for writing to kordinat
 
 | Skill | Command | Mode | Purpose |
 |-------|---------|------|---------|
-| [remember](skills/remember/SKILL.md) | `/remember <what>` | stateless | Write a memory for an agent — handles scope, paths, and KORD.md |
+| [remember](skills/remember/SKILL.md) | `/remember <what>` | stateless | Write a memory for an agent — handles scope, paths, and KORD.json |
 | [sanitize](skills/sanitize/SKILL.md) | `/sanitize <content>` | stateless | Classify content as config, credential, or memory — routes correctly |
 | [onboard](skills/onboard/SKILL.md) | `/onboard <name>` | stateful | Add a new agent or sync existing agents to the runtime |
 | [create-kord](skills/create-kord/SKILL.md) | `/create-kord <name>` | stateful | Define a new kord between agents |

@@ -19,7 +19,7 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 
 | Skill | Purpose |
 |-------|---------|
-| `/remember` | Write a memory for an agent — handles scope, paths, and KORD.md |
+| `/remember` | Write a memory for an agent — handles scope, paths, and KORD.json |
 | `/register` | Register a new agent or kord, or sync existing agents to the runtime |
 | `/doctor-k` | Health-check the kordinate system — structural checks, runtime validation, and e2e tests |
 | `/document` | Generate documentation — architecture diagrams, tutorials, doc artifacts |

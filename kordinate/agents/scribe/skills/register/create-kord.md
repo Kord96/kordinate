@@ -75,7 +75,7 @@ Level 3 resource for the register skill. Define a new kord — a consultation co
 
     The `{{DIFF}}` and `{{CACHED_DATA}}` placeholders are filled by Beorn at runtime.
 
-6. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
+6. **Reassemble KORD.json** — run `$KORDINATE_HOME/agents/scribe/skills/remember/assemble-kord.py` to reassemble the manifest.
 
 7. **Report** what was created:
     - Stateful: "Kord `<name>` defined. Files: contract.md, data.md, expiry.sh, review.md"

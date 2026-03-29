@@ -16,7 +16,7 @@ Core framework for coordinating specialized AI agents into a team.
 
 ## Key Files
 
-- `KORD.md` — Auto-generated index of all agents, memory, kords, and skills
+- `KORD.json` — Auto-generated index of all agents, memory, kords, and skills
 - `KORD.json` — Structured registry used by the runtime
 - `settings.json` — Hook configuration and Claude Code plugins
 - `CLAUDE.md.example` — Template for user's private instructions

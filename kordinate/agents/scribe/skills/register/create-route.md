@@ -48,7 +48,7 @@ Level 3 resource for the register skill. Define a new route — a capability exp
 
     Omit the `cache` section entirely if no cache config is provided.
 
-4. **Regenerate KORD.md** — run `$KORDINATE_HOME/agents/scribe/skills/remember/generate-kord.sh` to rebuild the index.
+4. **Reassemble KORD.json** — run `$KORDINATE_HOME/agents/scribe/skills/remember/assemble-kord.py` to reassemble the manifest.
 
 5. **Report** what was created:
     - "Route `<name>` added to `agents/<provider>/routes.yaml`."

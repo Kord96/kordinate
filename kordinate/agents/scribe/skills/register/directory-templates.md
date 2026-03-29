@@ -91,4 +91,4 @@ When creating any directory, verify:
 1. All required files exist
 2. Frontmatter fields are present and valid
 3. Cross-references resolve (e.g., SKILL.md links to Level 3 resources that exist)
-4. The parent index (KORD.md, MEMORY.md) includes an entry for the new item
+4. The parent index (KORD.json, MEMORY.md) includes an entry for the new item

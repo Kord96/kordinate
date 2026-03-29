@@ -151,7 +151,7 @@ If any check fails, STOP — you're on the old pod.
 | Pass store | `pass ls kordinate` | Lists entries |
 | GPG functional | `pass show kordinate/ssh/password` | Returns password |
 | SSH keys | `ls ~/.ssh/id_ed25519` | File exists |
-| Kordinate linked | `ls ~/.kord/KORD.md` | File exists |
+| Kordinate linked | `ls ~/.kord/KORD.json` | File exists |
 | Beorn running | `curl -sf localhost:3100/health` | 200 OK |
 | Caddy running | `curl -sf -H "Host: test.khaledkord.com" localhost:80 -o /dev/null -w "%{http_code}"` | 404 |
 | Grafana reachable | `curl -sf localhost:80/api/health -H "Host: grafana.khaledkord.com"` | JSON response |

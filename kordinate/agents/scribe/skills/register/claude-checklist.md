@@ -16,7 +16,7 @@ These can be verified immediately — no session restart required.
 - [ ] `shared/memory-protocol.md` exists (`preloaded: all`)
 - [ ] `shared/auth-protocol.md` exists (`preloaded: all`)
 - [ ] `shared/credentials-protocol.md` exists (`preloaded: all`)
-- [ ] `KORD.md` is current — run `generate-kord.sh` if needed
+- [ ] `KORD.json` is current — run `assemble-kord.py` if needed
 - [ ] `KORD.json` is valid JSON and lists all agents and kords
 
 ### Claude Native (~/.claude/)
