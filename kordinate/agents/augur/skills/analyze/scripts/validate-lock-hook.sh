@@ -34,7 +34,7 @@ MEM_DIR=$(echo "$FILE_PATH" | grep -oE '.*/\.kord/agents/augur/memory')
 LOCK="$MEM_DIR/.validate-lock"
 if [ -f "$LOCK" ]; then
     ERRORS=$(cat "$LOCK")
-    printf '{"error":"Output validation failed (%s). Fix the validation errors reported by validate_output.py and rerun it before writing more output."}\n' "$ERRORS"
+    printf '{"error":"Write blocked: output validation has %s. To unblock: 1) Run: python validate_output.py %s  2) Read the errors  3) Fix them in the existing output files  4) Rerun validation  5) Once it passes, retry this write. Do NOT skip validation or delete files to work around this — fix the actual errors."}\n' "$ERRORS" "$MEM_DIR"
     exit 2
 fi
 
