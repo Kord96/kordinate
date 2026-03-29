@@ -1,12 +1,54 @@
 [
-  {"type": "skill", "name": "validate", "agent": "warden", "description": "Validate output against registered validator. Returns completion token.", "arguments": "<dir>", "public": true},
-  {"type": "skill", "name": "scan-secrets", "agent": "warden", "description": "Scan repos for secrets, PII, exposed config. With --reconcile: check k8s secrets vs pass store.", "arguments": "<project> [--reconcile]", "public": true},
-  {"type": "skill", "name": "sanitize", "agent": "warden", "description": "Classify content as config, credential, or memory — routes to correct destination.", "arguments": "<content>", "public": true},
-
-  {"type": "guard", "pattern": "KORD.json", "tool": "Write", "validation": "warden", "description": "KORD.json requires warden auth"},
-  {"type": "guard", "pattern": "KORD-seed.json", "tool": "Write", "validation": "warden", "description": "KORD-seed.json requires warden auth"},
-  {"type": "guard", "pattern": "git push", "tool": "Bash", "validation": "sanitize", "description": "Scan diff for secrets before pushing"},
-
-  {"type": "file", "path": "agents/warden/IDENTITY.md", "description": "Warden agent identity", "owner": "warden", "preload": "warden", "validation": "scribe"},
-  {"type": "file", "path": "agents/warden/memory/scratchpad.md", "description": "Working notes", "owner": "warden", "preload": "none"}
+  {
+    "type": "skill",
+    "name": "validate",
+    "agent": "warden",
+    "description": "Validate output against registered validator. Returns completion token.",
+    "arguments": "<dir>",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "scan-secrets",
+    "agent": "warden",
+    "description": "Scan repos for secrets, PII, exposed config. With --reconcile: check k8s secrets vs pass store.",
+    "arguments": "<project> [--reconcile]",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "sanitize",
+    "agent": "warden",
+    "description": "Classify content as config, credential, or memory \u2014 routes to correct destination.",
+    "arguments": "<content>",
+    "public": true
+  },
+  {
+    "type": "guard",
+    "pattern": "KORD.json",
+    "tool": "Write",
+    "validation": "warden",
+    "description": "KORD.json requires warden auth"
+  },
+  {
+    "type": "guard",
+    "pattern": "KORD-seed.json",
+    "tool": "Write",
+    "validation": "warden",
+    "description": "KORD-seed.json requires warden auth"
+  },
+  {
+    "type": "guard",
+    "pattern": "git push",
+    "tool": "Bash",
+    "validation": "sanitize",
+    "description": "Scan diff for secrets before pushing"
+  },
+  {
+    "type": "file",
+    "path": "agents/warden/memory/scratchpad.md",
+    "description": "Working notes",
+    "owner": "warden",
+    "preload": "none"
+  }
 ]

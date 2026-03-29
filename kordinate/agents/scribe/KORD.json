@@ -1,8 +1,33 @@
 [
-  {"type": "skill", "name": "document", "agent": "scribe", "description": "Render stories into interactive documentation using pre-built Astro components.", "arguments": "<project> [--atlas-only]", "public": true},
-  {"type": "skill", "name": "register", "agent": "scribe", "description": "Register runtime, agent, or kord — setup, creation, and re-linking.", "arguments": "runtime|agent|kord [args]", "public": true},
-  {"type": "skill", "name": "doctor-k", "agent": "scribe", "description": "Health-check the kordinate system — structural, runtime, and e2e tests.", "arguments": "[--scope global|project|all] [--e2e]", "public": true},
-
-  {"type": "file", "path": "agents/scribe/IDENTITY.md", "description": "Scribe agent identity", "owner": "scribe", "preload": "scribe", "validation": "scribe"},
-  {"type": "file", "path": "agents/scribe/memory/scratchpad.md", "description": "Working notes", "owner": "scribe", "preload": "none"}
+  {
+    "type": "skill",
+    "name": "document",
+    "agent": "scribe",
+    "description": "Render stories into interactive documentation using pre-built Astro components.",
+    "arguments": "<project> [--atlas-only]",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "register",
+    "agent": "scribe",
+    "description": "Register runtime, agent, or kord \u2014 setup, creation, and re-linking.",
+    "arguments": "runtime|agent|kord [args]",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "doctor-k",
+    "agent": "scribe",
+    "description": "Health-check the kordinate system \u2014 structural, runtime, and e2e tests.",
+    "arguments": "[--scope global|project|all] [--e2e]",
+    "public": true
+  },
+  {
+    "type": "file",
+    "path": "agents/scribe/memory/scratchpad.md",
+    "description": "Working notes",
+    "owner": "scribe",
+    "preload": "none"
+  }
 ]

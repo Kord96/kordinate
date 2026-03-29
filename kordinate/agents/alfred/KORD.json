@@ -1,9 +1,39 @@
 [
-  {"type": "skill", "name": "get", "agent": "alfred", "description": "Retrieve personal information — config, credentials, overlays. Verifies caller identity.", "arguments": "<what> [--cluster <name>]", "public": true},
-  {"type": "skill", "name": "store", "agent": "alfred", "description": "Store personal information — credentials, config updates, overlays.", "arguments": "<what> <value>", "public": true},
-
-  {"type": "file", "path": "agents/alfred/IDENTITY.md", "description": "Alfred agent identity", "owner": "alfred", "preload": "alfred", "validation": "scribe"},
-  {"type": "file", "path": "agents/alfred/memory/scratchpad.md", "description": "Working notes", "owner": "alfred", "preload": "none"},
-  {"type": "file", "path": "profile/config.yaml", "description": "Cluster and service configuration", "owner": "alfred", "validation": "alfred"},
-  {"type": "file", "path": "profile/overlays/", "description": "Kustomize overlays per cluster", "owner": "alfred", "validation": "alfred"}
+  {
+    "type": "skill",
+    "name": "get",
+    "agent": "alfred",
+    "description": "Retrieve personal information \u2014 config, credentials, overlays. Verifies caller identity.",
+    "arguments": "<what> [--cluster <name>]",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "store",
+    "agent": "alfred",
+    "description": "Store personal information \u2014 credentials, config updates, overlays.",
+    "arguments": "<what> <value>",
+    "public": true
+  },
+  {
+    "type": "file",
+    "path": "agents/alfred/memory/scratchpad.md",
+    "description": "Working notes",
+    "owner": "alfred",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "profile/config.yaml",
+    "description": "Cluster and service configuration",
+    "owner": "alfred",
+    "validation": "alfred"
+  },
+  {
+    "type": "file",
+    "path": "profile/overlays/",
+    "description": "Kustomize overlays per cluster",
+    "owner": "alfred",
+    "validation": "alfred"
+  }
 ]

@@ -1,9 +1,32 @@
 [
-  {"type": "skill", "name": "monitor", "agent": "sauron", "description": "Monitor a running system — read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.", "arguments": "<project> [--diagnose <symptom>] [--check] [--scan-code]", "public": true},
-  {"type": "skill", "name": "design-monitoring", "agent": "sauron", "description": "Design a monitoring system — metrics, logs, health checks, dashboards, alerts. Depends on augur + charon.", "arguments": "<project> [--scope full|metrics|alerts|dashboards]", "public": true},
-
-  {"type": "guard", "pattern": "mcp__grafana*", "tool": "mcp", "validation": "sauron", "description": "Grafana operations require sauron"},
-
-  {"type": "file", "path": "agents/sauron/IDENTITY.md", "description": "Sauron agent identity", "owner": "sauron", "preload": "sauron", "validation": "scribe"},
-  {"type": "file", "path": "agents/sauron/memory/scratchpad.md", "description": "Working notes", "owner": "sauron", "preload": "none"}
+  {
+    "type": "skill",
+    "name": "monitor",
+    "agent": "sauron",
+    "description": "Monitor a running system \u2014 read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.",
+    "arguments": "<project> [--diagnose <symptom>] [--check] [--scan-code]",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "design-monitoring",
+    "agent": "sauron",
+    "description": "Design a monitoring system \u2014 metrics, logs, health checks, dashboards, alerts. Depends on augur + charon.",
+    "arguments": "<project> [--scope full|metrics|alerts|dashboards]",
+    "public": true
+  },
+  {
+    "type": "guard",
+    "pattern": "mcp__grafana*",
+    "tool": "mcp",
+    "validation": "sauron",
+    "description": "Grafana operations require sauron"
+  },
+  {
+    "type": "file",
+    "path": "agents/sauron/memory/scratchpad.md",
+    "description": "Working notes",
+    "owner": "sauron",
+    "preload": "none"
+  }
 ]

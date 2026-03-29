@@ -17,14 +17,6 @@
   },
   {
     "type": "file",
-    "path": "agents/alfred/IDENTITY.md",
-    "description": "Alfred agent identity",
-    "owner": "alfred",
-    "preload": "alfred",
-    "validation": "scribe"
-  },
-  {
-    "type": "file",
     "path": "agents/alfred/memory/scratchpad.md",
     "description": "Working notes",
     "owner": "alfred",
@@ -51,14 +43,6 @@
     "description": "Full project analysis: atlas.json + stories. Use --detect-only for atlas only.",
     "arguments": "<project> [--reverse] [--detect-only]",
     "public": true
-  },
-  {
-    "type": "file",
-    "path": "agents/augur/IDENTITY.md",
-    "description": "Augur agent identity",
-    "owner": "augur",
-    "preload": "augur",
-    "validation": "scribe"
   },
   {
     "type": "file",
@@ -177,14 +161,6 @@
   },
   {
     "type": "file",
-    "path": "agents/charon/IDENTITY.md",
-    "description": "Charon agent identity",
-    "owner": "charon",
-    "preload": "charon",
-    "validation": "scribe"
-  },
-  {
-    "type": "file",
     "path": "agents/charon/memory/scratchpad.md",
     "description": "Working notes",
     "owner": "charon",
@@ -212,14 +188,6 @@
     "tool": "mcp",
     "validation": "sauron",
     "description": "Grafana operations require sauron"
-  },
-  {
-    "type": "file",
-    "path": "agents/sauron/IDENTITY.md",
-    "description": "Sauron agent identity",
-    "owner": "sauron",
-    "preload": "sauron",
-    "validation": "scribe"
   },
   {
     "type": "file",
@@ -251,14 +219,6 @@
     "description": "Health-check the kordinate system \u2014 structural, runtime, and e2e tests.",
     "arguments": "[--scope global|project|all] [--e2e]",
     "public": true
-  },
-  {
-    "type": "file",
-    "path": "agents/scribe/IDENTITY.md",
-    "description": "Scribe agent identity",
-    "owner": "scribe",
-    "preload": "scribe",
-    "validation": "scribe"
   },
   {
     "type": "file",
@@ -311,14 +271,6 @@
     "tool": "Bash",
     "validation": "sanitize",
     "description": "Scan diff for secrets before pushing"
-  },
-  {
-    "type": "file",
-    "path": "agents/warden/IDENTITY.md",
-    "description": "Warden agent identity",
-    "owner": "warden",
-    "preload": "warden",
-    "validation": "scribe"
   },
   {
     "type": "file",
@@ -377,8 +329,8 @@
     "type": "skill",
     "name": "remember",
     "agent": "team",
-    "description": "Write a memory for any agent. Handles scope, paths, and indexes.",
-    "arguments": "<agent> <what to remember>",
+    "description": "Register a memory file in KORD.json \u2014 decide scope and preload.",
+    "arguments": "<file-path> [--scope global|project|both] [--preload <agent>|all|none]",
     "public": true
   },
   {
@@ -389,36 +341,68 @@
     "description": "Push to main requires fast-forward check via /merge"
   },
   {
+    "type": "dir",
+    "pattern": "agents/*/skills/",
+    "validation": "scribe",
+    "description": "Agent skill definitions are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "agents/*/IDENTITY.md",
+    "validation": "scribe",
+    "description": "Agent identities are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "shared/",
+    "validation": "scribe",
+    "description": "Shared protocols are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "hooks/",
+    "validation": "scribe",
+    "description": "Hooks are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "team/skills/",
+    "validation": "scribe",
+    "description": "Team skills are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "team/scripts/",
+    "validation": "scribe",
+    "description": "Team scripts are framework files"
+  },
+  {
     "type": "file",
     "path": "shared/auth-protocol.md",
     "description": "Authentication protocol for guarded operations",
     "owner": "team",
-    "preload": "all",
-    "validation": "scribe"
+    "preload": "all"
   },
   {
     "type": "file",
     "path": "shared/credentials-protocol.md",
     "description": "Credentials management via pass store",
     "owner": "team",
-    "preload": "all",
-    "validation": "scribe"
+    "preload": "all"
   },
   {
     "type": "file",
     "path": "shared/memory-protocol.md",
     "description": "Memory writing protocol",
     "owner": "team",
-    "preload": "all",
-    "validation": "scribe"
+    "preload": "all"
   },
   {
     "type": "file",
     "path": "shared/gemini-protocol.md",
     "description": "Gemini CLI usage and flags",
     "owner": "team",
-    "preload": "all",
-    "validation": "scribe"
+    "preload": "all"
   },
   {
     "type": "file",

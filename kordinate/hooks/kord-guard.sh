@@ -50,12 +50,17 @@ guard_write() {
   rel_path=$(echo "$file_path" | sed 's|.*\.kord/||')
   [ -z "$rel_path" ] && allow
 
-  # Look up in KORD.json — find the most specific matching file entry
-  # Matches both exact paths and directory prefixes
+  # Look up in KORD.json — check dir patterns first, then file entries.
+  # Most specific match wins (longer path = more specific).
   local validation
   validation=$(jq -r --arg p "$rel_path" '
-    [.[] | select(.type == "file" and .path != null and ($p | startswith(.path)))]
-    | sort_by(-.path | length)
+    [
+      (.[] | select(.type == "file" and .path != null and ($p | startswith(.path)))),
+      (.[] | select(.type == "dir" and .pattern != null and (
+        ($p | test(.pattern | gsub("\\*"; "[^/]*")))
+      )))
+    ]
+    | sort_by(-((.path // .pattern) | length))
     | .[0].validation // empty
   ' "$KORD_JSON" 2>/dev/null)
 

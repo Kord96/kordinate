@@ -5,13 +5,20 @@
   {"type": "skill", "name": "install", "agent": "team", "description": "Install or reinstall kordinate — create ~/.kord/, link to runtime.", "arguments": "[--local] [--restore <url>]", "public": true},
   {"type": "skill", "name": "authenticate", "agent": "team", "description": "Authenticate as an agent for guarded operations.", "arguments": "<agent-name>", "public": true},
   {"type": "skill", "name": "improve", "agent": "team", "description": "Improve skills, agents, or the whole team — run evals, benchmark, iterate.", "arguments": "skill|agent|all|optimize|audit|benchmark <name>", "public": true},
-  {"type": "skill", "name": "remember", "agent": "team", "description": "Write a memory for any agent. Handles scope, paths, and indexes.", "arguments": "<agent> <what to remember>", "public": true},
+  {"type": "skill", "name": "remember", "agent": "team", "description": "Register a memory file in KORD.json — decide scope and preload.", "arguments": "<file-path> [--scope global|project|both] [--preload <agent>|all|none]", "public": true},
 
   {"type": "guard", "pattern": "git push * main", "tool": "Bash", "validation": "merge", "description": "Push to main requires fast-forward check via /merge"},
 
-  {"type": "file", "path": "shared/auth-protocol.md", "description": "Authentication protocol for guarded operations", "owner": "team", "preload": "all", "validation": "scribe"},
-  {"type": "file", "path": "shared/credentials-protocol.md", "description": "Credentials management via pass store", "owner": "team", "preload": "all", "validation": "scribe"},
-  {"type": "file", "path": "shared/memory-protocol.md", "description": "Memory writing protocol", "owner": "team", "preload": "all", "validation": "scribe"},
-  {"type": "file", "path": "shared/gemini-protocol.md", "description": "Gemini CLI usage and flags", "owner": "team", "preload": "all", "validation": "scribe"},
+  {"type": "dir", "pattern": "agents/*/skills/", "validation": "scribe", "description": "Agent skill definitions are framework files"},
+  {"type": "dir", "pattern": "agents/*/IDENTITY.md", "validation": "scribe", "description": "Agent identities are framework files"},
+  {"type": "dir", "pattern": "shared/", "validation": "scribe", "description": "Shared protocols are framework files"},
+  {"type": "dir", "pattern": "hooks/", "validation": "scribe", "description": "Hooks are framework files"},
+  {"type": "dir", "pattern": "team/skills/", "validation": "scribe", "description": "Team skills are framework files"},
+  {"type": "dir", "pattern": "team/scripts/", "validation": "scribe", "description": "Team scripts are framework files"},
+
+  {"type": "file", "path": "shared/auth-protocol.md", "description": "Authentication protocol for guarded operations", "owner": "team", "preload": "all"},
+  {"type": "file", "path": "shared/credentials-protocol.md", "description": "Credentials management via pass store", "owner": "team", "preload": "all"},
+  {"type": "file", "path": "shared/memory-protocol.md", "description": "Memory writing protocol", "owner": "team", "preload": "all"},
+  {"type": "file", "path": "shared/gemini-protocol.md", "description": "Gemini CLI usage and flags", "owner": "team", "preload": "all"},
   {"type": "file", "path": "agents/main/memory/scratchpad.md", "description": "Main session working notes", "owner": "main", "preload": "none"}
 ]
