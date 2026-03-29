@@ -79,7 +79,7 @@ Each story is assembled from building blocks per [story-schema.md](story-schema.
 - **observations** — evidence-backed findings, attachable to specific structure nodes or flow steps
 - **rationale** — design decisions, trade-offs, alternatives considered
 
-Stories are **short orienting sections**. The summary orients the reader; the structures and flows carry the detail; observations point to evidence. Don't write essays.
+Stories are **short orienting sections**. The summary orients the reader; the structures and flows carry the detail; observations point to evidence. All prose follows [writing-guide.md](writing-guide.md): state facts about code, not facts about the document.
 
 For failure flows: include trigger, severity, detection, recovery. `detection: ["none"]` or `recovery: ["none"]` should generate a gap observation automatically.
 

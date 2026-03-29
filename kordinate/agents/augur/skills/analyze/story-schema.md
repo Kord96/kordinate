@@ -154,14 +154,7 @@ When a structure has data lineage semantics, use:
 
 ## Narrative Constraints
 
-Summaries are the only prose. Keep them short.
-
-- **~50-80 words** total per summary
-- **Scenario-driven** — trace real journeys, name concrete actors
-- **Lead with action** — start with what happens, not setup
-- **Decision anchors** — explain WHY when mentioning patterns
-- Every `**bold ref**` must resolve to an atlas node ID
-- Em dashes (—) not hyphens
+All prose follows [writing-guide.md](writing-guide.md). Core rule: state facts about code, not facts about the document. See the guide for examples by context (structure, flow, failure cascade, rationale) and common mistakes to avoid.
 
 ## Observation Attachment
 
