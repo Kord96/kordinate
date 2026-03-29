@@ -231,67 +231,60 @@ Everything else is identical. The detection sections (concepts, module_graph, ap
 
 ## Story Format
 
-Each story is a YAML file in `stories/`. A story is a scoped analytical unit about one architectural concern.
+Each story is a YAML file in `stories/`. A story is a short scoped section about one architectural concern, assembled from building blocks.
 
-### Story types
+### Building blocks
 
-| Type | Centers on | Count per project |
-|------|-----------|-------------------|
-| **structure** | A component group and its internal organization | 3-5 (one per group) |
-| **flow** | A data/request path through components | 2-4 (one per critical flow) |
-| **data** | A state store cluster and its readers/writers | 0+ (one per significant state) |
-| **resilience** | A failure mode and its cascade | 0+ (one per critical failure cluster) |
-| **highlight** | A notable pattern, decision, or finding | 0+ (optional) |
+| Block | Purpose | Multiple per story? |
+|-------|---------|-------------------|
+| **summary** | 1-2 short paragraphs (~50-80 words) orienting the reader | No (required) |
+| **structures** | Nested components + typed edges | Yes |
+| **flows** | Ordered steps through components, typed | Yes |
+| **observations** | Evidence-backed findings, attachable to nodes/steps | One list |
+| **rationale** | Design decisions, trade-offs, alternatives | Yes |
 
 ### Story shape
 
 ```yaml
-type: structure | flow | data | resilience | highlight
 id: "<kebab-case>"
 title: "<Human Readable Title>"
-teaches: "<one sentence — what the reader learns>"
-group: "<atlas-group-id>"
+teaches: "<one sentence>"
+tags: ["<freeform>"]
 
-structure:
-  nodes: ["<atlas-node-id>"]
-  edges:
-    - { source: "<node-id>", target: "<node-id>", label: "<short>" }
-  narrative: "<prose — bold **component-refs** resolve to atlas node IDs>"
-  narrative_map:
-    - { text: "<paragraph text>", refs: ["<node-id>"] }
+summary: "<1-2 short paragraphs, ~50-80 words. **bold refs** resolve to atlas node IDs.>"
+
+structures:
+  - id: "<kebab>"
+    title: "<Human Readable>"
+    type: "<freeform: component topology, data lineage, infrastructure, security boundary, ...>"
+    nodes:
+      - id: "<atlas-node-id>"
+        children: ["<atlas-node-id>"]
+        observation_ids: ["<obs-id>"]
+    edges:
+      - { from: "<node-id>", to: "<node-id>", label: "<short>", type: "<freeform: depends_on, reads, writes, contains, calls, ...>" }
 
 flows:
-  - id: "<flow-id>"
-    name: "<Human Name>"
+  - id: "<kebab>"
+    title: "<Human Readable>"
+    type: "<freeform: request path, failure cascade, data pipeline, event chain, ...>"
+    trigger: "<what starts this>"
+    severity: "<critical|high|medium|low>"       # for failure flows
+    detection: ["<signal or 'none'>"]            # for failure flows
+    recovery: ["<step or 'none'>"]               # for failure flows
     steps:
-      - { from: "<node-id>", to: "<node-id>", action: "<verb phrase>" }
-    narrative: "<prose>"
-    narrative_map:
-      - { text: "<paragraph>", steps: [1, 2] }
-
-data:
-  stores:
-    - { id: "<state-id>", name: "<name>", purpose: "<purpose>",
-        readers: ["<node-id>"], writers: ["<node-id>"] }
-  narrative: "<prose>"
-
-resilience:
-  failures:
-    - { id: "<failure-id>", trigger: "<what>", severity: "critical|high|medium|low",
-        cascade: [{ component: "<node-id>", effect: "<what happens>" }],
-        detection: ["<signal>"], recovery: ["<step>"] }
-  narrative: "<prose>"
+      - { node: "<atlas-node-id>", action: "<what it does>", effect: "<what happens to it>", to: "<node-id>", technology: "<protocol>", observation_ids: ["<obs-id>"] }
 
 observations:
-  - { id: "<obs-id>", type: "pattern-match|anti-pattern|gap|api-finding|debt|structural",
-      confidence: "high|medium|low", component: "<node-id>",
+  - { id: "<obs-id>", finding: "<one sentence>", confidence: "<high|medium|low>",
+      component: "<atlas-node-id>",
       evidence: { file: "<path>", lines: [14, 28], snippet: "<code>" },
-      finding: "<one sentence>", tags: ["<tag>"],
-      detection_method: "grep|ast-grep|semgrep|questions|manual",
-      related: ["<obs-id>"] }
+      tags: ["<freeform>"], detection_method: "<grep|ast-grep|semgrep|questions|manual>",
+      recommendation: "<what to do>", related: ["<obs-id>"] }
 
-highlights:
-  - "<key takeaway sentence>"
+rationale:
+  - { id: "<kebab>", decision: "<what>", context: "<why needed>",
+      trade_offs: "<gained vs given up>", alternatives: ["<rejected and why>"] }
 
 evaluation:
   groundedness: 0.92
@@ -300,42 +293,22 @@ evaluation:
   ungrounded_claims: []
 ```
 
-### Dimensions are optional
+### Key differences from previous schema
 
-Not every story needs all dimensions. A structure story might only have `structure` + `observations` + `highlights`. A flow story needs `flows` but might skip `data`.
-
-Required per story type:
-
-| Type | Required dimensions |
-|------|-------------------|
-| structure | structure |
-| flow | flows |
-| data | data |
-| resilience | resilience |
-| highlight | highlights |
-
-All other dimensions are optional enrichments.
+- **No story types** — stories are defined by their building blocks, not a type enum
+- **Structures and flows are typed with freeform strings** — augur invents types as needed
+- **Multiple structures and flows per story** — e.g., component topology + data lineage, or happy path + failure cascade
+- **Observations attach to nodes and steps** via `observation_ids`, not just story-wide
+- **Rationale block** captures the "why" — decisions, trade-offs, alternatives
+- **No narrative_map** — summaries are short enough that paragraph-level mapping isn't needed
 
 ### Narrative constraints
 
-- **Scenario-driven**: trace real journeys, name concrete actors/actions
-- **Lead with action**: start paragraphs with what happens, not setup
-- **Decision anchors**: explain WHY when mentioning patterns/choices
-- **2-3 sentences per paragraph**, separated by `\n\n`
-- **Every `**bold ref**`** must resolve to an atlas node ID
-- **Em dashes** (—) not hyphens
-- **Short narratives**: stories are orienting paragraphs, not essays. Structure: ~50-80 words. Flows: ~50-80 words. Data: ~30-50 words. Resilience: ~50-70 words.
-
-### narrative_map contract
-
-Every narrative has a companion `narrative_map` array. Each entry maps a paragraph to the structural elements it describes:
-
-- **Structure narratives**: `refs: ["<node-id>"]`
-- **Flow narratives**: `steps: [1, 2, 3]` (1-based step indices)
-- **Data narratives**: `refs: ["<node-id>"]`
-- **Resilience narratives**: `refs: ["<node-id>"]` and/or `cascade_steps: [1, 2]`
-
-This enables cross-highlighting in the UI: hover paragraph → highlight graph nodes/steps.
+- **~50-80 words** per summary — orienting paragraph, not essay
+- **Scenario-driven**: trace real journeys, name concrete actors
+- **Lead with action**: start with what happens, not setup
+- Every `**bold ref**` must resolve to an atlas node ID
+- Em dashes (—) not hyphens
 
 ---
 

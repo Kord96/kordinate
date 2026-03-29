@@ -77,59 +77,50 @@ If `--detect-only`: skip Phase 2, go directly to step 14 (Report).
 
 ---
 
-## Phase 2 — Compose Stories
+## Phase 2 — Compose
 
-With all Phase 1 findings in context, compose stories per [story-schema.md](story-schema.md). Each story is a scoped analytical unit about one architectural concern.
+With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-schema.md](story-schema.md).
 
-### Step 10 — Compose stories
+### Step 10 — Compose stories and journeys
 
-Work through each story type:
+Think about the codebase as a whole. What are the important things to understand? Who needs to understand them? Let the journeys guide which stories to tell.
 
-**a. Structure stories** (one per group, 3-5 total): For each group, write a structure story explaining how the group's components are organized, their relationships, and why this grouping exists. Pull from: component descriptions, dependency edges, detected patterns, group membership.
+Start with the **overview journey** (always required). As you identify each architectural concern worth explaining, write the story AND place it in the appropriate journey(s) simultaneously. If composing a journey reveals a gap between two stories, write a bridging story right there.
 
-**b. Flow stories** (one per critical data flow, 2-4 total): For each flow in atlas `data_flows`, trace the path from trigger to terminal state. Pull from: flow steps, component descriptions, technology annotations, API findings on endpoints in the path.
+Each story is assembled from building blocks per [story-schema.md](story-schema.md):
+- **summary** (required) — 1-2 short paragraphs, ~50-80 words
+- **structures** — nested components + typed edges (component topology, data lineage, infrastructure, or any type augur sees fit)
+- **flows** — ordered steps, typed (request paths, failure cascades, data pipelines, or any type augur sees fit)
+- **observations** — evidence-backed findings, attachable to specific structure nodes or flow steps
+- **rationale** — design decisions, trade-offs, alternatives considered
 
-**c. Data stories** (one per significant state cluster): For each entry in atlas `state` (or cluster of related entries sharing readers/writers), explain where truth lives, what reads and writes it, and the consistency model. Pull from: state entries, reader/writer references, persistence model, related debt findings.
+Stories are **short orienting sections**. The summary orients the reader; the structures and flows carry the detail; observations point to evidence. Don't write essays.
 
-**d. Resilience stories** (one per critical failure cluster): For related failure modes (sharing a component or cascade path), explain what breaks, the cascade, detection, and recovery. Pull from: failure modes, external dependency resilience, detected resilience patterns and gaps, debt findings in the Resilience category.
+For failure flows: include trigger, severity, detection, recovery. `detection: ["none"]` or `recovery: ["none"]` should generate a gap observation automatically.
 
-**e. Highlight stories** (optional): For findings that stand out — exemplary patterns, unusual choices, critical cross-cutting gaps — write a highlight story. These are for findings that don't fit neatly into structure/flow/data/resilience.
+For data structures: use `reads`/`writes` edge types and inherit `purpose`/`persistence` from atlas nodes.
 
-Stories are **short orienting sections**, not essays. Each narrative is 1-2 paragraphs that orient the reader and point to the structural evidence (nodes, edges, steps, observations). The detail lives in the structure, not the prose. Follow [story-schema.md](story-schema.md) for length targets and formatting.
+**Typical output:** 8-15 stories across 2-4 journeys. Each story has a summary and 1-3 building blocks.
 
-### Step 11 — Selective re-read (Detect-Compose-Refine)
+### Step 11 — Refine (Detect-Compose-Refine)
 
-Review each draft story. If a narrative makes a claim about code behavior that was not directly observed in Phase 1 (e.g., a flow story describes error handling but that path wasn't traced), re-read the specific source file(s) to verify or correct the claim.
+Review each story. If a summary makes a claim not directly observed in Phase 1, re-read the specific source file(s) to verify or correct it. Only re-read files that an ungrounded claim references.
 
-Do not re-scan broadly — only the specific files that an ungrounded claim references. This keeps the refinement targeted.
-
-### Step 12 — Evaluate stories
+### Step 12 — Evaluate
 
 For each story, compute:
+- **Groundedness**: claims traced to atlas findings + node IDs / total claims. Target: >= 0.85.
+- **Coverage** (across all stories): critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
 
-- **Groundedness**: count claims (every sentence asserting code behavior). For each, verify it maps to (a) a detection finding in the atlas and (b) an atlas node ID. `groundedness = grounded / total`. Target: >= 0.85. If below, revise ungrounded claims.
-- **Coverage** (across all stories): percentage of critical atlas nodes (components + external deps with criticality=critical + state with purpose=source-of-truth) referenced in at least one story. Target: >= 0.80. If below, add highlight stories for uncovered critical components.
+If groundedness is low, revise ungrounded claims. If coverage is low, add stories for uncovered critical components.
 
-Record scores in each story's `evaluation` section.
+### Step 13 — Write
 
-### Step 13 — Compose journeys
-
-Group stories into 2-4 journeys per [story-schema.md](story-schema.md). Each journey is an ordered reading path for a specific audience:
-
-- **Architecture overview** (always): all structure stories → 1-2 key flows. For new team members.
-- **Backend onboarding** (if applicable): server structure → request flow → persistence → resilience.
-- **Frontend onboarding** (if applicable): client structure → rendering flow → state management.
-- **Resilience review** (if failure modes exist): all resilience stories → gap highlights.
-
-Keep journeys to 3-8 stories each. The first story should always be a structure story.
-
-### Step 14 — Write stories and journeys
-
-Write stories to `$ROOT/.kord/agents/augur/memory/stories/<type>-<id>.yaml`. Write journeys to `$ROOT/.kord/agents/augur/memory/journeys/<id>.yaml`. Create directories if needed. Update `metadata.story_ids` in atlas.json.
+Write stories to `$ROOT/.kord/agents/augur/memory/stories/<id>.yaml`. Write journeys to `$ROOT/.kord/agents/augur/memory/journeys/<id>.yaml`. Create directories if needed. Update `metadata.story_ids` in atlas.json.
 
 ---
 
-## Step 15 — Report
+## Step 14 — Report
 
 ```
 ## Analysis: <project>
@@ -143,8 +134,8 @@ Write stories to `$ROOT/.kord/agents/augur/memory/stories/<type>-<id>.yaml`. Wri
 **Debt**: Score N — Grade X. <interpretation>
 **External** (N): <names with criticality>
 **Failures** (N): <names with severity>
-**Stories** (N): N structure, N flow, N data, N resilience, N highlight
-**Journeys** (N): <names>
+**Stories** (N): <titles>
+**Journeys** (N): <titles>
 **Groundedness**: <min>-<max> across stories
 **Coverage**: <percentage> of critical components
 **Top recommendations**: 1. ... 2. ... 3. ...
@@ -155,4 +146,4 @@ Written to:
   journeys: <path> (N files)
 ```
 
-If `--detect-only`, omit the Stories/Groundedness/Coverage lines and the stories path.
+If `--detect-only`, omit the Stories/Journeys/Groundedness/Coverage lines.
