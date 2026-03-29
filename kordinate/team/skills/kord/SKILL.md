@@ -30,4 +30,4 @@ When spawning an agent (local or remote), the agent should:
 
 1. **Boot** — run `/boot` to load preloaded memory from KORD.json.
 2. **Work** — execute the requested task.
-3. **Remember** — if new memory files were written, they'll be picked up by the nudge hook. The agent doesn't need to call `/remember` explicitly — the hook handles registration after the session.
+3. **Sleep** — write any new insights to memory files in the agent's memory directory. The nudge hook will trigger `/remember` to register them in KORD.json.
