@@ -380,8 +380,8 @@ def main():
                 continue
             all_issues.extend(validate_journey(journey, story_ids))
 
-        if not has_overview:
-            all_issues.append({"level": "ERROR", "section": "journey", "message": "overview.yaml not found (required)"})
+        # overview.yaml is optional — root stories serve as the overview
+        # Journeys only needed for cross-cutting concerns
 
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]
