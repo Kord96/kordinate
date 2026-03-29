@@ -107,9 +107,9 @@ Three mechanical checks, then a Gemini review:
 
 3. **Coverage**: critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
 
-4. **Gemini story review** (background):
+4. **Gemini story review** (background) — review stories against the **codebase** (ground truth), using the atlas as supporting context:
    ```bash
-   gemini -m gemini-2.5-pro -o json -p "Review these architectural stories against the atlas and our writing rules. Rules: summaries must be 50-80 words max, state facts about code not facts about the document, every **bold ref** must match an atlas node ID, no meta-text like 'this story covers...' Story building blocks: summary (required), structures, flows, observations, rationale. Journeys: 3-8 stories each, ordered from foundational to dependent. Check: do stories cover important concerns? Teaching order sensible? Summaries factual and specific? Any critical components missing from all stories?" @$ROOT/.kord/agents/augur/memory/stories/ < $ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
+   gemini -m gemini-2.5-pro -o json -p "Review these architectural stories against the SOURCE CODE (ground truth). The atlas.json is provided as context for what augur detected — but the code is the authority, not the atlas. Our rules: summaries 50-80 words max, state facts about code not about the document, no meta-text like 'this story covers...', journeys 3-8 stories ordered foundational to dependent. Check: do stories accurately describe what the code does? Are any claims not supported by the actual source? Are important architectural concerns missing? Is the teaching order sensible for someone new to this codebase?" @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
    ```
    Incorporate valid critiques before writing final output. Ignore opinions that contradict our constraints.
 
