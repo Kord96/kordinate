@@ -93,15 +93,18 @@ For data structures: use `reads`/`writes` edge types and inherit `purpose`/`pers
 
 Review each story. If a summary makes a claim not directly observed in Phase 1, re-read the specific source file(s) to verify or correct it. Only re-read files that an ungrounded claim references.
 
-### Step 7 — Evaluate
+### Step 7 — Validate and evaluate
 
-Three mechanical checks, then a Gemini review:
+Run validation first. **Do not proceed until validation passes.**
 
-1. **Schema validation** (run the script):
+1. **Output validation** (run the script with --lock):
    ```bash
-   python $SKILL_DIR/scripts/validate_atlas.py $ROOT/.kord/agents/augur/memory/atlas.json
+   python $SKILL_DIR/scripts/validate_output.py $ROOT/.kord/agents/augur/memory --lock
    ```
-   The script checks: required fields, kebab-case IDs, unique IDs, all cross-references resolve, 3-5 groups, 5-10 components, `grounded_in` non-empty. Fix any errors before proceeding.
+   This checks atlas.json, stories/*.yaml, journeys/*.yaml, and directory structure.
+   If errors are found, the script creates a lock file. **Fix the errors and rerun validation.**
+   The lock blocks further writes to the output directory until validation passes.
+   Loop up to 3 times. If still failing after 3 attempts, report the remaining errors and stop.
 
 2. **Groundedness verification**: for each observation and story claim with `grounded_in` references, re-read the cited source files and verify the claim holds at those locations. This catches hallucinations at the source — not "does the atlas agree?" (circular) but "does the code agree?" (ground truth). Target: >= 0.85.
 
