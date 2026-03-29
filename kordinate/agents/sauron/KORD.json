@@ -17,7 +17,7 @@
   },
   {
     "type": "guard",
-    "pattern": "mcp__grafana*",
+    "pattern": "mcp__grafana.*",
     "tool": "mcp",
     "validation": "sauron",
     "description": "Grafana operations require sauron"

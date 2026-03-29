@@ -133,28 +133,28 @@
   },
   {
     "type": "guard",
-    "pattern": "kubectl *",
+    "pattern": "kubectl .*",
     "tool": "Bash",
     "validation": "charon",
     "description": "Cluster operations require charon"
   },
   {
     "type": "guard",
-    "pattern": "helm *",
+    "pattern": "helm .*",
     "tool": "Bash",
     "validation": "charon",
     "description": "Helm operations require charon"
   },
   {
     "type": "guard",
-    "pattern": "git push * test*",
+    "pattern": "git push .* test.*",
     "tool": "Bash",
     "validation": "charon",
     "description": "Push to test requires charon"
   },
   {
     "type": "guard",
-    "pattern": "git push * prod*",
+    "pattern": "git push .* prod.*",
     "tool": "Bash",
     "validation": "charon",
     "description": "Push to prod requires charon"
@@ -184,7 +184,7 @@
   },
   {
     "type": "guard",
-    "pattern": "mcp__grafana*",
+    "pattern": "mcp__grafana.*",
     "tool": "mcp",
     "validation": "sauron",
     "description": "Grafana operations require sauron"
@@ -335,7 +335,7 @@
   },
   {
     "type": "guard",
-    "pattern": "git push * main",
+    "pattern": "git push .* main",
     "tool": "Bash",
     "validation": "merge",
     "description": "Push to main requires fast-forward check via /merge"
@@ -375,6 +375,31 @@
     "pattern": "team/scripts/",
     "validation": "scribe",
     "description": "Team scripts are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "lib/",
+    "validation": "scribe",
+    "description": "Library scripts are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "bin/",
+    "validation": "scribe",
+    "description": "Runtime scripts are framework files"
+  },
+  {
+    "type": "dir",
+    "pattern": "profile/locks/",
+    "validation": "warden",
+    "description": "Auth lock files \u2014 warden only"
+  },
+  {
+    "type": "file",
+    "path": "settings.json",
+    "description": "Hook and environment configuration",
+    "owner": "team",
+    "validation": "scribe"
   },
   {
     "type": "file",

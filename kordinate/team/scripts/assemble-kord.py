@@ -65,10 +65,13 @@ def main():
     global_path.write_text(json.dumps(entries, indent=2) + "\n")
     print(f"Wrote: {global_path}")
 
-    # Write seed
+    # Write seed only if it doesn't exist (factory reset baseline)
     seed_path = home / "KORD-seed.json"
-    seed_path.write_text(json.dumps(entries, indent=2) + "\n")
-    print(f"Wrote: {seed_path}")
+    if not seed_path.exists():
+        seed_path.write_text(json.dumps(entries, indent=2) + "\n")
+        print(f"Wrote: {seed_path} (first install)")
+    else:
+        print(f"Kept: {seed_path} (already exists)")
 
 
 if __name__ == "__main__":

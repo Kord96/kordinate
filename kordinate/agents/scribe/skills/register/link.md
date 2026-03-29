@@ -17,11 +17,15 @@ mkdir -p ~/.kord/backups
 
 **Wipe runtime** (prevents stale files from previous installs):
 ```bash
-rm -rf ~/.claude/agents/ ~/.claude/skills/ ~/.claude/agent-memory/
+rm -rf ~/.claude/agents/ ~/.claude/skills/
 mkdir -p ~/.claude/agents ~/.claude/skills ~/.claude/agent-memory
 ```
 
-**Preserve**: `~/.claude/projects/` (user auto-memory), `~/.claude/settings.json` (user config), `~/.claude/CLAUDE.md` (will be rewritten).
+**Preserve**:
+- `~/.claude/agent-memory/` — don't wipe, update MEMORY.md indexes in place (Claude's native agent memory accumulates across sessions)
+- `~/.claude/projects/` — user auto-memory (nudge hook + /remember moves files to kordinate)
+- `~/.claude/settings.json` — user config (hooks section merged, not replaced)
+- `~/.claude/CLAUDE.md` — will be rewritten
 
 ### 1. Agents
 
