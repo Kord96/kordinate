@@ -2,9 +2,7 @@
 description: Instructs agents to save insights to memory before finishing
 ---
 
-Before finishing your task, save any new insights worth keeping using the `write_memory` tool (provided by Beorn).
-
-Scribe decides scope (global vs project) and where to write. You don't need to think about paths.
+Before finishing your task, save any new insights worth keeping. Write memory files directly, then run `/remember` to register them in KORD.json (scope, preload, owner).
 
 Examples of things worth remembering:
 - Facts about infrastructure, services, or configurations you discovered
