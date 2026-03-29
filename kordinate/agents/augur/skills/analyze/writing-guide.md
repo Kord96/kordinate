@@ -101,6 +101,24 @@ Good: "Trace a request from the API gateway through auth, order processing, and 
 
 Bad: "This journey covers the backend request flow and related failure modes."
 
+## Analogies
+
+Use analogies sparingly and only when they make a concrete concept clearer. An analogy must be **grounded** — it should map to something specific in the code, not decorate a vague description.
+
+**Good analogies** (grounded in code behavior):
+- "**order-service** orchestrates checkout like a saga — each step has a compensating rollback if the next fails." (Maps to actual saga pattern in the code)
+- "The plugin system works like Unix pipes — each processor reads stdin, transforms, writes stdout." (Maps to actual ProcessorPool dispatch model)
+
+**Bad analogies** (decorative, not grounded):
+- "The architecture is like a city with roads connecting buildings." (Maps to nothing specific)
+- "Redis acts as the system's short-term memory." (Sounds nice but obscures what Redis actually stores and who reads/writes it)
+
+**Rules:**
+- Only use an analogy if it maps to a real mechanism in the code
+- The analogy must survive the question "which file/function implements this?"
+- One analogy per story is enough. Two is too many.
+- Never use an analogy as a substitute for naming components and stating facts
+
 ## Common Mistakes
 
 1. **Describing the document instead of the system.** "This story covers..." / "The following section..." / "We describe..." — delete these and state the fact directly.

@@ -94,6 +94,7 @@ observations:
     detection_method: "<grep|ast-grep|semgrep|questions|manual>"
     recommendation: "<what to do>"       # optional
     related: ["<obs-id>"]               # links to related observations
+    grounded_in: ["<file:line>"]        # source files that justify this finding
 
 # ── Rationale (0+) ────────────────────────────────────────────────
 
@@ -185,7 +186,9 @@ stories:
 
 - **3-8 stories** per journey. Shorter is better.
 - Stories can belong to **multiple journeys**.
+- **Teaching order**: sequence stories from most foundational to most dependent. Each story should build on concepts the previous stories established. Ask: "what does the reader need to understand before this story makes sense?"
 - The first story should orient the reader (typically shows the high-level structure).
+- If two stories have no dependency, put the simpler one first.
 - Journeys for different audiences can share stories but sequence them differently.
 
 ### Suggested journeys

@@ -71,6 +71,7 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
       "name": "<Human Readable Flow Name>",
       "description": "<what this flow accomplishes>",
       "trigger": "<what starts it>",
+      "grounded_in": ["<file:line>"],
       "steps": [
         {
           "component": "<component-id>",
@@ -93,7 +94,8 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
       "purpose": "source-of-truth | cache | derived | staging",
       "persistence": "persistent | ephemeral",
       "readers": ["<component-id>"],
-      "writers": ["<component-id>"]
+      "writers": ["<component-id>"],
+      "grounded_in": ["<file:line>"]
     }
   ],
 
@@ -136,7 +138,8 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
       "impact": "<what end users experience>",
       "detection": ["<signal — metric, log, error, or 'none'>"],
       "recovery": ["<step — automatic or manual>"],
-      "severity": "critical | high | medium | low"
+      "severity": "critical | high | medium | low",
+      "grounded_in": ["<file:line>"]
     }
   ],
 
@@ -337,6 +340,7 @@ All detection sections (concepts, module_graph, api_surface, debt) are structura
 - Omit `module_graph.reverse_dependencies` if `--reverse` was not used
 - Omit `api_surface` entirely if no endpoints were found and the project is not an API
 - Omit empty severity lists in `api_surface.findings` and empty `debt.by_category` entries
+- **`grounded_in`** on data_flows, state, failure_modes, and concept evidence lists the source files that justify the entry. Format: `["<file:line>"]`. These are used during evaluation to verify claims against actual code — not against other atlas entries (which would be circular)
 
 ## Group Assignment
 

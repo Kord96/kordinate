@@ -72,6 +72,8 @@ Think about the codebase as a whole. What are the important things to understand
 
 Start with the **overview journey** (always required). As you identify each architectural concern worth explaining, write the story AND place it in the appropriate journey(s) simultaneously. If composing a journey reveals a gap between two stories, write a bridging story right there.
 
+**Teaching order**: within each journey, sequence stories from most foundational to most dependent. Each story should build on what the previous established. Ask "what does the reader need to understand before this story makes sense?" and order accordingly.
+
 Each story is assembled from building blocks per [story-schema.md](story-schema.md):
 - **summary** (required) — 1-2 short paragraphs, ~50-80 words
 - **structures** — nested components + typed edges (component topology, data lineage, infrastructure, or any type augur sees fit)
@@ -93,11 +95,15 @@ Review each story. If a summary makes a claim not directly observed in Phase 1, 
 
 ### Step 7 — Evaluate
 
-For each story, compute:
-- **Groundedness**: claims traced to atlas findings + node IDs / total claims. Target: >= 0.85.
-- **Coverage** (across all stories): critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
+Three checks:
 
-If groundedness is low, revise ungrounded claims. If coverage is low, add stories for uncovered critical components.
+1. **Groundedness verification**: for each observation and story claim, check the `grounded_in` file references. Re-read the cited source files and verify the claim holds at those locations. This catches hallucinations at the source — not "does the atlas agree?" (circular) but "does the code agree?" (ground truth). Target: >= 0.85.
+
+2. **Schema validation**: verify atlas.json conforms to [schema.md](schema.md) (required fields, unique IDs, cross-references resolve, 3-5 groups, 5-10 components). Verify stories conform to [story-schema.md](story-schema.md) (summary present, bold refs resolve, observation_ids valid).
+
+3. **Coverage**: critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
+
+If groundedness is low, fix the claims at the source. If schema is invalid, fix the structure. If coverage is low, add stories for uncovered components.
 
 ### Step 8 — Write
 
