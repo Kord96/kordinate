@@ -1,0 +1,233 @@
+---
+/**
+ * Journey page layout — renders a journey as sequential story sections.
+ * Designed to work within Starlight's content area or as a standalone page.
+ *
+ * Props:
+ * - project: project name
+ * - journey: journey object (id, title, description, stories[])
+ * - stories: array of parsed story objects
+ * - atlas: atlas.json
+ * - allJourneys: all journey objects (for the selector dropdown)
+ * - rendering: Scribe's rendering decisions per story
+ */
+import StoryCard from './StoryCard.astro';
+
+interface Props {
+  project: string;
+  journey: any;
+  stories: any[];
+  atlas: any;
+  allJourneys: any[];
+  rendering: Record<string, any>;
+}
+
+const { project, journey, stories, atlas, allJourneys, rendering } = Astro.props;
+
+const stats = {
+  components: atlas.components?.length || 0,
+  flows: atlas.data_flows?.length || 0,
+  stories: stories.length,
+};
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{project} — {journey.title}</title>
+  <!-- Cytoscape (lazy-loaded by GraphBlock) -->
+  <script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js" is:inline defer></script>
+  <script src="https://unpkg.com/layout-base@2.0.1/layout-base.js" is:inline defer></script>
+  <script src="https://unpkg.com/cose-base@2.2.0/cose-base.js" is:inline defer></script>
+  <script src="https://unpkg.com/cytoscape-cose-bilkent@4.1.0/cytoscape-cose-bilkent.js" is:inline defer></script>
+  <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js" is:inline defer></script>
+  <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js" is:inline defer></script>
+  <!-- Mermaid (lazy-rendered by SequenceDiagram) -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js" is:inline defer></script>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-tertiary: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --border: #475569;
+      --accent: #3b82f6;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --bg-tertiary: #e2e8f0;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #94a3b8;
+        --border: #cbd5e1;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* Page header */
+    .page-header {
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ph-left { display: flex; align-items: center; gap: 0.75rem; }
+    .ph-project {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .ph-stats {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .ph-journey-select {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* Content area */
+    .page-content {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
+
+    /* Story TOC sidebar (desktop) */
+    .story-toc {
+      position: sticky;
+      top: 1rem;
+      width: 200px;
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+    .toc-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .toc-item {
+      display: block;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      margin-bottom: 0.15rem;
+      border-radius: 0 4px 4px 0;
+    }
+    .toc-item:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.03);
+      border-left-color: var(--accent);
+    }
+
+    /* Stories column */
+    .stories-column {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Journey description */
+    .journey-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Footer nav */
+    .page-footer {
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .footer-link {
+      font-size: 0.85rem;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .footer-link:hover { text-decoration: underline; }
+
+    @media (max-width: 768px) {
+      .story-toc { display: none; }
+      .page-content { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="ph-left">
+      <span class="ph-project">{project}</span>
+      <span class="ph-stats">{stats.components} components · {stats.flows} flows · {stats.stories} stories</span>
+    </div>
+    {allJourneys.length > 1 && (
+      <select class="ph-journey-select" id="journey-select">
+        {allJourneys.map(j => (
+          <option value={j.id} selected={j.id === journey.id}>{j.title}</option>
+        ))}
+      </select>
+    )}
+  </header>
+
+  <div class="page-content">
+    <nav class="story-toc">
+      <div class="toc-title">{journey.title}</div>
+      {stories.map(s => (
+        <a class="toc-item" href={`#story-${s.id}`}>{s.title}</a>
+      ))}
+      <a class="toc-item" href={`/${project}/atlas/`} style="margin-top:0.5rem;border-top:1px solid var(--border);padding-top:0.5rem;">Atlas →</a>
+      <a class="toc-item" href={`/${project}/facts/`}>Facts →</a>
+    </nav>
+
+    <main class="stories-column">
+      {journey.description && (
+        <p class="journey-desc">{journey.description}</p>
+      )}
+      {stories.map(s => (
+        <StoryCard story={s} atlas={atlas} rendering={rendering[s.id] || {}} />
+      ))}
+    </main>
+  </div>
+
+  <footer class="page-footer">
+    <a class="footer-link" href={`/${project}/atlas/`}>Full Atlas</a>
+    <a class="footer-link" href={`/${project}/facts/`}>All Observations</a>
+  </footer>
+
+  <script is:inline>
+    // Journey switcher
+    var sel = document.getElementById('journey-select');
+    if (sel) {
+      sel.addEventListener('change', function() {
+        var base = window.location.pathname.replace(/\/[^/]*\/?$/, '');
+        window.location.href = base + '/' + sel.value + '/';
+      });
+    }
+  </script>
+</body>
+</html>

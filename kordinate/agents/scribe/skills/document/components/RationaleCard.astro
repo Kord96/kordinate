@@ -1,0 +1,61 @@
+---
+/**
+ * Renders a design decision as a compact card.
+ * Shows: decision + context + trade-offs, optionally rejected alternatives.
+ */
+interface Props {
+  decision: string;
+  context: string;
+  trade_offs: string;
+  alternatives?: string[];
+}
+
+const { decision, context, trade_offs, alternatives } = Astro.props;
+---
+
+<div class="rationale-card">
+  <div class="rc-decision">ℹ {decision}</div>
+  <div class="rc-context">{context}</div>
+  {trade_offs && <div class="rc-tradeoffs">↔ {trade_offs}</div>}
+  {alternatives && alternatives.length > 0 && (
+    <div class="rc-alternatives">
+      {alternatives.map(alt => (
+        <div class="rc-alt">✕ {alt}</div>
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  .rationale-card {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border, #475569);
+    border-left: 3px solid #3b82f6;
+    border-radius: 6px;
+    background: var(--bg-secondary, #1e293b);
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .rc-decision {
+    color: var(--text-primary, #f1f5f9);
+    font-weight: 500;
+  }
+  .rc-context {
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+  }
+  .rc-tradeoffs {
+    color: var(--text-muted, #64748b);
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+  }
+  .rc-alternatives {
+    margin-top: 0.25rem;
+  }
+  .rc-alt {
+    font-size: 0.75rem;
+    color: var(--text-muted, #64748b);
+    opacity: 0.7;
+  }
+</style>

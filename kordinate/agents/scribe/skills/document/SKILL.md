@@ -1,18 +1,18 @@
 ---
 name: document
 description: >
-  Render stories into interactive documentation. Reads Augur's atlas + stories + journeys
-  and produces documentation pages. Stories render as short sections within journey pages.
-  All visualization decisions are Scribe's.
+  Render stories into interactive documentation. Reads Augur's atlas + stories + journeys,
+  maps them into pre-built Astro components, and writes pages to the docs site. Stories
+  render as short sections within journey pages. Visualization decisions are Scribe's.
 argument-hint: "<project> [--atlas-only]"
 curated: true
 scope: global
 context: fork
 ---
 
-Render a project's stories and atlas into interactive documentation. Scribe makes all visualization decisions — stories carry analytical content with zero rendering hints.
+Render a project's stories and atlas into interactive documentation using **pre-built components**. Scribe does NOT generate HTML from scratch — it maps story data into templates and makes rendering decisions (which graph layout, which diagram type) via a manifest.
 
-Stories are **short sections**, not full pages. A journey page contains its stories as sequential sections. Each story section has a summary and 1-3 visual building blocks.
+Stories are **short sections** within journey pages. Each story section has a summary and 1-3 visual building blocks rendered by reusable Astro components.
 
 ## Arguments
 
@@ -94,56 +94,60 @@ Sizing by node count:
 - Decision card: what was decided + context + trade-offs
 - Alternatives shown as dismissed options
 
-### 4. Render journey pages
+### 4. Write the rendering manifest
 
-Each journey becomes **one page**. Stories are sections within it.
+Scribe's core output is a **rendering manifest** — a JSON file that maps each story to its visualization decisions. The pre-built Astro components consume this manifest.
 
-Output: `<docs-dir>/<project>/index.astro` (default journey) and `<docs-dir>/<project>/<journey-id>.astro` (additional journeys).
+For each story, produce an entry:
 
-**Page layout:**
-
-```
-+------------------------------------------------------------------+
-|  [project name]                          [journey selector ▼]     |
-+------------------------------------------------------------------+
-|                                                                    |
-|  ┌─ Story 1: MCP Agent Servers ────────────────────────────────┐  |
-|  │  Summary paragraph (50-80 words)                            │  |
-|  │                                                              │  |
-|  │  [structure graph: 4 nodes]     [observation card]           │  |
-|  │                                                              │  |
-|  │  [rationale: why Express+MCP]                                │  |
-|  └──────────────────────────────────────────────────────────────┘  |
-|                                                                    |
-|  ┌─ Story 2: Agent Delegation Flow ────────────────────────────┐  |
-|  │  Summary paragraph                                          │  |
-|  │                                                              │  |
-|  │  [sequence diagram: 5 steps]                                │  |
-|  │                                                              │  |
-|  │  [2 observation cards]                                       │  |
-|  └──────────────────────────────────────────────────────────────┘  |
-|                                                                    |
-|  ┌─ Story 3: ... ──────────────────────────────────────────────┐  |
-|  │  ...                                                         │  |
-|  └──────────────────────────────────────────────────────────────┘  |
-|                                                                    |
-+------------------------------------------------------------------+
+```json
+{
+  "storyId": "mcp-servers",
+  "blocks": [
+    { "type": "structure", "sourceId": "server-topology", "render": "dagre", "nodeCount": 4 },
+    { "type": "observation", "sourceId": "obs-no-retry", "render": "warning-card" },
+    { "type": "rationale", "sourceId": "why-express-mcp", "render": "decision-card" }
+  ]
+}
 ```
 
-**Story section rendering:**
+Write the manifest to `<docs-content-dir>/<project>/manifest.json`.
 
-Each story section contains:
-1. **Title** — story title as a heading with anchor ID
-2. **Summary** — the prose summary with bold node refs as clickable links
-3. **Building blocks** — structures, flows, observations, rationale rendered per step 3
-4. Blocks render in order: structures first, then flows, then rationale. Observations render inline where they're attached (via `observation_ids`), with unattached observations at the end.
+### 5. Write journey pages using templates
 
-**Section styling:**
-- Each story is a card with a subtle border
-- Story sections are separated by whitespace
-- Structures and flows take the full card width
-- Observation cards are compact (one line: finding + badge + file link)
-- Rationale cards are compact (decision + trade-off in two lines)
+Each journey becomes **one page** using the `JourneyPage.astro` template. Write an Astro page that imports the template and passes data:
+
+```astro
+---
+import JourneyPage from '<components>/JourneyPage.astro';
+import atlas from './<project>/atlas.json';
+import stories from './<project>/stories/*.yaml';  // loaded at build time
+---
+<JourneyPage project="<name>" journey={journey} stories={orderedStories} atlas={atlas} allJourneys={allJourneys} rendering={manifest} />
+```
+
+Output: `<docs-pages-dir>/<project>/index.astro` (default journey) and `<docs-pages-dir>/<project>/<journey-id>/index.astro` (additional journeys).
+
+### 6. Component inventory
+
+Pre-built components in `components/` (do NOT regenerate these — they are stable code):
+
+| Component | Purpose | Rendered by |
+|-----------|---------|-------------|
+| `JourneyPage.astro` | Page shell: header, TOC sidebar, journey selector, story sections | Top-level page |
+| `StoryCard.astro` | One story section: title, summary, blocks | JourneyPage |
+| `GraphBlock.astro` | Cytoscape graph for structures (lazy-loads on hover) | StoryCard |
+| `SequenceDiagram.astro` | Mermaid sequence diagram for flows | StoryCard |
+| `TimelineCard.astro` | Failure cascade timeline | StoryCard |
+| `ObservationCard.astro` | Evidence/warning card for observations | StoryCard |
+| `RationaleCard.astro` | Design decision card | StoryCard |
+| `AtlasPage.astro` | Full interactive graph with story lens | Atlas page |
+
+Supporting files in `lib/`:
+| File | Purpose |
+|------|---------|
+| `cytoscape-config.ts` | typeConfig, node styles, severity colors, flow colors |
+| `narrative.ts` | Bold-ref parsing, HTML escaping, narrative rendering |
 
 ### 5. Implement interactions
 
