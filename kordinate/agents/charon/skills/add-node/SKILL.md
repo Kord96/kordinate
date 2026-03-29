@@ -2,8 +2,6 @@
 name: add-node
 description: Remotely add a worker node to an existing k3s cluster — installs Tailscale, joins via k3s agent over DERP relay, updates config.
 argument-hint: "<ssh-target> [cluster]"
-curated: true
-scope: global
 ---
 
 `/add-node <ssh-target> [cluster]`

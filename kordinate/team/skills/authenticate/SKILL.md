@@ -2,8 +2,6 @@
 name: authenticate
 description: Authenticate before performing guarded operations. Copy the agent's lock file, do work, remove it.
 disable-model-invocation: true
-curated: true
-scope: global
 ---
 
 Authenticate for guarded operations. Each agent has a lock file at `profile/locks/<agent-name>`.

@@ -1,9 +1,6 @@
 ---
 description: Server Prefetch — fetching data on the server before client rendering
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, data]
 ---

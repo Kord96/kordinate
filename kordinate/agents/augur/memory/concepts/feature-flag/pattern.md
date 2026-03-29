@@ -3,9 +3,6 @@ description: Feature Flag/Toggle architectural pattern
 type: pattern
 testable: true
 observable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [deployment, design]
 ---

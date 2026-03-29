@@ -1,9 +1,6 @@
 ---
 description: Big Ball of Mud anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Big Ball of Mud

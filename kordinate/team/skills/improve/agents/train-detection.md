@@ -5,8 +5,6 @@ description: >
   evaluating results against question-based ground truth, and refining signatures, AST rules,
   and diagnostic questions. Use when improving detection quality or expanding concept coverage.
 argument-hint: "[--rounds N] [--language LANG] [--topic TOPIC]"
-curated: true
-scope: global
 ---
 
 # train-detection

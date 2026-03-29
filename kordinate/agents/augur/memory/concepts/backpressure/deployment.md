@@ -1,8 +1,5 @@
 ---
 description: Backpressure — deployment guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

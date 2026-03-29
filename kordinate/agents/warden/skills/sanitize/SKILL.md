@@ -1,8 +1,6 @@
 ---
 name: sanitize
 description: Classify content as config, credential, or memory — routes to the correct destination.
-curated: true
-scope: global
 ---
 
 Classify content and route it to the right place. $ARGUMENTS should include the content to sanitize.

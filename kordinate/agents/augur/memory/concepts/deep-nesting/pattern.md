@@ -1,9 +1,6 @@
 ---
 description: Deep Nesting anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Deep Nesting

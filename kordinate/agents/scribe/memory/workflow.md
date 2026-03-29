@@ -1,8 +1,5 @@
 ---
 description: Scribe authentication and write workflow
-curated: true
-scope: global
-preloaded: scribe
 ---
 # Workflow
 

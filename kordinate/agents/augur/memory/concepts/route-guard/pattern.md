@@ -1,9 +1,6 @@
 ---
 description: Route Guard — conditional access control on route navigation
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, security]
 ---

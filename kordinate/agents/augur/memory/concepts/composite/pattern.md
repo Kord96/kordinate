@@ -2,9 +2,6 @@
 description: Composite architectural pattern
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [design]
 ---

@@ -2,9 +2,6 @@
 description: Batch Loader (N+1 Prevention) architectural pattern
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [data]
 ---

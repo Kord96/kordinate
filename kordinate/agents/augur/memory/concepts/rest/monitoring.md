@@ -1,9 +1,6 @@
 ---
 description: REST API — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

@@ -9,9 +9,6 @@ tools:
   - Bash
   - Grep
   - Glob
-curated: true
-preloaded: warden
-scope: global
 ---
 
 # Warden

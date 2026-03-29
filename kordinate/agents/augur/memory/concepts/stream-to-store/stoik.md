@@ -1,8 +1,5 @@
 ---
 description: stoik library reference
-curated: true
-scope: global
-preloaded: none
 ---
 # stoik
 

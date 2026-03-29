@@ -2,8 +2,6 @@
 name: register
 description: Register a runtime, agent, or kord — or re-link after changes.
 argument-hint: "runtime [--dev <path>|--from <url>] | agent <name> | kord <name> | --link [<name>]"
-curated: true
-scope: global
 ---
 
 One-time runtime setup, new agent/kord creation, or re-linking after kordinate changes.

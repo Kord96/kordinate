@@ -1,8 +1,5 @@
 ---
 description: klog library reference
-curated: true
-scope: global
-preloaded: none
 ---
 # klog
 

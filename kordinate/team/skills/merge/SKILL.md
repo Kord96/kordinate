@@ -2,8 +2,6 @@
 name: merge
 description: Merge session or memory branches into main, resolve conflicts, and clean up stale worktrees. Use when the worktree-push hook reports a conflict, when branches need manual merging, or to garbage-collect old worktrees.
 argument-hint: "[--memory] [<branch>]"
-curated: true
-scope: global
 ---
 
 Merge session or memory branches into main and clean up stale worktrees.

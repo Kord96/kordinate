@@ -1,9 +1,6 @@
 ---
 description: Lava Flow (Dead Code) anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Lava Flow (Dead Code)

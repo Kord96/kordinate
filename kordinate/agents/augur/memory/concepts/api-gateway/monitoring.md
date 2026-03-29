@@ -1,8 +1,5 @@
 ---
 description: API Gateway — monitoring guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

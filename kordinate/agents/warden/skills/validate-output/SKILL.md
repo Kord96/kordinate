@@ -5,8 +5,6 @@ description: >
   that the calling skill needs to include in its report. Without the token, the output
   is considered unvalidated.
 argument-hint: "<dir>"
-curated: true
-scope: global
 ---
 
 Validate an agent's output directory. On success, return a completion token. On failure, return errors. The calling skill cannot finish without the token — this is the enforcement mechanism.

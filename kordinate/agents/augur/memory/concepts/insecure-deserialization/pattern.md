@@ -2,9 +2,6 @@
 description: Insecure Deserialization anti-pattern
 type: anti-pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Insecure Deserialization

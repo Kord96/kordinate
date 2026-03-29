@@ -1,8 +1,5 @@
 ---
 description: Domain-Driven Design — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

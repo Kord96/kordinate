@@ -2,7 +2,6 @@
 name: store
 description: Store personal information — credentials, config updates, overlays.
 argument-hint: "key <path> <value> | config <yaml-path> <value> | overlay <cluster> <namespace> <content>"
-scope: global
 ---
 
 Store personal information managed by alfred. Agents call this via `/kord alfred store` to save credentials, update config, or write overlays.

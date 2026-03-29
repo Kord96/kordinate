@@ -1,8 +1,5 @@
 ---
 description: Sauron working notes and observations
-curated: false
-scope: global
-preloaded: sauron
 ---
 
 - Grafana unreachable from sandbox — audit dashboards from source JSON files instead

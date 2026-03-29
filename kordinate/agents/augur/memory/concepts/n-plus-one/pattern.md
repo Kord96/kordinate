@@ -2,9 +2,6 @@
 description: N+1 Queries anti-pattern
 type: anti-pattern
 observable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # N+1 Queries

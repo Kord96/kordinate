@@ -1,8 +1,5 @@
 ---
 description: Instructs agents to save insights to memory before finishing
-preloaded: all
-curated: true
-scope: global
 ---
 
 Before finishing your task, save any new insights worth keeping using the `write_memory` tool (provided by Beorn).

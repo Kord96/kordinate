@@ -4,9 +4,6 @@ type: pattern
 testable: true
 observable: true
 distributed: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [data, integration]
 ---

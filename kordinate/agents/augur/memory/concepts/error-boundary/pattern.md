@@ -1,9 +1,6 @@
 ---
 description: Error Boundary — component-level error catching and fallback rendering
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, error-handling]
 ---

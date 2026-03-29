@@ -1,9 +1,6 @@
 ---
 description: Dead Letter Queue — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

@@ -1,8 +1,5 @@
 ---
 description: Inbox architectural pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [messaging, data, resilience]
 ---

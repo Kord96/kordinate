@@ -1,9 +1,6 @@
 ---
 description: Tenant-Aware Routing — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 # Monitoring
 

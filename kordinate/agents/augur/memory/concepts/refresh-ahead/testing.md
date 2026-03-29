@@ -1,9 +1,6 @@
 ---
 description: Refresh-Ahead Cache — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

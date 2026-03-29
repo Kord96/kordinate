@@ -2,9 +2,6 @@
 description: Optimistic Update — immediately reflecting expected state changes in the UI before server confirmation
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, data, resilience]
 ---

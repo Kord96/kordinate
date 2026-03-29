@@ -9,9 +9,6 @@ tools:
   - Edit
   - Bash
   - Glob
-curated: true
-preloaded: scribe
-scope: global
 ---
 
 # Scribe

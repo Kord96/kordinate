@@ -1,9 +1,6 @@
 ---
 description: Long Polling — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

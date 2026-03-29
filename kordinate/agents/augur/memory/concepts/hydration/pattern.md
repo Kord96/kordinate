@@ -1,9 +1,6 @@
 ---
 description: Hydration — transferring server-rendered state to the client for interactive rendering
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, data]
 ---

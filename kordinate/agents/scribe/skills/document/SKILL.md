@@ -5,8 +5,6 @@ description: >
   maps them into pre-built Astro components, and writes pages to the docs site. Stories
   render as short sections within journey pages. Visualization decisions are Scribe's.
 argument-hint: "<project> [--atlas-only]"
-curated: true
-scope: global
 context: fork
 ---
 

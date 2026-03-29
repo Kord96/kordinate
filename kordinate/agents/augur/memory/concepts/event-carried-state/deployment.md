@@ -1,9 +1,6 @@
 ---
 description: Event-Carried State Transfer — deployment guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

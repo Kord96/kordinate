@@ -10,9 +10,6 @@ tools:
   - Grep
   - Glob
   - Bash
-curated: true
-preloaded: augur
-scope: global
 ---
 
 # Augur

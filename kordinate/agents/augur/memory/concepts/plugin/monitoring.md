@@ -1,8 +1,5 @@
 ---
 description: Plugin Architecture — monitoring guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

@@ -7,8 +7,6 @@ description: >
   project, or before cross-cutting changes. Use --detect-only for just the atlas.
 argument-hint: "<project> [--reverse] [--detect-only]"
 context: fork
-curated: true
-scope: global
 ---
 
 Produce `atlas.json` and stories — a complete architectural understanding of a project in one continuous pass. Phase 1 runs all detection methodologies. Phase 2 composes findings into stories. Both phases share context so detection informs composition directly.

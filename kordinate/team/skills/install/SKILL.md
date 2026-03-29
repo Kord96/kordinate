@@ -2,8 +2,6 @@
 name: install-k
 description: Convenience alias for register runtime — installs or reinstalls kordinate.
 argument-hint: "[--local] [--restore <repo-url>]"
-curated: true
-scope: global
 ---
 
 Thin wrapper around `register runtime`. Use `/install` for quick access; use `/register runtime` directly for full options.

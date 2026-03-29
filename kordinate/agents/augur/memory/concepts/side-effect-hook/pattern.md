@@ -1,9 +1,6 @@
 ---
 description: Side Effect Hook — lifecycle-bound execution of effects in component frameworks
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 abstraction: [frontend, lifecycle]
 ---

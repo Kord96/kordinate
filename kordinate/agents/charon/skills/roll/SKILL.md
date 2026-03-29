@@ -4,8 +4,6 @@ description: >
   Deploy a service between environments (forward) or revert a deployment (backward).
   Preflight checks run automatically before forward rolls.
 argument-hint: "<project> <source> <target> | back <project> <env>"
-curated: true
-scope: global
 ---
 
 Roll a project between environments. Forward rolls deploy code to a higher environment. Backward rolls (`/roll back`) revert to a pre-roll snapshot.

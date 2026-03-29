@@ -1,8 +1,5 @@
 ---
 description: nokrashi-tools library reference
-curated: true
-scope: global
-preloaded: none
 ---
 # nokrashi-tools — Testing Perspective
 

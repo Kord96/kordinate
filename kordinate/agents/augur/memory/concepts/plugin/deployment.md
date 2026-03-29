@@ -1,8 +1,5 @@
 ---
 description: Plugin Architecture — deployment guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

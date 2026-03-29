@@ -4,8 +4,6 @@ description: >
   Set up a cluster from scratch — namespaces, storage, overlays, and deploy all stacks.
   Use for initial cluster setup or full rebuild.
 argument-hint: "<cluster>"
-curated: true
-scope: global
 ---
 
 Set up a cluster from scratch. Generates kustomize overlays, creates namespaces, provisions storage, and deploys all service stacks.

@@ -3,9 +3,6 @@ description: Deadlock anti-pattern
 type: anti-pattern
 testable: true
 observable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Deadlock

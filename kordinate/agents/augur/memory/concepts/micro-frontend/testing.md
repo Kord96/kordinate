@@ -1,9 +1,6 @@
 ---
 description: Micro-Frontend — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -1,9 +1,6 @@
 ---
 description: Entity-Component-System (ECS) — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -1,8 +1,6 @@
 ---
 name: kord
 description: Send a request to another agent through a kord contract.
-curated: true
-scope: global
 ---
 
 > **DEPRECATED**: This skill is being replaced by beorn capability tools. Use capability tools (e.g., write_memory, analyze_architecture) directly.

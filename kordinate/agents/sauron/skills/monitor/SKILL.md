@@ -5,7 +5,6 @@ description: >
   Detect anomalies, diagnose issues, trace failures. Depends on augur's atlas for
   architecture context and charon's config for cluster access.
 argument-hint: "<project> [--diagnose <symptom>] [--check] [--scan-code]"
-scope: global
 ---
 
 Monitor a running system. Reads Prometheus metrics, Loki logs, Grafana dashboards, and health endpoints. Uses augur's atlas to understand which components to watch and charon's config for cluster access.

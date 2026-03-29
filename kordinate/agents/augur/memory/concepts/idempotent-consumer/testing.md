@@ -1,9 +1,6 @@
 ---
 description: Idempotent Consumer — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -1,9 +1,6 @@
 ---
 description: Middleware — request/response pipeline interceptors for cross-cutting concerns
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [integration, lifecycle]
 ---

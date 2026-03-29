@@ -1,7 +1,6 @@
 ---
 name: boot
 description: Load memory and shared protocols on spawn. Run before starting any task.
-scope: global
 ---
 
 Load your context before starting work.

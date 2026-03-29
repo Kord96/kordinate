@@ -1,9 +1,6 @@
 ---
 description: Role-Based Access Control — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

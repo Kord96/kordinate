@@ -1,9 +1,6 @@
 ---
 description: Primitive Obsession anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Primitive Obsession

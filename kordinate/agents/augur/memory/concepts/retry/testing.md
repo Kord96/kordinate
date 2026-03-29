@@ -1,8 +1,5 @@
 ---
 description: Retry with Backoff — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

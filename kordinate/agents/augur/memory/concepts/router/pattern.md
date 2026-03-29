@@ -1,9 +1,6 @@
 ---
 description: Router — URL-based navigation and view switching
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, integration]
 ---

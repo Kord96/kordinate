@@ -1,8 +1,5 @@
 ---
 description: Circuit Breaker — deployment guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

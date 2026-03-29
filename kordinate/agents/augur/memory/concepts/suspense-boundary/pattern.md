@@ -2,9 +2,6 @@
 description: Suspense Boundary — declarative loading state management for async component trees
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, lifecycle]
 ---

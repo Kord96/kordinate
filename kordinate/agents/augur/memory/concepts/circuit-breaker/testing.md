@@ -1,8 +1,5 @@
 ---
 description: Circuit Breaker — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

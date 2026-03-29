@@ -10,9 +10,6 @@ tools:
   - Write
   - Bash
   - Glob
-curated: true
-preloaded: deployer
-scope: global
 ---
 
 # Deployer

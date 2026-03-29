@@ -2,9 +2,6 @@
 description: Test Pollution anti-pattern
 type: anti-pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Test Pollution

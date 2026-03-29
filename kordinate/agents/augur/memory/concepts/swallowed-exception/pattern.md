@@ -1,9 +1,6 @@
 ---
 description: Swallowed Exception anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Swallowed Exception

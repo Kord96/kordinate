@@ -1,9 +1,6 @@
 ---
 description: Distributed Tracing Instrumentation — deployment guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

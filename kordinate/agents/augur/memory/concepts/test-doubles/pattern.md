@@ -2,9 +2,6 @@
 description: Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 abstraction: [testing]
 ---

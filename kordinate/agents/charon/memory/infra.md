@@ -1,8 +1,5 @@
 ---
 description: Infrastructure Reference
-curated: true
-scope: global
-preloaded: deployer
 ---
 # Infrastructure Reference
 

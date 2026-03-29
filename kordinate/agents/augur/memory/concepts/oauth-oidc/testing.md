@@ -1,9 +1,6 @@
 ---
 description: OAuth2/OpenID Connect — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

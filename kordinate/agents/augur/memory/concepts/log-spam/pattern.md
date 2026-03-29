@@ -2,9 +2,6 @@
 description: Log Spam anti-pattern
 type: anti-pattern
 observable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Log Spam

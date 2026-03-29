@@ -1,9 +1,6 @@
 ---
 description: Snowflake Server anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Snowflake Server

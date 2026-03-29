@@ -1,9 +1,6 @@
 ---
 description: Infrastructure as Code — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

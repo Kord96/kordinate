@@ -2,7 +2,6 @@
 name: get
 description: Retrieve personal information — config, credentials, overlays. Verifies caller identity.
 argument-hint: "config [cluster] | key <path> | overlay <cluster> [namespace] | status"
-scope: global
 ---
 
 Retrieve personal information managed by alfred. Agents call this via `/kord alfred get` to access config, credentials, or overlays.

@@ -2,9 +2,6 @@
 description: Lazy Loading — deferring component or module loading until needed to reduce initial bundle size
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, deployment]
 ---

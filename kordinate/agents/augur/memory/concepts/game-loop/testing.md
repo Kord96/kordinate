@@ -1,9 +1,6 @@
 ---
 description: Game Loop — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

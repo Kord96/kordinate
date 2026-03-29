@@ -1,9 +1,6 @@
 ---
 description: Abstract Syntax Tree (AST) — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -1,9 +1,6 @@
 ---
 description: Event-Driven — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

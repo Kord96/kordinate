@@ -1,8 +1,5 @@
 ---
 description: Sidecar — monitoring guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

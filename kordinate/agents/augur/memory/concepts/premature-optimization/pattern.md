@@ -1,9 +1,6 @@
 ---
 description: Premature Optimization anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Premature Optimization

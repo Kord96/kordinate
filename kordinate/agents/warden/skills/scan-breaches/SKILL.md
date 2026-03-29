@@ -1,8 +1,6 @@
 ---
 name: scan-breaches
 description: Scan repos for hardcoded secrets, PII, and exposed configuration
-curated: true
-scope: global
 ---
 
 Scan a project's source code for hardcoded secrets, personally identifiable information, and exposed configuration.

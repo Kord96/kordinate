@@ -1,9 +1,6 @@
 ---
 description: Serverless / FaaS architectural pattern
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [architectural, deployment]
 ---

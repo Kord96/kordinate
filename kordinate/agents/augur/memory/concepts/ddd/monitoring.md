@@ -1,8 +1,5 @@
 ---
 description: Domain-Driven Design — monitoring guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

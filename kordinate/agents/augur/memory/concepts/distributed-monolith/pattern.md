@@ -2,9 +2,6 @@
 description: Distributed Monolith anti-pattern
 type: anti-pattern
 distributed: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Distributed Monolith

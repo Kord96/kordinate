@@ -1,8 +1,6 @@
 ---
 name: audit-secrets
 description: Reconcile cluster Kubernetes secrets against the pass store
-curated: true
-scope: global
 ---
 
 Compare what secrets exist on Kubernetes clusters against what is stored in the local `pass` store. Identify gaps in both directions.

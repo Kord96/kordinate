@@ -1,7 +1,5 @@
 ---
 description: Designer working notes and observations
-curated: false
-scope: global
 ---
 
 - **2026-03-27**: map-dependencies skill improved: added multi-language support (Python/JS-TS/Go), ASCII graph examples (box and flat-list formats), error handling for missing modules/infra/deep cycles, --reverse performance note mentioning context:fork, pushy description for better triggering, reasoning-based language instead of ALWAYS/NEVER directives.

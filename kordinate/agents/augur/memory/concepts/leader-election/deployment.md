@@ -1,9 +1,6 @@
 ---
 description: Leader Election — deployment guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

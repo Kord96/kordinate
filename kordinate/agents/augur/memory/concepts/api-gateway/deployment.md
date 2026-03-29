@@ -1,8 +1,5 @@
 ---
 description: API Gateway — deployment guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

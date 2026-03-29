@@ -1,8 +1,5 @@
 ---
 description: Stream-to-Store — monitoring guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

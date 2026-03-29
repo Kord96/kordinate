@@ -2,9 +2,6 @@
 description: Hardcoded Credentials anti-pattern
 type: anti-pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Hardcoded Credentials

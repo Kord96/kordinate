@@ -1,9 +1,6 @@
 ---
 description: Circular Dependency anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Circular Dependency

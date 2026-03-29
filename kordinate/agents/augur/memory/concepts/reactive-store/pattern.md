@@ -1,9 +1,6 @@
 ---
 description: Reactive Store — client-side state container with reactive subscriptions
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [frontend, data]
 ---

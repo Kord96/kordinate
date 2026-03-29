@@ -1,8 +1,5 @@
 ---
 description: Retry with Backoff — deployment guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

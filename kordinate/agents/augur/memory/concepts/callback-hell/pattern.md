@@ -1,9 +1,6 @@
 ---
 description: Callback Hell anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Callback Hell

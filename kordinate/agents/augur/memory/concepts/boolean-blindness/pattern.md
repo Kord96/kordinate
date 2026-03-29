@@ -1,9 +1,6 @@
 ---
 description: Boolean Blindness anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Boolean Blindness

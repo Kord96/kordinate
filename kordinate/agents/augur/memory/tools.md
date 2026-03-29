@@ -1,8 +1,5 @@
 ---
 description: Designer tools reference — Gemini MCP for architecture validation
-curated: true
-scope: global
-preloaded: designer
 ---
 # Tools
 

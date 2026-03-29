@@ -1,8 +1,5 @@
 ---
 description: Saga Orchestrator architectural pattern
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [messaging, integration]
 ---

@@ -1,9 +1,6 @@
 ---
 description: A/B Experiment Framework — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

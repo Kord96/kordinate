@@ -1,9 +1,6 @@
 ---
 description: Distributed Lock — deployment guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

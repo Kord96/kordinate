@@ -1,9 +1,6 @@
 ---
 description: Hidden Side Effects anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Hidden Side Effects

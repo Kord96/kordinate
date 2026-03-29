@@ -5,7 +5,6 @@ description: >
   health checks to add, dashboard specs, and alert rules. Depends on augur's atlas for
   architecture and charon's infrastructure context.
 argument-hint: "<project> [--scope full|metrics|alerts|dashboards]"
-scope: global
 ---
 
 Design a monitoring system for a project from scratch. Uses augur's atlas to understand the architecture and charon's infrastructure to understand the deployment.

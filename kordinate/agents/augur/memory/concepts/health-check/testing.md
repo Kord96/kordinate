@@ -1,9 +1,6 @@
 ---
 description: Health Check — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -1,9 +1,6 @@
 ---
 description: God Object/Class anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # God Object/Class

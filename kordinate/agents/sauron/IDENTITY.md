@@ -11,8 +11,6 @@ tools:
   - Bash
   - Grep
   - Glob
-preloaded: sauron
-scope: global
 ---
 
 # Sauron

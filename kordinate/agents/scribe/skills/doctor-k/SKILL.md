@@ -2,8 +2,6 @@
 name: doctor-k
 description: Health-check the kordinate system — structural checks, runtime validation, and end-to-end tests. Use when checking system health, verifying after changes, or debugging integration issues.
 argument-hint: "[--scope global|project|all] [--e2e] [--agent <name>] [--stale-days N]"
-curated: true
-scope: global
 ---
 
 Comprehensive health check for the kordinate runtime. Scans agents, skills, hooks, memory, settings, and kord contracts for structural problems, broken links, and configuration drift. Never modifies files.

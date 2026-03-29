@@ -1,9 +1,6 @@
 ---
 description: Request-Reply — deployment guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

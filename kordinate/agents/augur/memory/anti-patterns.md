@@ -1,8 +1,5 @@
 ---
 description: Index of recognized anti-patterns by category
-curated: true
-scope: global
-preloaded: designer
 ---
 # Anti-Patterns Index
 

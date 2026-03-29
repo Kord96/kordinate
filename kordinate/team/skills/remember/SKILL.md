@@ -2,7 +2,6 @@
 name: remember
 description: Register a memory file in KORD.json — decide scope and preload. Run after writing a memory file.
 argument-hint: "<file-path> [--scope global|project|both] [--preload <agent>|all|none]"
-scope: global
 ---
 
 Register a memory file that was already written. This skill doesn't write the file — it registers it in KORD.json so the system knows about it (scope, preload, owner).

@@ -2,8 +2,6 @@
 name: improve
 description: Improve skills, agents, or the whole team — run evals, benchmark, iterate, and optimize. Use for skill quality testing, A/B benchmarks, iterative improvement loops, or description optimization.
 argument-hint: "skill <name> | agent <name> | all | optimize <skill> | audit [--fix] | benchmark <skill>"
-curated: true
-scope: global
 ---
 
 Improve skills, agents, or the whole team. Combines static quality analysis, eval-driven testing, benchmarking, and iterative improvement loops.

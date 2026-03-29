@@ -1,9 +1,6 @@
 ---
 description: Batch Loader (N+1 Prevention) — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

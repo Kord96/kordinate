@@ -1,9 +1,6 @@
 ---
 description: OAuth2/OpenID Connect — deployment guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

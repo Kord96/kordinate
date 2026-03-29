@@ -1,9 +1,6 @@
 ---
 description: Form Binding — two-way or controlled data binding between form inputs and state
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 abstraction: [frontend, data]
 ---

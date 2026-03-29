@@ -1,9 +1,6 @@
 ---
 description: Feature Flag/Toggle — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

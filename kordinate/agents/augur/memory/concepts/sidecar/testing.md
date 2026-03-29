@@ -1,8 +1,5 @@
 ---
 description: Sidecar — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -1,9 +1,6 @@
 ---
 description: Change Data Capture (CDC) — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

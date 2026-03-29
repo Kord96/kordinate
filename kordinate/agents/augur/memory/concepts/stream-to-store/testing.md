@@ -1,8 +1,5 @@
 ---
 description: Stream-to-Store — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -1,9 +1,6 @@
 ---
 description: Blue-Green Deployment — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

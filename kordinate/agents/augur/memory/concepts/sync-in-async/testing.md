@@ -1,9 +1,6 @@
 ---
 description: Sync-in-Async — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 # Testing
 

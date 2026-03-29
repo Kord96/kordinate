@@ -2,9 +2,6 @@
 description: SQL Injection anti-pattern
 type: anti-pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # SQL Injection

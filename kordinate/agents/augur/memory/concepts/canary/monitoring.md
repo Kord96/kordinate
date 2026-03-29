@@ -1,9 +1,6 @@
 ---
 description: Canary Release — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

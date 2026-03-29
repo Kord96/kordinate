@@ -1,9 +1,6 @@
 ---
 description: Copy-Paste Programming anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Copy-Paste Programming

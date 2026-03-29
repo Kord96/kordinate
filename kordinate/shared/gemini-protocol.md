@@ -1,8 +1,5 @@
 ---
 description: How to call the Gemini CLI for peer review and second opinions
-preloaded: all
-curated: true
-scope: global
 ---
 
 ## Gemini CLI

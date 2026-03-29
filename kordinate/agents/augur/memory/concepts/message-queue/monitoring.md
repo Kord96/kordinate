@@ -1,9 +1,6 @@
 ---
 description: Message Queue — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

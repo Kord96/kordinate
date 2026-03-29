@@ -1,7 +1,5 @@
 ---
 description: AST rule coverage catalog — scores, methodology, and quality criteria for ast-grep pattern detection rules
-curated: true
-scope: global
 ---
 
 # AST Rule Coverage

@@ -1,9 +1,6 @@
 ---
 description: Training Pipeline — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 # Monitoring
 

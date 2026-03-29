@@ -3,9 +3,6 @@ description: REST API architectural pattern
 type: pattern
 testable: true
 observable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [api, integration]
 ---

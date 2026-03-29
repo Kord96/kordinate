@@ -2,9 +2,6 @@
 description: Role-Based Access Control architectural pattern
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [security]
 ---

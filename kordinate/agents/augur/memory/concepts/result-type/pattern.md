@@ -2,9 +2,6 @@
 description: Result/Either Type architectural pattern
 type: pattern
 testable: true
-curated: true
-scope: global
-preloaded: none
 graphable: false
 abstraction: [design, error-handling]
 ---

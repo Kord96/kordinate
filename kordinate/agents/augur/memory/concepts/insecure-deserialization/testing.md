@@ -1,9 +1,6 @@
 ---
 description: Insecure Deserialization — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -4,8 +4,6 @@ description: >
   Move a resource to a new location — workstation, PVC, or data.
   Specific procedures in resource docs.
 argument-hint: "workstation | pvc <name> <namespace>"
-curated: true
-scope: global
 ---
 
 Move a resource to a new location. The migration verb is generic — specific procedures live in resource docs.

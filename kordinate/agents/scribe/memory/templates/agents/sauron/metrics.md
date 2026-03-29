@@ -1,7 +1,5 @@
 ---
 description: Template for project metrics documentation
-curated: true
-scope: global
 ---
 # <Project> — Metrics
 

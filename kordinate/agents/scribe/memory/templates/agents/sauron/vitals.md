@@ -1,7 +1,5 @@
 ---
 description: Template for project vitals documentation
-curated: true
-scope: global
 ---
 # <Project> — Vitals
 

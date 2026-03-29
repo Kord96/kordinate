@@ -3,9 +3,6 @@ description: Worker/Thread Pool architectural pattern
 type: pattern
 testable: true
 observable: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [concurrency, infrastructure]
 ---

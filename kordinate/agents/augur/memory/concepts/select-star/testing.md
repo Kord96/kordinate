@@ -1,9 +1,6 @@
 ---
 description: Select Star — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 # Testing
 

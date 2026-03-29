@@ -1,8 +1,5 @@
 ---
 description: Two-layer monitoring model — Alloy collects, Vitals evaluates
-curated: true
-scope: global
-preloaded: sauron
 ---
 # Monitoring
 

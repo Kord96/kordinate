@@ -1,9 +1,6 @@
 ---
 description: OAuth2/OpenID Connect — monitoring guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Monitoring
 

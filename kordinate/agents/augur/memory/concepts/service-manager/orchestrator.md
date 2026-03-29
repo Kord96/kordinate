@@ -1,8 +1,5 @@
 ---
 description: orchestrator library reference
-curated: true
-scope: global
-preloaded: none
 ---
 # orchestrator
 

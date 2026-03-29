@@ -1,8 +1,5 @@
 ---
 description: Stream-to-Store — deployment guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

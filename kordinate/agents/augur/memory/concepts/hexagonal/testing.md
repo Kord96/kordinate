@@ -1,8 +1,5 @@
 ---
 description: Hexagonal — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

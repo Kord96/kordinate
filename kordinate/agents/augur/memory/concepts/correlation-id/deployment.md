@@ -1,9 +1,6 @@
 ---
 description: Correlation ID — deployment guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Deployment
 

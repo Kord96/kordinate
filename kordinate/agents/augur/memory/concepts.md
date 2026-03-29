@@ -1,8 +1,5 @@
 ---
 description: Index of recognized architectural patterns by category
-curated: true
-scope: global
-preloaded: designer
 ---
 # Patterns Index
 

@@ -1,8 +1,5 @@
 ---
 description: Bulkhead — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

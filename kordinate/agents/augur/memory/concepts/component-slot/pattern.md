@@ -1,9 +1,6 @@
 ---
 description: Component Slot — parent-controlled content injection into child components
 type: pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 abstraction: [frontend, design]
 ---

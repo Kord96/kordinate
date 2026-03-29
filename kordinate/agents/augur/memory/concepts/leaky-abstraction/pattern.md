@@ -1,9 +1,6 @@
 ---
 description: Leaky Abstraction anti-pattern
 type: anti-pattern
-curated: true
-scope: global
-preloaded: none
 graphable: false
 ---
 # Leaky Abstraction

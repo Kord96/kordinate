@@ -1,9 +1,6 @@
 ---
 description: Audit Logging — testing guidance
 type: supplementary
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

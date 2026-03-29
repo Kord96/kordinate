@@ -2,9 +2,6 @@
 description: Immutable Infrastructure architectural pattern
 type: pattern
 distributed: true
-curated: true
-scope: global
-preloaded: none
 graphable: true
 abstraction: [deployment, infrastructure]
 ---

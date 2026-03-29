@@ -1,8 +1,5 @@
 ---
 description: API Gateway — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

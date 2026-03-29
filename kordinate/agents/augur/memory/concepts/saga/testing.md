@@ -1,8 +1,5 @@
 ---
 description: Saga — testing guidance
-curated: true
-scope: global
-preloaded: none
 ---
 ## Testing
 

@@ -11,9 +11,6 @@ tools:
   - Bash
   - Glob
   - Grep
-curated: true
-preloaded: alfred
-scope: global
 ---
 
 # Alfred
