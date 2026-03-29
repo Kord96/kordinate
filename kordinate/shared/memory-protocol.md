@@ -17,6 +17,3 @@ Don't remember:
 - Information already in git (code changes, commit history)
 - Things derivable from running a command
 
-## Git
-
-Commit and push periodically — at natural milestones, not at the end. This keeps auto-merge working and ensures work survives interrupted sessions.
