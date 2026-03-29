@@ -102,9 +102,27 @@ function getKnownAgents(registry) {
   return [...agents].sort();
 }
 
-const routeRegistry = loadRouteRegistry();
-const KNOWN_AGENTS = getKnownAgents(routeRegistry);
+let routeRegistry = loadRouteRegistry();
+let KNOWN_AGENTS = getKnownAgents(routeRegistry);
 const activeRequests = new Map();
+
+// Watch KORD.json for changes — reload routes automatically
+const kordJsonPath = join(KORDINATE_HOME, 'KORD.json');
+if (existsSync(kordJsonPath)) {
+  const { watch } = await import('node:fs');
+  let reloadTimeout;
+  watch(kordJsonPath, () => {
+    // Debounce — multiple writes may fire rapidly
+    clearTimeout(reloadTimeout);
+    reloadTimeout = setTimeout(() => {
+      const oldCount = routeRegistry.size;
+      routeRegistry = loadRouteRegistry();
+      KNOWN_AGENTS = getKnownAgents(routeRegistry);
+      log(`KORD.json changed — reloaded: ${oldCount} → ${routeRegistry.size} routes`);
+    }, 500);
+  });
+  log(`Watching KORD.json for changes`);
+}
 
 // ─── Agent helpers ───
 
