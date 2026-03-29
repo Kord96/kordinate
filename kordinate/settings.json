@@ -5,25 +5,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$KORDINATE_HOME/hooks/guard.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$KORDINATE_HOME/hooks/validate-lock-hook.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__grafana",
+        "matcher": "Write|Edit|Bash|mcp__grafana",
         "hooks": [
           {
             "type": "command",
@@ -48,15 +30,6 @@
           {
             "type": "command",
             "command": "$KORDINATE_HOME/hooks/worktree-push.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$KORDINATE_HOME/hooks/validate-post-hook.sh"
           }
         ]
       }

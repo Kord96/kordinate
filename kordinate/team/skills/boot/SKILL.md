@@ -1,7 +1,6 @@
 ---
 name: boot
 description: Load memory and shared protocols on spawn. Run before starting any task.
-curated: true
 scope: global
 ---
 
@@ -11,22 +10,18 @@ Your agent name is the `name` field from your own frontmatter. Use it wherever `
 
 ## Steps
 
-0. **Sync kord state** — if `$KORDINATE_HOME` is a git repo with a remote configured (`git -C "$KORDINATE_HOME" remote` returns output), pull memory written by Beorn agents since the last session:
+0. **Sync kord state** — if `$KORDINATE_HOME` is a git repo with a remote configured (`git -C "$KORDINATE_HOME" remote` returns output), pull:
     ```bash
     git -C "$KORDINATE_HOME" pull --ff-only 2>/dev/null || true
     ```
-    This only applies to local workstations — the PVC is already current on-cluster. If no remote is configured, skip.
+    Skip if no remote is configured.
 
-1. **Read shared protocols** — read all files in `$KORDINATE_HOME/shared/` (memory-protocol.md, auth-protocol.md, credentials-protocol.md). These are team-wide instructions.
+1. **Load preloaded files** — run the preload script to get all files marked for you in one read:
+    ```bash
+    python3 $KORDINATE_HOME/team/scripts/preload.py <your-name> > /tmp/boot-<your-name>.md
+    ```
+    Read `/tmp/boot-<your-name>.md`. This contains shared protocols and all memory files where `preload` matches your name or `all` in KORD.json. Faster than scanning frontmatter.
 
-2. **Read your memory** — load files marked for you:
-    - Global: in `$KORDINATE_HOME/agents/<your-name>/memory/`, read files
-      where frontmatter has `preloaded: <your-name>` or `preloaded: all`.
-      Skip files with `preloaded: none` (they're available on demand).
-    - Project: same at `<project-root>/.kord/agents/<your-name>/memory/`.
-      Skip if `.kord/` does not exist in the project root.
-    - Files without a `preloaded` property default to `none` (not loaded).
+2. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
 
-3. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
-
-4. **Proceed with your assigned task.**
+3. **Proceed with your assigned task.**
