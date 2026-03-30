@@ -14,11 +14,12 @@ Checks:
     Phase 1 (atlas):
         - atlas.json exists and is valid JSON
         - Required top-level fields present
-        - Version is "3"
+        - Version is "4"
         - IDs are kebab-case and unique
         - All cross-references resolve
         - Group count is 3-5
         - Component count is 5-10 (warning if outside 4-12)
+        - Flow type is one of: data, control, event, state, resource
         - grounded_in arrays present on flows, state, failure_modes
 
     Phase 2 (stories):
@@ -60,9 +61,11 @@ except ImportError:
 
 KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
+VALID_FLOW_TYPES = {"data", "control", "event", "state", "resource"}
+
 REQUIRED_ATLAS_FIELDS = [
     "version", "generated", "project", "purpose", "stack",
-    "groups", "components", "data_flows", "state",
+    "groups", "components", "flows", "state",
     "external_dependencies", "failure_modes", "concepts", "debt"
 ]
 
@@ -100,8 +103,12 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
             error(f"Missing required field: {field}", "atlas")
 
     # Version
-    if atlas.get("version") != "3":
-        error(f"Expected version '3', got '{atlas.get('version')}'", "atlas")
+    if atlas.get("version") != "4":
+        error(f"Expected version '4', got '{atlas.get('version')}'", "atlas")
+
+    # Legacy data_flows check
+    if "data_flows" in atlas:
+        error("Found 'data_flows' — v4 uses 'flows' with type discriminator. Migrate data_flows entries to flows with type: 'data'", "atlas")
 
     # Groups
     groups = atlas.get("groups", [])
@@ -160,18 +167,21 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
 
     check_deps(components)
 
-    # Data flows
-    for f in atlas.get("data_flows", []):
+    # Flows (typed)
+    for f in atlas.get("flows", []):
         fid = f.get("id", "")
+        ftype = f.get("type", "")
+        if ftype not in VALID_FLOW_TYPES:
+            error(f"Flow '{fid}' has invalid type '{ftype}' (must be one of: {', '.join(sorted(VALID_FLOW_TYPES))})", "flows")
         if not f.get("grounded_in"):
-            warn(f"Flow '{fid}' has no grounded_in", "data_flows")
+            warn(f"Flow '{fid}' has no grounded_in", "flows")
         elif project_root:
-            issues.extend(check_grounded_in(f["grounded_in"], project_root, "data_flows", fid))
+            issues.extend(check_grounded_in(f["grounded_in"], project_root, "flows", fid))
         for step in f.get("steps", []):
             for key in ("component", "to"):
                 ref = step.get(key, "")
                 if ref and ref not in all_node_ids:
-                    error(f"Flow '{fid}' step {key} references unknown '{ref}'", "data_flows")
+                    error(f"Flow '{fid}' step {key} references unknown '{ref}'", "flows")
 
     # State
     for s in atlas.get("state", []):
@@ -428,7 +438,7 @@ def main():
 
     if not valid:
         print(f"\nExpected output structure at {mem_dir}:")
-        print(f"  {mem_dir}/atlas.json          — v3 JSON (see schema.md)")
+        print(f"  {mem_dir}/atlas.json          — v4 JSON (see schema.md)")
         print(f"  {mem_dir}/stories/*.yaml       — one YAML file per story")
         print(f"  {mem_dir}/journeys/*.yaml      — at least getting-started.yaml")
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Convert architecture.yaml to Cytoscape viewer JSON.
+"""Convert atlas.json to Cytoscape viewer JSON.
 
 Usage:
-    python3 convert-to-viewer.py <architecture.yaml> <output.json>
+    python3 convert-to-viewer.py <atlas.json> <output.json>
 
 This is the reference implementation for the illustrate-architecture skill.
 The scribe LLM should use its judgment to produce the JSON, using this
@@ -11,11 +11,11 @@ script as a fallback for validation.
 Rules encoded here:
   1. Components with children → group nodes (hasChildren=true)
   2. depends_on → structural "uses" edges
-  3. data_flows → flow edges between consecutive steps
+  3. flows → flow edges between consecutive steps (typed: data, control, event, state, resource)
   4. No render edges — containment communicates parent-child visually
   5. Dedup: drop dependency edges when a flow edge exists for the same pair
   6. Bidirectional flows: keep both arrows, hide label on the return edge
-  7. State, failure_modes, data_flows included for Data/Resilience/Flows tabs
+  7. State, failure_modes, flows included for Data/Resilience/Flows tabs
   8. External dependencies added as nodes under an "External" group
 """
 
@@ -74,18 +74,21 @@ def walk_components(components, nodes, dep_edges, parent_id=None):
             walk_components(comp["children"], nodes, dep_edges, comp["id"])
 
 
-def extract_flow_edges(data_flows):
-    """Convert data_flows steps into edges."""
+def extract_flow_edges(flows):
+    """Convert typed flows steps into edges."""
     edges = []
-    for flow in data_flows:
+    for flow in flows:
+        flow_type = flow.get("type", "data")
         for step in flow.get("steps", []):
             if step.get("to"):
-                edges.append({
+                edge = {
                     "source": step["component"],
                     "target": step["to"],
                     "label": flow.get("name", flow["id"]),
                     "flowId": flow["id"],
-                })
+                    "flowType": flow_type,
+                }
+                edges.append(edge)
     return edges
 
 
@@ -162,7 +165,9 @@ def convert(arch):
     walk_components(arch.get("components", []), nodes, dep_edges)
     extract_externals(arch, nodes)
 
-    flow_edges = extract_flow_edges(arch.get("data_flows", []))
+    # Support both v4 (flows) and legacy v3 (data_flows)
+    raw_flows = arch.get("flows", arch.get("data_flows", []))
+    flow_edges = extract_flow_edges(raw_flows)
     all_edges = dedup_and_merge(flow_edges, dep_edges)
 
     # State data (Data tab)
@@ -191,11 +196,12 @@ def convert(arch):
             "recovery": f.get("recovery", []),
         })
 
-    # Data flows (Flows tab)
-    data_flows = []
-    for flow in arch.get("data_flows", []):
-        data_flows.append({
+    # Flows (Flows tab) — typed
+    flows = []
+    for flow in raw_flows:
+        flows.append({
             "id": flow["id"],
+            "type": flow.get("type", "data"),
             "name": flow.get("name", ""),
             "description": flow.get("description", ""),
             "trigger": flow.get("trigger", ""),
@@ -207,13 +213,13 @@ def convert(arch):
         "edges": all_edges,
         "state": state,
         "failure_modes": failure_modes,
-        "data_flows": data_flows,
+        "flows": flows,
     }
 
 
 def main():
     if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <architecture.yaml> <output.json>")
+        print(f"Usage: {sys.argv[0]} <atlas.json> <output.json>")
         sys.exit(1)
 
     with open(sys.argv[1]) as f:
@@ -239,12 +245,19 @@ def main():
     flow_ids = set(e["flowId"] for e in edges if e["flowId"] not in ("dependency", "rendering"))
     bidir = sum(1 for e in edges if e.get("hideLabel"))
 
+    # Count by flow type
+    type_counts = {}
+    for flow in result["flows"]:
+        ft = flow.get("type", "data")
+        type_counts[ft] = type_counts.get(ft, 0) + 1
+    type_summary = ", ".join(f"{v} {k}" for k, v in sorted(type_counts.items()))
+
     print(f"Nodes: {len(nodes)} ({len(roots)} roots, {len(groups)} groups)")
     print(f"Edges: {len(edges)} ({len(flow_ids)} flows, {bidir} return edges with hidden labels)")
     print(f"Orphan leaves: {len(orphans)} (connected by containment)")
     print(f"State: {len(result['state'])}")
     print(f"Failure modes: {len(result['failure_modes'])}")
-    print(f"Data flows: {len(result['data_flows'])}")
+    print(f"Flows: {len(result['flows'])} ({type_summary})")
     print(f"Written to {sys.argv[2]}")
 
 

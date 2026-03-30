@@ -37,9 +37,13 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [dep-analysis.md](dep-analysis.md).
 - **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
 - **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [source-gathering.md](source-gathering.md).
-- **Actors and flows** — External actors. 2-4 critical data flows. Events (omit if none). When writing atlas: read [schema.md](schema.md).
-- **Domain model** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Record it as `domain_model` in the atlas.
-- **State** — Stores with concept vocabulary, readers/writers, persistence model.
+- **Actors and flows** — External actors. Trace 2-6 critical flows across all five types (data, control, event, state, resource). Not every project will have all five — trace what exists. Events (omit if none). When writing atlas: read [schema.md](schema.md).
+- **Domain model and bounded contexts** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Map bounded contexts: where does the same entity name mean different things across modules? Extract ubiquitous language for ambiguous or domain-specific terms.
+- **State** — Stores with concept vocabulary, readers/writers, persistence model. Assess schema evolution strategy (migrations directory, versioning tool). Identify concurrency handling (locking strategy, conflict resolution). Record `schema_evolution` and `concurrency` on each state entry.
+- **Observability** — Logging structure (JSON vs plain, correlation IDs, library). Metrics exposure (endpoint, format, key metrics). Tracing (provider, propagation). Flag gaps — missing correlation IDs, no metrics endpoint, no error tracking. Record in `observability` section.
+- **Security** — Authentication methods and default-deny posture. Authorization model (RBAC, ABAC, ACL). Secrets management strategy — scan for hardcoded credentials, `.env` files committed, environment variable injection. Map threat surface: every external entry point with its auth and validation status. Record in `security` section.
+- **Developer experience** — Testing strategy: locate test directories, identify frameworks, assess unit/integration/e2e coverage. Linting and formatting: find config files (`.eslintrc`, `pyproject.toml`, `.prettierrc`), check for pre-commit hooks. Documentation: README quality, ADRs, API docs (OpenAPI/proto), inline comment density. Record in `developer_experience` section.
+- **Infrastructure** — CI/CD pipelines: find workflow files (`.github/workflows/`, `.gitlab-ci.yml`, `Jenkinsfile`), map triggers and stages. IaC: find Terraform, CloudFormation, Helm, Kustomize files, inventory managed resources. Record in `module_graph.ci_cd` and `module_graph.iac`.
 - **Failure modes** — Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
 - **Stories** — When composing stories: read [story-schema.md](story-schema.md) and [writing-guide.md](writing-guide.md).
@@ -48,13 +52,13 @@ Read the source code. As you build your understanding, cover all concerns below.
 
 Feed the draft atlas, source code, and our constraints to Gemini:
 ```bash
-gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-4 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
+gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? For each flow: verify the type matches the step fields used (data flows use data/transform, control flows use condition/gate, etc.). For observability/security/developer_experience: verify grounded_in files actually contain the claimed tooling. For bounded contexts: verify entity definitions actually differ across the listed modules. Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-6 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
 ```
 Continue immediately.
 
 ### Step 4 — Write atlas.json
 
-Assemble into [schema.md](schema.md) v3 format. Set `version: "3"` and `generated` to today. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
+Assemble into [schema.md](schema.md) v4 format. Set `version: "4"` and `generated` to today. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
 
 If `--detect-only`: skip Phase 2, go to Report.
 
@@ -129,9 +133,13 @@ If groundedness is low, fix claims. If coverage is low, add stories. Always reva
 **Purpose**: <one sentence>
 **Components** (N): <names>
 **Groups** (N): <names>
-**Flows** (N): <names>
+**Flows** (N): N data, N control, N event, N state, N resource
+**Bounded Contexts** (N): <names>
 **Concepts**: N patterns, N anti-patterns, N gaps
 **API**: N endpoints, N critical / N recommended / N minor findings
+**Observability**: logging (<format>), metrics (<format>), tracing (<provider>). Gaps: <list or none>
+**Security**: auth (<methods>), secrets (<strategy>), threat surface (<N entry points>)
+**DevEx**: testing (<frameworks>), linting (<tools>), docs (<coverage>)
 **Debt**: Score N — Grade X. <interpretation>
 **External** (N): <names with criticality>
 **Failures** (N): <names with severity>

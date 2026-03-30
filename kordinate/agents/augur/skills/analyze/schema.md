@@ -1,14 +1,14 @@
-# atlas.json Schema (v3)
+# atlas.json Schema (v4)
 
 Level 3 resource for the analyze skill. Referenced from step 9 (write atlas). Defines the structural inventory output format.
 
-Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capabilities`, adds `metadata` section. All detection sections (concepts, module_graph, api_surface, debt) are unchanged.
+Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_contexts` to domain model, deepens `state` with schema evolution and concurrency, adds `observability`, `security`, and `developer_experience` sections, expands `module_graph` with CI/CD and IaC.
 
 ## Schema
 
 ```json
 {
-  "version": "3",
+  "version": "4",
   "generated": "<YYYY-MM-DD>",
   "project": "<project-name>",
 
@@ -18,7 +18,19 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
     "primary": "<concept-name from catalog, e.g., property-graph, ledger, catalog>",
     "description": "<one sentence — what shape the core data takes>",
     "entities": ["<core entity types in the domain>"],
-    "relationships": ["<how entities connect>"]
+    "relationships": ["<how entities connect>"],
+    "bounded_contexts": [
+      {
+        "id": "<kebab-case>",
+        "name": "<Human Label>",
+        "description": "<one sentence — what this context owns>",
+        "entities": ["<entity names scoped to this context>"],
+        "modules": ["<path/to/module>"],
+        "ubiquitous_language": {
+          "<term>": "<definition as used in this context>"
+        }
+      }
+    ]
   },
 
   "stack": {
@@ -71,21 +83,45 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
 
   // ── Behavior ───────────────────────────────────────────────────
 
-  "data_flows": [
+  "flows": [
     {
       "id": "<kebab-case>",
-      "actors": ["<actor-id>"],
+      "type": "data | control | event | state | resource",
       "name": "<Human Readable Flow Name>",
       "description": "<what this flow accomplishes>",
       "trigger": "<what starts it>",
+      "actors": ["<actor-id>"],
       "grounded_in": ["<file:line>"],
       "steps": [
         {
+          // ── Common (all flow types) ──
           "component": "<component-id>",
           "action": "<verb phrase>",
-          "data": "<what moves>",
           "to": "<component-id>",
-          "technology": "<protocol or transport>"
+
+          // ── Data flow ──
+          "data": "<what moves>",
+          "technology": "<protocol or transport>",
+          "transform": "<what changes about the data>",
+
+          // ── Control flow ──
+          "condition": "<predicate that gates this step>",
+          "branch": "<which path taken: true | false | match-value>",
+          "gate": "<auth | validation | rate-limit | feature-flag>",
+
+          // ── Event flow ──
+          "topic": "<topic or channel name>",
+          "delivery": "<at-most-once | at-least-once | exactly-once>",
+
+          // ── State flow ──
+          "from_state": "<state before>",
+          "to_state": "<state after>",
+          "side_effects": "<what else happens on transition>",
+
+          // ── Resource flow ──
+          "resource": "<what is acquired: connection | lock | file-handle | memory | thread>",
+          "operation": "<acquire | use | release | timeout>",
+          "constraints": "<pool-size, timeout, max-concurrent>"
         }
       ]
     }
@@ -102,7 +138,17 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
       "persistence": "persistent | ephemeral",
       "readers": ["<component-id>"],
       "writers": ["<component-id>"],
-      "grounded_in": ["<file:line>"]
+      "grounded_in": ["<file:line>"],
+      "schema_evolution": {
+        "migrations": "<path to migrations directory or null>",
+        "strategy": "versioned | append-only | schema-on-read | none",
+        "tools": "<alembic | flyway | knex | prisma | manual | null>"
+      },
+      "concurrency": {
+        "strategy": "optimistic | pessimistic | lock-free | single-writer | none",
+        "mechanism": "<row-level locks | MVCC | CAS | advisory locks | mutex | null>",
+        "conflicts": "<what happens on conflict — retry, queue, reject, last-write-wins>"
+      }
     }
   ],
 
@@ -231,12 +277,113 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
         "files": ["<path>"]
       }
     ],
+    "ci_cd": [
+      {
+        "platform": "github-actions | gitlab-ci | jenkins | circleci | argo | custom",
+        "file": "<path to pipeline definition>",
+        "triggers": ["<push | pr | schedule | manual | tag>"],
+        "stages": ["<lint | test | build | deploy | scan>"],
+        "deploys_to": "<environment or null>"
+      }
+    ],
+    "iac": [
+      {
+        "tool": "terraform | cloudformation | pulumi | helm | kustomize | ansible | cdk",
+        "files": ["<path>"],
+        "resources": ["<resource type: aws_rds_instance | k8s_deployment | etc.>"],
+        "environment": "<dev | staging | production | shared>"
+      }
+    ],
     "risks": {
       "hardcoded_endpoints": ["<file:line>"],
       "missing_resilience": [
         {"file": "<path>", "service_type": "<type>", "missing": ["timeout", "retry", "circuit_breaker"]}
       ],
       "unversioned_deps": ["<description>"]
+    }
+  },
+
+  // ── Observability ──────────────────────────────────────────────
+
+  "observability": {
+    "logging": {
+      "format": "json | plain | mixed",
+      "levels_used": ["<DEBUG | INFO | WARN | ERROR>"],
+      "correlation_id": true,
+      "libraries": ["<structlog | winston | slog | log4j>"],
+      "grounded_in": ["<file:line>"]
+    },
+    "metrics": {
+      "format": "prometheus | statsd | otlp | none",
+      "endpoint": "</metrics or null>",
+      "key_metrics": ["<metric name or pattern>"],
+      "grounded_in": ["<file:line>"]
+    },
+    "tracing": {
+      "enabled": true,
+      "provider": "<opentelemetry | jaeger | datadog | zipkin | none>",
+      "propagation": "w3c | b3 | jaeger | none",
+      "grounded_in": ["<file:line>"]
+    },
+    "gaps": ["<what's missing — e.g., no correlation IDs, no metrics endpoint, no error tracking>"]
+  },
+
+  // ── Security ───────────────────────────────────────────────────
+
+  "security": {
+    "authentication": {
+      "methods": ["<jwt | oauth | api-key | session | mtls | basic | saml>"],
+      "default_deny": true,
+      "identity_provider": "<auth0 | keycloak | cognito | custom | null>",
+      "grounded_in": ["<file:line>"]
+    },
+    "authorization": {
+      "model": "rbac | abac | acl | ownership | none",
+      "enforcement": "<middleware | decorator | manual-check>",
+      "grounded_in": ["<file:line>"]
+    },
+    "secrets_management": {
+      "strategy": "env-vars | vault | k8s-secrets | aws-ssm | azure-keyvault | sealed-secrets | dotenv | hardcoded",
+      "hardcoded_secrets": ["<file:line — empty if none found>"],
+      "rotation": "<automated | manual | none>",
+      "grounded_in": ["<file:line>"]
+    },
+    "threat_surface": [
+      {
+        "entry_point": "<path or endpoint>",
+        "type": "api | webhook | queue | cron | websocket | grpc | public-ui",
+        "authentication": "<method or 'none'>",
+        "validation": "<framework-native | manual | none>",
+        "rate_limited": true
+      }
+    ]
+  },
+
+  // ── Developer Experience ───────────────────────────────────────
+
+  "developer_experience": {
+    "testing": {
+      "frameworks": ["<pytest | jest | go-test | junit | vitest>"],
+      "strategy": {
+        "unit": "<path pattern or 'none'>",
+        "integration": "<path pattern or 'none'>",
+        "e2e": "<path pattern or 'none'>"
+      },
+      "coverage": "<tool and threshold or 'unknown'>",
+      "grounded_in": ["<file:line>"]
+    },
+    "linting": [
+      {
+        "tool": "<eslint | ruff | golangci-lint | rubocop | prettier>",
+        "config": "<path to config file>",
+        "pre_commit": true
+      }
+    ],
+    "documentation": {
+      "readme": true,
+      "adrs": "<path or null>",
+      "api_docs": "<openapi | graphql-schema | grpc-proto | null>",
+      "inline_coverage": "high | medium | low | none"
     }
   },
 
@@ -304,7 +451,7 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
     ]
   },
 
-  // ── Metadata (v3) ──────────────────────────────────────────────
+  // ── Metadata (v4) ──────────────────────────────────────────────
 
   "metadata": {
     "story_ids": ["<story-id>"],
@@ -315,19 +462,19 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
 }
 ```
 
-## What Changed from v2
+## What Changed from v3
 
-| Change | v2 | v3 |
+| Change | v3 | v4 |
 |--------|-----|-----|
-| Format | YAML | JSON |
-| Version | `"2"` | `"3"` |
-| Grouping | `capabilities` (business-level, actors + components) | `groups` (structural clusters, components only) |
-| Component group ref | via capabilities | `group` field on each component |
-| Story link | N/A | `metadata.story_ids` |
-| State readers/writers | N/A | `readers` and `writers` arrays on state entries |
-| Flags | N/A | `metadata.flags` |
-
-All detection sections (concepts, module_graph, api_surface, debt) are structurally identical to v2.
+| Version | `"3"` | `"4"` |
+| Flows | `data_flows` (single type) | `flows` with `type` discriminator: data, control, event, state, resource |
+| Flow steps | Fixed schema (data-only fields) | Common base + type-specific fields |
+| Domain model | entities + relationships | + `bounded_contexts` with ubiquitous language |
+| State | stores inventory only | + `schema_evolution` and `concurrency` |
+| Observability | Detected as concepts only | Dedicated section: logging, metrics, tracing, gaps |
+| Security | Auth field on API endpoints only | Dedicated section: authn, authz, secrets, threat surface |
+| Developer experience | N/A | Testing strategy, linting, documentation |
+| Module graph | modules, deps, infra, risks | + `ci_cd` pipelines, `iac` manifests |
 
 ## Conventions
 
@@ -338,7 +485,7 @@ All detection sections (concepts, module_graph, api_surface, debt) are structura
 - Component `type: store` covers embedded data persistence. External databases appear in `external_dependencies`
 - **Components should number 5-10** for most projects. >12 means not abstracting enough. <4 means over-abstracting
 - **Groups must number 3-5.** This is a hard constraint. If you have more, merge related groups. If you have fewer, the project may be too small to warrant grouping.
-- **Data flows trace critical paths**, not every code path. 2-4 flows typical
+- **Flows trace critical paths**, not every code path. 2-6 flows typical across all types
 - **Failure modes should cover** every external dependency and every stateful component
 - Components nest via `children`. Don't nest deeper than the code's natural structure
 - `deployment` field enables the deployment viewpoint. Only add to components that map to a k8s workload
@@ -347,7 +494,43 @@ All detection sections (concepts, module_graph, api_surface, debt) are structura
 - Omit `module_graph.reverse_dependencies` if `--reverse` was not used
 - Omit `api_surface` entirely if no endpoints were found and the project is not an API
 - Omit empty severity lists in `api_surface.findings` and empty `debt.by_category` entries
-- **`grounded_in`** on data_flows, state, failure_modes, and concept evidence lists the source files that justify the entry. Format: `["<file:line>"]`. These are used during evaluation to verify claims against actual code — not against other atlas entries (which would be circular)
+- Omit `observability` if no logging/metrics/tracing found (rare — flag as gap in debt)
+- Omit `security` if the project has no auth, no secrets, no external entry points (flag as gap)
+- Omit `developer_experience` fields that don't apply (e.g., no `e2e` if none exist)
+- **`grounded_in`** on flows, state, failure_modes, observability, security, and concept evidence lists the source files that justify the entry. Format: `["<file:line>"]`. These are used during evaluation to verify claims against actual code — not against other atlas entries (which would be circular)
+
+## Flow Type Guide
+
+Each flow type captures a different dimension of system behavior. Use the type that matches what you're tracing.
+
+### Data flows (`type: "data"`)
+What moves where. Payloads, transforms, persistence. Use `data`, `technology`, `transform` on steps.
+- Request/response paths, ETL pipelines, file ingestion, API data exchange
+
+### Control flows (`type: "control"`)
+Decision points and execution order. Gates, branches, orchestration. Use `condition`, `branch`, `gate` on steps.
+- Auth middleware chains, feature flag routing, request validation gates, retry/fallback logic, orchestration sequences
+
+### Event flows (`type: "event"`)
+Async message propagation. Use `topic`, `delivery` on steps. Cross-reference `events` inventory for topology.
+- Pub/sub propagation, webhook delivery, signal handling, queue consumption patterns
+
+### State flows (`type: "state"`)
+Transitions and lifecycle. Use `from_state`, `to_state`, `side_effects` on steps. Cross-reference `state` inventory for stores.
+- Entity lifecycle (draft→published→archived), job execution (pending→running→completed→failed), circuit breaker (closed→open→half-open)
+
+### Resource flows (`type: "resource"`)
+Acquisition, use, release of constrained resources. Use `resource`, `operation`, `constraints` on steps.
+- Connection pool lifecycle, file handle management, lock acquisition patterns, thread pool saturation, memory buffer allocation
+
+## Bounded Context Guide
+
+Bounded contexts identify where the same term means different things or where entity definitions diverge across modules.
+
+- **Small projects (< 3 services):** Often a single context — include it but note it's unified
+- **Monoliths with modules:** Look for modules that define the same entity differently (e.g., `User` in auth vs. `User` in billing)
+- **Microservices:** Each service typically owns a context; map the translation layers between them
+- `ubiquitous_language` entries should only include terms that are ambiguous or domain-specific — not every variable name
 
 ## Group Assignment
 
@@ -364,15 +547,22 @@ Guidelines:
 
 ```json
 {
-  "version": "3",
+  "version": "4",
   "generated": "YYYY-MM-DD",
   "project": "<name>",
   "purpose": "",
+  "domain_model": {
+    "primary": "",
+    "description": "",
+    "entities": [],
+    "relationships": [],
+    "bounded_contexts": []
+  },
   "stack": {"languages": [], "frameworks": [], "runtime": ""},
   "groups": [],
   "actors": [],
   "components": [],
-  "data_flows": [],
+  "flows": [],
   "state": [],
   "external_dependencies": [],
   "failure_modes": [],
@@ -388,6 +578,8 @@ Guidelines:
     "hub_modules": [],
     "infrastructure": [],
     "inter_service": [],
+    "ci_cd": [],
+    "iac": [],
     "risks": {}
   },
   "debt": {

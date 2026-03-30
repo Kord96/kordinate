@@ -21,9 +21,9 @@ This document is the stable interface. Internal methodology may change; these ou
 
 ## atlas.json
 
-Full structural inventory. JSON, version `"3"`. See [schema.md](schema.md) for the complete field-by-field schema.
+Full structural inventory. JSON, version `"4"`. See [schema.md](schema.md) for the complete field-by-field schema.
 
-**Top-level sections:** `version`, `generated`, `project`, `purpose`, `stack`, `groups`, `actors`, `components`, `data_flows`, `state`, `events`, `external_dependencies`, `failure_modes`, `concepts`, `module_graph`, `api_surface`, `debt`, `metadata`.
+**Top-level sections:** `version`, `generated`, `project`, `purpose`, `domain_model`, `stack`, `groups`, `actors`, `components`, `flows`, `state`, `events`, `external_dependencies`, `failure_modes`, `concepts`, `module_graph`, `observability`, `security`, `developer_experience`, `api_surface`, `debt`, `metadata`.
 
 ### Constraints scribe can depend on
 
@@ -31,21 +31,26 @@ Full structural inventory. JSON, version `"3"`. See [schema.md](schema.md) for t
 |-----------|-------|-------|
 | Top-level groups | 3-5 | Yes |
 | Components | 5-10 (4-12 acceptable) | Guideline |
-| Critical data flows | 2-4 | Guideline |
+| Flows (all types combined) | 2-6 | Guideline |
+| Flow types | data, control, event, state, resource | Yes (enum) |
 | Failure modes | covers every external dep + stateful component | Yes |
 | Component IDs | kebab-case, unique | Yes |
 | All cross-references | resolve to existing IDs | Yes |
-| Omit empty sections | events, reverse_deps, api_surface when N/A | Yes |
+| Omit empty sections | events, reverse_deps, api_surface, observability, security, developer_experience when N/A | Yes |
 
-### What changed from architecture.yaml v2
+### What changed from v3
 
-| Change | Old | New |
+| Change | v3 | v4 |
 |--------|-----|-----|
-| Format | YAML | JSON |
-| Version | `"2"` | `"3"` |
-| Grouping | `capabilities` | `groups` (structural-only) |
-| Component group | via capabilities | `group` field on each component |
-| Story link | N/A | `metadata.story_ids` |
+| Version | `"3"` | `"4"` |
+| Flows | `data_flows` (single type) | `flows` with type discriminator |
+| Flow step schema | data-only fields | Common base + type-specific fields |
+| Domain model | entities + relationships | + `bounded_contexts` with ubiquitous language |
+| State | inventory only | + `schema_evolution`, `concurrency` |
+| Observability | detected as concepts | Dedicated section: logging, metrics, tracing, gaps |
+| Security | auth field on endpoints | Dedicated section: authn, authz, secrets, threat surface |
+| Developer experience | N/A | Testing, linting, documentation |
+| Module graph | modules, deps, infra | + `ci_cd`, `iac` |
 
 ---
 
@@ -65,14 +70,14 @@ Stories form a tree mirroring the atlas group hierarchy. See [story-schema.md](s
 |-------|---------|----------|
 | **summary** | Short paragraphs (depth-dependent length) | No (required) |
 | **structures** | Nested components + typed edges | Yes |
-| **flows** | Ordered steps, typed | Yes |
+| **flows** | Ordered steps, typed by flow category | Yes |
 | **observations** | Evidence-backed findings | One list, multi-attached |
 | **rationale** | Decisions, trade-offs, alternatives | Yes |
 
 ### Key properties
 
 - **Stories nest** — `parent`/`children` fields form a tree. Primary navigation.
-- **Types are freeform** — structures and flows have a `type` string
+- **Flow categories** — flows typed as data, control, event, state, or resource (matching atlas flow types)
 - **Multiple structures and flows per story**
 - **Observations attach at three levels** — story-wide, on nodes, on flow steps
 - **Cross-group references allowed** — child stories can reference nodes outside parent's group
@@ -113,13 +118,17 @@ Each story carries:
 7. **Bold refs in summaries match atlas node IDs**
 8. **Observation evidence includes file paths** relative to project root
 9. **Journeys are ordered** — render stories in the sequence given
+10. **Flow type is one of** data, control, event, state, resource
+11. **Flow steps use type-appropriate fields** — data flows use `data`/`transform`, control flows use `condition`/`gate`, etc.
+12. **`observability`, `security`, `developer_experience` sections** are present when the project has the relevant concerns (omitted only when truly N/A)
 
 ## What May Change (Not Stable)
 
 - Number of stories (depends on project)
 - Number and types of journeys
-- Structure/flow type strings (freeform, new types may appear)
+- Structure type strings (freeform, new types may appear)
 - Observation fields (may add new ones)
 - Detection methodology internals
 - Evaluation score thresholds
 - Additional atlas metadata fields
+- New optional fields within `observability`, `security`, `developer_experience`
