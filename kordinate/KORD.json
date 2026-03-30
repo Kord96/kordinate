@@ -95,6 +95,22 @@
   },
   {
     "type": "file",
+    "path": "agents/augur/memory/tools.md",
+    "description": "Tool reference (ast-grep, semgrep, grep)",
+    "owner": "augur",
+    "preload": "augur",
+    "validation": "augur"
+  },
+  {
+    "type": "file",
+    "path": "agents/augur/memory/workflow.md",
+    "description": "4-step review workflow",
+    "owner": "augur",
+    "preload": "augur",
+    "validation": "augur"
+  },
+  {
+    "type": "file",
     "path": "agents/augur/memory/scratchpad.md",
     "description": "Working notes and observations",
     "owner": "augur",

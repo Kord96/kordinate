@@ -82,8 +82,15 @@ Determine which patterns are absent but expected given what was found. Use three
 2. **Stack-implied patterns.** Match the project's stack against expected patterns: web API implies input validation and rate limiting; async workers imply backpressure and dead-letter handling; microservices imply service discovery and distributed tracing; any service implies structured logging and health checks.
 3. **Catalog cross-references.** Review which detected patterns commonly pair together. If one half of a well-known pair is present but the other was not detected, flag it (e.g., event sourcing detected without CQRS, or circuit-breaker without retry).
 
+## Prerequisites
+
+`ast-grep` and `semgrep` must be installed. Verify before starting detection:
+```bash
+ast-grep --version && semgrep --version
+```
+If either is missing, report the error and stop — detection cannot run without these tools.
+
 ## Error Handling
 
 - **No patterns detected:** Valid for small/unconventional projects. Produce empty concept sections and focus on gaps.
 - **Uncommon languages:** Catalog is strongest for Python, TS/JS, Go, Java, K8s. Grep still works for structural patterns; note coverage gaps in scan_metadata.
-- **Tool unavailable:** If ast-grep or semgrep is missing or a rule fails, continue with grep fallback. Note which tools were unavailable in scan_metadata.
