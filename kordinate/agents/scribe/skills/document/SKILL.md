@@ -8,9 +8,9 @@ argument-hint: "<project> [--atlas-only]"
 context: inherit
 ---
 
-Render a project's stories and atlas into interactive documentation using **pre-built components**. Scribe does NOT generate HTML from scratch — it maps story data into templates and makes rendering decisions (which graph layout, which diagram type) via a manifest.
+Render a project's stories and atlas into interactive documentation using **pre-built components**. Scribe does NOT generate HTML from scratch — it produces data files (manifest.json, journey pages) that the pre-built Astro components consume.
 
-Stories are **short sections** within journey pages. Each story section has a summary and 1-3 visual building blocks rendered by reusable Astro components.
+**Critical rule:** Do NOT read the `.astro` component files. The data schemas are defined in [schemas.md](schemas.md) — read that instead. The components are stable code that renders whatever data you produce in the correct schema.
 
 ## Arguments
 
@@ -31,6 +31,8 @@ If `atlas.json` is missing, suggest running `/analyze <project>`. Exit.
 ## Procedure
 
 ### 1. Load and validate
+
+Read [schemas.md](schemas.md) to understand the data formats the components expect.
 
 Read `atlas.json`. Build lookup indices: `nodeMap`, `groupMap`, `stateMap`, `failureMap`.
 
