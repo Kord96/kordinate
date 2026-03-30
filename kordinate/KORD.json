@@ -165,6 +165,24 @@
     "format": "md"
   },
   {
+    "type": "resource",
+    "name": "schema",
+    "agent": "augur",
+    "description": "Atlas v4 JSON schema \u2014 the structural inventory format definition.",
+    "scope": "global",
+    "path": "agents/augur/skills/analyze/schema.md",
+    "format": "md"
+  },
+  {
+    "type": "resource",
+    "name": "story-schema",
+    "agent": "augur",
+    "description": "Story and journey YAML schema \u2014 building blocks, flow categories, bridge edges.",
+    "scope": "global",
+    "path": "agents/augur/skills/analyze/story-schema.md",
+    "format": "md"
+  },
+  {
     "type": "skill",
     "name": "bootstrap",
     "agent": "charon",

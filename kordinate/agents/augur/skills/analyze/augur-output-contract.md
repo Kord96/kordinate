@@ -2,7 +2,7 @@
 
 What augur produces and what downstream consumers (scribe, improve loop) can depend on.
 
-This document is the stable interface. Internal methodology may change; these outputs won't break without a version bump. For full schema details, see [schema.md](schema.md) (atlas) and [story-schema.md](story-schema.md) (stories + journeys).
+This document is the stable interface. Internal methodology may change; these outputs won't break without a version bump. For full schema details, see [atlas-atlas-schema.md](atlas-atlas-schema.md) (atlas) and [story-atlas-schema.md](story-atlas-schema.md) (stories + journeys).
 
 ## Output Layout
 
@@ -21,7 +21,7 @@ This document is the stable interface. Internal methodology may change; these ou
 
 ## atlas.json
 
-Full structural inventory. JSON, version `"4"`. See [schema.md](schema.md) for the complete field-by-field schema.
+Full structural inventory. JSON, version `"4"`. See [atlas-atlas-schema.md](atlas-atlas-schema.md) for the complete field-by-field schema.
 
 **Top-level sections:** `version`, `generated`, `project`, `purpose`, `domain_model`, `stack`, `groups`, `actors`, `components`, `flows`, `state`, `events`, `external_dependencies`, `failure_modes`, `concepts`, `module_graph`, `observability`, `security`, `developer_experience`, `api_surface`, `debt`, `metadata`.
 
@@ -56,7 +56,7 @@ Full structural inventory. JSON, version `"4"`. See [schema.md](schema.md) for t
 
 ## Story Tree
 
-Stories form a tree mirroring the atlas group hierarchy. See [story-schema.md](story-schema.md) for the full schema.
+Stories form a tree mirroring the atlas group hierarchy. See [story-atlas-schema.md](story-atlas-schema.md) for the full schema.
 
 ### Tree structure
 
@@ -87,7 +87,7 @@ Stories form a tree mirroring the atlas group hierarchy. See [story-schema.md](s
 
 ## Journeys
 
-Thin cross-cutting paths through the story tree. Only created when a concern spans multiple root groups. See [story-schema.md](story-schema.md).
+Thin cross-cutting paths through the story tree. Only created when a concern spans multiple root groups. See [story-atlas-schema.md](story-atlas-schema.md).
 
 **Properties:**
 - Just ordered lists of story IDs — no content of their own

@@ -37,7 +37,7 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [dep-analysis.md](dep-analysis.md).
 - **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
 - **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [source-gathering.md](source-gathering.md).
-- **Actors and flows** — External actors. Trace 2-6 critical flows across all five types (data, control, event, state, resource). Not every project will have all five — trace what exists. Events (omit if none). When writing atlas: read [schema.md](schema.md).
+- **Actors and flows** — External actors. Trace 2-6 critical flows across all five types (data, control, event, state, resource). Not every project will have all five — trace what exists. Events (omit if none). When writing atlas: read [atlas-atlas-schema.md](atlas-atlas-schema.md).
 - **Domain model and bounded contexts** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Map bounded contexts: where does the same entity name mean different things across modules? Extract ubiquitous language for ambiguous or domain-specific terms.
 - **State** — Stores with concept vocabulary, readers/writers, persistence model. Assess schema evolution strategy (migrations directory, versioning tool). Identify concurrency handling (locking strategy, conflict resolution). Record `schema_evolution` and `concurrency` on each state entry.
 - **Observability** — Logging structure (JSON vs plain, correlation IDs, library). Metrics exposure (endpoint, format, key metrics). Tracing (provider, propagation). Flag gaps — missing correlation IDs, no metrics endpoint, no error tracking. Record in `observability` section.
@@ -46,7 +46,7 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Infrastructure** — CI/CD pipelines: find workflow files (`.github/workflows/`, `.gitlab-ci.yml`, `Jenkinsfile`), map triggers and stages. IaC: find Terraform, CloudFormation, Helm, Kustomize files, inventory managed resources. Record in `module_graph.ci_cd` and `module_graph.iac`.
 - **Failure modes** — Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
-- **Stories** — When composing stories: read [story-schema.md](story-schema.md) and [writing-guide.md](writing-guide.md).
+- **Stories** — When composing stories: read [story-atlas-schema.md](story-atlas-schema.md) and [writing-guide.md](writing-guide.md).
 
 ### Step 3 — Gemini review (background)
 
@@ -58,7 +58,7 @@ Continue immediately.
 
 ### Step 4 — Write atlas.json
 
-Assemble into [schema.md](schema.md) v4 format. Set `version: "4"` and `generated` to today. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
+Assemble into [atlas-atlas-schema.md](atlas-atlas-schema.md) v4 format. Set `version: "4"` and `generated` to today. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
 
 If `--detect-only`: skip Phase 2, go to Report.
 
@@ -66,11 +66,11 @@ If `--detect-only`: skip Phase 2, go to Report.
 
 ## Phase 2 — Compose
 
-With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-schema.md](story-schema.md).
+With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-atlas-schema.md](story-atlas-schema.md).
 
 ### Step 5 — Compose the story tree
 
-Build a tree of stories that mirrors the atlas structure. Top-down per [story-schema.md](story-schema.md):
+Build a tree of stories that mirrors the atlas structure. Top-down per [story-atlas-schema.md](story-atlas-schema.md):
 
 **1. Root stories (3-5, one per atlas group).** For each group, write a root story that orients the reader: what components this group contains, how they relate, why this grouping exists. Root summaries are 2 paragraphs max, ~50-80 words. Set `parent: null`, list `children`.
 

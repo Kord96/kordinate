@@ -538,7 +538,7 @@ def main():
 
     if not valid:
         print(f"\nExpected output structure at {mem_dir}:")
-        print(f"  {mem_dir}/atlas.json          — v4 JSON (see schema.md)")
+        print(f"  {mem_dir}/atlas.json          — v4 JSON (see atlas-schema.md)")
         print(f"  {mem_dir}/stories/*.yaml       — one YAML file per story")
         print(f"  {mem_dir}/journeys/*.yaml      — at least getting-started.yaml")
 
