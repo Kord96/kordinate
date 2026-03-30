@@ -3,8 +3,16 @@
     "type": "skill",
     "name": "document",
     "agent": "scribe",
-    "description": "Render stories into interactive documentation using pre-built Astro components.",
-    "arguments": "<project> [--atlas-only]",
+    "description": "Produce documentation data (manifest, indices) from augur's analysis output.",
+    "arguments": "<project>",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "render",
+    "agent": "scribe",
+    "description": "Render documentation data into Astro site pages using pre-built components.",
+    "arguments": "<project>",
     "public": true
   },
   {
