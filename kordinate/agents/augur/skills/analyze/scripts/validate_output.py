@@ -118,6 +118,12 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
         if gid in group_ids:
             error(f"Duplicate group ID: '{gid}'", "groups")
         group_ids.add(gid)
+        # Per-group component count (2-5 rule)
+        group_comps = g.get("components", [])
+        if len(group_comps) > 5:
+            error(f"Group '{gid}' has {len(group_comps)} components (max 5). Split the group or consolidate components.", "groups")
+        elif len(group_comps) < 2:
+            warn(f"Group '{gid}' has {len(group_comps)} component (min 2). Merge with another group.", "groups")
 
     # Components
     components = atlas.get("components", [])
@@ -392,6 +398,29 @@ def main():
             sid = story.get("id", f.stem)
             story_ids.add(sid)
             all_issues.extend(validate_story(story, atlas_node_ids, project_root))
+
+        # Story tree: check children per parent
+        all_stories = {}
+        for f in sorted(stories_dir.iterdir()):
+            if f.suffix not in (".yaml", ".yml"):
+                continue
+            story = load_yaml(f)
+            if story:
+                all_stories[story.get("id", f.stem)] = story
+
+        children_count = {}
+        for sid, story in all_stories.items():
+            parent = story.get("parent")
+            if parent:
+                children_count[parent] = children_count.get(parent, 0) + 1
+
+        for parent_id, count in children_count.items():
+            if count > 5:
+                all_issues.append({"level": "ERROR", "section": "story",
+                    "message": f"Story '{parent_id}' has {count} children (max 5). Consolidate child stories."})
+            elif count < 2:
+                all_issues.append({"level": "WARNING", "section": "story",
+                    "message": f"Story '{parent_id}' has {count} child (min 2). Add more or merge into parent."})
 
     # --- Journeys ---
     journeys_dir = mem_dir / "journeys"

@@ -108,6 +108,7 @@ Rules:
 - Synthetic `external` and `actors` groups count toward the 3-5 limit
 - Small projects (<15 nodes) should aim for 3 groups
 - If two groups have only 1-2 nodes each, they belong together
+- Each group should have **2-5 components**. If a group has 6+, either split it into two groups or consolidate components. If a group has 1, merge it into another group
 - After drafting, count groups. If >5, merge the two most closely related. Repeat until ≤5
 
 Each group informs story composition in Phase 2 — choose groupings that tell a coherent story about the system's shape.
