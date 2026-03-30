@@ -3,7 +3,7 @@ description: Index of recognized architectural patterns by category
 ---
 # Patterns Index
 
-170 patterns across 21 categories. Each pattern has recognition signatures for code scanning.
+204 concepts across 5 types (pattern, anti-pattern, domain-model, flow-shape, structure-shape). Each concept has recognition signatures for code scanning.
 
 ## Categories
 
@@ -319,20 +319,49 @@ Implementation files are co-located in the pattern directory.
 
 ## Domain Model
 
-| Pattern | Description | Reference |
+| Concept | Description | Reference |
 |---------|-------------|-----------|
 | Ledger | Double-entry ledger — debits, credits, balanced transactions | [view](concepts/ledger/concept.md) |
+| Catalog | Product/variant/SKU hierarchy with inventory | [view](concepts/catalog/concept.md) |
+| Graph | Generic graph model — DAGs, traversal, cycle detection | [view](concepts/graph/concept.md) |
 | Property graph | Typed nodes and edges with properties and traversal queries | [view](concepts/property-graph/concept.md) |
-| Search index | Inverted index, analyzers, ranked full-text retrieval | [view](concepts/search-index/concept.md) |
+| Social graph | Follow/connection relationships with feed generation | [view](concepts/social-graph/concept.md) |
 | Time-series | Timestamp-indexed append-only data with retention and downsampling | [view](concepts/time-series/concept.md) |
+| Registry | Entities with lifecycle states, metadata, and lookups | [view](concepts/registry-model/concept.md) |
+| Event log | Append-only log of events as source of truth | [view](concepts/event-log/concept.md) |
+| Key-value | Simple key→value lookups with optional expiry | [view](concepts/key-value-model/concept.md) |
+| Workflow / State machine | Entities with defined states, transitions, and guards | [view](concepts/workflow-state-machine/concept.md) |
+| Search index | Inverted index, analyzers, ranked full-text retrieval | [view](concepts/search-index/concept.md) |
 | Versioned document | Immutable revisions, diffs, conflict resolution | [view](concepts/versioned-document/concept.md) |
+| Block content | Structured rich text with nested typed blocks | [view](concepts/block-content/concept.md) |
+| Conversation thread | Threaded messaging with real-time delivery | [view](concepts/conversation-thread/concept.md) |
 | Tensor | Multi-dimensional array computation with GPU dispatch | [view](concepts/tensor/concept.md) |
 | Spatial | Geographic/geometric data with spatial indexes | [view](concepts/spatial/concept.md) |
 | Rule engine | Declarative business rules, policy evaluation, decision tables | [view](concepts/rule-engine/concept.md) |
 | Multi-tenant | Tenant-scoped data isolation and configuration | [view](concepts/multi-tenant/concept.md) |
 | Subscription | Recurring billing, plan management, usage metering | [view](concepts/subscription/concept.md) |
-| Block content | Structured rich text with nested typed blocks | [view](concepts/block-content/concept.md) |
-| Catalog | Product/variant/SKU hierarchy with inventory | [view](concepts/catalog/concept.md) |
-| Social graph | Follow/connection relationships with feed generation | [view](concepts/social-graph/concept.md) |
-| Conversation thread | Threaded messaging with real-time delivery | [view](concepts/conversation-thread/concept.md) |
-| Graph | Generic graph model — DAGs, traversal, cycle detection | [view](concepts/graph/concept.md) |
+
+## Flow Shape
+
+| Concept | Description | Reference |
+|---------|-------------|-----------|
+| Request path | Synchronous request through a handler chain | [view](concepts/request-path/concept.md) |
+| Data pipeline | Linear transformation stages from source to sink | [view](concepts/data-pipeline/concept.md) |
+| Fan-out | One event triggers parallel processing across consumers | [view](concepts/fan-out/concept.md) |
+| Fan-in | Parallel results converge into a single aggregation point | [view](concepts/fan-in/concept.md) |
+| Streaming | Continuous data flow with backpressure and windowing | [view](concepts/streaming-flow/concept.md) |
+| Failure cascade | Propagation of failure through dependent components | [view](concepts/failure-cascade/concept.md) |
+| Polling | Periodic check for state changes or new work | [view](concepts/polling-flow/concept.md) |
+| Batch processing | Data processed in discrete chunks on a schedule | [view](concepts/batch-processing/concept.md) |
+| Scatter-gather | Request dispatched to multiple services, responses aggregated | [view](concepts/scatter-gather/concept.md) |
+
+## Structure Shape
+
+| Concept | Description | Reference |
+|---------|-------------|-----------|
+| Layered | Horizontal layers with dependency flowing downward | [view](concepts/layered/concept.md) |
+| Plugin host | Core system with pluggable extensions via defined interfaces | [view](concepts/plugin-host/concept.md) |
+| Pipeline stages | Components arranged as sequential processing stages | [view](concepts/pipeline-stages/concept.md) |
+| Gateway-backends | Single entry point routing to multiple backend services | [view](concepts/gateway-backends/concept.md) |
+| Cell-based | Independent cells that scale, deploy, and fail independently | [view](concepts/cell-based/concept.md) |
+| Sidecar mesh | Services with co-located helper processes for cross-cutting concerns | [view](concepts/sidecar-mesh/concept.md) |

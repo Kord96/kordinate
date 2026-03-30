@@ -1,7 +1,6 @@
 ---
 description: Versioned document pattern with revision history and conflict resolution
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, collaboration]
 ---
 # Versioned Document

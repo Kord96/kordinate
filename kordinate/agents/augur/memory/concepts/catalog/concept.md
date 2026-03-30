@@ -1,7 +1,6 @@
 ---
 description: Catalog and inventory pattern for product management and stock tracking
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, commerce]
 ---
 # Catalog

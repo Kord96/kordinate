@@ -1,7 +1,6 @@
 ---
 description: Subscription and recurring billing pattern for SaaS monetization
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, financial]
 ---
 # Subscription

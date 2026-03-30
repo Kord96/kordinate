@@ -1,7 +1,6 @@
 ---
 description: Multi-tenant isolation pattern for shared infrastructure
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [architectural, data]
 ---
 # Multi-Tenant

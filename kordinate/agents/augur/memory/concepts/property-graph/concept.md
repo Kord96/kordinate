@@ -1,7 +1,6 @@
 ---
 description: Property graph model with typed nodes and edges carrying attributes
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, graph]
 ---
 # Property Graph

@@ -37,6 +37,23 @@
     "validation": "alfred"
   },
   {
+    "type": "resource",
+    "name": "environment",
+    "agent": "alfred",
+    "description": "Deployment preflight status \u2014 profile config, overlay validity, credentials.",
+    "scope": "global",
+    "guidelines": "Run a quick preflight check. Verify profile config, overlay validity, and pass store credential existence. Return ready/not-ready with issues. Keep under 30 lines.",
+    "cache": {
+      "max_age": "7d",
+      "inputs": [
+        "profile/config.yaml",
+        "profile/overlays/"
+      ],
+      "threshold": 0.05,
+      "stale_threshold": 0.3
+    }
+  },
+  {
     "type": "skill",
     "name": "analyze",
     "agent": "augur",
@@ -98,6 +115,54 @@
     "description": "Working notes and observations",
     "owner": "augur",
     "preload": "none"
+  },
+  {
+    "type": "resource",
+    "name": "atlas",
+    "agent": "augur",
+    "description": "Structural inventory \u2014 components, patterns, dependencies, debt, failure modes.",
+    "scope": "project",
+    "path": "<project>/.kord/agents/augur/memory/atlas.json",
+    "format": "json",
+    "produced_by": "analyze",
+    "cache": {
+      "max_age": "7d"
+    }
+  },
+  {
+    "type": "resource",
+    "name": "stories",
+    "agent": "augur",
+    "description": "Scoped architectural narratives \u2014 8-15 stories per project.",
+    "scope": "project",
+    "path": "<project>/.kord/agents/augur/memory/stories/",
+    "format": "yaml",
+    "produced_by": "analyze",
+    "cache": {
+      "max_age": "7d"
+    }
+  },
+  {
+    "type": "resource",
+    "name": "journeys",
+    "agent": "augur",
+    "description": "Cross-cutting reading paths through the story tree.",
+    "scope": "project",
+    "path": "<project>/.kord/agents/augur/memory/journeys/",
+    "format": "yaml",
+    "produced_by": "analyze",
+    "cache": {
+      "max_age": "7d"
+    }
+  },
+  {
+    "type": "resource",
+    "name": "concepts",
+    "agent": "augur",
+    "description": "Pattern and anti-pattern catalog \u2014 155 patterns across 20 categories.",
+    "scope": "global",
+    "path": "agents/augur/memory/concepts.md",
+    "format": "md"
   },
   {
     "type": "skill",
@@ -202,6 +267,32 @@
     "preload": "none"
   },
   {
+    "type": "resource",
+    "name": "cluster-topology",
+    "agent": "charon",
+    "description": "Cluster topology, service endpoints, and networking.",
+    "scope": "global",
+    "guidelines": "Return the current cluster layout: namespaces, services, ports, and networking topology. Draw from manifests and overlays, not live state. Keep under 50 lines.",
+    "cache": {
+      "max_age": "5d",
+      "inputs": [
+        "agents/charon/skills/infra/manifests/",
+        "profile/config.yaml",
+        "profile/overlays/"
+      ],
+      "threshold": 0.05,
+      "stale_threshold": 0.25
+    }
+  },
+  {
+    "type": "resource",
+    "name": "deployment-status",
+    "agent": "charon",
+    "description": "Live deployment status \u2014 pods, versions, health. Always live.",
+    "scope": "global",
+    "guidelines": "Return the current live state of the cluster: running pods, image versions, resource usage, and health. Always a live query. Keep under 50 lines."
+  },
+  {
     "type": "skill",
     "name": "monitor",
     "agent": "sauron",
@@ -267,11 +358,52 @@
     "preload": "none"
   },
   {
+    "type": "resource",
+    "name": "dashboard-catalog",
+    "agent": "sauron",
+    "description": "Available dashboards, metrics, and alert rules.",
+    "scope": "global",
+    "guidelines": "Return the catalog of configured dashboards, scraped metrics, and active alert rules. Draw from sauron memory and deployer infra manifests. Keep under 50 lines.",
+    "cache": {
+      "max_age": "5d",
+      "inputs": [
+        "agents/sauron/memory/",
+        "agents/charon/skills/infra/manifests/"
+      ],
+      "threshold": 0.05,
+      "stale_threshold": 0.25
+    }
+  },
+  {
+    "type": "resource",
+    "name": "monitoring-impact",
+    "agent": "sauron",
+    "description": "Monitoring coverage gaps \u2014 missing dashboards, metrics, alerts by severity.",
+    "scope": "global",
+    "guidelines": "Assess monitoring coverage for the affected service. Report gaps, not what's already working. Keep under 50 lines.",
+    "cache": {
+      "max_age": "7d",
+      "inputs": [
+        "agents/sauron/memory/"
+      ],
+      "threshold": 0.05,
+      "stale_threshold": 0.3
+    }
+  },
+  {
     "type": "skill",
     "name": "document",
     "agent": "scribe",
-    "description": "Render stories into interactive documentation using pre-built Astro components.",
-    "arguments": "<project> [--atlas-only]",
+    "description": "Produce documentation data (manifest, indices) from augur's analysis output.",
+    "arguments": "<project>",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "render",
+    "agent": "scribe",
+    "description": "Render documentation data into Astro site pages using pre-built components.",
+    "arguments": "<project>",
     "public": true
   },
   {
@@ -320,11 +452,13 @@
   },
   {
     "type": "skill",
-    "name": "validate",
+    "name": "validate-output",
     "agent": "warden",
     "description": "Validate output against registered validator. Returns completion token.",
     "arguments": "<dir>",
-    "public": true
+    "public": true,
+    "handler": "script",
+    "registry": "agents/warden/skills/validate-output/registry.yaml"
   },
   {
     "type": "skill",

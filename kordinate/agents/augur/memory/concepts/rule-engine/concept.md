@@ -1,7 +1,6 @@
 ---
 description: Rule engine pattern for declarative business logic evaluation
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [design, logic]
 ---
 # Rule Engine

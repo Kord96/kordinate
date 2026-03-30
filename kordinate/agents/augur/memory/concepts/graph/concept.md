@@ -1,7 +1,6 @@
 ---
 description: Generic graph model covering dependency graphs, DAGs, and general graph algorithms
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, algorithmic]
 ---
 # Graph

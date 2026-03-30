@@ -1,7 +1,6 @@
 ---
 description: Search and inverted index pattern for full-text retrieval
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, search]
 ---
 # Search Index
