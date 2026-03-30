@@ -24,20 +24,13 @@ Route a request to another agent via the kord MCP server. The server reads KORD.
    - `local: true` + gate secret → write the gate secret, spawn the agent locally via Agent tool.
    - A direct response (for lightweight/cached queries).
 
-## Lifecycle wrapper
+## Lifecycle
 
-When spawning an agent locally, **always wrap the original prompt** with lifecycle instructions. The agent's prompt must be:
+When spawning an agent (local or remote), the agent should:
 
-```
-Follow this lifecycle exactly:
-
-1. BOOT — run /boot to load your identity and preloaded memory.
-2. WORK — execute the task below. You MUST delegate to warden to validate your output at least once — when your skill asks for it, and always before finishing. If warden reports errors, fix them and re-validate until it passes.
-3. SLEEP — save any new insights worth keeping to memory files in your memory directory.
-
-## Task
-
-<original prompt from MCP response>
-```
-
-Never pass the raw prompt to the agent. The wrapper ensures the agent loads its skills, validates output, and saves memory.
+1. **Boot** — run `/boot` to load preloaded memory from KORD.json.
+2. **Work** — execute the requested task.
+3. **Sleep** — before finishing, persist what you learned:
+   - **Scratchpad** — append quick observations, operational notes, things you noticed. Write to your `memory/scratchpad.md`. This is low-friction — one line per insight.
+   - **Topic files** — if you discovered something worth its own file (a reusable pattern, a significant finding), write it to your memory directory.
+   - The nudge hook will trigger `/remember` to register new files in KORD.json.
