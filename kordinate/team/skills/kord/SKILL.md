@@ -24,10 +24,20 @@ Route a request to another agent via the kord MCP server. The server reads KORD.
    - `local: true` + gate secret → write the gate secret, spawn the agent locally via Agent tool.
    - A direct response (for lightweight/cached queries).
 
-## Lifecycle
+## Lifecycle wrapper
 
-When spawning an agent (local or remote), the agent should:
+When spawning an agent locally, **always wrap the original prompt** with lifecycle instructions. The agent's prompt must be:
 
-1. **Boot** — run `/boot` to load preloaded memory from KORD.json.
-2. **Work** — execute the requested task.
-3. **Sleep** — write any new insights to memory files in the agent's memory directory. The nudge hook will trigger `/remember` to register them in KORD.json.
+```
+Follow this lifecycle exactly:
+
+1. BOOT — run /boot to load your identity and preloaded memory.
+2. WORK — execute the task below.
+3. SLEEP — save any new insights worth keeping to memory files in your memory directory.
+
+## Task
+
+<original prompt from MCP response>
+```
+
+Never pass the raw prompt to the agent. The wrapper ensures the agent loads its skills and schema before working.

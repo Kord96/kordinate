@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 // Kord — HTTP-inspired route protocol server for agent orchestration.
 //
-// Registers capability-based MCP tools from agent routes.yaml files.
+// Registers capability-based MCP tools from KORD.json entries.
+// Skills become POST tools, resources become catalog/get tools.
 // Routes requests to the right agent. No worktree isolation — agents run
 // in the current directory. KORD.json ownership model handles protection.
 // Lightweight --print mode for cache, -p mode for full tool access.
 //
-// Routes are declared per agent in routes.yaml. Each route becomes
-// an MCP tool with a capability-based name (no agent names visible).
+// Skills and resources are declared per agent in KORD.json. Each skill
+// becomes an MCP tool with a capability-based name (no agent names visible).
+// Resources are exposed via <agent>_catalog and <agent>_get tools.
 //
-// MCP tools: delegate, status, + dynamic per-route tools
+// MCP tools: delegate, status, + dynamic per-route tools + resource catalog/get
 // MCP endpoint: POST /mcp
 // Health:       GET /health
 
@@ -85,6 +87,23 @@ function loadRouteRegistry() {
   return registry;
 }
 
+function loadResourceRegistry() {
+  const registry = new Map();
+  const kordJsonPath = join(KORDINATE_HOME, 'KORD.json');
+  if (!existsSync(kordJsonPath)) return registry;
+  try {
+    const entries = JSON.parse(readFileSync(kordJsonPath, 'utf8'));
+    for (const entry of entries) {
+      if (entry.type !== 'resource') continue;
+      if (!entry.name || !entry.agent) { log(`WARN: skipping invalid resource entry`, entry); continue; }
+      if (!registry.has(entry.agent)) registry.set(entry.agent, []);
+      registry.get(entry.agent).push(entry);
+    }
+    log(`Loaded resources for ${registry.size} agents`);
+  } catch (e) { log(`WARN: failed to load resources: ${e.message}`); }
+  return registry;
+}
+
 function getKnownAgents(registry) {
   const agents = new Set();
   for (const route of registry.values()) {
@@ -103,6 +122,7 @@ function getKnownAgents(registry) {
 }
 
 let routeRegistry = loadRouteRegistry();
+let resourceRegistry = loadResourceRegistry();
 let KNOWN_AGENTS = getKnownAgents(routeRegistry);
 const activeRequests = new Map();
 
@@ -117,6 +137,7 @@ if (existsSync(kordJsonPath)) {
     reloadTimeout = setTimeout(() => {
       const oldCount = routeRegistry.size;
       routeRegistry = loadRouteRegistry();
+      resourceRegistry = loadResourceRegistry();
       KNOWN_AGENTS = getKnownAgents(routeRegistry);
       log(`KORD.json changed — reloaded: ${oldCount} → ${routeRegistry.size} routes`);
     }, 500);
@@ -544,6 +565,138 @@ async function runCacheReview(route, cacheDir) {
   }
 }
 
+// ─── Resource helpers ───
+
+function resolveProjectPath(projectArg) {
+  if (!projectArg) return null;
+  if (projectArg.startsWith('/')) {
+    if (existsSync(projectArg)) return projectArg;
+    throw new Error(`Project path not found: ${projectArg}`);
+  }
+  const candidates = [join(HOME, projectArg), join(HOME, 'repos', projectArg), join(HOME, 'test-repos', projectArg)];
+  for (const c of candidates) { if (existsSync(c)) return c; }
+  throw new Error(`Project not found: ${projectArg}`);
+}
+
+function resolveResourcePath(entry, projectParam) {
+  if (!entry.path) return null;
+  if (entry.scope === 'project') {
+    const projectPath = resolveProjectPath(projectParam);
+    return entry.path.replace('<project>', projectPath);
+  }
+  return join(KORDINATE_HOME, entry.path);
+}
+
+function readResourceContent(resolved, isDir, format) {
+  if (isDir) {
+    if (!existsSync(resolved)) return null;
+    const files = readdirSync(resolved).filter(f => {
+      if (format === 'yaml') return f.endsWith('.yaml') || f.endsWith('.yml');
+      if (format === 'json') return f.endsWith('.json');
+      if (format === 'md') return f.endsWith('.md');
+      return true;
+    }).sort();
+    if (files.length === 0) return null;
+    return files.map(f => `--- ${f} ---\n${readFileSync(join(resolved, f), 'utf8')}`).join('\n\n');
+  }
+  if (!existsSync(resolved)) return null;
+  return readFileSync(resolved, 'utf8');
+}
+
+function checkFileResourceFreshness(entry, resolvedPath) {
+  if (!entry.cache) return 'fresh';
+  const maxAgeSeconds = parseDuration(entry.cache.max_age);
+  if (maxAgeSeconds <= 0) return 'fresh';
+  try {
+    const ageSeconds = (Date.now() - statSync(resolvedPath).mtimeMs) / 1000;
+    return ageSeconds >= maxAgeSeconds ? 'stale' : 'fresh';
+  } catch { return 'stale'; }
+}
+
+const activeProductions = new Map();
+
+async function triggerProduction(entry, projectPath) {
+  const prodKey = `${entry.agent}/${entry.produced_by}/${projectPath || 'global'}`;
+  if (activeProductions.has(prodKey)) {
+    log(`RESOURCE: waiting on in-flight production ${prodKey}`);
+    return activeProductions.get(prodKey);
+  }
+  const promise = (async () => {
+    try {
+      log(`RESOURCE: triggering /${entry.produced_by} as ${entry.agent} for ${prodKey}`);
+      await invokeFull(entry.agent, `Run the /${entry.produced_by} skill. Input: ${projectPath || ''}`);
+      log(`RESOURCE: production complete for ${prodKey}`);
+    } finally { activeProductions.delete(prodKey); }
+  })();
+  activeProductions.set(prodKey, promise);
+  return promise;
+}
+
+async function handleResourceGet(entry, projectParam, ifNoneMatch) {
+  if (entry.path) {
+    const resolved = resolveResourcePath(entry, projectParam);
+    const isDir = entry.path.endsWith('/');
+    const freshness = checkFileResourceFreshness(entry, resolved);
+    log(`RESOURCE ${entry.agent}/${entry.name}: freshness=${freshness}`);
+    if (freshness === 'fresh') {
+      const content = readResourceContent(resolved, isDir, entry.format);
+      if (content) {
+        const etag = computeETag(content);
+        if (ifNoneMatch && ifNoneMatch === etag) return { text: '[304 not modified]', etag, status: 304 };
+        return { text: content, etag, status: 200 };
+      }
+    }
+    if (entry.produced_by) {
+      await triggerProduction(entry, projectParam);
+      const content = readResourceContent(resolved, isDir, entry.format);
+      if (content) return { text: content, etag: computeETag(content), status: 200 };
+      return { text: `Production completed but resource not found at ${resolved}`, status: 404 };
+    }
+    const content = readResourceContent(resolved, isDir, entry.format);
+    if (content) return { text: content, etag: computeETag(content), status: 200 };
+    return { text: `Resource not found: ${entry.name}`, status: 404 };
+  }
+  if (entry.guidelines) {
+    const cacheKey = `resource/${entry.agent}/${entry.name}`;
+    if (entry.cache) {
+      const cacheDir = ensureCacheDir(cacheKey);
+      const dataPath = join(cacheDir, 'data.md');
+      const syntheticRoute = { name: cacheKey, cache: entry.cache, provider: entry.agent };
+      const expiry = checkCacheExpiry(syntheticRoute, cacheDir);
+      log(`RESOURCE ${entry.agent}/${entry.name}: query cache=${expiry}`);
+      if (expiry === 'fresh' && existsSync(dataPath)) {
+        const cached = readFileSync(dataPath, 'utf8');
+        const etag = computeETag(cached);
+        if (ifNoneMatch && ifNoneMatch === etag) return { text: '[304 not modified]', etag, status: 304 };
+        return { text: `[cached]\n\n${cached}`, etag, status: 200 };
+      }
+      if (expiry === 'uncertain') {
+        const reviewResult = await runCacheReview(syntheticRoute, cacheDir);
+        if (reviewResult === 'valid') {
+          if (entry.cache.inputs) writeSnapshot(join(cacheDir, '.snapshot'), entry.cache.inputs);
+          writeFileSync(join(cacheDir, '.valid'), new Date().toISOString());
+          const cached = readFileSync(dataPath, 'utf8');
+          return { text: `[cached:revalidated]\n\n${cached}`, etag: computeETag(cached), status: 200 };
+        }
+      }
+      const response = await invokeLightweight(entry.agent, entry.guidelines);
+      writeFileSync(dataPath, response);
+      writeFileSync(join(cacheDir, '.valid'), new Date().toISOString());
+      if (entry.cache.inputs) writeSnapshot(join(cacheDir, '.snapshot'), entry.cache.inputs);
+      if (entry.cache.type === 'hash' && entry.cache.inputs) {
+        const files = collectFiles(entry.cache.inputs);
+        const allContent = files.map(f => { try { return readFileSync(f, 'utf8'); } catch { return ''; } }).join('');
+        writeFileSync(join(cacheDir, '.hash'), md5(allContent));
+      }
+      log(`RESOURCE ${entry.agent}/${entry.name}: regenerated, ${response.length} chars`);
+      return { text: response, etag: computeETag(response), status: 200 };
+    }
+    const response = await invokeLightweight(entry.agent, entry.guidelines);
+    return { text: response, etag: computeETag(response), status: 200 };
+  }
+  return { text: `Resource "${entry.name}" has neither path nor guidelines`, status: 500 };
+}
+
 // ─── Auth delegation ───
 
 function readAuthSecret(agent) {
@@ -755,6 +908,8 @@ function registerTools(server) {
       for (const [name, route] of routeRegistry) {
         routes.push({ name, method: route.method, provider: route.provider, cached: !!route.cache });
       }
+      const resourceInfo = {};
+      for (const [agent, resources] of resourceRegistry) { resourceInfo[agent] = resources.map(r => r.name); }
       return {
         content: [{
           type: 'text',
@@ -763,6 +918,7 @@ function registerTools(server) {
             boot: BOOT_TIME,
             agents: KNOWN_AGENTS,
             routes,
+            resources: resourceInfo,
             active: [...activeRequests.values()],
           }, null, 2),
         }],
@@ -802,6 +958,40 @@ function registerTools(server) {
           log(`TOOL ${name} error`, { error: e.message });
           throw e;
         }
+      },
+    );
+  }
+
+  // Resource catalog + get tools
+  for (const [agent, resources] of resourceRegistry) {
+    server.tool(
+      `${agent}_catalog`,
+      `List resources available from ${agent} — descriptions, scope, and format.`,
+      {},
+      async () => {
+        const items = resources.map(r => ({ name: r.name, description: r.description, scope: r.scope, format: r.format || null, produced_by: r.produced_by || null }));
+        return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
+      },
+    );
+    const resourceNames = resources.map(r => r.name);
+    const hasProjectScoped = resources.some(r => r.scope === 'project');
+    const getSchema = { resource: z.enum(resourceNames).describe('Which resource to retrieve') };
+    if (hasProjectScoped) getSchema.project = z.string().optional().describe('Project path — required for project-scoped resources');
+    getSchema.if_none_match = z.string().optional().describe('ETag from previous response for conditional requests');
+    server.tool(
+      `${agent}_get`,
+      `Retrieve a ${agent} resource. Serves from disk/cache if fresh, triggers production if stale.`,
+      getSchema,
+      async (params) => {
+        log(`TOOL ${agent}_get called`, { resource: params.resource, project: params.project });
+        const entry = resources.find(r => r.name === params.resource);
+        if (!entry) throw new Error(`Unknown resource: ${params.resource}`);
+        if (entry.scope === 'project' && !params.project) throw new Error(`Resource "${entry.name}" is project-scoped — provide a project parameter`);
+        try {
+          const result = await handleResourceGet(entry, params.project, params.if_none_match);
+          log(`TOOL ${agent}_get done`, { resource: params.resource, status: result.status });
+          return { content: [{ type: 'text', text: result.etag ? `${result.text}\n\n<!-- etag: ${result.etag} -->` : result.text }] };
+        } catch (e) { log(`TOOL ${agent}_get error`, { resource: params.resource, error: e.message }); throw e; }
       },
     );
   }
@@ -867,5 +1057,6 @@ app.listen(PORT, '0.0.0.0', () => {
   log('Shape-shifting MCP agent server on :' + PORT);
   log(`Known agents: ${KNOWN_AGENTS.join(', ')}`);
   log(`Registered routes: ${[...routeRegistry.keys()].join(', ')}`);
+  log(`Resources: ${[...resourceRegistry.entries()].map(([a, rs]) => `${a}(${rs.length})`).join(', ') || 'none'}`);
   log('MCP: /mcp | Health: /health');
 });

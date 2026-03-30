@@ -100,5 +100,7 @@
     "description": "Troubleshooting notes",
     "owner": "charon",
     "preload": "none"
-  }
+  },
+  {"type":"resource","name":"cluster-topology","agent":"charon","description":"Cluster topology, service endpoints, and networking.","scope":"global","guidelines":"Return the current cluster layout: namespaces, services, ports, and networking topology. Draw from manifests and overlays, not live state. Keep under 50 lines.","cache":{"max_age":"5d","inputs":["agents/charon/skills/infra/manifests/","profile/config.yaml","profile/overlays/"],"threshold":0.05,"stale_threshold":0.25}},
+  {"type":"resource","name":"deployment-status","agent":"charon","description":"Live deployment status — pods, versions, health. Always live.","scope":"global","guidelines":"Return the current live state of the cluster: running pods, image versions, resource usage, and health. Always a live query. Keep under 50 lines."}
 ]
