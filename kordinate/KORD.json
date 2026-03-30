@@ -95,6 +95,22 @@
   },
   {
     "type": "file",
+    "path": "agents/augur/memory/tools.md",
+    "description": "Tool reference (ast-grep, semgrep, grep)",
+    "owner": "augur",
+    "preload": "augur",
+    "validation": "augur"
+  },
+  {
+    "type": "file",
+    "path": "agents/augur/memory/workflow.md",
+    "description": "4-step review workflow",
+    "owner": "augur",
+    "preload": "augur",
+    "validation": "augur"
+  },
+  {
+    "type": "file",
     "path": "agents/augur/memory/scratchpad.md",
     "description": "Working notes and observations",
     "owner": "augur",
@@ -662,11 +678,5 @@
     "description": "Main session working notes",
     "owner": "main",
     "preload": "none"
-  },
-  {
-    "type": "dir",
-    "pattern": "agents/augur/memory/concepts/*/concept.md",
-    "description": "Design concept definitions \u2014 patterns, anti-patterns, domain models, flow shapes, structure shapes",
-    "preload": "augur"
   }
 ]

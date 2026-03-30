@@ -1,68 +1,70 @@
 ---
 name: render
 description: >
-  Render scribe's documentation data into Astro pages. Reads manifest.json + stories + atlas
-  from scribe's output directory and generates pages using pre-built components.
-argument-hint: "<project>"
+  Render augur's analysis into documentation. Fetches atlas + stories + journeys via kord,
+  makes visualization decisions, and generates Astro pages. Use --manifest-only to produce
+  just the manifest without Astro output.
+argument-hint: "<project> [--manifest-only]"
 context: fork
 ---
 
-Generate Astro site pages from scribe's `/document` output. This skill reads the data files (manifest.json, storyByNode.json, atlas.json, stories, journeys) and maps them to pre-built Astro components.
-
-**This skill uses `context: fork`** — it runs in its own context and reads the component files it needs. It does NOT inherit the document skill's context.
+Render a project's architecture documentation from augur's analysis output. All input is fetched through kord — scribe never reads augur's files directly.
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>` (path to project directory).
+`$ARGUMENTS` — Required: `<project>`. Optional: `--manifest-only` to produce manifest.json + storyByNode.json without generating Astro pages.
 
 ## Input
 
-Read from `<project>/.kord/agents/scribe/output/`:
+All input acquired through kord by delegating to augur:
 
-| File | Required | Purpose |
-|------|----------|---------|
-| `manifest.json` | **yes** | Rendering decisions from /document |
-| `storyByNode.json` | **yes** | Node-to-story index |
-| `atlas.json` | **yes** | Structural inventory |
-| `stories/*.yaml` | **yes** | Story data |
-| `journeys/*.yaml` | **yes** | Journey data |
+| Resource | Purpose |
+|----------|---------|
+| `atlas-schema` | Atlas v4 format definition |
+| `story-schema` | Story/journey format definition |
+| `atlas` | Structural inventory for the project |
+| `stories` | Story files with building blocks |
+| `journeys` | Reading paths (getting-started, etc.) |
 
-If `manifest.json` is missing, suggest running `/document <project>` first. Exit.
-
-## Output
-
-Resolve the docs site location:
-1. `$KORDINATE_HOME/../site/` — if it exists
-2. `site/` in kordinate repo root — if it exists
-3. Fallback: `<project>/.kord/agents/scribe/output/site/`
-
-Write Astro pages that import pre-built components and pass them the data.
-
-## Components
-
-Pre-built components in this skill's `components/` directory. Read them to understand their props and rendering logic.
-
-| Component | Props | Purpose |
-|-----------|-------|---------|
-| `JourneyPage.astro` | project, journeys, storiesByJourney, atlas, rendering | Full explorer: tabs, sidebar, canvas, drawer |
-| `StoryCard.astro` | story, atlas, rendering | One story section with all building blocks |
-| `GraphBlock.astro` | id, nodes, edges, atlas, structureType | Interactive graph |
-| `SequenceDiagram.astro` | id, steps, title | Mermaid sequence diagram |
-| `TimelineCard.astro` | title, trigger, severity, cascade, detection, recovery | Failure cascade |
-| `ObservationCard.astro` | finding, confidence, component, evidence, tags, recommendation, type | Evidence/warning card |
-| `RationaleCard.astro` | decision, context, trade_offs, alternatives | Design decision card |
-| `AtlasPage.astro` | project, atlas, storyByNode, stories | Full interactive atlas graph |
-| `BottomDrawer.astro` | (none) | Drawer shell for detail panels |
-
-Supporting files in `lib/`:
-- `cytoscape-config.ts` — node type colors, shapes, severity colors
-- `narrative.ts` — bold-ref parsing, HTML escaping
+If atlas is missing, suggest running `/analyze <project>`. Exit.
 
 ## Procedure
 
-### 1. Install components
+### 1. Fetch
 
-Copy components and lib from this skill into the site:
+Fetch all input via kord delegation to augur. Parse atlas JSON, story YAML, journey YAML.
+
+### 2. Build manifest
+
+For each story's building blocks, decide the rendering approach:
+
+**Structures** — by node count:
+- 1-3 nodes: `grid`
+- 4-8 nodes: `dagre`
+- 9+ nodes: `cose-bilkent`
+
+**Flows** — by type:
+- `state` or failure cascade: `timeline`
+- all others: `sequence`
+
+**Observations** — by content:
+- has code snippet: `evidence-card`
+- has recommendation: `warning-card`
+- otherwise: `compact-card`
+
+**Rationale**: `decision-card`
+
+Write to `<project>/.kord/agents/scribe/output/manifest.json`.
+
+### 3. Build storyByNode index
+
+For each atlas node, find which stories reference it (in structures, flows, observations). Write to `<project>/.kord/agents/scribe/output/storyByNode.json`.
+
+**If `--manifest-only`: stop here and report.**
+
+### 4. Install components
+
+Copy pre-built components from this skill into the docs site:
 
 ```bash
 mkdir -p $SITE/src/components/kordinate $SITE/src/components/kordinate/lib
@@ -70,54 +72,30 @@ cp components/*.astro $SITE/src/components/kordinate/
 cp lib/*.ts $SITE/src/components/kordinate/lib/
 ```
 
-### 2. Copy data to site content
+Resolve site location:
+1. `$KORDINATE_HOME/../site/` — if exists
+2. `site/` in kordinate repo root — if exists
+3. Fallback: `<project>/.kord/agents/scribe/output/site/`
+
+### 5. Copy data to site
 
 ```bash
 mkdir -p $SITE/src/content/docs/<project>
-cp <project>/.kord/agents/scribe/output/atlas.json $SITE/src/content/docs/<project>/
-cp <project>/.kord/agents/scribe/output/manifest.json $SITE/src/content/docs/<project>/
-cp <project>/.kord/agents/scribe/output/storyByNode.json $SITE/src/content/docs/<project>/
-cp -r <project>/.kord/agents/scribe/output/stories $SITE/src/content/docs/<project>/
-cp -r <project>/.kord/agents/scribe/output/journeys $SITE/src/content/docs/<project>/
 ```
 
-### 3. Write journey pages
+Write the fetched atlas, stories, journeys, manifest, and storyByNode to the site content directory.
 
-Each journey becomes one thin Astro page importing JourneyPage:
+### 6. Write Astro pages
 
-```astro
----
-import JourneyPage from '../../components/kordinate/JourneyPage.astro';
-import atlas from '../../content/docs/<project>/atlas.json';
-import manifest from '../../content/docs/<project>/manifest.json';
-const journeys = [/* loaded from journeys/*.yaml */];
-const storiesByJourney = {/* journeyId → ordered stories */};
----
-<JourneyPage project="<project>" journeys={journeys} storiesByJourney={storiesByJourney} atlas={atlas} rendering={manifest} />
-```
+Each journey becomes one thin page importing JourneyPage component. Atlas page imports AtlasPage component. Read the components from `components/` to understand their props.
 
-Output: `$SITE/src/pages/<project>/index.astro` (default journey) + additional journey pages.
-
-### 4. Write atlas page
-
-```astro
----
-import AtlasPage from '../../../components/kordinate/AtlasPage.astro';
-import atlas from '../../../content/docs/<project>/atlas.json';
-import storyByNode from '../../../content/docs/<project>/storyByNode.json';
----
-<AtlasPage project="<project>" atlas={atlas} storyByNode={storyByNode} stories={[]} />
-```
-
-Output: `$SITE/src/pages/<project>/atlas/index.astro`
-
-### 5. Report
+### 7. Report
 
 ```
 ## Rendered: <project>
 
-**Site**: <site path>
-**Journey pages**: N
-**Atlas page**: <path>
-**Components installed**: yes
+**Manifest**: N stories, N blocks
+**storyByNode**: N nodes mapped
+**Site**: <path> (if not --manifest-only)
+**Pages**: N journey pages + atlas page
 ```

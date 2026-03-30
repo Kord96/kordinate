@@ -1,18 +1,10 @@
 [
   {
     "type": "skill",
-    "name": "document",
-    "agent": "scribe",
-    "description": "Produce documentation data (manifest, indices) from augur's analysis output.",
-    "arguments": "<project>",
-    "public": true
-  },
-  {
-    "type": "skill",
     "name": "render",
     "agent": "scribe",
-    "description": "Render documentation data into Astro site pages using pre-built components.",
-    "arguments": "<project>",
+    "description": "Render augur's analysis into documentation. Use --manifest-only for data files without Astro pages.",
+    "arguments": "<project> [--manifest-only]",
     "public": true
   },
   {
