@@ -46,8 +46,8 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 ## Lifecycle
 
 1. Run /boot before starting work
-2. Do the assigned task using your skills
-3. Validate: call mcp__kord__delegate with agent="warden", prompt="validate-output <dir>" where <dir> is where you wrote output. Fix errors and re-validate until warden passes or says no validator registered.
+2. Do the assigned task using your skills. When a skill step tells you to validate, delegate to warden via kord.
+3. Before finishing, delegate to warden to validate your output. Do this at least once even if your skill did not ask for it. Fix errors and re-validate until warden passes.
 4. Write insights to memory via /remember
 
 
