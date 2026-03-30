@@ -754,7 +754,7 @@ async function handleScriptRoute(route, message) {
     const stdout = e.stdout?.toString() || '';
     const output = (stdout + '\n' + stderr).trim();
     log(`SCRIPT ${route.name}: INVALID — ${output.substring(0, 200)}`);
-    return `${output}\n\nFix the errors above and call validate-output again.`;
+    return `VALIDATION FAILED\n\n${output}\n\nTo fix:\n1. Read each ERROR line — it tells you exactly what's wrong and where.\n2. Fix the output files (atlas.json, stories/*.yaml, journeys/*.yaml).\n3. Call warden validate-output again with the same directory.\n4. Repeat until you get a VALIDATED response with a completion token.\n\nDo NOT compute the token yourself — only this server can issue valid tokens.`;
   }
 }
 
@@ -932,6 +932,20 @@ function registerTools(server) {
     async ({ agent, prompt, caller }) => {
       const isMain = !caller || caller === 'main';
       log('TOOL delegate called', { agent, caller: caller || 'main', prompt: prompt.substring(0, 100) });
+
+      // Check if the prompt matches a script-handled route for this agent
+      // e.g., "validate-output /path/to/dir" → warden_validate_output route
+      for (const [, route] of routeRegistry) {
+        if (route.provider === agent && route.handler === 'script' && route.skill) {
+          const skillPrefix = route.skill.replace(/-/g, '[ -]');
+          const match = prompt.match(new RegExp(`^${skillPrefix}\\s+(.+)`, 'i'));
+          if (match) {
+            log(`DELEGATE ${agent}: matched script route ${route.name}`);
+            const result = await handleScriptRoute(route, match[1].trim());
+            return { content: [{ type: 'text', text: result }] };
+          }
+        }
+      }
 
       if (isMain) {
         const secret = readAuthSecret(agent);

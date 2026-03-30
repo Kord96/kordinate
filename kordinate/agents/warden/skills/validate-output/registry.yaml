@@ -4,6 +4,6 @@
 
 validators:
   - pattern: ".kord/agents/augur/memory/"
-    script: "agents/augur/skills/analyze/scripts/validate_output.py"
+    script: "agents/warden/skills/validate-output/scripts/augur_validate_output.py"
     agent: augur
     description: "Validates atlas.json v3 schema, story YAML format, journey references, directory structure"
