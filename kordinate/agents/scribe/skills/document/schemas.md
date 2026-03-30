@@ -104,9 +104,11 @@ Each story is a YAML object from augur's stories/ directory. StoryCard expects:
   title: string,
   description?: string,
   audience?: string[],
-  stories: [{
-    id: string,                  // story ID
-    bridge?: string              // one sentence before this story — question pulling reader forward
+  stories: string[],             // ordered story IDs
+  bridges?: [{                   // edges between adjacent stories
+    from: string,                // story ID (must exist in stories)
+    to: string,                  // story ID (must be adjacent to from)
+    text: string                 // one sentence — question pulling reader forward
   }]
 }
 ```
@@ -159,5 +161,5 @@ Full interactive graph. Expects:
 - GraphBlock auto-selects layout by node count: 1-3 grid, 4-8 dagre, 9+ cose-bilkent
 - ObservationCard auto-selects variant: has snippet → evidence, has recommendation → warning, else → compact
 - `anchor` is optional but recommended — the single most important file:line for the story
-- `bridge` is required for getting-started journeys, optional for others
-- First story in a journey has no bridge (it's the entry point)
+- `bridges` are edges between adjacent stories — `from`/`to` must exist in stories list and be adjacent
+- `bridges` are required for getting-started journeys (N-1 bridges for N stories), optional for others

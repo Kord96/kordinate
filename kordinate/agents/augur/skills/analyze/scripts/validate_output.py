@@ -320,6 +320,31 @@ def validate_journey(journey: dict, story_ids: set) -> list[dict]:
         if sid not in story_ids:
             error(f"Journey '{jid}' references unknown story '{sid}'")
 
+    # Bridge validation
+    bridges = journey.get("bridges", [])
+    is_getting_started = jid == "getting-started"
+
+    if is_getting_started and len(stories) > 1 and len(bridges) != len(stories) - 1:
+        error(f"Journey '{jid}' needs {len(stories) - 1} bridges for {len(stories)} stories (has {len(bridges)}). Add bridges connecting each adjacent pair.")
+
+    for bridge in bridges:
+        if not isinstance(bridge, dict):
+            error(f"Journey '{jid}' bridge must be an object with from/to/text, got: {type(bridge).__name__}")
+            continue
+        bfrom = bridge.get("from", "")
+        bto = bridge.get("to", "")
+        if bfrom and bfrom not in stories:
+            error(f"Journey '{jid}' bridge from '{bfrom}' not in stories list")
+        if bto and bto not in stories:
+            error(f"Journey '{jid}' bridge to '{bto}' not in stories list")
+        if bfrom and bto and bfrom in stories and bto in stories:
+            fi = stories.index(bfrom)
+            ti = stories.index(bto)
+            if ti != fi + 1:
+                error(f"Journey '{jid}' bridge from '{bfrom}' to '{bto}' — not adjacent in stories order")
+        if not bridge.get("text"):
+            error(f"Journey '{jid}' bridge from '{bfrom}' to '{bto}' has no text")
+
     return issues
 
 

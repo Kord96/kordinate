@@ -218,18 +218,23 @@ title: "<Human Readable Title>"
 description: "<one sentence — what the reader achieves>"
 audience: ["<role>"]
 stories:
-  - id: "<story-id>"                     # can be root or child, from any group
-  - id: "<story-id>"
-    bridge: "<one sentence — creates curiosity for what comes next>"
+  - "<story-id>"                          # can be root or child, from any group
+  - "<story-id>"
+bridges:                                   # edges connecting adjacent stories
+  - from: "<story-id>"
+    to: "<story-id>"
+    text: "<one sentence — question pulling the reader forward>"
 ```
 
-### Bridge text
+### Bridges
 
-- `bridge` is optional, one sentence
-- It appears before the story it's attached to
-- It creates curiosity for what comes next — typically a question the next story answers
-- The first story has no bridge (it's the entry point)
-- Bridge text is **required** for `getting-started` journeys, optional for others
+Bridges are edges between adjacent stories in the journey. They create curiosity for what comes next.
+
+- `from` and `to` must both exist in the `stories` list
+- `from` and `to` must be adjacent in the stories order
+- `text` is one sentence — typically a question the next story answers
+- N stories → N-1 bridges (every adjacent pair connected)
+- Bridges are **required** for `getting-started` journeys, optional for others
 
 ### Journey design rules
 
