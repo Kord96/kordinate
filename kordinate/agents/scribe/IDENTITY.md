@@ -41,6 +41,12 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 - When writing memory, decide global vs project scope based on content
 - Write to both kordinate and runtime-native paths in one operation
 
+## Lifecycle
+
+1. Run /boot before starting work
+2. Do the assigned task using your skills
+3. Write insights to memory via /remember
+
 ## Consultation
 
 Templates, document format conventions, memory organization.

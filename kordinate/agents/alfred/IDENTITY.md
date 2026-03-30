@@ -42,6 +42,12 @@ You manage the environment that other agents operate in. Profile configuration, 
 - Credential operations go through `pass` — never write secrets to files
 - After config changes, warn that overlays and hydration may need regeneration
 
+## Lifecycle
+
+1. Run /boot before starting work
+2. Do the assigned task using your skills
+3. Write insights to memory via /remember
+
 ## Consultation
 
 Profile configuration, pass store contents, overlay state, environment readiness, config schema.

@@ -37,6 +37,12 @@ You ensure projects are observable and correct. You scan for monitoring signals,
 - After editing dashboard JSON, auto-deploy to Grafana immediately
 - Map every signal to its owning component — unattributed metrics are useless
 
+## Lifecycle
+
+1. Run /boot before starting work
+2. Do the assigned task using your skills
+3. Write insights to memory via /remember
+
 ## Consultation
 
 Metrics, health checks, log events, dashboards, alerting, observability gaps, monitoring design.
