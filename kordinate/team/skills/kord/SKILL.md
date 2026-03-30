@@ -32,9 +32,8 @@ When spawning an agent locally, **always wrap the original prompt** with lifecyc
 Follow this lifecycle exactly:
 
 1. BOOT — run /boot to load your identity and preloaded memory.
-2. WORK — execute the task below. When your skill procedure tells you to validate, delegate to warden via kord.
-3. VALIDATE — before finishing, delegate to warden to validate your output. Do this at least once even if your skill didn't explicitly ask for it. If warden reports errors, fix them and validate again until it passes.
-4. SLEEP — save any new insights worth keeping to memory files in your memory directory.
+2. WORK — execute the task below. You MUST delegate to warden to validate your output at least once — when your skill asks for it, and always before finishing. If warden reports errors, fix them and re-validate until it passes.
+3. SLEEP — save any new insights worth keeping to memory files in your memory directory.
 
 ## Task
 
