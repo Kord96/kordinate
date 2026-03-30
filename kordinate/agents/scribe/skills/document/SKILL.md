@@ -5,7 +5,7 @@ description: >
   maps them into pre-built Astro components, and writes pages to the docs site. Stories
   render as short sections within journey pages. Visualization decisions are Scribe's.
 argument-hint: "<project> [--atlas-only]"
-context: fork
+context: inherit
 ---
 
 Render a project's stories and atlas into interactive documentation using **pre-built components**. Scribe does NOT generate HTML from scratch — it maps story data into templates and makes rendering decisions (which graph layout, which diagram type) via a manifest.
