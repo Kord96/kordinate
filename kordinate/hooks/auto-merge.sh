@@ -1,11 +1,15 @@
 #!/bin/bash
-# auto-merge — after git push from a worktree, also push to main.
+# auto-merge — redirect all pushes from session branches to main.
 #
 # Registered as PostToolUse on Bash. Triggers on git push
 # from a worktree on a session/* branch.
 #
-# Simple approach: push the same SHA to main. No merge, no worktree.
-# If main has diverged, report the conflict — don't force push.
+# Worktrees stay isolated locally (each session has its own branch).
+# But on the remote, only main exists. This hook ensures every push
+# goes to main, not to the session branch.
+#
+# If main has diverged (another session pushed first), the push fails
+# and the user needs to pull --rebase and retry.
 
 set -uo pipefail
 
@@ -36,7 +40,7 @@ if [ -z "$REPO_ROOT" ]; then
   exit 0
 fi
 
-# Must be a worktree (not main repo) on a session/* branch
+# Must be a worktree on a session/* branch
 COMMON_DIR=$(git -C "$REPO_ROOT" rev-parse --git-common-dir 2>/dev/null)
 GIT_DIR=$(git -C "$REPO_ROOT" rev-parse --git-dir 2>/dev/null)
 if [ "$COMMON_DIR" = "$GIT_DIR" ]; then
@@ -46,18 +50,18 @@ fi
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null)
 case "$BRANCH" in session/*) ;; *) exit 0 ;; esac
 
-# Skip if the push command already targets main
-echo "$CMD" | grep -qE ':main\b' && exit 0
+# Skip if already pushing to main
+echo "$CMD" | grep -qE ':main\b|push.*main' && exit 0
 
-# Push current HEAD to main
+# Push to main
 CURRENT_SHA=$(git -C "$REPO_ROOT" rev-parse HEAD)
 PUSH_OUTPUT=$(git -C "$REPO_ROOT" push origin "$CURRENT_SHA:refs/heads/main" 2>&1)
 PUSH_RC=$?
 
 if [ $PUSH_RC -eq 0 ]; then
-  log "pushed $BRANCH to main"
-  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Also pushed %s to main."}}\n' "$BRANCH"
+  log "pushed $BRANCH → main"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Pushed %s to main."}}\n' "$BRANCH"
 else
   log "push to main failed (rc=$PUSH_RC): $PUSH_OUTPUT"
-  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Push to main failed — branches may have diverged. Run /merge to resolve."}}\n' "$BRANCH"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Push to main failed — run: git fetch origin main && git rebase origin/main, then push again."}}\n' "$BRANCH"
 fi
