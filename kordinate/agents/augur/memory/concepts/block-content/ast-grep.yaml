@@ -1,0 +1,40 @@
+id: block-content-slate-element-ts
+language: TypeScript
+rule:
+  pattern: |
+    const $NAME = ($$$ARGS) => {
+        $$$BODY
+    }
+  inside:
+    kind: variable_declaration
+    has:
+      pattern: renderElement
+---
+id: block-content-tiptap-extension-ts
+language: TypeScript
+rule:
+  pattern: |
+    Node.create({
+        $$$CONFIG
+    })
+---
+id: block-content-prosemirror-schema-ts
+language: TypeScript
+rule:
+  pattern: |
+    new Schema({
+        $$$CONFIG
+    })
+---
+id: block-content-streamfield-py
+language: Python
+rule:
+  pattern: |
+    $NAME = StreamField($$$ARGS)
+---
+id: block-content-struct-block-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(StructBlock):
+        $$$BODY

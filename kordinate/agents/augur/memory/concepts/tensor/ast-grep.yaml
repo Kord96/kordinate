@@ -1,0 +1,33 @@
+id: tensor-forward-py
+language: Python
+rule:
+  pattern: |
+    def forward(self, $$$ARGS):
+        $$$BODY
+---
+id: tensor-predict-py
+language: Python
+rule:
+  pattern: |
+    def predict(self, $$$ARGS):
+        $$$BODY
+---
+id: tensor-nn-module-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(nn.Module):
+        $$$BODY
+---
+id: tensor-keras-model-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(tf.keras.Model):
+        $$$BODY
+---
+id: tensor-to-device-py
+language: Python
+rule:
+  pattern: |
+    $TENSOR.to($DEVICE)

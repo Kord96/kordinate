@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there follow or connection models representing directional or bidirectional user relationships?"
+    weight: 3
+    signals: ["Follow model with follower_id and following_id", "Connection model with status", "friend request and acceptance flow"]
+  - q: "Is there a feed or timeline generated from the social graph of followed users?"
+    weight: 3
+    signals: ["activity feed or timeline model", "fan-out on write to follower feeds", "feed aggregation query"]
+  - q: "Does the system support activity stream aggregation (likes, comments, shares grouped by actor)?"
+    weight: 2
+    signals: ["activity_stream or Activity model", "aggregated activity grouping", "stream-io or activity-stream library"]
+  - q: "Is there a fan-out strategy (on write or on read) for distributing content to followers?"
+    weight: 1
+    signals: ["fan-out worker or job", "pre-computed feed per user", "feed assembly strategy documented"]
+threshold: 6

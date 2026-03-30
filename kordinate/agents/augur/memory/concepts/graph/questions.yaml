@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an explicit graph data structure (adjacency list, adjacency matrix, or graph library) modeling entity relationships?"
+    weight: 3
+    signals: ["networkx or petgraph Graph", "adjacency list or matrix", "custom Graph class with nodes and edges"]
+  - q: "Are graph traversal algorithms (BFS, DFS, topological sort) used for ordering or reachability?"
+    weight: 3
+    signals: ["topological_sort for dependency ordering", "BFS or DFS traversal", "shortest_path computation"]
+  - q: "Is cycle detection implemented for graphs that must maintain DAG properties?"
+    weight: 2
+    signals: ["has_cycle or is_acyclic check", "cycle detection on graph mutation", "DAG validation before processing"]
+  - q: "Are graph operations (add node, add edge, remove) encapsulated with invariant enforcement?"
+    weight: 1
+    signals: ["graph mutation methods with validation", "edge addition checks for cycles", "graph integrity constraints"]
+threshold: 6

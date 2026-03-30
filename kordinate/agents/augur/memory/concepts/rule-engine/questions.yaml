@@ -1,0 +1,14 @@
+questions:
+  - q: "Are business rules defined declaratively and evaluated by a dedicated engine rather than hardcoded in application logic?"
+    weight: 3
+    signals: ["Rule/Condition/Action class hierarchy", "json-rules-engine or Drools usage", "externalized rule definitions"]
+  - q: "Is there a defined evaluation order or priority system for resolving rule conflicts?"
+    weight: 3
+    signals: ["priority or salience on rules", "conflict resolution strategy", "ordered rule evaluation pipeline"]
+  - q: "Can rules be modified or deployed independently of application code?"
+    weight: 2
+    signals: ["rules stored in database or config", "hot-reload of rule definitions", "admin UI for rule management"]
+  - q: "Are rules composed from reusable conditions and actions that can be tested in isolation?"
+    weight: 1
+    signals: ["composable predicates", "unit tests per rule", "condition reuse across multiple rules"]
+threshold: 6

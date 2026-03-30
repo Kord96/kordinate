@@ -3,7 +3,7 @@ description: Index of recognized architectural patterns by category
 ---
 # Patterns Index
 
-155 patterns across 20 categories. Each pattern has recognition signatures for code scanning.
+170 patterns across 21 categories. Each pattern has recognition signatures for code scanning.
 
 ## Categories
 
@@ -28,6 +28,7 @@ description: Index of recognized architectural patterns by category
 | testing | How code is verified |
 | error-handling | How failures are represented |
 | infrastructure | How environments are provisioned |
+| domain-model | Core data shape of the system |
 | networking | How network communication is handled |
 | observability | How systems are monitored |
 | realtime | How real-time systems are structured |
@@ -315,3 +316,23 @@ description: Index of recognized architectural patterns by category
 
 Patterns with kordinate library implementations: stream-to-store (stoik), service-manager (orchestrator).
 Implementation files are co-located in the pattern directory.
+
+## Domain Model
+
+| Pattern | Description | Reference |
+|---------|-------------|-----------|
+| Ledger | Double-entry ledger — debits, credits, balanced transactions | [view](concepts/ledger/concept.md) |
+| Property graph | Typed nodes and edges with properties and traversal queries | [view](concepts/property-graph/concept.md) |
+| Search index | Inverted index, analyzers, ranked full-text retrieval | [view](concepts/search-index/concept.md) |
+| Time-series | Timestamp-indexed append-only data with retention and downsampling | [view](concepts/time-series/concept.md) |
+| Versioned document | Immutable revisions, diffs, conflict resolution | [view](concepts/versioned-document/concept.md) |
+| Tensor | Multi-dimensional array computation with GPU dispatch | [view](concepts/tensor/concept.md) |
+| Spatial | Geographic/geometric data with spatial indexes | [view](concepts/spatial/concept.md) |
+| Rule engine | Declarative business rules, policy evaluation, decision tables | [view](concepts/rule-engine/concept.md) |
+| Multi-tenant | Tenant-scoped data isolation and configuration | [view](concepts/multi-tenant/concept.md) |
+| Subscription | Recurring billing, plan management, usage metering | [view](concepts/subscription/concept.md) |
+| Block content | Structured rich text with nested typed blocks | [view](concepts/block-content/concept.md) |
+| Catalog | Product/variant/SKU hierarchy with inventory | [view](concepts/catalog/concept.md) |
+| Social graph | Follow/connection relationships with feed generation | [view](concepts/social-graph/concept.md) |
+| Conversation thread | Threaded messaging with real-time delivery | [view](concepts/conversation-thread/concept.md) |
+| Graph | Generic graph model — DAGs, traversal, cycle detection | [view](concepts/graph/concept.md) |
