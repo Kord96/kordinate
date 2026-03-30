@@ -1,7 +1,6 @@
 ---
 description: Conversation threading pattern for messaging and real-time communication
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, communication]
 ---
 # Conversation Thread

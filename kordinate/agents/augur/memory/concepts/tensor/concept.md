@@ -1,7 +1,6 @@
 ---
 description: Tensor and matrix computation pattern for ML and numerical workloads
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, compute]
 ---
 # Tensor

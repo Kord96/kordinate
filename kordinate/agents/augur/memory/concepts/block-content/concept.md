@@ -1,7 +1,6 @@
 ---
 description: Block-based content model for structured rich text editing
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, content]
 ---
 # Block Content

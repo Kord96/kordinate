@@ -1,7 +1,6 @@
 ---
 description: Double-entry ledger pattern for financial data integrity
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, financial]
 ---
 # Ledger

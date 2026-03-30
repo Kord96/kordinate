@@ -1,7 +1,6 @@
 ---
 description: Social graph pattern for user relationships and activity feeds
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, social]
 ---
 # Social Graph

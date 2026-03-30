@@ -1,7 +1,6 @@
 ---
 description: Spatial data model for geographic and geometric computations
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, geospatial]
 ---
 # Spatial

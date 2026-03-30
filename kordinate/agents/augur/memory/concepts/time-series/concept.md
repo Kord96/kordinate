@@ -1,7 +1,6 @@
 ---
 description: Time-series data pattern for temporal metrics and event streams
-type: pattern
-category: domain-model
+type: domain-model
 abstraction: [data, temporal]
 ---
 # Time Series
