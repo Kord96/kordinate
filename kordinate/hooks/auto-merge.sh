@@ -55,6 +55,13 @@ case "$BRANCH" in session/*) ;; *) exit 0 ;; esac
 # Skip if already pushing to main explicitly
 echo "$CMD" | grep -qE 'HEAD:.*main\b' && exit 0
 
+# Skip if HEAD is a wip commit (session exit auto-commit — not ready for main)
+HEAD_MSG=$(git -C "$REPO_ROOT" log -1 --format="%s" 2>/dev/null)
+if echo "$HEAD_MSG" | grep -qi "^wip"; then
+  log "skipping main sync — HEAD is a wip commit"
+  exit 0
+fi
+
 # Step 1: Fetch latest main
 git -C "$REPO_ROOT" fetch origin main 2>/dev/null || log "fetch origin main failed"
 
