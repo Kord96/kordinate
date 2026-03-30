@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 // Kord — HTTP-inspired route protocol server for agent orchestration.
 //
-// Registers capability-based MCP tools from agent routes.yaml files.
+// Registers capability-based MCP tools from KORD.json entries.
+// Skills become POST tools, resources become catalog/get tools.
 // Routes requests to the right agent. No worktree isolation — agents run
 // in the current directory. KORD.json ownership model handles protection.
 // Lightweight --print mode for cache, -p mode for full tool access.
 //
-// Routes are declared per agent in routes.yaml. Each route becomes
-// an MCP tool with a capability-based name (no agent names visible).
+// Skills and resources are declared per agent in KORD.json. Each skill
+// becomes an MCP tool with a capability-based name (no agent names visible).
+// Resources are exposed via <agent>_resources and <agent>_fetch tools.
 //
-// MCP tools: delegate, status, + dynamic per-route tools
+// MCP tools: delegate, status, + dynamic per-route tools + resource catalog/get
 // MCP endpoint: POST /mcp
 // Health:       GET /health
 
@@ -74,6 +76,8 @@ function loadRouteRegistry() {
         provider: entry.agent,
         skill: entry.name,
         arguments: entry.arguments,
+        handler: entry.handler || null,
+        registryPath: entry.registry || null,
       });
     }
 
@@ -82,6 +86,23 @@ function loadRouteRegistry() {
     log(`WARN: failed to parse KORD.json: ${e.message}`);
   }
 
+  return registry;
+}
+
+function loadResourceRegistry() {
+  const registry = new Map();
+  const kordJsonPath = join(KORDINATE_HOME, 'KORD.json');
+  if (!existsSync(kordJsonPath)) return registry;
+  try {
+    const entries = JSON.parse(readFileSync(kordJsonPath, 'utf8'));
+    for (const entry of entries) {
+      if (entry.type !== 'resource') continue;
+      if (!entry.name || !entry.agent) { log(`WARN: skipping invalid resource entry`, entry); continue; }
+      if (!registry.has(entry.agent)) registry.set(entry.agent, []);
+      registry.get(entry.agent).push(entry);
+    }
+    log(`Loaded resources for ${registry.size} agents`);
+  } catch (e) { log(`WARN: failed to load resources: ${e.message}`); }
   return registry;
 }
 
@@ -103,6 +124,7 @@ function getKnownAgents(registry) {
 }
 
 let routeRegistry = loadRouteRegistry();
+let resourceRegistry = loadResourceRegistry();
 let KNOWN_AGENTS = getKnownAgents(routeRegistry);
 const activeRequests = new Map();
 
@@ -117,6 +139,7 @@ if (existsSync(kordJsonPath)) {
     reloadTimeout = setTimeout(() => {
       const oldCount = routeRegistry.size;
       routeRegistry = loadRouteRegistry();
+      resourceRegistry = loadResourceRegistry();
       KNOWN_AGENTS = getKnownAgents(routeRegistry);
       log(`KORD.json changed — reloaded: ${oldCount} → ${routeRegistry.size} routes`);
     }, 500);
@@ -544,6 +567,197 @@ async function runCacheReview(route, cacheDir) {
   }
 }
 
+// ─── Resource helpers ───
+
+function resolveProjectPath(projectArg) {
+  if (!projectArg) return null;
+  if (projectArg.startsWith('/')) {
+    if (existsSync(projectArg)) return projectArg;
+    throw new Error(`Project path not found: ${projectArg}`);
+  }
+  const candidates = [join(HOME, projectArg), join(HOME, 'repos', projectArg), join(HOME, 'test-repos', projectArg)];
+  for (const c of candidates) { if (existsSync(c)) return c; }
+  throw new Error(`Project not found: ${projectArg}`);
+}
+
+function resolveResourcePath(entry, projectParam) {
+  if (!entry.path) return null;
+  if (entry.scope === 'project') {
+    const projectPath = resolveProjectPath(projectParam);
+    return entry.path.replace('<project>', projectPath);
+  }
+  return join(KORDINATE_HOME, entry.path);
+}
+
+function readResourceContent(resolved, isDir, format) {
+  if (isDir) {
+    if (!existsSync(resolved)) return null;
+    const files = readdirSync(resolved).filter(f => {
+      if (format === 'yaml') return f.endsWith('.yaml') || f.endsWith('.yml');
+      if (format === 'json') return f.endsWith('.json');
+      if (format === 'md') return f.endsWith('.md');
+      return true;
+    }).sort();
+    if (files.length === 0) return null;
+    return files.map(f => `--- ${f} ---\n${readFileSync(join(resolved, f), 'utf8')}`).join('\n\n');
+  }
+  if (!existsSync(resolved)) return null;
+  return readFileSync(resolved, 'utf8');
+}
+
+function checkFileResourceFreshness(entry, resolvedPath) {
+  if (!entry.cache) return 'fresh';
+  const maxAgeSeconds = parseDuration(entry.cache.max_age);
+  if (maxAgeSeconds <= 0) return 'fresh';
+  try {
+    const ageSeconds = (Date.now() - statSync(resolvedPath).mtimeMs) / 1000;
+    return ageSeconds >= maxAgeSeconds ? 'stale' : 'fresh';
+  } catch { return 'stale'; }
+}
+
+const activeProductions = new Map();
+
+async function triggerProduction(entry, projectPath) {
+  const prodKey = `${entry.agent}/${entry.produced_by}/${projectPath || 'global'}`;
+  if (activeProductions.has(prodKey)) {
+    log(`RESOURCE: waiting on in-flight production ${prodKey}`);
+    return activeProductions.get(prodKey);
+  }
+  const promise = (async () => {
+    try {
+      log(`RESOURCE: triggering /${entry.produced_by} as ${entry.agent} for ${prodKey}`);
+      await invokeFull(entry.agent, `Run the /${entry.produced_by} skill. Input: ${projectPath || ''}`);
+      log(`RESOURCE: production complete for ${prodKey}`);
+    } finally { activeProductions.delete(prodKey); }
+  })();
+  activeProductions.set(prodKey, promise);
+  return promise;
+}
+
+async function handleResourceGet(entry, projectParam, ifNoneMatch) {
+  if (entry.path) {
+    const resolved = resolveResourcePath(entry, projectParam);
+    const isDir = entry.path.endsWith('/');
+    const freshness = checkFileResourceFreshness(entry, resolved);
+    log(`RESOURCE ${entry.agent}/${entry.name}: freshness=${freshness}`);
+    if (freshness === 'fresh') {
+      const content = readResourceContent(resolved, isDir, entry.format);
+      if (content) {
+        const etag = computeETag(content);
+        if (ifNoneMatch && ifNoneMatch === etag) return { text: '[304 not modified]', etag, status: 304 };
+        return { text: content, etag, status: 200 };
+      }
+    }
+    if (entry.produced_by) {
+      await triggerProduction(entry, projectParam);
+      const content = readResourceContent(resolved, isDir, entry.format);
+      if (content) return { text: content, etag: computeETag(content), status: 200 };
+      return { text: `Production completed but resource not found at ${resolved}`, status: 404 };
+    }
+    const content = readResourceContent(resolved, isDir, entry.format);
+    if (content) return { text: content, etag: computeETag(content), status: 200 };
+    return { text: `Resource not found: ${entry.name}`, status: 404 };
+  }
+  if (entry.guidelines) {
+    const cacheKey = `resource/${entry.agent}/${entry.name}`;
+    if (entry.cache) {
+      const cacheDir = ensureCacheDir(cacheKey);
+      const dataPath = join(cacheDir, 'data.md');
+      const syntheticRoute = { name: cacheKey, cache: entry.cache, provider: entry.agent };
+      const expiry = checkCacheExpiry(syntheticRoute, cacheDir);
+      log(`RESOURCE ${entry.agent}/${entry.name}: query cache=${expiry}`);
+      if (expiry === 'fresh' && existsSync(dataPath)) {
+        const cached = readFileSync(dataPath, 'utf8');
+        const etag = computeETag(cached);
+        if (ifNoneMatch && ifNoneMatch === etag) return { text: '[304 not modified]', etag, status: 304 };
+        return { text: `[cached]\n\n${cached}`, etag, status: 200 };
+      }
+      if (expiry === 'uncertain') {
+        const reviewResult = await runCacheReview(syntheticRoute, cacheDir);
+        if (reviewResult === 'valid') {
+          if (entry.cache.inputs) writeSnapshot(join(cacheDir, '.snapshot'), entry.cache.inputs);
+          writeFileSync(join(cacheDir, '.valid'), new Date().toISOString());
+          const cached = readFileSync(dataPath, 'utf8');
+          return { text: `[cached:revalidated]\n\n${cached}`, etag: computeETag(cached), status: 200 };
+        }
+      }
+      const response = await invokeLightweight(entry.agent, entry.guidelines);
+      writeFileSync(dataPath, response);
+      writeFileSync(join(cacheDir, '.valid'), new Date().toISOString());
+      if (entry.cache.inputs) writeSnapshot(join(cacheDir, '.snapshot'), entry.cache.inputs);
+      if (entry.cache.type === 'hash' && entry.cache.inputs) {
+        const files = collectFiles(entry.cache.inputs);
+        const allContent = files.map(f => { try { return readFileSync(f, 'utf8'); } catch { return ''; } }).join('');
+        writeFileSync(join(cacheDir, '.hash'), md5(allContent));
+      }
+      log(`RESOURCE ${entry.agent}/${entry.name}: regenerated, ${response.length} chars`);
+      return { text: response, etag: computeETag(response), status: 200 };
+    }
+    const response = await invokeLightweight(entry.agent, entry.guidelines);
+    return { text: response, etag: computeETag(response), status: 200 };
+  }
+  return { text: `Resource "${entry.name}" has neither path nor guidelines`, status: 500 };
+}
+
+// ─── Script route handler ───
+
+async function handleScriptRoute(route, message) {
+  const dir = message.trim();
+  if (!dir) return 'ERROR: No directory provided. Usage: validate-output <dir>';
+
+  // Load the validator registry
+  const registryFile = join(KORDINATE_HOME, route.registryPath);
+  if (!existsSync(registryFile)) return `ERROR: Registry not found at ${registryFile}`;
+
+  let registry;
+  try {
+    registry = yaml.load(readFileSync(registryFile, 'utf8'));
+  } catch (e) {
+    return `ERROR: Failed to parse registry: ${e.message}`;
+  }
+
+  // Match dir against registry patterns
+  const validators = registry.validators || [];
+  const match = validators.find(v => dir.includes(v.pattern));
+  if (!match) return `NO_VALIDATOR: No validator registered for ${dir}. Proceed.`;
+
+  // Resolve script path
+  const scriptPath = join(KORDINATE_HOME, match.script);
+  if (!existsSync(scriptPath)) return `ERROR: Validator script not found at ${scriptPath}`;
+
+  // Run the validator
+  log(`SCRIPT ${route.name}: running ${scriptPath} on ${dir}`);
+  try {
+    const result = execSync(`python3 "${scriptPath}" "${dir}"`, {
+      cwd: KORDINATE_HOME,
+      timeout: 60000,
+      env: { ...process.env, HOME, KORDINATE_HOME },
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    const output = result.toString().trim();
+
+    // Validation passed — compute completion token
+    try {
+      const tokenResult = execSync(
+        `find "${dir}" -name "*.json" -o -name "*.yaml" | sort | xargs cat | sha256sum | cut -d' ' -f1`,
+        { timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'] }
+      );
+      const token = tokenResult.toString().trim();
+      log(`SCRIPT ${route.name}: VALID, token=${token.substring(0, 16)}...`);
+      return `${output}\n\nVALIDATED — token: ${token}\nInclude this token in your report to confirm validation passed.`;
+    } catch {
+      return `${output}\n\nVALID but token computation failed.`;
+    }
+  } catch (e) {
+    // Validation failed — return errors
+    const stderr = e.stderr?.toString() || '';
+    const stdout = e.stdout?.toString() || '';
+    const output = (stdout + '\n' + stderr).trim();
+    log(`SCRIPT ${route.name}: INVALID — ${output.substring(0, 200)}`);
+    return `VALIDATION FAILED\n\n${output}\n\nTo fix:\n1. Read each ERROR line — it tells you exactly what's wrong and where.\n2. Fix the output files (atlas.json, stories/*.yaml, journeys/*.yaml).\n3. Call warden validate-output again with the same directory.\n4. Repeat until you get a VALIDATED response with a completion token.\n\nDo NOT compute the token yourself — only this server can issue valid tokens.`;
+  }
+}
+
 // ─── Auth delegation ───
 
 function readAuthSecret(agent) {
@@ -563,6 +777,12 @@ async function handleRoute(route, message, ifNoneMatch, caller) {
   activeRequests.set(requestId, { route: route.name, provider: route.provider, caller: caller || 'unknown', startedAt: new Date().toISOString() });
 
   try {
+    // Script-handled routes — run directly, no agent spawn
+    if (route.handler === 'script' && route.registryPath) {
+      const result = await handleScriptRoute(route, message);
+      return { text: result, status: 200 };
+    }
+
     // Skill routes — always return auth grant (caller runs locally)
     if (route.skill && !route.guidelines && !route.cache) {
       const secret = readAuthSecret(route.provider);
@@ -713,6 +933,20 @@ function registerTools(server) {
       const isMain = !caller || caller === 'main';
       log('TOOL delegate called', { agent, caller: caller || 'main', prompt: prompt.substring(0, 100) });
 
+      // Check if the prompt matches a script-handled route for this agent
+      // e.g., "validate-output /path/to/dir" → warden_validate_output route
+      for (const [, route] of routeRegistry) {
+        if (route.provider === agent && route.handler === 'script' && route.skill) {
+          const skillPrefix = route.skill.replace(/-/g, '[ -]');
+          const match = prompt.match(new RegExp(`^${skillPrefix}\\s+(.+)`, 'i'));
+          if (match) {
+            log(`DELEGATE ${agent}: matched script route ${route.name}`);
+            const result = await handleScriptRoute(route, match[1].trim());
+            return { content: [{ type: 'text', text: result }] };
+          }
+        }
+      }
+
       if (isMain) {
         const secret = readAuthSecret(agent);
         return {
@@ -755,6 +989,8 @@ function registerTools(server) {
       for (const [name, route] of routeRegistry) {
         routes.push({ name, method: route.method, provider: route.provider, cached: !!route.cache });
       }
+      const resourceInfo = {};
+      for (const [agent, resources] of resourceRegistry) { resourceInfo[agent] = resources.map(r => r.name); }
       return {
         content: [{
           type: 'text',
@@ -763,6 +999,7 @@ function registerTools(server) {
             boot: BOOT_TIME,
             agents: KNOWN_AGENTS,
             routes,
+            resources: resourceInfo,
             active: [...activeRequests.values()],
           }, null, 2),
         }],
@@ -802,6 +1039,40 @@ function registerTools(server) {
           log(`TOOL ${name} error`, { error: e.message });
           throw e;
         }
+      },
+    );
+  }
+
+  // Resource catalog + get tools
+  for (const [agent, resources] of resourceRegistry) {
+    server.tool(
+      `${agent}_resources`,
+      `List resources available from ${agent} — descriptions, scope, and format.`,
+      {},
+      async () => {
+        const items = resources.map(r => ({ name: r.name, description: r.description, scope: r.scope, format: r.format || null, produced_by: r.produced_by || null }));
+        return { content: [{ type: 'text', text: JSON.stringify(items, null, 2) }] };
+      },
+    );
+    const resourceNames = resources.map(r => r.name);
+    const hasProjectScoped = resources.some(r => r.scope === 'project');
+    const getSchema = { resource: z.enum(resourceNames).describe('Which resource to retrieve') };
+    if (hasProjectScoped) getSchema.project = z.string().optional().describe('Project path — required for project-scoped resources');
+    getSchema.if_none_match = z.string().optional().describe('ETag from previous response for conditional requests');
+    server.tool(
+      `${agent}_fetch`,
+      `Retrieve a ${agent} resource. Serves from disk/cache if fresh, triggers production if stale.`,
+      getSchema,
+      async (params) => {
+        log(`TOOL ${agent}_get called`, { resource: params.resource, project: params.project });
+        const entry = resources.find(r => r.name === params.resource);
+        if (!entry) throw new Error(`Unknown resource: ${params.resource}`);
+        if (entry.scope === 'project' && !params.project) throw new Error(`Resource "${entry.name}" is project-scoped — provide a project parameter`);
+        try {
+          const result = await handleResourceGet(entry, params.project, params.if_none_match);
+          log(`TOOL ${agent}_get done`, { resource: params.resource, status: result.status });
+          return { content: [{ type: 'text', text: result.etag ? `${result.text}\n\n<!-- etag: ${result.etag} -->` : result.text }] };
+        } catch (e) { log(`TOOL ${agent}_get error`, { resource: params.resource, error: e.message }); throw e; }
       },
     );
   }
@@ -867,5 +1138,6 @@ app.listen(PORT, '0.0.0.0', () => {
   log('Shape-shifting MCP agent server on :' + PORT);
   log(`Known agents: ${KNOWN_AGENTS.join(', ')}`);
   log(`Registered routes: ${[...routeRegistry.keys()].join(', ')}`);
+  log(`Resources: ${[...resourceRegistry.entries()].map(([a, rs]) => `${a}(${rs.length})`).join(', ') || 'none'}`);
   log('MCP: /mcp | Health: /health');
 });

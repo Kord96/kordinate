@@ -1,0 +1,17 @@
+questions:
+  - q: "Are code paths gated by feature flag evaluation calls that check external toggle state?"
+    weight: 3
+    signals: ["if feature_enabled() or is_feature_on() conditionals", "SDK flag evaluation gating code branches"]
+  - q: "Is feature flag configuration managed externally from application code?"
+    weight: 2
+    signals: ["flag management service or config file with flag definitions", "LaunchDarkly/Unleash SDK initialization with remote config"]
+  - q: "Do flags have a default value for when the flag service is unavailable?"
+    weight: 2
+    signals: ["fallback or default parameter in flag evaluation", "default behavior defined for flag service outage"]
+  - q: "Is there a process for tracking and removing stale feature flags?"
+    weight: 1
+    signals: ["flag removal dates or ownership tracking", "cleanup tickets for concluded flags"]
+  - q: "Are both flag-on and flag-off code paths tested independently?"
+    weight: 1
+    signals: ["tests for both enabled and disabled flag states", "parameterized tests covering flag variants"]
+threshold: 6

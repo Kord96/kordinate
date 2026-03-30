@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a dedicated database table named inbox, processed_messages, or received_events for message deduplication?"
+    weight: 3
+    signals: ["inbox table", "processed_messages table", "received_events table"]
+  - q: "Does the table have a uniqueness constraint on message_id to enforce deduplication at the database level?"
+    weight: 3
+    signals: ["UNIQUE on message_id", "unique constraint", "INSERT ON CONFLICT DO NOTHING"]
+  - q: "Does the consumer write the message ID to the inbox table in the same transaction as the business logic?"
+    weight: 2
+    signals: ["same transaction for inbox and logic", "atomic dedup and process", "transactional inbox write"]
+  - q: "Is there a cleanup mechanism to prevent unbounded growth of the inbox table?"
+    weight: 1
+    signals: ["TTL on inbox records", "cleanup old entries", "periodic purge of processed messages"]
+threshold: 6

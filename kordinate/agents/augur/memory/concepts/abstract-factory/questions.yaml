@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an interface or base class with multiple create/make methods that each return a different but related type?"
+    weight: 3
+    signals: ["factory interface with multiple create methods", "product family creation", "createButton/createMenu/createDialog"]
+  - q: "Are there multiple concrete implementations of the same factory interface, each producing a different family of objects?"
+    weight: 3
+    signals: ["WindowsFactory/MacFactory", "LightThemeFactory/DarkThemeFactory", "parallel factory implementations"]
+  - q: "Is the factory selection centralized at configuration or startup time, with the chosen factory used throughout?"
+    weight: 2
+    signals: ["factory resolved from config", "factory injected at bootstrap", "runtime factory selection"]
+  - q: "Do callers interact with the created objects through abstract interfaces rather than concrete product types?"
+    weight: 2
+    signals: ["product abstraction", "client uses interface not concrete class", "polymorphic product usage"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there expressions that chain through 3 or more different objects' methods or properties to reach a value in a single statement?"
+    weight: 3
+    signals: ["a.getB().getC().getD()", "multi-object dot chain", "deep object graph navigation"]
+  - q: "Does changing an intermediate type in the chain break code in distant, seemingly unrelated modules?"
+    weight: 3
+    signals: ["change in intermediate type breaks distant code", "fragile object graph traversal", "ripple from nested type change"]
+  - q: "Are there chained null checks like 'if a and a.b and a.b.c' guarding deep property access?"
+    weight: 2
+    signals: ["chained null checks", "nested defensive access", "guard chain before deep property"]
+  - q: "Does the same multi-object chain appear duplicated in multiple places rather than being encapsulated in a delegate method?"
+    weight: 2
+    signals: ["duplicated chain expressions", "same traversal in multiple files", "no encapsulated accessor"]
+threshold: 6

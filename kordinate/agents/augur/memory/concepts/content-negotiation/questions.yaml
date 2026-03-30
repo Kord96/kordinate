@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the server inspect the Accept or Content-Type headers to select the response or request format?"
+    weight: 3
+    signals: ["Accept header parsing", "Content-Type dispatch", "format selection from headers"]
+  - q: "Are multiple serialization formats (JSON, XML, protobuf) supported and dispatched based on client preference?"
+    weight: 2
+    signals: ["multi-format serializers", "format-specific response rendering", "media type routing"]
+  - q: "Does the API return 406 Not Acceptable or 415 Unsupported Media Type for unsupported formats?"
+    weight: 2
+    signals: ["406 response", "415 response", "unsupported format error handling"]
+  - q: "Is a Vary: Accept header set on responses to prevent cache poisoning across formats?"
+    weight: 1
+    signals: ["Vary: Accept header", "cache-safe content negotiation", "format-aware caching"]
+threshold: 5

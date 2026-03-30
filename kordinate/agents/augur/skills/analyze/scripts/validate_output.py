@@ -32,7 +32,7 @@ Checks:
 
     Phase 2 (journeys):
         - journeys/ directory exists
-        - overview.yaml exists
+        - getting-started.yaml exists
         - Each journey references existing story IDs
         - Journey length is 3-8 stories
 
@@ -71,7 +71,21 @@ def kebab_case(s: str) -> bool:
     return bool(KEBAB_RE.match(s))
 
 
-def validate_atlas(atlas: dict) -> list[dict]:
+def check_grounded_in(refs: list, project_root: Path | None, section: str, item_id: str) -> list[dict]:
+    """Verify grounded_in file:line references point to real files."""
+    issues = []
+    if not project_root:
+        return issues
+    for ref in refs:
+        filepath = ref.split(":")[0]
+        full_path = project_root / filepath
+        if not full_path.exists():
+            issues.append({"level": "ERROR", "section": section,
+                           "message": f"'{item_id}' grounded_in references non-existent file: {filepath}"})
+    return issues
+
+
+def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
     issues = []
 
     def error(msg, section=""):
@@ -104,6 +118,12 @@ def validate_atlas(atlas: dict) -> list[dict]:
         if gid in group_ids:
             error(f"Duplicate group ID: '{gid}'", "groups")
         group_ids.add(gid)
+        # Per-group component count (2-5 rule)
+        group_comps = g.get("components", [])
+        if len(group_comps) > 5:
+            error(f"Group '{gid}' has {len(group_comps)} components (max 5). Split the group or consolidate components.", "groups")
+        elif len(group_comps) < 2:
+            warn(f"Group '{gid}' has {len(group_comps)} component (min 2). Merge with another group.", "groups")
 
     # Components
     components = atlas.get("components", [])
@@ -151,6 +171,8 @@ def validate_atlas(atlas: dict) -> list[dict]:
         fid = f.get("id", "")
         if not f.get("grounded_in"):
             warn(f"Flow '{fid}' has no grounded_in", "data_flows")
+        elif project_root:
+            issues.extend(check_grounded_in(f["grounded_in"], project_root, "data_flows", fid))
         for step in f.get("steps", []):
             for key in ("component", "to"):
                 ref = step.get(key, "")
@@ -162,6 +184,8 @@ def validate_atlas(atlas: dict) -> list[dict]:
         sid = s.get("id", "")
         if not s.get("grounded_in"):
             warn(f"State '{sid}' has no grounded_in", "state")
+        elif project_root:
+            issues.extend(check_grounded_in(s["grounded_in"], project_root, "state", sid))
         for key in ("component",):
             ref = s.get(key, "")
             if ref and ref not in all_node_ids:
@@ -178,6 +202,8 @@ def validate_atlas(atlas: dict) -> list[dict]:
         fmid = fm.get("id", "")
         if not fm.get("grounded_in"):
             warn(f"Failure mode '{fmid}' has no grounded_in", "failure_modes")
+        elif project_root:
+            issues.extend(check_grounded_in(fm["grounded_in"], project_root, "failure_modes", fmid))
         for cascade in fm.get("cascade", []):
             ref = cascade.get("component", "")
             if ref and ref not in all_node_ids:
@@ -203,7 +229,7 @@ def validate_atlas(atlas: dict) -> list[dict]:
     return issues, all_node_ids
 
 
-def validate_story(story: dict, atlas_node_ids: set) -> list[dict]:
+def validate_story(story: dict, atlas_node_ids: set, project_root: Path | None = None) -> list[dict]:
     issues = []
 
     def error(msg):
@@ -259,6 +285,8 @@ def validate_story(story: dict, atlas_node_ids: set) -> list[dict]:
         oid = obs.get("id", "?")
         if not obs.get("grounded_in"):
             warn(f"Story '{sid}' observation '{oid}' has no grounded_in")
+        elif project_root:
+            issues.extend(check_grounded_in(obs["grounded_in"], project_root, "story", f"{sid}/{oid}"))
         comp = obs.get("component", "")
         if comp and comp not in atlas_node_ids:
             error(f"Story '{sid}' observation component '{comp}' not in atlas")
@@ -325,18 +353,27 @@ def main():
 
     all_issues = []
 
+    # Derive project root from memory dir path
+    # Expected: <project>/.kord/agents/augur/memory/ → project root is 4 levels up
+    project_root = None
+    if ".kord" in mem_dir.parts:
+        kord_idx = mem_dir.parts.index(".kord")
+        project_root = Path(*mem_dir.parts[:kord_idx])
+        if not project_root.exists():
+            project_root = None
+
     # --- Atlas ---
     atlas_path = mem_dir / "atlas.json"
     atlas_node_ids = set()
 
     if not atlas_path.exists():
-        all_issues.append({"level": "ERROR", "section": "structure", "message": "atlas.json not found"})
+        all_issues.append({"level": "ERROR", "section": "structure", "message": f"atlas.json not found at {atlas_path}. Write your atlas to this exact path."})
     elif atlas_path.suffix != ".json":
         all_issues.append({"level": "ERROR", "section": "structure", "message": f"atlas should be .json, got {atlas_path.suffix}"})
     else:
         try:
             atlas = json.loads(atlas_path.read_text())
-            issues, atlas_node_ids = validate_atlas(atlas)
+            issues, atlas_node_ids = validate_atlas(atlas, project_root)
             all_issues.extend(issues)
         except json.JSONDecodeError as e:
             all_issues.append({"level": "ERROR", "section": "atlas", "message": f"JSON parse error: {e}"})
@@ -346,7 +383,7 @@ def main():
     story_ids = set()
 
     if not stories_dir.exists():
-        all_issues.append({"level": "WARNING", "section": "structure", "message": "stories/ directory not found"})
+        all_issues.append({"level": "ERROR", "section": "structure", "message": f"stories/ directory not found at {stories_dir}. Write each story as a separate .yaml file in this directory."})
     else:
         for f in sorted(stories_dir.iterdir()):
             if f.suffix == ".md":
@@ -360,13 +397,36 @@ def main():
                 continue
             sid = story.get("id", f.stem)
             story_ids.add(sid)
-            all_issues.extend(validate_story(story, atlas_node_ids))
+            all_issues.extend(validate_story(story, atlas_node_ids, project_root))
+
+        # Story tree: check children per parent
+        all_stories = {}
+        for f in sorted(stories_dir.iterdir()):
+            if f.suffix not in (".yaml", ".yml"):
+                continue
+            story = load_yaml(f)
+            if story:
+                all_stories[story.get("id", f.stem)] = story
+
+        children_count = {}
+        for sid, story in all_stories.items():
+            parent = story.get("parent")
+            if parent:
+                children_count[parent] = children_count.get(parent, 0) + 1
+
+        for parent_id, count in children_count.items():
+            if count > 5:
+                all_issues.append({"level": "ERROR", "section": "story",
+                    "message": f"Story '{parent_id}' has {count} children (max 5). Consolidate child stories."})
+            elif count < 2:
+                all_issues.append({"level": "WARNING", "section": "story",
+                    "message": f"Story '{parent_id}' has {count} child (min 2). Add more or merge into parent."})
 
     # --- Journeys ---
     journeys_dir = mem_dir / "journeys"
 
     if not journeys_dir.exists():
-        all_issues.append({"level": "WARNING", "section": "structure", "message": "journeys/ directory not found"})
+        all_issues.append({"level": "ERROR", "section": "structure", "message": f"journeys/ directory not found at {journeys_dir}. Write at least getting-started.yaml here."})
     else:
         has_overview = False
         for f in sorted(journeys_dir.iterdir()):
@@ -380,8 +440,9 @@ def main():
                 continue
             all_issues.extend(validate_journey(journey, story_ids))
 
-        # overview.yaml is optional — root stories serve as the overview
-        # Journeys only needed for cross-cutting concerns
+        has_getting_started = any(f.stem == "getting-started" for f in journeys_dir.iterdir() if f.suffix in (".yaml", ".yml"))
+        if not has_getting_started:
+            all_issues.append({"level": "ERROR", "section": "journey", "message": "getting-started.yaml is required — teaching-order journey covering all groups"})
 
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]
@@ -393,6 +454,12 @@ def main():
 
     valid = len(errors) == 0
     print(f"\n{'VALID' if valid else 'INVALID'}: {len(errors)} errors, {len(warnings)} warnings")
+
+    if not valid:
+        print(f"\nExpected output structure at {mem_dir}:")
+        print(f"  {mem_dir}/atlas.json          — v3 JSON (see schema.md)")
+        print(f"  {mem_dir}/stories/*.yaml       — one YAML file per story")
+        print(f"  {mem_dir}/journeys/*.yaml      — at least getting-started.yaml")
 
     # Lock management
     if use_lock:

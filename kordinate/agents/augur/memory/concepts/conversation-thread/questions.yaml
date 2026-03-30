@@ -1,0 +1,14 @@
+questions:
+  - q: "Are messages organized into threads or conversations with reply_to or parent references?"
+    weight: 3
+    signals: ["Thread or Conversation model", "reply_to or parent_message_id FK", "threaded message hierarchy"]
+  - q: "Is there real-time message delivery via WebSocket, SSE, or similar push mechanism?"
+    weight: 3
+    signals: ["WebSocket connection for messages", "real-time message broadcast", "socket.io or stream-chat usage"]
+  - q: "Is read state tracked per user (read receipts, last_read_at, unread counts)?"
+    weight: 2
+    signals: ["ReadReceipt model", "last_read_at timestamp per user per conversation", "unread count computation"]
+  - q: "Are reactions or emoji responses supported on individual messages?"
+    weight: 1
+    signals: ["Reaction model linked to message", "emoji reaction endpoints", "reaction aggregation counts"]
+threshold: 6

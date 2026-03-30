@@ -1,0 +1,14 @@
+questions:
+  - q: "Do API endpoints return full database models with many fields when consumers only use a small subset?"
+    weight: 3
+    signals: ["SELECT * returned to client", "20+ fields in response, 3 rendered", "full object graph serialized"]
+  - q: "Does a single page or view require multiple sequential API calls to assemble its data?"
+    weight: 3
+    signals: ["waterfall of fetch calls", "5+ API calls for one view", "N+1 API pattern"]
+  - q: "Do clients filter or reshape API responses because the server returns the wrong shape or too much data?"
+    weight: 2
+    signals: ["client-side data filtering", "response.map to extract fields", "unused fields in payload"]
+  - q: "Are there SELECT * queries where only a few columns are actually used by the caller?"
+    weight: 2
+    signals: ["SELECT * in ORM", "no column projection", "all columns fetched for 2 used"]
+threshold: 6

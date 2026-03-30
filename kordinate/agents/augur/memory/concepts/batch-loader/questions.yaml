@@ -1,0 +1,14 @@
+questions:
+  - q: "Are individual data lookups collected into batches and resolved with a single bulk query (e.g., WHERE id IN (...))?"
+    weight: 3
+    signals: ["batched key collection", "WHERE id IN query", "deferred resolution then bulk fetch"]
+  - q: "Is there a DataLoader or equivalent mechanism that accumulates keys within a request and flushes them in one operation?"
+    weight: 3
+    signals: ["DataLoader instance", "batch function", "key accumulation with deferred flush"]
+  - q: "Are ORM eager-loading directives used to prefetch associations and prevent per-item queries on related data?"
+    weight: 2
+    signals: ["prefetch_related", "includes/eager_load", "association preloading"]
+  - q: "Is the batch cache scoped to a single request to avoid serving stale data across different users?"
+    weight: 2
+    signals: ["per-request cache scope", "loader created per request", "no cross-request caching"]
+threshold: 6

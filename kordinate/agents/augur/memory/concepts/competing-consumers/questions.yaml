@@ -1,0 +1,14 @@
+questions:
+  - q: "Are multiple consumer instances reading from the same queue or topic, each processing a subset of messages?"
+    weight: 3
+    signals: ["consumer group", "multiple readers on one queue", "partitioned consumption"]
+  - q: "Is there consumer group configuration with partition assignment or rebalancing logic?"
+    weight: 3
+    signals: ["group.id configuration", "partition rebalance handler", "consumer group membership"]
+  - q: "Is message processing idempotent to handle redelivery during consumer rebalancing?"
+    weight: 2
+    signals: ["idempotent processing", "deduplication on redelivery", "at-least-once with idempotency"]
+  - q: "Does the consumer count scale based on queue depth or lag metrics?"
+    weight: 1
+    signals: ["autoscale on queue depth", "consumer lag monitoring", "scale workers by backlog"]
+threshold: 6

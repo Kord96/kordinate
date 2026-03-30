@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the code contain sequential stages for data loading, preprocessing, training (fit/train), evaluation, and model export?"
+    weight: 3
+    signals: ["fit() or train() method", "evaluate() and save_model()", "sequential pipeline stages"]
+  - q: "Are hyperparameters externalized in configuration files rather than hardcoded throughout the training code?"
+    weight: 2
+    signals: ["hyperparameter config YAML or JSON", "config objects for training params", "externalized learning rate and batch size"]
+  - q: "Is experiment tracking present with run IDs, logged metrics, and parameter recording across training runs?"
+    weight: 2
+    signals: ["experiment tracking with run_id", "metric logging per run", "parameter recording for reproducibility"]
+  - q: "Are checkpoints saved periodically during training to enable resumption after failures?"
+    weight: 2
+    signals: ["checkpoint saving", "training resumption from checkpoint", "periodic model state persistence"]
+threshold: 6

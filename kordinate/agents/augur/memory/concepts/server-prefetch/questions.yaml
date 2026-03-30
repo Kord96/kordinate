@@ -1,0 +1,14 @@
+questions:
+  - q: "Are data-fetching functions executed on the server during the request lifecycle before client rendering?"
+    weight: 3
+    signals: ["loader with prefetchQuery and dehydrate", "getServerSideProps returning props", "load function in +page.server.ts"]
+  - q: "Is server-fetched data serialized and rehydrated on the client to avoid redundant fetches?"
+    weight: 3
+    signals: ["HydrationBoundary passing dehydrated state", "DehydratedState props on client component", "__NEXT_DATA__ with serialized server state"]
+  - q: "Are cache keys consistent between server prefetch and client-side queries?"
+    weight: 2
+    signals: ["same query key used in loader and useQuery", "consistent cache key across SSR and CSR", "no mismatched keys causing hydration miss"]
+  - q: "Is sensitive data excluded from serialized state in the HTML response?"
+    weight: 1
+    signals: ["no tokens in dehydrated state", "internal IDs filtered before serialization", "sensitive fields stripped from server data"]
+threshold: 6

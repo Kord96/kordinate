@@ -1,0 +1,14 @@
+questions:
+  - q: "Are queues or channels bounded with an explicit maximum capacity that prevents unbounded growth?"
+    weight: 3
+    signals: ["bounded queue", "maxsize parameter", "channel with buffer limit"]
+  - q: "When a queue is full, does the system actively reject, drop, or slow down the producer rather than buffering indefinitely?"
+    weight: 3
+    signals: ["rejection on full", "drop policy", "producer blocked until space available"]
+  - q: "Is there a pull-based consumption model where the consumer requests items at its own pace?"
+    weight: 2
+    signals: ["pull-based consumption", "consumer-driven flow", "request(n) demand signaling"]
+  - q: "Are backpressure operators or rate-limiting mechanisms applied to streaming or reactive pipelines?"
+    weight: 2
+    signals: ["onBackpressureDrop", "limitRate operator", "flow control in reactive stream"]
+threshold: 6

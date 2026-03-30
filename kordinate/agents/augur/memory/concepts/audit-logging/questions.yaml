@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a dedicated store (table, collection, or log) that records who performed what action on which target and when?"
+    weight: 3
+    signals: ["audit table with actor/action/target/timestamp", "who-did-what-when records", "structured audit trail"]
+  - q: "Are audit records append-only with no mechanism to update or delete existing entries?"
+    weight: 3
+    signals: ["append-only writes", "no UPDATE/DELETE on audit table", "immutable audit log"]
+  - q: "Is audit capture applied systematically via middleware, decorators, or interceptors rather than ad-hoc log statements?"
+    weight: 2
+    signals: ["audit middleware", "@audited decorator", "interceptor-based capture"]
+  - q: "Are audit writes decoupled from the primary operation so they do not add latency to the user-facing request?"
+    weight: 2
+    signals: ["async audit write", "fire-and-forget with delivery guarantee", "audit does not block request"]
+threshold: 6

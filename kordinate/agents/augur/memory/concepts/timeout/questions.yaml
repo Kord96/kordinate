@@ -1,0 +1,14 @@
+questions:
+  - q: "Do external calls (HTTP, database, gRPC) have explicit timeout parameters set rather than relying on framework defaults?"
+    weight: 3
+    signals: ["timeout= parameter on calls", "context.WithTimeout", "connect_timeout and read_timeout configured"]
+  - q: "Are timeout errors caught and handled distinctly from other failure types with specific error handling logic?"
+    weight: 2
+    signals: ["TimeoutError handling", "DeadlineExceeded catch block", "timeout-specific error path"]
+  - q: "Do timeouts propagate through the call chain with downstream deadlines shorter than upstream deadlines?"
+    weight: 3
+    signals: ["deadline propagation", "downstream timeout shorter than upstream", "context deadline forwarding"]
+  - q: "Are timeout values configurable through external configuration rather than hardcoded as literal numbers?"
+    weight: 1
+    signals: ["timeout from config", "configurable timeout values", "no hardcoded timeout literals"]
+threshold: 6

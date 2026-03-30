@@ -1,0 +1,14 @@
+questions:
+  - q: "Do message handlers check a deduplication store for the message ID before processing?"
+    weight: 3
+    signals: ["processed_ids lookup", "message_id check before process", "dedup table query"]
+  - q: "Is there an inbox or processed_messages table with a uniqueness constraint on message_id?"
+    weight: 3
+    signals: ["inbox table", "processed_messages table", "UNIQUE constraint on message_id"]
+  - q: "Are the deduplication check and business logic executed within the same database transaction?"
+    weight: 2
+    signals: ["same transaction for dedup and logic", "INSERT ON CONFLICT in transaction", "atomic check-and-process"]
+  - q: "Do duplicate messages return the original result rather than raising an error?"
+    weight: 1
+    signals: ["return cached result for duplicate", "ON CONFLICT DO NOTHING", "idempotent response"]
+threshold: 6

@@ -8,6 +8,8 @@ tools:
   - Read
   - Edit
   - Bash
+  - Skill
+  - mcp__kord__delegate
   - Glob
 ---
 
@@ -40,6 +42,13 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 - Keep edits minimal — change only what was requested
 - When writing memory, decide global vs project scope based on content
 - Write to both kordinate and runtime-native paths in one operation
+
+## Lifecycle
+
+1. Run /boot before starting work
+2. Do the assigned task using your skills. You MUST delegate to warden to validate your output at least once — when your skill asks for it, and always before finishing. Fix errors and re-validate until warden passes.
+3. Write insights to memory via /remember
+
 
 ## Consultation
 

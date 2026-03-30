@@ -6,7 +6,7 @@ description: >
   One coherent pass. Use when asked to understand architecture, audit a codebase, onboard to a
   project, or before cross-cutting changes. Use --detect-only for just the atlas.
 argument-hint: "<project> [--reverse] [--detect-only]"
-context: fork
+context: inherit
 ---
 
 Produce `atlas.json` and stories — a complete architectural understanding of a project in one continuous pass. Phase 1 runs all detection methodologies. Phase 2 composes findings into stories. Both phases share context so detection informs composition directly.
@@ -29,26 +29,26 @@ Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runt
 
 ### Step 2 — Read and analyze
 
-Read the source code. As you build your understanding, make sure you cover all of these concerns. They inform each other — don't treat them as separate passes.
+Read the source code. As you build your understanding, cover all concerns below. They inform each other — don't treat them as separate passes. Read each reference doc **when you reach that concern**, not upfront.
 
 **Completeness checklist:**
 
-| Concern | Methodology | Reference |
-|---------|-------------|-----------|
-| **Patterns and concepts** | 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. | [detection.md](detection.md) |
-| **Dependencies** | Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. | [dep-analysis.md](dep-analysis.md) |
-| **API surface** | Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. | [api-review.md](api-review.md), [frameworks.md](frameworks.md) |
-| **Components** | 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. | [source-gathering.md](source-gathering.md) |
-| **Actors and flows** | External actors. 2-4 critical data flows. Events (omit if none). | [schema.md](schema.md) |
-| **State** | Stores with concept vocabulary, readers/writers, persistence model. | [dep-analysis.md](dep-analysis.md) |
-| **Failure modes** | Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent. | [schema.md](schema.md) |
-| **Debt** | Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. | [debt.md](debt.md) |
+- **Patterns and concepts** — 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. When starting this: read [detection.md](detection.md).
+- **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [dep-analysis.md](dep-analysis.md).
+- **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
+- **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [source-gathering.md](source-gathering.md).
+- **Actors and flows** — External actors. 2-4 critical data flows. Events (omit if none). When writing atlas: read [schema.md](schema.md).
+- **Domain model** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Record it as `domain_model` in the atlas.
+- **State** — Stores with concept vocabulary, readers/writers, persistence model.
+- **Failure modes** — Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent.
+- **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
+- **Stories** — When composing stories: read [story-schema.md](story-schema.md) and [writing-guide.md](writing-guide.md).
 
 ### Step 3 — Gemini review (background)
 
 Feed the draft atlas, source code, and our constraints to Gemini:
 ```bash
-gemini -m gemini-2.5-pro -o json -p "Review this atlas.json against the source code. Our constraints: MUST have 3-5 groups (hard limit), 5-10 components (4-12 acceptable), 2-4 critical flows. Every entry needs grounded_in file references. Flag: missing components, incorrect edges, missed failure modes, false positives, severity misclassifications, API findings missed, groups that should merge or split to hit 3-5. Be specific — cite file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
+gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-4 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
 ```
 Continue immediately.
 
@@ -72,7 +72,7 @@ Build a tree of stories that mirrors the atlas structure. Top-down per [story-sc
 
 **2. Child stories (2-5 per root).** For each root, identify the concerns worth zooming into — a key flow, a data store, a failure mode, a design decision. Write a child story for each. Child summaries are 3 paragraphs max, ~80-120 words. Set `parent: "<root-id>"`. Children can reference atlas nodes from outside the parent's group when the concern crosses boundaries.
 
-**3. Journeys (only for cross-cutting concerns).** If a concern spans multiple root groups (resilience across API + data + external, onboarding path across frontend + backend), create a thin journey — just an ordered list of story IDs from anywhere in the tree. Don't create journeys for within-group navigation (the tree handles that) or for overviews (the root stories ARE the overview).
+**3. Journeys.** Always create `getting-started.yaml` — a teaching-order journey for someone new to the codebase, pulling stories from all groups in the sequence they should be read. Beyond that, create additional journeys for cross-cutting concerns that span multiple groups (e.g., resilience review, security audit). 3-8 stories per journey.
 
 Each story is assembled from building blocks:
 - **summary** (required) — short paragraphs, depth-dependent length
@@ -91,11 +91,9 @@ Review each story. If a summary makes a claim not directly observed in Phase 1, 
 
 ### Step 7 — Validate
 
-Request validation from warden. **You need a completion token to finish.**
+Delegate to warden to validate your output. **You need a completion token to finish.**
 
-```
-/kord warden validate-output $ROOT/.kord/agents/augur/memory/
-```
+Call warden via kord with your output directory. Warden runs the validator and returns either errors or a completion token.
 
 If warden returns errors: read them, fix the output files, call warden again. Repeat until warden returns a **completion token**. Record it.
 
@@ -109,7 +107,7 @@ With validated output, run quality checks:
 
 3. **Gemini story review** (background) — review against the **codebase**:
    ```bash
-   gemini -m gemini-2.5-pro -o json -p "Review these stories against the SOURCE CODE. The atlas is context, code is authority. Rules: root summaries 50-80 words, child 80-120, facts about code not meta-text. Check: accurate? unsupported claims? missing concerns? teaching order?" @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
+   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
    ```
    If changes are made after Gemini feedback, **call warden again** for a fresh token.
 

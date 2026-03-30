@@ -1,0 +1,14 @@
+questions:
+  - q: "Do test files contain mock, stub, fake, or spy classes that implement the same interface as production dependencies?"
+    weight: 3
+    signals: ["Mock or Fake or Stub classes in tests", "implements production interface", "test double matching real dependency"]
+  - q: "Are spy assertions used to verify meaningful call behavior such as call counts or argument matching?"
+    weight: 2
+    signals: ["called_with assertions", "toHaveBeenCalledTimes", "call_count verification"]
+  - q: "Are test doubles scoped to test directories with no imports from production code into test double modules or vice versa?"
+    weight: 2
+    signals: ["doubles in test directories only", "no production import of test doubles", "clean test boundary"]
+  - q: "Is there a distinction between mocks (behavior verification), stubs (canned answers), and fakes (working implementations) in how they are used?"
+    weight: 2
+    signals: ["behavior verification vs canned responses", "fake with working logic", "intentional double type selection"]
+threshold: 6

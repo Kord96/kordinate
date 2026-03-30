@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the cache automatically load from the backing source on a miss without caller intervention?"
+    weight: 3
+    signals: ["CacheLoader or LoadingCache with loader function", "@Cacheable with implicit load-on-miss", "cache configured as sole data access layer"]
+  - q: "Do callers interact only with the cache, never directly with the backing store?"
+    weight: 3
+    signals: ["caller reads only from cache", "backing store hidden behind cache interface", "no direct database query alongside cache check"]
+  - q: "Does the loader handle source failures gracefully without caching error responses?"
+    weight: 2
+    signals: ["error not cached on loader failure", "fallback on source unavailability", "negative caching handled explicitly"]
+  - q: "Is there a cache warming strategy for cold starts?"
+    weight: 1
+    signals: ["pre-population on startup", "bulk loading for initial cache fill", "warm-up job before serving traffic"]
+threshold: 6

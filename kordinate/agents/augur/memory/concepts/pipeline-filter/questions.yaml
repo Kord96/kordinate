@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an ordered chain of transform functions where the output of one feeds the input of the next?"
+    weight: 3
+    signals: ["pipe() chaining transforms", "stage output feeds next input", "sequential filter chain"]
+  - q: "Does each stage have a uniform interface and operate independently without shared hidden state?"
+    weight: 3
+    signals: ["same input/output type per stage", "no shared mutable state between stages", "stages testable in isolation"]
+  - q: "Is the pipeline order explicit and configurable rather than hardcoded in scattered locations?"
+    weight: 2
+    signals: ["pipeline defined as ordered list", "addStage() registration", "stage order in config"]
+  - q: "Are stages reusable across different pipelines without modification?"
+    weight: 2
+    signals: ["stage used in multiple pipelines", "generic transform function", "composable filter"]
+threshold: 6

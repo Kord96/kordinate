@@ -1,0 +1,14 @@
+questions:
+  - q: "Does middleware extract Bearer tokens from Authorization headers and verify JWT signatures before processing requests?"
+    weight: 3
+    signals: ["Authorization: Bearer extraction", "jwt.verify or jwt.decode", "signature verification in middleware"]
+  - q: "Are JWT claims like exp, iss, and aud validated on every request, not just decoded?"
+    weight: 3
+    signals: ["exp claim validation", "iss and aud verification", "claim checks beyond decode"]
+  - q: "Is there a refresh token flow with a dedicated endpoint that issues new access tokens?"
+    weight: 2
+    signals: ["refresh token endpoint", "token renewal flow", "short-lived access with refresh rotation"]
+  - q: "Does the system use a JWKS endpoint or key rotation mechanism for token signing keys?"
+    weight: 1
+    signals: ["JWKS URI configuration", ".well-known/jwks.json", "signing key rotation"]
+threshold: 6

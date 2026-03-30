@@ -1,0 +1,14 @@
+questions:
+  - q: "Do test directories contain factory or builder classes that construct test objects with sensible defaults?"
+    weight: 3
+    signals: ["UserFactory or OrderBuilder in test utils", "factory_boy Factory subclass or FactoryBot.define"]
+  - q: "Do builders allow selective field overrides so tests specify only scenario-relevant data?"
+    weight: 3
+    signals: ["create(name=override) with defaults for other fields", ".with_status().build() method chaining"]
+  - q: "Are factory definitions shared in a common test utilities module rather than duplicated per test file?"
+    weight: 2
+    signals: ["factories/ or test_utils/ directory with shared builders", "single factory definition imported across test files"]
+  - q: "Do factories support composing nested object graphs via sub-factories?"
+    weight: 1
+    signals: ["SubFactory or nested builder for related objects", "factory composes child objects automatically"]
+threshold: 6

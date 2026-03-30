@@ -1,0 +1,14 @@
+questions:
+  - q: "Are multi-dimensional arrays (tensors) a core data structure with explicit shape and dtype management?"
+    weight: 3
+    signals: ["torch.Tensor or tf.Tensor usage", "ndarray with shape manipulation", "tensor creation with specified dtype and device"]
+  - q: "Is GPU acceleration used for tensor operations via CUDA or similar dispatch?"
+    weight: 3
+    signals: [".to('cuda') or device placement", "CUDA availability check", "GPU memory management"]
+  - q: "Is there a model serving or inference pipeline that processes batched tensor inputs?"
+    weight: 2
+    signals: ["model.predict() or model.forward()", "DataLoader with batch_size", "batch inference endpoint"]
+  - q: "Are tensor operations composed into differentiable computation graphs for training?"
+    weight: 1
+    signals: ["autograd or gradient computation", "loss.backward() calls", "optimizer.step() in training loop"]
+threshold: 6

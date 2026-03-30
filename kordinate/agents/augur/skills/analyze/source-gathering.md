@@ -62,8 +62,14 @@ The goal is to surface abstractions that define the system's shape, not every mo
 
 **Include as top-level components:**
 - Entry points (servers, CLI, main) — where actors meet the system
-- Data stores and external integrations — system boundaries
 - Business-domain abstractions — the core "what it does"
+- Client libraries that wrap external services — if you wrote the code, it's a component
+
+**Move to `external_dependencies`, NOT components:**
+- Infrastructure you deploy but didn't write (Kafka, Redis, PostgreSQL, MinIO, Elasticsearch)
+- Third-party services you call (OAuth providers, SMTP, payment APIs)
+- These go in the atlas `external_dependencies` section with criticality and resilience info
+- The **client code** that connects to them (e.g., kafka.py, redis_client.py) belongs in the component that uses it, not as a separate component
 
 **Skip as top-level components:**
 - Utilities, logging, config modules — high fan-in plumbing, not structure
@@ -102,6 +108,7 @@ Rules:
 - Synthetic `external` and `actors` groups count toward the 3-5 limit
 - Small projects (<15 nodes) should aim for 3 groups
 - If two groups have only 1-2 nodes each, they belong together
+- Each group should have **2-5 components**. If a group has 6+, either split it into two groups or consolidate components. If a group has 1, merge it into another group
 - After drafting, count groups. If >5, merge the two most closely related. Repeat until ≤5
 
 Each group informs story composition in Phase 2 — choose groupings that tell a coherent story about the system's shape.

@@ -9,6 +9,8 @@ tools:
   - Edit
   - Write
   - Bash
+  - Skill
+  - mcp__kord__delegate
   - Glob
 ---
 

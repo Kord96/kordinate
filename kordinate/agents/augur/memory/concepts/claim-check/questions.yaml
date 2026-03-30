@@ -1,0 +1,14 @@
+questions:
+  - q: "Are large payloads stored in external storage (S3, GCS, Azure Blob) with only a reference or URL passed in the message?"
+    weight: 3
+    signals: ["payload offload to object storage", "reference in message body", "storage URL instead of inline data"]
+  - q: "Is there a size threshold that triggers offloading the payload to external storage?"
+    weight: 2
+    signals: ["size-check before send", "payload threshold for offload", "conditional storage upload"]
+  - q: "Does the consumer fetch the full payload from storage using the reference received in the message?"
+    weight: 2
+    signals: ["download-on-consume", "fetch by reference", "resolve claim token to payload"]
+  - q: "Is there a retention or cleanup policy for offloaded payloads to prevent orphaned blobs?"
+    weight: 1
+    signals: ["blob expiration policy", "storage cleanup lifecycle", "TTL on offloaded payloads"]
+threshold: 5

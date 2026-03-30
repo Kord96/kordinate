@@ -72,6 +72,8 @@ After confirming a candidate in Pass 2, 3, or 3.5, read its `## Recognition > ##
 
 Record for each: name, category (from catalog), confidence level, file locations, one-sentence evidence note.
 
+**Domain models** (concepts with `category: domain-model` in frontmatter) are special: a project usually has one primary domain model that defines its core data shape (e.g., property-graph for a network analysis tool, ledger for a financial system). When detected, promote the primary domain model to the atlas `purpose` field and note it explicitly in the component descriptions that implement it. Secondary domain models (e.g., search-index alongside a catalog) are recorded normally alongside implementation patterns.
+
 ## Gap Identification
 
 Determine which patterns are absent but expected given what was found. Use three checks:

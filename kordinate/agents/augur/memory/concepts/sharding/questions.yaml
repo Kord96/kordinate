@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a shard router that deterministically maps keys to specific database connections or partitions?"
+    weight: 3
+    signals: ["consistent hashing or hash-ring implementation", "shard key derivation logic", "shard router mapping keys to connections"]
+  - q: "Are shard keys defined on models or tables to direct data placement?"
+    weight: 3
+    signals: ["shard_key or partition_key field", "tenant_id used for shard routing", "multiple database connection configs per shard"]
+  - q: "Are cross-shard queries identified and handled explicitly?"
+    weight: 2
+    signals: ["scatter-gather for cross-shard reads", "denormalization to avoid cross-shard joins", "explicit handling of cross-partition queries"]
+  - q: "Is there a rebalancing strategy for adding or removing shards without downtime?"
+    weight: 1
+    signals: ["shard split tooling", "resharding migration scripts", "live rebalancing without service interruption"]
+threshold: 6

@@ -14,6 +14,13 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
 
   "purpose": "<one sentence — what the system does>",
 
+  "domain_model": {
+    "primary": "<concept-name from catalog, e.g., property-graph, ledger, catalog>",
+    "description": "<one sentence — what shape the core data takes>",
+    "entities": ["<core entity types in the domain>"],
+    "relationships": ["<how entities connect>"]
+  },
+
   "stack": {
     "languages": ["<Python>", "<TypeScript>"],
     "frameworks": [

@@ -1,0 +1,14 @@
+questions:
+  - q: "Are dependencies received through constructor or method parameters rather than constructed internally?"
+    weight: 3
+    signals: ["constructor accepts interfaces not concrete classes", "no new ConcreteClass() inside business logic"]
+  - q: "Is there a composition root or DI container that wires dependencies at startup?"
+    weight: 3
+    signals: ["Container or Injector class with bindings", "centralized binding configuration at app entry point"]
+  - q: "Do bindings map interfaces to implementations rather than registering concrete classes directly?"
+    weight: 2
+    signals: ["bind(Interface).to(Implementation)", "container.register(protocol, concrete)"]
+  - q: "Can tests substitute real dependencies with fakes without modifying production code?"
+    weight: 1
+    signals: ["test container with mock bindings", "constructor injection allows passing test doubles"]
+threshold: 6

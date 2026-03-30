@@ -1,11 +1,13 @@
 [
   {
     "type": "skill",
-    "name": "validate",
+    "name": "validate-output",
     "agent": "warden",
     "description": "Validate output against registered validator. Returns completion token.",
     "arguments": "<dir>",
-    "public": true
+    "public": true,
+    "handler": "script",
+    "registry": "agents/warden/skills/validate-output/registry.yaml"
   },
   {
     "type": "skill",

@@ -1,0 +1,14 @@
+questions:
+  - q: "Are ML model artifacts stored with version numbers and stage transitions such as staging to production?"
+    weight: 3
+    signals: ["register_model() with version", "transition_model_version_stage", "staging -> production"]
+  - q: "Does each model version record its training metrics, parameters, and data lineage?"
+    weight: 3
+    signals: ["log_model() with metrics", "training parameters stored alongside", "data lineage tracked"]
+  - q: "Are model artifacts immutable once registered, with new versions created rather than overwritten?"
+    weight: 2
+    signals: ["new version on retrain", "no overwrite of existing model", "immutable artifact storage"]
+  - q: "Can a model be loaded by name, resolving to the correct version for a given stage?"
+    weight: 2
+    signals: ["load_model(name, stage='production')", "version resolution by stage", "model name lookup"]
+threshold: 6

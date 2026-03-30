@@ -1,0 +1,14 @@
+questions:
+  - q: "Do components communicate exclusively through a central coordinator rather than referencing each other directly?"
+    weight: 3
+    signals: ["components hold mediator reference only", "no direct component-to-component calls", "all messages routed through hub"]
+  - q: "Is there a central object with send/dispatch/publish methods that routes messages between registered participants?"
+    weight: 3
+    signals: ["mediator.send()", "dispatcher.dispatch()", "hub.publish()"]
+  - q: "Does the mediator restrict itself to coordination logic without accumulating business rules?"
+    weight: 2
+    signals: ["thin mediator routing only", "handler contains logic not mediator", "mediator delegates to handlers"]
+  - q: "Are message types or commands well-defined with typed contracts for handler registration?"
+    weight: 2
+    signals: ["typed command classes", "handler registry by message type", "IRequest/IRequestHandler"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the UI immediately reflect a state change before the server confirms the mutation?"
+    weight: 3
+    signals: ["cache update in onMutate", "optimisticResponse in mutation", "store updated before API call"]
+  - q: "Is previous state captured before the optimistic update so it can be rolled back on failure?"
+    weight: 3
+    signals: ["previousData saved in onMutate", "snapshot before update", "rollback state captured"]
+  - q: "Does the error handler revert the UI to the captured previous state and notify the user?"
+    weight: 2
+    signals: ["onError rolls back cache", "revert to previousData", "toast on rollback"]
+  - q: "Does the success handler reconcile the optimistic state with the actual server response?"
+    weight: 2
+    signals: ["onSettled invalidates cache", "server response replaces optimistic", "reconcile on success"]
+threshold: 6
