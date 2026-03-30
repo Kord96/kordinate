@@ -119,6 +119,28 @@ Use analogies sparingly and only when they make a concrete concept clearer. An a
 - One analogy per story is enough. Two is too many.
 - Never use an analogy as a substitute for naming components and stating facts
 
+## Guided Narrative Voice
+
+Stories should guide a reader through the system, not just describe it.
+
+**Lead with what happens, not what exists:**
+- YES: "When a new log slot appears on NFS, **message-producer** scans it and publishes each log line to Kafka."
+- NO: "The message-producer component processes log files from NFS."
+
+**Anchors orient the reader:**
+- Each story should identify its anchor — the one file:line a new developer should open first.
+- Promote the most important `grounded_in` reference to the anchor field.
+- Write the anchor description as a "you are here" statement: "This is where a raw log becomes a Kafka message."
+
+**Bridge text between journey stories:**
+- Bridge asks a question the next story answers.
+- Pattern: "[What you just learned]. But [question that pulls you forward]?"
+- Example: "Logs are now parsed into entities. But how do 14 entity types become a queryable graph?"
+
+**First story in getting-started orients:**
+- Open with the domain model and purpose: "This is a property-graph system that maps network entities and their relationships."
+- Name one concrete thing to follow: "Follow a FortiMail log line from NFS mount to queryable graph node."
+
 ## Common Mistakes
 
 1. **Describing the document instead of the system.** "This story covers..." / "The following section..." / "We describe..." — delete these and state the fact directly.

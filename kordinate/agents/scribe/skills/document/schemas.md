@@ -32,6 +32,12 @@ Each story is a YAML object from augur's stories/ directory. StoryCard expects:
   parent: string | null,        // root stories have null
   children?: string[],          // child story IDs
 
+  anchor?: {                    // the "you are here" code location
+    file: string,               // relative to project root
+    line: number,
+    description: string          // one sentence — what the reader sees here
+  },
+
   structures?: [{               // → rendered by GraphBlock
     id: string,
     title?: string,
@@ -98,7 +104,10 @@ Each story is a YAML object from augur's stories/ directory. StoryCard expects:
   title: string,
   description?: string,
   audience?: string[],
-  stories: string[]             // ordered story IDs — render in this sequence
+  stories: [{
+    id: string,                  // story ID
+    bridge?: string              // one sentence before this story — question pulling reader forward
+  }]
 }
 ```
 
@@ -149,3 +158,6 @@ Full interactive graph. Expects:
 - `flow.type === "failure cascade"` → TimelineCard, everything else → SequenceDiagram
 - GraphBlock auto-selects layout by node count: 1-3 grid, 4-8 dagre, 9+ cose-bilkent
 - ObservationCard auto-selects variant: has snippet → evidence, has recommendation → warning, else → compact
+- `anchor` is optional but recommended — the single most important file:line for the story
+- `bridge` is required for getting-started journeys, optional for others
+- First story in a journey has no bridge (it's the entry point)

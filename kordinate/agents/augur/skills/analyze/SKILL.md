@@ -74,6 +74,12 @@ Build a tree of stories that mirrors the atlas structure. Top-down per [story-sc
 
 **3. Journeys.** Always create `getting-started.yaml` — a teaching-order journey for someone new to the codebase, pulling stories from all groups in the sequence they should be read. Beyond that, create additional journeys for cross-cutting concerns that span multiple groups (e.g., resilience review, security audit). 3-8 stories per journey.
 
+**Getting-started journey requirements:**
+- The first story must orient with the domain model and purpose — what this system is and one concrete thing to follow through it.
+- Each story must identify its anchor — promote the best `grounded_in` reference to the anchor field (the one file:line a new developer should open first).
+- Include bridge text between each story — one sentence question that pulls the reader forward to the next story. Pattern: "[What you just learned]. But [question that pulls you forward]?"
+- Bridge text is not required for other journeys (e.g., resilience-review).
+
 Each story is assembled from building blocks:
 - **summary** (required) — short paragraphs, depth-dependent length
 - **structures** — nested components + typed edges

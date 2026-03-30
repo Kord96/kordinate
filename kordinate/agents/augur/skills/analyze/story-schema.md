@@ -37,6 +37,13 @@ title: "<Human Readable Title>"
 teaches: "<one sentence — what the reader learns>"
 tags: ["<freeform>"]                     # for filtering and indexing
 
+# ── Anchor ───────────────────────────────────────────────────────
+
+anchor:                                  # optional — the single most important code location
+  file: "<relative path>"               # relative to project root
+  line: <number>                         # starting line
+  description: "<one sentence — what the reader sees here>"
+
 # ── Tree ──────────────────────────────────────────────────────────
 
 parent: "<story-id>"                     # null for root stories
@@ -211,9 +218,18 @@ title: "<Human Readable Title>"
 description: "<one sentence — what the reader achieves>"
 audience: ["<role>"]
 stories:
-  - "<story-id>"                         # can be root or child, from any group
-  - "<story-id>"
+  - id: "<story-id>"                     # can be root or child, from any group
+  - id: "<story-id>"
+    bridge: "<one sentence — creates curiosity for what comes next>"
 ```
+
+### Bridge text
+
+- `bridge` is optional, one sentence
+- It appears before the story it's attached to
+- It creates curiosity for what comes next — typically a question the next story answers
+- The first story has no bridge (it's the entry point)
+- Bridge text is **required** for `getting-started` journeys, optional for others
 
 ### Journey design rules
 
