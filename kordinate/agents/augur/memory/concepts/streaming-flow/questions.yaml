@@ -1,0 +1,30 @@
+threshold: 3
+questions:
+- q: Does the project have a continuous consumer loop (not batch/cron)?
+  w: 2
+  signals:
+  - poll
+  - consume
+  - XREAD
+  - subscribe
+- q: Is there backpressure handling (bounded buffers, rate limiting, dropping)?
+  w: 2
+  signals:
+  - backpressure
+  - maxsize
+  - capacity
+  - buffer
+- q: Are there windowed operations (tumbling, sliding, session windows)?
+  w: 1
+  signals:
+  - window
+  - tumbling
+  - sliding
+  - buffer(
+- q: Does the code use streaming libraries (RxJS, Reactor, Akka Streams, Kafka Streams)?
+  w: 1
+  signals:
+  - Observable
+  - Flux
+  - akka.stream
+  - KStream

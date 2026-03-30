@@ -1,0 +1,24 @@
+threshold: 3
+questions:
+- q: Does one event or message trigger processing by multiple independent consumers?
+  w: 2
+- q: Is there a pub/sub topic with multiple subscriber groups?
+  w: 2
+  signals:
+  - subscribe
+  - consumer_group
+  - SNS
+  - fanout
+- q: Does the code use Promise.all/asyncio.gather to dispatch parallel work?
+  w: 1
+  signals:
+  - Promise.all
+  - asyncio.gather
+  - WaitGroup
+  - CompletableFuture
+- q: Are there webhook dispatchers sending the same event to multiple URLs?
+  w: 1
+  signals:
+  - webhook
+  - dispatch
+  - notify_all

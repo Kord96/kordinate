@@ -1,0 +1,39 @@
+threshold: 3
+questions:
+- q: Are there entity classes with status/state fields and defined lifecycle transitions?
+  w: 2
+  signals:
+  - status
+  - state
+  - lifecycle
+  - PENDING
+  - ACTIVE
+- q: Is the primary API surface CRUD operations on entities?
+  w: 1
+  signals:
+  - create
+  - update
+  - delete
+  - find
+  - list
+- q: Do entities have unique identifiers (UUID, slug, email) for lookups?
+  w: 1
+  signals:
+  - uuid
+  - slug
+  - unique
+  - lookup
+- q: Is there soft delete (status=archived/deleted) rather than hard delete?
+  w: 1
+  signals:
+  - soft_delete
+  - archived
+  - deleted_at
+  - is_active
+- q: Are there audit fields (created_at, updated_at, created_by)?
+  w: 1
+  signals:
+  - created_at
+  - updated_at
+  - created_by
+  - modified_at

@@ -1,0 +1,20 @@
+threshold: 3
+questions:
+- q: Are there components named Stage, Step, Phase, or Processor arranged sequentially?
+  w: 2
+  signals:
+  - Stage
+  - Step
+  - Phase
+  - Processor
+  - Pipeline
+- q: Does the output of one stage feed as input to the next?
+  w: 2
+- q: Is there a Pipeline class composing Stage instances?
+  w: 1
+  signals:
+  - Pipeline
+  - pipe(
+  - compose
+- q: Are stages independently testable or replaceable?
+  w: 1

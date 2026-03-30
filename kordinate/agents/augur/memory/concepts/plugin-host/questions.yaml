@@ -1,0 +1,24 @@
+threshold: 3
+questions:
+- q: Is there a plugin interface or abstract base class that extensions implement?
+  w: 2
+  signals:
+  - Plugin
+  - Extension
+  - register_plugin
+  - activate
+- q: Does the system discover plugins at runtime (scanning dirs, entry_points, registries)?
+  w: 2
+  signals:
+  - entry_points
+  - plugins/
+  - loadPlugins
+  - discover
+- q: Is there a plugin lifecycle (register → initialize → activate → deactivate)?
+  w: 1
+- q: Can features be enabled/disabled via configuration?
+  w: 1
+  signals:
+  - enabled_plugins
+  - feature_flag
+  - config

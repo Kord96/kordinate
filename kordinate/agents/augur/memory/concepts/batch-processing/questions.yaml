@@ -1,0 +1,30 @@
+threshold: 3
+questions:
+- q: Does the code process data in configurable chunk sizes (BATCH_SIZE, page_size)?
+  w: 2
+  signals:
+  - batch_size
+  - BATCH_SIZE
+  - page_size
+  - chunk_size
+- q: Are there scheduled jobs that process accumulated data?
+  w: 1
+  signals:
+  - cron
+  - schedule
+  - nightly
+  - hourly
+- q: Is there pagination through large datasets (LIMIT/OFFSET, cursor)?
+  w: 1
+  signals:
+  - LIMIT
+  - OFFSET
+  - cursor
+  - paginate
+- q: Does the code flush/commit after processing each batch?
+  w: 1
+  signals:
+  - flush
+  - commit
+  - bulk_create
+  - executemany

@@ -1,0 +1,29 @@
+threshold: 3
+questions:
+- q: Does the project have sequential data transformation stages (extract → transform
+    → load)?
+  w: 2
+- q: Is there a pipeline framework (Airflow, dbt, Spark, Prefect, Dagster, Luigi)?
+  w: 2
+  signals:
+  - airflow
+  - dbt
+  - spark
+  - prefect
+  - dagster
+  - luigi
+- q: Are there batch/scheduled jobs that read from one data source, transform, and
+    write to another?
+  w: 1
+  signals:
+  - CronJob
+  - cron
+  - schedule
+  - batch
+- q: Do transformations form a DAG with explicit dependencies?
+  w: 1
+  signals:
+  - dag
+  - depends_on
+  - ref(
+  - upstream

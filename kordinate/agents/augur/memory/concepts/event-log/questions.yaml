@@ -1,0 +1,25 @@
+threshold: 3
+questions:
+- q: Are there append-only tables or streams (inserts only, no updates/deletes)?
+  w: 2
+  signals:
+  - append
+  - immutable
+  - insert_only
+  - event_type
+- q: Can system state be rebuilt by replaying events from the log?
+  w: 2
+  signals:
+  - replay
+  - rebuild
+  - snapshot
+  - rehydrate
+- q: Is there event schema versioning (Avro, Protobuf, schema registry)?
+  w: 1
+  signals:
+  - schema_registry
+  - avro
+  - protobuf
+  - event_version
+- q: Are events the source of truth rather than mutable database records?
+  w: 1

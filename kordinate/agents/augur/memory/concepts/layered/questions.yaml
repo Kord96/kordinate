@@ -1,0 +1,26 @@
+threshold: 3
+questions:
+- q: Is the code organized in horizontal layers (presentation/api → service/domain
+    → repository/data)?
+  w: 2
+  signals:
+  - controllers/
+  - services/
+  - repositories/
+  - models/
+- q: Do upper layers import lower layers but never the reverse?
+  w: 2
+- q: Is there a Controller → Service → Repository class pattern?
+  w: 1
+  signals:
+  - '@Controller'
+  - '@Service'
+  - '@Repository'
+  - Controller
+  - Service
+- q: Are there architecture tests or lint rules enforcing layer boundaries?
+  w: 1
+  signals:
+  - ArchUnit
+  - import-linter
+  - eslint-plugin-import

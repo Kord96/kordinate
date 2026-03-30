@@ -1,0 +1,12 @@
+threshold: 2
+questions:
+- q: Does a component depend synchronously on another that depends on a third (A→B→C
+    chain)?
+  w: 2
+- q: Are there external dependency calls without circuit breakers or timeouts?
+  w: 2
+- q: Could a slow downstream service block callers and exhaust thread/connection pools?
+  w: 1
+- q: Do health checks report unhealthy when a dependency is down (cascading health
+    failure)?
+  w: 1

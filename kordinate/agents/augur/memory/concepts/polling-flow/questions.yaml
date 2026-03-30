@@ -1,0 +1,29 @@
+threshold: 3
+questions:
+- q: Does the code have setInterval/setTimeout or sleep-in-a-loop patterns?
+  w: 2
+  signals:
+  - setInterval
+  - setTimeout
+  - sleep
+  - time.sleep
+- q: Are there database queries polling for pending/new records?
+  w: 1
+  signals:
+  - status = 'pending'
+  - WHERE processed = false
+  - LIMIT
+- q: Is there a CronJob or scheduled task that runs periodically?
+  w: 1
+  signals:
+  - CronJob
+  - cron
+  - '@Scheduled'
+  - schedule.every
+- q: Does the code track polling position via cursors or timestamps?
+  w: 1
+  signals:
+  - last_checked
+  - cursor
+  - offset
+  - since
