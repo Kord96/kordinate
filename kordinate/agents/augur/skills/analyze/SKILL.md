@@ -29,20 +29,19 @@ Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runt
 
 ### Step 2 — Read and analyze
 
-Read the source code. As you build your understanding, make sure you cover all of these concerns. They inform each other — don't treat them as separate passes.
+Read the source code. As you build your understanding, cover all concerns below. They inform each other — don't treat them as separate passes. Read each reference doc **when you reach that concern**, not upfront.
 
 **Completeness checklist:**
 
-| Concern | Methodology | Reference |
-|---------|-------------|-----------|
-| **Patterns and concepts** | 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. | [detection.md](detection.md) |
-| **Dependencies** | Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. | [dep-analysis.md](dep-analysis.md) |
-| **API surface** | Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. | [api-review.md](api-review.md), [frameworks.md](frameworks.md) |
-| **Components** | 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. | [source-gathering.md](source-gathering.md) |
-| **Actors and flows** | External actors. 2-4 critical data flows. Events (omit if none). | [schema.md](schema.md) |
-| **State** | Stores with concept vocabulary, readers/writers, persistence model. | [dep-analysis.md](dep-analysis.md) |
-| **Failure modes** | Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent. | [schema.md](schema.md) |
-| **Debt** | Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. | [debt.md](debt.md) |
+- **Patterns and concepts** — 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. When starting this: read [detection.md](detection.md).
+- **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [dep-analysis.md](dep-analysis.md).
+- **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
+- **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [source-gathering.md](source-gathering.md).
+- **Actors and flows** — External actors. 2-4 critical data flows. Events (omit if none). When writing atlas: read [schema.md](schema.md).
+- **State** — Stores with concept vocabulary, readers/writers, persistence model.
+- **Failure modes** — Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent.
+- **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
+- **Stories** — When composing stories: read [story-schema.md](story-schema.md) and [writing-guide.md](writing-guide.md).
 
 ### Step 3 — Gemini review (background)
 
