@@ -1,15 +1,17 @@
 #!/bin/bash
-# auto-merge — redirect all pushes from session branches to main.
+# auto-merge — keep session branch and main in sync on every push.
 #
 # Registered as PostToolUse on Bash. Triggers on git push
 # from a worktree on a session/* branch.
 #
-# Worktrees stay isolated locally (each session has its own branch).
-# But on the remote, only main exists. This hook ensures every push
-# goes to main, not to the session branch.
+# On push:
+# 1. Fetch latest main from origin
+# 2. Merge origin/main into the session branch (picks up other sessions' work)
+# 3. Push session branch (already done by the user's command)
+# 4. Fast-forward main to match session (since session now includes main)
+# 5. Push main to origin
 #
-# If main has diverged (another session pushed first), the push fails
-# and the user needs to pull --rebase and retry.
+# If merge conflicts: don't block, suggest /merge.
 
 set -uo pipefail
 
@@ -50,18 +52,41 @@ fi
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null)
 case "$BRANCH" in session/*) ;; *) exit 0 ;; esac
 
-# Skip if already pushing to main
-echo "$CMD" | grep -qE ':main\b|push.*main' && exit 0
+# Skip if already pushing to main explicitly
+echo "$CMD" | grep -qE 'HEAD:.*main\b' && exit 0
 
-# Push to main
+# Step 1: Fetch latest main
+git -C "$REPO_ROOT" fetch origin main 2>/dev/null || log "fetch origin main failed"
+
+# Step 2: Merge origin/main into session branch (picks up other sessions' work)
+MERGE_OUTPUT=$(git -C "$REPO_ROOT" merge origin/main --no-edit 2>&1)
+MERGE_RC=$?
+
+if [ $MERGE_RC -ne 0 ]; then
+  git -C "$REPO_ROOT" merge --abort 2>/dev/null
+  log "merge origin/main into $BRANCH failed: $MERGE_OUTPUT"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"CONFLICT: %s has diverged from main. Run /merge to resolve."}}\n' "$BRANCH"
+  exit 0
+fi
+
+# Step 3: Push session branch (with the merge commit if any)
+# The user's push already happened, but if we merged, we need to push again
+if echo "$MERGE_OUTPUT" | grep -q "Already up to date"; then
+  log "session already includes main"
+else
+  log "merged origin/main into $BRANCH"
+  git -C "$REPO_ROOT" push origin "$BRANCH" 2>/dev/null || true
+fi
+
+# Step 4+5: Update main to match session and push
 CURRENT_SHA=$(git -C "$REPO_ROOT" rev-parse HEAD)
 PUSH_OUTPUT=$(git -C "$REPO_ROOT" push origin "$CURRENT_SHA:refs/heads/main" 2>&1)
 PUSH_RC=$?
 
 if [ $PUSH_RC -eq 0 ]; then
-  log "pushed $BRANCH → main"
-  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Pushed %s to main."}}\n' "$BRANCH"
+  log "main synced to $BRANCH"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Synced %s → main."}}\n' "$BRANCH"
 else
   log "push to main failed (rc=$PUSH_RC): $PUSH_OUTPUT"
-  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Push to main failed — run: git fetch origin main && git rebase origin/main, then push again."}}\n' "$BRANCH"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Push to main failed — may need rebase. Run /merge to resolve."}}\n' "$BRANCH"
 fi
