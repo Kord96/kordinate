@@ -48,7 +48,7 @@ Read the source code. As you build your understanding, make sure you cover all o
 
 Feed the draft atlas, source code, and our constraints to Gemini:
 ```bash
-gemini -m gemini-2.5-pro -o json -p "Review this atlas.json against the source code. Our constraints: MUST have 3-5 groups (hard limit), 5-10 components (4-12 acceptable), 2-4 critical flows. Every entry needs grounded_in file references. Flag: missing components, incorrect edges, missed failure modes, false positives, severity misclassifications, API findings missed, groups that should merge or split to hit 3-5. Be specific — cite file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
+gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-4 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
 ```
 Continue immediately.
 
@@ -109,7 +109,7 @@ With validated output, run quality checks:
 
 3. **Gemini story review** (background) — review against the **codebase**:
    ```bash
-   gemini -m gemini-2.5-pro -o json -p "Review these stories against the SOURCE CODE. The atlas is context, code is authority. Rules: root summaries 50-80 words, child 80-120, facts about code not meta-text. Check: accurate? unsupported claims? missing concerns? teaching order?" @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
+   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
    ```
    If changes are made after Gemini feedback, **call warden again** for a fresh token.
 

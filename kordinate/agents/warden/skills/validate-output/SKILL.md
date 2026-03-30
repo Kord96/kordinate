@@ -31,7 +31,7 @@ If no validator is registered for the given directory, warden reports "no valida
 
 ## Procedure
 
-1. **Match** the `<dir>` against the registry to find the validator script. If no match, report and exit.
+1. **Match** the `<dir>` against the registry to find the validator script. If no match, respond: `NO_VALIDATOR: No validator registered for <dir>. Proceed.` — this is not an error, it means the agent's output type has no automated checks.
 
 2. **Run** the validator:
    ```bash

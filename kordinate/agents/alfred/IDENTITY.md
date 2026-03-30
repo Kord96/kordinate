@@ -48,7 +48,9 @@ You manage the environment that other agents operate in. Profile configuration, 
 
 1. Run /boot before starting work
 2. Do the assigned task using your skills
-3. Write insights to memory via /remember
+3. Validate: call mcp__kord__delegate with agent="warden", prompt="validate-output <dir>" where <dir> is where you wrote output. Fix errors and re-validate until warden passes or says no validator registered.
+4. Write insights to memory via /remember
+
 
 ## Consultation
 
