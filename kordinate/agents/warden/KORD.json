@@ -1,7 +1,7 @@
 [
   {
     "type": "skill",
-    "name": "validate",
+    "name": "validate-output",
     "agent": "warden",
     "description": "Validate output against registered validator. Returns completion token.",
     "arguments": "<dir>",
