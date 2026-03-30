@@ -62,8 +62,14 @@ The goal is to surface abstractions that define the system's shape, not every mo
 
 **Include as top-level components:**
 - Entry points (servers, CLI, main) — where actors meet the system
-- Data stores and external integrations — system boundaries
 - Business-domain abstractions — the core "what it does"
+- Client libraries that wrap external services — if you wrote the code, it's a component
+
+**Move to `external_dependencies`, NOT components:**
+- Infrastructure you deploy but didn't write (Kafka, Redis, PostgreSQL, MinIO, Elasticsearch)
+- Third-party services you call (OAuth providers, SMTP, payment APIs)
+- These go in the atlas `external_dependencies` section with criticality and resilience info
+- The **client code** that connects to them (e.g., kafka.py, redis_client.py) belongs in the component that uses it, not as a separate component
 
 **Skip as top-level components:**
 - Utilities, logging, config modules — high fan-in plumbing, not structure
