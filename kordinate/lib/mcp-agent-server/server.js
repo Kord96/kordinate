@@ -9,7 +9,7 @@
 //
 // Skills and resources are declared per agent in KORD.json. Each skill
 // becomes an MCP tool with a capability-based name (no agent names visible).
-// Resources are exposed via <agent>_catalog and <agent>_get tools.
+// Resources are exposed via <agent>_resources and <agent>_fetch tools.
 //
 // MCP tools: delegate, status, + dynamic per-route tools + resource catalog/get
 // MCP endpoint: POST /mcp
@@ -1046,7 +1046,7 @@ function registerTools(server) {
   // Resource catalog + get tools
   for (const [agent, resources] of resourceRegistry) {
     server.tool(
-      `${agent}_catalog`,
+      `${agent}_resources`,
       `List resources available from ${agent} — descriptions, scope, and format.`,
       {},
       async () => {
@@ -1060,7 +1060,7 @@ function registerTools(server) {
     if (hasProjectScoped) getSchema.project = z.string().optional().describe('Project path — required for project-scoped resources');
     getSchema.if_none_match = z.string().optional().describe('ETag from previous response for conditional requests');
     server.tool(
-      `${agent}_get`,
+      `${agent}_fetch`,
       `Retrieve a ${agent} resource. Serves from disk/cache if fresh, triggers production if stale.`,
       getSchema,
       async (params) => {
