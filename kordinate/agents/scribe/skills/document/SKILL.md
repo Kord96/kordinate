@@ -10,7 +10,7 @@ context: inherit
 
 Render a project's stories and atlas into interactive documentation using **pre-built components**. Scribe does NOT generate HTML from scratch — it produces data files (manifest.json, journey pages) that the pre-built Astro components consume.
 
-**Critical rule:** Do NOT read the `.astro` component files. The data schemas are defined in [schemas.md](schemas.md) — read that instead. The components are stable code that renders whatever data you produce in the correct schema.
+The data schemas for each component are defined in [schemas.md](schemas.md). Produce data in the correct schema and the components render it automatically.
 
 ## Arguments
 
@@ -128,41 +128,6 @@ import stories from './<project>/stories/*.yaml';  // loaded at build time
 
 Output: `<docs-pages-dir>/<project>/index.astro` (default journey) and `<docs-pages-dir>/<project>/<journey-id>/index.astro` (additional journeys).
 
-### 6. Component inventory
-
-Pre-built components in `components/` (do NOT regenerate these — they are stable code):
-
-| Component | Purpose | Rendered by |
-|-----------|---------|-------------|
-| `JourneyPage.astro` | Page shell: header, TOC sidebar, journey selector, story sections | Top-level page |
-| `StoryCard.astro` | One story section: title, summary, blocks | JourneyPage |
-| `GraphBlock.astro` | Cytoscape graph for structures (lazy-loads on hover) | StoryCard |
-| `SequenceDiagram.astro` | Mermaid sequence diagram for flows | StoryCard |
-| `TimelineCard.astro` | Failure cascade timeline | StoryCard |
-| `ObservationCard.astro` | Evidence/warning card for observations | StoryCard |
-| `RationaleCard.astro` | Design decision card | StoryCard |
-| `AtlasPage.astro` | Full interactive graph with story lens | Atlas page |
-
-Supporting files in `lib/`:
-| File | Purpose |
-|------|---------|
-| `cytoscape-config.ts` | typeConfig, node styles, severity colors, flow colors |
-| `narrative.ts` | Bold-ref parsing, HTML escaping, narrative rendering |
-
-### 5. Implement interactions
-
-**Bold refs → graph nodes:**
-- Parse `**bold text**` in summaries into `<span class="node-ref" data-node-id="...">` elements
-- On click, scroll to and highlight the corresponding node in the nearest structure graph
-- On hover, show tooltip with node description
-
-**Flow step → sequence diagram:**
-- Steps with `observation_ids` show a small badge on the corresponding diagram step
-
-**Story navigation:**
-- Sticky table of contents on the side (desktop) listing story titles
-- Click to scroll to story section
-- Journey selector dropdown switches between journey pages
 
 ### 6. Render the atlas page
 
