@@ -71,7 +71,7 @@ Build a tree of stories that mirrors the atlas structure. Top-down per [story-sc
 
 **2. Child stories (2-5 per root).** For each root, identify the concerns worth zooming into — a key flow, a data store, a failure mode, a design decision. Write a child story for each. Child summaries are 3 paragraphs max, ~80-120 words. Set `parent: "<root-id>"`. Children can reference atlas nodes from outside the parent's group when the concern crosses boundaries.
 
-**3. Journeys (only for cross-cutting concerns).** If a concern spans multiple root groups (resilience across API + data + external, onboarding path across frontend + backend), create a thin journey — just an ordered list of story IDs from anywhere in the tree. Don't create journeys for within-group navigation (the tree handles that) or for overviews (the root stories ARE the overview).
+**3. Journeys.** Always create `getting-started.yaml` — a teaching-order journey for someone new to the codebase, pulling stories from all groups in the sequence they should be read. Beyond that, create additional journeys for cross-cutting concerns that span multiple groups (e.g., resilience review, security audit). 3-8 stories per journey.
 
 Each story is assembled from building blocks:
 - **summary** (required) — short paragraphs, depth-dependent length
@@ -90,13 +90,19 @@ Review each story. If a summary makes a claim not directly observed in Phase 1, 
 
 ### Step 7 — Validate
 
-Request validation from warden. **You need a completion token to finish.**
+Run the validation script directly. **You need 0 errors to proceed.**
 
-```
-/kord warden validate-output $ROOT/.kord/agents/augur/memory/
+```bash
+python3 ~/.kord/agents/augur/skills/analyze/scripts/validate_output.py $ROOT/.kord/agents/augur/memory/
 ```
 
-If warden returns errors: read them, fix the output files, call warden again. Repeat until warden returns a **completion token**. Record it.
+If validation reports errors: read them, fix the output files, run again. Repeat until it reports VALID with 0 errors. Then compute a completion token:
+
+```bash
+find $ROOT/.kord/agents/augur/memory/ -name "*.json" -o -name "*.yaml" | sort | xargs cat | sha256sum
+```
+
+Record the token for your report.
 
 ### Step 8 — Evaluate
 
