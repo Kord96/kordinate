@@ -35,7 +35,7 @@ const { project, journeys, storiesByJourney, atlas, rendering, repoUrl } = Astro
 
 const stats = {
   components: atlas.components?.length || 0,
-  flows: atlas.data_flows?.length || 0,
+  flows: (atlas.flows || atlas.data_flows)?.length || 0,
   observations: Object.values(storiesByJourney).flat().reduce((n: number, s: any) => n + (s.observations?.length || 0), 0),
 };
 
