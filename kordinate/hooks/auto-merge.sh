@@ -91,7 +91,41 @@ if ! git -C "$MAIN_REPO" worktree add "$WORKSPACE" main 2>/dev/null; then
 fi
 
 if git -C "$WORKSPACE" merge "$CURRENT_SHA" --no-edit 2>/dev/null; then
-  # Merge succeeded (fast-forward or auto-merge)
+  # Merge succeeded — but check for structural conflicts (renames undone by directory moves)
+  MERGE_BASE=$(git -C "$WORKSPACE" merge-base HEAD~ "$CURRENT_SHA" 2>/dev/null)
+  STRUCTURAL_CONFLICT=false
+
+  if [ -n "$MERGE_BASE" ]; then
+    # Detect renames on each side since the merge base
+    MAIN_RENAMES=$(git -C "$WORKSPACE" diff --diff-filter=R --name-status "$MERGE_BASE" HEAD~ 2>/dev/null | awk '{print $2 " " $3}')
+    SESSION_RENAMES=$(git -C "$WORKSPACE" diff --diff-filter=R --name-status "$MERGE_BASE" "$CURRENT_SHA" 2>/dev/null | awk '{print $2 " " $3}')
+
+    # Check if any file renamed on one side exists under the OLD name in the merge result
+    if [ -n "$MAIN_RENAMES" ]; then
+      while IFS=' ' read -r old_name new_name; do
+        if [ -n "$old_name" ] && git -C "$WORKSPACE" ls-files --error-unmatch "$old_name" >/dev/null 2>&1; then
+          log "structural conflict: main renamed $old_name → $new_name but old name exists in merge"
+          STRUCTURAL_CONFLICT=true
+        fi
+      done <<< "$MAIN_RENAMES"
+    fi
+    if [ -n "$SESSION_RENAMES" ]; then
+      while IFS=' ' read -r old_name new_name; do
+        if [ -n "$old_name" ] && git -C "$WORKSPACE" ls-files --error-unmatch "$old_name" >/dev/null 2>&1; then
+          log "structural conflict: $BRANCH renamed $old_name → $new_name but old name exists in merge"
+          STRUCTURAL_CONFLICT=true
+        fi
+      done <<< "$SESSION_RENAMES"
+    fi
+  fi
+
+  if [ "$STRUCTURAL_CONFLICT" = true ]; then
+    log "aborting merge due to structural conflicts — needs manual /merge"
+    git -C "$WORKSPACE" reset --hard HEAD~ 2>/dev/null
+    printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"STRUCTURAL CONFLICT: %s has file renames that collide with directory moves on main. Run /merge to resolve — auto-merge cannot safely handle this."}}\n' "$BRANCH"
+    exit 0
+  fi
+
   log "merged $BRANCH ($CURRENT_SHA) into main"
   IS_PUSH=$(echo "$CMD" | grep -qE 'git\s+((-C\s+\S+\s+)?push|push)' && echo "yes" || echo "no")
 
