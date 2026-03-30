@@ -25,6 +25,8 @@ Read the codebase and build a holistic understanding. This is one coherent thoug
 
 Resolve the project directory (`$ROOT`). Check: `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, or absolute path. If not found, report and exit. If empty, produce minimal atlas.json.
 
+**Clean previous output.** Delete `$ROOT/.kord/agents/augur/memory/` if it exists — start fresh. Do NOT read old atlas.json or stories from a previous run. Analyze the code, not previous analysis.
+
 Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runtime). Glob source files per [source-gathering.md](source-gathering.md). Load concept catalogs (abstractions, concepts, anti-patterns indexes).
 
 ### Step 2 — Read and analyze
