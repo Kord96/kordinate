@@ -29,6 +29,26 @@ if [ -d "$KORDINATE_HOME/agents/$AGENT" ] && [ "$AGENT" != "main" ]; then
   if [ -f "$GATE_FILE" ] && [ -f "$LOCK_FILE" ]; then
     if [ "$(cat "$GATE_FILE")" = "$(cat "$LOCK_FILE")" ]; then
       rm -f "$GATE_FILE"
+      # Sync runtime before spawning — ensures agent reads latest files
+      REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+      KORD_PKG="$REPO_ROOT/kordinate"
+      if [ -d "$KORD_PKG/agents" ]; then
+        for id in "$KORD_PKG"/agents/*/IDENTITY.md; do
+          [ -f "$id" ] && cp "$id" "$HOME/.claude/agents/$(basename "$(dirname "$id")").md" 2>/dev/null
+        done
+        for a in "$KORD_PKG"/agents/*/; do
+          agent=$(basename "$a")
+          [ -d "$a/skills" ] && cp -r "$a/skills/"* "$KORDINATE_HOME/agents/$agent/skills/" 2>/dev/null
+          for f in "$a"/memory/*.md; do
+            [ -f "$f" ] && cp "$f" "$KORDINATE_HOME/agents/$agent/memory/" 2>/dev/null
+          done
+        done
+        for s in "$KORD_PKG"/team/skills/*/; do
+          skill=$(basename "$s")
+          mkdir -p "$HOME/.claude/skills/$skill"
+          cp "$s"*.md "$HOME/.claude/skills/$skill/" 2>/dev/null
+        done
+      fi
       echo '{}'; exit 0
     fi
   fi
