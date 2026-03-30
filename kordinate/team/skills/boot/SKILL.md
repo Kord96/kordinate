@@ -19,13 +19,13 @@ Your agent name is the `name` field from your own frontmatter. Use it wherever `
     ```bash
     python3 $KORDINATE_HOME/team/scripts/preload.py <your-name> > /tmp/boot-<your-name>.md
     ```
-    Read `/tmp/boot-<your-name>.md`. Contains shared protocols and all global memory files where `preload` matches your name or `all` in KORD.json.
+    Read `/tmp/boot-<your-name>.md` with `limit: 99999` (the file can be large). Contains shared protocols and all global memory files where `preload` matches your name or `all` in KORD.json.
 
 2. **Load project memory** — if `.kord/` exists in the current project root AND has a KORD.json:
     ```bash
     python3 $KORDINATE_HOME/team/scripts/preload.py <your-name> <project-root>/.kord > /tmp/boot-<your-name>-project.md
     ```
-    Read `/tmp/boot-<your-name>-project.md`. If `.kord/` doesn't exist, skip.
+    Read `/tmp/boot-<your-name>-project.md` with `limit: 99999`. If `.kord/` doesn't exist, skip.
 
 3. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
 
