@@ -32,7 +32,7 @@ Checks:
 
     Phase 2 (journeys):
         - journeys/ directory exists
-        - overview.yaml exists
+        - getting-started.yaml exists
         - Each journey references existing story IDs
         - Journey length is 3-8 stories
 
@@ -380,8 +380,9 @@ def main():
                 continue
             all_issues.extend(validate_journey(journey, story_ids))
 
-        if not has_overview:
-            all_issues.append({"level": "ERROR", "section": "journey", "message": "overview.yaml is required — the default journey walking through the project's architecture"})
+        has_getting_started = any(f.stem == "getting-started" for f in journeys_dir.iterdir() if f.suffix in (".yaml", ".yml"))
+        if not has_getting_started:
+            all_issues.append({"level": "ERROR", "section": "journey", "message": "getting-started.yaml is required — teaching-order journey covering all groups"})
 
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]

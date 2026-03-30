@@ -12,8 +12,7 @@ This document is the stable interface. Internal methodology may change; these ou
   stories/
     <id>.yaml           # 8-15 stories, each a scoped architectural concern
   journeys/
-    overview.yaml       # always present
-    <id>.yaml           # audience-specific reading paths
+    <id>.yaml           # at least one — teaching-order path through stories
 ```
 
 `--detect-only` produces only `atlas.json` (no stories or journeys).
@@ -88,11 +87,10 @@ Thin cross-cutting paths through the story tree. Only created when a concern spa
 **Properties:**
 - Just ordered lists of story IDs — no content of their own
 - Pull from any level of the tree (root or child, any group)
-- Only created for cross-cutting concerns (resilience review, onboarding)
-- NOT needed for within-group navigation (tree handles that) or overview (root stories handle that)
+- At least one journey required: `getting-started.yaml` — teaching-order path covering all groups, for someone new to the codebase
+- Additional journeys for cross-cutting concerns (resilience review, security audit, etc.) as the codebase warrants
 - Every story ID in a journey exists in `stories/`
 - 3-8 stories per journey
-- Augur creates journeys beyond the defaults as the codebase warrants
 
 ---
 
@@ -108,7 +106,7 @@ Each story carries:
 
 1. **atlas.json always exists** after `/analyze`
 2. **stories/ directory exists** (may be empty if `--detect-only`)
-3. **journeys/ directory exists** with at least `overview.yaml` (empty if `--detect-only`)
+3. **journeys/ directory exists** with at least `getting-started.yaml` (empty if `--detect-only`)
 4. **All IDs are kebab-case and unique** within their section
 5. **All cross-references resolve** — node IDs in stories exist in atlas, story IDs in journeys exist in stories/
 6. **3-5 groups** — hard constraint
