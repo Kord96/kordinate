@@ -30,4 +30,7 @@ When spawning an agent (local or remote), the agent should:
 
 1. **Boot** — run `/boot` to load preloaded memory from KORD.json.
 2. **Work** — execute the requested task.
-3. **Sleep** — write any new insights to memory files in the agent's memory directory. The nudge hook will trigger `/remember` to register them in KORD.json.
+3. **Sleep** — before finishing, persist what you learned:
+   - **Scratchpad** — append quick observations, operational notes, things you noticed. Write to your `memory/scratchpad.md`. This is low-friction — one line per insight.
+   - **Topic files** — if you discovered something worth its own file (a reusable pattern, a significant finding), write it to your memory directory.
+   - The nudge hook will trigger `/remember` to register new files in KORD.json.
