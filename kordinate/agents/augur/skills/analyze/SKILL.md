@@ -90,19 +90,11 @@ Review each story. If a summary makes a claim not directly observed in Phase 1, 
 
 ### Step 7 — Validate
 
-Run the validation script directly. **You need 0 errors to proceed.**
+Delegate to warden to validate your output. **You need a completion token to finish.**
 
-```bash
-python3 ~/.kord/agents/augur/skills/analyze/scripts/validate_output.py $ROOT/.kord/agents/augur/memory/
-```
+Call warden via kord with your output directory. Warden runs the validator and returns either errors or a completion token.
 
-If validation reports errors: read them, fix the output files, run again. Repeat until it reports VALID with 0 errors. Then compute a completion token:
-
-```bash
-find $ROOT/.kord/agents/augur/memory/ -name "*.json" -o -name "*.yaml" | sort | xargs cat | sha256sum
-```
-
-Record the token for your report.
+If warden returns errors: read them, fix the output files, call warden again. Repeat until warden returns a **completion token**. Record it.
 
 ### Step 8 — Evaluate
 

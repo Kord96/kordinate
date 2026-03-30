@@ -76,6 +76,8 @@ function loadRouteRegistry() {
         provider: entry.agent,
         skill: entry.name,
         arguments: entry.arguments,
+        handler: entry.handler || null,
+        registryPath: entry.registry || null,
       });
     }
 
@@ -697,6 +699,65 @@ async function handleResourceGet(entry, projectParam, ifNoneMatch) {
   return { text: `Resource "${entry.name}" has neither path nor guidelines`, status: 500 };
 }
 
+// ─── Script route handler ───
+
+async function handleScriptRoute(route, message) {
+  const dir = message.trim();
+  if (!dir) return 'ERROR: No directory provided. Usage: validate-output <dir>';
+
+  // Load the validator registry
+  const registryFile = join(KORDINATE_HOME, route.registryPath);
+  if (!existsSync(registryFile)) return `ERROR: Registry not found at ${registryFile}`;
+
+  let registry;
+  try {
+    registry = yaml.load(readFileSync(registryFile, 'utf8'));
+  } catch (e) {
+    return `ERROR: Failed to parse registry: ${e.message}`;
+  }
+
+  // Match dir against registry patterns
+  const validators = registry.validators || [];
+  const match = validators.find(v => dir.includes(v.pattern));
+  if (!match) return `NO_VALIDATOR: No validator registered for ${dir}. Proceed.`;
+
+  // Resolve script path
+  const scriptPath = join(KORDINATE_HOME, match.script);
+  if (!existsSync(scriptPath)) return `ERROR: Validator script not found at ${scriptPath}`;
+
+  // Run the validator
+  log(`SCRIPT ${route.name}: running ${scriptPath} on ${dir}`);
+  try {
+    const result = execSync(`python3 "${scriptPath}" "${dir}"`, {
+      cwd: KORDINATE_HOME,
+      timeout: 60000,
+      env: { ...process.env, HOME, KORDINATE_HOME },
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    const output = result.toString().trim();
+
+    // Validation passed — compute completion token
+    try {
+      const tokenResult = execSync(
+        `find "${dir}" -name "*.json" -o -name "*.yaml" | sort | xargs cat | sha256sum | cut -d' ' -f1`,
+        { timeout: 10000, stdio: ['pipe', 'pipe', 'pipe'] }
+      );
+      const token = tokenResult.toString().trim();
+      log(`SCRIPT ${route.name}: VALID, token=${token.substring(0, 16)}...`);
+      return `${output}\n\nVALIDATED — token: ${token}\nInclude this token in your report to confirm validation passed.`;
+    } catch {
+      return `${output}\n\nVALID but token computation failed.`;
+    }
+  } catch (e) {
+    // Validation failed — return errors
+    const stderr = e.stderr?.toString() || '';
+    const stdout = e.stdout?.toString() || '';
+    const output = (stdout + '\n' + stderr).trim();
+    log(`SCRIPT ${route.name}: INVALID — ${output.substring(0, 200)}`);
+    return `${output}\n\nFix the errors above and call validate-output again.`;
+  }
+}
+
 // ─── Auth delegation ───
 
 function readAuthSecret(agent) {
@@ -716,6 +777,12 @@ async function handleRoute(route, message, ifNoneMatch, caller) {
   activeRequests.set(requestId, { route: route.name, provider: route.provider, caller: caller || 'unknown', startedAt: new Date().toISOString() });
 
   try {
+    // Script-handled routes — run directly, no agent spawn
+    if (route.handler === 'script' && route.registryPath) {
+      const result = await handleScriptRoute(route, message);
+      return { text: result, status: 200 };
+    }
+
     // Skill routes — always return auth grant (caller runs locally)
     if (route.skill && !route.guidelines && !route.cache) {
       const secret = readAuthSecret(route.provider);
