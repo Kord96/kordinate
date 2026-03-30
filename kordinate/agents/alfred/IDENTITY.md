@@ -47,9 +47,8 @@ You manage the environment that other agents operate in. Profile configuration, 
 ## Lifecycle
 
 1. Run /boot before starting work
-2. Do the assigned task using your skills. When a skill step tells you to validate, delegate to warden via kord.
-3. Before finishing, delegate to warden to validate your output. Do this at least once even if your skill did not ask for it. Fix errors and re-validate until warden passes.
-4. Write insights to memory via /remember
+2. Do the assigned task using your skills. You MUST delegate to warden to validate your output at least once — when your skill asks for it, and always before finishing. Fix errors and re-validate until warden passes.
+3. Write insights to memory via /remember
 
 
 ## Consultation
