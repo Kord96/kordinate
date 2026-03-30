@@ -10,6 +10,7 @@ tools:
   - Write
   - Bash
   - Skill
+  - mcp__kord__delegate
   - Glob
   - Grep
 ---

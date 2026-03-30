@@ -12,6 +12,7 @@ tools:
   - Glob
   - Bash
   - Skill
+  - mcp__kord__delegate
 ---
 
 # Augur
