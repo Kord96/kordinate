@@ -16,14 +16,14 @@ Every story is assembled from these blocks. Only `summary` is required.
 |-------|---------|-------------------|
 | **summary** | Short paragraphs orienting the reader | No |
 | **structure** | Nested components + typed edges | Yes |
-| **flow** | Ordered steps through components, typed | Yes |
+| **flow** | Ordered steps through components, typed by flow category | Yes |
 | **observations** | Evidence-backed findings, attachable to nodes and steps | One list |
 | **rationale** | Design decisions, trade-offs, alternatives | Yes |
 
 ### Why these blocks
 
-- **Structure** covers component topology, data store lineage, infrastructure layout, security boundaries — anything that's "things and their relationships."
-- **Flow** covers request paths, data pipelines, failure cascades, deployment sequences, event chains — anything that's "things happening in order."
+- **Structure** covers component topology, data store lineage, infrastructure layout, security boundaries, bounded context maps — anything that's "things and their relationships."
+- **Flow** covers data movement, control decisions, event propagation, state transitions, resource lifecycle — anything that's "things happening in order." Typed by the five flow categories.
 - **Rationale** captures the "why" — decisions, trade-offs, alternatives considered.
 - **Observations** are findings that attach to the story, to specific structure nodes, or to specific flow steps.
 
@@ -62,14 +62,14 @@ structures:
       - from: "<node-id>"
         to: "<node-id>"
         label: "<short>"
-        type: "<freeform: depends_on, reads, writes, contains, calls, publishes, subscribes, ...>"
+        type: "<freeform: depends_on, reads, writes, contains, calls, publishes, subscribes, translates, ...>"
 
 # ── Flows (0+) ────────────────────────────────────────────────────
 
 flows:
   - id: "<kebab-case>"
     title: "<Human Readable>"
-    type: "<freeform — see suggested types below>"
+    type: "<flow category — see Flow Categories below>"
     trigger: "<what starts this flow>"
     severity: "<critical|high|medium|low>"
     detection: ["<signal or 'none'>"]
@@ -81,6 +81,21 @@ flows:
         to: "<atlas-node-id>"
         technology: "<protocol>"
         observation_ids: ["<obs-id>"]
+
+        # ── Type-specific step fields (use per flow category) ──
+        data: "<what moves>"
+        transform: "<what changes>"
+        condition: "<predicate>"
+        branch: "<path taken>"
+        gate: "<auth | validation | rate-limit | feature-flag>"
+        topic: "<topic or channel>"
+        delivery: "<at-most-once | at-least-once | exactly-once>"
+        from_state: "<state before>"
+        to_state: "<state after>"
+        side_effects: "<what else happens>"
+        resource: "<what is acquired>"
+        operation: "<acquire | use | release | timeout>"
+        constraints: "<limits>"
 
 # ── Observations (0+) ─────────────────────────────────────────────
 
@@ -161,34 +176,57 @@ Summary length scales with depth and grounding scope. The deeper and more focuse
 
 All prose follows [writing-guide.md](writing-guide.md).
 
-## Suggested Types
+## Flow Categories
 
-Types are freeform strings. Augur invents new ones as needed.
+Flows are typed by one of five categories that capture different dimensions of system behavior. Each category has specific step fields — use the fields that match your category, omit others.
 
-**Structure types:**
+### `data` — What moves where
+Payloads, transforms, persistence writes, API responses. Use `data`, `transform`, `technology`.
+- Request/response paths, ETL pipelines, file ingestion, data replication
+
+### `control` — Decision points and execution order
+Gates, branches, orchestration, middleware chains. Use `condition`, `branch`, `gate`.
+- Auth middleware chains, feature flag routing, validation gates, retry/fallback logic, orchestration sequences
+
+### `event` — Async message propagation
+Pub/sub, webhooks, signals, queue consumption. Use `topic`, `delivery`, `data`.
+- Event fan-out, webhook delivery, signal handling, dead-letter routing
+
+### `state` — Transitions and lifecycle
+Entity state machines, job lifecycle, circuit breakers. Use `from_state`, `to_state`, `side_effects`.
+- Entity lifecycle (draft→published→archived), job execution (pending→running→failed), circuit breaker (closed→open→half-open)
+
+### `resource` — Acquisition, use, release
+Connection pools, locks, file handles, memory buffers. Use `resource`, `operation`, `constraints`.
+- Connection pool lifecycle, lock acquisition, thread pool saturation, memory allocation patterns
+
+### Choosing a category
+
+A single architectural concern often spans multiple flow categories. For example, "user login" involves a **control** flow (auth gate decisions), a **data** flow (credential payload), and a **state** flow (session lifecycle). Model each dimension as a separate flow — don't try to cram everything into one.
+
+When a flow clearly crosses categories, pick the primary one (what is this flow *about*?) and use tags to link related flows.
+
+## Suggested Structure Types
+
+Structure types are freeform strings. These are the common ones:
+
 - `component topology` — how components are organized and depend on each other
 - `data lineage` — stores, readers, writers, persistence model
 - `infrastructure` — deployment, k8s resources, cloud services
 - `security boundary` — auth zones, trust boundaries, permission model
 - `module graph` — internal code organization, import relationships
-
-**Flow types:**
-- `request path` — user/API request through the system
-- `data pipeline` — data transformation or ETL sequence
-- `failure cascade` — what breaks when a component fails
-- `event chain` — async event propagation
-- `deployment sequence` — how code gets to production
-- `config resolution` — how configuration is loaded and resolved
+- `bounded context map` — domain boundaries, entity ownership, translation layers
+- `observability topology` — metric collectors, log aggregators, trace propagation paths
 
 Scribe uses the type to choose rendering strategy. Unknown types fall back to generic rendering.
 
 ## Failure Flow Conventions
 
-When a flow has cascade semantics, include `trigger`, `severity`, `detection`, `recovery`. Use `effect` on steps instead of `action`. `detection: ["none"]` or `recovery: ["none"]` should auto-generate a gap observation.
+When a flow has cascade semantics, include `trigger`, `severity`, `detection`, `recovery`. Use `effect` on steps instead of `action`. `detection: ["none"]` or `recovery: ["none"]` should auto-generate a gap observation. Failure cascades typically use `type: "state"` (component state transitions) or `type: "control"` (fallback logic).
 
 ## Data Structure Conventions
 
-When a structure has data lineage semantics, use `reads`/`writes` edge types. Inherit `purpose`/`persistence` from atlas nodes.
+When a structure has data lineage semantics, use `reads`/`writes` edge types. Inherit `purpose`/`persistence` from atlas nodes. When a structure maps bounded contexts, use `translates` edge type between contexts that share entity names with different definitions.
 
 ## Observation Attachment
 
