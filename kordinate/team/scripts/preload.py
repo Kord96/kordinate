@@ -4,15 +4,17 @@
 Usage:
     python preload.py <agent-name> [kordinate-home]
 
-Reads KORD.json, filters file entries where preload matches the agent name
+Reads KORD.json, filters entries where preload matches the agent name
 or "all", concatenates the file contents, and writes to stdout.
 
-The boot skill pipes this to a temp file that the agent reads in one shot
-instead of scanning hundreds of frontmatter blocks.
+Supports two entry types:
+  - "file": single file path
+  - "dir": glob pattern matching multiple files
 
 Skips IDENTITY.md files (already loaded as agent definition).
 """
 
+import glob as globmod
 import json
 import os
 import sys
@@ -34,29 +36,49 @@ def main():
 
     entries = json.loads(kord_json.read_text())
 
-    # Filter: file entries where preload matches agent or "all"
-    preload_entries = [
-        e for e in entries
-        if e.get("type") == "file"
-        and e.get("preload") in (agent, "all")
-        and not e.get("path", "").endswith("IDENTITY.md")  # Skip — already in agent definition
-    ]
+    # Collect all file paths to preload: (absolute_path, relative_display_path)
+    file_paths: list[tuple[Path, str]] = []
 
-    if not preload_entries:
+    for entry in entries:
+        preload = entry.get("preload")
+        if preload not in (agent, "all"):
+            continue
+
+        if entry.get("type") == "file":
+            path = entry.get("path", "")
+            if path.endswith("IDENTITY.md"):
+                continue
+            abs_path = home / path
+            if abs_path.exists():
+                file_paths.append((abs_path, path))
+
+        elif entry.get("type") == "dir":
+            pattern = entry.get("pattern", "")
+            if not pattern:
+                continue
+            for match in sorted(globmod.glob(str(home / pattern), recursive=True)):
+                match_path = Path(match)
+                if match_path.is_file() and match_path.name != "IDENTITY.md":
+                    file_paths.append((match_path, str(match_path.relative_to(home))))
+
+    if not file_paths:
         print(f"# No preload files for agent: {agent}", file=sys.stderr)
         sys.exit(0)
 
-    # Concatenate file contents
+    # Deduplicate
+    seen = set()
+    unique: list[tuple[Path, str]] = []
+    for abs_path, rel_path in file_paths:
+        if rel_path not in seen:
+            seen.add(rel_path)
+            unique.append((abs_path, rel_path))
+
+    # Concatenate
     loaded = 0
-    for entry in preload_entries:
-        file_path = home / entry["path"]
-        if file_path.exists():
-            desc = entry.get("description", "")
-            print(f"\n# === {entry['path']} — {desc} ===\n")
-            print(file_path.read_text())
-            loaded += 1
-        else:
-            print(f"# MISSING: {entry['path']}", file=sys.stderr)
+    for abs_path, rel_path in unique:
+        print(f"\n# === {rel_path} ===\n")
+        print(abs_path.read_text())
+        loaded += 1
 
     print(f"\n# Preloaded {loaded} files for {agent}", file=sys.stderr)
 
