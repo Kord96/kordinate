@@ -11,11 +11,14 @@ Full structural inventory. Scribe uses this for the atlas page, resolving node r
 See [augur-output-contract.md] for the complete atlas schema. Key sections:
 
 - `components[]` — nodes with id, name, type, group, modules, patterns, children
-- `data_flows[]` — flows with steps
-- `state[]` — stores with readers/writers
+- `flows[]` — typed flows (data, control, event, state, resource) with type-specific step fields
+- `state[]` — stores with readers/writers, schema_evolution, concurrency
 - `external_dependencies[]` — with criticality and resilience
 - `failure_modes[]` — with cascade, detection, recovery
 - `concepts` — detected patterns, anti-patterns, gaps
+- `observability` — logging, metrics, tracing configuration
+- `security` — authentication, authorization, secrets management, threat surface
+- `developer_experience` — testing strategy, linting, documentation
 - `debt` — score, grade, violations, recommendations
 
 ### Node type styling
@@ -77,7 +80,7 @@ structures:
 flows:
   - id: "<kebab>"
     title: "<Human Readable>"
-    type: "<freeform: request path, failure cascade, data pipeline, event chain, deployment sequence, ...>"
+    type: "<flow category: data, control, event, state, resource>"
     trigger: "<optional>"
     severity: "<optional, for failure flows>"
     detection: ["<optional>"]
@@ -135,12 +138,11 @@ evaluation:
 
 | Type | Scribe renders as |
 |------|------------------|
-| `request path` | Mermaid sequence diagram |
-| `data pipeline` | Mermaid sequence diagram |
-| `failure cascade` | Timeline card (trigger → cascade → detection → recovery) |
-| `event chain` | Mermaid sequence diagram |
-| `deployment sequence` | Numbered step list |
-| _(unknown)_ | Mermaid sequence diagram |
+| `data` | Mermaid sequence diagram (data movement, transforms) |
+| `control` | Mermaid sequence diagram with decision nodes (gates, branches) |
+| `event` | Mermaid sequence diagram with async markers (pub/sub, delivery) |
+| `state` | State transition diagram or timeline card (from_state → to_state) |
+| `resource` | Lifecycle diagram (acquire → use → release) |
 
 ### Observation attachment
 

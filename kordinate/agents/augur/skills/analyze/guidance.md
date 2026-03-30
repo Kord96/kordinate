@@ -35,7 +35,7 @@ For each component, capture:
 - **No**: both A and B import a shared utility (incidental coupling, not structural)
 - **No**: A and B happen to run in the same process (co-location, not dependency)
 
-For richer relationship detail (what flows, transport, direction), use `data_flows` and `events` rather than trying to encode it in `depends_on`.
+For richer relationship detail (what flows, transport, direction), use `flows` (with the appropriate type: data, control, event, state, resource) and `events` rather than trying to encode it in `depends_on`.
 
 ## Group Assignment
 
