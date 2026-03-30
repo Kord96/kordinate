@@ -1,5 +1,4 @@
-- [workflow.md](workflow.md) — Designer review workflow
-- [app-contract.md](app-contract.md) — App Contract
-- [tools.md](tools.md) — Designer tools reference
-- [patterns.md](patterns.md) — Index of recognized architectural patterns by category
-- [abstractions.md](abstractions.md) — Index of abstraction levels used to classify concepts
+- [concepts.md](concepts.md) — Index of all concepts: patterns, anti-patterns, domain models, flow shapes, structure shapes
+- [anti-patterns.md](anti-patterns.md) — Index of recognized anti-patterns by category
+- [abstractions.md](abstractions.md) — Abstraction levels for classifying concepts
+- [app-contract.md](app-contract.md) — Deployment requirements every app must satisfy
