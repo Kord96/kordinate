@@ -42,7 +42,9 @@ journeys/*.yaml        — copied from augur
 
 ### 1. Load and validate
 
-Read [schemas.md](schemas.md) for the data formats.
+Fetch augur's schema definitions via kord to understand the data formats:
+- Delegate to augur for `schema` resource (atlas.json v4 format)
+- Delegate to augur for `story-schema` resource (story/journey YAML format)
 
 Read `atlas.json`. Read all `stories/*.yaml` and `journeys/*.yaml`. Validate:
 - Every node ID in structures exists in atlas
