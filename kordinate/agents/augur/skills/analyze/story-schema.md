@@ -6,7 +6,7 @@ Level 3 resource for the analyze skill. Referenced from Phase 2 (compose). Defin
 
 Stories nest like components. A **root story** gives the high-level view of a group (3-5 roots, mirroring atlas groups). **Child stories** zoom into specific concerns within that group. The story tree IS the primary navigation — drill down from root to children.
 
-**Journeys** are secondary — thin cross-cutting paths through the tree for specific audiences (resilience review, onboarding). They're just ordered lists of story IDs pulled from anywhere in the tree.
+**Journeys** are secondary — thin cross-cutting paths through the tree for specific audiences. They're just ordered lists of story IDs pulled from anywhere in the tree. What journeys to create depends on what the analysis found — not every project needs the same ones.
 
 ## Building Blocks
 
@@ -279,15 +279,19 @@ Bridges are edges between adjacent stories in the journey. They create curiosity
 - **3-8 stories** per journey
 - Stories can come from **any level** of the tree (root or child)
 - **Teaching order**: foundational to dependent
-- Journeys exist for **cross-cutting concerns** that don't fit one branch of the tree (resilience review, onboarding path)
+- Journeys exist for **cross-cutting concerns** that don't fit one branch of the tree
 - For concerns that DO fit one branch, just navigate the tree — no journey needed
 
 ### When to create a journey
 
-- **Do create**: when a concern spans multiple root groups (resilience across API + data + external)
-- **Do create**: when a specific audience needs a curated path (frontend onboarding)
+- **Do create**: when a concern spans multiple root groups
+- **Do create**: when a specific audience needs a curated path
 - **Don't create**: for navigating within one group (that's what the tree is for)
 - **Don't create**: for an "overview" (the root stories ARE the overview)
+
+### Journey examples (for reference — not a checklist)
+
+Past analyses have produced journeys like: data pipeline end-to-end, failure mode walkthrough, security audit path, API consumer guide, performance-critical path, deployment lifecycle. What fits depends entirely on the project.
 
 ## File Layout
 

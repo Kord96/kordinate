@@ -78,13 +78,13 @@ Build a tree of stories that mirrors the atlas structure. Top-down per [story-at
 
 **2. Child stories (2-5 per root).** For each root, identify the concerns worth zooming into — a key flow, a data store, a failure mode, a design decision. Write a child story for each. Child summaries are 3 paragraphs max, ~80-120 words. Set `parent: "<root-id>"`. Children can reference atlas nodes from outside the parent's group when the concern crosses boundaries.
 
-**3. Journeys.** Always create `getting-started.yaml` — a teaching-order journey for someone new to the codebase, pulling stories from all groups in the sequence they should be read. Beyond that, create additional journeys for cross-cutting concerns that span multiple groups (e.g., resilience review, security audit). 3-8 stories per journey.
+**3. Journeys.** Always create `getting-started.yaml` — a teaching-order journey for someone new to the codebase, pulling stories from all groups in the sequence they should be read. Beyond that, create additional journeys for cross-cutting concerns that emerged from your analysis and span multiple groups. What those are depends entirely on what you found — there is no default. 3-8 stories per journey.
 
 **Getting-started journey requirements:**
 - The first story must orient with the domain model and purpose — what this system is and one concrete thing to follow through it.
 - Each story must identify its anchor — promote the best `grounded_in` reference to the anchor field (the one file:line a new developer should open first).
 - Include `bridges` connecting each adjacent pair of stories — `from`/`to` with a one sentence question. Pattern: "[What you just learned]. But [question that pulls you forward]?" N stories → N-1 bridges.
-- Bridge text is not required for other journeys (e.g., resilience-review).
+- Bridge text is not required for additional journeys.
 
 Each story is assembled from building blocks:
 - **summary** (required) — short paragraphs, depth-dependent length

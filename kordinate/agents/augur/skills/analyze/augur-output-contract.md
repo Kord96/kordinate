@@ -93,7 +93,7 @@ Thin cross-cutting paths through the story tree. Only created when a concern spa
 - Just ordered lists of story IDs — no content of their own
 - Pull from any level of the tree (root or child, any group)
 - At least one journey required: `getting-started.yaml` — teaching-order path covering all groups, for someone new to the codebase
-- Additional journeys for cross-cutting concerns (resilience review, security audit, etc.) as the codebase warrants
+- Additional journeys for cross-cutting concerns that emerged from the analysis — no default set
 - Every story ID in a journey exists in `stories/`
 - 3-8 stories per journey
 
