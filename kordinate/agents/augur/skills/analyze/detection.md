@@ -2,14 +2,6 @@
 
 Level 3 resource for the analyze skill. Referenced from step 2 (detect concepts).
 
-## Prerequisites
-
-Verify before starting:
-```bash
-ast-grep --version && semgrep --version
-```
-If either is missing, stop — detection cannot run without these tools.
-
 ## Catalog
 
 All concept definitions are preloaded on boot. Use them directly from context.
