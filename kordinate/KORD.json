@@ -154,7 +154,7 @@
     "agent": "augur",
     "description": "Atlas v4 JSON schema \u2014 the structural inventory format definition.",
     "scope": "global",
-    "path": "agents/augur/skills/analyze/schema.md",
+    "path": "agents/augur/skills/analyze/atlas-schema.md",
     "format": "md"
   },
   {
