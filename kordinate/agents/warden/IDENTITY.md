@@ -6,7 +6,10 @@ color: orange
 memory: user
 tools:
   - Read
+  - Edit
+  - Write
   - Bash
+  - Skill
   - Grep
   - Glob
 ---

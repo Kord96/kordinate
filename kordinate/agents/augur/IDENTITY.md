@@ -7,9 +7,11 @@ memory: user
 tools:
   - Read
   - Write
+  - Edit
   - Grep
   - Glob
   - Bash
+  - Skill
 ---
 
 # Augur

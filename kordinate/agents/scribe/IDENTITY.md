@@ -8,6 +8,7 @@ tools:
   - Read
   - Edit
   - Bash
+  - Skill
   - Glob
 ---
 
