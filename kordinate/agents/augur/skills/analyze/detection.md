@@ -1,78 +1,91 @@
 # Concept Detection
 
-Level 3 resource for the analyze skill. Referenced from step 2 (detect concepts). Carries the full detection procedure from the concept catalog.
+Level 3 resource for the analyze skill. Referenced from step 2 (detect concepts).
 
 ## Prerequisites
 
-`ast-grep` and `semgrep` must be installed. Verify before starting detection:
+Verify before starting:
 ```bash
 ast-grep --version && semgrep --version
 ```
-If either is missing, report the error and stop — detection cannot run without these tools.
+If either is missing, stop — detection cannot run without these tools.
 
 ## Catalog
 
-The concept catalog — all indexes and concept definitions — is preloaded on boot. Use it directly from context.
+All concept definitions are preloaded on boot. Use them directly from context.
 
-- `concepts.md` — patterns, domain models, flow shapes, structure shapes index
-- `anti-patterns.md` — anti-patterns index
+- `concepts.md` — patterns, domain models, flow shapes, structure shapes
+- `anti-patterns.md` — anti-patterns
 
-Each index header states its entry and category counts. The `type` field in each concept's frontmatter distinguishes: `pattern`, `anti-pattern`, `domain-model`, `flow-shape`, `structure-shape`.
+The `type` field in each concept's frontmatter distinguishes: `pattern`, `anti-pattern`, `domain-model`, `flow-shape`, `structure-shape`.
 
-## Stack Detection and Category Prioritization
+## Detection Order
 
-Before scanning, identify the project's languages and frameworks (already detected in step 1) to prioritize relevant categories. Always scan: resilience, error-handling, security, structural, storage/data. Add stack-specific categories. For projects over 500 files, limit to the 5-8 most relevant categories.
+Detection runs in three steps. Implementation patterns first (they inform higher-level detection), then domain models and shapes.
 
-## Pass 1 — Broad Grep (Candidate List)
-
-Work category by category. For each entry, derive grep keywords from its index table row. A hit adds that entry to the candidate list.
-
-**Batch by category:** one multi-pattern regex per category (e.g., `pybreaker|opossum|CircuitBreaker|resilience4j` for Resilience). ~45 grep invocations total, not ~265.
-
-## Pass 2 — Tool Rules (ast-grep / semgrep)
-
-**Batched execution.** Run ast-grep once against the entire project using the generated sgconfig.yml:
-
-```bash
-cd $KORDINATE_HOME && ast-grep scan -c sgconfig.yml $ROOT --json 2>/dev/null
+```
+Step 1: AST rules     — one ast-grep run + one semgrep run (fast, high confidence)
+Step 2: Grep scan     — keyword search builds candidate list (fast, low confidence)
+Step 3: Questions     — diagnostic evaluation confirms candidates + detects shapes (slow, medium-high confidence)
 ```
 
-This scans all ~175 ast-grep rules in one pass. Parse the JSON output — each match has a `ruleId` that maps to a concept name. Mark matched concepts as confirmed with high confidence.
+After all three steps: assess confidence, identify gaps.
 
-For semgrep rules (~8 anti-patterns), run one batched scan:
+## Step 1 — AST Rules
+
+Run ast-grep once against the entire project:
 
 ```bash
-semgrep --config $KORDINATE_HOME/agents/augur/memory/concepts/*/semgrep.yaml $ROOT --json 2>/dev/null
+cd $KORDINATE_HOME && ast-grep scan -c sgconfig.yml $ROOT --json
 ```
 
-Tool matches are strong evidence — high confidence. Remove confirmed candidates from the Pass 3 worklist.
+This runs all ~175 rules in one pass. Parse the JSON output — each match has a `ruleId` that maps to a concept name. Mark matched concepts as **confirmed, high confidence**.
 
-If individual rules fail (syntax errors in rule files), those concepts fall through to Pass 3. The batch scan continues past individual rule failures.
+Run semgrep once for anti-pattern rules:
 
-## Pass 3 — Manual Signature Verification
+```bash
+semgrep --config $KORDINATE_HOME/agents/augur/memory/concepts/*/semgrep.yaml $ROOT --json
+```
 
-For each candidate still unconfirmed after Pass 2, use the concept's `## Recognition > ### Signatures` section and verify with targeted Grep/Glob.
+Record confirmed concepts with file paths and line numbers. These skip Step 2 and Step 3.
 
-## Pass 3.5 — Diagnostic Question Evaluation
+## Step 2 — Grep Scan
 
-For candidates still unconfirmed after Pass 3. Check for a question file at `~/.kord/agents/augur/memory/concepts/<name>/questions.yaml`. If one exists:
+For each category in the concept index, build one regex from the index table keywords and grep the project. A hit adds that concept to the **candidate list**.
 
-- For questions with `signals` hints, grep for those signals first. If all signals return zero results, answer "no".
-- For remaining questions, read relevant code and answer yes/no with a one-line justification.
-- Compute the weighted score (sum of weights for "yes" answers).
-- If score >= `threshold`, mark as detected. Derive confidence from score/max_score ratio: >= 80% = high, >= threshold = medium.
+Example: for the Resilience category, grep `pybreaker|opossum|CircuitBreaker|resilience4j` in one invocation.
 
-**Domain models, flow shapes, and structure shapes** (`type: domain-model`, `flow-shape`, `structure-shape`) — for these concept types, questions are the primary detection method. Run their questions even if they weren't grep candidates in Pass 1. These higher-level concepts are recognized from structural patterns and data shapes, not from library imports.
+Work through all categories (~45 grep invocations total). Skip concepts already confirmed in Step 1.
+
+**Important:** grep builds a candidate list — it does not confirm detection. A grep hit means "worth investigating," not "pattern detected."
+
+## Step 3 — Diagnostic Questions
+
+Evaluate diagnostic questions for two groups:
+
+**Group A — grep candidates.** For each concept that had grep hits in Step 2 but was not confirmed in Step 1, load its `questions.yaml` and evaluate:
+
+- For questions with `signals` hints, grep for those signals first. All signals return zero → answer "no" without further analysis.
+- For remaining questions, read the relevant code and answer yes/no with a one-line justification.
+- Compute weighted score. If score >= `threshold`, mark as detected.
+
+If a concept has no `questions.yaml`, use its `## Recognition > ### Signatures` section instead — verify with targeted Grep/Glob against the specific imports, class names, and directory layouts listed.
+
+**Group B — domain models, flow shapes, structure shapes.** These higher-level concepts are detected from data shapes and structural patterns, not library imports. Run their questions regardless of whether they had grep hits. Every concept with `type: domain-model`, `flow-shape`, or `structure-shape` gets evaluated here.
 
 ## Confidence Assessment
 
-After confirming a candidate in Pass 2, 3, or 3.5, use the concept's `## Recognition > ### Confidence` section. If absent, apply the default rubric:
+After detection, assign confidence per concept:
 
-- **high** — unambiguous: library import, framework config, or tool rule match
-- **medium** — partial: structural indicators but implementation deviates from canonical form
-- **low** — traces only: a single keyword hit or hand-rolled implementation
+- **high** — AST rule match (Step 1), or question score >= 80% of max
+- **medium** — question score >= threshold but < 80%, or strong signature match
+- **low** — single grep hit or weak signature match
 
-**Domain models** are special: a project usually has one primary domain model (e.g., property-graph, ledger, catalog). When detected, promote it to the atlas `domain_model` field.
+Use the concept's `## Recognition > ### Confidence` section if it defines concept-specific thresholds. Otherwise use the defaults above.
+
+## Domain Model Promotion
+
+A project usually has one primary domain model that defines its core data shape (e.g., property-graph, ledger, catalog). When detected, promote it to the atlas `domain_model` field and reference it in component descriptions. Secondary domain models (e.g., search-index alongside a catalog) are recorded normally.
 
 ## Gap Identification
 
