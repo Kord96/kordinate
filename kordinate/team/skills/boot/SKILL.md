@@ -27,12 +27,6 @@ Your agent name is the `name` field from your own frontmatter. Use it wherever `
     ```
     Read `/tmp/boot-<your-name>-project.md` with `limit: 99999`. If `.kord/` doesn't exist, skip.
 
-3. **Verify tools** — check that required tools are available:
-    ```bash
-    ast-grep --version && semgrep --version
-    ```
-    If either is missing, warn immediately — detection skills will not work.
+3. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
 
-4. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.
-
-5. **Proceed with your assigned task.**
+4. **Proceed with your assigned task.**

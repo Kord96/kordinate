@@ -12,6 +12,9 @@ tools:
   - Skill
   - mcp__kord__delegate
   - Glob
+requires:
+  - kubectl
+  - ssh
 ---
 
 # Deployer

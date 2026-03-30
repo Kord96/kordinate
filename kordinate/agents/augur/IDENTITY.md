@@ -13,6 +13,9 @@ tools:
   - Bash
   - Skill
   - mcp__kord__delegate
+requires:
+  - ast-grep
+  - semgrep
 ---
 
 # Augur
