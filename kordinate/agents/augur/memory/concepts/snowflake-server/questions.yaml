@@ -1,0 +1,14 @@
+questions:
+  - q: "Are servers configured manually via SSH with no Infrastructure as Code backing them?"
+    weight: 3
+    signals: ["ssh prod-server in deploy scripts", "manual systemctl commands on server", "no Terraform or Ansible in repository"]
+  - q: "Are config files edited directly on the server rather than managed through version-controlled IaC?"
+    weight: 3
+    signals: ["vim or sed edits on production server", "config changes applied via ad-hoc SSH", "undocumented manual server tweaks"]
+  - q: "Is server setup knowledge held by specific individuals rather than codified?"
+    weight: 2
+    signals: ["ask Dave for server config", "setup instructions not documented", "tribal knowledge for server provisioning"]
+  - q: "Has configuration drifted between nominally identical servers?"
+    weight: 1
+    signals: ["servers behave differently despite same role", "security patches applied inconsistently", "state divergence between instances"]
+threshold: 6

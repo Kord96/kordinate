@@ -1,0 +1,14 @@
+questions:
+  - q: "Does each step in a distributed transaction have a corresponding compensating action?"
+    weight: 3
+    signals: ["compensate method paired with execute", "rollback logic per step", "SagaStep with execute and compensate"]
+  - q: "Is step state tracked and persisted across the saga lifecycle?"
+    weight: 3
+    signals: ["step status tracking pending/completed/compensated", "saga state persisted to durable store", "saga coordinator tracks step progress"]
+  - q: "Are compensating actions idempotent and safe to retry on partial failure?"
+    weight: 2
+    signals: ["compensation is idempotent", "safe to re-run compensate", "deduplication on compensation retry"]
+  - q: "Are timeouts defined for steps that may hang during the distributed workflow?"
+    weight: 1
+    signals: ["per-step timeout configuration", "deadline for step completion", "timeout triggers compensation"]
+threshold: 6

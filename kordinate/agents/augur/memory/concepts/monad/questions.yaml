@@ -1,0 +1,14 @@
+questions:
+  - q: "Are operations chained via bind/flatMap/and_then on container types that propagate failure automatically?"
+    weight: 3
+    signals: [".flatMap()", ".bind()", ".and_then()", ">>= operator"]
+  - q: "Do success and failure paths use explicit types rather than exceptions or null checks?"
+    weight: 3
+    signals: ["Result/Either type", "Option/Maybe chaining", "no try-catch in pipeline"]
+  - q: "Does the happy path read as a clean pipeline with error handling deferred to the terminal boundary?"
+    weight: 2
+    signals: ["fold/match at boundary", "pipeline of map/flatMap", "unwrap only at edge"]
+  - q: "Are for-comprehensions or do-notation used to flatten nested monadic composition?"
+    weight: 2
+    signals: ["for { x <- ... }", "do notation", "flow() composition"]
+threshold: 6

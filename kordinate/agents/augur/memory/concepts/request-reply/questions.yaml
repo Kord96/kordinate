@@ -1,0 +1,14 @@
+questions:
+  - q: "Are correlation IDs used to link request messages to their responses?"
+    weight: 3
+    signals: ["correlation_id in message headers", "unique ID linking request to reply", "correlation ID propagated through intermediate services"]
+  - q: "Is a reply-to destination specified in message headers for routing responses?"
+    weight: 3
+    signals: ["reply_to queue in AMQP properties", "temporary response queue per requester", "reply subject in NATS request"]
+  - q: "Are timeouts enforced on the requester side when waiting for replies?"
+    weight: 2
+    signals: ["timeout on request call", "deadline for reply with error handling", "timeout fires on missing response"]
+  - q: "Are temporary reply queues cleaned up after the response is received or timeout fires?"
+    weight: 1
+    signals: ["reply queue deleted after response", "exclusive queue auto-deleted", "cleanup on timeout expiry"]
+threshold: 6

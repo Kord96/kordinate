@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the e2e or integration test directory contain significantly more tests than the unit test directory?"
+    weight: 3
+    signals: ["test/e2e larger than test/unit", "more integration files than unit files", "inverted test count"]
+  - q: "Is CI runtime dominated by integration or end-to-end tests taking 20+ minutes?"
+    weight: 3
+    signals: ["CI takes 30+ minutes", "test runtime dominated by e2e", "slow pipeline from integration tests"]
+  - q: "Do test fixtures primarily spin up full application stacks rather than isolating individual units?"
+    weight: 2
+    signals: ["Docker Compose in test setup", "full stack test fixture", "conftest spins up services"]
+  - q: "Are there many Selenium, Playwright, or Cypress tests with few corresponding unit tests for the same logic?"
+    weight: 1
+    signals: ["Playwright tests without unit tests", "Cypress covering business logic", "browser tests for validation"]
+threshold: 6

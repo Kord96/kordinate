@@ -1,0 +1,14 @@
+questions:
+  - q: "Are log statements placed inside loop bodies that iterate over unbounded or large input?"
+    weight: 3
+    signals: ["logger.info inside for loop", "log in while loop body", "per-iteration logging"]
+  - q: "Is the log level set to DEBUG or TRACE in production configuration files?"
+    weight: 3
+    signals: ["DEBUG level in production", "TRACE enabled in prod config", "verbose logging in production"]
+  - q: "Are full request or response bodies logged at INFO level on every request?"
+    weight: 2
+    signals: ["log request body at INFO", "log full response", "verbose request logging"]
+  - q: "Is there no rate limiting, sampling, or conditional guard on high-frequency log emissions?"
+    weight: 1
+    signals: ["unconditional log.warning", "no sampling on log", "no rate limit on log emit"]
+threshold: 6

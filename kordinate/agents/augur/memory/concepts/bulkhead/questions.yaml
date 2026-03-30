@@ -1,0 +1,14 @@
+questions:
+  - q: "Does each external dependency have its own isolated resource pool (thread pool, connection pool, semaphore) with a bounded size?"
+    weight: 3
+    signals: ["per-dependency pool", "separate thread pool per service", "isolated connection pools"]
+  - q: "When a resource pool is exhausted, does the system reject requests immediately (fast fail) rather than queuing unboundedly?"
+    weight: 3
+    signals: ["rejection on pool exhaustion", "fast fail policy", "bounded queue with rejection"]
+  - q: "Are pool sizes configured independently per dependency based on expected load and criticality?"
+    weight: 2
+    signals: ["per-dependency pool sizing", "independent capacity config", "critical services get larger pools"]
+  - q: "Are metrics exposed per pool showing active, idle, waiting, and rejected counts?"
+    weight: 2
+    signals: ["per-pool metrics", "rejected count monitoring", "pool utilization observability"]
+threshold: 6

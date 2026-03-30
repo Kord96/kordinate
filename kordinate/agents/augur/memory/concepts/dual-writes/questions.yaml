@@ -1,0 +1,14 @@
+questions:
+  - q: "Does a single method write to a database and publish to a message broker without a transactional outbox?"
+    weight: 3
+    signals: ["db.save() followed by producer.send() in same function", "commit() then notify() with separate error handling"]
+  - q: "Can either the database write or the message publish fail independently, leaving inconsistent state?"
+    weight: 3
+    signals: ["separate try/catch for db write and event publish", "no atomicity guarantee between the two writes"]
+  - q: "Are two different data stores written in sequence within the same operation?"
+    weight: 2
+    signals: ["write to cache and database in same function", "REST call to another service after local db write"]
+  - q: "Is there an absence of outbox table, change data capture, or transactional event publish?"
+    weight: 1
+    signals: ["no outbox table in schema", "no Debezium or CDC pipeline configured"]
+threshold: 6

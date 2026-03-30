@@ -1,0 +1,14 @@
+questions:
+  - q: "Do database transaction blocks contain HTTP requests, external API calls, or other non-database I/O?"
+    weight: 3
+    signals: ["HTTP call inside transaction", "external API in @Transactional", "network request in BEGIN/COMMIT"]
+  - q: "Do transaction boundaries span entire request handlers rather than being scoped to specific database operations?"
+    weight: 3
+    signals: ["@transaction.atomic on handler", "BEGIN at request start COMMIT at end", "whole-request transaction"]
+  - q: "Are there lock wait timeouts or idle-in-transaction connections visible in database metrics or logs?"
+    weight: 2
+    signals: ["lock wait timeout", "idle in transaction", "connection pool exhaustion"]
+  - q: "Does the transaction scope include operations like file I/O, message publishing, or email sending?"
+    weight: 2
+    signals: ["file write in transaction", "publish message in transaction", "email send in atomic block"]
+threshold: 7

@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there consumer-driven contract files that define expected interactions between services?"
+    weight: 3
+    signals: ["Pact contract files", "consumer-driven contract definition", "interaction expectations"]
+  - q: "Do provider verification tests replay contracts against a running service to validate compatibility?"
+    weight: 3
+    signals: ["provider verification suite", "contract replay tests", "verify against consumer contracts"]
+  - q: "Are contracts published to a broker and used as a deployment gate (can-i-deploy checks)?"
+    weight: 2
+    signals: ["contract broker", "can-i-deploy gate in CI", "contract publication step"]
+  - q: "Do contracts cover error responses and edge cases, not just happy-path interactions?"
+    weight: 1
+    signals: ["error contract scenarios", "edge case interactions", "failure mode contracts"]
+threshold: 6

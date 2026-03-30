@@ -1,0 +1,14 @@
+questions:
+  - q: "Are events written to an outbox table in the same database transaction as the business state change?"
+    weight: 3
+    signals: ["outbox insert in same transaction", "atomic write of state + event", "transactional outbox"]
+  - q: "Does a separate process poll or stream from the outbox table to publish events to a message broker?"
+    weight: 3
+    signals: ["outbox publisher process", "Debezium CDC on outbox", "polling outbox for unpublished"]
+  - q: "Are published events marked or deleted to prevent re-publishing on the next poll cycle?"
+    weight: 2
+    signals: ["published_at timestamp set", "processed flag updated", "delete after publish"]
+  - q: "Is there monitoring for stale unpublished events that may indicate a publisher failure?"
+    weight: 2
+    signals: ["alert on unpublished age", "outbox lag metric", "stale event monitoring"]
+threshold: 6

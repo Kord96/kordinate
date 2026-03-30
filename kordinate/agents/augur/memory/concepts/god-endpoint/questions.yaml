@@ -1,0 +1,14 @@
+questions:
+  - q: "Does a single API route dispatch to multiple unrelated operations based on an action or type parameter?"
+    weight: 3
+    signals: ["switch on action", "if type ==", "request.body.operation"]
+  - q: "Does one endpoint accept different request/response shapes depending on which operation is requested?"
+    weight: 3
+    signals: ["different schemas per action", "polymorphic request body", "union response type"]
+  - q: "Is there a large switch/case or if-else chain inside a single handler routing to unrelated business logic?"
+    weight: 2
+    signals: ["case 'createUser'", "case 'sendEmail'", "5+ branches in handler"]
+  - q: "Do authorization checks, rate limits, or caching behave differently per operation but share the same route?"
+    weight: 1
+    signals: ["per-action permission logic", "cannot cache by URL", "shared rate limit bucket"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Do methods named get* perform mutations such as database writes, HTTP calls, or cache invalidation?"
+    weight: 3
+    signals: ["getUser contains INSERT", "get method with side effects", "getter that writes to DB"]
+  - q: "Do is*/has* functions return non-boolean values like strings, integers, or objects?"
+    weight: 2
+    signals: ["isValid returns string", "hasPermission returns int", "boolean-named fn returns object"]
+  - q: "Do methods named for a single action (validate, check, find) silently perform additional unrelated actions?"
+    weight: 3
+    signals: ["validate() also saves", "check() silently fixes", "find() creates when missing"]
+  - q: "Are method names vague verbs like handle, process, or do that reveal nothing about what the function actually does?"
+    weight: 2
+    signals: ["handleData()", "processRequest()", "doStuff()"]
+threshold: 6

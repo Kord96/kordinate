@@ -1,0 +1,14 @@
+questions:
+  - q: "Does a single class exceed 1000 lines with 20+ public methods spanning unrelated concerns?"
+    weight: 3
+    signals: ["class over 1000 lines", "20+ methods", "imports from 5+ packages"]
+  - q: "Does the class mix concerns like HTTP handling, database access, and business logic in one place?"
+    weight: 3
+    signals: ["handles HTTP and DB", "email sending and PDF generation", "presentation and persistence"]
+  - q: "Does the class name use generic terms like Manager, Handler, Processor, Utils, or Helper?"
+    weight: 1
+    signals: ["AppManager", "MainService", "GlobalHandler"]
+  - q: "Do tests for this class require mocking a large number of unrelated dependencies to instantiate it?"
+    weight: 2
+    signals: ["dozens of mocks in setup", "complex test fixture", "every test patches many dependencies"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Is a TracerProvider configured at application startup with an exporter?"
+    weight: 3
+    signals: ["TracerProvider initialization with OTLP or Jaeger exporter", "opentelemetry SDK setup in app bootstrap"]
+  - q: "Are spans created with parent-child relationships across service boundaries?"
+    weight: 3
+    signals: ["tracer.start_span() with parent context", "context propagation via traceparent header"]
+  - q: "Does middleware inject and extract trace context on inbound and outbound calls?"
+    weight: 2
+    signals: ["inject() on outbound HTTP/gRPC calls", "extract() in request middleware for incoming traces"]
+  - q: "Do spans include meaningful attributes like operation name, status code, and error flags?"
+    weight: 1
+    signals: ["span.set_attribute with business identifiers", "error flag and status code recorded on spans"]
+threshold: 6

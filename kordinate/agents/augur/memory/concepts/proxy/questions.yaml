@@ -1,0 +1,14 @@
+questions:
+  - q: "Does a class implement the same interface as the real subject and conditionally delegate calls to it?"
+    weight: 3
+    signals: ["proxy implements subject interface", "delegates to real object", "same API surface"]
+  - q: "Does the proxy add a single transparent behavior such as lazy loading, caching, access control, or remote access?"
+    weight: 3
+    signals: ["lazy initialization on first use", "caching proxy returns stored result", "permission check before delegate"]
+  - q: "Is client code unaware whether it holds a proxy or the real object?"
+    weight: 2
+    signals: ["client depends on interface only", "no proxy-specific methods called", "transparent substitution"]
+  - q: "For caching proxies, is there a defined invalidation strategy to prevent stale data?"
+    weight: 2
+    signals: ["cache TTL on proxy", "invalidation on write", "cache eviction policy"]
+threshold: 6

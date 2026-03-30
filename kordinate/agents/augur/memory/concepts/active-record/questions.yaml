@@ -1,0 +1,14 @@
+questions:
+  - q: "Do model instances have methods that persist themselves to the database (save, delete, update) without a separate repository?"
+    weight: 3
+    signals: ["self.save()", "instance.delete()", "model owns persistence"]
+  - q: "Does the model class provide class-level query methods that return instances directly from the database?"
+    weight: 3
+    signals: ["Model.find()", "Model.where()", "objects.filter()", "class-level query API"]
+  - q: "Are database columns mapped directly to model attributes with no separate data-access layer?"
+    weight: 2
+    signals: ["column-to-attribute mapping", "schema reflected in model fields", "ORM column declarations"]
+  - q: "Does the model define validation rules, associations, or callbacks that execute during persistence operations?"
+    weight: 2
+    signals: ["validates presence", "before_save hooks", "has_many/belongs_to", "model callbacks"]
+threshold: 6

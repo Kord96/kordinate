@@ -1,0 +1,14 @@
+questions:
+  - q: "Are domain events defined as first-class objects with type, timestamp, and payload?"
+    weight: 3
+    signals: ["event classes like OrderCreated or UserRegistered", "event metadata with ID, timestamp, correlation ID"]
+  - q: "Do components communicate through an event bus or dispatcher rather than direct method calls?"
+    weight: 3
+    signals: ["emit_event() or publish_event() calls", "event handler registration with subscribe or on_event"]
+  - q: "Are event handlers registered to react to typed events, decoupled from producers?"
+    weight: 2
+    signals: ["@event_handler decorator or subscribe(EventType, handler)", "handler does not import or reference the producer"]
+  - q: "Are events immutable facts rather than commands directing action?"
+    weight: 1
+    signals: ["events named in past tense (Created, Processed)", "event payload describes what happened, not what to do"]
+threshold: 6

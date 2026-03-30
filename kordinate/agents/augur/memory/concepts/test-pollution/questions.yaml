@@ -1,0 +1,14 @@
+questions:
+  - q: "Do tests modify global state, module-level variables, singletons, or environment variables without restoring them in teardown?"
+    weight: 3
+    signals: ["global state mutation in tests", "missing tearDown or tearDownClass", "env vars set without restoration"]
+  - q: "Are there shared fixtures or class-level state that is mutated across test methods without cleanup?"
+    weight: 3
+    signals: ["shared fixture mutation", "setUpClass without tearDownClass", "list append in shared fixture"]
+  - q: "Do tests pass individually but fail when run together or in a different order?"
+    weight: 2
+    signals: ["order-dependent test failures", "pass alone fail in suite", "flaky depending on execution order"]
+  - q: "Is database state or cache state carried over between test cases without reset or rollback?"
+    weight: 2
+    signals: ["database not reset between tests", "cache not cleared", "previous test data affecting next test"]
+threshold: 6

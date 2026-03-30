@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there functions or methods with zero callers anywhere in the codebase?"
+    weight: 3
+    signals: ["function with no references", "method never called", "dead symbol"]
+  - q: "Are there commented-out code blocks exceeding a few lines left in production source files?"
+    weight: 3
+    signals: ["large commented block", "commented-out function", "disabled code not removed"]
+  - q: "Do TODO or FIXME comments reference removing code that was never cleaned up?"
+    weight: 2
+    signals: ["TODO: remove", "FIXME: delete this", "no longer used comment"]
+  - q: "Are there @deprecated annotations or markers with no removal date or migration timeline?"
+    weight: 1
+    signals: ["@deprecated without date", "deprecated no replacement", "stale feature flag"]
+threshold: 6

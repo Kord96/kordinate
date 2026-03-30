@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there classes named *Repository or *Repo with CRUD methods that accept and return domain objects?"
+    weight: 3
+    signals: ["UserRepository with find and save methods", "@Repository annotation on data access class", "repositories/ directory with CRUD interfaces"]
+  - q: "Is data access abstracted behind an interface independent of the storage implementation?"
+    weight: 3
+    signals: ["repository interface defining data contract", "storage mechanism hidden from domain objects", "repository injected as dependency not instantiated inline"]
+  - q: "Does query logic live inside the repository rather than leaking into services or controllers?"
+    weight: 2
+    signals: ["SQL or ORM queries inside repository methods", "no raw queries in service layer", "controllers call repository not database directly"]
+  - q: "Do repositories return domain objects rather than raw database rows or ORM models?"
+    weight: 1
+    signals: ["repository maps to domain model", "no ORM entity returned to caller", "data transformation inside repository"]
+threshold: 6

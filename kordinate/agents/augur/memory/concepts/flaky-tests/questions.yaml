@@ -1,0 +1,14 @@
+questions:
+  - q: "Do test files contain sleep() or time.sleep() calls to wait for conditions?"
+    weight: 3
+    signals: ["sleep() or time.sleep() in test code", "fixed delay waiting for async condition"]
+  - q: "Do tests depend on shared mutable state or execution order?"
+    weight: 3
+    signals: ["class-level variable modified across test methods", "test passes in sequence but fails in isolation"]
+  - q: "Do unit tests make real network calls to external services without mocking?"
+    weight: 2
+    signals: ["HTTP requests to external URLs in unit tests", "no mock for external service dependency in test"]
+  - q: "Are there @retry decorators on test methods or tests marked @skip/@xfail for flakiness?"
+    weight: 1
+    signals: ["@retry or @flaky decorator on test function", "growing list of @skip or @xfail tests"]
+threshold: 6
