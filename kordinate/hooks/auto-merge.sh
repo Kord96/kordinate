@@ -1,15 +1,15 @@
 #!/bin/bash
-# auto-merge — keep session branch and main in sync on every push.
+# auto-merge — keep session branch and target branch in sync on every push.
 #
-# Registered as PostToolUse on Bash. Triggers on git push
-# from a worktree on a session/* branch.
+# Target branch is configurable per repo via .kord/merge-target file.
+# Default: "dev". Falls back to "main" if dev doesn't exist.
 #
-# On push:
-# 1. Fetch latest main from origin
-# 2. Merge origin/main into the session branch (picks up other sessions' work)
-# 3. Push session branch (already done by the user's command)
-# 4. Fast-forward main to match session (since session now includes main)
-# 5. Push main to origin
+# On push from a session/* worktree:
+# 1. Fetch latest target from origin
+# 2. Merge origin/target into the session branch (picks up other sessions' work)
+# 3. Push session branch again (if merge added commits)
+# 4. Fast-forward target to match session
+# 5. Push target to origin
 #
 # If merge conflicts: don't block, suggest /merge.
 
@@ -52,48 +52,72 @@ fi
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null)
 case "$BRANCH" in session/*) ;; *) exit 0 ;; esac
 
-# Skip if already pushing to main explicitly
-echo "$CMD" | grep -qE 'HEAD:.*main\b' && exit 0
+# Determine target branch — configurable per repo
+# Priority: .kord/merge-target > KORD_MERGE_TARGET env > "dev" > "main"
+MAIN_REPO=$(git -C "$REPO_ROOT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+MAIN_REPO="${MAIN_REPO%/.git}"
 
-# Skip if HEAD is a wip commit (session exit auto-commit — not ready for main)
+TARGET=""
+# Check repo-level config
+if [ -f "$MAIN_REPO/.kord/merge-target" ]; then
+  TARGET=$(cat "$MAIN_REPO/.kord/merge-target" | head -1 | tr -d '[:space:]')
+fi
+# Check env override
+if [ -z "$TARGET" ] && [ -n "${KORD_MERGE_TARGET:-}" ]; then
+  TARGET="$KORD_MERGE_TARGET"
+fi
+# Default: dev if it exists on remote, otherwise main
+if [ -z "$TARGET" ]; then
+  if git -C "$REPO_ROOT" ls-remote --heads origin dev 2>/dev/null | grep -q dev; then
+    TARGET="dev"
+  else
+    TARGET="main"
+  fi
+fi
+
+log "target branch: $TARGET"
+
+# Skip if already pushing to target explicitly
+echo "$CMD" | grep -qE "HEAD:.*${TARGET}\b" && exit 0
+
+# Skip if HEAD is a wip commit (session exit auto-commit — not ready for target)
 HEAD_MSG=$(git -C "$REPO_ROOT" log -1 --format="%s" 2>/dev/null)
 if echo "$HEAD_MSG" | grep -qi "^wip"; then
-  log "skipping main sync — HEAD is a wip commit"
+  log "skipping sync — HEAD is a wip commit"
   exit 0
 fi
 
-# Step 1: Fetch latest main
-git -C "$REPO_ROOT" fetch origin main 2>/dev/null || log "fetch origin main failed"
+# Step 1: Fetch latest target
+git -C "$REPO_ROOT" fetch origin "$TARGET" 2>/dev/null || log "fetch origin $TARGET failed"
 
-# Step 2: Merge origin/main into session branch (picks up other sessions' work)
-MERGE_OUTPUT=$(git -C "$REPO_ROOT" merge origin/main --no-edit 2>&1)
+# Step 2: Merge origin/target into session branch
+MERGE_OUTPUT=$(git -C "$REPO_ROOT" merge "origin/$TARGET" --no-edit 2>&1)
 MERGE_RC=$?
 
 if [ $MERGE_RC -ne 0 ]; then
   git -C "$REPO_ROOT" merge --abort 2>/dev/null
-  log "merge origin/main into $BRANCH failed: $MERGE_OUTPUT"
-  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"CONFLICT: %s has diverged from main. Run /merge to resolve."}}\n' "$BRANCH"
+  log "merge origin/$TARGET into $BRANCH failed: $MERGE_OUTPUT"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"CONFLICT: %s has diverged from %s. Run /merge to resolve."}}\n' "$BRANCH" "$TARGET"
   exit 0
 fi
 
-# Step 3: Push session branch (with the merge commit if any)
-# The user's push already happened, but if we merged, we need to push again
+# Step 3: Push session branch (if merge added commits)
 if echo "$MERGE_OUTPUT" | grep -q "Already up to date"; then
-  log "session already includes main"
+  log "session already includes $TARGET"
 else
-  log "merged origin/main into $BRANCH"
+  log "merged origin/$TARGET into $BRANCH"
   git -C "$REPO_ROOT" push origin "$BRANCH" 2>/dev/null || true
 fi
 
-# Step 4+5: Update main to match session and push
+# Step 4+5: Update target to match session and push
 CURRENT_SHA=$(git -C "$REPO_ROOT" rev-parse HEAD)
-PUSH_OUTPUT=$(git -C "$REPO_ROOT" push origin "$CURRENT_SHA:refs/heads/main" 2>&1)
+PUSH_OUTPUT=$(git -C "$REPO_ROOT" push origin "$CURRENT_SHA:refs/heads/$TARGET" 2>&1)
 PUSH_RC=$?
 
 if [ $PUSH_RC -eq 0 ]; then
-  log "main synced to $BRANCH"
-  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Synced %s → main."}}\n' "$BRANCH"
+  log "$TARGET synced to $BRANCH"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Synced %s → %s."}}\n' "$BRANCH" "$TARGET"
 else
-  log "push to main failed (rc=$PUSH_RC): $PUSH_OUTPUT"
-  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Push to main failed — may need rebase. Run /merge to resolve."}}\n' "$BRANCH"
+  log "push to $TARGET failed (rc=$PUSH_RC): $PUSH_OUTPUT"
+  printf '{"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"Push to %s failed — may need rebase. Run /merge to resolve."}}\n' "$TARGET"
 fi
