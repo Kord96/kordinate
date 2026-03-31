@@ -173,6 +173,47 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
 
     check_deps(components)
 
+    # Component connectivity — every component must connect to at least one other node
+    # via depends_on, flows, state readers/writers, or failure cascades
+    connected_components = set()
+    # From depends_on
+    def collect_connections(comps):
+        for c in comps:
+            cid = c.get("id", "")
+            for dep in c.get("depends_on", []):
+                connected_components.add(cid)
+                connected_components.add(dep)
+            collect_connections(c.get("children", []))
+    collect_connections(components)
+    # From flows
+    for f in atlas.get("flows", []):
+        for step in f.get("steps", []):
+            for key in ("component", "to"):
+                ref = step.get(key, "")
+                if ref and ref in component_ids:
+                    connected_components.add(ref)
+    # From state readers/writers
+    for s in atlas.get("state", []):
+        comp = s.get("component", "")
+        if comp and comp in component_ids:
+            connected_components.add(comp)
+        for r in s.get("readers", []):
+            if r in component_ids:
+                connected_components.add(r)
+        for w in s.get("writers", []):
+            if w in component_ids:
+                connected_components.add(w)
+    # From failure cascades
+    for fm in atlas.get("failure_modes", []):
+        for cascade in fm.get("cascade", []):
+            ref = cascade.get("component", "")
+            if ref and ref in component_ids:
+                connected_components.add(ref)
+    # Check for isolated components
+    for cid in component_ids:
+        if cid not in connected_components:
+            error(f"Component '{cid}' is isolated — not connected to any other component via depends_on, flows, state, or failure cascades", "components")
+
     # Flows (typed)
     for f in atlas.get("flows", []):
         fid = f.get("id", "")
