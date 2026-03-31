@@ -54,9 +54,9 @@ Write `<project>/.kord/agents/scribe/output/overview.json`:
 
 ```json
 {
-  "introduction": "2-3 paragraphs explaining what this project is, what problem it solves, and who uses it. No code references, no file paths — pure architecture concepts.",
-  "how_it_works": "1-2 paragraphs explaining the high-level flow in plain language. 'Logs come in, entities are extracted, a graph is built, queries are served.' Name the groups, not the components.",
-  "key_decisions": ["1-3 sentences each — the most important architectural decisions and why they were made. Synthesize from augur's rationale blocks."],
+  "introduction": "2-3 sentences max. What this project is and what problem it solves. No code, no jargon.",
+  "how_it_works": "3-5 short sentences, one per pipeline stage. Each sentence is one step: 'X happens, then Y, then Z.' Name the groups, not the components. Must be scannable — no paragraphs.",
+  "key_decisions": ["One sentence each, max 3-4 decisions. The most important architectural choices."],
   "groups_overview": [
     {
       "id": "<group-id>",
