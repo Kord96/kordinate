@@ -78,13 +78,13 @@ Build a tree of stories that mirrors the atlas structure. Top-down per [story-at
 
 **2. Child stories (2-5 per root).** For each root, identify the concerns worth zooming into — a key flow, a data store, a failure mode, a design decision. Write a child story for each. Child summaries are 3 paragraphs max, ~80-120 words. Set `parent: "<root-id>"`. Children can reference atlas nodes from outside the parent's group when the concern crosses boundaries.
 
-**3. Journeys (2-5 total).** Always create `getting-started.yaml` — a teaching-order journey for someone new to the codebase, pulling stories from all groups in the sequence they should be read. Then create 1-4 additional journeys for different audiences or cross-cutting concerns that emerged from your analysis. Aim for at least 3 journeys total — each should offer a genuinely different perspective through the codebase. What those are depends on what you found. 3-8 stories per journey.
+**3. Journeys (2-5 total).** Always create `getting-started.yaml` (number: 1) — a teaching-order journey for someone new to the codebase, pulling stories from all groups. Then create 1-4 additional journeys (numbered 2+) for different audiences or cross-cutting concerns. Aim for at least 3 journeys total. 3-8 stories per journey.
 
-**Getting-started journey requirements:**
-- The first story must orient with the domain model and purpose — what this system is and one concrete thing to follow through it.
-- Each story must identify its anchor — promote the best `grounded_in` reference to the anchor field (the one file:line a new developer should open first).
-- Include `bridges` connecting each adjacent pair of stories — `from`/`to` with a one sentence question. Pattern: "[What you just learned]. But [question that pulls you forward]?" N stories → N-1 bridges.
-- Bridge text is not required for additional journeys.
+**Every journey must have:**
+- `number` — getting-started is 1, others are 2, 3, etc.
+- `overview` — 2-3 sentences framing the journey for its audience. This is the chapter 0 that appears before the first story. Getting-started's overview is the project overview. Other journeys frame their specific concern (e.g., "The system has 6 external dependencies. Here's what happens when each one fails.")
+- Each story must identify its `anchor` — the one file:line a new developer should open first.
+- `bridges` connecting each adjacent pair of stories — `from`/`to` with a one sentence question. Required for getting-started, recommended for others.
 
 Each story is assembled from building blocks:
 - **summary** (required) — short paragraphs, depth-dependent length
