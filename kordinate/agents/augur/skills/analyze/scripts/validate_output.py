@@ -262,6 +262,21 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
         if testing and testing.get("grounded_in") and project_root:
             issues.extend(check_grounded_in(testing["grounded_in"], project_root, "developer_experience", "testing"))
 
+    # Module graph: CI/CD and IaC
+    module_graph = atlas.get("module_graph", {})
+    for ci in module_graph.get("ci_cd", []):
+        ci_file = ci.get("file", "")
+        if ci_file and project_root:
+            full = project_root / ci_file
+            if not full.exists():
+                warn(f"CI/CD entry references non-existent file: {ci_file}", "module_graph")
+    for iac_entry in module_graph.get("iac", []):
+        for iac_file in iac_entry.get("files", []):
+            if iac_file and project_root:
+                full = project_root / iac_file
+                if not full.exists():
+                    warn(f"IaC entry references non-existent file: {iac_file}", "module_graph")
+
     # Concepts
     concepts = atlas.get("concepts", {})
     for p in concepts.get("detected_patterns", []):
@@ -365,6 +380,10 @@ def validate_journey(journey: dict, story_ids: set) -> list[dict]:
         error("Journey missing required field: id")
     if "title" not in journey:
         error(f"Journey '{jid}' missing required field: title")
+    if "number" not in journey:
+        warn(f"Journey '{jid}' missing field: number (getting-started should be 1)")
+    if not journey.get("overview"):
+        warn(f"Journey '{jid}' missing overview (2-3 sentence framing for the audience)")
 
     stories = journey.get("stories", [])
     if len(stories) < 3:
@@ -509,12 +528,9 @@ def main():
     if not journeys_dir.exists():
         all_issues.append({"level": "ERROR", "section": "structure", "message": f"journeys/ directory not found at {journeys_dir}. Write at least getting-started.yaml here."})
     else:
-        has_overview = False
         for f in sorted(journeys_dir.iterdir()):
             if f.suffix not in (".yaml", ".yml"):
                 continue
-            if f.stem == "overview":
-                has_overview = True
             journey = load_yaml(f)
             if journey is None:
                 all_issues.append({"level": "ERROR", "section": "journey", "message": f"Failed to parse: {f.name}"})

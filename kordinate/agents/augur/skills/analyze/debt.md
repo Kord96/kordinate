@@ -1,6 +1,6 @@
 # Debt Assessment
 
-Level 3 resource for the architect skill. Referenced from step 7 (failure modes + debt assessment). Carries the full debt scoring procedure.
+Level 3 resource for the analyze skill. Referenced from step 2 (debt concern). Carries the full debt scoring procedure.
 
 ## Determine Applicable Concepts
 
