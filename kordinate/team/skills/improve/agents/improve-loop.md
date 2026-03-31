@@ -228,11 +228,12 @@ Execute the skill's procedure against a cloned repo. Capture the full output (sa
 
 | Skill type | How to run |
 |------------|-----------|
-| **Scan/detect** (detect-concepts, detect-patterns, scan-observability, assess-debt) | Run the full procedure. Save the output artifact (concepts.md, patterns report, etc.) |
-| **Generate** (architect, analyze, map-dependencies, review-api) | Run the full procedure. Save the generated artifact (architecture.yaml, dependency graph, API report) |
-| **Transform** (edit-based skills) | Dry-run on a copy of the repo. Save proposed changes as a patch. |
-| **Deploy/infra** | Skip — trace the procedure mentally instead. |
-| **Meta** (improve, train-detection) | Skip — these are tested by running them. |
+| **Analyze** (augur /analyze) | Run the full procedure. Save atlas.json, stories/*.yaml, journeys/*.yaml |
+| **Document** (scribe /document) | Run with augur output as input. Save manifest.json, storyByNode.json |
+| **Scan** (sauron /monitor, warden /scan-secrets) | Run the full procedure. Save the output artifact |
+| **Transform** (edit-based skills) | Dry-run on a copy of the repo. Save proposed changes as a patch |
+| **Deploy/infra** | Skip — trace the procedure mentally instead |
+| **Meta** (improve, train-detection) | Skip — these are tested by running them |
 
 #### 2.2b — Build Ground Truth
 
@@ -248,35 +249,54 @@ gemini -m gemini-2.5-pro -o json -p "<oracle prompt for skill type>" \
   @/data/repos/<repo>/src/ > $DATA_DIR/<agent>/ground-truth/<skill>-<repo>-gemini.json &
 ```
 
-Oracle prompts by skill type:
+Oracle prompts by output type:
 
-| Skill | Gemini oracle prompt |
-|-------|---------------------|
-| **detect-concepts** | "List every architectural concept, pattern, and anti-pattern present in this codebase. For each, cite the specific file and line range as evidence. Look for BEHAVIOR, not naming." |
-| **detect-patterns** | Same as detect-concepts (they share the same catalog). |
-| **review-api** | "List every API endpoint in this codebase — method, path, handler function, file. Note any inconsistencies in naming, authentication, error handling, or response format." |
-| **assess-debt** | "Identify every instance of tech debt in this codebase — code smells, anti-patterns, missing tests, hardcoded values, dead code. For each, cite the file and describe the impact." |
-| **map-dependencies** | "List every dependency: internal module imports, external packages, infrastructure services (databases, caches, queues), and external API calls. Cite the import statement or connection string." |
-| **architect/analyze** | "Describe the architecture of this codebase: main components, their responsibilities, how data flows between them, state management, and failure modes. Cite specific files for each component." |
-| **scan-observability** | "List every observability signal: log statements (with level and message), metrics (with names), health check endpoints, and tracing spans. Cite file and line." |
+| Output | Gemini oracle prompt |
+|--------|---------------------|
+| **atlas.json (structure)** | "Describe the architecture of this codebase: main components (5-10), their responsibilities, how they group into 3-5 runtime boundaries, and their dependencies. Cite specific files for each component." |
+| **atlas.json (flows)** | "Trace the 2-4 most critical data flows through this codebase. For each: what triggers it, what components are involved, what data moves, what protocol is used. Cite files." |
+| **atlas.json (concepts)** | "List every architectural pattern, anti-pattern, and domain model present in this codebase. For each, cite the specific file and line range as evidence. Look for BEHAVIOR, not naming." |
+| **atlas.json (debt)** | "Identify every instance of tech debt: code smells, anti-patterns, missing tests, hardcoded values, dead code. For each, cite the file and describe the impact." |
+| **atlas.json (security)** | "Describe the authentication, authorization, and secrets management in this codebase. List every entry point and whether it has auth. Cite files." |
+| **atlas.json (observability)** | "List every observability signal: log statements (with level), metrics (with names), health endpoints, tracing spans. Cite file and line." |
+| **stories** | "For each component group in this codebase, write a 2-paragraph summary explaining what it does and why it's organized this way. Then identify 2-3 specific concerns worth drilling into (a key flow, a data store, a failure mode)." |
+| **journeys** | "If you were onboarding a new developer to this codebase, what order would you teach things? List 5-8 topics in teaching order, explaining why each builds on the previous." |
 
 **Oracle 2 — Mechanical verification.** Use grep/glob/AST to independently verify
 specific claims. This catches hallucinations from both the skill and Gemini:
 
-| Skill | Mechanical checks |
-|-------|------------------|
-| **detect-concepts** | Grep for import statements, decorators, config files that confirm/deny each detected concept |
-| **review-api** | Grep for route decorators (`@app.get`, `@router.post`, `http.HandleFunc`, etc.) and count — does the skill's endpoint count match? |
-| **assess-debt** | Verify cited files exist. Grep for the specific patterns flagged (e.g., `TODO`, hardcoded strings, bare excepts) |
-| **map-dependencies** | Parse `requirements.txt`/`go.mod`/`package.json` — does the skill's external dep list match? Grep for imports — does the internal module list match? |
-| **architect/analyze** | Verify every component name maps to a real file/directory. Check that stated data flows have matching import/call chains. |
-| **scan-observability** | Grep for `log.`, `logger.`, `metrics.`, `/health`, `/ready` — does the count match the skill's output? |
+| Output | Mechanical checks |
+|--------|------------------|
+| **atlas components** | Verify every component's `modules[]` paths exist. Grep for imports to confirm `depends_on` edges. |
+| **atlas flows** | Verify `grounded_in` file:line references exist. Trace step sequences via import chains. |
+| **atlas concepts** | Grep for import statements, decorators, config files that confirm/deny each detected concept. Run ast-grep rules to cross-check. |
+| **atlas API surface** | Grep for route decorators (`@app.get`, `@router.post`, `http.HandleFunc`) — does endpoint count match? |
+| **atlas debt** | Verify cited files exist. Grep for flagged patterns (`TODO`, hardcoded strings, bare excepts). |
+| **atlas state** | Verify `readers`/`writers` component IDs exist. Check `grounded_in` references. |
+| **stories** | Every `**bold ref**` resolves to an atlas node ID. Every `grounded_in` file exists. Structure node IDs exist in atlas. |
+| **journeys** | Every story ID in the journey exists in `stories/`. Order makes pedagogical sense (doesn't reference concepts before they're introduced). |
 
-**Oracle 3 — Cross-skill validation.** If multiple skills ran on the same repo, their
-outputs should be consistent:
-- Components in `architect` output should appear in `map-dependencies` output
-- Endpoints in `review-api` should align with routes found by `detect-concepts`
-- Debt flagged by `assess-debt` should reference real components from `architect`
+**Oracle 3 — Schema compliance.** Validate the output against the v4 schema:
+
+- Run `python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py` on atlas.json
+- Check: version is "4", 3-5 groups, 5-10 components, flow types are valid enum values
+- Check: all cross-references resolve (component IDs in flows, state readers/writers, failure cascade components)
+- Check: `grounded_in` references on flows, state, and failure_modes are present
+- Check: stories have required `summary` block, valid `parent`/`children` tree structure
+- Check: journeys reference valid story IDs, have 3-8 stories each
+
+**Oracle 4 — Story and journey quality.** Assess the narrative output:
+
+| Dimension | What to check |
+|-----------|--------------|
+| **Story groundedness** | Does each story's `evaluation.groundedness` score >= 0.85? For scores below, which claims are ungrounded? |
+| **Story coverage** | Are all critical atlas nodes (components + critical external deps + source-of-truth state) referenced in at least one story? |
+| **Story tree coherence** | Does each child story zoom into a subset of its parent's nodes? Do children reference fewer nodes than parents? |
+| **Story summary quality** | Are summaries scenario-driven (not passive descriptions)? Do they lead with action? Are they within word limits (root: 50-80, child: 80-120)? |
+| **Journey teaching order** | Does the getting-started journey build understanding progressively? Would a reader at story N have enough context from stories 1..N-1? |
+| **Journey coverage** | Does getting-started touch all atlas groups? Are there groups with no story in any journey? |
+| **Observation attachment** | Are observations attached to the right nodes/steps (not just story-wide when they could be specific)? |
+| **Rationale presence** | Do stories about non-obvious architectural choices include rationale blocks? |
 
 #### 2.2c — Score
 
@@ -292,15 +312,36 @@ Compute:
 - **Recall** = TP / (TP + FN) — "does the skill find everything that's there?"
 - **F1** = 2 * (P * R) / (P + R) — balanced score
 
-For skills where items aren't countable (e.g., architect produces a narrative), score
-on a rubric instead:
+For outputs where items aren't countable, score on a rubric:
+
+**Atlas rubric:**
 
 | Dimension | 1 (poor) | 3 (adequate) | 5 (excellent) |
 |-----------|----------|-------------|--------------|
 | **Completeness** | Major components missing | Most components present, some gaps | All components identified |
 | **Accuracy** | Multiple hallucinated components | Minor inaccuracies | All claims verifiable in code |
-| **Specificity** | Vague descriptions, no file refs | Some file refs, some vague | Every claim cites specific files |
-| **Consistency** | Contradicts other skill outputs | Mostly consistent | Fully consistent with other skills |
+| **Specificity** | Vague descriptions, no file refs | Some file refs, some vague | Every claim cites specific files via `grounded_in` |
+| **Schema compliance** | Missing required sections, wrong types | Minor schema issues | Passes validator with zero errors |
+| **Flow typing** | Flows untyped or wrong type | Most flows correctly typed | Every flow uses the right category with correct step fields |
+
+**Story rubric:**
+
+| Dimension | 1 (poor) | 3 (adequate) | 5 (excellent) |
+|-----------|----------|-------------|--------------|
+| **Groundedness** | < 0.70 | 0.70-0.85 | >= 0.85 |
+| **Coverage** | Major components undocumented | Most covered, some gaps | >= 0.80 of critical nodes covered |
+| **Tree coherence** | Children don't zoom in, random scoping | Most children scope correctly | Every child is a clean subset of parent |
+| **Summary quality** | Passive, verbose, no action | Adequate but generic | Scenario-driven, leads with action, within word limits |
+| **Observation placement** | All story-wide, none attached | Some attached to nodes/steps | Observations attached at the most specific applicable level |
+
+**Journey rubric:**
+
+| Dimension | 1 (poor) | 3 (adequate) | 5 (excellent) |
+|-----------|----------|-------------|--------------|
+| **Teaching order** | Random or alphabetical | Reasonable but some gaps | Progressive — each story builds on prior context |
+| **Group coverage** | Misses multiple groups | Most groups touched | All atlas groups represented |
+| **Audience fit** | Generic, no clear audience | Audience stated but stories not tailored | Stories clearly selected and ordered for the stated audience |
+| **Length** | < 3 or > 8 stories | 3-8 stories | Right number for the concern — neither rushed nor padded |
 
 #### 2.2d — Record Results
 
@@ -354,6 +395,19 @@ Evaluate the skill against these criteria:
 | **Actionability** | Steps that say "handle X" without saying how, vague verbs like "process" or "manage" |
 | **Alignment** | Does this skill serve the agent's identity? Is it in the right place? (from Phase 1) |
 | **Resources** | Are 3rd-layer resources sufficient? Missing scripts, templates, schemas? |
+
+**For augur's `/analyze` specifically**, also ask:
+
+| Category | What to look for |
+|----------|-----------------|
+| **Concept coverage** | Did the test run detect patterns that have no concept file? Should new concepts be created? |
+| **Detection gaps** | Were patterns visible in the code but missed by all 3 detection steps? What grep keywords, AST rules, or questions would catch them? |
+| **AST rule quality** | Did any ast-grep rules produce false positives? Did rules fail to parse? Should new rules be written for high-value concepts that currently rely on grep only? |
+| **Question quality** | Did diagnostic questions produce the right answer? Were any questions misleading or ambiguous? Should signal hints be added or refined? |
+| **New concept proposals** | Did the test repo exhibit patterns not in the catalog at all? Propose new concept files with type, signatures, and questions. |
+| **Schema compliance** | Does the atlas output pass the v4 validator? Are new atlas sections (observability, security, devex) populated when the code has them? |
+| **Story grounding** | Are story claims traceable to atlas findings? Do `grounded_in` references point to real files? |
+| **Journey coherence** | Does the getting-started journey cover all groups? Does the teaching order make sense? |
 
 Do NOT look for:
 - Style preferences (Oxford commas, heading levels, bullet vs number)
