@@ -132,11 +132,19 @@ gh search repos --language=<relevant-lang> --stars=100..5000 --sort=updated --li
 
 Pick 2-3 repos that are likely to exercise your skills (e.g., for an architecture agent, pick repos with clear design patterns across different stacks).
 
-Check the repo database at `$DATA_DIR/repo-database.json` — **exclude all repos that have ever been tested**, not just recent ones. The goal is maximum diversity across runs. Clone:
+Check the repo index to exclude all previously tested repos:
 
 ```bash
-git clone --depth 1 https://github.com/<nameWithOwner>.git /data/repos/<owner>--<name>
+python3 $KORDINATE_HOME/team/scripts/repo-index.py check <nameWithOwner>
 ```
+
+Exit code 0 = already exists (skip it). Exit code 1 = new repo (use it). Clone and register new repos via the index script:
+
+```bash
+python3 $KORDINATE_HOME/team/scripts/repo-index.py add <nameWithOwner> <language> --tested-by <agent-name>
+```
+
+This clones to `/data/repos/<owner>--<name>` and updates `/data/repos/index.json` in one step.
 
 Record each repo in the manifest's `test_repos` array:
 ```json
@@ -494,25 +502,15 @@ classify as "proposed" instead.
 
 Persist findings so the next improvement run starts with awareness of what was assessed.
 
-### Step 3.1 — Update Repo Database
+### Step 3.1 — Update Repo Index
 
-Append tested repos to the persistent database at `$DATA_DIR/repo-database.json`:
+Mark all tested repos in the central index:
 
-```json
-[
-  {
-    "nameWithOwner": "owner/repo",
-    "language": "python",
-    "stars": 1200,
-    "tested_by": "<agent-name>",
-    "tested_at": "ISO-8601",
-    "skills_tested": ["skill-a", "skill-b"],
-    "results_path": "$DATA_DIR/<agent>/test-results/"
-  }
-]
+```bash
+python3 $KORDINATE_HOME/team/scripts/repo-index.py mark-tested <nameWithOwner> <agent-name>
 ```
 
-Create the file if it doesn't exist. Append to the array if it does.
+This updates `/data/repos/index.json` so future improve runs know which repos have been tested and by whom. If the repo was already added via `repo-index.py add` during Step 1.5, it's already registered — this just adds the agent to `tested_by`.
 
 ### Step 3.2 — Update Improvement History
 
