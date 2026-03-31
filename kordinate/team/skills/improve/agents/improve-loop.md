@@ -121,18 +121,18 @@ Continue to Step 1.5. Read Gemini's response in Step 1.6.
 
 ### Step 1.5 — Clone Test Repos
 
-Select 2-3 repos to test your skills against real codebases. Use GitHub CLI:
+Always clone **fresh repos** — never reuse repos from previous runs. Testing against the same repos repeatedly causes overfitting to their specific patterns. Fresh repos expose new edge cases, new concept gaps, and new architectural styles.
+
+Use GitHub CLI to find candidates:
 
 ```bash
 gh search repos --language=<relevant-lang> --stars=100..5000 --sort=updated --limit=10 \
   --json nameWithOwner,description,primaryLanguage,stargazerCount
 ```
 
-Pick repos that are likely to exercise your skills (e.g., for an observability agent, pick
-repos with monitoring code; for an architecture agent, pick repos with clear design patterns).
+Pick 2-3 repos that are likely to exercise your skills (e.g., for an architecture agent, pick repos with clear design patterns across different stacks).
 
-Check the repo database at `$DATA_DIR/repo-database.json` — avoid repos already tested
-in the last 30 days (to broaden coverage). Clone:
+Check the repo database at `$DATA_DIR/repo-database.json` — **exclude all repos that have ever been tested**, not just recent ones. The goal is maximum diversity across runs. Clone:
 
 ```bash
 git clone --depth 1 https://github.com/<nameWithOwner>.git /data/repos/<owner>--<name>
