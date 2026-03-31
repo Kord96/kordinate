@@ -12,7 +12,7 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
   "generated": "<YYYY-MM-DD>",
   "project": "<project-name>",
 
-  "purpose": "<one sentence — what the system does>",
+  "purpose": "<one short sentence, max 15 words — what the system does in plain language>",
 
   "domain_model": {
     "primary": "<concept-name from catalog, e.g., property-graph, ledger, catalog>",
