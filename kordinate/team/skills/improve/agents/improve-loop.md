@@ -512,34 +512,119 @@ python3 $KORDINATE_HOME/team/scripts/repo-index.py mark-tested <nameWithOwner> <
 
 This updates `/data/repos/index.json` so future improve runs know which repos have been tested and by whom. If the repo was already added via `repo-index.py add` during Step 1.5, it's already registered — this just adds the agent to `tested_by`.
 
-### Step 3.2 — Update Improvement History
+### Step 3.2 — Write Run Report
 
-Append this run's summary to `$DATA_DIR/<agent>/history.json`. Each entry captures
-what was found and done, enabling trend analysis across runs:
+Write a detailed run report to `$DATA_DIR/<agent>/runs/<run_id>.json`. This is the permanent record — every number, every change, every finding. One file per run, never overwritten.
 
 ```json
 {
   "run_id": "<timestamp>",
   "date": "YYYY-MM-DD",
+  "duration_minutes": 45,
+  "status": "complete | plateau | failed",
+
+  "repos_tested": [
+    {
+      "nameWithOwner": "owner/repo",
+      "language": "python",
+      "stars": 1200,
+      "files_scanned": 87,
+      "loc": 12400
+    }
+  ],
+
+  "detection_scores": {
+    "<repo>": {
+      "concepts": {"precision": 0.88, "recall": 0.74, "f1": 0.80, "true_positives": 14, "false_positives": 2, "false_negatives": 5},
+      "components": {"precision": 0.90, "recall": 0.82, "f1": 0.86, "count_expected": 11, "count_produced": 10},
+      "flows": {"precision": 1.00, "recall": 0.67, "f1": 0.80, "count_expected": 3, "count_produced": 2},
+      "api_endpoints": {"precision": 0.95, "recall": 0.80, "f1": 0.87, "count_expected": 20, "count_produced": 19},
+      "debt_items": {"precision": 0.85, "recall": 0.60, "f1": 0.70, "count_expected": 10, "count_produced": 7}
+    }
+  },
+
+  "story_scores": {
+    "groundedness": {"min": 0.85, "max": 0.95, "avg": 0.90},
+    "coverage": 0.82,
+    "total_stories": 12,
+    "root_stories": 4,
+    "child_stories": 8
+  },
+
+  "journey_scores": {
+    "getting_started": {"story_count": 6, "groups_covered": 4, "groups_total": 4},
+    "additional_journeys": 1
+  },
+
+  "schema_validation": {
+    "passed": true,
+    "errors": [],
+    "warnings": ["observability section empty — flagged as gap"]
+  },
+
+  "changes_made": [
+    {
+      "iteration": 1,
+      "type": "structural",
+      "description": "Added bounded context detection to Phase 1 checklist",
+      "files_changed": ["SKILL.md"],
+      "lines_added": 12,
+      "lines_removed": 3
+    }
+  ],
+
+  "new_concepts_proposed": [
+    {
+      "name": "connection-draining",
+      "type": "pattern",
+      "evidence": "Found in owner/repo at src/server.py:45 — graceful shutdown drains connections before exit",
+      "created": true
+    }
+  ],
+
+  "detection_improvements": [
+    {
+      "concept": "circuit-breaker",
+      "change": "Added tenacity library signature to grep keywords",
+      "before_recall": 0.60,
+      "after_recall": 0.80
+    }
+  ],
+
   "portfolio_findings": {
-    "coverage_gaps": ["..."],
-    "split_candidates": ["..."],
-    "new_skills_scaffolded": ["..."],
-    "staleness_fixes": ["..."]
-  },
-  "per_skill_results": {
-    "skill-a": {"iterations": 2, "stop_reason": "cosmetic-only", "test_result": "pass"},
-    "skill-b": {"iterations": 1, "stop_reason": "no-changes", "test_result": "pass"}
-  },
-  "proposed_actions": ["..."],
-  "repos_tested": ["owner/repo-1", "owner/repo-2"]
+    "coverage_gaps": [],
+    "staleness_fixes": [],
+    "resource_additions": [],
+    "proposed_actions": []
+  }
 }
 ```
 
-Create the file as `[]` if it doesn't exist. Append to the array. Keep the last 20 entries
-(trim oldest if over).
+Create the `runs/` directory if it doesn't exist.
 
-### Step 3.3 — Persist Portfolio Findings
+### Step 3.3 — Update History Index
+
+Append a summary line to `$DATA_DIR/<agent>/history.json` for quick trend analysis. This is the lightweight index — the full data is in `runs/<run_id>.json`.
+
+```json
+{
+  "run_id": "<timestamp>",
+  "date": "YYYY-MM-DD",
+  "repos_tested": 2,
+  "avg_f1": {"concepts": 0.80, "components": 0.86, "flows": 0.80},
+  "story_coverage": 0.82,
+  "story_groundedness_avg": 0.90,
+  "changes_count": 3,
+  "new_concepts": 1,
+  "detection_improvements": 1,
+  "stop_reason": "cosmetic-only",
+  "status": "complete"
+}
+```
+
+Create as `[]` if it doesn't exist. Append. Keep the last 50 entries.
+
+### Step 3.4 — Persist Portfolio Findings
 
 For each finding classified as "proposed" (needs human approval):
 ```
@@ -551,7 +636,7 @@ For domain insights discovered during improvement:
 /kord remember <agent-name> learned during self-improvement: <insight>
 ```
 
-### Step 3.4 — Commit and Push
+### Step 3.5 — Commit and Push
 
 Commit all changes and push. The worktree-push hook will automatically merge
 to main on push.
@@ -565,7 +650,7 @@ git -C $KORDINATE_HOME push 2>/dev/null || true
 If the push triggers a merge conflict, the hook will report it. The next `/merge`
 run will resolve it.
 
-### Step 3.5 — Finalize Manifest
+### Step 3.6 — Finalize Manifest
 
 Update manifest:
 ```json
