@@ -61,6 +61,13 @@
     "description": "Push to main requires fast-forward check via /merge"
   },
   {
+    "type": "guard",
+    "pattern": "git push .*--force",
+    "tool": "Bash",
+    "validation": "merge",
+    "description": "Force push is not allowed — use /merge to resolve conflicts"
+  },
+  {
     "type": "dir",
     "pattern": "agents/*/skills/",
     "validation": "scribe",

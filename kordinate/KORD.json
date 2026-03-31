@@ -394,8 +394,16 @@
     "type": "skill",
     "name": "document",
     "agent": "scribe",
-    "description": "Render stories into interactive documentation using pre-built Astro components.",
-    "arguments": "<project> [--atlas-only]",
+    "description": "Produce documentation data (manifest, indices) from augur's analysis output.",
+    "arguments": "<project>",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "render",
+    "agent": "scribe",
+    "description": "Render documentation data into Astro site pages using pre-built components.",
+    "arguments": "<project>",
     "public": true
   },
   {
@@ -556,6 +564,13 @@
     "tool": "Bash",
     "validation": "merge",
     "description": "Push to main requires fast-forward check via /merge"
+  },
+  {
+    "type": "guard",
+    "pattern": "git push .*--force",
+    "tool": "Bash",
+    "validation": "merge",
+    "description": "Force push is not allowed \u2014 use /merge to resolve conflicts"
   },
   {
     "type": "dir",
