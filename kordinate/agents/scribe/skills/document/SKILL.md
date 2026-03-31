@@ -33,6 +33,7 @@ If atlas is missing, suggest running `/analyze <project>`. Exit.
 All output goes to `<project>/.kord/agents/scribe/output/`:
 
 ```
+overview.json          — editorial introduction, project context, visual overview
 manifest.json          — rendering decisions per story
 storyByNode.json       — atlas node ID → story IDs that reference it
 ```
@@ -45,7 +46,34 @@ These files are consumed by the Astro site at build time alongside augur's atlas
 
 Fetch all input via kord delegation to augur. Parse atlas JSON, story YAML, journey YAML.
 
-### 2. Validate
+### 2. Generate overview
+
+Scribe's editorial contribution — the layer above augur's code-grounded stories. Read the project's source code (README, docs, key entry points) alongside the atlas to write an overview that orients a newcomer before they see any code.
+
+Write `<project>/.kord/agents/scribe/output/overview.json`:
+
+```json
+{
+  "introduction": "2-3 paragraphs explaining what this project is, what problem it solves, and who uses it. No code references, no file paths — pure architecture concepts.",
+  "how_it_works": "1-2 paragraphs explaining the high-level flow in plain language. 'Logs come in, entities are extracted, a graph is built, queries are served.' Name the groups, not the components.",
+  "key_decisions": ["1-3 sentences each — the most important architectural decisions and why they were made. Synthesize from augur's rationale blocks."],
+  "groups_overview": [
+    {
+      "id": "<group-id>",
+      "name": "<group name>",
+      "role": "One sentence — what this group does in plain language, not what components it contains."
+    }
+  ]
+}
+```
+
+**Voice:** Write for someone who has never seen the codebase. No `**bold refs**`, no file paths, no function names. Architecture concepts only. This is the "chapter 0" that appears before any story.
+
+**Sources:** Read the project's README.md, any docs/ directory, and augur's atlas purpose + domain_model + groups. The atlas gives you structure; the README gives you intent.
+
+### 3. Validate
+
+
 
 Cross-reference check:
 - Every node ID in structures exists in atlas
@@ -55,7 +83,7 @@ Cross-reference check:
 - Every observation component exists in atlas
 - Every journey story ID exists in stories
 
-### 3. Build manifest
+### 4. Build manifest
 
 For each story's building blocks, decide the rendering approach:
 
@@ -77,11 +105,11 @@ For each story's building blocks, decide the rendering approach:
 
 Write to `<project>/.kord/agents/scribe/output/manifest.json`.
 
-### 4. Build storyByNode
+### 5. Build storyByNode
 
 For each atlas node, find which stories reference it. Write to `<project>/.kord/agents/scribe/output/storyByNode.json`.
 
-### 5. Report
+### 6. Report
 
 ```
 ## Documentation: <project>
