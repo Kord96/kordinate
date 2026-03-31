@@ -252,11 +252,13 @@ Journeys are secondary navigation. The story tree is primary.
 
 ```yaml
 id: "<kebab-case>"
+number: <integer>                            # getting-started is always 1, others numbered 2+
 title: "<Human Readable Title>"
 description: "<one sentence — what the reader achieves>"
 audience: ["<role>"]
+overview: "<2-3 sentences framing this journey for its audience — the chapter 0>"
 stories:
-  - "<story-id>"                          # can be root or child, from any group
+  - "<story-id>"                          # first story expands on the overview
   - "<story-id>"
 bridges:                                   # edges connecting adjacent stories
   - from: "<story-id>"
@@ -276,6 +278,8 @@ Bridges are edges between adjacent stories in the journey. They create curiosity
 
 ### Journey design rules
 
+- **Numbered**: getting-started is always `number: 1`. Other journeys are `2`, `3`, etc.
+- **Overview field**: each journey has a 2-3 sentence overview that frames the journey for its audience. Getting-started's overview is the project overview. Failure-modes' overview frames the dependency chain. This is the "chapter 0" — it appears before the first story.
 - **3-8 stories** per journey
 - Stories can come from **any level** of the tree (root or child)
 - **Teaching order**: foundational to dependent

@@ -46,8 +46,23 @@ If you're over the target, you're probably describing the document instead of st
 - **Bold** component names: `**auth-service**` — must resolve to an atlas node ID
 - Em dashes (—) not double hyphens
 - Periods to end sentences, not semicolons
+- Every sentence starts with a capital letter
 - No headings inside summaries — they're single paragraphs
 - No bullet lists inside summaries — use sentences
+
+## Text Quality
+
+These rules apply to ALL text augur produces — summaries, observations, rationale, descriptions, journey overviews.
+
+**Capitalization:** Every sentence starts with a capital letter. Component names in **bold** keep their kebab-case inside the bold markers but the sentence itself starts capitalized. YES: "**message-producer** scans NFS..." NO: "message-producer scans NFS..."
+
+**Spacing:** One space after periods. Two newlines between paragraphs (in multi-paragraph summaries). No trailing whitespace. No double spaces.
+
+**Punctuation:** End every sentence with a period. Observations end with a period. Rationale fields end with a period. Anchor descriptions end with a period.
+
+**Clarity over cleverness:** Short sentences (15-25 words). One idea per sentence. If a sentence has more than one comma, split it. Technical terms are fine — jargon is not. Name the specific technology, don't say "the framework" or "the tool."
+
+**Descriptions in atlas:** Component descriptions are one sentence, max 30 words. Group descriptions are one sentence, max 20 words. The purpose field is one sentence, max 15 words. External dependency descriptions are one sentence.
 
 ## Examples by Context
 

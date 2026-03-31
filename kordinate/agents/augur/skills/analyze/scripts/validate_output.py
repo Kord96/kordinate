@@ -521,9 +521,12 @@ def main():
                 continue
             all_issues.extend(validate_journey(journey, story_ids))
 
+        journey_count = sum(1 for f in journeys_dir.iterdir() if f.suffix in (".yaml", ".yml"))
         has_getting_started = any(f.stem == "getting-started" for f in journeys_dir.iterdir() if f.suffix in (".yaml", ".yml"))
         if not has_getting_started:
             all_issues.append({"level": "ERROR", "section": "journey", "message": "getting-started.yaml is required — teaching-order journey covering all groups"})
+        if journey_count < 3:
+            all_issues.append({"level": "ERROR", "section": "journey", "message": f"Need at least 3 journeys (have {journey_count}). Every project has at least 3 distinct perspectives."})
 
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]
