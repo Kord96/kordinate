@@ -133,7 +133,21 @@ If groundedness is low, fix claims. If coverage is low, add stories. Always reva
 
 ---
 
-## Step 9 — Report
+## Step 9 — Write Learnings
+
+After every analysis, write what you learned to memory. Record anything that would make the next analysis better:
+
+- Detection gaps — patterns you saw but missed or detected with low confidence
+- New concept candidates — patterns not in the catalog, with evidence
+- AST rule issues — false positives or missed detections
+- Stack-specific notes — framework idioms that affected detection
+- Score summary — project name and key metrics
+
+Skip this step if `--detect-only`.
+
+---
+
+## Step 10 — Report
 
 ```
 ## Analysis: <project>
