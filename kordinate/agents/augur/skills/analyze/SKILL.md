@@ -78,7 +78,7 @@ Build a tree of stories that mirrors the atlas structure. Top-down per [story-at
 
 **2. Child stories (2-5 per root).** For each root, identify the concerns worth zooming into — a key flow, a data store, a failure mode, a design decision. Write a child story for each. Child summaries are 3 paragraphs max, ~80-120 words. Set `parent: "<root-id>"`. Children can reference atlas nodes from outside the parent's group when the concern crosses boundaries.
 
-**3. Journeys (2-5 total).** Always create `getting-started.yaml` (number: 1) — a teaching-order journey for someone new to the codebase, pulling stories from all groups. Then create 1-4 additional journeys (numbered 2+) for different audiences or cross-cutting concerns. Aim for at least 3 journeys total. 3-8 stories per journey.
+**3. Journeys (3-5 total).** Always create `getting-started.yaml` (number: 1) — a teaching-order journey for someone new to the codebase, pulling stories from all groups. Then create 2-4 additional journeys (numbered 2+) for different audiences or cross-cutting concerns. Minimum 3 journeys — every project has at least 3 distinct perspectives worth walking through. 3-8 stories per journey.
 
 **Every journey must have:**
 - `number` — getting-started is 1, others are 2, 3, etc.
