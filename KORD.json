@@ -3,7 +3,7 @@
     "type": "skill",
     "name": "get",
     "agent": "alfred",
-    "description": "Retrieve personal information \u2014 config, credentials, overlays. Verifies caller identity.",
+    "description": "Retrieve personal information — config, credentials, overlays. Verifies caller identity.",
     "arguments": "<what> [--cluster <name>]",
     "public": true
   },
@@ -11,7 +11,7 @@
     "type": "skill",
     "name": "store",
     "agent": "alfred",
-    "description": "Store personal information \u2014 credentials, config updates, overlays.",
+    "description": "Store personal information — credentials, config updates, overlays.",
     "arguments": "<what> <value>",
     "public": true
   },
@@ -40,7 +40,7 @@
     "type": "resource",
     "name": "environment",
     "agent": "alfred",
-    "description": "Deployment preflight status \u2014 profile config, overlay validity, credentials.",
+    "description": "Deployment preflight status — profile config, overlay validity, credentials.",
     "scope": "global",
     "guidelines": "Run a quick preflight check. Verify profile config, overlay validity, and pass store credential existence. Return ready/not-ready with issues. Keep under 30 lines.",
     "cache": {
@@ -120,7 +120,7 @@
     "type": "resource",
     "name": "atlas",
     "agent": "augur",
-    "description": "Structural inventory \u2014 components, patterns, dependencies, debt, failure modes.",
+    "description": "Structural inventory — components, patterns, dependencies, debt, failure modes.",
     "scope": "project",
     "path": "<project>/.kord/agents/augur/memory/atlas.json",
     "format": "json",
@@ -133,7 +133,7 @@
     "type": "resource",
     "name": "stories",
     "agent": "augur",
-    "description": "Scoped architectural narratives \u2014 8-15 stories per project.",
+    "description": "Scoped architectural narratives — 8-15 stories per project.",
     "scope": "project",
     "path": "<project>/.kord/agents/augur/memory/stories/",
     "format": "yaml",
@@ -159,7 +159,7 @@
     "type": "resource",
     "name": "concepts",
     "agent": "augur",
-    "description": "Pattern and anti-pattern catalog \u2014 155 patterns across 20 categories.",
+    "description": "Pattern and anti-pattern catalog — 155 patterns across 20 categories.",
     "scope": "global",
     "path": "agents/augur/memory/concepts.md",
     "format": "md"
@@ -168,7 +168,7 @@
     "type": "skill",
     "name": "bootstrap",
     "agent": "charon",
-    "description": "Set up a cluster from scratch \u2014 namespaces, storage, overlays, deploy stacks.",
+    "description": "Set up a cluster from scratch — namespaces, storage, overlays, deploy stacks.",
     "arguments": "<cluster>",
     "public": true
   },
@@ -288,7 +288,7 @@
     "type": "resource",
     "name": "deployment-status",
     "agent": "charon",
-    "description": "Live deployment status \u2014 pods, versions, health. Always live.",
+    "description": "Live deployment status — pods, versions, health. Always live.",
     "scope": "global",
     "guidelines": "Return the current live state of the cluster: running pods, image versions, resource usage, and health. Always a live query. Keep under 50 lines."
   },
@@ -296,7 +296,7 @@
     "type": "skill",
     "name": "monitor",
     "agent": "sauron",
-    "description": "Monitor a running system \u2014 read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.",
+    "description": "Monitor a running system — read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.",
     "arguments": "<project> [--diagnose <symptom>] [--check] [--scan-code]",
     "public": true
   },
@@ -304,7 +304,7 @@
     "type": "skill",
     "name": "design-monitoring",
     "agent": "sauron",
-    "description": "Design a monitoring system \u2014 metrics, logs, health checks, dashboards, alerts. Depends on augur + charon.",
+    "description": "Design a monitoring system — metrics, logs, health checks, dashboards, alerts. Depends on augur + charon.",
     "arguments": "<project> [--scope full|metrics|alerts|dashboards]",
     "public": true
   },
@@ -378,7 +378,7 @@
     "type": "resource",
     "name": "monitoring-impact",
     "agent": "sauron",
-    "description": "Monitoring coverage gaps \u2014 missing dashboards, metrics, alerts by severity.",
+    "description": "Monitoring coverage gaps — missing dashboards, metrics, alerts by severity.",
     "scope": "global",
     "guidelines": "Assess monitoring coverage for the affected service. Report gaps, not what's already working. Keep under 50 lines.",
     "cache": {
@@ -410,7 +410,7 @@
     "type": "skill",
     "name": "register",
     "agent": "scribe",
-    "description": "Register runtime, agent, or kord \u2014 setup, creation, and re-linking.",
+    "description": "Register runtime, agent, or kord — setup, creation, and re-linking.",
     "arguments": "runtime|agent|kord [args]",
     "public": true
   },
@@ -418,7 +418,7 @@
     "type": "skill",
     "name": "doctor-k",
     "agent": "scribe",
-    "description": "Health-check the kordinate system \u2014 structural, runtime, and e2e tests.",
+    "description": "Health-check the kordinate system — structural, runtime, and e2e tests.",
     "arguments": "[--scope global|project|all] [--e2e]",
     "public": true
   },
@@ -472,7 +472,7 @@
     "type": "skill",
     "name": "sanitize",
     "agent": "warden",
-    "description": "Classify content as config, credential, or memory \u2014 routes to correct destination.",
+    "description": "Classify content as config, credential, or memory — routes to correct destination.",
     "arguments": "<content>",
     "public": true
   },
@@ -530,7 +530,7 @@
     "type": "skill",
     "name": "install",
     "agent": "team",
-    "description": "Install or reinstall kordinate \u2014 create ~/.kord/, link to runtime.",
+    "description": "Install or reinstall kordinate — create ~/.kord/, link to runtime.",
     "arguments": "[--local] [--restore <url>]",
     "public": true
   },
@@ -546,7 +546,7 @@
     "type": "skill",
     "name": "improve",
     "agent": "team",
-    "description": "Improve skills, agents, or the whole team \u2014 run evals, benchmark, iterate.",
+    "description": "Improve skills, agents, or the whole team — run evals, benchmark, iterate.",
     "arguments": "skill|agent|all|optimize|audit|benchmark <name>",
     "public": true
   },
@@ -554,7 +554,7 @@
     "type": "skill",
     "name": "remember",
     "agent": "team",
-    "description": "Register a memory file in KORD.json \u2014 decide scope and preload.",
+    "description": "Register a memory file in KORD.json — decide scope and preload.",
     "arguments": "<file-path> [--scope global|project|both] [--preload <agent>|all|none]",
     "public": true
   },
@@ -570,7 +570,7 @@
     "pattern": "git push .*--force",
     "tool": "Bash",
     "validation": "merge",
-    "description": "Force push is not allowed \u2014 use /merge to resolve conflicts"
+    "description": "Force push is not allowed — use /merge to resolve conflicts"
   },
   {
     "type": "dir",
@@ -592,7 +592,7 @@
   },
   {
     "type": "dir",
-    "pattern": "hooks/",
+    "pattern": "team/hooks/",
     "validation": "scribe",
     "description": "Hooks are framework files"
   },
@@ -624,7 +624,7 @@
     "type": "dir",
     "pattern": "profile/locks/",
     "validation": "warden",
-    "description": "Auth lock files \u2014 warden only"
+    "description": "Auth lock files — warden only"
   },
   {
     "type": "file",

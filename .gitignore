@@ -36,7 +36,7 @@ agent-state/
 /agents
 /agent-memory
 /commands
-/profile
+agents/alfred/profile
 
 # Agent runtime state
 kordinate/agents/*/deploys/

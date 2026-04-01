@@ -25,7 +25,7 @@
     "type": "skill",
     "name": "install",
     "agent": "team",
-    "description": "Install or reinstall kordinate \u2014 create ~/.kord/, link to runtime.",
+    "description": "Install or reinstall kordinate — create ~/.kord/, link to runtime.",
     "arguments": "[--local] [--restore <url>]",
     "public": true
   },
@@ -41,7 +41,7 @@
     "type": "skill",
     "name": "improve",
     "agent": "team",
-    "description": "Improve skills, agents, or the whole team \u2014 run evals, benchmark, iterate.",
+    "description": "Improve skills, agents, or the whole team — run evals, benchmark, iterate.",
     "arguments": "skill|agent|all|optimize|audit|benchmark <name>",
     "public": true
   },
@@ -49,7 +49,7 @@
     "type": "skill",
     "name": "remember",
     "agent": "team",
-    "description": "Register a memory file in KORD.json \u2014 decide scope and preload.",
+    "description": "Register a memory file in KORD.json — decide scope and preload.",
     "arguments": "<file-path> [--scope global|project|both] [--preload <agent>|all|none]",
     "public": true
   },
