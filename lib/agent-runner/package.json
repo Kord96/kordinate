@@ -1,0 +1,13 @@
+{
+  "name": "agent-runner",
+  "version": "1.0.0",
+  "description": "Kafka consumer that invokes Claude CLI per agent pod",
+  "type": "module",
+  "main": "runner.js",
+  "scripts": {
+    "start": "node runner.js"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  }
+}

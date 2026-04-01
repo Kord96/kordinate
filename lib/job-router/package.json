@@ -1,16 +1,17 @@
 {
-  "name": "mcp-agent-server",
+  "name": "job-router",
   "version": "1.0.0",
-  "description": "Beorn — shape-shifting MCP agent server",
+  "description": "HTTP/MCP router that publishes jobs to Kafka",
   "type": "module",
-  "main": "server.js",
+  "main": "router.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node router.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "express": "^5.1.0",
     "js-yaml": "^4.1.0",
+    "kafkajs": "^2.2.4",
     "zod": "^4.3.6"
   }
 }

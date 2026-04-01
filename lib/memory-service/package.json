@@ -1,0 +1,11 @@
+{
+  "name": "memory-service",
+  "version": "1.0.0",
+  "description": "Cross-agent memory merge service (CronJob)",
+  "type": "module",
+  "main": "sync.js",
+  "scripts": {
+    "start": "node sync.js"
+  },
+  "dependencies": {}
+}

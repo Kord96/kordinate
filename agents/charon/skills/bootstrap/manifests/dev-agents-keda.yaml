@@ -1,0 +1,121 @@
+# KEDA ScaledObjects for agent pods.
+# Prerequisite: KEDA operator installed (kubectl apply -f https://keda.sh/docs/latest/deploy/)
+#
+# Standby scaling:
+# - minReplicaCount = standby count (always-warm pods)
+# - Kafka consumer lag triggers scale-up
+# - cooldownPeriod controls scale-down delay
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-augur
+  namespace: dev
+spec:
+  scaleTargetRef:
+    name: agent-augur
+  minReplicaCount: 1      # standby: 1
+  maxReplicaCount: 10
+  cooldownPeriod: 300      # 5 minutes
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: agent-augur
+        topic: jobs.augur
+        lagThreshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-charon
+  namespace: dev
+spec:
+  scaleTargetRef:
+    name: agent-charon
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  cooldownPeriod: 300
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: agent-charon
+        topic: jobs.charon
+        lagThreshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-warden
+  namespace: dev
+spec:
+  scaleTargetRef:
+    name: agent-warden
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  cooldownPeriod: 180      # 3 minutes (called frequently)
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: agent-warden
+        topic: jobs.warden
+        lagThreshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-sauron
+  namespace: dev
+spec:
+  scaleTargetRef:
+    name: agent-sauron
+  minReplicaCount: 0       # scale from zero
+  maxReplicaCount: 3
+  cooldownPeriod: 600      # 10 minutes
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: agent-sauron
+        topic: jobs.sauron
+        lagThreshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-scribe
+  namespace: dev
+spec:
+  scaleTargetRef:
+    name: agent-scribe
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 600
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: agent-scribe
+        topic: jobs.scribe
+        lagThreshold: "1"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-alfred
+  namespace: dev
+spec:
+  scaleTargetRef:
+    name: agent-alfred
+  minReplicaCount: 0
+  maxReplicaCount: 2
+  cooldownPeriod: 600
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: agent-alfred
+        topic: jobs.alfred
+        lagThreshold: "1"
