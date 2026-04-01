@@ -15,9 +15,7 @@ pane_path="$1"
 
 repo_name=""
 if cd "$pane_path" 2>/dev/null; then
-  # Resolve to the main repo root, not a worktree
-  toplevel=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null | sed 's|/\.git$||' || true)
-  [ -d "$toplevel/.git" ] || toplevel=$(git rev-parse --show-toplevel 2>/dev/null || true)
+  toplevel=$(git rev-parse --show-toplevel 2>/dev/null || true)
   if [[ -n "$toplevel" ]]; then
     repo_name=$(basename "$toplevel")
   fi
@@ -33,7 +31,7 @@ fi
 if ! tmux has-session -t "=$repo_name" 2>/dev/null; then
   tmux new-session -d -s "$repo_name" -c "$toplevel"
 else
-  tmux new-window -t "=$repo_name" -c "$toplevel"
+  tmux new-window -t "=$repo_name" -c "$pane_path"
 fi
 
 tmux switch-client -t "=$repo_name"

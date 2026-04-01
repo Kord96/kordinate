@@ -1,13 +1,13 @@
 ---
 description: Template for project vitals documentation
-curated: true
-scope: global
 ---
 # <Project> — Vitals
 
 > **Maintain this document when health checks are added or modified.**
 
 ## Architecture
+
+One vitals pod per app per namespace. Vitals queries Prometheus and Loki to evaluate health, producing gauges and derived metrics. Alloy scrapes vitals like any other pod.
 
 Describe how health checks compose: per-process flags -> section flags -> composite status.
 Include the section tree diagram.
@@ -19,12 +19,25 @@ Document the tri-state gauge and any project-specific status metrics.
 | Value | Meaning | Condition |
 |-------|---------|-----------|
 | 0 | FAIL | ... |
-| 1 | STUCK/WARN | ... |
+| 1 | WARNING | ... |
 | 2 | OK | ... |
+
+## Deployment
+
+Vitals port: 9131. Required env vars: `PROMETHEUS_URL`, `LOKI_URL`.
+
+```yaml
+annotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9131"
+labels:
+  app: <app-name>
+  component: vitals
+```
 
 ## Loki Label Schema
 
-Document how to address components in Loki queries for this project.
+Document how to address components in Loki queries for this project. The `app` label is the universal key across all data.
 
 ## Start Here
 

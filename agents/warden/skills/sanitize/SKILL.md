@@ -1,8 +1,6 @@
 ---
 name: sanitize
 description: Classify content as config, credential, or memory — routes to the correct destination.
-curated: true
-scope: global
 ---
 
 Classify content and route it to the right place. $ARGUMENTS should include the content to sanitize.
@@ -11,19 +9,20 @@ Classify content and route it to the right place. $ARGUMENTS should include the 
 
 | Type | Indicators | Destination |
 |------|-----------|-------------|
-| **Config** | IPs, endpoints, hostnames, domains, ports, namespace names, storage classes | `$KORDINATE_HOME/profile/config.yaml` |
+| **Config** | IPs, endpoints, hostnames, domains, ports, namespace names, storage classes | `/config` to update `profile/config.yaml` |
 | **Credential** | Tokens, passwords, API keys, secrets, auth keys | `pass insert kordinate/<service>/<key>` |
-| **Memory** | Facts, observations, patterns, knowledge, decisions | `/kord remember` |
+| **Memory** | Facts, observations, patterns, knowledge, decisions | `write_memory` tool |
 
 ## Procedure
 
 1. **Analyze** — does the content contain config, credentials, or memory? A single input may contain all three.
 2. **Split** if mixed — "Cluster at 10.95.43.66 has DNS issues with token abc123":
-    - Config: IP `10.95.43.66` → `profile/config.yaml`
+    - Config: IP `10.95.43.66` → `/config` to update config.yaml
     - Credential: token `abc123` → `pass`
-    - Memory: "DNS issues" → `/kord remember`
+    - Memory: "DNS issues" → `write_memory` tool
 3. **Route** each piece to its destination.
-4. **Report** what went where.
+4. **Validate manifests** — if the input is a Kubernetes manifest file (`.yaml` in a `manifests/` directory), run the Manifest Validation checks below.
+5. **Report** what went where (and any manifest validation findings).
 
 ## Examples
 
@@ -40,7 +39,7 @@ When sanitize is invoked on Kubernetes manifest files (`.yaml` in `manifests/`),
 
 ### Detection Rules
 
-Scan base manifests in `agents/charon/skills/infra/manifests/` for:
+Scan base manifests in `$KORDINATE_HOME/agents/charon/skills/infra/manifests/` for:
 
 | Pattern | Severity | Action |
 |---------|----------|--------|
@@ -59,7 +58,7 @@ Scan base manifests in `agents/charon/skills/infra/manifests/` for:
 
 ### Procedure for Manifest Validation
 
-1. Glob for `*.yaml` in `agents/charon/skills/infra/manifests/`
+1. Glob for `*.yaml` in `$KORDINATE_HOME/agents/charon/skills/infra/manifests/`
 2. For each file, grep for domain patterns, IPs, and `.svc.cluster.local`
 3. Filter against the allowlist
 4. Cross-reference: if a value from `profile/config.yaml` (`network.*`, `clusters.*.services.*`) appears in a base manifest, flag it

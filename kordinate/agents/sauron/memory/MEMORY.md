@@ -1,7 +1,0 @@
-- [monitoring.md](monitoring.md) — Two-layer monitoring model: Alloy collects, Vitals evaluates
-- [logging.md](logging.md) — Structured logging standards across all projects
-- [workflow.md](workflow.md) — Sauron workflow: understand, implement, validate, report
-- [tools.md](tools.md) — Sauron tools reference
-- [grafana_renderer.md](grafana_renderer.md) — Prioritize Grafana renderer for visual dashboard auditing
-- [manifest.yaml](manifest.yaml) — Project knowledge files sauron requires on startup
-- [scratchpad.md](scratchpad.md) — Sauron working notes and observations

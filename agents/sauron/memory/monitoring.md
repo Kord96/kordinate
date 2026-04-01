@@ -1,73 +1,108 @@
 ---
-description: Four-layer monitoring model — physical, application, business, alerting
-curated: true
-scope: global
-preloaded: sauron
+description: Two-layer monitoring model — Alloy collects, Vitals evaluates
 ---
-# Monitoring Layers
+# Monitoring
 
-Monitoring has four layers. Sauron handles all four, but with different approaches per layer.
+Two layers: Alloy collects per-pod data, Vitals evaluates per-app health.
 
-## 1. Physical Resources
+## The `app` Label
 
-Always monitor. Node metrics come from Alloy's built-in `node_exporter` integration (no standalone DaemonSet). Container metrics come from cAdvisor via kubelet. Sauron doesn't generate these — just ensures they're collected and scraped.
+Every pod must have the Kubernetes label `app: <name>`. Alloy copies it to every metric and log it collects, making all data queryable by application across Prometheus, Loki, and Grafana.
 
-Metrics: CPU usage, memory (total/available/swap), disk (usage/IO), network (bytes sent/recv), container resources.
+## Alloy: Pod-Level Collection
 
-## 2. Health Status
+Alloy runs in the monitor namespace and collects three concerns per pod:
 
-Discoverable from the project's dependencies and processes. Sauron generates these by auditing the codebase.
+| Concern | Source | How |
+|---------|--------|-----|
+| Infra metrics | kubelet, cAdvisor | CPU, memory, network, disk — automatic for all pods |
+| App metrics | pod `/metrics` | Scraped if pod has `prometheus.io/scrape` annotation |
+| Logs | pod stdout | Tailed via K8s API, written to Loki |
 
-**Per-process:** Is it running? Is it stuck? (check port reachability, recent activity)
-**Per-dependency:** Is Kafka/Postgres/Redis reachable? (TCP checks, ping)
-**Composite:** Roll up process + dependency health into section-level status gauges (0=fail, 1=warning, 2=ok)
+Infra metrics are always available — no app instrumentation needed. App metrics are opt-in. Not every pod needs `/metrics`.
 
-Pattern: a health daemon that periodically checks all processes and dependencies, exposes `service_status{process}` and `section_status{section}` gauges.
+### Pod Annotations
 
-## 3. Design-Pattern Metrics
+For pods that expose `/metrics`:
 
-Determined by which framework the project uses. Sauron generates these from the Design Patterns table in CLAUDE.md.
-
-### Stoik
-Consumer loop metrics: `messages_consumed_total`, `messages_flushed_total`, `buffer_size`, `flush_duration_seconds`, `parse_errors_total`, `consumer_lag`
-
-### Orchestrator
-Lifecycle metrics: `service_status`, `service_healthy`, `batch_completed_total`, `batch_last_duration_seconds`, `task_success`/`task_failed`, `batch_cpu_percent`, `batch_memory_bytes`
-
-## 4. Project-Specific
-
-Only the developer knows these. Sauron should **ask** what business metrics matter, then implement them.
-
-Examples: spam/clean message rates, entity counts by type, enrichment coverage, classification scores, job success timestamps.
-
-## Reference Patterns
-
-- `metrics_pusher.py` — How to expose Prometheus metrics in k8s (prometheus_client + pod annotations)
-- `grafana_api.py` — Programmatic dashboard push/pull via Grafana HTTP API
-
-## Health Logs
-
-Complement metrics with structured warning/error logs. Rate-limit to avoid storms.
-
-| Category | Warning | Error |
-|----------|---------|-------|
-| **Performance** | Slow operations (>threshold) | Timeouts, deadlocks |
-| **Throughput** | Low consume/flush rate | Zero throughput |
-| **Resources** | High memory/disk usage | OOM, disk full |
-| **Dependencies** | Slow calls, retries | Connection failures |
-| **Data Quality** | High error ratio | Data corruption |
-| **Backpressure** | Growing backlog/lag | Backlog exceeding capacity |
-
-## Grafana Dashboard Provisioning
-
-Dashboards are stored as JSON in `agents/charon/manifests/master/base/dashboards/` and provisioned via ConfigMaps:
-
-- `dashboards/cluster/` — per-cluster dashboards (loaded on all Grafana instances)
-- `dashboards/master/` — master-only dashboards (loaded on home Grafana only)
-
-To update dashboards after editing JSONs:
+```yaml
+metadata:
+  labels:
+    app: my-app
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "<port>"
 ```
-kubectl create configmap grafana-dashboards-cluster -n monitor --from-file=dashboards/cluster/ --dry-run=client -o yaml | kubectl apply --server-side -f -
+
+Pods without `/metrics` still get infra metrics and log collection — only the `app` label is required.
+
+### Logs
+
+Apps write structured JSON to stdout. Alloy tails pod stdout and writes to Loki. Log delivery is best-effort.
+
+Required fields: `level` (info/warning/error), `event` (what happened). Additional fields become Loki labels automatically.
+
+## Vitals: App-Level Evaluation
+
+Each app deploys one vitals pod in its own namespace that evaluates health by querying Prometheus and Loki. Vitals is standalone (not a sidecar) because it needs a cross-pod view.
+
+Vitals produces two types of metrics:
+
+1. **Health gauges** — tri-state (`0=FAIL, 1=WARNING, 2=OK`) evaluations of app concerns
+2. **Derived metrics** — app-level aggregations that don't exist at the pod level
+
+Alloy scrapes vitals like any other pod.
+
+### Health Gauges
+
+| Metric | What it answers |
+|--------|----------------|
+| `vitals_process{process}` | Is this process alive? |
+| `vitals_<section>{check}` | Is this concern healthy? |
+
+Recommended sections (extend as needed): `vitals_deps`, `vitals_ingestion`, `vitals_storage`, `vitals_serving`, `vitals_queue`.
+
+### Derived Metrics
+
+App-level aggregations computed from pod-level data. Examples: `vitals_pipeline_latency_seconds`, `vitals_consumer_lag_total`, `vitals_throughput_messages_per_second`.
+
+### Deployment
+
+One vitals deployment per app, per namespace. Requires both `PROMETHEUS_URL` and `LOKI_URL` env vars. Port 9131, with `prometheus.io/scrape` annotation so Alloy collects vitals metrics.
+
+## Dashboards
+
+Dashboards are stored as JSON and provisioned via ConfigMaps:
+
+```bash
+kubectl create configmap grafana-dashboards -n monitor \
+  --from-file=dashboards/ --dry-run=client -o yaml | kubectl apply --server-side -f -
 ```
 
 Grafana polls for changes every 30 seconds.
+
+## Alerting
+
+### Meta-alerts
+
+Detect silent vitals failures — if vitals goes down, health visibility is lost:
+
+```yaml
+- alert: VitalsMissing
+  expr: absent(vitals_process{app="my-app"})
+  for: 5m
+```
+
+### App alerts
+
+Alert rules are defined per-app based on vitals gauges (e.g., `vitals_deps == 0` for critical, `vitals_ingestion == 1` for warning).
+
+## Onboarding a New App
+
+1. Add the `app` label to all pods
+2. Optionally expose `/metrics` with `prometheus.io/scrape` annotation
+3. Deploy a vitals pod that evaluates health and derived metrics
+4. Add a Grafana dashboard
+5. Add alert rules for critical vitals gauges
+
+Vitals is not required for short-lived jobs or CronJobs. Platform infrastructure has its own health mechanisms and does not use vitals.

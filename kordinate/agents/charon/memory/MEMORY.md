@@ -1,6 +1,0 @@
-- [infra.md](infra.md) — Infrastructure reference
-- [migration.md](migration.md) — Full migration lifecycle for deployments
-- [monitoring-topology.md](monitoring-topology.md) — Monitoring infrastructure config and topology
-- [tools.md](tools.md) — Deployer tools reference
-- [troubleshooting.md](troubleshooting.md) — Common deployment issues and their fixes
-- [scratchpad.md](scratchpad.md) — Deployer working notes and observations

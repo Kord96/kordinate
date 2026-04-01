@@ -1,8 +1,6 @@
 ---
 name: main
 description: Orchestrator — the main Claude Code session that coordinates all agents
-curated: true
-scope: global
 ---
 
 # Main

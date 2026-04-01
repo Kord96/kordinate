@@ -1,8 +1,5 @@
 ---
 description: Prioritize Grafana renderer for visual dashboard auditing over JSON-only analysis
-curated: false
-scope: global
-preloaded: sauron
 ---
 
 Prioritize using Grafana renderer (curl to /render/d/...) for visual investigation over JSON inspection when auditing dashboards. Visual audit catches layout issues (overlapping panels, wrong row assignments, spacing problems) that JSON gridPos analysis misses.
@@ -13,4 +10,4 @@ Prioritize using Grafana renderer (curl to /render/d/...) for visual investigati
 
 **How to apply:** After making dashboard JSON edits, always render a screenshot to verify the result before reporting success.
 
-**Note:** For project-specific notes, use `/kord remember` to save memories.
+**Note:** For project-specific notes, use the `write_memory` tool to save memories.

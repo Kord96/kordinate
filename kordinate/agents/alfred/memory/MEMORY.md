@@ -1,1 +1,0 @@
-- [scratchpad.md](scratchpad.md) — Operational notes and observations
