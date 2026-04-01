@@ -25,13 +25,15 @@ After all three steps: assess confidence, identify gaps.
 
 ## Step 1 — AST Rules
 
-Run ast-grep once against the entire project:
+Run ast-grep against the project using the per-rule scanner:
 
 ```bash
-cd $KORDINATE_HOME && ast-grep scan -c sgconfig.yml $ROOT --json
+python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/run_ast_grep.py $ROOT
 ```
 
-This runs all ~175 rules in one pass. Parse the JSON output — each match has a `ruleId` that maps to a concept name. Mark matched concepts as **confirmed, high confidence**.
+This runs each concept's `ast-grep.yaml` individually and merges results. Parse the JSON output — each match has a `ruleId` that maps to a concept name. Mark matched concepts as **confirmed, high confidence**.
+
+Do NOT use `ast-grep scan -c sgconfig.yml` — the `ruleDirs` approach fails when concept directories contain non-rule YAML files (questions.yaml).
 
 Run semgrep once for anti-pattern rules:
 

@@ -35,11 +35,11 @@ Read the source code. As you build your understanding, cover all concerns below.
 
 **Completeness checklist:**
 
-- **Patterns and concepts** — 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. When starting this: read [detection.md](detection.md).
+- **Patterns and concepts** — 3-step detection: AST/semgrep rules (fast, high confidence) → batch grep (candidate list) → diagnostic questions (confirm candidates + detect shapes). Assess confidence. Identify gaps. When starting this: read [detection.md](detection.md).
 - **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [dep-analysis.md](dep-analysis.md).
 - **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
 - **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [source-gathering.md](source-gathering.md).
-- **Actors and flows** — External actors. Trace 2-6 critical flows across all five types (data, control, event, state, resource). Not every project will have all five — trace what exists. Events (omit if none). When writing atlas: read [atlas-atlas-schema.md](atlas-atlas-schema.md).
+- **Actors and flows** — External actors. Trace 2-6 critical flows across all five types (data, control, event, state, resource). Not every project will have all five — trace what exists. Events (omit if none). When writing atlas: read [atlas-schema.md](atlas-schema.md).
 - **Domain model and bounded contexts** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Map bounded contexts: where does the same entity name mean different things across modules? Extract ubiquitous language for ambiguous or domain-specific terms.
 - **State** — Stores with concept vocabulary, readers/writers, persistence model. Assess schema evolution strategy (migrations directory, versioning tool). Identify concurrency handling (locking strategy, conflict resolution). Record `schema_evolution` and `concurrency` on each state entry.
 - **Observability** — Logging structure (JSON vs plain, correlation IDs, library). Metrics exposure (endpoint, format, key metrics). Tracing (provider, propagation). Flag gaps — missing correlation IDs, no metrics endpoint, no error tracking. Record in `observability` section.
@@ -48,19 +48,22 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Infrastructure** — CI/CD pipelines: find workflow files (`.github/workflows/`, `.gitlab-ci.yml`, `Jenkinsfile`), map triggers and stages. IaC: find Terraform, CloudFormation, Helm, Kustomize files, inventory managed resources. Record in `module_graph.ci_cd` and `module_graph.iac`.
 - **Failure modes** — Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
-- **Stories** — When composing stories: read [story-atlas-schema.md](story-atlas-schema.md) and [writing-guide.md](writing-guide.md).
+- **Stories** — When composing stories: read [story-schema.md](story-schema.md) and [writing-guide.md](writing-guide.md).
 
 ### Step 3 — Gemini atlas review
 
-Write the draft atlas to `/tmp/atlas-draft.json`, then launch Gemini to audit it while you continue composing. Use `run_in_background`:
+Write the draft atlas to `/tmp/atlas-draft.json`, then feed it with key source files to Gemini via stdin. Use `run_in_background`:
 ```bash
-gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? For each flow: verify the type matches the step fields used (data flows use data/transform, control flows use condition/gate, etc.). For observability/security/developer_experience: verify grounded_in files actually contain the claimed tooling. For bounded contexts: verify entity definitions actually differ across the listed modules. Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-6 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json
+cat /tmp/atlas-draft.json > /tmp/gemini-atlas-context.md
+echo "=== Key source files ===" >> /tmp/gemini-atlas-context.md
+find $ROOT -name "*.py" -o -name "*.go" -o -name "*.ts" | head -30 | xargs head -50 >> /tmp/gemini-atlas-context.md 2>/dev/null
+gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? For each flow: verify the type matches the step fields used (data flows use data/transform, control flows use condition/gate, etc.). Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-6 flows. Report EVERY error with specific file paths." < /tmp/gemini-atlas-context.md > /tmp/gemini-review-atlas.json
 ```
-Continue to Step 4 while Gemini runs — you will be notified when it completes.
+Do NOT use `@$ROOT/` — it fails on large repos. Continue to Step 4 while Gemini runs — you will be notified when it completes.
 
 ### Step 4 — Write atlas.json
 
-Assemble into [atlas-atlas-schema.md](atlas-atlas-schema.md) v4 format. Set `version: "4"` and `generated` to today.
+Assemble into [atlas-schema.md](atlas-schema.md) v4 format. Set `version: "4"` and `generated` to today.
 
 **Before writing the final atlas.json**, check if the Gemini atlas review (Step 3) has completed. If it has, read `/tmp/gemini-review-atlas.json` and incorporate valid critiques — fix any confirmed errors (wrong file paths, false pattern detections, incorrect severity). Discard critiques that are wrong or subjective. If Gemini hasn't finished yet, wait for the notification before writing.
 
@@ -72,11 +75,11 @@ If `--detect-only`: skip Phase 2, go to Report.
 
 ## Phase 2 — Compose
 
-With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-atlas-schema.md](story-atlas-schema.md).
+With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-schema.md](story-schema.md).
 
 ### Step 5 — Compose the story tree
 
-Build a tree of stories that mirrors the atlas structure. Top-down per [story-atlas-schema.md](story-atlas-schema.md):
+Build a tree of stories that mirrors the atlas structure. Top-down per [story-schema.md](story-schema.md):
 
 **1. Root stories (3-5, one per atlas group).** For each group, write a root story that orients the reader: what components this group contains, how they relate, why this grouping exists. Root summaries are 2 paragraphs max, ~50-80 words. Set `parent: null`, list `children`.
 
@@ -99,7 +102,7 @@ Each story is assembled from building blocks:
 
 All prose follows [writing-guide.md](writing-guide.md). For failure flows: include trigger, severity, detection, recovery. For data structures: use `reads`/`writes` edge types.
 
-**Typical output:** 3-5 root stories, 8-20 child stories, 0-3 journeys.
+**Typical output:** 3-5 root stories, 8-20 child stories, 3-5 journeys.
 
 ### Step 6 — Refine (Detect-Compose-Refine)
 
@@ -123,7 +126,10 @@ With validated output, run quality checks:
 
 3. **Gemini story review** — review against the **codebase**. Run with `run_in_background`:
    ```bash
-   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json
+   cat $ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-story-context.md
+   for f in $ROOT/.kord/agents/augur/memory/stories/*.yaml; do echo "=== $f ===" >> /tmp/gemini-story-context.md; cat "$f" >> /tmp/gemini-story-context.md; done
+   find $ROOT -name "*.py" -o -name "*.go" -o -name "*.ts" | head -20 | xargs head -30 >> /tmp/gemini-story-context.md 2>/dev/null
+   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." < /tmp/gemini-story-context.md > /tmp/gemini-review-stories.json
    ```
 
 **Wait for the Gemini story review to complete** before proceeding to the report. Read `/tmp/gemini-review-stories.json` and fix any confirmed errors in stories (fabricated claims, wrong file references, incorrect causality). If changes are made, **call warden again** for a fresh token.
@@ -132,7 +138,21 @@ If groundedness is low, fix claims. If coverage is low, add stories. Always reva
 
 ---
 
-## Step 9 — Report
+## Step 9 — Write Learnings
+
+After every analysis, write what you learned to memory. Record anything that would make the next analysis better:
+
+- Detection gaps — patterns you saw but missed or detected with low confidence
+- New concept candidates — patterns not in the catalog, with evidence
+- AST rule issues — false positives or missed detections
+- Stack-specific notes — framework idioms that affected detection
+- Score summary — project name and key metrics
+
+Skip this step if `--detect-only`.
+
+---
+
+## Step 10 — Report
 
 ```
 ## Analysis: <project>

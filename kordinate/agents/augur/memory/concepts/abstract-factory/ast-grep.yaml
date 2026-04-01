@@ -29,7 +29,8 @@ rule:
         $$$BODY
     }
   has:
-    pattern: "create$NAME($$$ARGS): $TYPE"
+    kind: method_signature
+    regex: "^create"
 ---
 id: abstract-factory-class-ts
 language: TypeScript
@@ -39,7 +40,5 @@ rule:
         $$$BODY
     }
   has:
-    pattern: |
-      create$NAME($$$ARGS) {
-          $$$BODY
-      }
+    kind: method_definition
+    regex: "^create"

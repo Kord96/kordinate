@@ -1,6 +1,6 @@
 # API Surface Review
 
-Level 3 resource for the architect skill. Referenced from step 4 (review API surface). Carries the full API review procedure.
+Level 3 resource for the analyze skill. Referenced from step 2 (API surface concern). Carries the full API review procedure.
 
 ## Framework Detection
 

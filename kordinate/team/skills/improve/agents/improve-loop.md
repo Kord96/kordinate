@@ -121,22 +121,30 @@ Continue to Step 1.5. Read Gemini's response in Step 1.6.
 
 ### Step 1.5 — Clone Test Repos
 
-Select 2-3 repos to test your skills against real codebases. Use GitHub CLI:
+Always clone **fresh repos** — never reuse repos from previous runs. Testing against the same repos repeatedly causes overfitting to their specific patterns. Fresh repos expose new edge cases, new concept gaps, and new architectural styles.
+
+Use GitHub CLI to find candidates:
 
 ```bash
 gh search repos --language=<relevant-lang> --stars=100..5000 --sort=updated --limit=10 \
   --json nameWithOwner,description,primaryLanguage,stargazerCount
 ```
 
-Pick repos that are likely to exercise your skills (e.g., for an observability agent, pick
-repos with monitoring code; for an architecture agent, pick repos with clear design patterns).
+Pick 2-3 repos that are likely to exercise your skills (e.g., for an architecture agent, pick repos with clear design patterns across different stacks).
 
-Check the repo database at `$DATA_DIR/repo-database.json` — avoid repos already tested
-in the last 30 days (to broaden coverage). Clone:
+Check the repo index to exclude all previously tested repos:
 
 ```bash
-git clone --depth 1 https://github.com/<nameWithOwner>.git /data/repos/<owner>--<name>
+python3 $KORDINATE_HOME/team/scripts/repo-index.py check <nameWithOwner>
 ```
+
+Exit code 0 = already exists (skip it). Exit code 1 = new repo (use it). Clone and register new repos via the index script:
+
+```bash
+python3 $KORDINATE_HOME/team/scripts/repo-index.py add <nameWithOwner> <language> --tested-by <agent-name>
+```
+
+This clones to `/data/repos/<owner>--<name>` and updates `/data/repos/index.json` in one step.
 
 Record each repo in the manifest's `test_repos` array:
 ```json
@@ -228,11 +236,12 @@ Execute the skill's procedure against a cloned repo. Capture the full output (sa
 
 | Skill type | How to run |
 |------------|-----------|
-| **Scan/detect** (detect-concepts, detect-patterns, scan-observability, assess-debt) | Run the full procedure. Save the output artifact (concepts.md, patterns report, etc.) |
-| **Generate** (architect, analyze, map-dependencies, review-api) | Run the full procedure. Save the generated artifact (architecture.yaml, dependency graph, API report) |
-| **Transform** (edit-based skills) | Dry-run on a copy of the repo. Save proposed changes as a patch. |
-| **Deploy/infra** | Skip — trace the procedure mentally instead. |
-| **Meta** (improve, train-detection) | Skip — these are tested by running them. |
+| **Analyze** (augur /analyze) | Run the full procedure. Save atlas.json, stories/*.yaml, journeys/*.yaml |
+| **Document** (scribe /document) | Run with augur output as input. Save manifest.json, storyByNode.json |
+| **Scan** (sauron /monitor, warden /scan-secrets) | Run the full procedure. Save the output artifact |
+| **Transform** (edit-based skills) | Dry-run on a copy of the repo. Save proposed changes as a patch |
+| **Deploy/infra** | Skip — trace the procedure mentally instead |
+| **Meta** (improve, train-detection) | Skip — these are tested by running them |
 
 #### 2.2b — Build Ground Truth
 
@@ -248,35 +257,54 @@ gemini -m gemini-2.5-pro -o json -p "<oracle prompt for skill type>" \
   @/data/repos/<repo>/src/ > $DATA_DIR/<agent>/ground-truth/<skill>-<repo>-gemini.json &
 ```
 
-Oracle prompts by skill type:
+Oracle prompts by output type:
 
-| Skill | Gemini oracle prompt |
-|-------|---------------------|
-| **detect-concepts** | "List every architectural concept, pattern, and anti-pattern present in this codebase. For each, cite the specific file and line range as evidence. Look for BEHAVIOR, not naming." |
-| **detect-patterns** | Same as detect-concepts (they share the same catalog). |
-| **review-api** | "List every API endpoint in this codebase — method, path, handler function, file. Note any inconsistencies in naming, authentication, error handling, or response format." |
-| **assess-debt** | "Identify every instance of tech debt in this codebase — code smells, anti-patterns, missing tests, hardcoded values, dead code. For each, cite the file and describe the impact." |
-| **map-dependencies** | "List every dependency: internal module imports, external packages, infrastructure services (databases, caches, queues), and external API calls. Cite the import statement or connection string." |
-| **architect/analyze** | "Describe the architecture of this codebase: main components, their responsibilities, how data flows between them, state management, and failure modes. Cite specific files for each component." |
-| **scan-observability** | "List every observability signal: log statements (with level and message), metrics (with names), health check endpoints, and tracing spans. Cite file and line." |
+| Output | Gemini oracle prompt |
+|--------|---------------------|
+| **atlas.json (structure)** | "Describe the architecture of this codebase: main components (5-10), their responsibilities, how they group into 3-5 runtime boundaries, and their dependencies. Cite specific files for each component." |
+| **atlas.json (flows)** | "Trace the 2-4 most critical data flows through this codebase. For each: what triggers it, what components are involved, what data moves, what protocol is used. Cite files." |
+| **atlas.json (concepts)** | "List every architectural pattern, anti-pattern, and domain model present in this codebase. For each, cite the specific file and line range as evidence. Look for BEHAVIOR, not naming." |
+| **atlas.json (debt)** | "Identify every instance of tech debt: code smells, anti-patterns, missing tests, hardcoded values, dead code. For each, cite the file and describe the impact." |
+| **atlas.json (security)** | "Describe the authentication, authorization, and secrets management in this codebase. List every entry point and whether it has auth. Cite files." |
+| **atlas.json (observability)** | "List every observability signal: log statements (with level), metrics (with names), health endpoints, tracing spans. Cite file and line." |
+| **stories** | "For each component group in this codebase, write a 2-paragraph summary explaining what it does and why it's organized this way. Then identify 2-3 specific concerns worth drilling into (a key flow, a data store, a failure mode)." |
+| **journeys** | "If you were onboarding a new developer to this codebase, what order would you teach things? List 5-8 topics in teaching order, explaining why each builds on the previous." |
 
 **Oracle 2 — Mechanical verification.** Use grep/glob/AST to independently verify
 specific claims. This catches hallucinations from both the skill and Gemini:
 
-| Skill | Mechanical checks |
-|-------|------------------|
-| **detect-concepts** | Grep for import statements, decorators, config files that confirm/deny each detected concept |
-| **review-api** | Grep for route decorators (`@app.get`, `@router.post`, `http.HandleFunc`, etc.) and count — does the skill's endpoint count match? |
-| **assess-debt** | Verify cited files exist. Grep for the specific patterns flagged (e.g., `TODO`, hardcoded strings, bare excepts) |
-| **map-dependencies** | Parse `requirements.txt`/`go.mod`/`package.json` — does the skill's external dep list match? Grep for imports — does the internal module list match? |
-| **architect/analyze** | Verify every component name maps to a real file/directory. Check that stated data flows have matching import/call chains. |
-| **scan-observability** | Grep for `log.`, `logger.`, `metrics.`, `/health`, `/ready` — does the count match the skill's output? |
+| Output | Mechanical checks |
+|--------|------------------|
+| **atlas components** | Verify every component's `modules[]` paths exist. Grep for imports to confirm `depends_on` edges. |
+| **atlas flows** | Verify `grounded_in` file:line references exist. Trace step sequences via import chains. |
+| **atlas concepts** | Grep for import statements, decorators, config files that confirm/deny each detected concept. Run ast-grep rules to cross-check. |
+| **atlas API surface** | Grep for route decorators (`@app.get`, `@router.post`, `http.HandleFunc`) — does endpoint count match? |
+| **atlas debt** | Verify cited files exist. Grep for flagged patterns (`TODO`, hardcoded strings, bare excepts). |
+| **atlas state** | Verify `readers`/`writers` component IDs exist. Check `grounded_in` references. |
+| **stories** | Every `**bold ref**` resolves to an atlas node ID. Every `grounded_in` file exists. Structure node IDs exist in atlas. |
+| **journeys** | Every story ID in the journey exists in `stories/`. Order makes pedagogical sense (doesn't reference concepts before they're introduced). |
 
-**Oracle 3 — Cross-skill validation.** If multiple skills ran on the same repo, their
-outputs should be consistent:
-- Components in `architect` output should appear in `map-dependencies` output
-- Endpoints in `review-api` should align with routes found by `detect-concepts`
-- Debt flagged by `assess-debt` should reference real components from `architect`
+**Oracle 3 — Schema compliance.** Validate the output against the v4 schema:
+
+- Run `python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py` on atlas.json
+- Check: version is "4", 3-5 groups, 5-10 components, flow types are valid enum values
+- Check: all cross-references resolve (component IDs in flows, state readers/writers, failure cascade components)
+- Check: `grounded_in` references on flows, state, and failure_modes are present
+- Check: stories have required `summary` block, valid `parent`/`children` tree structure
+- Check: journeys reference valid story IDs, have 3-8 stories each
+
+**Oracle 4 — Story and journey quality.** Assess the narrative output:
+
+| Dimension | What to check |
+|-----------|--------------|
+| **Story groundedness** | Does each story's `evaluation.groundedness` score >= 0.85? For scores below, which claims are ungrounded? |
+| **Story coverage** | Are all critical atlas nodes (components + critical external deps + source-of-truth state) referenced in at least one story? |
+| **Story tree coherence** | Does each child story zoom into a subset of its parent's nodes? Do children reference fewer nodes than parents? |
+| **Story summary quality** | Are summaries scenario-driven (not passive descriptions)? Do they lead with action? Are they within word limits (root: 50-80, child: 80-120)? |
+| **Journey teaching order** | Does the getting-started journey build understanding progressively? Would a reader at story N have enough context from stories 1..N-1? |
+| **Journey coverage** | Does getting-started touch all atlas groups? Are there groups with no story in any journey? |
+| **Observation attachment** | Are observations attached to the right nodes/steps (not just story-wide when they could be specific)? |
+| **Rationale presence** | Do stories about non-obvious architectural choices include rationale blocks? |
 
 #### 2.2c — Score
 
@@ -292,15 +320,36 @@ Compute:
 - **Recall** = TP / (TP + FN) — "does the skill find everything that's there?"
 - **F1** = 2 * (P * R) / (P + R) — balanced score
 
-For skills where items aren't countable (e.g., architect produces a narrative), score
-on a rubric instead:
+For outputs where items aren't countable, score on a rubric:
+
+**Atlas rubric:**
 
 | Dimension | 1 (poor) | 3 (adequate) | 5 (excellent) |
 |-----------|----------|-------------|--------------|
 | **Completeness** | Major components missing | Most components present, some gaps | All components identified |
 | **Accuracy** | Multiple hallucinated components | Minor inaccuracies | All claims verifiable in code |
-| **Specificity** | Vague descriptions, no file refs | Some file refs, some vague | Every claim cites specific files |
-| **Consistency** | Contradicts other skill outputs | Mostly consistent | Fully consistent with other skills |
+| **Specificity** | Vague descriptions, no file refs | Some file refs, some vague | Every claim cites specific files via `grounded_in` |
+| **Schema compliance** | Missing required sections, wrong types | Minor schema issues | Passes validator with zero errors |
+| **Flow typing** | Flows untyped or wrong type | Most flows correctly typed | Every flow uses the right category with correct step fields |
+
+**Story rubric:**
+
+| Dimension | 1 (poor) | 3 (adequate) | 5 (excellent) |
+|-----------|----------|-------------|--------------|
+| **Groundedness** | < 0.70 | 0.70-0.85 | >= 0.85 |
+| **Coverage** | Major components undocumented | Most covered, some gaps | >= 0.80 of critical nodes covered |
+| **Tree coherence** | Children don't zoom in, random scoping | Most children scope correctly | Every child is a clean subset of parent |
+| **Summary quality** | Passive, verbose, no action | Adequate but generic | Scenario-driven, leads with action, within word limits |
+| **Observation placement** | All story-wide, none attached | Some attached to nodes/steps | Observations attached at the most specific applicable level |
+
+**Journey rubric:**
+
+| Dimension | 1 (poor) | 3 (adequate) | 5 (excellent) |
+|-----------|----------|-------------|--------------|
+| **Teaching order** | Random or alphabetical | Reasonable but some gaps | Progressive — each story builds on prior context |
+| **Group coverage** | Misses multiple groups | Most groups touched | All atlas groups represented |
+| **Audience fit** | Generic, no clear audience | Audience stated but stories not tailored | Stories clearly selected and ordered for the stated audience |
+| **Length** | < 3 or > 8 stories | 3-8 stories | Right number for the concern — neither rushed nor padded |
 
 #### 2.2d — Record Results
 
@@ -354,6 +403,19 @@ Evaluate the skill against these criteria:
 | **Actionability** | Steps that say "handle X" without saying how, vague verbs like "process" or "manage" |
 | **Alignment** | Does this skill serve the agent's identity? Is it in the right place? (from Phase 1) |
 | **Resources** | Are 3rd-layer resources sufficient? Missing scripts, templates, schemas? |
+
+**For augur's `/analyze` specifically**, also ask:
+
+| Category | What to look for |
+|----------|-----------------|
+| **Concept coverage** | Did the test run detect patterns that have no concept file? Should new concepts be created? |
+| **Detection gaps** | Were patterns visible in the code but missed by all 3 detection steps? What grep keywords, AST rules, or questions would catch them? |
+| **AST rule quality** | Did any ast-grep rules produce false positives? Did rules fail to parse? Should new rules be written for high-value concepts that currently rely on grep only? |
+| **Question quality** | Did diagnostic questions produce the right answer? Were any questions misleading or ambiguous? Should signal hints be added or refined? |
+| **New concept proposals** | Did the test repo exhibit patterns not in the catalog at all? Propose new concept files with type, signatures, and questions. |
+| **Schema compliance** | Does the atlas output pass the v4 validator? Are new atlas sections (observability, security, devex) populated when the code has them? |
+| **Story grounding** | Are story claims traceable to atlas findings? Do `grounded_in` references point to real files? |
+| **Journey coherence** | Does the getting-started journey cover all groups? Does the teaching order make sense? |
 
 Do NOT look for:
 - Style preferences (Oxford commas, heading levels, bullet vs number)
@@ -440,54 +502,129 @@ classify as "proposed" instead.
 
 Persist findings so the next improvement run starts with awareness of what was assessed.
 
-### Step 3.1 — Update Repo Database
+### Step 3.1 — Update Repo Index
 
-Append tested repos to the persistent database at `$DATA_DIR/repo-database.json`:
+Mark all tested repos in the central index:
 
-```json
-[
-  {
-    "nameWithOwner": "owner/repo",
-    "language": "python",
-    "stars": 1200,
-    "tested_by": "<agent-name>",
-    "tested_at": "ISO-8601",
-    "skills_tested": ["skill-a", "skill-b"],
-    "results_path": "$DATA_DIR/<agent>/test-results/"
-  }
-]
+```bash
+python3 $KORDINATE_HOME/team/scripts/repo-index.py mark-tested <nameWithOwner> <agent-name>
 ```
 
-Create the file if it doesn't exist. Append to the array if it does.
+This updates `/data/repos/index.json` so future improve runs know which repos have been tested and by whom. If the repo was already added via `repo-index.py add` during Step 1.5, it's already registered — this just adds the agent to `tested_by`.
 
-### Step 3.2 — Update Improvement History
+### Step 3.2 — Write Run Report
 
-Append this run's summary to `$DATA_DIR/<agent>/history.json`. Each entry captures
-what was found and done, enabling trend analysis across runs:
+Write a detailed run report to `$DATA_DIR/<agent>/runs/<run_id>.json`. This is the permanent record — every number, every change, every finding. One file per run, never overwritten.
 
 ```json
 {
   "run_id": "<timestamp>",
   "date": "YYYY-MM-DD",
+  "duration_minutes": 45,
+  "status": "complete | plateau | failed",
+
+  "repos_tested": [
+    {
+      "nameWithOwner": "owner/repo",
+      "language": "python",
+      "stars": 1200,
+      "files_scanned": 87,
+      "loc": 12400
+    }
+  ],
+
+  "detection_scores": {
+    "<repo>": {
+      "concepts": {"precision": 0.88, "recall": 0.74, "f1": 0.80, "true_positives": 14, "false_positives": 2, "false_negatives": 5},
+      "components": {"precision": 0.90, "recall": 0.82, "f1": 0.86, "count_expected": 11, "count_produced": 10},
+      "flows": {"precision": 1.00, "recall": 0.67, "f1": 0.80, "count_expected": 3, "count_produced": 2},
+      "api_endpoints": {"precision": 0.95, "recall": 0.80, "f1": 0.87, "count_expected": 20, "count_produced": 19},
+      "debt_items": {"precision": 0.85, "recall": 0.60, "f1": 0.70, "count_expected": 10, "count_produced": 7}
+    }
+  },
+
+  "story_scores": {
+    "groundedness": {"min": 0.85, "max": 0.95, "avg": 0.90},
+    "coverage": 0.82,
+    "total_stories": 12,
+    "root_stories": 4,
+    "child_stories": 8
+  },
+
+  "journey_scores": {
+    "getting_started": {"story_count": 6, "groups_covered": 4, "groups_total": 4},
+    "additional_journeys": 1
+  },
+
+  "schema_validation": {
+    "passed": true,
+    "errors": [],
+    "warnings": ["observability section empty — flagged as gap"]
+  },
+
+  "changes_made": [
+    {
+      "iteration": 1,
+      "type": "structural",
+      "description": "Added bounded context detection to Phase 1 checklist",
+      "files_changed": ["SKILL.md"],
+      "lines_added": 12,
+      "lines_removed": 3
+    }
+  ],
+
+  "new_concepts_proposed": [
+    {
+      "name": "connection-draining",
+      "type": "pattern",
+      "evidence": "Found in owner/repo at src/server.py:45 — graceful shutdown drains connections before exit",
+      "created": true
+    }
+  ],
+
+  "detection_improvements": [
+    {
+      "concept": "circuit-breaker",
+      "change": "Added tenacity library signature to grep keywords",
+      "before_recall": 0.60,
+      "after_recall": 0.80
+    }
+  ],
+
   "portfolio_findings": {
-    "coverage_gaps": ["..."],
-    "split_candidates": ["..."],
-    "new_skills_scaffolded": ["..."],
-    "staleness_fixes": ["..."]
-  },
-  "per_skill_results": {
-    "skill-a": {"iterations": 2, "stop_reason": "cosmetic-only", "test_result": "pass"},
-    "skill-b": {"iterations": 1, "stop_reason": "no-changes", "test_result": "pass"}
-  },
-  "proposed_actions": ["..."],
-  "repos_tested": ["owner/repo-1", "owner/repo-2"]
+    "coverage_gaps": [],
+    "staleness_fixes": [],
+    "resource_additions": [],
+    "proposed_actions": []
+  }
 }
 ```
 
-Create the file as `[]` if it doesn't exist. Append to the array. Keep the last 20 entries
-(trim oldest if over).
+Create the `runs/` directory if it doesn't exist.
 
-### Step 3.3 — Persist Portfolio Findings
+### Step 3.3 — Update History Index
+
+Append a summary line to `$DATA_DIR/<agent>/history.json` for quick trend analysis. This is the lightweight index — the full data is in `runs/<run_id>.json`.
+
+```json
+{
+  "run_id": "<timestamp>",
+  "date": "YYYY-MM-DD",
+  "repos_tested": 2,
+  "avg_f1": {"concepts": 0.80, "components": 0.86, "flows": 0.80},
+  "story_coverage": 0.82,
+  "story_groundedness_avg": 0.90,
+  "changes_count": 3,
+  "new_concepts": 1,
+  "detection_improvements": 1,
+  "stop_reason": "cosmetic-only",
+  "status": "complete"
+}
+```
+
+Create as `[]` if it doesn't exist. Append. Keep the last 50 entries.
+
+### Step 3.4 — Persist Portfolio Findings
 
 For each finding classified as "proposed" (needs human approval):
 ```
@@ -499,7 +636,7 @@ For domain insights discovered during improvement:
 /kord remember <agent-name> learned during self-improvement: <insight>
 ```
 
-### Step 3.4 — Commit and Push
+### Step 3.5 — Commit and Push
 
 Commit all changes and push. The worktree-push hook will automatically merge
 to main on push.
@@ -513,7 +650,7 @@ git -C $KORDINATE_HOME push 2>/dev/null || true
 If the push triggers a merge conflict, the hook will report it. The next `/merge`
 run will resolve it.
 
-### Step 3.5 — Finalize Manifest
+### Step 3.6 — Finalize Manifest
 
 Update manifest:
 ```json

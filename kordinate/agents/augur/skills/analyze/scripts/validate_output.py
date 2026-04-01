@@ -173,6 +173,47 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
 
     check_deps(components)
 
+    # Component connectivity — every component must connect to at least one other node
+    # via depends_on, flows, state readers/writers, or failure cascades
+    connected_components = set()
+    # From depends_on
+    def collect_connections(comps):
+        for c in comps:
+            cid = c.get("id", "")
+            for dep in c.get("depends_on", []):
+                connected_components.add(cid)
+                connected_components.add(dep)
+            collect_connections(c.get("children", []))
+    collect_connections(components)
+    # From flows
+    for f in atlas.get("flows", []):
+        for step in f.get("steps", []):
+            for key in ("component", "to"):
+                ref = step.get(key, "")
+                if ref and ref in component_ids:
+                    connected_components.add(ref)
+    # From state readers/writers
+    for s in atlas.get("state", []):
+        comp = s.get("component", "")
+        if comp and comp in component_ids:
+            connected_components.add(comp)
+        for r in s.get("readers", []):
+            if r in component_ids:
+                connected_components.add(r)
+        for w in s.get("writers", []):
+            if w in component_ids:
+                connected_components.add(w)
+    # From failure cascades
+    for fm in atlas.get("failure_modes", []):
+        for cascade in fm.get("cascade", []):
+            ref = cascade.get("component", "")
+            if ref and ref in component_ids:
+                connected_components.add(ref)
+    # Check for isolated components
+    for cid in component_ids:
+        if cid not in connected_components:
+            error(f"Component '{cid}' is isolated — not connected to any other component via depends_on, flows, state, or failure cascades", "components")
+
     # Flows (typed)
     for f in atlas.get("flows", []):
         fid = f.get("id", "")
@@ -261,6 +302,21 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
         testing = devex.get("testing", {})
         if testing and testing.get("grounded_in") and project_root:
             issues.extend(check_grounded_in(testing["grounded_in"], project_root, "developer_experience", "testing"))
+
+    # Module graph: CI/CD and IaC
+    module_graph = atlas.get("module_graph", {})
+    for ci in module_graph.get("ci_cd", []):
+        ci_file = ci.get("file", "")
+        if ci_file and project_root:
+            full = project_root / ci_file
+            if not full.exists():
+                warn(f"CI/CD entry references non-existent file: {ci_file}", "module_graph")
+    for iac_entry in module_graph.get("iac", []):
+        for iac_file in iac_entry.get("files", []):
+            if iac_file and project_root:
+                full = project_root / iac_file
+                if not full.exists():
+                    warn(f"IaC entry references non-existent file: {iac_file}", "module_graph")
 
     # Concepts
     concepts = atlas.get("concepts", {})
@@ -365,6 +421,10 @@ def validate_journey(journey: dict, story_ids: set) -> list[dict]:
         error("Journey missing required field: id")
     if "title" not in journey:
         error(f"Journey '{jid}' missing required field: title")
+    if "number" not in journey:
+        warn(f"Journey '{jid}' missing field: number (getting-started should be 1)")
+    if not journey.get("overview"):
+        warn(f"Journey '{jid}' missing overview (2-3 sentence framing for the audience)")
 
     stories = journey.get("stories", [])
     if len(stories) < 3:
@@ -509,12 +569,9 @@ def main():
     if not journeys_dir.exists():
         all_issues.append({"level": "ERROR", "section": "structure", "message": f"journeys/ directory not found at {journeys_dir}. Write at least getting-started.yaml here."})
     else:
-        has_overview = False
         for f in sorted(journeys_dir.iterdir()):
             if f.suffix not in (".yaml", ".yml"):
                 continue
-            if f.stem == "overview":
-                has_overview = True
             journey = load_yaml(f)
             if journey is None:
                 all_issues.append({"level": "ERROR", "section": "journey", "message": f"Failed to parse: {f.name}"})

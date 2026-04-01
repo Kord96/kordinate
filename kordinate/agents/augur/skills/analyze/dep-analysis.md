@@ -1,6 +1,6 @@
 # Dependency Analysis
 
-Level 3 resource for the architect skill. Referenced from step 3 (map dependencies). Carries the full dependency mapping procedure.
+Level 3 resource for the analyze skill. Referenced from step 2 (dependencies concern). Carries the full dependency mapping procedure.
 
 ## Module Discovery
 
