@@ -433,6 +433,14 @@
     "public": true
   },
   {
+    "type": "skill",
+    "name": "issues",
+    "agent": "scribe",
+    "description": "Create GitHub Issues from augur findings \u2014 deduplicates, classifies, confirms before creating.",
+    "arguments": "<project> [--dry-run] [--auto]",
+    "public": true
+  },
+  {
     "type": "file",
     "path": "agents/scribe/memory/scratchpad.md",
     "description": "Working notes",

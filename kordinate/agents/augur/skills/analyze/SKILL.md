@@ -50,17 +50,21 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
 - **Stories** — When composing stories: read [story-atlas-schema.md](story-atlas-schema.md) and [writing-guide.md](writing-guide.md).
 
-### Step 3 — Gemini review (background)
+### Step 3 — Gemini atlas review
 
-Feed the draft atlas, source code, and our constraints to Gemini:
+Write the draft atlas to `/tmp/atlas-draft.json`, then launch Gemini to audit it while you continue composing. Use `run_in_background`:
 ```bash
-gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? For each flow: verify the type matches the step fields used (data flows use data/transform, control flows use condition/gate, etc.). For observability/security/developer_experience: verify grounded_in files actually contain the claimed tooling. For bounded contexts: verify entity definitions actually differ across the listed modules. Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-6 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
+gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? For each flow: verify the type matches the step fields used (data flows use data/transform, control flows use condition/gate, etc.). For observability/security/developer_experience: verify grounded_in files actually contain the claimed tooling. For bounded contexts: verify entity definitions actually differ across the listed modules. Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-6 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json
 ```
-Continue immediately.
+Continue to Step 4 while Gemini runs — you will be notified when it completes.
 
 ### Step 4 — Write atlas.json
 
-Assemble into [atlas-atlas-schema.md](atlas-atlas-schema.md) v4 format. Set `version: "4"` and `generated` to today. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
+Assemble into [atlas-atlas-schema.md](atlas-atlas-schema.md) v4 format. Set `version: "4"` and `generated` to today.
+
+**Before writing the final atlas.json**, check if the Gemini atlas review (Step 3) has completed. If it has, read `/tmp/gemini-review-atlas.json` and incorporate valid critiques — fix any confirmed errors (wrong file paths, false pattern detections, incorrect severity). Discard critiques that are wrong or subjective. If Gemini hasn't finished yet, wait for the notification before writing.
+
+Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
 
 If `--detect-only`: skip Phase 2, go to Report.
 
@@ -117,11 +121,12 @@ With validated output, run quality checks:
 
 2. **Coverage**: critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
 
-3. **Gemini story review** (background) — review against the **codebase**:
+3. **Gemini story review** — review against the **codebase**. Run with `run_in_background`:
    ```bash
-   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
+   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json
    ```
-   If changes are made after Gemini feedback, **call warden again** for a fresh token.
+
+**Wait for the Gemini story review to complete** before proceeding to the report. Read `/tmp/gemini-review-stories.json` and fix any confirmed errors in stories (fabricated claims, wrong file references, incorrect causality). If changes are made, **call warden again** for a fresh token.
 
 If groundedness is low, fix claims. If coverage is low, add stories. Always revalidate after changes.
 

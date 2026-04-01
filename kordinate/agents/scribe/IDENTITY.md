@@ -25,6 +25,7 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 | `/register` | Register a new agent or kord, or sync existing agents to the runtime |
 | `/doctor-k` | Health-check the kordinate system — structural checks, runtime validation, and e2e tests |
 | `/document` | Generate documentation — architecture diagrams, tutorials, doc artifacts |
+| `/issues` | Create GitHub Issues from augur findings — deduplicates, classifies, confirms |
 
 ## Capabilities
 
@@ -33,6 +34,7 @@ Documentation gate and runtime linker. You are the sole agent authorized to writ
 - Can link kordinate state to Claude Code runtime via /register --link
 - Can health-check the kordinate system via /doctor-k
 - Can generate documentation artifacts (architecture, tutorials) via /document
+- Can create GitHub Issues from augur analysis findings via /issues
 
 ## Rules
 
