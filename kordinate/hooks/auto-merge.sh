@@ -2,7 +2,7 @@
 # auto-merge — keep session branch and target branch in sync on every push.
 #
 # Target branch is configurable per repo via .kord/merge-target file.
-# Default: "dev". Falls back to "main" if dev doesn't exist.
+# Default: "main".
 #
 # On push from a session/* worktree:
 # 1. Fetch latest target from origin
@@ -53,7 +53,7 @@ BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null)
 case "$BRANCH" in session/*) ;; *) exit 0 ;; esac
 
 # Determine target branch — configurable per repo
-# Priority: .kord/merge-target > KORD_MERGE_TARGET env > "dev" > "main"
+# Priority: .kord/merge-target > KORD_MERGE_TARGET env > "main"
 MAIN_REPO=$(git -C "$REPO_ROOT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
 MAIN_REPO="${MAIN_REPO%/.git}"
 
@@ -66,13 +66,9 @@ fi
 if [ -z "$TARGET" ] && [ -n "${KORD_MERGE_TARGET:-}" ]; then
   TARGET="$KORD_MERGE_TARGET"
 fi
-# Default: dev if it exists on remote, otherwise main
+# Default: main
 if [ -z "$TARGET" ]; then
-  if git -C "$REPO_ROOT" ls-remote --heads origin dev 2>/dev/null | grep -q dev; then
-    TARGET="dev"
-  else
-    TARGET="main"
-  fi
+  TARGET="main"
 fi
 
 log "target branch: $TARGET"
