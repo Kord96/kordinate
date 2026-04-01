@@ -36,7 +36,6 @@ agent-state/
 /agents
 /agent-memory
 /commands
-/hooks
 /profile
 
 # Agent runtime state
