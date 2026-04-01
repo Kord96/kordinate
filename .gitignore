@@ -70,3 +70,4 @@ __pycache__/
 .merge-lock/
 tasks/
 mcp-needs-auth-cache.json
+sgconfig.yml
