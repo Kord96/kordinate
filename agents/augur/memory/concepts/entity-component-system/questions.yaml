@@ -1,0 +1,14 @@
+questions:
+  - q: "Are entities represented as plain integer IDs or opaque handles rather than class hierarchies?"
+    weight: 3
+    signals: ["entity IDs as integers or u32/u64 handles", "no inheritance hierarchy for game objects"]
+  - q: "Are components pure data structs with no behavior or methods?"
+    weight: 3
+    signals: ["Position, Velocity, Health as plain data structs", "components contain only fields, no logic"]
+  - q: "Do systems iterate over entities by querying for specific component combinations?"
+    weight: 2
+    signals: ["query() or each() over entities matching component sets", "system function declares required components"]
+  - q: "Is there a central World or Registry that owns all entities and components?"
+    weight: 2
+    signals: ["World or Registry class with add_component/spawn", "single owner of entity-component relationships"]
+threshold: 6

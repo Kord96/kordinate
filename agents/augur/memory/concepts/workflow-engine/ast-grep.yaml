@@ -1,0 +1,44 @@
+id: workflow-airflow-dag-py
+language: Python
+rule:
+  pattern: |
+    with DAG($$$ARGS) as $DAG:
+        $$$BODY
+---
+id: workflow-airflow-operator-py
+language: Python
+rule:
+  pattern: '$TASK = PythonOperator($$$ARGS)'
+---
+id: workflow-temporal-workflow-py
+language: Python
+rule:
+  pattern: |
+    @workflow.defn
+    class $NAME:
+        $$$BODY
+---
+id: workflow-temporal-activity-py
+language: Python
+rule:
+  pattern: |
+    @activity.defn
+    async def $NAME($$$PARAMS):
+        $$$BODY
+---
+# Removed overly generic workflow-temporal-ts: `export async function` with Promise return
+# matched every exported async function. Temporal workflows need import-based detection.
+id: workflow-temporal-execute-ts
+language: TypeScript
+rule:
+  pattern: '$CLIENT.workflow.execute($$$ARGS)'
+---
+id: workflow-step-functions-ts
+language: TypeScript
+rule:
+  pattern: 'new sfn.StateMachine($$$ARGS)'
+---
+id: workflow-temporal-client-ts
+language: TypeScript
+rule:
+  pattern: '$CLIENT.workflow.start($$$ARGS)'

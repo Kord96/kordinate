@@ -1,0 +1,14 @@
+questions:
+  - q: "Are new objects created by cloning existing template instances rather than constructing from scratch?"
+    weight: 3
+    signals: ["clone() method", "deepcopy(template)", "Object.create(prototype)"]
+  - q: "Is there a prototype registry or catalog of pre-configured template objects that callers clone from?"
+    weight: 3
+    signals: ["prototype registry", "template catalog", "pre-configured instances for cloning"]
+  - q: "Are deep copy vs shallow copy semantics explicitly chosen and documented for cloned objects?"
+    weight: 2
+    signals: ["deepcopy for nested objects", "shallow copy documented", "copy semantics explicit"]
+  - q: "Does the clone method maintain class invariants so the cloned object is in a valid state?"
+    weight: 2
+    signals: ["cloned object passes validation", "clone preserves invariants", "no broken state after clone"]
+threshold: 6

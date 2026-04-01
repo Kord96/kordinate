@@ -1,0 +1,43 @@
+id: etl-airflow-dag-py
+language: Python
+rule:
+  pattern: '$NAME = DAG($$$ARGS)'
+---
+id: etl-airflow-dag-context-py
+language: Python
+rule:
+  pattern: |
+    with DAG($$$ARGS) as $DAG:
+        $$$BODY
+---
+id: etl-prefect-flow-py
+language: Python
+rule:
+  pattern: |
+    @flow($$$ARGS)
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: etl-prefect-task-py
+language: Python
+rule:
+  pattern: |
+    @task($$$ARGS)
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: etl-dagster-op-py
+language: Python
+rule:
+  pattern: |
+    @op($$$ARGS)
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: etl-dagster-job-py
+language: Python
+rule:
+  pattern: |
+    @job($$$ARGS)
+    def $NAME($$$PARAMS):
+        $$$BODY

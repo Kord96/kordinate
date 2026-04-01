@@ -1,0 +1,14 @@
+questions:
+  - q: "Is data primarily append-only and indexed by timestamp as the leading dimension?"
+    weight: 3
+    signals: ["timestamp as primary index", "hypertable or time-partitioned table", "append-only writes with time ordering"]
+  - q: "Are there retention policies that automatically expire or archive old data?"
+    weight: 3
+    signals: ["retention_policy configuration", "TTL on data points", "automatic purge of aged data"]
+  - q: "Does the system use windowed aggregation or downsampling for time-range queries?"
+    weight: 2
+    signals: ["time_bucket or resample functions", "rollup jobs producing coarser granularity", "continuous aggregate or recording rules"]
+  - q: "Is a specialized time-series database or extension used instead of a general-purpose store?"
+    weight: 1
+    signals: ["InfluxDB or TimescaleDB", "Prometheus TSDB", "dedicated time-series engine"]
+threshold: 6

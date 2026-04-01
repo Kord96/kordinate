@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there separate API layers, services, or route groups dedicated to specific frontend types (mobile, web, admin)?"
+    weight: 3
+    signals: ["/api/mobile/", "/api/web/", "mobile-bff service", "frontend-specific routes"]
+  - q: "Does the API layer aggregate calls to multiple backend microservices into a single response shaped for a specific frontend?"
+    weight: 3
+    signals: ["response aggregation", "multiple backend calls merged", "frontend-optimized payload"]
+  - q: "Do different frontends receive differently shaped responses from their dedicated API (e.g., compact for mobile, rich for web)?"
+    weight: 2
+    signals: ["response shaping per client", "mobile gets compact payload", "web gets richer data"]
+  - q: "Is the frontend-specific API layer free of business logic, containing only aggregation and response formatting?"
+    weight: 2
+    signals: ["no business rules in BFF", "aggregation only", "shared logic stays in backend services"]
+threshold: 6

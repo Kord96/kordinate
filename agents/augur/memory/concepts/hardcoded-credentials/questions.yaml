@@ -1,0 +1,14 @@
+questions:
+  - q: "Are password, API key, or secret token values assigned as string literals in source files?"
+    weight: 3
+    signals: ["password = '...'", "api_key = '...'", "secret_key = '...'"]
+  - q: "Do connection strings embed passwords directly in the URL rather than referencing environment variables?"
+    weight: 3
+    signals: ["postgresql://user:pass@host", "mongodb://user:pass@", "embedded password in DSN"]
+  - q: "Are .env files with real credential values tracked in git instead of listed in .gitignore?"
+    weight: 2
+    signals: [".env committed to git", ".env not in .gitignore", "real values in .env.example"]
+  - q: "Are there string literals with recognizable credential prefixes like AKIA, sk-, or Bearer tokens in tracked code?"
+    weight: 2
+    signals: ["AKIA prefix", "sk- prefix", "Authorization: Bearer literal"]
+threshold: 7

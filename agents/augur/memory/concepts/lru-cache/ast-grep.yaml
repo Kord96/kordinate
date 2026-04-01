@@ -1,0 +1,33 @@
+id: lrucache-functools-py
+language: Python
+rule:
+  pattern: |
+    @lru_cache($$$ARGS)
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: lrucache-functools-bare-py
+language: Python
+rule:
+  pattern: |
+    @lru_cache
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: lrucache-cache-decorator-py
+language: Python
+rule:
+  pattern: |
+    @cache
+    def $NAME($$$PARAMS):
+        $$$BODY
+---
+id: lrucache-lru-cache-ts
+language: TypeScript
+rule:
+  pattern: 'new LRUCache($$$OPTS)'
+---
+id: lrucache-quick-lru-ts
+language: TypeScript
+rule:
+  pattern: 'new QuickLRU($$$OPTS)'

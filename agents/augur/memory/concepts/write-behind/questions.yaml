@@ -1,0 +1,17 @@
+questions:
+  - q: "Do writes target a cache or in-memory buffer first, with asynchronous flush workers propagating changes to the backing store?"
+    weight: 3
+    signals: ["write to cache then async flush", "write-behind buffer", "deferred persistence to backing store"]
+  - q: "Is there write coalescing where multiple writes to the same key are batched into a single store write?"
+    weight: 3
+    signals: ["write coalescing logic", "batch writes to same key", "dirty flag tracking on cached entries"]
+  - q: "Are flush failures retried with backoff and is there a dead-letter mechanism for permanently failed writes?"
+    weight: 2
+    signals: ["flush retry with backoff", "dead-letter for failed writes", "write failure handling"]
+  - q: "Is cache warming or preloading from the backing store implemented on startup before accepting new writes?"
+    weight: 1
+    signals: ["cache warming on startup", "preload from backing store", "hydrate cache before writes"]
+  - q: "Is the write ordering strategy explicit when coalescing (last-write-wins or merge strategy documented)?"
+    weight: 1
+    signals: ["last-write-wins strategy", "write ordering on coalesce", "merge strategy for concurrent writes"]
+threshold: 6

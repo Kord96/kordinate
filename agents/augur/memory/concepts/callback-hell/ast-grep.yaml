@@ -1,0 +1,45 @@
+id: callback-hell-nested-callbacks-ts
+language: TypeScript
+rule:
+  pattern: |
+    $FN1($$$ARGS1, ($$$PARAMS1) => {
+        $$$BEFORE1
+        $FN2($$$ARGS2, ($$$PARAMS2) => {
+            $$$BEFORE2
+            $FN3($$$ARGS3, ($$$PARAMS3) => {
+                $$$BODY
+            })
+        })
+    })
+---
+id: callback-hell-nested-function-callbacks-ts
+language: TypeScript
+rule:
+  pattern: |
+    $FN1($$$ARGS1, function($$$PARAMS1) {
+        $$$BEFORE1
+        $FN2($$$ARGS2, function($$$PARAMS2) {
+            $$$BEFORE2
+            $FN3($$$ARGS3, function($$$PARAMS3) {
+                $$$BODY
+            })
+        })
+    })
+---
+id: callback-hell-then-chain-ts
+language: TypeScript
+rule:
+  pattern: $EXPR.then($$$A).then($$$B).then($$$C).then($$$D).then($$$E)
+---
+id: callback-hell-nested-callbacks-py
+language: Python
+rule:
+  pattern: |
+    def $FN1($$$ARGS1):
+        $$$BEFORE1
+        def $FN2($$$ARGS2):
+            $$$BEFORE2
+            def $FN3($$$ARGS3):
+                $$$BODY
+            $$$AFTER2
+        $$$AFTER1

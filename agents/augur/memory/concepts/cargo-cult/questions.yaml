@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there design patterns applied where the problem they solve does not exist (e.g., a Factory that only creates one type, an interface with exactly one implementation and no test doubles)?"
+    weight: 3
+    signals: ["single-product factory", "interface with sole implementor", "pattern without purpose"]
+  - q: "Is there copy-pasted boilerplate across files that has not been adapted to its local context?"
+    weight: 2
+    signals: ["identical boilerplate blocks", "unmodified tutorial code", "template without customization"]
+  - q: "Does adding a simple feature require modifying boilerplate in 5 or more files?"
+    weight: 2
+    signals: ["multi-file ceremony for small changes", "excessive indirection layers", "more structural code than logic"]
+  - q: "Are configuration values present that match popular tutorial defaults with no evidence they were chosen for this system?"
+    weight: 1
+    signals: ["tutorial-default config", "unexplained settings", "cargo-culted parameters"]
+threshold: 5

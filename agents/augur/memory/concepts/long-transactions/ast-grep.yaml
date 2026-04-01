@@ -1,0 +1,60 @@
+# Score 3: Long transactions require detecting non-DB operations INSIDE a
+# transaction block. ast-grep can match HTTP calls or sleep inside
+# transaction.atomic or session context managers.
+
+id: long-transactions-http-in-atomic-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      with transaction.atomic():
+          $$$BODY
+  pattern: requests.$METHOD($$$ARGS)
+---
+id: long-transactions-sleep-in-atomic-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      with transaction.atomic():
+          $$$BODY
+  pattern: time.sleep($DURATION)
+---
+id: long-transactions-http-in-session-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      with $SESSION.begin():
+          $$$BODY
+  pattern: requests.$METHOD($$$ARGS)
+---
+id: long-transactions-decorator-atomic-with-http-py
+language: Python
+rule:
+  inside:
+    pattern: |
+      @transaction.atomic
+      def $FN($$$ARGS):
+          $$$BODY
+  pattern: requests.$METHOD($$$ARGS)
+---
+id: long-transactions-prisma-ts
+language: TypeScript
+rule:
+  inside:
+    pattern: |
+      $PRISMA.$transaction(async ($TX) => {
+          $$$BODY
+      })
+  pattern: await fetch($$$ARGS)
+---
+id: long-transactions-fetch-in-transaction-ts
+language: TypeScript
+rule:
+  inside:
+    pattern: |
+      await $DB.transaction(async ($$$PARAMS) => {
+          $$$BODY
+      })
+  pattern: await fetch($$$ARGS)

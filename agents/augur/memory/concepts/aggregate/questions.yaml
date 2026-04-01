@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a root entity that controls all mutations to its child entities, with children never modified directly by outside code?"
+    weight: 3
+    signals: ["root guards child mutations", "children have no public setters", "all changes go through root"]
+  - q: "Does the repository load and persist the entire entity cluster as a single unit rather than individual children?"
+    weight: 3
+    signals: ["repository returns root only", "save/load entire aggregate", "transactional consistency boundary"]
+  - q: "Are references between entity clusters expressed as IDs rather than direct object pointers?"
+    weight: 2
+    signals: ["ID reference between aggregates", "no cross-aggregate object refs", "foreign key not object pointer"]
+  - q: "Does the root entity enforce business invariants with guard clauses before allowing state changes?"
+    weight: 2
+    signals: ["invariant checks in root methods", "guard clause before mutation", "domain rule enforcement at boundary"]
+threshold: 6

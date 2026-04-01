@@ -1,0 +1,14 @@
+questions:
+  - q: "Does a single user action or page load require 10 or more sequential API calls to the same backend?"
+    weight: 3
+    signals: ["sequential API call cascade", "many requests per action", "10+ calls for one view"]
+  - q: "Are there N individual requests made to fetch N items instead of a batch or bulk endpoint?"
+    weight: 3
+    signals: ["fetch-by-id in a loop", "no batch endpoint", "one request per item"]
+  - q: "Does the client contain orchestration logic to sequence, merge, and error-handle multiple API responses?"
+    weight: 2
+    signals: ["client-side response merging", "frontend orchestration of backend calls", "waterfall API requests"]
+  - q: "Does the API lack bulk or aggregation endpoints for operations that naturally apply to collections?"
+    weight: 1
+    signals: ["no bulk endpoint", "single-resource-only API", "missing collection operations"]
+threshold: 6

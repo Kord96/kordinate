@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there separate liveness and readiness endpoints that check different aspects of application health?"
+    weight: 3
+    signals: ["/healthz endpoint", "/readyz endpoint", "livenessProbe vs readinessProbe"]
+  - q: "Does the readiness probe verify dependency connectivity such as database and cache availability?"
+    weight: 2
+    signals: ["check database connection", "verify cache reachable", "dependency health aggregation"]
+  - q: "Are Kubernetes probe configurations present with appropriate timeouts and intervals?"
+    weight: 2
+    signals: ["livenessProbe in pod spec", "readinessProbe configured", "startupProbe for slow start"]
+  - q: "Does the liveness probe check only process health without depending on external service availability?"
+    weight: 2
+    signals: ["liveness returns 200 unconditionally", "no DB check in liveness", "process-only health"]
+threshold: 6

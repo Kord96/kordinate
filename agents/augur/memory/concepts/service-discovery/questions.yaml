@@ -1,0 +1,14 @@
+questions:
+  - q: "Do services register themselves on startup and consumers resolve endpoints dynamically?"
+    weight: 3
+    signals: ["service registration on startup", "DNS-based discovery via Consul or CoreDNS", "K8s Service with DNS resolution"]
+  - q: "Are health checks configured so unhealthy instances are removed from the registry?"
+    weight: 3
+    signals: ["health check with TTL on registration", "heartbeat-based liveness", "unhealthy instance deregistered automatically"]
+  - q: "Is endpoint resolution done through the registry rather than hardcoded addresses?"
+    weight: 2
+    signals: ["no hardcoded IPs in config", "dynamic endpoint lookup", "service name resolved to address at runtime"]
+  - q: "Is there a defined load balancing strategy for discovered endpoints?"
+    weight: 1
+    signals: ["round-robin or least-connections selection", "client-side load balancer", "consistent hashing for routing"]
+threshold: 6

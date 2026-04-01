@@ -1,0 +1,14 @@
+questions:
+  - q: "Do isolated entities communicate exclusively through asynchronous message passing rather than direct method calls?"
+    weight: 3
+    signals: ["message send to actor ref", "mailbox dispatch", "tell/ask instead of call"]
+  - q: "Does each entity maintain its own private state with no shared mutable data between entities?"
+    weight: 3
+    signals: ["encapsulated actor state", "no shared variables", "state isolation per actor"]
+  - q: "Is there a message handler or receive method that dispatches incoming messages by type?"
+    weight: 2
+    signals: ["receive() handler", "on_message dispatch", "pattern matching on message type"]
+  - q: "Is there a supervision hierarchy that defines how failures in one entity are handled by a parent?"
+    weight: 2
+    signals: ["supervisor strategy", "restart policy", "parent watches child lifecycle"]
+threshold: 6

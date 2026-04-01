@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an interface with one core method implemented by multiple interchangeable concrete classes?"
+    weight: 3
+    signals: ["interface with execute or apply method", "multiple implementations of same protocol", "Strategy or Policy suffix on class names"]
+  - q: "Is strategy selection externalized via configuration, factory, or runtime parameter?"
+    weight: 3
+    signals: ["config-driven strategy selection", "factory returning strategy by name", "strategy chosen via environment variable"]
+  - q: "Does the context delegate to the strategy without knowledge of which concrete implementation is active?"
+    weight: 2
+    signals: ["context calls strategy interface method", "no type check on strategy in caller", "strategy injected, not instantiated by context"]
+  - q: "Can new strategies be added without modifying existing strategies or the context class?"
+    weight: 1
+    signals: ["open for extension, closed for modification", "new strategy class with no other changes", "strategy registered without touching context"]
+threshold: 6

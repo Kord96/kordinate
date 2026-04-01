@@ -1,0 +1,32 @@
+id: oauth-oidc-authorization-url-py
+language: Python
+rule:
+  pattern: $CLIENT.create_authorization_url($$$ARGS)
+---
+id: oauth-oidc-fetch-token-py
+language: Python
+rule:
+  pattern: $CLIENT.fetch_token($$$ARGS)
+---
+id: oauth-oidc-jwt-decode-verify-py
+language: Python
+rule:
+  pattern: jwt.decode($TOKEN, $$$ARGS)
+---
+id: oauth-oidc-passport-strategy-ts
+language: TypeScript
+rule:
+  pattern: |
+    new $STRATEGY({
+        clientID: $CLIENT_ID,
+        $$$OPTS
+    }, $CALLBACK)
+---
+id: oauth-oidc-next-auth-ts
+language: TypeScript
+rule:
+  pattern: |
+    NextAuth({
+        providers: [$$$PROVIDERS],
+        $$$OPTS
+    })

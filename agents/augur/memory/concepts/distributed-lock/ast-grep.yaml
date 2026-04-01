@@ -1,0 +1,35 @@
+id: distributed-lock-redis-setnx-py
+language: Python
+rule:
+  pattern: $REDIS.set($KEY, $VALUE, nx=True, ex=$TTL)
+---
+id: distributed-lock-aioredlock-py
+language: Python
+rule:
+  pattern: |
+    async with $LOCK_MANAGER.lock($RESOURCE, $TTL):
+        $$$BODY
+---
+id: distributed-lock-pg-advisory-py
+language: Python
+rule:
+  pattern: $CURSOR.execute("SELECT pg_advisory_lock($$$ARGS)")
+---
+id: distributed-lock-redlock-ts
+language: TypeScript
+rule:
+  pattern: |
+    const $LOCK = await $REDLOCK.acquire($$$ARGS)
+---
+id: distributed-lock-release-ts
+language: TypeScript
+rule:
+  pattern: await $LOCK.release()
+---
+id: distributed-lock-using-ts
+language: TypeScript
+rule:
+  pattern: |
+    await $REDLOCK.using($RESOURCES, $DURATION, async ($SIGNAL) => {
+        $$$BODY
+    })

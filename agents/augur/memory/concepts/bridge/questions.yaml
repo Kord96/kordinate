@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an abstraction class that holds a reference to an implementation interface, with both hierarchies varying independently?"
+    weight: 3
+    signals: ["abstraction delegates to impl interface", "two parallel hierarchies", "composition over inheritance"]
+  - q: "Can new implementations be added without modifying existing abstractions, and vice versa?"
+    weight: 3
+    signals: ["independent variation", "new impl needs no abstraction change", "open for extension on both axes"]
+  - q: "Is the implementation injected into the abstraction via constructor or setter rather than hardcoded?"
+    weight: 2
+    signals: ["implementation injected", "constructor receives impl", "swappable at runtime"]
+  - q: "Are there distinct class hierarchies for what something does (abstraction) versus how it does it (implementation)?"
+    weight: 2
+    signals: ["what vs how separation", "Renderer vs RendererImpl", "abstraction hierarchy plus implementation hierarchy"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there 4 or more levels of nested callback or anonymous function indentation in async code?"
+    weight: 3
+    signals: ["deeply nested callbacks", "pyramid-shaped async code", "4+ indentation levels"]
+  - q: "Is error handling duplicated at each nesting level instead of being centralized?"
+    weight: 2
+    signals: ["repeated error handlers", "catch at every level", "duplicated error logic per callback"]
+  - q: "Are .then() chains longer than 5 steps without intermediate named functions?"
+    weight: 2
+    signals: ["long promise chain", "unbounded .then() sequence", "inline anonymous handlers"]
+  - q: "Does the code use nested callbacks in a language or runtime that supports async/await?"
+    weight: 2
+    signals: ["callbacks despite async/await support", "no await usage", "pre-async style in modern runtime"]
+threshold: 6

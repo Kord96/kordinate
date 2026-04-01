@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a Product/Variant/SKU hierarchy modeling purchasable items with attributes?"
+    weight: 3
+    signals: ["Product model with Variant children", "SKU identifiers on variants", "variant attributes like size and color"]
+  - q: "Is inventory or stock tracked with quantity management and availability checks?"
+    weight: 3
+    signals: ["stock or inventory model", "quantity_on_hand field", "stock reservation on purchase"]
+  - q: "Are pricing rules or price models defined separately from product data?"
+    weight: 2
+    signals: ["Price model with currency and amount", "pricing rule evaluation", "discount or promotion models"]
+  - q: "Is there a cart or line-item model aggregating selected products for purchase?"
+    weight: 1
+    signals: ["Cart or CartItem model", "line_item with quantity and price", "cart total calculation"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Is tenant_id or organization_id present on all data tables and enforced in every query path?"
+    weight: 3
+    signals: ["tenant_id column on all tables", "automatic query scoping by tenant", "row-level security policy per tenant"]
+  - q: "Does middleware or context propagation ensure tenant identity is available throughout the request lifecycle?"
+    weight: 3
+    signals: ["TenantContext middleware", "tenant_id extracted from JWT or subdomain", "current_tenant available in request context"]
+  - q: "Is there database-level isolation (RLS, schema-per-tenant) beyond application-layer filtering?"
+    weight: 2
+    signals: ["row_level_security policies", "schema-per-tenant strategy", "database-enforced tenant boundary"]
+  - q: "Are caches, queues, and other shared resources scoped by tenant to prevent data leakage?"
+    weight: 1
+    signals: ["tenant-prefixed cache keys", "per-tenant queue routing", "tenant-scoped background jobs"]
+threshold: 6

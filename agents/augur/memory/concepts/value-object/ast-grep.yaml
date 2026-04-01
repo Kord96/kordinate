@@ -1,0 +1,35 @@
+id: value-object-frozen-dataclass-py
+language: Python
+rule:
+  pattern: |
+    @dataclass(frozen=True)
+    class $NAME:
+        $$$BODY
+---
+id: value-object-frozen-attrs-py
+language: Python
+rule:
+  pattern: |
+    @attr.s(frozen=True)
+    class $NAME:
+        $$$BODY
+---
+id: value-object-eq-method-py
+language: Python
+rule:
+  pattern: |
+    def __eq__(self, $OTHER):
+        $$$BODY
+---
+id: value-object-readonly-class-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $NAME extends ValueObject {
+        $$$BODY
+    }
+---
+id: value-object-readonly-props-ts
+language: TypeScript
+rule:
+  pattern: 'readonly $PROP: $TYPE'

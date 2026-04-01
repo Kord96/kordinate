@@ -1,0 +1,14 @@
+id: micro-frontend-module-federation-ts
+language: TypeScript
+rule:
+  pattern: 'new ModuleFederationPlugin($$$ARGS)'
+---
+id: micro-frontend-registerApplication-ts
+language: TypeScript
+rule:
+  pattern: 'registerApplication($$$ARGS)'
+---
+id: micro-frontend-single-spa-start-ts
+language: TypeScript
+rule:
+  pattern: 'start($$$ARGS)'

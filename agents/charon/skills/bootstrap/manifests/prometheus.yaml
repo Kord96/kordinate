@@ -1,0 +1,121 @@
+##
+## Prometheus — base manifest
+## Overlays set: retention, port, storage type, resources, ConfigMap/PVC names
+##
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  labels:
+    app: monitoring
+    component: prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: ["localhost:9090"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  labels:
+    app: monitoring
+    component: prometheus
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: monitoring
+      component: prometheus
+  template:
+    metadata:
+      labels:
+        app: monitoring
+        component: prometheus
+    spec:
+      initContainers:
+        - name: fix-prometheus-perms
+          image: busybox:1.36
+          command: ["sh", "-c", "chown -R 65534:65534 /prometheus"]
+          volumeMounts:
+            - name: prometheus-data
+              mountPath: /prometheus
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.51.0
+          args:
+            - --storage.tsdb.retention.time=7d
+            - --storage.tsdb.path=/prometheus
+            - --web.listen-address=:9090
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --web.enable-remote-write-receiver
+            - --web.enable-lifecycle
+            - --web.enable-admin-api
+          ports:
+            - containerPort: 9090
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 500m
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus
+            - name: prometheus-data
+              mountPath: /prometheus
+        - name: config-reloader
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              HASH=$(md5sum /etc/prometheus/prometheus.yml | cut -d' ' -f1)
+              while true; do
+                sleep 30
+                NEW=$(md5sum /etc/prometheus/prometheus.yml | cut -d' ' -f1)
+                if [ "$NEW" != "$HASH" ]; then
+                  wget -q --post-data='' -O- http://localhost:9090/-/reload 2>/dev/null && echo "Prometheus config reloaded" || echo "Reload failed"
+                  HASH=$NEW
+                fi
+              done
+          volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus
+              readOnly: true
+          resources:
+            requests:
+              cpu: 5m
+              memory: 8Mi
+            limits:
+              memory: 16Mi
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
+        - name: prometheus-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  labels:
+    app: monitoring
+    component: prometheus
+spec:
+  type: ClusterIP
+  selector:
+    app: monitoring
+    component: prometheus
+  ports:
+    - port: 9090
+      targetPort: 9090

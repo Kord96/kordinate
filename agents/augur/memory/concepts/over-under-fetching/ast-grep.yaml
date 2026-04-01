@@ -1,0 +1,14 @@
+# Score 2: Over/Under-Fetching is a semantic API design anti-pattern. Whether an endpoint
+# returns "too much" or a client makes "too many calls" depends on what the consumer
+# actually needs -- pure domain knowledge ast-grep cannot access.
+#
+# The one weak structural hint is SELECT * in SQL queries, which is a common over-fetching
+# symptom. However, this appears as a string literal in most code, not a structural AST
+# node. ast-grep can match the string pattern but this is essentially glorified grep.
+
+# Low-confidence heuristic: SELECT * in Python string literals (raw SQL queries)
+id: over-under-fetching-python-select-star
+language: Python
+rule:
+  kind: string
+  regex: "SELECT\\s+\\*\\s+FROM"

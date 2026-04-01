@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a server-side session store with session IDs transported via cookies?"
+    weight: 3
+    signals: ["Redis or database session store", "Set-Cookie with session_id", "express-session or django.contrib.sessions middleware"]
+  - q: "Are session cookies set with HttpOnly, Secure, and SameSite attributes?"
+    weight: 3
+    signals: ["HttpOnly flag on session cookie", "Secure flag preventing plaintext transport", "SameSite=Strict or SameSite=Lax"]
+  - q: "Is CSRF protection enabled for state-changing requests alongside sessions?"
+    weight: 2
+    signals: ["csrf_token in forms", "X-CSRF-Token header validation", "CSRF middleware registered"]
+  - q: "Is the session regenerated on login to prevent session fixation attacks?"
+    weight: 1
+    signals: ["session ID regenerated on auth", "new session created on login", "old session invalidated on privilege change"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Do events carry full entity state rather than just identifiers?"
+    weight: 3
+    signals: ["event payload contains complete entity snapshot", "order.created event with full order object in data field"]
+  - q: "Do consumers operate without calling back to the source service for data?"
+    weight: 3
+    signals: ["no API callback to source after receiving event", "consumer builds local projection from event data alone"]
+  - q: "Do consumers maintain local read replicas or projections built from event data?"
+    weight: 2
+    signals: ["local cache or table updated from event payloads", "projection store populated by event consumers"]
+  - q: "Is the event schema versioned to handle field additions and removals?"
+    weight: 1
+    signals: ["schema version field in event metadata", "event versioning or upcasting logic"]
+threshold: 6

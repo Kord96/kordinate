@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an explicit leader election protocol using Lease objects, etcd keys, or ZooKeeper nodes?"
+    weight: 3
+    signals: ["Lease object", "etcd compare-and-swap", "ZooKeeper ephemeral node"]
+  - q: "Does only the current leader execute write operations while followers redirect or reject them?"
+    weight: 3
+    signals: ["leader-only write path", "follower redirects to leader", "if isLeader then process"]
+  - q: "Are fencing tokens or epoch numbers used to prevent split-brain where two nodes act as leader?"
+    weight: 2
+    signals: ["fencing token", "epoch number", "leader epoch check"]
+  - q: "Does the leader renew its lease periodically with a TTL, and do followers trigger re-election on leader failure?"
+    weight: 2
+    signals: ["lease renewal", "TTL on leader lock", "re-election on timeout"]
+threshold: 7

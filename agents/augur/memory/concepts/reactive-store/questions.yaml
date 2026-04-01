@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a centralized state container that components subscribe to for reactive updates?"
+    weight: 3
+    signals: ["create() or createSlice() store definition", "defineStore with storeToRefs", "atom() with useAtomValue subscriptions"]
+  - q: "Do state mutations go through defined actions or setters rather than direct object mutation?"
+    weight: 3
+    signals: ["dispatch action to update state", "set() function for mutations", "commit mutation through store API"]
+  - q: "Are selectors or derived values used to compute state instead of duplicating it?"
+    weight: 2
+    signals: ["createSelector for derived state", "computed getters on store", "derived() from base atoms"]
+  - q: "Is the store segmented by domain rather than stored as a single monolithic object?"
+    weight: 1
+    signals: ["separate slices per feature", "multiple stores or atoms per domain", "module-based store organization"]
+threshold: 6

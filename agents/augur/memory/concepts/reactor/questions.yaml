@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a single-threaded event loop dispatching I/O events to registered handlers?"
+    weight: 3
+    signals: ["asyncio.run() or loop.run_forever()", "epoll or kqueue multiplexing", "libuv-based event loop"]
+  - q: "Are I/O operations non-blocking with callbacks, promises, or async/await?"
+    weight: 3
+    signals: ["async def with await on I/O", "non-blocking socket operations", "callback-based event handlers"]
+  - q: "Are blocking operations offloaded to a thread pool to avoid stalling the event loop?"
+    weight: 2
+    signals: ["run_in_executor for blocking calls", "thread pool for CPU-heavy work", "offloading file I/O to workers"]
+  - q: "Does the system handle backpressure when write buffers fill up?"
+    weight: 1
+    signals: ["pause reading on buffer full", "drain event before resuming writes", "flow control on streams"]
+threshold: 6

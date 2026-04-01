@@ -1,0 +1,32 @@
+id: proxy-class-naming-py
+language: Python
+rule:
+  pattern: |
+    class $NAME($$$BASES):
+        $$$BODY
+  constraints:
+    NAME:
+      regex: '.*(Proxy|Virtual|Lazy).*'
+---
+id: proxy-class-naming-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $NAME implements $IFACE {
+        $$$BODY
+    }
+  constraints:
+    NAME:
+      regex: '.*(Proxy|Virtual|Lazy).*'
+---
+id: proxy-js-proxy-ts
+language: TypeScript
+rule:
+  pattern: new Proxy($TARGET, $HANDLER)
+---
+id: proxy-getattr-py
+language: Python
+rule:
+  pattern: |
+    def __getattr__(self, $NAME):
+        $$$BODY

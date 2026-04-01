@@ -1,0 +1,14 @@
+questions:
+  - q: "Are multiple locks acquired in different orders across different code paths?"
+    weight: 3
+    signals: ["lock A then lock B in one function, lock B then lock A in another", "inconsistent nested synchronized or mutex.Lock ordering"]
+  - q: "Do nested lock acquisitions exist where inner locks vary by call site?"
+    weight: 3
+    signals: ["nested synchronized blocks or with lock statements", "inner lock target depends on runtime arguments"]
+  - q: "Do database transactions lock rows in varying orders depending on the operation?"
+    weight: 2
+    signals: ["SELECT FOR UPDATE on different tables in different order per query", "concurrent transactions updating overlapping row sets"]
+  - q: "Is there an absence of a documented or enforced global lock ordering?"
+    weight: 1
+    signals: ["no lock ordering comments or conventions", "locks acquired ad-hoc without hierarchy"]
+threshold: 6

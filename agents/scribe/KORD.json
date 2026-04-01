@@ -1,0 +1,62 @@
+[
+  {
+    "type": "skill",
+    "name": "document",
+    "agent": "scribe",
+    "description": "Produce documentation data (manifest, indices) from augur's analysis output.",
+    "arguments": "<project>",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "render",
+    "agent": "scribe",
+    "description": "Render documentation data into Astro site pages using pre-built components.",
+    "arguments": "<project>",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "register",
+    "agent": "scribe",
+    "description": "Register runtime, agent, or kord \u2014 setup, creation, and re-linking.",
+    "arguments": "runtime|agent|kord [args]",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "doctor-k",
+    "agent": "scribe",
+    "description": "Health-check the kordinate system \u2014 structural, runtime, and e2e tests.",
+    "arguments": "[--scope global|project|all] [--e2e]",
+    "public": true
+  },
+  {
+    "type": "file",
+    "path": "agents/scribe/memory/scratchpad.md",
+    "description": "Working notes",
+    "owner": "scribe",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/scribe/memory/skill-marketplace-evaluation.md",
+    "description": "Skill marketplace evaluation",
+    "owner": "scribe",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/scribe/memory/tools.md",
+    "description": "Tool reference",
+    "owner": "scribe",
+    "preload": "none"
+  },
+  {
+    "type": "file",
+    "path": "agents/scribe/memory/workflow.md",
+    "description": "Workflow reference",
+    "owner": "scribe",
+    "preload": "none"
+  }
+]

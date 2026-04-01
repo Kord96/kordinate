@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the code define a node-per-character tree structure with children stored in a dict or array, plus an is_end or is_terminal flag?"
+    weight: 3
+    signals: ["TrieNode with children mapping", "is_end or is_terminal flag", "character-keyed child nodes"]
+  - q: "Are insert, search, and starts_with (or has_prefix) operations implemented on the tree structure?"
+    weight: 3
+    signals: ["insert method", "search method", "starts_with or has_prefix method"]
+  - q: "Is the structure used for prefix-based operations like autocomplete, typeahead, or longest-prefix matching?"
+    weight: 2
+    signals: ["autocomplete implementation", "prefix matching logic", "typeahead search"]
+  - q: "Does deletion handle non-leaf nodes correctly by distinguishing prefixes that are themselves valid keys?"
+    weight: 1
+    signals: ["deletion preserves prefix nodes", "terminal marker management on delete", "prune orphaned branches"]
+threshold: 6

@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there an acquire/release or borrow/return lifecycle for reusable resources managed by a pool?"
+    weight: 3
+    signals: ["acquire() / release()", "borrow() / return_to_pool()", "pool.get() / pool.put()"]
+  - q: "Does the pool enforce a maximum size to prevent unbounded resource consumption?"
+    weight: 2
+    signals: ["max_size configuration", "pool_size limit", "bounded pool capacity"]
+  - q: "Are pooled resources always returned via try-finally or context manager, even on error paths?"
+    weight: 3
+    signals: ["with pool.acquire() as conn", "try/finally release", "context manager for pool"]
+  - q: "Does the pool validate or evict stale resources before handing them to callers?"
+    weight: 2
+    signals: ["health check on acquire", "stale connection eviction", "validation before checkout"]
+threshold: 6

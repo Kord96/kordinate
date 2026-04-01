@@ -1,0 +1,14 @@
+questions:
+  - q: "Do API endpoints accept pagination parameters such as limit/offset, page/per_page, or cursor/after?"
+    weight: 3
+    signals: ["limit and offset query params", "page and per_page parameters", "after cursor parameter"]
+  - q: "Are results ordered by a stable unique key to prevent duplicates and missed records across pages?"
+    weight: 3
+    signals: ["ORDER BY id", "stable sort key", "unique ordering column"]
+  - q: "Does the response include pagination metadata such as has_more, next_cursor, or total count?"
+    weight: 2
+    signals: ["has_next_page in response", "next_cursor returned", "totalCount in payload"]
+  - q: "Are default and maximum page sizes enforced to prevent clients from requesting unbounded result sets?"
+    weight: 2
+    signals: ["max page_size enforced", "default limit applied", "cap on per_page"]
+threshold: 6

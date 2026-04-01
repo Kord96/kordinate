@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the code contain a tick() or step() method called at a fixed rate with a monotonic tick counter tracking simulation progress?"
+    weight: 3
+    signals: ["tick() or step() method", "tick counter or tick number", "TICKS_PER_SECOND constant"]
+  - q: "Are state updates deterministic such that identical inputs at the same tick always produce identical outputs?"
+    weight: 3
+    signals: ["deterministic update functions", "seeded randomness in tick", "same input same output per tick"]
+  - q: "Is the simulation tick rate decoupled from the rendering frame rate with a separate fixed_update or physics step?"
+    weight: 2
+    signals: ["fixed_update separate from render", "tick rate independent of frame rate", "simulation clock distinct from wall clock"]
+  - q: "Does the system support replay or lockstep synchronization by recording per-tick inputs?"
+    weight: 2
+    signals: ["replay from tick inputs", "lockstep networking", "input log per tick"]
+threshold: 6

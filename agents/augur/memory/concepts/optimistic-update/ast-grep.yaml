@@ -1,0 +1,28 @@
+id: optimistic-update-tanstack-mutation-ts
+language: TypeScript
+rule:
+  pattern: |
+    useMutation({
+        $$$OPTS,
+        onMutate: $$$ON_MUTATE,
+        $$$REST
+    })
+---
+id: optimistic-update-apollo-ts
+language: TypeScript
+rule:
+  pattern: |
+    $CLIENT.mutate({
+        mutation: $MUTATION,
+        optimisticResponse: $RESPONSE,
+        $$$OPTS
+    })
+---
+id: optimistic-update-swr-ts
+language: TypeScript
+rule:
+  pattern: |
+    useSWRMutation($KEY, $FETCHER, {
+        optimisticData: $DATA,
+        $$$OPTS
+    })

@@ -1,0 +1,14 @@
+questions:
+  - q: "Are schema changes captured as versioned migration files with sequential ordering?"
+    weight: 3
+    signals: ["numbered or timestamped migration files", "001_create_users.sql or V2__add_index.sql naming"]
+  - q: "Do migration files contain both up/upgrade and down/rollback logic?"
+    weight: 2
+    signals: ["def upgrade() and def downgrade()", "exports.up and exports.down"]
+  - q: "Is there a schema version tracking table or migration state store?"
+    weight: 2
+    signals: ["alembic_version or flyway_schema_history table", "schema_migrations table referenced in code"]
+  - q: "Is a migration framework configured to manage execution order?"
+    weight: 2
+    signals: ["alembic.ini or flyway config present", "knex migrate or django migrate commands in scripts"]
+threshold: 6

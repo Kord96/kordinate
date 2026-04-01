@@ -1,0 +1,17 @@
+questions:
+  - q: "Does the code use ws:// or wss:// URL schemes with message handler callbacks like on_message, on_connect, on_close?"
+    weight: 3
+    signals: ["ws:// or wss:// URLs", "on_message and on_close handlers", "WebSocket connection lifecycle"]
+  - q: "Is there HTTP Upgrade handshake handling with Connection: Upgrade headers for establishing WebSocket connections?"
+    weight: 2
+    signals: ["Upgrade: websocket header", "Connection: Upgrade", "HTTP upgrade handshake"]
+  - q: "Does the implementation include ping/pong keepalive or application-level heartbeat to detect dead connections?"
+    weight: 2
+    signals: ["ping pong frame handling", "heartbeat for keepalive", "dead connection detection"]
+  - q: "Is there client-side reconnection logic with backoff to recover from disconnections?"
+    weight: 2
+    signals: ["reconnection with backoff", "auto-reconnect on disconnect", "reconnection strategy"]
+  - q: "Is authentication performed during the upgrade handshake rather than after the connection is established?"
+    weight: 1
+    signals: ["auth during upgrade", "handshake authentication", "token validation before upgrade"]
+threshold: 6

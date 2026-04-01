@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a lock or mutex that ensures only one caller recomputes a cache entry while others wait?"
+    weight: 3
+    signals: ["singleflight", "mutex around cache miss", "lock-then-compute pattern"]
+  - q: "Do concurrent requests for the same cache key get coalesced so that only one fetch executes?"
+    weight: 3
+    signals: ["request coalescing", "deduplicated in-flight requests", "shared future for same key"]
+  - q: "Is there a distributed lock mechanism (e.g., SETNX) used during cache population?"
+    weight: 2
+    signals: ["SETNX for cache lock", "distributed mutex on miss", "redis lock for recompute"]
+  - q: "Is stale-while-revalidate or probabilistic early recomputation used to avoid synchronous stampedes?"
+    weight: 2
+    signals: ["stale-while-revalidate", "probabilistic early expiry", "XFetch algorithm"]
+threshold: 6

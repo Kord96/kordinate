@@ -1,0 +1,14 @@
+questions:
+  - q: "Are declarative Suspense boundaries wrapping async component subtrees with fallback UI?"
+    weight: 3
+    signals: ["<Suspense fallback={skeleton}> wrapping children", "<Suspense> with #fallback template slot", "@defer blocks for lazy loading"]
+  - q: "Are multiple granular suspense boundaries used rather than one top-level boundary?"
+    weight: 3
+    signals: ["nested Suspense per data-loading zone", "separate boundaries for independent sections", "not one giant Suspense wrapping entire app"]
+  - q: "Are error boundaries paired with suspense boundaries for failed async loads?"
+    weight: 2
+    signals: ["ErrorBoundary alongside Suspense", "error fallback for failed data fetch", "catch boundary for suspended component errors"]
+  - q: "Is streaming SSR enabled when using server-side suspense for progressive hydration?"
+    weight: 1
+    signals: ["streaming SSR with progressive rendering", "server-side Suspense with chunked response", "progressive hydration of suspended content"]
+threshold: 6

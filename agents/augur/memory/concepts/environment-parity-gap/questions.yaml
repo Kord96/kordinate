@@ -1,0 +1,14 @@
+questions:
+  - q: "Does the project use a different database engine in development than in production?"
+    weight: 3
+    signals: ["SQLite in dev config, PostgreSQL in prod config", "different DB driver imports per environment"]
+  - q: "Are there environment-conditional code paths that change business logic, not just configuration?"
+    weight: 3
+    signals: ["if env == development blocks with different behavior", "ENV-gated code that skips validation or auth in dev"]
+  - q: "Are critical infrastructure dependencies replaced with in-memory fakes in development?"
+    weight: 2
+    signals: ["in-memory queue instead of Kafka in dev", "local filesystem instead of S3 in development"]
+  - q: "Do tests pass locally but fail in CI due to environment differences?"
+    weight: 1
+    signals: ["CI-only test failures not reproducible locally", "works on my machine incidents in postmortems"]
+threshold: 6

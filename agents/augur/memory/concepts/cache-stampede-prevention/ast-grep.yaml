@@ -1,0 +1,21 @@
+id: cache-stampede-setnx-lock-py
+language: Python
+rule:
+  pattern: '$REDIS.set($LOCK_KEY, $VALUE, nx=True, ex=$TTL)'
+---
+id: cache-stampede-singleflight-py
+language: Python
+rule:
+  pattern: '$RESULT = $GROUP.do($KEY, $FUNC)'
+---
+id: cache-stampede-setnx-lock-ts
+language: TypeScript
+rule:
+  pattern: 'await $REDIS.set($LOCK_KEY, $VALUE, "NX", "EX", $TTL)'
+---
+id: cache-stampede-mutex-guard-ts
+language: TypeScript
+rule:
+  pattern: |
+    const $RELEASE = await $MUTEX.acquire($KEY);
+    $$$BODY

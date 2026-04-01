@@ -1,0 +1,14 @@
+questions:
+  - q: "Are geometry types (Point, Polygon, LineString) used instead of raw coordinate floats?"
+    weight: 3
+    signals: ["geometry column type in database", "Shapely or turf.js geometry objects", "GeoJSON Feature structures"]
+  - q: "Does the system use spatial queries (distance, containment, intersection) backed by a spatial index?"
+    weight: 3
+    signals: ["ST_Distance or ST_Contains calls", "spatial index on geometry column", "R-tree or GiST index creation"]
+  - q: "Is there coordinate reference system (CRS) awareness for correct distance and projection calculations?"
+    weight: 2
+    signals: ["SRID or CRS specification", "projection transformations", "EPSG code references"]
+  - q: "Are geofencing or bounding box queries used for region-based filtering?"
+    weight: 1
+    signals: ["geofence boundary definitions", "bounding_box or bbox computations", "ST_Within for containment checks"]
+threshold: 6

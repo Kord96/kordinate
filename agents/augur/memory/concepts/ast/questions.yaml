@@ -1,0 +1,14 @@
+questions:
+  - q: "Is there a tree of typed node classes or tagged unions representing parsed language constructs (expressions, statements, declarations)?"
+    weight: 3
+    signals: ["node type hierarchy", "ExprNode/StmtNode/DeclNode", "tagged union of syntax forms"]
+  - q: "Do nodes carry source location information (span, line, column) for error reporting and diagnostics?"
+    weight: 2
+    signals: ["span field on nodes", "source location tracking", "loc/pos attached to each node"]
+  - q: "Is there a visitor or walker pattern that traverses the tree without requiring modifications to node definitions?"
+    weight: 3
+    signals: ["visit_* methods", "accept() dispatch", "walk/traverse/fold utilities"]
+  - q: "Are tree transformations performed by producing new trees rather than mutating existing nodes in place?"
+    weight: 2
+    signals: ["immutable AST", "transformation returns new tree", "no in-place node mutation"]
+threshold: 6

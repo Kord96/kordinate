@@ -1,0 +1,14 @@
+questions:
+  - q: "Are cache entries proactively refreshed before their TTL expires?"
+    weight: 3
+    signals: ["refreshAfterWrite configuration", "background thread refreshing entries before expiry", "probabilistic early expiration"]
+  - q: "Does the refresh execute asynchronously without blocking callers serving the stale value?"
+    weight: 3
+    signals: ["async reload function", "stale value served while refresh in progress", "non-blocking refresh task"]
+  - q: "Is the refresh bounded to hot keys only, allowing cold keys to expire normally?"
+    weight: 2
+    signals: ["refresh only for recently accessed keys", "access frequency check before refresh", "cold entries expire without refresh"]
+  - q: "Are failed refreshes handled by keeping the existing cached value?"
+    weight: 1
+    signals: ["keep stale on refresh failure", "fallback to cached value on error", "no eviction on refresh source unavailability"]
+threshold: 6

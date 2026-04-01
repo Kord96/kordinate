@@ -1,0 +1,14 @@
+questions:
+  - q: "Are locks acquired with a TTL that automatically expires if the holder crashes?"
+    weight: 3
+    signals: ["SET NX EX or SETNX with expiry", "lock TTL configuration in acquire call"]
+  - q: "Does the lock implementation use a shared external store (Redis, etcd, database)?"
+    weight: 3
+    signals: ["Redis SETNX or etcd mutex for locking", "pg_advisory_lock or GET_LOCK for database locking"]
+  - q: "Does the lock holder verify ownership before releasing?"
+    weight: 2
+    signals: ["compare lock token before DEL", "conditional release checking holder identity"]
+  - q: "Is there bounded timeout or retry logic on lock acquisition attempts?"
+    weight: 1
+    signals: ["try-lock with timeout parameter", "retry loop with max attempts on acquire"]
+threshold: 6

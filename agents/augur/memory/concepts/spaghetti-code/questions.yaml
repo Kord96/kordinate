@@ -1,0 +1,14 @@
+questions:
+  - q: "Are there functions exceeding 200-500 lines with 5+ levels of nesting?"
+    weight: 3
+    signals: ["function body over 500 lines", "if/else nested 5+ levels deep", "deeply nested try/catch within conditionals"]
+  - q: "Do functions accept 10+ parameters or have variables reused for unrelated purposes?"
+    weight: 3
+    signals: ["function signature with 10+ parameters", "variable reassigned to different meaning mid-function", "single function handling multiple concerns"]
+  - q: "Is logic inlined rather than extracted into named functions at consistent abstraction levels?"
+    weight: 2
+    signals: ["no function extraction for repeated blocks", "mixed abstraction levels in one function", "inline code that should be a named helper"]
+  - q: "Is control flow hard to follow due to scattered returns, breaks, and exception-driven branching?"
+    weight: 1
+    signals: ["early returns at unpredictable points", "exception used for normal flow control", "goto-like breaks and continues"]
+threshold: 6

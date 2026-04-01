@@ -1,0 +1,42 @@
+id: composite-add-child-py
+language: Python
+rule:
+  pattern: |
+    def add(self, $COMPONENT):
+        self.children.append($COMPONENT)
+---
+id: composite-recursive-operation-py
+language: Python
+rule:
+  pattern: |
+    for $CHILD in self.children:
+        $CHILD.$METHOD($$$ARGS)
+---
+id: composite-children-init-py
+language: Python
+rule:
+  pattern: |
+    def __init__(self, $$$ARGS):
+        $$$BEFORE
+        self.children = []
+        $$$AFTER
+---
+id: composite-add-child-ts
+language: TypeScript
+rule:
+  pattern: |
+    add($COMPONENT: $TYPE) {
+        this.children.push($COMPONENT);
+        $$$BODY
+    }
+---
+id: composite-recursive-operation-ts
+language: TypeScript
+rule:
+  pattern: |
+    this.children.forEach($$$ARGS)
+---
+id: composite-children-field-ts
+language: TypeScript
+rule:
+  pattern: "private children: $TYPE[] = []"

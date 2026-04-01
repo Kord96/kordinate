@@ -1,0 +1,14 @@
+id: pipeline-filter-pipe-method-py
+language: Python
+rule:
+  pattern: '$OBJ.pipe($$$ARGS)'
+---
+id: pipeline-filter-add-filter-py
+language: Python
+rule:
+  pattern: '$OBJ.add_filter($$$ARGS)'
+---
+id: pipeline-filter-chain-ts
+language: TypeScript
+rule:
+  pattern: '$OBJ.pipe($$$ARGS)'

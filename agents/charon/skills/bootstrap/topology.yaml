@@ -1,0 +1,39 @@
+# What goes where — maps manifests to namespaces
+# Read by /infra subcommands to know which manifests apply where
+#
+# Shared bases (prometheus.yaml, loki.yaml) are used by both monitor and master.
+# Overlays customize per namespace (ports, retention, storage, sidecars).
+
+gateway:
+  - gateway-pod.yaml
+  - gateway-minio.yaml
+
+master:
+  - master-kord-storage.yaml
+  - master-docs.yaml                 # Astro Starlight docs site (docs.khaledkord.com)
+  - master-workstation.yaml          # Caddyfile ConfigMap generated in overlay
+  - master-agent-factory.yaml        # MCP server that spawns beorn agents
+  - prometheus.yaml                  # base — overlay sets: port=9191, retention=30d, PVC
+  - loki.yaml                       # base — overlay sets: PVC name
+  - master-grafana.yaml
+  - master-alloy.yaml               # Deployment only — ConfigMap generated in overlay
+  # Generated in overlay: workstation-caddyfile, grafana-datasources, alloy-config, gateway-registry
+
+monitor:
+  - prometheus.yaml            # base — overlay sets: port=9090, retention=7d, emptyDir
+  - loki.yaml                  # base — overlay adds federation sidecar
+  - monitor-alloy.yaml
+  - monitor-alloy-config.yaml
+  - monitor-node-exporter.yaml
+  - monitor-kube-state-metrics.yaml
+
+shared:
+  - namespaces.yaml
+  - agent-rbac.yaml
+
+images:
+  - workstation
+  - agent-factory
+  - docs
+  - log-puller
+  - loki-federate

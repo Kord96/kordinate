@@ -1,0 +1,17 @@
+questions:
+  - q: "Is there a declarative mapping between URL paths and components with route definitions?"
+    weight: 3
+    signals: ["Routes with Route elements mapping path to component", "createRouter with route config array", "file-based routing in pages/ directory"]
+  - q: "Are nested routes configured with layout components and outlet placeholders?"
+    weight: 2
+    signals: ["Outlet for nested child rendering", "RouterView for nested routes", "layout.svelte wrapping child pages"]
+  - q: "Are path parameters extracted and used for data fetching within route handlers?"
+    weight: 2
+    signals: ["useParams for route parameter access", ":id path parameter definition", "route params passed to loader"]
+  - q: "Is code splitting applied per route to avoid loading the entire application upfront?"
+    weight: 1
+    signals: ["lazy() or React.lazy for route components", "dynamic import in route config", "route-level chunk splitting"]
+  - q: "Are 404 and error fallback routes explicitly defined?"
+    weight: 1
+    signals: ["catch-all wildcard route", "errorElement on route definition", "NotFound page for unmatched paths"]
+threshold: 6

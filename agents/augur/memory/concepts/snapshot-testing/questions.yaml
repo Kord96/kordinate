@@ -1,0 +1,14 @@
+questions:
+  - q: "Are snapshot assertions used to capture complex output and detect unintended changes via diff?"
+    weight: 3
+    signals: ["toMatchSnapshot() in test assertions", "assert snapshot == result with syrupy", ".snap files committed to version control"]
+  - q: "Are snapshot files tracked in version control and reviewed in pull requests?"
+    weight: 3
+    signals: ["__snapshots__ directory in repo", ".snap files in git", "snapshot changes visible in PR diff"]
+  - q: "Is volatile data normalized before snapshotting to prevent false failures?"
+    weight: 2
+    signals: ["timestamps masked in snapshot", "random IDs replaced with deterministic values", "absolute paths normalized"]
+  - q: "Are obsolete snapshots cleaned up when corresponding tests are removed?"
+    weight: 1
+    signals: ["obsolete snapshot detection in CI", "snapshot cleanup on test deletion", "no orphaned .snap files"]
+threshold: 6

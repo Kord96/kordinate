@@ -1,0 +1,14 @@
+questions:
+  - q: "Are caching layers, denormalized tables, or complex data structures present without accompanying benchmarks or load test results?"
+    weight: 3
+    signals: ["cache layer with no profiling data", "bloom filter for small dataset", "denormalized table with no scale evidence"]
+  - q: "Does the optimized code path account for a negligible portion of total latency based on profiling?"
+    weight: 3
+    signals: ["optimized path is <5% of latency", "micro-benchmark without production profile", "cache for sub-millisecond query"]
+  - q: "Are comments referencing performance or efficiency found on code handling low-traffic paths or small datasets?"
+    weight: 2
+    signals: ["'for performance' on cold path", "custom serializer for admin endpoint", "hand-rolled protocol for internal tool"]
+  - q: "Do optimization constraints make the codebase harder to change without proven necessity?"
+    weight: 2
+    signals: ["feature blocked by cache coherency", "custom data structure obscures intent", "optimization locked in early design"]
+threshold: 6

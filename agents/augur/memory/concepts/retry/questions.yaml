@@ -1,0 +1,14 @@
+questions:
+  - q: "Are retries bounded with a maximum attempt count and exponential backoff with jitter?"
+    weight: 3
+    signals: ["max_retries configured", "wait_exponential with jitter", "stop_after_attempt limiting retries"]
+  - q: "Are retryable errors distinguished from non-retryable errors?"
+    weight: 3
+    signals: ["retry_on_exception predicate", "only retry 5xx not 4xx", "retryable error classification"]
+  - q: "Is there a dead-letter path for operations that exhaust all retry attempts?"
+    weight: 2
+    signals: ["dead letter queue on exhaustion", "DLQ routing after max retries", "failed operation captured for review"]
+  - q: "Are retry attempts observable through metrics or logging?"
+    weight: 1
+    signals: ["retry count metric emitted", "log on each retry attempt", "DLQ depth monitored"]
+threshold: 6

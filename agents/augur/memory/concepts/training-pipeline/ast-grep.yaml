@@ -1,0 +1,29 @@
+id: training-pytorch-lightning-py
+language: Python
+rule:
+  pattern: '$TRAINER.fit($MODEL, $$$ARGS)'
+---
+id: training-keras-fit-py
+language: Python
+rule:
+  pattern: '$MODEL.fit($$$ARGS)'
+---
+id: training-checkpoint-py
+language: Python
+rule:
+  pattern: 'torch.save($$$ARGS)'
+---
+id: training-mlflow-log-metric-py
+language: Python
+rule:
+  pattern: 'mlflow.log_metric($$$ARGS)'
+---
+id: training-mlflow-log-param-py
+language: Python
+rule:
+  pattern: 'mlflow.log_param($$$ARGS)'
+---
+id: training-lightning-trainer-py
+language: Python
+rule:
+  pattern: '$TRAINER = Trainer($$$ARGS)'

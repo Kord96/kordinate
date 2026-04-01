@@ -1,0 +1,17 @@
+questions:
+  - q: "Are secrets sourced from a dedicated store rather than hardcoded in source code or config files?"
+    weight: 3
+    signals: ["Vault integration or pass store", "external-secrets operator in K8s", "secretKeyRef in manifests not inline value"]
+  - q: "Is secret rotation possible without code changes or redeployment?"
+    weight: 2
+    signals: ["rotation policy configured", "secrets fetched at runtime from store", "dynamic secret refresh without restart"]
+  - q: "Are secrets excluded from version control with scanning enforcement?"
+    weight: 2
+    signals: [".env in .gitignore", "gitleaks or trufflehog in CI", "secret scanning blocking commits"]
+  - q: "Is access to secrets auditable with logging of who accessed what?"
+    weight: 1
+    signals: ["audit log on secret access", "Vault audit backend enabled", "access tracking for credentials"]
+  - q: "Do CI/CD pipelines avoid exposing secret values in build output?"
+    weight: 1
+    signals: ["secrets masked in CI logs", "no echo of credential values", "build output redacts sensitive vars"]
+threshold: 6

@@ -1,0 +1,25 @@
+id: null-object-noop-class-py
+language: Python
+rule:
+  pattern: |
+    class $NAME($$$BASES):
+        $$$BODY
+  constraints:
+    NAME:
+      regex: '(Null|NoOp|Noop|DevNull|Blackhole).*'
+---
+id: null-object-noop-class-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $NAME implements $IFACE {
+        $$$BODY
+    }
+  constraints:
+    NAME:
+      regex: '(Null|NoOp|Noop|DevNull|Blackhole).*'
+---
+id: null-object-noop-lambda-default-py
+language: Python
+rule:
+  pattern: 'def $FN($$$BEFORE, $PARAM=lambda $$$A: None, $$$AFTER):'

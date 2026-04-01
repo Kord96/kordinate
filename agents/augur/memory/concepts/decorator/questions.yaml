@@ -1,0 +1,14 @@
+questions:
+  - q: "Do wrapper classes implement the same interface as the object they wrap?"
+    weight: 3
+    signals: ["wrapper implements same interface or protocol", "delegates calls to wrapped object with added behavior"]
+  - q: "Is behavior added before or after delegating to the wrapped object without altering its interface?"
+    weight: 3
+    signals: ["logging or timing around delegated call", "pre/post processing with passthrough to inner object"]
+  - q: "Are decorators composable through nesting, each adding a single concern?"
+    weight: 2
+    signals: ["new AuthDecorator(new LoggingDecorator(service))", "middleware chain with single-responsibility wrappers"]
+  - q: "Is the wrapped object unaware that it is being decorated?"
+    weight: 1
+    signals: ["no back-reference to decorator from wrapped object", "wrapped object has no decorator-specific code"]
+threshold: 6
