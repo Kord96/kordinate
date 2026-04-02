@@ -1,15 +1,40 @@
-# Strimzi Kafka cluster for agent job distribution.
+# Strimzi Kafka cluster for agent job distribution (KRaft mode, no ZooKeeper).
 # Deploy Strimzi operator first: kubectl apply -f https://strimzi.io/install/latest
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: combined
+  namespace: dev
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  replicas: 1
+  roles:
+    - controller
+    - broker
+  storage:
+    type: persistent-claim
+    size: 10Gi
+    class: longhorn
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 250m
+    limits:
+      memory: 2Gi
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: kafka
   namespace: dev
+  annotations:
+    strimzi.io/node-pools: enabled
+    strimzi.io/kraft: enabled
 spec:
   kafka:
-    version: 3.7.0
-    replicas: 1
+    version: 4.2.0
     listeners:
       - name: plain
         port: 9092
@@ -21,29 +46,9 @@ spec:
       transaction.state.log.min.isr: 1
       default.replication.factor: 1
       min.insync.replicas: 1
-      log.retention.hours: 168  # 7 days
-    storage:
-      type: persistent-claim
-      size: 10Gi
-      class: longhorn
-    resources:
-      requests:
-        memory: 1Gi
-        cpu: 250m
-      limits:
-        memory: 2Gi
-  zookeeper:
-    replicas: 1
-    storage:
-      type: persistent-claim
-      size: 5Gi
-      class: longhorn
-    resources:
-      requests:
-        memory: 512Mi
-        cpu: 100m
-      limits:
-        memory: 1Gi
+      log.retention.hours: 168
+  entityOperator:
+    topicOperator: {}
 ---
 # Agent job topics
 apiVersion: kafka.strimzi.io/v1beta2
@@ -57,7 +62,7 @@ spec:
   partitions: 3
   replicas: 1
   config:
-    retention.ms: 604800000  # 7 days
+    retention.ms: "604800000"
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -70,7 +75,7 @@ spec:
   partitions: 3
   replicas: 1
   config:
-    retention.ms: 604800000
+    retention.ms: "604800000"
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -83,7 +88,7 @@ spec:
   partitions: 3
   replicas: 1
   config:
-    retention.ms: 604800000
+    retention.ms: "604800000"
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -96,7 +101,7 @@ spec:
   partitions: 3
   replicas: 1
   config:
-    retention.ms: 604800000
+    retention.ms: "604800000"
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -109,7 +114,7 @@ spec:
   partitions: 3
   replicas: 1
   config:
-    retention.ms: 604800000
+    retention.ms: "604800000"
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -122,7 +127,7 @@ spec:
   partitions: 2
   replicas: 1
   config:
-    retention.ms: 604800000
+    retention.ms: "604800000"
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -135,7 +140,7 @@ spec:
   partitions: 6
   replicas: 1
   config:
-    retention.ms: 86400000  # 1 day
+    retention.ms: "86400000"
 ---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -148,4 +153,4 @@ spec:
   partitions: 1
   replicas: 1
   config:
-    retention.ms: 2592000000  # 30 days
+    retention.ms: "2592000000"
