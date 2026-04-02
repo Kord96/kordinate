@@ -68,7 +68,7 @@ deploy_agent() {
 
 deploy_team() {
   local SRC="$REPO/shared"
-  local DST="$RUNTIME/team"
+  local DST="$RUNTIME/team/memory/global"
 
   mkdir -p "$DST"
 
@@ -78,7 +78,7 @@ deploy_team() {
       local base=$(basename "$f")
       # Strip frontmatter
       sed '/^---$/,/^---$/d' "$f" > "$DST/$base"
-      log "team/$base deployed"
+      log "team/memory/global/$base deployed"
     done
   fi
 
@@ -104,7 +104,7 @@ curl -s http://job-router:3100/api/delegate \
   -d '{"agent":"<name>","prompt":"<what you need>","project":"<optional>"}'
 ```
 TEAM
-    log "team/team.md generated"
+    log "team/memory/global/team.md generated"
   fi
 }
 

@@ -9,10 +9,10 @@
 #   /kord/agents/<name>/
 #     .claude/
 #     memory/global/
-#     memory/shared/
 #     memory/projects/
-#     memory/local-global/
 #     skills/
+#   /kord/team/
+#     memory/global/
 
 set -euo pipefail
 
@@ -21,16 +21,11 @@ DST="/kord/agents/$AGENT"
 
 log() { echo "[setup-agent-dir] $*"; }
 
-# Create directory structure
 mkdir -p \
   "$DST/.claude" \
   "$DST/memory/global" \
-  "$DST/memory/shared" \
   "$DST/memory/projects" \
-  "$DST/memory/local-global" \
-  "$DST/skills"
-
-# Create team dir if it doesn't exist
-mkdir -p /kord/team
+  "$DST/skills" \
+  "/kord/team/memory/global"
 
 log "directory structure ready: $DST"
