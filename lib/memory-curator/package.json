@@ -5,5 +5,5 @@
   "type": "module",
   "main": "curator.js",
   "scripts": { "start": "node curator.js" },
-  "dependencies": { "kafkajs": "^2.2.4" }
+  "dependencies": { "kafkajs": "^2.2.4", "@anthropic-ai/sdk": "^0.39.0" }
 }

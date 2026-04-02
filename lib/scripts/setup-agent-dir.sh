@@ -2,10 +2,11 @@
 # setup-agent-dir.sh <agent-name>
 #
 # Creates /kord/agents/<name>/ with:
-#   CLAUDE.md         — generated @ imports (Claude-specific glue)
+#   CLAUDE.md         — generated @ imports (identity + shared + global memory)
 #   identity.md       — converted from IDENTITY.md (Claude-agnostic)
 #   .claude/settings.json — hooks template
-#   memory/           — seeded from source if empty
+#   memory/global/    — seeded from source if empty
+#   memory/projects/  — empty, populated by curators per-project
 #   skills/           — symlinks to source skill dirs
 #   shared/           — symlink to /kord/agents/shared/
 #
@@ -64,7 +65,7 @@ fi
 
 # ─── Create agent directory ───
 
-mkdir -p "$DST/.claude" "$DST/memory" "$DST/skills"
+mkdir -p "$DST/.claude" "$DST/memory/global" "$DST/memory/projects" "$DST/skills"
 
 # ─── identity.md — strip frontmatter from IDENTITY.md ───
 
@@ -82,7 +83,7 @@ fi
 cp "$SRC/lib/templates/agent-settings.json" "$DST/.claude/settings.json"
 log "created .claude/settings.json"
 
-# ─── memory/ — seed from source if empty ───
+# ─── memory/global/ — seed from source if empty ───
 
 MEMORY_SRC="$SRC/agents/$AGENT/memory"
 if [ -d "$MEMORY_SRC" ]; then
@@ -90,9 +91,9 @@ if [ -d "$MEMORY_SRC" ]; then
     [ -f "$f" ] || continue
     base=$(basename "$f")
     # Only seed if file doesn't exist (don't overwrite curator's work)
-    if [ ! -f "$DST/memory/$base" ]; then
-      cp "$f" "$DST/memory/$base"
-      log "seeded memory/$base"
+    if [ ! -f "$DST/memory/global/$base" ]; then
+      cp "$f" "$DST/memory/global/$base"
+      log "seeded memory/global/$base"
     fi
   done
 fi
@@ -114,7 +115,7 @@ fi
 ln -sfn "$SHARED" "$DST/shared"
 log "linked shared/"
 
-# ─── CLAUDE.md — generate @ imports ───
+# ─── CLAUDE.md — generate @ imports (global memory only) ───
 
 {
   echo "@identity.md"
@@ -125,12 +126,11 @@ log "linked shared/"
     echo "@shared/$(basename "$f")"
   done
 
-  # Memory files
-  for f in "$DST/memory/"*.md; do
+  # Global memory files
+  for f in "$DST/memory/global/"*.md; do
     [ -f "$f" ] || continue
     base=$(basename "$f")
-    [ "$base" = "MEMORY.md" ] && continue  # skip index files
-    echo "@memory/$base"
+    echo "@memory/global/$base"
   done
 } > "$DST/CLAUDE.md"
 
