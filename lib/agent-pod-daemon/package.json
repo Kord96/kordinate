@@ -1,11 +1,11 @@
 {
-  "name": "agent-runner",
+  "name": "agent-pod-daemon",
   "version": "1.0.0",
   "description": "Kafka consumer that invokes Claude CLI per agent pod",
   "type": "module",
-  "main": "runner.js",
+  "main": "daemon.js",
   "scripts": {
-    "start": "node runner.js"
+    "start": "node daemon.js"
   },
   "dependencies": {
     "kafkajs": "^2.2.4"

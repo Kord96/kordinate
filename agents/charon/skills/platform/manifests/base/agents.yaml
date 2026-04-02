@@ -1,6 +1,6 @@
 # Agent pod Deployments — pod = persistent Claude session.
-# Each pod runs the stream-json bridge (runner.js) with Claude as a long-lived process.
-# Agents are project-agnostic; runner injects project context (name, memory paths) per-job.
+# Each pod runs the stream-json bridge (daemon.js) with Claude as a long-lived process.
+# Agents are project-agnostic; the pod daemon injects project context (name, memory paths) per-job.
 # Init container sets up /kord/agents/<name>/ with memory/global/ and memory/projects/ dirs.
 # Claude loads CLAUDE.md natively with @ imports for identity, memory, and team awareness.
 # KEDA ScaledObjects control replicas (see keda.yaml).
@@ -41,8 +41,8 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node runner.js
+              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              exec node daemon.js
           env:
             - { name: AGENT_NAME, value: augur }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
@@ -106,8 +106,8 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg /kord/ssh 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node runner.js
+              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              exec node daemon.js
           env:
             - { name: AGENT_NAME, value: charon }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
@@ -168,8 +168,8 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node runner.js
+              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              exec node daemon.js
           env:
             - { name: AGENT_NAME, value: warden }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
@@ -230,8 +230,8 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node runner.js
+              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              exec node daemon.js
           env:
             - { name: AGENT_NAME, value: sauron }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
@@ -292,8 +292,8 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node runner.js
+              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              exec node daemon.js
           env:
             - { name: AGENT_NAME, value: alfred }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }

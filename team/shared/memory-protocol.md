@@ -7,7 +7,7 @@ description: How agents persist knowledge through the memory system
 You have two types of memory, stored under your agent directory:
 
 - **Global** (`memory/global/`) — loaded at boot via CLAUDE.md. Reusable knowledge across projects.
-- **Project** (`memory/projects/<project>/`) — loaded per-job by the runner. Findings about a specific codebase.
+- **Project** (`memory/projects/<project>/`) — loaded per-job by the pod daemon. Findings about a specific codebase.
 
 ## Reading memory
 

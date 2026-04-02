@@ -1,5 +1,5 @@
 {
-  "name": "memory-curator",
+  "name": "agent-curator",
   "version": "1.0.0",
   "description": "Per-agent memory curator — consumes updates from Kafka, merges into shared files",
   "type": "module",

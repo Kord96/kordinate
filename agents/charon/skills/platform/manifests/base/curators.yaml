@@ -27,7 +27,7 @@ spec:
           args:
             - |
               mkdir -p /kord/agents/augur/memory/global /kord/agents/augur/memory/projects
-              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
               exec node curator.js
           env:
             - { name: AGENT_NAME, value: augur }
@@ -72,7 +72,7 @@ spec:
           args:
             - |
               mkdir -p /kord/agents/charon/memory/global /kord/agents/charon/memory/projects
-              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
               exec node curator.js
           env:
             - { name: AGENT_NAME, value: charon }
@@ -117,7 +117,7 @@ spec:
           args:
             - |
               mkdir -p /kord/agents/warden/memory/global /kord/agents/warden/memory/projects
-              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
               exec node curator.js
           env:
             - { name: AGENT_NAME, value: warden }
@@ -162,7 +162,7 @@ spec:
           args:
             - |
               mkdir -p /kord/agents/sauron/memory/global /kord/agents/sauron/memory/projects
-              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
               exec node curator.js
           env:
             - { name: AGENT_NAME, value: sauron }
@@ -207,7 +207,7 @@ spec:
           args:
             - |
               mkdir -p /kord/agents/alfred/memory/global /kord/agents/alfred/memory/projects
-              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
               exec node curator.js
           env:
             - { name: AGENT_NAME, value: alfred }

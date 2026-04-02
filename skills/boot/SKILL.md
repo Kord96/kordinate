@@ -23,7 +23,7 @@ Your agent name is the `name` field from your own frontmatter. Use it wherever `
     - Global: in `memory/global/` (relative to your agent dir, loaded via CLAUDE.md), read files
       where frontmatter has `preloaded: <your-name>` or `preloaded: all`.
       Skip files with `preloaded: none` (they're available on demand).
-    - Project: at `$MEM/` (injected per-job by the runner).
+    - Project: at `$MEM/` (injected per-job by the pod daemon).
       Skip if `$MEM` is not set.
     - Files without a `preloaded` property default to `none` (not loaded).
 
