@@ -4,6 +4,7 @@
 # Init container sets up /kord/agents/<name>/ with memory/global/ and memory/projects/ dirs.
 # Claude loads CLAUDE.md natively with @ imports for identity, memory, and team awareness.
 # KEDA ScaledObjects control replicas (see keda.yaml).
+# /kord/projects is mounted read-only — agents read code but cannot modify project repos.
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -64,6 +65,7 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
@@ -126,6 +128,7 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
@@ -187,6 +190,7 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
@@ -248,6 +252,7 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
@@ -309,6 +314,7 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
@@ -370,6 +376,7 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }

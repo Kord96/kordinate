@@ -105,9 +105,74 @@ gateways:
       minio: 9000
 ```
 
+## Platform Overlays
+
+In addition to cluster infrastructure overlays, generate platform overlays for the agent runtime. These live at `profile/overlays/platform/<env>/` and customize the base manifests at `agents/charon/skills/platform/manifests/base/`.
+
+### Procedure
+
+1. Read `$KORDINATE_HOME/profile/config.yaml` — look for a `platform:` section with per-environment config
+2. For each environment (default: `dev`), generate:
+
+```
+$KORDINATE_HOME/profile/overlays/platform/<env>/
+├── kustomization.yaml      # namespace, base reference
+├── scaling.yaml             # KEDA ScaledObject patches (min/max replicas, cooldown)
+└── resources.yaml           # resource limit overrides (optional)
+```
+
+### kustomization.yaml
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: <env>
+resources:
+  - ../../../../agents/charon/skills/platform/manifests/base
+patches:
+  - path: scaling.yaml
+  - path: resources.yaml
+```
+
+### scaling.yaml
+
+Generate one strategic merge patch per agent from `platform.agents.<name>`:
+
+| Config path | Patch field | Default |
+|------------|------------|---------|
+| `platform.agents.<name>.standby` | `spec.minReplicaCount` | 0 |
+| `platform.agents.<name>.max_replicas` | `spec.maxReplicaCount` | 3 |
+| `platform.agents.<name>.cooldown` | `spec.cooldownPeriod` | 300 |
+
+### resources.yaml
+
+Generate resource patches if `platform.agents.<name>.resources` is set. Otherwise create an empty file with a comment.
+
+### Config Schema (platform section)
+
+```yaml
+platform:
+  environments:
+    dev:
+      agents:
+        augur:   { standby: 1, max_replicas: 10, cooldown: 300 }
+        charon:  { standby: 1, max_replicas: 3,  cooldown: 300 }
+        warden:  { standby: 1, max_replicas: 5,  cooldown: 180 }
+        sauron:  { standby: 0, max_replicas: 3,  cooldown: 600 }
+        scribe:  { standby: 0, max_replicas: 3,  cooldown: 600 }
+        alfred:  { standby: 0, max_replicas: 2,  cooldown: 600 }
+    prod:
+      agents:
+        augur:   { standby: 2, max_replicas: 15, cooldown: 180 }
+        # ...
+```
+
+After generating, store via: `/kord alfred store overlay platform/<env>`.
+
 ## Notes
 
-- Overlays live at `profile/overlays/<cluster>/` — profile-specific, separate from base manifests
-- Secrets (Tailscale auth keys, MinIO credentials) are NOT in overlays — created at deploy time from `pass`
-- If `profile/config.yaml` changes, re-run `/bootstrap generate-overlays <cluster>` to update
-- Base manifests at `manifests/` stay abstract — never edit them with cluster-specific values
+- Cluster overlays live at `profile/overlays/<cluster>/` — infrastructure-specific
+- Platform overlays live at `profile/overlays/platform/<env>/` — agent runtime config
+- Secrets (Tailscale auth keys, MinIO credentials, Anthropic API key) are NOT in overlays — created at deploy time from `pass`
+- If `profile/config.yaml` changes, re-run `/bootstrap generate-overlays <cluster>` for infra and `/platform deploy <env>` for agent runtime
+- Base manifests stay abstract — never edit them with cluster-specific or env-specific values
