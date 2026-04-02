@@ -10,7 +10,7 @@ Pre/post-tool hooks that enforce domain boundaries and automate workflows. Confi
 
 | Trigger | Condition | Auth | Deny message |
 |---------|-----------|------|-------------|
-| Write/Edit to `*/.kord/*` | `curated: true` in KORD.json | `/tmp/.scribe-auth` | Use the `write_memory` tool |
+| Write/Edit to `*/.kord/*` | `curated: true` in KORD.json | — | Use the `write_memory` tool |
 | Write/Edit to `*/dashboards/*.json` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 | Bash `git push` to main | branch has diverged | — | Use `/merge` to rebase |
 | Bash `git push` to test/prod | any | `/tmp/.deployer-auth` | Use `/infra roll` |
@@ -19,7 +19,7 @@ Pre/post-tool hooks that enforce domain boundaries and automate workflows. Confi
 | Bash Grafana API calls | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 | `mcp__grafana*` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 
-Non-curated, non-templated `.kord/` files are allowed without scribe auth.
+Non-curated, non-templated `.kord/` files are allowed without auth.
 
 ### Authentication
 
@@ -37,7 +37,7 @@ Guards check lock files via `/authenticate`. The flow:
 |---------|-----------|--------|
 | git post-commit | `.dev-source` exists and matches repo | Copies changed `kordinate/` files to `$KORDINATE_HOME` |
 
-Activated via `register runtime --dev`. See [dev-sync.md](../agents/scribe/skills/register/dev-sync.md) for full documentation.
+Activated via `register runtime --dev`.
 
 ## Validation Lock
 
@@ -66,4 +66,4 @@ Any validator script that follows this contract works with the hooks:
 
 ## Agent Memory
 
-Agent MEMORY.md files are maintained by Scribe — updated during `/onboard` (link step) and `write_memory` (write step). No spawn-time hook needed.
+Agent MEMORY.md files are updated during `/onboard` (link step) and `write_memory` (write step). No spawn-time hook needed.

@@ -18,4 +18,4 @@ Thin wrapper around `register runtime`. Use `/install` for quick access; use `/r
 
 ## Procedure
 
-Parse flags and delegate to the register skill's runtime mode. All setup logic (detect runtime, pull package, link, backup, dev-mode hooks) lives in [runtime.md](../agents/scribe/skills/register/runtime.md) -- this skill only translates arguments.
+Parse flags and delegate to the register skill's runtime mode. This skill only translates arguments.

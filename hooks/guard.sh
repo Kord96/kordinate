@@ -2,7 +2,6 @@
 # Unified guard for kordinate
 #
 # Enforces domain boundaries:
-#   scribe   → curated .kord/ files
 #   deployer → git push (test/prod), kubectl writes
 #   sauron   → Grafana dashboards, API, MCP
 #   merge    → git push to main (FF check — blocks if rebase needed)
@@ -88,17 +87,13 @@ print(' '.join(sorted(agents)) if agents else '')
         fi
       fi
 
-      # Fallback: scribe can always edit config.yaml
-      check_auth scribe && allow
-      deny "config.yaml edit requires field-owner or scribe authentication."
+      deny "config.yaml edit requires field-owner authentication."
       ;;
   esac
 
-  # Scribe: curated .kord/ files only
+  # Curated .kord/ files
   case "$file_path" in
     */.kord/*)
-      check_auth scribe && allow
-
       # Allow non-curated, non-templated files without auth
       local kord_json="$KORD_HOME/KORD.json"
       if [ -f "$kord_json" ]; then

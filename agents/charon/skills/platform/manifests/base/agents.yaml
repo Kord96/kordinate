@@ -260,68 +260,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-scribe
-  labels: { app: kord-agent, agent: scribe }
-spec:
-  selector:
-    matchLabels: { app: kord-agent, agent: scribe }
-  template:
-    metadata:
-      labels: { app: kord-agent, agent: scribe }
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9090"
-    spec:
-      serviceAccountName: kord
-      initContainers:
-        - name: setup
-          image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "scribe"]
-          env:
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
-          volumeMounts:
-            - { name: kord, mountPath: /kord }
-      containers:
-        - name: agent
-          image: localhost:30500/agent-factory:latest
-          command: ["/bin/sh", "-c"]
-          args:
-            - |
-              ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
-              ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
-              cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
-              chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node runner.js
-          env:
-            - { name: AGENT_NAME, value: scribe }
-            - { name: AGENT_PROJECT_DIR, value: /kord/agents/scribe }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
-            - { name: PROJECTS_ROOT, value: /kord/projects }
-          resources:
-            requests: { cpu: 100m, memory: 512Mi }
-            limits: { memory: 4Gi }
-          ports:
-            - { containerPort: 9090, name: status }
-          readinessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 10
-          livenessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 30
-          volumeMounts:
-            - { name: kord, mountPath: /kord }
-            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
-      volumes:
-        - name: kord
-          persistentVolumeClaim: { claimName: kord }
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: agent-alfred
   labels: { app: kord-agent, agent: alfred }
 spec:

@@ -37,15 +37,6 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-scribe
-spec:
-  minReplicaCount: 0
-  maxReplicaCount: 3
-  cooldownPeriod: 600
----
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
   name: agent-alfred
 spec:
   minReplicaCount: 0

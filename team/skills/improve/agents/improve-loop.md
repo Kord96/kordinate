@@ -237,7 +237,6 @@ Execute the skill's procedure against a cloned repo. Capture the full output (sa
 | Skill type | How to run |
 |------------|-----------|
 | **Analyze** (augur /analyze) | Run the full procedure. Save atlas.json, stories/*.yaml, journeys/*.yaml |
-| **Document** (scribe /document) | Run with augur output as input. Save manifest.json, storyByNode.json |
 | **Scan** (sauron /monitor, warden /scan-secrets) | Run the full procedure. Save the output artifact |
 | **Transform** (edit-based skills) | Dry-run on a copy of the repo. Save proposed changes as a patch |
 | **Deploy/infra** | Skip — trace the procedure mentally instead |

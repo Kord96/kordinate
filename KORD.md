@@ -9,7 +9,6 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/charon/IDENTITY.md` — Infrastructure operations — deployments, cluster management, kubectl authority
 - `agents/main/IDENTITY.md` — Orchestrator — the main Claude Code session that coordinates all agents
 - `agents/sauron/IDENTITY.md` — Monitoring and observability — scans for signals, diagnoses issues, designs monitoring systems
-- `agents/scribe/IDENTITY.md` — Documentation gate and runtime linker — sole authority for writing to kordinate and memory paths
 - `agents/warden/IDENTITY.md` — Security scanning and credential hygiene — ensures nothing sensitive is hardcoded or exposed
 
 ## Memory
@@ -836,12 +835,6 @@ Auto-generated from frontmatter. Do not edit manually.
 - `agents/sauron/memory/scratchpad.md` — Sauron working notes and observations
 - `agents/sauron/memory/tools.md` — Sauron tools reference — klog, nokrashi-tools, Grafana MCP
 - `agents/sauron/memory/workflow.md` — Sauron workflow — understand, implement, validate, report
-- `agents/scribe/memory/scratchpad.md` — Scribe working notes and observations
-- `agents/scribe/memory/skill-marketplace-evaluation.md` — Evaluation of external skill marketplaces (anthropic-agent-skills, alirezarezvani/claude-skills) for integration into deployer, sauron, designer, scribe — verdicts, priorities, cross-agent dependencies
-- `agents/scribe/memory/templates/agents/sauron/metrics.md` — Template for project metrics documentation
-- `agents/scribe/memory/templates/agents/sauron/vitals.md` — Template for project vitals documentation
-- `agents/scribe/memory/tools.md` — Scribe tools reference — Gemini MCP for doc review
-- `agents/scribe/memory/workflow.md` — Scribe authentication and write workflow
 - `agents/warden/memory/scratchpad.md` — Warden working notes and observations
 
 ## Routes

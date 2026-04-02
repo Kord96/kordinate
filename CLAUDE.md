@@ -1,7 +1,7 @@
 This is the kordinate development repo. Agents run as Kubernetes pods with persistent Claude sessions.
 
 Structure:
-- `agents/` — 6 agents (alfred, augur, charon, sauron, scribe, warden) with IDENTITY.md, memory/, skills/
+- `agents/` — 5 agents (alfred, augur, charon, sauron, warden) with IDENTITY.md, memory/, skills/
 - `team/` — shared hooks, skills, protocols
 - `lib/` — agent-runner (stream-json bridge), job-router, memory-curator, hooks, scripts
 - `installer/` — cluster bootstrap scripts

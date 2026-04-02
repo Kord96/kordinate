@@ -198,37 +198,6 @@
   },
   {
     "type": "skill",
-    "name": "document",
-    "agent": "scribe",
-    "description": "Render stories into interactive documentation using pre-built Astro components.",
-    "arguments": "<project> [--atlas-only]",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "register",
-    "agent": "scribe",
-    "description": "Register runtime, agent, or kord \u2014 setup, creation, and re-linking.",
-    "arguments": "runtime|agent|kord [args]",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "doctor-k",
-    "agent": "scribe",
-    "description": "Health-check the kordinate system \u2014 structural, runtime, and e2e tests.",
-    "arguments": "[--scope global|project|all] [--e2e]",
-    "public": true
-  },
-  {
-    "type": "file",
-    "path": "agents/scribe/memory/scratchpad.md",
-    "description": "Working notes",
-    "owner": "scribe",
-    "preload": "none"
-  },
-  {
-    "type": "skill",
     "name": "validate",
     "agent": "warden",
     "description": "Validate output against registered validator. Returns completion token.",
@@ -342,54 +311,6 @@
   },
   {
     "type": "dir",
-    "pattern": "agents/*/skills/",
-    "validation": "scribe",
-    "description": "Agent skill definitions are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "agents/*/IDENTITY.md",
-    "validation": "scribe",
-    "description": "Agent identities are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "shared/",
-    "validation": "scribe",
-    "description": "Shared protocols are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "hooks/",
-    "validation": "scribe",
-    "description": "Hooks are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "team/skills/",
-    "validation": "scribe",
-    "description": "Team skills are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "team/scripts/",
-    "validation": "scribe",
-    "description": "Team scripts are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "lib/",
-    "validation": "scribe",
-    "description": "Library scripts are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "bin/",
-    "validation": "scribe",
-    "description": "Runtime scripts are framework files"
-  },
-  {
-    "type": "dir",
     "pattern": "profile/locks/",
     "validation": "warden",
     "description": "Auth lock files \u2014 warden only"
@@ -398,8 +319,7 @@
     "type": "file",
     "path": "settings.json",
     "description": "Hook and environment configuration",
-    "owner": "team",
-    "validation": "scribe"
+    "owner": "team"
   },
   {
     "type": "file",

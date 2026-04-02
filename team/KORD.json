@@ -69,54 +69,6 @@
   },
   {
     "type": "dir",
-    "pattern": "agents/*/skills/",
-    "validation": "scribe",
-    "description": "Agent skill definitions are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "agents/*/IDENTITY.md",
-    "validation": "scribe",
-    "description": "Agent identities are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "shared/",
-    "validation": "scribe",
-    "description": "Shared protocols are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "hooks/",
-    "validation": "scribe",
-    "description": "Hooks are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "team/skills/",
-    "validation": "scribe",
-    "description": "Team skills are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "team/scripts/",
-    "validation": "scribe",
-    "description": "Team scripts are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "lib/",
-    "validation": "scribe",
-    "description": "Library scripts are framework files"
-  },
-  {
-    "type": "dir",
-    "pattern": "bin/",
-    "validation": "scribe",
-    "description": "Runtime scripts are framework files"
-  },
-  {
-    "type": "dir",
     "pattern": "profile/locks/",
     "validation": "warden",
     "description": "Auth lock files — warden only"
@@ -125,8 +77,7 @@
     "type": "file",
     "path": "settings.json",
     "description": "Hook and environment configuration",
-    "owner": "team",
-    "validation": "scribe"
+    "owner": "team"
   },
   {
     "type": "file",

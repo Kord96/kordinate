@@ -67,21 +67,6 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-scribe
-spec:
-  scaleTargetRef:
-    name: agent-scribe
-  triggers:
-    - type: kafka
-      metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent-scribe
-        topic: jobs.scribe
-        lagThreshold: "1"
----
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
   name: agent-alfred
 spec:
   scaleTargetRef:

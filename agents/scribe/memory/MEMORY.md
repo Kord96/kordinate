@@ -1,3 +1,0 @@
-- [workflow.md](workflow.md) — Scribe authentication and write workflow
-- [tools.md](tools.md) — Scribe tools reference
-- [scratchpad.md](scratchpad.md) — Scribe working notes and observations

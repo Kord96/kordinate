@@ -15,7 +15,6 @@ Thin wrapper that routes kord requests. Stateless kords run locally, stateful ko
 
 ```
 /kord deployer what's running in prod?
-/kord scribe remember DNS uses .local domains
 /kord designer pattern-review review the deployment changes
 /kord remember team coding standards updated
 ```

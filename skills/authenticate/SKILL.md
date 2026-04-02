@@ -20,4 +20,3 @@ Authenticate once per task, not per operation. Remove the auth token when done â
 
 - **Deployer**: `guard-kubectl.sh` checks for `/tmp/.deployer-auth`. Bootstrap operations also need `/tmp/.bootstrap-auth`.
 - **Sauron**: `guard-grafana.sh` checks for `/tmp/.sauron-auth`.
-- **Scribe**: `guard-md.sh` checks for `/tmp/.scribe-auth`.
