@@ -5,7 +5,7 @@ Usage:
     python validate_output.py <project-memory-dir>
 
     <project-memory-dir> is the path containing atlas.json, stories/, journeys/
-    e.g., /path/to/project/.kord/agents/augur/memory/
+    e.g., /kord/agents/augur/memory/projects/logBD/
 
 Lock management is automatic when VALIDATE_LOCK=1 is set in the environment.
 This is used by the hook infrastructure, not by the agent directly.
@@ -354,13 +354,16 @@ def main():
     all_issues = []
 
     # Derive project root from memory dir path
-    # Expected: <project>/.kord/agents/augur/memory/ → project root is 4 levels up
+    # Expected: /kord/agents/<agent>/memory/projects/<project>/ → project name is last part
+    # Project code lives at /kord/projects/<project>/
     project_root = None
-    if ".kord" in mem_dir.parts:
-        kord_idx = mem_dir.parts.index(".kord")
-        project_root = Path(*mem_dir.parts[:kord_idx])
-        if not project_root.exists():
-            project_root = None
+    if "projects" in mem_dir.parts:
+        proj_idx = mem_dir.parts.index("projects")
+        if proj_idx + 1 < len(mem_dir.parts):
+            project_name = mem_dir.parts[proj_idx + 1]
+            candidate = Path("/kord/projects") / project_name
+            if candidate.exists():
+                project_root = candidate
 
     # --- Atlas ---
     atlas_path = mem_dir / "atlas.json"

@@ -249,7 +249,7 @@ stories:
 ## File Layout
 
 ```
-<project>/.kord/agents/augur/memory/
+$MEM/
   atlas.json
   stories/
     <id>.yaml              # both roots and children in the same directory

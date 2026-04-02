@@ -15,7 +15,9 @@ Supports three analysis modes: **full** (first run or major changes), **incremen
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition); `[--full]` to force full analysis (ignore previous results). Directory must exist at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, or as an absolute path.
+`$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition); `[--full]` to force full analysis (ignore previous results). Directory must exist at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, `/kord/projects/<project>/`, or as an absolute path.
+
+**Memory paths:** The runner injects `[Memory]` context with each job. Use the `Project:` path for reading/writing project memory (atlas, stories). If no project memory path is provided, fall back to `$AGENT_PROJECT_DIR/memory/projects/<project>/`. Output is written via the `/memory-update` endpoint for insights, but atlas.json and stories are written directly to the project memory path (they are structured output, not curated memory).
 
 ---
 
@@ -25,7 +27,7 @@ Before reading any code, decide whether to run a full analysis or an incremental
 
 ### 0.1 — Locate and check previous analysis
 
-Resolve the project directory (`$ROOT`). Check for existing output at `$ROOT/.kord/agents/augur/memory/atlas.json`.
+Resolve the project directory (`$ROOT`) and the project memory directory (`$MEM` — from the runner's `[Memory] Project:` path, or `$AGENT_PROJECT_DIR/memory/projects/<project>/`). Check for existing output at `$MEM/atlas.json`.
 
 If `--full` was passed, or no previous atlas exists: **mode = FULL**. Skip to Phase 1.
 
@@ -34,7 +36,7 @@ If `--full` was passed, or no previous atlas exists: **mode = FULL**. Skip to Ph
 Read `metadata.analyzed_at_sha` from the existing atlas. Compare against current HEAD:
 
 ```bash
-PREV_SHA=$(jq -r '.metadata.analyzed_at_sha // empty' $ROOT/.kord/agents/augur/memory/atlas.json)
+PREV_SHA=$(jq -r '.metadata.analyzed_at_sha // empty' $MEM/atlas.json)
 CURRENT_SHA=$(git -C $ROOT rev-parse HEAD)
 ```
 
@@ -137,7 +139,7 @@ Continue immediately.
 
 ### Step 4 — Write atlas.json
 
-Assemble into [atlas-schema.md](atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
+Assemble into [atlas-schema.md](atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Incorporate valid Gemini critiques if available. Write to `$MEM/atlas.json`.
 
 If `--detect-only`: skip Phase 2, go to Report.
 
@@ -196,7 +198,7 @@ With validated output, run quality checks:
 
 3. **Gemini story review** (background) — review against the **codebase**:
    ```bash
-   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$ROOT/.kord/agents/augur/memory/stories/ @$ROOT/.kord/agents/augur/memory/atlas.json > /tmp/gemini-review-stories.json &
+   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$MEM/stories/ @$MEM/atlas.json > /tmp/gemini-review-stories.json &
    ```
    If changes are made after Gemini feedback, **call warden again** for a fresh token.
 

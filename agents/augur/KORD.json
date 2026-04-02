@@ -62,8 +62,8 @@
     "owner": "augur",
     "preload": "none"
   },
-  {"type":"resource","name":"atlas","agent":"augur","description":"Structural inventory — components, patterns, dependencies, debt, failure modes.","scope":"project","path":"<project>/.kord/agents/augur/memory/atlas.json","format":"json","produced_by":"analyze","cache":{"max_age":"7d"}},
-  {"type":"resource","name":"stories","agent":"augur","description":"Scoped architectural narratives — 8-15 stories per project.","scope":"project","path":"<project>/.kord/agents/augur/memory/stories/","format":"yaml","produced_by":"analyze","cache":{"max_age":"7d"}},
-  {"type":"resource","name":"journeys","agent":"augur","description":"Cross-cutting reading paths through the story tree.","scope":"project","path":"<project>/.kord/agents/augur/memory/journeys/","format":"yaml","produced_by":"analyze","cache":{"max_age":"7d"}},
+  {"type":"resource","name":"atlas","agent":"augur","description":"Structural inventory — components, patterns, dependencies, debt, failure modes.","scope":"project","path":"$MEM/atlas.json","format":"json","produced_by":"analyze","cache":{"max_age":"7d"}},
+  {"type":"resource","name":"stories","agent":"augur","description":"Scoped architectural narratives — 8-15 stories per project.","scope":"project","path":"$MEM/stories/","format":"yaml","produced_by":"analyze","cache":{"max_age":"7d"}},
+  {"type":"resource","name":"journeys","agent":"augur","description":"Cross-cutting reading paths through the story tree.","scope":"project","path":"$MEM/journeys/","format":"yaml","produced_by":"analyze","cache":{"max_age":"7d"}},
   {"type":"resource","name":"concepts","agent":"augur","description":"Pattern and anti-pattern catalog — 155 patterns across 20 categories.","scope":"global","path":"agents/augur/memory/concepts.md","format":"md"}
 ]

@@ -2,14 +2,11 @@
 
 Level 3 resource for the architect skill. Referenced from step 2 (detect concepts). Carries the full detection procedure from the concept catalog.
 
-## Catalog Loading
+## Catalog
 
-Read both indexes from `~/.kord/agents/augur/memory/`:
+The pattern and anti-pattern indexes (`concepts.md`, `anti-patterns.md`) are pre-loaded in your global memory. Each index header states its entry and category counts — use those numbers in the report, do not hardcode them.
 
-- `concepts.md` — patterns index (columns: `Pattern | Description | Reference`)
-- `anti-patterns.md` — anti-patterns index (columns: `Anti-pattern | What to look for | Reference`)
-
-Each index header states its entry and category counts — use those numbers in the report, do not hardcode them. Both patterns and anti-patterns live in `~/.kord/agents/augur/memory/concepts/<name>/concept.md`. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). The two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) — always pull the category from whichever index the entry appears in.
+Individual concept details live in `memory/global/concepts/<name>/concept.md` — read these on demand during detection, not upfront. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). The two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) — always pull the category from whichever index the entry appears in.
 
 ## Stack Detection and Category Prioritization
 
@@ -33,8 +30,8 @@ Work category by category through the prioritized list. For each entry in a cate
 
 For each candidate, check for a rule file:
 
-- `~/.kord/agents/augur/memory/concepts/<name>/ast-grep.yaml` — used by ~15 pattern entries (structural GoF patterns like factory, singleton, observer, decorator, strategy, builder, etc.)
-- `~/.kord/agents/augur/memory/concepts/<name>/semgrep.yaml` — used by ~8 anti-pattern entries (security and error-handling: hardcoded-credentials, sql-injection, swallowed-exception, race-condition, etc.)
+- `memory/global/concepts/<name>/ast-grep.yaml` — used by ~15 pattern entries (structural GoF patterns like factory, singleton, observer, decorator, strategy, builder, etc.)
+- `memory/global/concepts/<name>/semgrep.yaml` — used by ~8 anti-pattern entries (security and error-handling: hardcoded-credentials, sql-injection, swallowed-exception, race-condition, etc.)
 
 Most entries have neither. Each entry has at most one type — no entry currently has both. Check file existence before running.
 
@@ -50,7 +47,7 @@ For each candidate still unconfirmed after Pass 2 (no rule file exists, or the t
 
 ## Pass 3.5 — Diagnostic Question Evaluation
 
-For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), check for a question file at `~/.kord/agents/augur/memory/concepts/<name>/questions.yaml`. If one exists, load it and evaluate:
+For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), check for a question file at `memory/global/concepts/<name>/questions.yaml`. If one exists, load it and evaluate:
 
 - For questions with `signals` hints, grep for those signals first. If all signals return zero results, answer "no" without further analysis.
 - For remaining questions, read relevant code and answer yes/no with a one-line justification.

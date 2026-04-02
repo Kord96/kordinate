@@ -7,7 +7,7 @@ This document is the stable interface. Internal methodology may change; these ou
 ## Output Layout
 
 ```
-<project>/.kord/agents/augur/memory/
+$MEM/
   atlas.json            # structural inventory — complete, scoreable
   stories/
     <id>.yaml           # 8-15 stories, each a scoped architectural concern
