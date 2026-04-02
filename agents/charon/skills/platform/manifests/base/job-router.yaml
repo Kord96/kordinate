@@ -27,9 +27,8 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              ln -sfn /kord/kordinate "$HOME/.kord" 2>/dev/null
-              cd /kord/kordinate/lib/job-router && npm install --production 2>/dev/null
-              exec node /kord/kordinate/lib/job-router/router.js
+              cd /data/repos/kordinate/lib/job-router && npm install --production 2>/dev/null
+              exec node router.js
           env:
             - name: PORT
               value: "3100"
@@ -38,7 +37,7 @@ spec:
             - name: HOME
               value: /home/claude
             - name: KORDINATE_HOME
-              value: /kord/kordinate
+              value: /data/repos/kordinate
           resources:
             requests: { cpu: 100m, memory: 256Mi }
             limits: { memory: 1Gi }
@@ -56,10 +55,16 @@ spec:
           volumeMounts:
             - name: kord
               mountPath: /kord
+            - name: data
+              mountPath: /data
+              readOnly: true
       volumes:
         - name: kord
           persistentVolumeClaim:
             claimName: kord
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
 ---
 apiVersion: v1
 kind: Service

@@ -4,7 +4,7 @@
 # Init container sets up /kord/agents/<name>/ with memory/global/ and memory/projects/ dirs.
 # Claude loads CLAUDE.md natively with @ imports for identity, memory, and team awareness.
 # KEDA ScaledObjects control replicas (see keda.yaml).
-# /kord/projects is mounted read-only — agents read code but cannot modify project repos.
+# Two PVCs: kord (runtime, rw) and data (repos, read-only for agents).
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,11 +25,12 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "augur"]
+          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "augur"]
           env:
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: data, mountPath: /data, readOnly: true }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -41,15 +42,15 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: augur }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
-            - { name: PROJECTS_ROOT, value: /kord/projects }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
+            - { name: PROJECTS_ROOT, value: /data/repos }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -65,10 +66,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
+            - { name: data, mountPath: /data, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
+        - name: data
+          persistentVolumeClaim: { claimName: data }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -89,11 +92,12 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "charon"]
+          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "charon"]
           env:
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: data, mountPath: /data, readOnly: true }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -106,15 +110,15 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg /kord/ssh 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: charon }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
-            - { name: PROJECTS_ROOT, value: /kord/projects }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
+            - { name: PROJECTS_ROOT, value: /data/repos }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -128,10 +132,12 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
+            - { name: data, mountPath: /data, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
+        - name: data
+          persistentVolumeClaim: { claimName: data }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -152,11 +158,12 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "warden"]
+          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "warden"]
           env:
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: data, mountPath: /data, readOnly: true }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -168,15 +175,15 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: warden }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
-            - { name: PROJECTS_ROOT, value: /kord/projects }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
+            - { name: PROJECTS_ROOT, value: /data/repos }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -190,10 +197,12 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
+            - { name: data, mountPath: /data, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
+        - name: data
+          persistentVolumeClaim: { claimName: data }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -214,11 +223,12 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "sauron"]
+          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "sauron"]
           env:
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: data, mountPath: /data, readOnly: true }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -230,15 +240,15 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: sauron }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
-            - { name: PROJECTS_ROOT, value: /kord/projects }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
+            - { name: PROJECTS_ROOT, value: /data/repos }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -252,10 +262,12 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
+            - { name: data, mountPath: /data, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
+        - name: data
+          persistentVolumeClaim: { claimName: data }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -276,11 +288,12 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "alfred"]
+          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "alfred"]
           env:
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
             - { name: kord, mountPath: /kord }
+            - { name: data, mountPath: /data, readOnly: true }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -292,15 +305,15 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /kord/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: alfred }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /kord/kordinate }
-            - { name: PROJECTS_ROOT, value: /kord/projects }
+            - { name: KORDINATE_HOME, value: /data/repos/kordinate }
+            - { name: PROJECTS_ROOT, value: /data/repos }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -314,7 +327,9 @@ spec:
             initialDelaySeconds: 30
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: kord, mountPath: /kord/projects, subPath: projects, readOnly: true }
+            - { name: data, mountPath: /data, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
+        - name: data
+          persistentVolumeClaim: { claimName: data }

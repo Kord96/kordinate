@@ -357,7 +357,7 @@ cmd_init() {
   [ -d "$KORD_SRC/installer/profile" ] && cp -r "$KORD_SRC/installer/profile" "$TMP_KORD/"
   tar czf /tmp/kordinate-files.tar.gz -C "$TMP_KORD" .
   kc cp /tmp/kordinate-files.tar.gz "master/$POD:/tmp/kordinate-files.tar.gz" -c workstation
-  ws_exec "mkdir -p /kord/kordinate && tar xzf /tmp/kordinate-files.tar.gz -C /kord/kordinate && rm /tmp/kordinate-files.tar.gz"
+  ws_exec "mkdir -p /data/repos/kordinate && tar xzf /tmp/kordinate-files.tar.gz -C /data/repos/kordinate && rm /tmp/kordinate-files.tar.gz"
   rm -rf "$TMP_KORD" /tmp/kordinate-files.tar.gz
   log "Kordinate files copied to workstation (no git repo)"
 
