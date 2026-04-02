@@ -455,6 +455,9 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
 
   "metadata": {
     "story_ids": ["<story-id>"],
+    "analyzed_at_sha": "<git commit SHA at time of analysis>",
+    "analysis_mode": "full | incremental | skip",
+    "affected_components": ["<component-id — only populated in incremental mode>"],
     "flags": {
       "detect_only": false
     }
@@ -593,6 +596,9 @@ Guidelines:
   },
   "metadata": {
     "story_ids": [],
+    "analyzed_at_sha": "",
+    "analysis_mode": "full",
+    "affected_components": [],
     "flags": {"detect_only": false}
   }
 }

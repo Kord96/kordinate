@@ -11,21 +11,104 @@ context: inherit
 
 Produce `atlas.json` and stories — a complete architectural understanding of a project in one continuous pass. Phase 1 runs all detection methodologies. Phase 2 composes findings into stories. Both phases share context so detection informs composition directly.
 
+Supports three analysis modes: **full** (first run or major changes), **incremental** (update existing atlas based on what changed), and **skip** (nothing changed). The mode is determined automatically.
+
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition). Directory must exist at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, or as an absolute path.
+`$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition); `[--full]` to force full analysis (ignore previous results). Directory must exist at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, or as an absolute path.
+
+---
+
+## Step 0 — Determine Analysis Mode
+
+Before reading any code, decide whether to run a full analysis or an incremental update.
+
+### 0.1 — Locate and check previous analysis
+
+Resolve the project directory (`$ROOT`). Check for existing output at `$ROOT/.kord/agents/augur/memory/atlas.json`.
+
+If `--full` was passed, or no previous atlas exists: **mode = FULL**. Skip to Phase 1.
+
+### 0.2 — Compute the diff (deterministic)
+
+Read `metadata.analyzed_at_sha` from the existing atlas. Compare against current HEAD:
+
+```bash
+PREV_SHA=$(jq -r '.metadata.analyzed_at_sha // empty' $ROOT/.kord/agents/augur/memory/atlas.json)
+CURRENT_SHA=$(git -C $ROOT rev-parse HEAD)
+```
+
+If `$PREV_SHA` is empty or doesn't exist in git history: **mode = FULL**.
+If `$PREV_SHA == $CURRENT_SHA`: **mode = SKIP** — nothing changed, report "atlas is current" and exit.
+
+Otherwise, get the diff:
+
+```bash
+git -C $ROOT diff --stat $PREV_SHA..HEAD
+git -C $ROOT diff --name-only $PREV_SHA..HEAD > /tmp/changed-files.txt
+```
+
+### 0.3 — Map changes to components (deterministic)
+
+Cross-reference changed files against the existing atlas's `components[].modules[]` arrays:
+
+For each changed file, find which component(s) it belongs to. Classify:
+
+| Category | Detection | Files |
+|----------|-----------|-------|
+| **Mapped** | File matches a component's `modules[]` | Component is affected |
+| **Unmapped** | File doesn't match any component | Potential new component |
+| **Peripheral** | Only docs, tests, config, CI files changed | Low architectural impact |
+| **Dependency** | Package manifests changed (package.json, go.mod, etc.) | Re-run dependency detection |
+| **Schema** | Migration or schema files changed | Re-analyze state section |
+| **Deleted** | File removed | Check if component still resolves |
+
+Build the **affected set**: all directly changed components + their dependents (walk `depends_on` edges one level).
+
+### 0.4 — Decide mode
+
+| Condition | Mode | What happens |
+|-----------|------|-------------|
+| 0 files changed | **SKIP** | Report "atlas is current", exit |
+| Only peripheral files | **SKIP** | Or **PATCH** if devex/CI section needs updating |
+| Unmapped files exist (potential new components) | **FULL** | Can't incrementally add components — topology might change |
+| Affected set >= 50% of components | **FULL** | Too much changed, incremental isn't cheaper |
+| Affected set < 50% of components | **INCREMENTAL** | Update only what changed |
+
+Report the decision: "Mode: INCREMENTAL — 3 of 8 components affected (api-client, auth-service, config-loader). 12 files changed since abc123."
 
 ---
 
 ## Phase 1 — Understand the Codebase
 
-Read the codebase and build a holistic understanding. This is one coherent thought — as you discover patterns, you're already forming opinions about components; as you trace dependencies, you're already seeing failure modes. The checklist below ensures completeness, not a sequential mental pass.
+### FULL mode
+
+Delete previous output. Read the entire codebase and build a holistic understanding from scratch.
+
+### INCREMENTAL mode
+
+Read the existing atlas. Then read **only** the changed files and the files belonging to affected components. The existing atlas provides context for unchanged components — don't re-analyze them.
+
+**What to re-run for affected components:**
+- Re-scan changed files with AST rules and grep (not the whole codebase)
+- Re-evaluate concept detection only for concepts found in affected components
+- Re-check depends_on edges for affected components (imports may have changed)
+- Re-trace flows that pass through affected components
+- Re-assess debt for affected components only
+- Keep unchanged components, flows, state, and failure modes as-is
+
+**What to always re-check even in incremental:**
+- `grounded_in` references on affected components (files may have moved)
+- External dependency resilience if dependency code changed
+- API surface if route handler files changed
+
+---
 
 ### Step 1 — Locate and gather
 
-Resolve the project directory (`$ROOT`). Check: `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, or absolute path. If not found, report and exit. If empty, produce minimal atlas.json.
+Resolve the project directory (`$ROOT`). If not found, report and exit. If empty, produce minimal atlas.json.
 
-Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runtime). Glob source files per [source-gathering.md](source-gathering.md). Load concept catalogs (abstractions, concepts, anti-patterns indexes).
+Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runtime). In **INCREMENTAL** mode, only glob changed files + affected component files per [source-gathering.md](source-gathering.md). In **FULL** mode, glob everything. Load concept catalogs (abstractions, concepts, anti-patterns indexes).
 
 ### Step 2 — Read and analyze
 
@@ -54,7 +137,7 @@ Continue immediately.
 
 ### Step 4 — Write atlas.json
 
-Assemble into [schema.md](schema.md) v3 format. Set `version: "3"` and `generated` to today. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
+Assemble into [atlas-schema.md](atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Incorporate valid Gemini critiques if available. Write to `$ROOT/.kord/agents/augur/memory/atlas.json`.
 
 If `--detect-only`: skip Phase 2, go to Report.
 
@@ -126,6 +209,7 @@ If groundedness is low, fix claims. If coverage is low, add stories. Always reva
 ```
 ## Analysis: <project>
 
+**Mode**: full | incremental (N of M components) | skip
 **Purpose**: <one sentence>
 **Components** (N): <names>
 **Groups** (N): <names>
