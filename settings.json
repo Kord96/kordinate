@@ -1,0 +1,31 @@
+{
+  "env": {
+    "KORDINATE_HOME": "$HOME/.kord"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|Bash|mcp__grafana",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$KORDINATE_HOME/team/hooks/kord-guard.sh"
+          }
+        ]
+      },
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$KORDINATE_HOME/team/hooks/auto-merge.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "effortLevel": "max",
+  "skipDangerousModePermissionPrompt": true
+}

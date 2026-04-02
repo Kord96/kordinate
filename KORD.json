@@ -3,7 +3,7 @@
     "type": "skill",
     "name": "get",
     "agent": "alfred",
-    "description": "Retrieve personal information — config, credentials, overlays. Verifies caller identity.",
+    "description": "Retrieve personal information \u2014 config, credentials, overlays. Verifies caller identity.",
     "arguments": "<what> [--cluster <name>]",
     "public": true
   },
@@ -11,7 +11,7 @@
     "type": "skill",
     "name": "store",
     "agent": "alfred",
-    "description": "Store personal information — credentials, config updates, overlays.",
+    "description": "Store personal information \u2014 credentials, config updates, overlays.",
     "arguments": "<what> <value>",
     "public": true
   },
@@ -19,8 +19,7 @@
     "type": "file",
     "path": "agents/alfred/memory/scratchpad.md",
     "description": "Working notes",
-    "owner": "alfred",
-    "preload": "none"
+    "owner": "alfred"
   },
   {
     "type": "file",
@@ -40,7 +39,7 @@
     "type": "resource",
     "name": "environment",
     "agent": "alfred",
-    "description": "Deployment preflight status — profile config, overlay validity, credentials.",
+    "description": "Deployment preflight status \u2014 profile config, overlay validity, credentials.",
     "scope": "global",
     "guidelines": "Run a quick preflight check. Verify profile config, overlay validity, and pass store credential existence. Return ready/not-ready with issues. Keep under 30 lines.",
     "cache": {
@@ -66,7 +65,6 @@
     "path": "agents/augur/memory/concepts.md",
     "description": "Index of 155 patterns across 20 categories",
     "owner": "augur",
-    "preload": "augur",
     "validation": "augur"
   },
   {
@@ -74,7 +72,6 @@
     "path": "agents/augur/memory/anti-patterns.md",
     "description": "Index of anti-patterns by category",
     "owner": "augur",
-    "preload": "augur",
     "validation": "augur"
   },
   {
@@ -82,7 +79,6 @@
     "path": "agents/augur/memory/abstractions.md",
     "description": "Canonical abstraction names for components",
     "owner": "augur",
-    "preload": "augur",
     "validation": "augur"
   },
   {
@@ -90,7 +86,6 @@
     "path": "agents/augur/memory/app-contract.md",
     "description": "Pod labels, annotations, observability contract",
     "owner": "augur",
-    "preload": "augur",
     "validation": "augur"
   },
   {
@@ -98,7 +93,6 @@
     "path": "agents/augur/memory/tools.md",
     "description": "Tool reference (ast-grep, semgrep, grep)",
     "owner": "augur",
-    "preload": "augur",
     "validation": "augur"
   },
   {
@@ -106,21 +100,19 @@
     "path": "agents/augur/memory/workflow.md",
     "description": "4-step review workflow",
     "owner": "augur",
-    "preload": "augur",
     "validation": "augur"
   },
   {
     "type": "file",
     "path": "agents/augur/memory/scratchpad.md",
     "description": "Working notes and observations",
-    "owner": "augur",
-    "preload": "none"
+    "owner": "augur"
   },
   {
     "type": "resource",
     "name": "atlas",
     "agent": "augur",
-    "description": "Structural inventory — components, patterns, dependencies, debt, failure modes.",
+    "description": "Structural inventory \u2014 components, patterns, dependencies, debt, failure modes.",
     "scope": "project",
     "path": "<project>/.kord/agents/augur/memory/atlas.json",
     "format": "json",
@@ -133,7 +125,7 @@
     "type": "resource",
     "name": "stories",
     "agent": "augur",
-    "description": "Scoped architectural narratives — 8-15 stories per project.",
+    "description": "Scoped architectural narratives \u2014 8-15 stories per project.",
     "scope": "project",
     "path": "<project>/.kord/agents/augur/memory/stories/",
     "format": "yaml",
@@ -159,7 +151,7 @@
     "type": "resource",
     "name": "concepts",
     "agent": "augur",
-    "description": "Pattern and anti-pattern catalog — 155 patterns across 20 categories.",
+    "description": "Pattern and anti-pattern catalog \u2014 155 patterns across 20 categories.",
     "scope": "global",
     "path": "agents/augur/memory/concepts.md",
     "format": "md"
@@ -168,7 +160,7 @@
     "type": "skill",
     "name": "bootstrap",
     "agent": "charon",
-    "description": "Set up a cluster from scratch — namespaces, storage, overlays, deploy stacks.",
+    "description": "Set up a cluster from scratch \u2014 namespaces, storage, overlays, deploy stacks.",
     "arguments": "<cluster>",
     "public": true
   },
@@ -228,43 +220,37 @@
     "type": "file",
     "path": "agents/charon/memory/scratchpad.md",
     "description": "Working notes",
-    "owner": "charon",
-    "preload": "none"
+    "owner": "charon"
   },
   {
     "type": "file",
     "path": "agents/charon/memory/infra.md",
     "description": "Infrastructure knowledge",
-    "owner": "charon",
-    "preload": "none"
+    "owner": "charon"
   },
   {
     "type": "file",
     "path": "agents/charon/memory/migration.md",
     "description": "Migration procedures",
-    "owner": "charon",
-    "preload": "none"
+    "owner": "charon"
   },
   {
     "type": "file",
     "path": "agents/charon/memory/monitoring-topology.md",
     "description": "Monitoring topology",
-    "owner": "charon",
-    "preload": "none"
+    "owner": "charon"
   },
   {
     "type": "file",
     "path": "agents/charon/memory/tools.md",
     "description": "Tool reference",
-    "owner": "charon",
-    "preload": "none"
+    "owner": "charon"
   },
   {
     "type": "file",
     "path": "agents/charon/memory/troubleshooting.md",
     "description": "Troubleshooting notes",
-    "owner": "charon",
-    "preload": "none"
+    "owner": "charon"
   },
   {
     "type": "resource",
@@ -288,7 +274,7 @@
     "type": "resource",
     "name": "deployment-status",
     "agent": "charon",
-    "description": "Live deployment status — pods, versions, health. Always live.",
+    "description": "Live deployment status \u2014 pods, versions, health. Always live.",
     "scope": "global",
     "guidelines": "Return the current live state of the cluster: running pods, image versions, resource usage, and health. Always a live query. Keep under 50 lines."
   },
@@ -296,7 +282,7 @@
     "type": "skill",
     "name": "monitor",
     "agent": "sauron",
-    "description": "Monitor a running system — read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.",
+    "description": "Monitor a running system \u2014 read metrics, logs, dashboards, health checks. Diagnose issues. Depends on augur + charon.",
     "arguments": "<project> [--diagnose <symptom>] [--check] [--scan-code]",
     "public": true
   },
@@ -304,7 +290,7 @@
     "type": "skill",
     "name": "design-monitoring",
     "agent": "sauron",
-    "description": "Design a monitoring system — metrics, logs, health checks, dashboards, alerts. Depends on augur + charon.",
+    "description": "Design a monitoring system \u2014 metrics, logs, health checks, dashboards, alerts. Depends on augur + charon.",
     "arguments": "<project> [--scope full|metrics|alerts|dashboards]",
     "public": true
   },
@@ -319,43 +305,37 @@
     "type": "file",
     "path": "agents/sauron/memory/scratchpad.md",
     "description": "Working notes",
-    "owner": "sauron",
-    "preload": "none"
+    "owner": "sauron"
   },
   {
     "type": "file",
     "path": "agents/sauron/memory/grafana_renderer.md",
     "description": "Grafana renderer notes",
-    "owner": "sauron",
-    "preload": "none"
+    "owner": "sauron"
   },
   {
     "type": "file",
     "path": "agents/sauron/memory/logging.md",
     "description": "Logging patterns",
-    "owner": "sauron",
-    "preload": "none"
+    "owner": "sauron"
   },
   {
     "type": "file",
     "path": "agents/sauron/memory/monitoring.md",
     "description": "Monitoring knowledge",
-    "owner": "sauron",
-    "preload": "none"
+    "owner": "sauron"
   },
   {
     "type": "file",
     "path": "agents/sauron/memory/tools.md",
     "description": "Tool reference",
-    "owner": "sauron",
-    "preload": "none"
+    "owner": "sauron"
   },
   {
     "type": "file",
     "path": "agents/sauron/memory/workflow.md",
     "description": "Workflow reference",
-    "owner": "sauron",
-    "preload": "none"
+    "owner": "sauron"
   },
   {
     "type": "resource",
@@ -378,7 +358,7 @@
     "type": "resource",
     "name": "monitoring-impact",
     "agent": "sauron",
-    "description": "Monitoring coverage gaps — missing dashboards, metrics, alerts by severity.",
+    "description": "Monitoring coverage gaps \u2014 missing dashboards, metrics, alerts by severity.",
     "scope": "global",
     "guidelines": "Assess monitoring coverage for the affected service. Report gaps, not what's already working. Keep under 50 lines.",
     "cache": {
@@ -400,25 +380,9 @@
   },
   {
     "type": "skill",
-    "name": "render",
-    "agent": "scribe",
-    "description": "Render documentation data into Astro site pages using pre-built components.",
-    "arguments": "<project>",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "register",
-    "agent": "scribe",
-    "description": "Register runtime, agent, or kord — setup, creation, and re-linking.",
-    "arguments": "runtime|agent|kord [args]",
-    "public": true
-  },
-  {
-    "type": "skill",
     "name": "doctor-k",
     "agent": "scribe",
-    "description": "Health-check the kordinate system — structural, runtime, and e2e tests.",
+    "description": "Health-check the kordinate system \u2014 structural, runtime, and e2e tests.",
     "arguments": "[--scope global|project|all] [--e2e]",
     "public": true
   },
@@ -426,29 +390,25 @@
     "type": "file",
     "path": "agents/scribe/memory/scratchpad.md",
     "description": "Working notes",
-    "owner": "scribe",
-    "preload": "none"
+    "owner": "scribe"
   },
   {
     "type": "file",
     "path": "agents/scribe/memory/skill-marketplace-evaluation.md",
     "description": "Skill marketplace evaluation",
-    "owner": "scribe",
-    "preload": "none"
+    "owner": "scribe"
   },
   {
     "type": "file",
     "path": "agents/scribe/memory/tools.md",
     "description": "Tool reference",
-    "owner": "scribe",
-    "preload": "none"
+    "owner": "scribe"
   },
   {
     "type": "file",
     "path": "agents/scribe/memory/workflow.md",
     "description": "Workflow reference",
-    "owner": "scribe",
-    "preload": "none"
+    "owner": "scribe"
   },
   {
     "type": "skill",
@@ -472,7 +432,7 @@
     "type": "skill",
     "name": "sanitize",
     "agent": "warden",
-    "description": "Classify content as config, credential, or memory — routes to correct destination.",
+    "description": "Classify content as config, credential, or memory \u2014 routes to correct destination.",
     "arguments": "<content>",
     "public": true
   },
@@ -501,15 +461,7 @@
     "type": "file",
     "path": "agents/warden/memory/scratchpad.md",
     "description": "Working notes",
-    "owner": "warden",
-    "preload": "none"
-  },
-  {
-    "type": "skill",
-    "name": "boot",
-    "agent": "team",
-    "description": "Load memory and shared protocols on spawn.",
-    "public": true
+    "owner": "warden"
   },
   {
     "type": "skill",
@@ -528,14 +480,6 @@
   },
   {
     "type": "skill",
-    "name": "install",
-    "agent": "team",
-    "description": "Install or reinstall kordinate — create ~/.kord/, link to runtime.",
-    "arguments": "[--local] [--restore <url>]",
-    "public": true
-  },
-  {
-    "type": "skill",
     "name": "authenticate",
     "agent": "team",
     "description": "Authenticate as an agent for guarded operations.",
@@ -546,16 +490,8 @@
     "type": "skill",
     "name": "improve",
     "agent": "team",
-    "description": "Improve skills, agents, or the whole team — run evals, benchmark, iterate.",
+    "description": "Improve skills, agents, or the whole team \u2014 run evals, benchmark, iterate.",
     "arguments": "skill|agent|all|optimize|audit|benchmark <name>",
-    "public": true
-  },
-  {
-    "type": "skill",
-    "name": "remember",
-    "agent": "team",
-    "description": "Register a memory file in KORD.json — decide scope and preload.",
-    "arguments": "<file-path> [--scope global|project|both] [--preload <agent>|all|none]",
     "public": true
   },
   {
@@ -570,7 +506,7 @@
     "pattern": "git push .*--force",
     "tool": "Bash",
     "validation": "merge",
-    "description": "Force push is not allowed — use /merge to resolve conflicts"
+    "description": "Force push is not allowed \u2014 use /merge to resolve conflicts"
   },
   {
     "type": "dir",
@@ -624,7 +560,7 @@
     "type": "dir",
     "pattern": "profile/locks/",
     "validation": "warden",
-    "description": "Auth lock files — warden only"
+    "description": "Auth lock files \u2014 warden only"
   },
   {
     "type": "file",
@@ -637,35 +573,24 @@
     "type": "file",
     "path": "shared/auth-protocol.md",
     "description": "Authentication protocol for guarded operations",
-    "owner": "team",
-    "preload": "all"
+    "owner": "team"
   },
   {
     "type": "file",
     "path": "shared/credentials-protocol.md",
     "description": "Credentials management via pass store",
-    "owner": "team",
-    "preload": "all"
+    "owner": "team"
   },
   {
     "type": "file",
     "path": "shared/memory-protocol.md",
     "description": "Memory writing protocol",
-    "owner": "team",
-    "preload": "all"
+    "owner": "team"
   },
   {
     "type": "file",
     "path": "shared/gemini-protocol.md",
     "description": "Gemini CLI usage and flags",
-    "owner": "team",
-    "preload": "all"
-  },
-  {
-    "type": "file",
-    "path": "agents/main/memory/scratchpad.md",
-    "description": "Main session working notes",
-    "owner": "main",
-    "preload": "none"
+    "owner": "team"
   }
 ]

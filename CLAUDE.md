@@ -1,5 +1,12 @@
-This is the kordinate development repo. All agent, skill, kord, and infrastructure changes MUST be made here first.
+This is the kordinate development repo. Agents run as Kubernetes pods with persistent Claude sessions.
 
-To apply changes to the runtime (`~/.kord/` and `~/.claude/`), run `/install --local` after editing. Do NOT edit `~/.kord/` directly — it will be overwritten on next install.
+Structure:
+- `agents/` — 6 agents (alfred, augur, charon, sauron, scribe, warden) with IDENTITY.md, memory/, skills/
+- `team/` — shared hooks, skills, protocols
+- `lib/` — agent-runner (stream-json bridge), job-router, memory-curator, hooks, scripts
+- `installer/` — cluster bootstrap scripts
+- `bin/` — session and tmux utilities
 
-The installable kordinate package lives at `kordinate/` (i.e., `kordinate/kordinate/` from repo root). Infrastructure manifests and images are under `kordinate/agents/charon/skills/infra/`.
+Infrastructure manifests are under `agents/charon/skills/bootstrap/manifests/`.
+
+Pod project directories are generated at `/kord/agents/<name>/` by `lib/scripts/setup-agent-dir.sh`.
