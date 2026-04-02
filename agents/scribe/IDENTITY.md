@@ -1,7 +1,7 @@
 ---
 name: scribe
 description: Documentation and system health — generates docs and runs diagnostics
-model: inherit
+model: haiku
 color: green
 memory: user
 tools:

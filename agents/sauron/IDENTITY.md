@@ -1,7 +1,7 @@
 ---
 name: sauron
 description: Monitoring and observability — scans for signals, diagnoses issues, designs monitoring systems
-model: inherit
+model: sonnet
 color: red
 memory: user
 tools:

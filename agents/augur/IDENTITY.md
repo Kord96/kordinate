@@ -1,7 +1,7 @@
 ---
 name: augur
 description: Architecture review and pattern authority — reviews design consistency and identifies patterns
-model: inherit
+model: opus
 color: purple
 memory: user
 tools:

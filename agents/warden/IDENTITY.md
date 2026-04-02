@@ -1,7 +1,7 @@
 ---
 name: warden
 description: Security scanning and credential hygiene — ensures nothing sensitive is hardcoded or exposed
-model: inherit
+model: haiku
 color: orange
 memory: user
 tools:

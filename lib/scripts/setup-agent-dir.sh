@@ -78,6 +78,15 @@ else
   log "WARN: no IDENTITY.md found for $AGENT"
 fi
 
+# ─── Extract model from IDENTITY.md frontmatter ───
+MODEL="sonnet"  # default
+if [ -f "$IDENTITY_SRC" ]; then
+  MODEL=$(sed -n 's/^model: *//p' "$IDENTITY_SRC" | head -1)
+  [ -z "$MODEL" ] && MODEL="sonnet"
+  log "model: $MODEL"
+fi
+echo "$MODEL" > "$DST/.model"
+
 # ─── .claude/settings.json — copy template ───
 
 cp "$SRC/lib/templates/agent-settings.json" "$DST/.claude/settings.json"

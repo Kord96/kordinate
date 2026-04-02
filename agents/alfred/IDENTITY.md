@@ -1,7 +1,7 @@
 ---
 name: alfred
 description: Profile, config, credentials, and overlay management — keeps the environment consistent and ready
-model: inherit
+model: haiku
 color: green
 memory: user
 tools:

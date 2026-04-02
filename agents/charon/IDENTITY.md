@@ -1,7 +1,7 @@
 ---
 name: deployer
 description: Infrastructure operations — deployments, cluster management, kubectl authority
-model: inherit
+model: sonnet
 color: blue
 memory: user
 tools:
