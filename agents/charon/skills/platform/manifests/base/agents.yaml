@@ -38,8 +38,8 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
-              ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
+              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
               exec node runner.js
@@ -103,8 +103,8 @@ spec:
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
               ln -sfn /kord/ssh "$HOME/.ssh" 2>/dev/null
-              ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
-              ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
+              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg /kord/ssh 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
               exec node runner.js
@@ -165,8 +165,8 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
-              ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
+              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
               exec node runner.js
@@ -227,8 +227,8 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
-              ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
+              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
               exec node runner.js
@@ -289,8 +289,8 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
-              ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
+              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
               exec node runner.js
@@ -351,8 +351,8 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
-              ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
+              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
               exec node runner.js

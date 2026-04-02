@@ -83,19 +83,16 @@ fi
 cp "$SRC/lib/templates/agent-settings.json" "$DST/.claude/settings.json"
 log "created .claude/settings.json"
 
-# ─── memory/global/ — seed from source if empty ───
+# ─── memory/global/ — seed from source (recursive, don't overwrite curator's work) ───
 
 MEMORY_SRC="$SRC/agents/$AGENT/memory"
 if [ -d "$MEMORY_SRC" ]; then
-  for f in "$MEMORY_SRC/"*.md; do
-    [ -f "$f" ] || continue
-    base=$(basename "$f")
-    # Only seed if file doesn't exist (don't overwrite curator's work)
-    if [ ! -f "$DST/memory/global/$base" ]; then
-      cp "$f" "$DST/memory/global/$base"
-      log "seeded memory/global/$base"
-    fi
-  done
+  # Copy entire memory tree into global/, preserving subdirectories (e.g., concepts/)
+  # Use cp -rn (no-clobber) to avoid overwriting curator's merged files
+  cp -rn "$MEMORY_SRC/." "$DST/memory/global/" 2>/dev/null || true
+  # Remove any nested dynamic/pending dirs that shouldn't be in global
+  rm -rf "$DST/memory/global/dynamic" "$DST/memory/global/pending" 2>/dev/null || true
+  log "seeded memory/global/ from $MEMORY_SRC (recursive)"
 fi
 
 # ─── skills/ — symlink to source skill dirs ───

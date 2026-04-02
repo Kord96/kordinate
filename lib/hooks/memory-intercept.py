@@ -39,21 +39,25 @@ def main():
     if not file_path:
         allow()
 
-    # Only guard memory/ paths
-    if "/memory/" not in file_path:
-        allow()
+    # Guard memory/ paths
+    if "/memory/" in file_path and "/.claude/" not in file_path:
+        deny(
+            "Direct writes to memory/ are not allowed. "
+            "Use the memory endpoint instead: "
+            "curl -s http://localhost:9090/memory-update "
+            '-H "Content-Type: application/json" '
+            "-d '{\"path\":\"<topic>.md\",\"content\":\"...\",\"scope\":\"global|project\",\"project\":\"...\"}'"
+        )
 
-    # Allow Claude's internal memory
-    if "/.claude/" in file_path:
-        allow()
+    # Guard .claude/ paths on pods (runtime is managed, not writable by agents)
+    import os
+    if "/.claude/" in file_path and os.environ.get("AGENT_NAME"):
+        deny(
+            "The Claude runtime directory is managed by the platform. "
+            "Do not write to .claude/ paths."
+        )
 
-    deny(
-        "Direct writes to memory/ are not allowed. "
-        "Use the memory endpoint instead: "
-        "curl -s http://localhost:9090/memory-update "
-        '-H "Content-Type: application/json" '
-        "-d '{\"path\":\"<topic>.md\",\"content\":\"...\",\"scope\":\"global|project\",\"project\":\"...\"}'"
-    )
+    allow()
 
 
 if __name__ == "__main__":
