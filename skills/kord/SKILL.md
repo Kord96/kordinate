@@ -33,7 +33,7 @@ Thin wrapper that routes kord requests. Stateless kords run locally, stateful ko
 Handle locally — no Beorn, no agent spawn:
 
 1. Authenticate as provider: `cp $KORDINATE_HOME/profile/locks/<provider> /tmp/.<provider>-auth`
-2. Invoke the skill specified in the contract's `skill:` field (e.g., `/remember`, `/sanitize`)
+2. Invoke the skill specified in the contract's `skill:` field (e.g., `/sanitize`)
 3. Remove auth: `rm /tmp/.<provider>-auth`
 4. Return the result.
 

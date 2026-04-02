@@ -72,7 +72,7 @@ Written to `/tmp/train-results/scorecard-<timestamp>.json` after each training r
 
 ## Training Log (Persistent)
 
-Appended to `~/.kord/agents/augur/memory/training-log.json` after each round. Tracks improvement over time.
+Appended to `memory/global/training-log.json` after each round. Tracks improvement over time.
 
 ```json
 {

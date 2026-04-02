@@ -26,7 +26,7 @@ Detect the GitHub repo by running `gh repo view --json nameWithOwner -q .nameWit
 
 ### Step 2 — Load augur findings
 
-Read augur output from `<project>/.kord/agents/augur/memory/`:
+Read augur output from `$MEM/` (augur's project memory):
 
 | Source | File |
 |--------|------|

@@ -16,7 +16,7 @@ Produce documentation data files from augur's analysis output. Scribe reads the 
 
 ## Input
 
-Read from `<project>/.kord/agents/augur/memory/`:
+Read from `$MEM/` (augur's project memory):
 
 | File | Required | Purpose |
 |------|----------|---------|
@@ -28,7 +28,7 @@ If `atlas.json` is missing, suggest running `/analyze <project>`. Exit.
 
 ## Output
 
-All output goes to `<project>/.kord/agents/scribe/output/`:
+All output goes to `$MEM/output/`:
 
 ```
 manifest.json          — rendering decisions per story
@@ -79,11 +79,11 @@ For each story's building blocks, decide the rendering approach. Record the deci
 
 ### 4. Write manifest.json
 
-Write rendering decisions to `<project>/.kord/agents/scribe/output/manifest.json`. See [schemas.md](schemas.md) for the exact schema.
+Write rendering decisions to `$MEM/output/manifest.json`. See [schemas.md](schemas.md) for the exact schema.
 
 ### 5. Write storyByNode.json
 
-Write the node-to-story index to `<project>/.kord/agents/scribe/output/storyByNode.json`.
+Write the node-to-story index to `$MEM/output/storyByNode.json`.
 
 ### 6. Copy augur data
 
@@ -94,7 +94,7 @@ Copy `atlas.json`, `stories/*.yaml`, and `journeys/*.yaml` from augur's output t
 ```
 ## Documentation: <project>
 
-**Output**: <project>/.kord/agents/scribe/output/
+**Output**: $MEM/output/
 **Manifest**: N stories, N total blocks
 **Coverage**: N of M atlas nodes in stories (N%)
 

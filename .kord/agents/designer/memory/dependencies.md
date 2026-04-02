@@ -19,7 +19,7 @@ Kordinate is a multi-agent orchestration platform running on k3s. A main Claude 
 | deployer | `/infra` | Bootstrap, roll, stop, clean, diff, migrate, preflight, rollback |
 | designer | `/detect-patterns`, `/review-api`, `/assess-debt`, `/map-dependencies`, `/architect` | Architecture review, pattern detection, dependency mapping |
 | sauron | `/scan-observability`, `/diagnose-issue` | Monitoring gap scans, issue diagnosis |
-| scribe | `/remember`, `/audit-kordinate`, `/onboard`, `/create-kord`, `/illustrate-architecture`, `/audit-skills` | Memory writes, kordinate health, agent onboarding, kord creation |
+| scribe | `/audit-kordinate`, `/onboard`, `/create-kord`, `/illustrate-architecture`, `/audit-skills` | Memory writes (via memory-update endpoint), kordinate health, agent onboarding, kord creation |
 | warden | `/sanitize`, `/scan-breaches`, `/audit-secrets` | Secret stripping, breach scanning, secret reconciliation |
 | main | (none -- orchestrator) | Delegates to all agents via kords; runs `/boot` at start |
 

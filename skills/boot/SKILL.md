@@ -20,11 +20,11 @@ Your agent name is the `name` field from your own frontmatter. Use it wherever `
 1. **Read shared protocols** — read all files in `$KORDINATE_HOME/shared/` (memory-protocol.md, auth-protocol.md, credentials-protocol.md). These are team-wide instructions.
 
 2. **Read your memory** — load files marked for you:
-    - Global: in `$KORDINATE_HOME/agents/<your-name>/memory/`, read files
+    - Global: in `memory/global/` (relative to your agent dir, loaded via CLAUDE.md), read files
       where frontmatter has `preloaded: <your-name>` or `preloaded: all`.
       Skip files with `preloaded: none` (they're available on demand).
-    - Project: same at `<project-root>/.kord/agents/<your-name>/memory/`.
-      Skip if `.kord/` does not exist in the project root.
+    - Project: at `$MEM/` (injected per-job by the runner).
+      Skip if `$MEM` is not set.
     - Files without a `preloaded` property default to `none` (not loaded).
 
 3. **Check code changes** — `git log --oneline -20` for recent commits relevant to your domain.

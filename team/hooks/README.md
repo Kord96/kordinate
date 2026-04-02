@@ -45,7 +45,7 @@ Two hooks enforce output quality for any skill that uses warden's `validate-outp
 
 ### validate-lock-hook.sh (PreToolUse on Write/Edit)
 
-Blocks writes to any `.kord/agents/*/memory/` directory that contains a `.validate-lock` file. The agent sees an error message telling it to fix validation errors — it never knows about the lock mechanism itself.
+Blocks writes to any project memory directory (`memory/projects/*/`) that contains a `.validate-lock` file. The agent sees an error message telling it to fix validation errors — it never knows about the lock mechanism itself.
 
 ### validate-post-hook.sh (PostToolUse on Bash)
 
@@ -53,7 +53,7 @@ Detects when an agent runs a `validate_output` script (any skill's validator fol
 
 | Trigger | Condition | Action |
 |---------|-----------|--------|
-| Write/Edit to `.kord/agents/*/memory/` | `.validate-lock` exists | Deny with fix instructions |
+| Write/Edit to `memory/projects/*/` | `.validate-lock` exists | Deny with fix instructions |
 | Bash runs `*validate_output*` | script + dir detected | Re-run with `VALIDATE_LOCK=1` to manage lock |
 
 ### Validator contract

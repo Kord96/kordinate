@@ -3,7 +3,7 @@
 # New agents register their validators here during install.
 
 validators:
-  - pattern: ".kord/agents/augur/memory/"
+  - pattern: "memory/projects/*/"
     script: "agents/warden/skills/validate-output/scripts/augur_validate_output.py"
     agent: augur
     description: "Validates atlas.json v3 schema, story YAML format, journey references, directory structure"

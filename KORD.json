@@ -114,7 +114,7 @@
     "agent": "augur",
     "description": "Structural inventory \u2014 components, patterns, dependencies, debt, failure modes.",
     "scope": "project",
-    "path": "<project>/.kord/agents/augur/memory/atlas.json",
+    "path": "$MEM/atlas.json",
     "format": "json",
     "produced_by": "analyze",
     "cache": {
@@ -127,7 +127,7 @@
     "agent": "augur",
     "description": "Scoped architectural narratives \u2014 8-15 stories per project.",
     "scope": "project",
-    "path": "<project>/.kord/agents/augur/memory/stories/",
+    "path": "$MEM/stories/",
     "format": "yaml",
     "produced_by": "analyze",
     "cache": {
@@ -140,7 +140,7 @@
     "agent": "augur",
     "description": "Cross-cutting reading paths through the story tree.",
     "scope": "project",
-    "path": "<project>/.kord/agents/augur/memory/journeys/",
+    "path": "$MEM/journeys/",
     "format": "yaml",
     "produced_by": "analyze",
     "cache": {

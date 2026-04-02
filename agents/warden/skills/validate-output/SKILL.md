@@ -13,7 +13,7 @@ Validate an agent's output directory. On success, return a completion token. On 
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<dir>` (directory containing output to validate, e.g., `<project>/.kord/agents/augur/memory/`).
+`$ARGUMENTS` — Required: `<dir>` (directory containing output to validate, e.g., `$MEM/`).
 
 ## Registry
 
@@ -22,7 +22,7 @@ Warden maintains a registry of validators per agent output directory. Registrati
 ```yaml
 # $KORDINATE_HOME/agents/warden/skills/validate-output/registry.yaml
 validators:
-  - pattern: ".kord/agents/augur/memory/"
+  - pattern: "memory/projects/*/"
     script: "$KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py"
     agent: augur
 ```

@@ -5,7 +5,7 @@
 # worktree that contains the kordinate/ package directory.
 #
 # Syncs: agent identities → ~/.claude/agents/
-#        agent skills/memory → ~/.kord/agents/
+#        agent skills/memory → ~/.kord/agents/ (global memory)
 #        team skills → ~/.claude/skills/
 #        server code → ~/.kord/lib/
 #        KORD.json (assembled) → ~/.kord/KORD.json
@@ -39,7 +39,7 @@ for identity in "$KORD_PKG"/agents/*/IDENTITY.md; do
   cp "$identity" "$CLAUDE_DIR/agents/$agent.md" 2>/dev/null
 done
 
-# --- Sync agent skills and memory → ~/.kord/agents/ ---
+# --- Sync agent skills and global memory → ~/.kord/agents/ ---
 for agent_dir in "$KORD_PKG"/agents/*/; do
   agent=$(basename "$agent_dir")
   # Skills
@@ -47,11 +47,11 @@ for agent_dir in "$KORD_PKG"/agents/*/; do
     mkdir -p "$KORDINATE_HOME/agents/$agent/skills"
     cp -r "$agent_dir/skills/"* "$KORDINATE_HOME/agents/$agent/skills/" 2>/dev/null
   fi
-  # Memory (top-level .md files only, not concept subdirs)
-  if [ -d "$agent_dir/memory" ]; then
-    mkdir -p "$KORDINATE_HOME/agents/$agent/memory"
-    for f in "$agent_dir"/memory/*.md; do
-      [ -f "$f" ] && cp "$f" "$KORDINATE_HOME/agents/$agent/memory/" 2>/dev/null
+  # Global memory (top-level .md files only, not concept subdirs)
+  if [ -d "$agent_dir/memory/global" ]; then
+    mkdir -p "$KORDINATE_HOME/agents/$agent/memory/global"
+    for f in "$agent_dir"/memory/global/*.md; do
+      [ -f "$f" ] && cp "$f" "$KORDINATE_HOME/agents/$agent/memory/global/" 2>/dev/null
     done
   fi
 done

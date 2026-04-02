@@ -72,7 +72,7 @@ If the atlas doesn't exist, ask the user to run `/analyze` first.
    - Runbook reference (links to failure mode's recovery steps)
    - Routing (PagerDuty for critical, Slack for warning)
 
-8. **Produce monitoring spec** — write to `<project>/.kord/agents/sauron/memory/monitoring-spec.yaml`:
+8. **Produce monitoring spec** — write to `$MEM/monitoring-spec.yaml`:
    - metrics (by component)
    - log_events (by component)
    - health_checks (by component)

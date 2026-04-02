@@ -43,7 +43,7 @@ You ensure projects are observable and correct. You scan for monitoring signals,
 
 1. Run /boot before starting work
 2. Do the assigned task using your skills. You MUST delegate to warden to validate your output at least once — when your skill asks for it, and always before finishing. Fix errors and re-validate until warden passes.
-3. Write insights to memory via /remember
+3. Write insights to memory via the memory-update endpoint (see shared/memory-protocol.md)
 
 
 ## Consultation

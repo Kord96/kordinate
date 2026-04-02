@@ -1,1 +1,1 @@
-- [scratchpad.md](/home/claude/.kord/agents/warden/memory/scratchpad.md) — Warden working notes and observations
+- [scratchpad.md](memory/global/scratchpad.md) — Warden working notes and observations

@@ -39,7 +39,7 @@ The environment order is: `main` (dev) → `test` → `prod`
    kubectl get configmap -n <namespace> -o json | sha256sum
    kubectl get secret -n <namespace> -o json | sha256sum
    ```
-   Write snapshot to `~/.kord/agents/charon/memory/dynamic/rollback/<project>-<env>.json`.
+   Write snapshot to `$MEM/rollback/<project>-<env>.json`.
    Create the directory if it doesn't exist.
 
 7. **Deploy** (method-specific last mile):

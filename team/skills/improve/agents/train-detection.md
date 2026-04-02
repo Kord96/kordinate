@@ -13,7 +13,7 @@ Automated training loop for improving concept detection quality across the full 
 
 ## Dependency: analyze
 
-Invokes `/analyze --detect-only` via an augur subagent on each sampled repo (step 3). The analyze skill must be installed and functional. Results are read from each repo's `.kord/agents/augur/memory/atlas.json` (the `concepts` section).
+Invokes `/analyze --detect-only` via an augur subagent on each sampled repo (step 3). The analyze skill must be installed and functional. Results are read from each repo's `$MEM/atlas.json` (the `concepts` section).
 
 ## Arguments
 
@@ -37,7 +37,7 @@ Each round produces a scorecard. Over multiple runs, detection precision and rec
 
 ## Convergence and Early Exit
 
-After each round completes, compare the aggregate F1 against the previous round's F1 (read from `~/.kord/agents/augur/memory/training-log.json`):
+After each round completes, compare the aggregate F1 against the previous round's F1 (read from `memory/global/training-log.json`):
 
 - **Plateau**: if F1 improvement < 0.02 for two consecutive rounds, stop early. Further rounds are unlikely to yield meaningful gains — the remaining gaps are likely concepts that need manual attention (new AST rules, fundamentally different detection approaches) rather than signature/question tuning.
 - **Target reached**: if aggregate F1 >= 0.90, stop. The system is performing well enough for production use.
@@ -99,7 +99,7 @@ When a parent session launches multiple training agents, it should append each e
    ```
    Agent(subagent_type="augur", prompt="Run /analyze --detect-only on /tmp/train-repos/<repo>")
    ```
-   Collect the output from each repo's `.kord/agents/augur/memory/atlas.json` — read the `concepts` section (`detected_patterns`, `detected_anti_patterns`, `gaps`).
+   Collect the output from each repo's `$MEM/atlas.json` — read the `concepts` section (`detected_patterns`, `detected_anti_patterns`, `gaps`).
    Run repos in parallel where possible (up to 3 concurrent).
 
 ### Phase 3: Evaluate (Multi-Oracle Ground Truth)
@@ -108,7 +108,7 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
 
 4. **Build ground truth.** For each repo, establish what concepts ACTUALLY exist using three oracles:
 
-   **Oracle 1: Gemini (primary).** Send the repo tree + key source files to Gemini. First, build the concept list from the same catalogs detect-concepts uses: extract the `Pattern | Description` column from `~/.kord/agents/augur/memory/concepts.md` and the `Anti-pattern | What to look for` column from `~/.kord/agents/augur/memory/anti-patterns.md`. Write the combined list to `/tmp/train-results/concept-list.txt`. The prompt provides this list and instructs: "Look for the BEHAVIOR, not the NAME. A strategy pattern might be called 'processor' or 'handler'."
+   **Oracle 1: Gemini (primary).** Send the repo tree + key source files to Gemini. First, build the concept list from the same catalogs detect-concepts uses: extract the `Pattern | Description` column from `memory/global/concepts.md` and the `Anti-pattern | What to look for` column from `memory/global/anti-patterns.md`. Write the combined list to `/tmp/train-results/concept-list.txt`. The prompt provides this list and instructs: "Look for the BEHAVIOR, not the NAME. A strategy pattern might be called 'processor' or 'handler'."
    ```bash
    gemini -m gemini-2.5-pro -o json -p "Analyze this codebase. For each concept in this list, answer present/absent with file-level evidence. Look for BEHAVIOR, not naming. $(cat /tmp/train-results/concept-list.txt)" @/tmp/train-repos/<repo>/src/ > /tmp/train-results/<repo>/oracle-gemini.json
    ```
@@ -185,7 +185,7 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
    If the Gemini review from step 10 has returned, incorporate valid critiques: drop changes flagged as overfitting, add constraints to broadened keywords. Ignore critiques that contradict the scorecard evidence (measured false negatives/positives outweigh opinions).
 
 12. **Accumulate results.** Append the scorecard to a persistent log at:
-    `~/.kord/agents/augur/memory/training-log.json`
+    `memory/global/training-log.json`
     This allows tracking improvement over time across multiple runs.
 
 13. **Update manifest.** Update `/tmp/train-results/manifest.json` with `status: "complete"`, `completed_at`, `scorecard_path`, `commit_sha`, and `improvements_count`.
@@ -204,11 +204,11 @@ When the caller launches multiple training agents in parallel (e.g., one per lan
 2. **Check manifest on recovery** — if you lose track of running agents, read `/tmp/train-results/manifest.json` to see which runs completed, which are in-progress, and which failed.
 3. **Limit concurrency** — run at most 2 training agents in parallel. Each agent reads many files and calls Gemini, creating heavy context load. 4 concurrent agents risk the parent losing track.
 4. **Sequential languages within one agent** — instead of 4 agents doing 1 language each, prefer 2 agents doing 2 languages each (sequentially). Fewer agents to track, same throughput.
-5. **Checkpoint to memory** — after each completed round, the caller should save a memory note via `/remember` with the cumulative training state: total repos analyzed, aggregate metrics, which languages/rounds are done, and what's remaining. Memory survives across sessions, so a new conversation can pick up where the last one left off. Example:
-   ```
-   /remember Training detection: 40/100 repos done. Rounds completed: Python R1-R3, TS R1, Java R1, Go R1.
-   Aggregate F1: Python 0.92, TS 0.58→improving, Java 0.57→improving, Go 0.92.
-   Next: TS R2, Java R2, Go R2, then 3 more rounds of 20.
+5. **Checkpoint to memory** — after each completed round, the caller should save a memory note via the memory-update endpoint with the cumulative training state: total repos analyzed, aggregate metrics, which languages/rounds are done, and what's remaining. Memory survives across sessions, so a new conversation can pick up where the last one left off. Example:
+   ```bash
+   curl -s http://localhost:9090/memory-update \
+     -H "Content-Type: application/json" \
+     -d '{"path": "training-state.md", "content": "Training detection: 40/100 repos done. Rounds completed: Python R1-R3, TS R1, Java R1, Go R1.\nAggregate F1: Python 0.92, TS 0.58→improving, Java 0.57→improving, Go 0.92.\nNext: TS R2, Java R2, Go R2, then 3 more rounds of 20.", "scope": "global"}'
    ```
 
 ## Error Handling

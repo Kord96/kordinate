@@ -20,11 +20,11 @@ TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.filePath // empty')
 [ -n "$FILE_PATH" ] || exit 0
 
-# Only check writes to .kord/ agent memory directories
-echo "$FILE_PATH" | grep -qE '\.kord/agents/[^/]+/memory/' || exit 0
+# Only check writes to agent project memory directories ($MEM paths)
+echo "$FILE_PATH" | grep -qE 'memory/projects/[^/]+/' || exit 0
 
-# Extract the memory directory root: everything up to and including memory/
-MEM_DIR=$(echo "$FILE_PATH" | grep -oE '.*/\.kord/agents/[^/]+/memory')
+# Extract the project memory directory root
+MEM_DIR=$(echo "$FILE_PATH" | grep -oE '.*/memory/projects/[^/]+')
 [ -n "$MEM_DIR" ] || exit 0
 
 # Check for lock

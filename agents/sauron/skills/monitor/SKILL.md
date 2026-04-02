@@ -21,7 +21,7 @@ Default (no flags): full monitoring review — read all available signals, repor
 ## Dependencies
 
 1. **Augur** — architectural context:
-   Read atlas from `<project>/.kord/agents/augur/memory/atlas.json`. Provides: components (what to check), flows (what paths to trace), failure modes (what cascades to look for), external dependencies (what external health to verify).
+   Read atlas from `$MEM/atlas.json` (augur's project memory). Provides: components (what to check), flows (what paths to trace), failure modes (what cascades to look for), external dependencies (what external health to verify).
 
 2. **Charon/Alfred** — cluster access:
    ```
@@ -91,7 +91,7 @@ Static analysis of the codebase for observability signals:
 - Map each signal to its atlas component
 - Identify gaps (components with no signals)
 
-Write catalog to `<project>/.kord/agents/sauron/memory/observability-catalog.yaml`.
+Write catalog to `$MEM/observability-catalog.yaml`.
 
 ### Step 8 — Report
 
