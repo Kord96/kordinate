@@ -1,5 +1,7 @@
-# Agent pod Deployments — one per agent type.
-# All use the same agent-factory image, differentiated by AGENT_NAME env var.
+# Agent pod Deployments — pod = persistent Claude session.
+# Each pod runs the stream-json bridge (runner.js) with Claude as a long-lived process.
+# Init container sets up the agent project directory (/kord/agents/<name>/).
+# Claude loads CLAUDE.md natively with @ imports for identity, memory, and team awareness.
 # KEDA ScaledObjects control replicas (see dev-agents-keda.yaml).
 ---
 apiVersion: apps/v1
@@ -7,25 +9,27 @@ kind: Deployment
 metadata:
   name: agent-augur
   namespace: dev
-  labels:
-    app: kord-agent
-    agent: augur
+  labels: { app: kord-agent, agent: augur }
 spec:
-  replicas: 1  # standby count (KEDA manages scaling)
+  replicas: 1
   selector:
-    matchLabels:
-      app: kord-agent
-      agent: augur
+    matchLabels: { app: kord-agent, agent: augur }
   template:
     metadata:
-      labels:
-        app: kord-agent
-        agent: augur
+      labels: { app: kord-agent, agent: augur }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
       serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "augur"]
+          env:
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -34,71 +38,62 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/kordinate "$HOME/.kord" 2>/dev/null
               ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
               ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node /kord/kordinate/lib/agent-runner/runner.js
+              exec node runner.js
           env:
-            - name: AGENT_NAME
-              value: augur
-            - name: KAFKA_BROKERS
-              value: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-            - name: HOME
-              value: /home/claude
-            - name: KORDINATE_HOME
-              value: /kord/kordinate
+            - { name: AGENT_NAME, value: augur }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: /home/claude }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
           resources:
-            requests: { cpu: 100m, memory: 256Mi }
+            requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
           ports:
-            - containerPort: 9090
-              name: status
+            - { containerPort: 9090, name: status }
           readinessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
             periodSeconds: 30
           volumeMounts:
-            - name: kord
-              mountPath: /kord
-            - name: work
-              mountPath: /work
+            - { name: kord, mountPath: /kord }
       volumes:
         - name: kord
-          persistentVolumeClaim:
-            claimName: kord
-        - name: work
-          emptyDir: { sizeLimit: 2Gi }
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-charon
   namespace: dev
-  labels:
-    app: kord-agent
-    agent: charon
+  labels: { app: kord-agent, agent: charon }
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: kord-agent
-      agent: charon
+    matchLabels: { app: kord-agent, agent: charon }
   template:
     metadata:
-      labels:
-        app: kord-agent
-        agent: charon
+      labels: { app: kord-agent, agent: charon }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
       serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "charon"]
+          env:
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -108,69 +103,60 @@ spec:
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
               ln -sfn /kord/ssh "$HOME/.ssh" 2>/dev/null
-              ln -sfn /kord/kordinate "$HOME/.kord" 2>/dev/null
               ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
               ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg /kord/ssh 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node /kord/kordinate/lib/agent-runner/runner.js
+              exec node runner.js
           env:
-            - name: AGENT_NAME
-              value: charon
-            - name: KAFKA_BROKERS
-              value: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-            - name: HOME
-              value: /home/claude
-            - name: KORDINATE_HOME
-              value: /kord/kordinate
+            - { name: AGENT_NAME, value: charon }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: /home/claude }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
           resources:
-            requests: { cpu: 100m, memory: 256Mi }
+            requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
           ports:
-            - containerPort: 9090
-              name: status
+            - { containerPort: 9090, name: status }
           readinessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
           livenessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
           volumeMounts:
-            - name: kord
-              mountPath: /kord
-            - name: work
-              mountPath: /work
+            - { name: kord, mountPath: /kord }
       volumes:
         - name: kord
-          persistentVolumeClaim:
-            claimName: kord
-        - name: work
-          emptyDir: { sizeLimit: 2Gi }
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-warden
   namespace: dev
-  labels:
-    app: kord-agent
-    agent: warden
+  labels: { app: kord-agent, agent: warden }
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: kord-agent
-      agent: warden
+    matchLabels: { app: kord-agent, agent: warden }
   template:
     metadata:
-      labels:
-        app: kord-agent
-        agent: warden
+      labels: { app: kord-agent, agent: warden }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
       serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "warden"]
+          env:
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -179,69 +165,60 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/kordinate "$HOME/.kord" 2>/dev/null
               ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
               ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node /kord/kordinate/lib/agent-runner/runner.js
+              exec node runner.js
           env:
-            - name: AGENT_NAME
-              value: warden
-            - name: KAFKA_BROKERS
-              value: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-            - name: HOME
-              value: /home/claude
-            - name: KORDINATE_HOME
-              value: /kord/kordinate
+            - { name: AGENT_NAME, value: warden }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: /home/claude }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
           resources:
-            requests: { cpu: 100m, memory: 256Mi }
+            requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
           ports:
-            - containerPort: 9090
-              name: status
+            - { containerPort: 9090, name: status }
           readinessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
           livenessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
           volumeMounts:
-            - name: kord
-              mountPath: /kord
-            - name: work
-              mountPath: /work
+            - { name: kord, mountPath: /kord }
       volumes:
         - name: kord
-          persistentVolumeClaim:
-            claimName: kord
-        - name: work
-          emptyDir: { sizeLimit: 2Gi }
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-sauron
   namespace: dev
-  labels:
-    app: kord-agent
-    agent: sauron
+  labels: { app: kord-agent, agent: sauron }
 spec:
-  replicas: 0  # scale from zero (KEDA)
+  replicas: 0
   selector:
-    matchLabels:
-      app: kord-agent
-      agent: sauron
+    matchLabels: { app: kord-agent, agent: sauron }
   template:
     metadata:
-      labels:
-        app: kord-agent
-        agent: sauron
+      labels: { app: kord-agent, agent: sauron }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
       serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "sauron"]
+          env:
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -250,69 +227,60 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/kordinate "$HOME/.kord" 2>/dev/null
               ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
               ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node /kord/kordinate/lib/agent-runner/runner.js
+              exec node runner.js
           env:
-            - name: AGENT_NAME
-              value: sauron
-            - name: KAFKA_BROKERS
-              value: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-            - name: HOME
-              value: /home/claude
-            - name: KORDINATE_HOME
-              value: /kord/kordinate
+            - { name: AGENT_NAME, value: sauron }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: /home/claude }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
           resources:
-            requests: { cpu: 100m, memory: 256Mi }
+            requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
           ports:
-            - containerPort: 9090
-              name: status
+            - { containerPort: 9090, name: status }
           readinessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
           livenessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
           volumeMounts:
-            - name: kord
-              mountPath: /kord
-            - name: work
-              mountPath: /work
+            - { name: kord, mountPath: /kord }
       volumes:
         - name: kord
-          persistentVolumeClaim:
-            claimName: kord
-        - name: work
-          emptyDir: { sizeLimit: 2Gi }
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-scribe
   namespace: dev
-  labels:
-    app: kord-agent
-    agent: scribe
+  labels: { app: kord-agent, agent: scribe }
 spec:
   replicas: 0
   selector:
-    matchLabels:
-      app: kord-agent
-      agent: scribe
+    matchLabels: { app: kord-agent, agent: scribe }
   template:
     metadata:
-      labels:
-        app: kord-agent
-        agent: scribe
+      labels: { app: kord-agent, agent: scribe }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
       serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "scribe"]
+          env:
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -321,69 +289,60 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/kordinate "$HOME/.kord" 2>/dev/null
               ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
               ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node /kord/kordinate/lib/agent-runner/runner.js
+              exec node runner.js
           env:
-            - name: AGENT_NAME
-              value: scribe
-            - name: KAFKA_BROKERS
-              value: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-            - name: HOME
-              value: /home/claude
-            - name: KORDINATE_HOME
-              value: /kord/kordinate
+            - { name: AGENT_NAME, value: scribe }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/scribe }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: /home/claude }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
           resources:
-            requests: { cpu: 100m, memory: 256Mi }
+            requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
           ports:
-            - containerPort: 9090
-              name: status
+            - { containerPort: 9090, name: status }
           readinessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
           livenessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
           volumeMounts:
-            - name: kord
-              mountPath: /kord
-            - name: work
-              mountPath: /work
+            - { name: kord, mountPath: /kord }
       volumes:
         - name: kord
-          persistentVolumeClaim:
-            claimName: kord
-        - name: work
-          emptyDir: { sizeLimit: 2Gi }
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-alfred
   namespace: dev
-  labels:
-    app: kord-agent
-    agent: alfred
+  labels: { app: kord-agent, agent: alfred }
 spec:
   replicas: 0
   selector:
-    matchLabels:
-      app: kord-agent
-      agent: alfred
+    matchLabels: { app: kord-agent, agent: alfred }
   template:
     metadata:
-      labels:
-        app: kord-agent
-        agent: alfred
+      labels: { app: kord-agent, agent: alfred }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
       serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/bash", "/kord/kordinate/lib/scripts/setup-agent-dir.sh", "alfred"]
+          env:
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
       containers:
         - name: agent
           image: localhost:30500/agent-factory:latest
@@ -392,41 +351,30 @@ spec:
             - |
               ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
               ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
-              ln -sfn /kord/kordinate "$HOME/.kord" 2>/dev/null
               ln -sfn /kord/claude-home "$HOME/.claude" 2>/dev/null
               ln -sfn /kord/claude-home.json "$HOME/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
               cd /kord/kordinate/lib/agent-runner && npm install --production 2>/dev/null
-              exec node /kord/kordinate/lib/agent-runner/runner.js
+              exec node runner.js
           env:
-            - name: AGENT_NAME
-              value: alfred
-            - name: KAFKA_BROKERS
-              value: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-            - name: HOME
-              value: /home/claude
-            - name: KORDINATE_HOME
-              value: /kord/kordinate
+            - { name: AGENT_NAME, value: alfred }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: /home/claude }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
           resources:
-            requests: { cpu: 100m, memory: 256Mi }
+            requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
           ports:
-            - containerPort: 9090
-              name: status
+            - { containerPort: 9090, name: status }
           readinessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 5
+            initialDelaySeconds: 10
           livenessProbe:
             httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 15
+            initialDelaySeconds: 30
           volumeMounts:
-            - name: kord
-              mountPath: /kord
-            - name: work
-              mountPath: /work
+            - { name: kord, mountPath: /kord }
       volumes:
         - name: kord
-          persistentVolumeClaim:
-            claimName: kord
-        - name: work
-          emptyDir: { sizeLimit: 2Gi }
+          persistentVolumeClaim: { claimName: kord }

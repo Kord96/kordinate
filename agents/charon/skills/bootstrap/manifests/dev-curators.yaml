@@ -1,0 +1,237 @@
+# Memory Curator Deployments — one per agent type.
+# Replicas=1, strategy=Recreate (never run two curators simultaneously).
+# Consumes memory.updates.<agent>, merges into shared PVC, updates CLAUDE.md.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curator-augur
+  namespace: dev
+  labels: { app: kord-curator, agent: augur }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: kord-curator, agent: augur }
+  template:
+    metadata:
+      labels: { app: kord-curator, agent: augur }
+    spec:
+      serviceAccountName: kord
+      containers:
+        - name: curator
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              exec node curator.js
+          env:
+            - { name: AGENT_NAME, value: augur }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: HOME, value: /home/claude }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
+      volumes:
+        - name: kord
+          persistentVolumeClaim: { claimName: kord }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curator-charon
+  namespace: dev
+  labels: { app: kord-curator, agent: charon }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: kord-curator, agent: charon }
+  template:
+    metadata:
+      labels: { app: kord-curator, agent: charon }
+    spec:
+      serviceAccountName: kord
+      containers:
+        - name: curator
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              exec node curator.js
+          env:
+            - { name: AGENT_NAME, value: charon }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: HOME, value: /home/claude }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
+      volumes:
+        - name: kord
+          persistentVolumeClaim: { claimName: kord }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curator-warden
+  namespace: dev
+  labels: { app: kord-curator, agent: warden }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: kord-curator, agent: warden }
+  template:
+    metadata:
+      labels: { app: kord-curator, agent: warden }
+    spec:
+      serviceAccountName: kord
+      containers:
+        - name: curator
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              exec node curator.js
+          env:
+            - { name: AGENT_NAME, value: warden }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: HOME, value: /home/claude }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
+      volumes:
+        - name: kord
+          persistentVolumeClaim: { claimName: kord }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curator-sauron
+  namespace: dev
+  labels: { app: kord-curator, agent: sauron }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: kord-curator, agent: sauron }
+  template:
+    metadata:
+      labels: { app: kord-curator, agent: sauron }
+    spec:
+      serviceAccountName: kord
+      containers:
+        - name: curator
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              exec node curator.js
+          env:
+            - { name: AGENT_NAME, value: sauron }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: HOME, value: /home/claude }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
+      volumes:
+        - name: kord
+          persistentVolumeClaim: { claimName: kord }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curator-scribe
+  namespace: dev
+  labels: { app: kord-curator, agent: scribe }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: kord-curator, agent: scribe }
+  template:
+    metadata:
+      labels: { app: kord-curator, agent: scribe }
+    spec:
+      serviceAccountName: kord
+      containers:
+        - name: curator
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              exec node curator.js
+          env:
+            - { name: AGENT_NAME, value: scribe }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/scribe }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: HOME, value: /home/claude }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
+      volumes:
+        - name: kord
+          persistentVolumeClaim: { claimName: kord }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curator-alfred
+  namespace: dev
+  labels: { app: kord-curator, agent: alfred }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: kord-curator, agent: alfred }
+  template:
+    metadata:
+      labels: { app: kord-curator, agent: alfred }
+    spec:
+      serviceAccountName: kord
+      containers:
+        - name: curator
+          image: localhost:30500/agent-factory:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cd /kord/kordinate/lib/memory-curator && npm install --production 2>/dev/null
+              exec node curator.js
+          env:
+            - { name: AGENT_NAME, value: alfred }
+            - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: HOME, value: /home/claude }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: kord, mountPath: /kord }
+      volumes:
+        - name: kord
+          persistentVolumeClaim: { claimName: kord }
