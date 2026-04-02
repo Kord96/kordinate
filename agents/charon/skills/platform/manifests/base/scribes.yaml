@@ -1,5 +1,5 @@
-# Memory Curator v2 Deployments — one per agent type.
-# Replicas=1, strategy=Recreate (never run two curators simultaneously).
+# Agent Scribe v2 Deployments — one per agent type.
+# Replicas=1, strategy=Recreate (never run two scribes simultaneously).
 # Consumes memory.updates.<agent>, merges into shared PVC, updates CLAUDE.md.
 # v2: Uses Anthropic Haiku for semantic deduplication.
 #     Routes memory to memory/global/ or memory/projects/<project>/ based on scope.
@@ -8,27 +8,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: curator-augur
-  labels: { app: kord-curator, agent: augur }
+  name: scribe-augur
+  labels: { app: kord-scribe, agent: augur }
 spec:
   replicas: 1
   strategy: { type: Recreate }
   selector:
-    matchLabels: { app: kord-curator, agent: augur }
+    matchLabels: { app: kord-scribe, agent: augur }
   template:
     metadata:
-      labels: { app: kord-curator, agent: augur }
+      labels: { app: kord-scribe, agent: augur }
     spec:
       serviceAccountName: kord
       containers:
-        - name: curator
+        - name: scribe
           image: localhost:30500/agent-factory:latest
           command: ["/bin/sh", "-c"]
           args:
             - |
               mkdir -p /kord/agents/augur/memory/global /kord/agents/augur/memory/projects
-              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
-              exec node curator.js
+              cd /kord/kordinate/lib/agent-scribe && npm install --production 2>/dev/null
+              exec node scribe.js
           env:
             - { name: AGENT_NAME, value: augur }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
@@ -53,27 +53,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: curator-charon
-  labels: { app: kord-curator, agent: charon }
+  name: scribe-charon
+  labels: { app: kord-scribe, agent: charon }
 spec:
   replicas: 1
   strategy: { type: Recreate }
   selector:
-    matchLabels: { app: kord-curator, agent: charon }
+    matchLabels: { app: kord-scribe, agent: charon }
   template:
     metadata:
-      labels: { app: kord-curator, agent: charon }
+      labels: { app: kord-scribe, agent: charon }
     spec:
       serviceAccountName: kord
       containers:
-        - name: curator
+        - name: scribe
           image: localhost:30500/agent-factory:latest
           command: ["/bin/sh", "-c"]
           args:
             - |
               mkdir -p /kord/agents/charon/memory/global /kord/agents/charon/memory/projects
-              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
-              exec node curator.js
+              cd /kord/kordinate/lib/agent-scribe && npm install --production 2>/dev/null
+              exec node scribe.js
           env:
             - { name: AGENT_NAME, value: charon }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
@@ -98,27 +98,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: curator-warden
-  labels: { app: kord-curator, agent: warden }
+  name: scribe-warden
+  labels: { app: kord-scribe, agent: warden }
 spec:
   replicas: 1
   strategy: { type: Recreate }
   selector:
-    matchLabels: { app: kord-curator, agent: warden }
+    matchLabels: { app: kord-scribe, agent: warden }
   template:
     metadata:
-      labels: { app: kord-curator, agent: warden }
+      labels: { app: kord-scribe, agent: warden }
     spec:
       serviceAccountName: kord
       containers:
-        - name: curator
+        - name: scribe
           image: localhost:30500/agent-factory:latest
           command: ["/bin/sh", "-c"]
           args:
             - |
               mkdir -p /kord/agents/warden/memory/global /kord/agents/warden/memory/projects
-              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
-              exec node curator.js
+              cd /kord/kordinate/lib/agent-scribe && npm install --production 2>/dev/null
+              exec node scribe.js
           env:
             - { name: AGENT_NAME, value: warden }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
@@ -143,27 +143,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: curator-sauron
-  labels: { app: kord-curator, agent: sauron }
+  name: scribe-sauron
+  labels: { app: kord-scribe, agent: sauron }
 spec:
   replicas: 1
   strategy: { type: Recreate }
   selector:
-    matchLabels: { app: kord-curator, agent: sauron }
+    matchLabels: { app: kord-scribe, agent: sauron }
   template:
     metadata:
-      labels: { app: kord-curator, agent: sauron }
+      labels: { app: kord-scribe, agent: sauron }
     spec:
       serviceAccountName: kord
       containers:
-        - name: curator
+        - name: scribe
           image: localhost:30500/agent-factory:latest
           command: ["/bin/sh", "-c"]
           args:
             - |
               mkdir -p /kord/agents/sauron/memory/global /kord/agents/sauron/memory/projects
-              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
-              exec node curator.js
+              cd /kord/kordinate/lib/agent-scribe && npm install --production 2>/dev/null
+              exec node scribe.js
           env:
             - { name: AGENT_NAME, value: sauron }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
@@ -188,27 +188,27 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: curator-alfred
-  labels: { app: kord-curator, agent: alfred }
+  name: scribe-alfred
+  labels: { app: kord-scribe, agent: alfred }
 spec:
   replicas: 1
   strategy: { type: Recreate }
   selector:
-    matchLabels: { app: kord-curator, agent: alfred }
+    matchLabels: { app: kord-scribe, agent: alfred }
   template:
     metadata:
-      labels: { app: kord-curator, agent: alfred }
+      labels: { app: kord-scribe, agent: alfred }
     spec:
       serviceAccountName: kord
       containers:
-        - name: curator
+        - name: scribe
           image: localhost:30500/agent-factory:latest
           command: ["/bin/sh", "-c"]
           args:
             - |
               mkdir -p /kord/agents/alfred/memory/global /kord/agents/alfred/memory/projects
-              cd /kord/kordinate/lib/agent-curator && npm install --production 2>/dev/null
-              exec node curator.js
+              cd /kord/kordinate/lib/agent-scribe && npm install --production 2>/dev/null
+              exec node scribe.js
           env:
             - { name: AGENT_NAME, value: alfred }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }

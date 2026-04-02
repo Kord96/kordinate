@@ -1,0 +1,9 @@
+{
+  "name": "agent-scribe",
+  "version": "1.0.0",
+  "description": "Per-agent memory scribe — consumes updates from Kafka, deduplicates with Haiku, writes shared memory",
+  "type": "module",
+  "main": "scribe.js",
+  "scripts": { "start": "node scribe.js" },
+  "dependencies": { "kafkajs": "^2.2.4", "@anthropic-ai/sdk": "^0.39.0" }
+}
