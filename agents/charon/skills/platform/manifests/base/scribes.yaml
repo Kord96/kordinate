@@ -44,12 +44,12 @@ spec:
             limits: { memory: 512Mi }
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data, readOnly: true }
+            - { name: data, mountPath: /data/repos, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
         - name: data
-          persistentVolumeClaim: { claimName: data }
+          persistentVolumeClaim: { claimName: kord-repos }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -90,12 +90,12 @@ spec:
             limits: { memory: 512Mi }
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data, readOnly: true }
+            - { name: data, mountPath: /data/repos, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
         - name: data
-          persistentVolumeClaim: { claimName: data }
+          persistentVolumeClaim: { claimName: kord-repos }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -136,12 +136,12 @@ spec:
             limits: { memory: 512Mi }
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data, readOnly: true }
+            - { name: data, mountPath: /data/repos, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
         - name: data
-          persistentVolumeClaim: { claimName: data }
+          persistentVolumeClaim: { claimName: kord-repos }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -182,12 +182,12 @@ spec:
             limits: { memory: 512Mi }
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data, readOnly: true }
+            - { name: data, mountPath: /data/repos, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
         - name: data
-          persistentVolumeClaim: { claimName: data }
+          persistentVolumeClaim: { claimName: kord-repos }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -228,9 +228,9 @@ spec:
             limits: { memory: 512Mi }
           volumeMounts:
             - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data, readOnly: true }
+            - { name: data, mountPath: /data/repos, readOnly: true }
       volumes:
         - name: kord
           persistentVolumeClaim: { claimName: kord }
         - name: data
-          persistentVolumeClaim: { claimName: data }
+          persistentVolumeClaim: { claimName: kord-repos }
