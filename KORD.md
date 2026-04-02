@@ -1,0 +1,861 @@
+# KORD
+
+Auto-generated from frontmatter. Do not edit manually.
+
+## Agents
+
+- `agents/alfred/IDENTITY.md` — Profile, config, credentials, and overlay management — keeps the environment consistent and ready
+- `agents/augur/IDENTITY.md` — Architecture review and pattern authority — reviews design consistency and identifies patterns
+- `agents/charon/IDENTITY.md` — Infrastructure operations — deployments, cluster management, kubectl authority
+- `agents/main/IDENTITY.md` — Orchestrator — the main Claude Code session that coordinates all agents
+- `agents/sauron/IDENTITY.md` — Monitoring and observability — scans for signals, diagnoses issues, designs monitoring systems
+- `agents/scribe/IDENTITY.md` — Documentation gate and runtime linker — sole authority for writing to kordinate and memory paths
+- `agents/warden/IDENTITY.md` — Security scanning and credential hygiene — ensures nothing sensitive is hardcoded or exposed
+
+## Memory
+
+- `agents/alfred/memory/scratchpad.md` — Operational notes and observations
+- `agents/augur/memory/abstractions.md` — Index of abstraction levels used to classify concepts — each answers a distinct architectural question
+- `agents/augur/memory/anti-patterns.md` — Index of recognized anti-patterns by category
+- `agents/augur/memory/app-contract.md` — App Contract
+- `agents/augur/memory/concepts.md` — Index of recognized architectural patterns by category
+- `agents/augur/memory/concepts/AST-RULES.md` — AST rule coverage catalog — scores, methodology, and quality criteria for ast-grep pattern detection rules
+- `agents/augur/memory/concepts/README.md` — One-line summary
+- `agents/augur/memory/concepts/abstract-factory/concept.md` — Abstract Factory architectural pattern
+- `agents/augur/memory/concepts/abstract-factory/pattern.md` — Abstract Factory architectural pattern
+- `agents/augur/memory/concepts/abstract-factory/testing.md` — Abstract Factory — testing guidance
+- `agents/augur/memory/concepts/active-record/concept.md` — Active Record architectural pattern
+- `agents/augur/memory/concepts/active-record/pattern.md` — Active Record architectural pattern
+- `agents/augur/memory/concepts/active-record/testing.md` — Active Record — testing guidance
+- `agents/augur/memory/concepts/actor-model/concept.md` — Actor Model architectural pattern
+- `agents/augur/memory/concepts/actor-model/deployment.md` — Actor Model — deployment guidance
+- `agents/augur/memory/concepts/actor-model/monitoring.md` — Actor Model — monitoring guidance
+- `agents/augur/memory/concepts/actor-model/pattern.md` — Actor Model architectural pattern
+- `agents/augur/memory/concepts/actor-model/testing.md` — Actor Model — testing guidance
+- `agents/augur/memory/concepts/adapter/concept.md` — Adapter architectural pattern
+- `agents/augur/memory/concepts/adapter/pattern.md` — Adapter architectural pattern
+- `agents/augur/memory/concepts/adapter/testing.md` — Adapter — testing guidance
+- `agents/augur/memory/concepts/aggregate/concept.md` — Aggregate Root architectural pattern
+- `agents/augur/memory/concepts/aggregate/pattern.md` — Aggregate Root architectural pattern
+- `agents/augur/memory/concepts/aggregate/testing.md` — Aggregate Root — testing guidance
+- `agents/augur/memory/concepts/anemic-domain-model/concept.md` — Anemic Domain Model anti-pattern
+- `agents/augur/memory/concepts/anemic-domain-model/pattern.md` — Anemic Domain Model anti-pattern
+- `agents/augur/memory/concepts/anti-corruption-layer/concept.md` — Anti-Corruption Layer architectural pattern
+- `agents/augur/memory/concepts/anti-corruption-layer/pattern.md` — Anti-Corruption Layer architectural pattern
+- `agents/augur/memory/concepts/anti-corruption-layer/testing.md` — Anti-Corruption Layer — testing guidance
+- `agents/augur/memory/concepts/api-gateway/concept.md` — API Gateway architectural pattern
+- `agents/augur/memory/concepts/api-gateway/deployment.md` — API Gateway — deployment guidance
+- `agents/augur/memory/concepts/api-gateway/monitoring.md` — API Gateway — monitoring guidance
+- `agents/augur/memory/concepts/api-gateway/pattern.md` — API Gateway architectural pattern
+- `agents/augur/memory/concepts/api-gateway/testing.md` — API Gateway — testing guidance
+- `agents/augur/memory/concepts/api-key-auth/concept.md` — API Key Authentication architectural pattern
+- `agents/augur/memory/concepts/api-key-auth/monitoring.md` — API Key Authentication — monitoring guidance
+- `agents/augur/memory/concepts/api-key-auth/pattern.md` — API Key Authentication architectural pattern
+- `agents/augur/memory/concepts/api-key-auth/testing.md` — API Key Authentication — testing guidance
+- `agents/augur/memory/concepts/ast/concept.md` — Abstract Syntax Tree (AST) architectural pattern
+- `agents/augur/memory/concepts/ast/pattern.md` — Abstract Syntax Tree (AST) architectural pattern
+- `agents/augur/memory/concepts/ast/testing.md` — Abstract Syntax Tree (AST) — testing guidance
+- `agents/augur/memory/concepts/audit-logging/concept.md` — Audit Logging architectural pattern
+- `agents/augur/memory/concepts/audit-logging/monitoring.md` — Audit Logging — monitoring guidance
+- `agents/augur/memory/concepts/audit-logging/pattern.md` — Audit Logging architectural pattern
+- `agents/augur/memory/concepts/audit-logging/testing.md` — Audit Logging — testing guidance
+- `agents/augur/memory/concepts/backpressure/concept.md` — Backpressure architectural pattern
+- `agents/augur/memory/concepts/backpressure/deployment.md` — Backpressure — deployment guidance
+- `agents/augur/memory/concepts/backpressure/monitoring.md` — Backpressure — monitoring guidance
+- `agents/augur/memory/concepts/backpressure/pattern.md` — Backpressure architectural pattern
+- `agents/augur/memory/concepts/backpressure/testing.md` — Backpressure — testing guidance
+- `agents/augur/memory/concepts/batch-loader/concept.md` — Batch Loader (N+1 Prevention) architectural pattern
+- `agents/augur/memory/concepts/batch-loader/pattern.md` — Batch Loader (N+1 Prevention) architectural pattern
+- `agents/augur/memory/concepts/batch-loader/testing.md` — Batch Loader (N+1 Prevention) — testing guidance
+- `agents/augur/memory/concepts/batch-processing/concept.md` — Batch processing flow — data processed in discrete chunks on a schedule
+- `agents/augur/memory/concepts/bff/concept.md` — Backend for Frontend architectural pattern
+- `agents/augur/memory/concepts/bff/deployment.md` — Backend for Frontend — deployment guidance
+- `agents/augur/memory/concepts/bff/monitoring.md` — Backend for Frontend — monitoring guidance
+- `agents/augur/memory/concepts/bff/pattern.md` — Backend for Frontend architectural pattern
+- `agents/augur/memory/concepts/bff/testing.md` — Backend for Frontend — testing guidance
+- `agents/augur/memory/concepts/big-ball-of-mud/concept.md` — Big Ball of Mud anti-pattern
+- `agents/augur/memory/concepts/big-ball-of-mud/pattern.md` — Big Ball of Mud anti-pattern
+- `agents/augur/memory/concepts/block-content/concept.md` — Block-based content model for structured rich text editing
+- `agents/augur/memory/concepts/bloom-filter/concept.md` — Bloom Filter architectural pattern
+- `agents/augur/memory/concepts/bloom-filter/pattern.md` — Bloom Filter architectural pattern
+- `agents/augur/memory/concepts/bloom-filter/testing.md` — Bloom Filter — testing guidance
+- `agents/augur/memory/concepts/blue-green/concept.md` — Blue-Green Deployment architectural pattern
+- `agents/augur/memory/concepts/blue-green/deployment.md` — Blue-Green Deployment — deployment guidance
+- `agents/augur/memory/concepts/blue-green/monitoring.md` — Blue-Green Deployment — monitoring guidance
+- `agents/augur/memory/concepts/blue-green/pattern.md` — Blue-Green Deployment architectural pattern
+- `agents/augur/memory/concepts/boolean-blindness/concept.md` — Boolean Blindness anti-pattern
+- `agents/augur/memory/concepts/boolean-blindness/pattern.md` — Boolean Blindness anti-pattern
+- `agents/augur/memory/concepts/breaking-changes/concept.md` — Breaking Changes anti-pattern
+- `agents/augur/memory/concepts/breaking-changes/pattern.md` — Breaking Changes anti-pattern
+- `agents/augur/memory/concepts/bridge/concept.md` — Bridge architectural pattern
+- `agents/augur/memory/concepts/bridge/pattern.md` — Bridge architectural pattern
+- `agents/augur/memory/concepts/bridge/testing.md` — Bridge — testing guidance
+- `agents/augur/memory/concepts/builder/concept.md` — Builder architectural pattern
+- `agents/augur/memory/concepts/builder/pattern.md` — Builder architectural pattern
+- `agents/augur/memory/concepts/builder/testing.md` — Builder — testing guidance
+- `agents/augur/memory/concepts/bulkhead/concept.md` — Bulkhead architectural pattern
+- `agents/augur/memory/concepts/bulkhead/deployment.md` — Bulkhead — deployment guidance
+- `agents/augur/memory/concepts/bulkhead/monitoring.md` — Bulkhead — monitoring guidance
+- `agents/augur/memory/concepts/bulkhead/pattern.md` — Bulkhead architectural pattern
+- `agents/augur/memory/concepts/bulkhead/testing.md` — Bulkhead — testing guidance
+- `agents/augur/memory/concepts/busy-waiting/concept.md` — Busy Waiting anti-pattern
+- `agents/augur/memory/concepts/busy-waiting/pattern.md` — Busy Waiting anti-pattern
+- `agents/augur/memory/concepts/cache-aside/concept.md` — Cache-Aside architectural pattern
+- `agents/augur/memory/concepts/cache-aside/monitoring.md` — Cache-Aside — monitoring guidance
+- `agents/augur/memory/concepts/cache-aside/pattern.md` — Cache-Aside architectural pattern
+- `agents/augur/memory/concepts/cache-aside/testing.md` — Cache-Aside — testing guidance
+- `agents/augur/memory/concepts/cache-stampede-prevention/concept.md` — Cache Stampede Prevention architectural pattern
+- `agents/augur/memory/concepts/cache-stampede-prevention/monitoring.md` — Cache Stampede Prevention — monitoring guidance
+- `agents/augur/memory/concepts/cache-stampede-prevention/pattern.md` — Cache Stampede Prevention architectural pattern
+- `agents/augur/memory/concepts/cache-stampede-prevention/testing.md` — Cache Stampede Prevention — testing guidance
+- `agents/augur/memory/concepts/callback-hell/concept.md` — Callback Hell anti-pattern
+- `agents/augur/memory/concepts/callback-hell/pattern.md` — Callback Hell anti-pattern
+- `agents/augur/memory/concepts/canary/concept.md` — Canary Release architectural pattern
+- `agents/augur/memory/concepts/canary/deployment.md` — Canary Release — deployment guidance
+- `agents/augur/memory/concepts/canary/monitoring.md` — Canary Release — monitoring guidance
+- `agents/augur/memory/concepts/canary/pattern.md` — Canary Release architectural pattern
+- `agents/augur/memory/concepts/cargo-cult/concept.md` — Cargo Cult Programming anti-pattern
+- `agents/augur/memory/concepts/cargo-cult/pattern.md` — Cargo Cult Programming anti-pattern
+- `agents/augur/memory/concepts/catalog/concept.md` — Catalog and inventory pattern for product management and stock tracking
+- `agents/augur/memory/concepts/cell-based/concept.md` — Cell-based structure — independent cells that can scale, deploy, and fail independently
+- `agents/augur/memory/concepts/chain-of-responsibility/concept.md` — Chain of Responsibility architectural pattern
+- `agents/augur/memory/concepts/chain-of-responsibility/pattern.md` — Chain of Responsibility architectural pattern
+- `agents/augur/memory/concepts/chain-of-responsibility/testing.md` — Chain of Responsibility — testing guidance
+- `agents/augur/memory/concepts/change-data-capture/concept.md` — Change Data Capture (CDC) architectural pattern
+- `agents/augur/memory/concepts/change-data-capture/deployment.md` — Change Data Capture (CDC) — deployment guidance
+- `agents/augur/memory/concepts/change-data-capture/monitoring.md` — Change Data Capture (CDC) — monitoring guidance
+- `agents/augur/memory/concepts/change-data-capture/pattern.md` — Change Data Capture (CDC) architectural pattern
+- `agents/augur/memory/concepts/change-data-capture/testing.md` — Change Data Capture (CDC) — testing guidance
+- `agents/augur/memory/concepts/chatty-api/concept.md` — Chatty API anti-pattern
+- `agents/augur/memory/concepts/chatty-api/pattern.md` — Chatty API anti-pattern
+- `agents/augur/memory/concepts/choreography/concept.md` — Choreography architectural pattern
+- `agents/augur/memory/concepts/choreography/deployment.md` — Choreography — deployment guidance
+- `agents/augur/memory/concepts/choreography/monitoring.md` — Choreography — monitoring guidance
+- `agents/augur/memory/concepts/choreography/pattern.md` — Choreography architectural pattern
+- `agents/augur/memory/concepts/choreography/testing.md` — Choreography — testing guidance
+- `agents/augur/memory/concepts/circuit-breaker/concept.md` — Circuit Breaker architectural pattern
+- `agents/augur/memory/concepts/circuit-breaker/deployment.md` — Circuit Breaker — deployment guidance
+- `agents/augur/memory/concepts/circuit-breaker/monitoring.md` — Circuit Breaker — monitoring guidance
+- `agents/augur/memory/concepts/circuit-breaker/pattern.md` — Circuit Breaker architectural pattern
+- `agents/augur/memory/concepts/circuit-breaker/testing.md` — Circuit Breaker — testing guidance
+- `agents/augur/memory/concepts/circular-dependency/concept.md` — Circular Dependency anti-pattern
+- `agents/augur/memory/concepts/circular-dependency/pattern.md` — Circular Dependency anti-pattern
+- `agents/augur/memory/concepts/claim-check/concept.md` — Claim Check architectural pattern
+- `agents/augur/memory/concepts/claim-check/deployment.md` — Claim Check — deployment guidance
+- `agents/augur/memory/concepts/claim-check/pattern.md` — Claim Check architectural pattern
+- `agents/augur/memory/concepts/claim-check/testing.md` — Claim Check — testing guidance
+- `agents/augur/memory/concepts/command/concept.md` — Command architectural pattern
+- `agents/augur/memory/concepts/command/pattern.md` — Command architectural pattern
+- `agents/augur/memory/concepts/command/testing.md` — Command — testing guidance
+- `agents/augur/memory/concepts/competing-consumers/concept.md` — Competing Consumers architectural pattern
+- `agents/augur/memory/concepts/competing-consumers/deployment.md` — Competing Consumers — deployment guidance
+- `agents/augur/memory/concepts/competing-consumers/monitoring.md` — Competing Consumers — monitoring guidance
+- `agents/augur/memory/concepts/competing-consumers/pattern.md` — Competing Consumers architectural pattern
+- `agents/augur/memory/concepts/competing-consumers/testing.md` — Competing Consumers — testing guidance
+- `agents/augur/memory/concepts/component-slot/concept.md` — Component Slot — parent-controlled content injection into child components
+- `agents/augur/memory/concepts/component-slot/pattern.md` — Component Slot — parent-controlled content injection into child components
+- `agents/augur/memory/concepts/component/concept.md` — Component Architecture architectural pattern
+- `agents/augur/memory/concepts/component/pattern.md` — Component Architecture architectural pattern
+- `agents/augur/memory/concepts/component/testing.md` — Component Architecture — testing guidance
+- `agents/augur/memory/concepts/composite/concept.md` — Composite architectural pattern
+- `agents/augur/memory/concepts/composite/pattern.md` — Composite architectural pattern
+- `agents/augur/memory/concepts/composite/testing.md` — Composite — testing guidance
+- `agents/augur/memory/concepts/config-management/concept.md` — Configuration Management architectural pattern
+- `agents/augur/memory/concepts/config-management/pattern.md` — Configuration Management architectural pattern
+- `agents/augur/memory/concepts/config-management/testing.md` — Configuration Management — testing guidance
+- `agents/augur/memory/concepts/config-sprawl/concept.md` — Configuration Sprawl anti-pattern
+- `agents/augur/memory/concepts/config-sprawl/pattern.md` — Configuration Sprawl anti-pattern
+- `agents/augur/memory/concepts/connection-pooling/concept.md` — Connection Pooling architectural pattern
+- `agents/augur/memory/concepts/connection-pooling/monitoring.md` — Connection Pooling — monitoring guidance
+- `agents/augur/memory/concepts/connection-pooling/pattern.md` — Connection Pooling architectural pattern
+- `agents/augur/memory/concepts/connection-pooling/testing.md` — Connection Pooling — testing guidance
+- `agents/augur/memory/concepts/content-negotiation/concept.md` — Content/Protocol Negotiation architectural pattern
+- `agents/augur/memory/concepts/content-negotiation/pattern.md` — Content/Protocol Negotiation architectural pattern
+- `agents/augur/memory/concepts/content-negotiation/testing.md` — Content/Protocol Negotiation — testing guidance
+- `agents/augur/memory/concepts/contract-testing/concept.md` — Contract Testing architectural pattern
+- `agents/augur/memory/concepts/contract-testing/deployment.md` — Contract Testing — deployment guidance
+- `agents/augur/memory/concepts/contract-testing/pattern.md` — Contract Testing architectural pattern
+- `agents/augur/memory/concepts/contract-testing/testing.md` — Contract Testing — testing guidance
+- `agents/augur/memory/concepts/conversation-thread/concept.md` — Conversation threading pattern for messaging and real-time communication
+- `agents/augur/memory/concepts/copy-paste-programming/concept.md` — Copy-Paste Programming anti-pattern
+- `agents/augur/memory/concepts/copy-paste-programming/pattern.md` — Copy-Paste Programming anti-pattern
+- `agents/augur/memory/concepts/correlation-id/concept.md` — Correlation ID architectural pattern
+- `agents/augur/memory/concepts/correlation-id/deployment.md` — Correlation ID — deployment guidance
+- `agents/augur/memory/concepts/correlation-id/monitoring.md` — Correlation ID — monitoring guidance
+- `agents/augur/memory/concepts/correlation-id/pattern.md` — Correlation ID architectural pattern
+- `agents/augur/memory/concepts/correlation-id/testing.md` — Correlation ID — testing guidance
+- `agents/augur/memory/concepts/cors/concept.md` — CORS architectural pattern
+- `agents/augur/memory/concepts/cors/pattern.md` — CORS architectural pattern
+- `agents/augur/memory/concepts/cors/testing.md` — CORS — testing guidance
+- `agents/augur/memory/concepts/cqrs/concept.md` — CQRS architectural pattern
+- `agents/augur/memory/concepts/cqrs/deployment.md` — CQRS — deployment guidance
+- `agents/augur/memory/concepts/cqrs/monitoring.md` — CQRS — monitoring guidance
+- `agents/augur/memory/concepts/cqrs/pattern.md` — CQRS architectural pattern
+- `agents/augur/memory/concepts/cqrs/testing.md` — CQRS — testing guidance
+- `agents/augur/memory/concepts/data-mapper/concept.md` — Data Mapper architectural pattern
+- `agents/augur/memory/concepts/data-mapper/pattern.md` — Data Mapper architectural pattern
+- `agents/augur/memory/concepts/data-mapper/testing.md` — Data Mapper — testing guidance
+- `agents/augur/memory/concepts/data-pipeline/concept.md` — Data pipeline flow — linear transformation stages from source to sink
+- `agents/augur/memory/concepts/database-migration/concept.md` — Database Migration architectural pattern
+- `agents/augur/memory/concepts/database-migration/pattern.md` — Database Migration architectural pattern
+- `agents/augur/memory/concepts/database-migration/testing.md` — Database Migration — testing guidance
+- `agents/augur/memory/concepts/ddd/concept.md` — Domain-Driven Design architectural pattern
+- `agents/augur/memory/concepts/ddd/deployment.md` — Domain-Driven Design — deployment guidance
+- `agents/augur/memory/concepts/ddd/monitoring.md` — Domain-Driven Design — monitoring guidance
+- `agents/augur/memory/concepts/ddd/pattern.md` — Domain-Driven Design architectural pattern
+- `agents/augur/memory/concepts/ddd/testing.md` — Domain-Driven Design — testing guidance
+- `agents/augur/memory/concepts/dead-letter/concept.md` — Dead Letter Queue architectural pattern
+- `agents/augur/memory/concepts/dead-letter/deployment.md` — Dead Letter Queue — deployment guidance
+- `agents/augur/memory/concepts/dead-letter/monitoring.md` — Dead Letter Queue — monitoring guidance
+- `agents/augur/memory/concepts/dead-letter/pattern.md` — Dead Letter Queue architectural pattern
+- `agents/augur/memory/concepts/dead-letter/testing.md` — Dead Letter Queue — testing guidance
+- `agents/augur/memory/concepts/deadlock/concept.md` — Deadlock anti-pattern
+- `agents/augur/memory/concepts/deadlock/monitoring.md` — Deadlock — monitoring guidance
+- `agents/augur/memory/concepts/deadlock/pattern.md` — Deadlock anti-pattern
+- `agents/augur/memory/concepts/deadlock/testing.md` — Deadlock — testing guidance
+- `agents/augur/memory/concepts/decorator/concept.md` — Decorator/Wrapper architectural pattern
+- `agents/augur/memory/concepts/decorator/pattern.md` — Decorator/Wrapper architectural pattern
+- `agents/augur/memory/concepts/decorator/testing.md` — Decorator/Wrapper — testing guidance
+- `agents/augur/memory/concepts/deep-nesting/concept.md` — Deep Nesting anti-pattern
+- `agents/augur/memory/concepts/deep-nesting/pattern.md` — Deep Nesting anti-pattern
+- `agents/augur/memory/concepts/dependency-injection/concept.md` — Dependency Injection/IoC architectural pattern
+- `agents/augur/memory/concepts/dependency-injection/pattern.md` — Dependency Injection/IoC architectural pattern
+- `agents/augur/memory/concepts/dependency-injection/testing.md` — Dependency Injection/IoC — testing guidance
+- `agents/augur/memory/concepts/distributed-lock/concept.md` — Distributed Lock architectural pattern
+- `agents/augur/memory/concepts/distributed-lock/deployment.md` — Distributed Lock — deployment guidance
+- `agents/augur/memory/concepts/distributed-lock/monitoring.md` — Distributed Lock — monitoring guidance
+- `agents/augur/memory/concepts/distributed-lock/pattern.md` — Distributed Lock architectural pattern
+- `agents/augur/memory/concepts/distributed-lock/testing.md` — Distributed Lock — testing guidance
+- `agents/augur/memory/concepts/distributed-monolith/concept.md` — Distributed Monolith anti-pattern
+- `agents/augur/memory/concepts/distributed-monolith/pattern.md` — Distributed Monolith anti-pattern
+- `agents/augur/memory/concepts/distributed-tracing/concept.md` — Distributed Tracing Instrumentation architectural pattern
+- `agents/augur/memory/concepts/distributed-tracing/deployment.md` — Distributed Tracing Instrumentation — deployment guidance
+- `agents/augur/memory/concepts/distributed-tracing/monitoring.md` — Distributed Tracing Instrumentation — monitoring guidance
+- `agents/augur/memory/concepts/distributed-tracing/pattern.md` — Distributed Tracing Instrumentation architectural pattern
+- `agents/augur/memory/concepts/distributed-tracing/testing.md` — Distributed Tracing Instrumentation — testing guidance
+- `agents/augur/memory/concepts/dual-writes/concept.md` — Dual Writes anti-pattern
+- `agents/augur/memory/concepts/dual-writes/pattern.md` — Dual Writes anti-pattern
+- `agents/augur/memory/concepts/entity-component-system/concept.md` — Entity-Component-System (ECS) architectural pattern
+- `agents/augur/memory/concepts/entity-component-system/pattern.md` — Entity-Component-System (ECS) architectural pattern
+- `agents/augur/memory/concepts/entity-component-system/testing.md` — Entity-Component-System (ECS) — testing guidance
+- `agents/augur/memory/concepts/environment-parity-gap/concept.md` — Environment Parity Gap anti-pattern
+- `agents/augur/memory/concepts/environment-parity-gap/pattern.md` — Environment Parity Gap anti-pattern
+- `agents/augur/memory/concepts/error-boundary/concept.md` — Error Boundary — component-level error catching and fallback rendering
+- `agents/augur/memory/concepts/error-boundary/pattern.md` — Error Boundary — component-level error catching and fallback rendering
+- `agents/augur/memory/concepts/error-code-returns/concept.md` — Error Code Returns anti-pattern
+- `agents/augur/memory/concepts/error-code-returns/pattern.md` — Error Code Returns anti-pattern
+- `agents/augur/memory/concepts/etl/concept.md` — ETL architectural pattern
+- `agents/augur/memory/concepts/etl/deployment.md` — ETL — deployment guidance
+- `agents/augur/memory/concepts/etl/monitoring.md` — ETL — monitoring guidance
+- `agents/augur/memory/concepts/etl/pattern.md` — ETL architectural pattern
+- `agents/augur/memory/concepts/etl/testing.md` — ETL — testing guidance
+- `agents/augur/memory/concepts/event-carried-state/concept.md` — Event-Carried State Transfer architectural pattern
+- `agents/augur/memory/concepts/event-carried-state/deployment.md` — Event-Carried State Transfer — deployment guidance
+- `agents/augur/memory/concepts/event-carried-state/pattern.md` — Event-Carried State Transfer architectural pattern
+- `agents/augur/memory/concepts/event-carried-state/testing.md` — Event-Carried State Transfer — testing guidance
+- `agents/augur/memory/concepts/event-driven/concept.md` — Event-Driven architectural pattern
+- `agents/augur/memory/concepts/event-driven/deployment.md` — Event-Driven — deployment guidance
+- `agents/augur/memory/concepts/event-driven/monitoring.md` — Event-Driven — monitoring guidance
+- `agents/augur/memory/concepts/event-driven/pattern.md` — Event-Driven architectural pattern
+- `agents/augur/memory/concepts/event-driven/testing.md` — Event-Driven — testing guidance
+- `agents/augur/memory/concepts/event-log/concept.md` — Event log domain model — append-only log of events as source of truth
+- `agents/augur/memory/concepts/event-notification/concept.md` — Event Notification architectural pattern
+- `agents/augur/memory/concepts/event-notification/deployment.md` — Event Notification — deployment guidance
+- `agents/augur/memory/concepts/event-notification/pattern.md` — Event Notification architectural pattern
+- `agents/augur/memory/concepts/event-notification/testing.md` — Event Notification — testing guidance
+- `agents/augur/memory/concepts/event-sourcing/concept.md` — Event Sourcing architectural pattern
+- `agents/augur/memory/concepts/event-sourcing/deployment.md` — Event Sourcing — deployment guidance
+- `agents/augur/memory/concepts/event-sourcing/monitoring.md` — Event Sourcing — monitoring guidance
+- `agents/augur/memory/concepts/event-sourcing/pattern.md` — Event Sourcing architectural pattern
+- `agents/augur/memory/concepts/event-sourcing/testing.md` — Event Sourcing — testing guidance
+- `agents/augur/memory/concepts/experiment-framework/concept.md` — A/B Experiment Framework architectural pattern
+- `agents/augur/memory/concepts/experiment-framework/monitoring.md` — A/B Experiment Framework — monitoring guidance
+- `agents/augur/memory/concepts/experiment-framework/pattern.md` — A/B Experiment Framework architectural pattern
+- `agents/augur/memory/concepts/experiment-framework/testing.md` — A/B Experiment Framework — testing guidance
+- `agents/augur/memory/concepts/facade/concept.md` — Facade architectural pattern
+- `agents/augur/memory/concepts/facade/pattern.md` — Facade architectural pattern
+- `agents/augur/memory/concepts/facade/testing.md` — Facade — testing guidance
+- `agents/augur/memory/concepts/factory/concept.md` — Factory Method architectural pattern
+- `agents/augur/memory/concepts/factory/pattern.md` — Factory Method architectural pattern
+- `agents/augur/memory/concepts/factory/testing.md` — Factory Method — testing guidance
+- `agents/augur/memory/concepts/failure-cascade/concept.md` — Failure cascade flow — propagation of failure through dependent components
+- `agents/augur/memory/concepts/fan-in/concept.md` — Fan-in flow — parallel results converge into a single aggregation point
+- `agents/augur/memory/concepts/fan-out/concept.md` — Fan-out flow — one event triggers parallel processing across multiple consumers
+- `agents/augur/memory/concepts/feature-envy/concept.md` — Feature Envy anti-pattern
+- `agents/augur/memory/concepts/feature-envy/pattern.md` — Feature Envy anti-pattern
+- `agents/augur/memory/concepts/feature-envy/testing.md` — Feature Envy — testing guidance
+- `agents/augur/memory/concepts/feature-flag/concept.md` — Feature Flag/Toggle architectural pattern
+- `agents/augur/memory/concepts/feature-flag/monitoring.md` — Feature Flag/Toggle — monitoring guidance
+- `agents/augur/memory/concepts/feature-flag/pattern.md` — Feature Flag/Toggle architectural pattern
+- `agents/augur/memory/concepts/feature-flag/testing.md` — Feature Flag/Toggle — testing guidance
+- `agents/augur/memory/concepts/feature-store/concept.md` — Feature Store architectural pattern
+- `agents/augur/memory/concepts/feature-store/deployment.md` — Feature Store — deployment guidance
+- `agents/augur/memory/concepts/feature-store/monitoring.md` — Feature Store — monitoring guidance
+- `agents/augur/memory/concepts/feature-store/pattern.md` — Feature Store architectural pattern
+- `agents/augur/memory/concepts/feature-store/testing.md` — Feature Store — testing guidance
+- `agents/augur/memory/concepts/fire-and-forget/concept.md` — Fire and Forget anti-pattern
+- `agents/augur/memory/concepts/fire-and-forget/pattern.md` — Fire and Forget anti-pattern
+- `agents/augur/memory/concepts/fixture-builder/concept.md` — Test Fixture / Data Builder architectural pattern
+- `agents/augur/memory/concepts/fixture-builder/pattern.md` — Test Fixture / Data Builder architectural pattern
+- `agents/augur/memory/concepts/fixture-builder/testing.md` — Test Fixture / Data Builder — testing guidance
+- `agents/augur/memory/concepts/flaky-tests/concept.md` — Flaky Tests anti-pattern
+- `agents/augur/memory/concepts/flaky-tests/monitoring.md` — Flaky Tests — monitoring guidance
+- `agents/augur/memory/concepts/flaky-tests/pattern.md` — Flaky Tests anti-pattern
+- `agents/augur/memory/concepts/flaky-tests/testing.md` — Flaky Tests — testing guidance
+- `agents/augur/memory/concepts/flux/concept.md` — Flux/Redux (Unidirectional Data Flow) architectural pattern
+- `agents/augur/memory/concepts/flux/pattern.md` — Flux/Redux (Unidirectional Data Flow) architectural pattern
+- `agents/augur/memory/concepts/flux/testing.md` — Flux/Redux — testing guidance
+- `agents/augur/memory/concepts/flyweight/concept.md` — Flyweight architectural pattern
+- `agents/augur/memory/concepts/flyweight/pattern.md` — Flyweight architectural pattern
+- `agents/augur/memory/concepts/flyweight/testing.md` — Flyweight — testing guidance
+- `agents/augur/memory/concepts/form-binding/concept.md` — Form Binding — two-way or controlled data binding between form inputs and state
+- `agents/augur/memory/concepts/form-binding/pattern.md` — Form Binding — two-way or controlled data binding between form inputs and state
+- `agents/augur/memory/concepts/future-promise/concept.md` — Future/Promise architectural pattern
+- `agents/augur/memory/concepts/future-promise/pattern.md` — Future/Promise architectural pattern
+- `agents/augur/memory/concepts/future-promise/testing.md` — Future/Promise — testing guidance
+- `agents/augur/memory/concepts/game-loop/concept.md` — Game Loop architectural pattern
+- `agents/augur/memory/concepts/game-loop/pattern.md` — Game Loop architectural pattern
+- `agents/augur/memory/concepts/game-loop/testing.md` — Game Loop — testing guidance
+- `agents/augur/memory/concepts/gateway-backends/concept.md` — Gateway-backends structure — single entry point routing to multiple backend services
+- `agents/augur/memory/concepts/gitops/concept.md` — GitOps architectural pattern
+- `agents/augur/memory/concepts/gitops/deployment.md` — GitOps — deployment guidance
+- `agents/augur/memory/concepts/gitops/pattern.md` — GitOps architectural pattern
+- `agents/augur/memory/concepts/god-endpoint/concept.md` — God Endpoint anti-pattern
+- `agents/augur/memory/concepts/god-endpoint/pattern.md` — God Endpoint anti-pattern
+- `agents/augur/memory/concepts/god-object/concept.md` — God Object/Class anti-pattern
+- `agents/augur/memory/concepts/god-object/pattern.md` — God Object/Class anti-pattern
+- `agents/augur/memory/concepts/golden-hammer/concept.md` — Golden Hammer anti-pattern
+- `agents/augur/memory/concepts/golden-hammer/pattern.md` — Golden Hammer anti-pattern
+- `agents/augur/memory/concepts/graceful-degradation/concept.md` — Graceful Degradation architectural pattern
+- `agents/augur/memory/concepts/graceful-degradation/deployment.md` — Graceful Degradation — deployment guidance
+- `agents/augur/memory/concepts/graceful-degradation/monitoring.md` — Graceful Degradation — monitoring guidance
+- `agents/augur/memory/concepts/graceful-degradation/pattern.md` — Graceful Degradation architectural pattern
+- `agents/augur/memory/concepts/graceful-degradation/testing.md` — Graceful Degradation — testing guidance
+- `agents/augur/memory/concepts/graph/concept.md` — Generic graph model covering dependency graphs, DAGs, and general graph algorithms
+- `agents/augur/memory/concepts/graphql/concept.md` — GraphQL architectural pattern
+- `agents/augur/memory/concepts/graphql/monitoring.md` — GraphQL — monitoring guidance
+- `agents/augur/memory/concepts/graphql/pattern.md` — GraphQL architectural pattern
+- `agents/augur/memory/concepts/graphql/testing.md` — GraphQL — testing guidance
+- `agents/augur/memory/concepts/grpc/concept.md` — gRPC/RPC architectural pattern
+- `agents/augur/memory/concepts/grpc/deployment.md` — gRPC/RPC — deployment guidance
+- `agents/augur/memory/concepts/grpc/monitoring.md` — gRPC/RPC — monitoring guidance
+- `agents/augur/memory/concepts/grpc/pattern.md` — gRPC/RPC architectural pattern
+- `agents/augur/memory/concepts/grpc/testing.md` — gRPC/RPC — testing guidance
+- `agents/augur/memory/concepts/hardcoded-credentials/concept.md` — Hardcoded Credentials anti-pattern
+- `agents/augur/memory/concepts/hardcoded-credentials/pattern.md` — Hardcoded Credentials anti-pattern
+- `agents/augur/memory/concepts/hardcoded-credentials/testing.md` — Hardcoded Credentials — testing guidance
+- `agents/augur/memory/concepts/hardcoded-urls/concept.md` — Hardcoded URLs anti-pattern
+- `agents/augur/memory/concepts/hardcoded-urls/pattern.md` — Hardcoded URLs anti-pattern
+- `agents/augur/memory/concepts/hardcoded-urls/testing.md` — Hardcoded URLs — testing guidance
+- `agents/augur/memory/concepts/health-check/concept.md` — Health Check architectural pattern
+- `agents/augur/memory/concepts/health-check/deployment.md` — Health Check — deployment guidance
+- `agents/augur/memory/concepts/health-check/monitoring.md` — Health Check — monitoring guidance
+- `agents/augur/memory/concepts/health-check/pattern.md` — Health Check architectural pattern
+- `agents/augur/memory/concepts/health-check/testing.md` — Health Check — testing guidance
+- `agents/augur/memory/concepts/hexagonal/concept.md` — Hexagonal architectural pattern
+- `agents/augur/memory/concepts/hexagonal/deployment.md` — Hexagonal — deployment guidance
+- `agents/augur/memory/concepts/hexagonal/monitoring.md` — Hexagonal — monitoring guidance
+- `agents/augur/memory/concepts/hexagonal/pattern.md` — Hexagonal architectural pattern
+- `agents/augur/memory/concepts/hexagonal/testing.md` — Hexagonal — testing guidance
+- `agents/augur/memory/concepts/hidden-side-effects/concept.md` — Hidden Side Effects anti-pattern
+- `agents/augur/memory/concepts/hidden-side-effects/pattern.md` — Hidden Side Effects anti-pattern
+- `agents/augur/memory/concepts/hydration/concept.md` — Hydration — transferring server-rendered state to the client for interactive rendering
+- `agents/augur/memory/concepts/hydration/pattern.md` — Hydration — transferring server-rendered state to the client for interactive rendering
+- `agents/augur/memory/concepts/ice-cream-cone/concept.md` — Ice Cream Cone anti-pattern
+- `agents/augur/memory/concepts/ice-cream-cone/pattern.md` — Ice Cream Cone anti-pattern
+- `agents/augur/memory/concepts/idempotent-consumer/concept.md` — Idempotent Consumer architectural pattern
+- `agents/augur/memory/concepts/idempotent-consumer/deployment.md` — Idempotent Consumer — deployment guidance
+- `agents/augur/memory/concepts/idempotent-consumer/monitoring.md` — Idempotent Consumer — monitoring guidance
+- `agents/augur/memory/concepts/idempotent-consumer/pattern.md` — Idempotent Consumer architectural pattern
+- `agents/augur/memory/concepts/idempotent-consumer/testing.md` — Idempotent Consumer — testing guidance
+- `agents/augur/memory/concepts/immutable-infra/concept.md` — Immutable Infrastructure architectural pattern
+- `agents/augur/memory/concepts/immutable-infra/deployment.md` — Immutable Infrastructure — deployment guidance
+- `agents/augur/memory/concepts/immutable-infra/pattern.md` — Immutable Infrastructure architectural pattern
+- `agents/augur/memory/concepts/inbox/concept.md` — Inbox architectural pattern
+- `agents/augur/memory/concepts/inbox/pattern.md` — Inbox architectural pattern
+- `agents/augur/memory/concepts/inconsistent-naming/concept.md` — Inconsistent Naming anti-pattern
+- `agents/augur/memory/concepts/inconsistent-naming/pattern.md` — Inconsistent Naming anti-pattern
+- `agents/augur/memory/concepts/infrastructure-as-code/concept.md` — Infrastructure as Code architectural pattern
+- `agents/augur/memory/concepts/infrastructure-as-code/pattern.md` — Infrastructure as Code architectural pattern
+- `agents/augur/memory/concepts/infrastructure-as-code/testing.md` — Infrastructure as Code — testing guidance
+- `agents/augur/memory/concepts/input-validation/concept.md` — Input Validation architectural pattern
+- `agents/augur/memory/concepts/input-validation/pattern.md` — Input Validation architectural pattern
+- `agents/augur/memory/concepts/input-validation/testing.md` — Input Validation — testing guidance
+- `agents/augur/memory/concepts/insecure-deserialization/concept.md` — Insecure Deserialization anti-pattern
+- `agents/augur/memory/concepts/insecure-deserialization/pattern.md` — Insecure Deserialization anti-pattern
+- `agents/augur/memory/concepts/insecure-deserialization/testing.md` — Insecure Deserialization — testing guidance
+- `agents/augur/memory/concepts/intermediate-representation/concept.md` — Intermediate Representation (IR) architectural pattern
+- `agents/augur/memory/concepts/intermediate-representation/pattern.md` — Intermediate Representation (IR) architectural pattern
+- `agents/augur/memory/concepts/intermediate-representation/testing.md` — Intermediate Representation — testing guidance
+- `agents/augur/memory/concepts/iterator/concept.md` — Iterator architectural pattern
+- `agents/augur/memory/concepts/iterator/pattern.md` — Iterator architectural pattern
+- `agents/augur/memory/concepts/iterator/testing.md` — Iterator — testing guidance
+- `agents/augur/memory/concepts/key-value-model/concept.md` — Key-value domain model — simple key→value lookups with optional expiry
+- `agents/augur/memory/concepts/lava-flow/concept.md` — Lava Flow (Dead Code) anti-pattern
+- `agents/augur/memory/concepts/lava-flow/pattern.md` — Lava Flow (Dead Code) anti-pattern
+- `agents/augur/memory/concepts/layered/concept.md` — Layered structure — horizontal layers with dependency flowing downward
+- `agents/augur/memory/concepts/lazy-loading/concept.md` — Lazy Loading — deferring component or module loading until needed to reduce initial bundle size
+- `agents/augur/memory/concepts/lazy-loading/pattern.md` — Lazy Loading — deferring component or module loading until needed to reduce initial bundle size
+- `agents/augur/memory/concepts/leader-election/concept.md` — Leader Election architectural pattern
+- `agents/augur/memory/concepts/leader-election/deployment.md` — Leader Election — deployment guidance
+- `agents/augur/memory/concepts/leader-election/monitoring.md` — Leader Election — monitoring guidance
+- `agents/augur/memory/concepts/leader-election/pattern.md` — Leader Election architectural pattern
+- `agents/augur/memory/concepts/leader-election/testing.md` — Leader Election — testing guidance
+- `agents/augur/memory/concepts/leaky-abstraction/concept.md` — Leaky Abstraction anti-pattern
+- `agents/augur/memory/concepts/leaky-abstraction/pattern.md` — Leaky Abstraction anti-pattern
+- `agents/augur/memory/concepts/ledger/concept.md` — Double-entry ledger pattern for financial data integrity
+- `agents/augur/memory/concepts/lexer-parser/concept.md` — Lexer/Parser architectural pattern
+- `agents/augur/memory/concepts/lexer-parser/pattern.md` — Lexer/Parser architectural pattern
+- `agents/augur/memory/concepts/lexer-parser/testing.md` — Lexer/Parser — testing guidance
+- `agents/augur/memory/concepts/log-and-throw/concept.md` — Log and Throw anti-pattern
+- `agents/augur/memory/concepts/log-and-throw/pattern.md` — Log and Throw anti-pattern
+- `agents/augur/memory/concepts/log-spam/concept.md` — Log Spam anti-pattern
+- `agents/augur/memory/concepts/log-spam/pattern.md` — Log Spam anti-pattern
+- `agents/augur/memory/concepts/long-polling/concept.md` — Long Polling architectural pattern
+- `agents/augur/memory/concepts/long-polling/monitoring.md` — Long Polling — monitoring guidance
+- `agents/augur/memory/concepts/long-polling/pattern.md` — Long Polling architectural pattern
+- `agents/augur/memory/concepts/long-polling/testing.md` — Long Polling — testing guidance
+- `agents/augur/memory/concepts/long-transactions/concept.md` — Long Transactions anti-pattern
+- `agents/augur/memory/concepts/long-transactions/pattern.md` — Long Transactions anti-pattern
+- `agents/augur/memory/concepts/lru-cache/concept.md` — LRU Cache architectural pattern
+- `agents/augur/memory/concepts/lru-cache/monitoring.md` — LRU Cache — monitoring guidance
+- `agents/augur/memory/concepts/lru-cache/pattern.md` — LRU Cache architectural pattern
+- `agents/augur/memory/concepts/lru-cache/testing.md` — LRU Cache — testing guidance
+- `agents/augur/memory/concepts/magic-numbers/concept.md` — Magic Numbers/Strings anti-pattern
+- `agents/augur/memory/concepts/magic-numbers/pattern.md` — Magic Numbers/Strings anti-pattern
+- `agents/augur/memory/concepts/mapreduce/concept.md` — MapReduce architectural pattern
+- `agents/augur/memory/concepts/mapreduce/deployment.md` — MapReduce — deployment guidance
+- `agents/augur/memory/concepts/mapreduce/monitoring.md` — MapReduce — monitoring guidance
+- `agents/augur/memory/concepts/mapreduce/pattern.md` — MapReduce architectural pattern
+- `agents/augur/memory/concepts/mapreduce/testing.md` — MapReduce — testing guidance
+- `agents/augur/memory/concepts/materialized-view/concept.md` — Materialized View architectural pattern
+- `agents/augur/memory/concepts/materialized-view/monitoring.md` — Materialized View — monitoring guidance
+- `agents/augur/memory/concepts/materialized-view/pattern.md` — Materialized View architectural pattern
+- `agents/augur/memory/concepts/materialized-view/testing.md` — Materialized View — testing guidance
+- `agents/augur/memory/concepts/mediator/concept.md` — Mediator architectural pattern
+- `agents/augur/memory/concepts/mediator/pattern.md` — Mediator architectural pattern
+- `agents/augur/memory/concepts/mediator/testing.md` — Mediator — testing guidance
+- `agents/augur/memory/concepts/memento/concept.md` — Memento architectural pattern
+- `agents/augur/memory/concepts/memento/pattern.md` — Memento architectural pattern
+- `agents/augur/memory/concepts/memento/testing.md` — Memento — testing guidance
+- `agents/augur/memory/concepts/memory-leak/concept.md` — Memory Leak anti-pattern
+- `agents/augur/memory/concepts/memory-leak/pattern.md` — Memory Leak anti-pattern
+- `agents/augur/memory/concepts/message-queue/concept.md` — Message Queue architectural pattern
+- `agents/augur/memory/concepts/message-queue/deployment.md` — Message Queue — deployment guidance
+- `agents/augur/memory/concepts/message-queue/monitoring.md` — Message Queue — monitoring guidance
+- `agents/augur/memory/concepts/message-queue/pattern.md` — Message Queue architectural pattern
+- `agents/augur/memory/concepts/message-queue/testing.md` — Message Queue — testing guidance
+- `agents/augur/memory/concepts/metric-cardinality-explosion/concept.md` — Metric Cardinality Explosion anti-pattern
+- `agents/augur/memory/concepts/metric-cardinality-explosion/pattern.md` — Metric Cardinality Explosion anti-pattern
+- `agents/augur/memory/concepts/metrics-instrumentation/concept.md` — Metrics Instrumentation architectural pattern
+- `agents/augur/memory/concepts/metrics-instrumentation/monitoring.md` — Metrics Instrumentation — monitoring guidance
+- `agents/augur/memory/concepts/metrics-instrumentation/pattern.md` — Metrics Instrumentation architectural pattern
+- `agents/augur/memory/concepts/metrics-instrumentation/testing.md` — Metrics Instrumentation — testing guidance
+- `agents/augur/memory/concepts/micro-frontend/concept.md` — Micro-Frontend architectural pattern
+- `agents/augur/memory/concepts/micro-frontend/deployment.md` — Micro-Frontend — deployment guidance
+- `agents/augur/memory/concepts/micro-frontend/pattern.md` — Micro-Frontend architectural pattern
+- `agents/augur/memory/concepts/micro-frontend/testing.md` — Micro-Frontend — testing guidance
+- `agents/augur/memory/concepts/microservices/concept.md` — Microservices architectural pattern
+- `agents/augur/memory/concepts/microservices/pattern.md` — Microservices architectural pattern
+- `agents/augur/memory/concepts/middleware/concept.md` — Middleware — request/response pipeline interceptors for cross-cutting concerns
+- `agents/augur/memory/concepts/middleware/pattern.md` — Middleware — request/response pipeline interceptors for cross-cutting concerns
+- `agents/augur/memory/concepts/misleading-names/concept.md` — Misleading Names anti-pattern
+- `agents/augur/memory/concepts/misleading-names/pattern.md` — Misleading Names anti-pattern
+- `agents/augur/memory/concepts/missing-log-context/concept.md` — Missing Log Context anti-pattern
+- `agents/augur/memory/concepts/missing-log-context/pattern.md` — Missing Log Context anti-pattern
+- `agents/augur/memory/concepts/model-registry/concept.md` — Model Registry architectural pattern
+- `agents/augur/memory/concepts/model-registry/monitoring.md` — Model Registry — monitoring guidance
+- `agents/augur/memory/concepts/model-registry/pattern.md` — Model Registry architectural pattern
+- `agents/augur/memory/concepts/model-registry/testing.md` — Model Registry — testing guidance
+- `agents/augur/memory/concepts/modular-monolith/concept.md` — Modular Monolith architectural pattern
+- `agents/augur/memory/concepts/modular-monolith/pattern.md` — Modular Monolith architectural pattern
+- `agents/augur/memory/concepts/monad/concept.md` — Monad/Railway-Oriented Programming architectural pattern
+- `agents/augur/memory/concepts/monad/pattern.md` — Monad/Railway-Oriented Programming architectural pattern
+- `agents/augur/memory/concepts/monad/testing.md` — Monad — testing guidance
+- `agents/augur/memory/concepts/mtls/concept.md` — Mutual TLS architectural pattern
+- `agents/augur/memory/concepts/mtls/deployment.md` — Mutual TLS — deployment guidance
+- `agents/augur/memory/concepts/mtls/monitoring.md` — Mutual TLS — monitoring guidance
+- `agents/augur/memory/concepts/mtls/pattern.md` — Mutual TLS architectural pattern
+- `agents/augur/memory/concepts/mtls/testing.md` — Mutual TLS — testing guidance
+- `agents/augur/memory/concepts/multi-tenant/concept.md` — Multi-tenant isolation pattern for shared infrastructure
+- `agents/augur/memory/concepts/mvc/concept.md` — Model-View-Controller architectural pattern
+- `agents/augur/memory/concepts/mvc/pattern.md` — Model-View-Controller architectural pattern
+- `agents/augur/memory/concepts/mvc/testing.md` — MVC — testing guidance
+- `agents/augur/memory/concepts/mvvm/concept.md` — Model-View-ViewModel architectural pattern
+- `agents/augur/memory/concepts/mvvm/pattern.md` — Model-View-ViewModel architectural pattern
+- `agents/augur/memory/concepts/mvvm/testing.md` — MVVM — testing guidance
+- `agents/augur/memory/concepts/n-plus-one/concept.md` — N+1 Queries anti-pattern
+- `agents/augur/memory/concepts/n-plus-one/pattern.md` — N+1 Queries anti-pattern
+- `agents/augur/memory/concepts/null-object/concept.md` — Null Object architectural pattern
+- `agents/augur/memory/concepts/null-object/pattern.md` — Null Object architectural pattern
+- `agents/augur/memory/concepts/null-object/testing.md` — Null Object — testing guidance
+- `agents/augur/memory/concepts/oauth-oidc/concept.md` — OAuth2/OpenID Connect architectural pattern
+- `agents/augur/memory/concepts/oauth-oidc/deployment.md` — OAuth2/OpenID Connect — deployment guidance
+- `agents/augur/memory/concepts/oauth-oidc/monitoring.md` — OAuth2/OpenID Connect — monitoring guidance
+- `agents/augur/memory/concepts/oauth-oidc/pattern.md` — OAuth2/OpenID Connect architectural pattern
+- `agents/augur/memory/concepts/oauth-oidc/testing.md` — OAuth2/OpenID Connect — testing guidance
+- `agents/augur/memory/concepts/object-pool/concept.md` — Object Pool architectural pattern
+- `agents/augur/memory/concepts/object-pool/pattern.md` — Object Pool architectural pattern
+- `agents/augur/memory/concepts/object-pool/testing.md` — Object Pool — testing guidance
+- `agents/augur/memory/concepts/observer/concept.md` — Observer/Event Emitter architectural pattern
+- `agents/augur/memory/concepts/observer/pattern.md` — Observer/Event Emitter architectural pattern
+- `agents/augur/memory/concepts/observer/testing.md` — Observer — testing guidance
+- `agents/augur/memory/concepts/optimistic-locking/concept.md` — Optimistic Locking architectural pattern
+- `agents/augur/memory/concepts/optimistic-locking/pattern.md` — Optimistic Locking architectural pattern
+- `agents/augur/memory/concepts/optimistic-locking/testing.md` — Optimistic Locking — testing guidance
+- `agents/augur/memory/concepts/optimistic-update/concept.md` — Optimistic Update — immediately reflecting expected state changes in the UI before server confirmation
+- `agents/augur/memory/concepts/optimistic-update/pattern.md` — Optimistic Update — immediately reflecting expected state changes in the UI before server confirmation
+- `agents/augur/memory/concepts/outbox/concept.md` — Outbox architectural pattern
+- `agents/augur/memory/concepts/outbox/deployment.md` — Outbox — deployment guidance
+- `agents/augur/memory/concepts/outbox/monitoring.md` — Outbox — monitoring guidance
+- `agents/augur/memory/concepts/outbox/pattern.md` — Outbox architectural pattern
+- `agents/augur/memory/concepts/outbox/testing.md` — Outbox — testing guidance
+- `agents/augur/memory/concepts/over-under-fetching/concept.md` — Over/Under-Fetching anti-pattern
+- `agents/augur/memory/concepts/over-under-fetching/pattern.md` — Over/Under-Fetching anti-pattern
+- `agents/augur/memory/concepts/pagination/concept.md` — Pagination architectural pattern
+- `agents/augur/memory/concepts/pagination/pattern.md` — Pagination architectural pattern
+- `agents/augur/memory/concepts/pagination/testing.md` — Pagination — testing guidance
+- `agents/augur/memory/concepts/pipeline-filter/concept.md` — Pipeline/Filter architectural pattern
+- `agents/augur/memory/concepts/pipeline-filter/pattern.md` — Pipeline/Filter architectural pattern
+- `agents/augur/memory/concepts/pipeline-filter/testing.md` — Pipeline/Filter — testing guidance
+- `agents/augur/memory/concepts/pipeline-stages/concept.md` — Pipeline stages structure — components arranged as sequential processing stages
+- `agents/augur/memory/concepts/plugin-host/concept.md` — Plugin host structure — core system with pluggable extensions via defined interfaces
+- `agents/augur/memory/concepts/plugin/concept.md` — Plugin architectural pattern
+- `agents/augur/memory/concepts/plugin/deployment.md` — Plugin Architecture — deployment guidance
+- `agents/augur/memory/concepts/plugin/monitoring.md` — Plugin Architecture — monitoring guidance
+- `agents/augur/memory/concepts/plugin/pattern.md` — Plugin architectural pattern
+- `agents/augur/memory/concepts/plugin/testing.md` — Plugin Architecture — testing guidance
+- `agents/augur/memory/concepts/pokemon-exception/concept.md` — Pokemon Exception anti-pattern
+- `agents/augur/memory/concepts/pokemon-exception/pattern.md` — Pokemon Exception anti-pattern
+- `agents/augur/memory/concepts/polling-flow/concept.md` — Polling flow — periodic check for state changes or new work
+- `agents/augur/memory/concepts/premature-optimization/concept.md` — Premature Optimization anti-pattern
+- `agents/augur/memory/concepts/premature-optimization/pattern.md` — Premature Optimization anti-pattern
+- `agents/augur/memory/concepts/primitive-obsession/concept.md` — Primitive Obsession anti-pattern
+- `agents/augur/memory/concepts/primitive-obsession/pattern.md` — Primitive Obsession anti-pattern
+- `agents/augur/memory/concepts/producer-consumer/concept.md` — Producer-Consumer architectural pattern
+- `agents/augur/memory/concepts/producer-consumer/monitoring.md` — Producer-Consumer — monitoring guidance
+- `agents/augur/memory/concepts/producer-consumer/pattern.md` — Producer-Consumer architectural pattern
+- `agents/augur/memory/concepts/producer-consumer/testing.md` — Producer-Consumer — testing guidance
+- `agents/augur/memory/concepts/prop-drilling/concept.md` — Prop Drilling anti-pattern
+- `agents/augur/memory/concepts/prop-drilling/pattern.md` — Prop Drilling anti-pattern
+- `agents/augur/memory/concepts/property-graph/concept.md` — Property graph model with typed nodes and edges carrying attributes
+- `agents/augur/memory/concepts/property-testing/concept.md` — Property-Based Testing architectural pattern
+- `agents/augur/memory/concepts/property-testing/pattern.md` — Property-Based Testing architectural pattern
+- `agents/augur/memory/concepts/property-testing/testing.md` — Property-Based Testing — testing guidance
+- `agents/augur/memory/concepts/prototype/concept.md` — Prototype architectural pattern
+- `agents/augur/memory/concepts/prototype/pattern.md` — Prototype architectural pattern
+- `agents/augur/memory/concepts/prototype/testing.md` — Prototype — testing guidance
+- `agents/augur/memory/concepts/proxy/concept.md` — Proxy architectural pattern
+- `agents/augur/memory/concepts/proxy/pattern.md` — Proxy architectural pattern
+- `agents/augur/memory/concepts/proxy/testing.md` — Proxy — testing guidance
+- `agents/augur/memory/concepts/pub-sub/concept.md` — Publish-Subscribe architectural pattern
+- `agents/augur/memory/concepts/pub-sub/deployment.md` — Publish-Subscribe — deployment guidance
+- `agents/augur/memory/concepts/pub-sub/monitoring.md` — Publish-Subscribe — monitoring guidance
+- `agents/augur/memory/concepts/pub-sub/pattern.md` — Publish-Subscribe architectural pattern
+- `agents/augur/memory/concepts/pub-sub/testing.md` — Publish-Subscribe — testing guidance
+- `agents/augur/memory/concepts/race-condition/concept.md` — Race Condition anti-pattern
+- `agents/augur/memory/concepts/race-condition/pattern.md` — Race Condition anti-pattern
+- `agents/augur/memory/concepts/race-condition/testing.md` — Race Condition — testing guidance
+- `agents/augur/memory/concepts/rate-limiting/concept.md` — Rate Limiting/Throttling architectural pattern
+- `agents/augur/memory/concepts/rate-limiting/deployment.md` — Rate Limiting — deployment guidance
+- `agents/augur/memory/concepts/rate-limiting/monitoring.md` — Rate Limiting — monitoring guidance
+- `agents/augur/memory/concepts/rate-limiting/pattern.md` — Rate Limiting/Throttling architectural pattern
+- `agents/augur/memory/concepts/rate-limiting/testing.md` — Rate Limiting — testing guidance
+- `agents/augur/memory/concepts/rbac/concept.md` — Role-Based Access Control architectural pattern
+- `agents/augur/memory/concepts/rbac/pattern.md` — Role-Based Access Control architectural pattern
+- `agents/augur/memory/concepts/rbac/testing.md` — Role-Based Access Control — testing guidance
+- `agents/augur/memory/concepts/reactive-store/concept.md` — Reactive Store — client-side state container with reactive subscriptions
+- `agents/augur/memory/concepts/reactive-store/pattern.md` — Reactive Store — client-side state container with reactive subscriptions
+- `agents/augur/memory/concepts/reactor/concept.md` — Reactor/Event Loop architectural pattern
+- `agents/augur/memory/concepts/reactor/monitoring.md` — Reactor/Event Loop — monitoring guidance
+- `agents/augur/memory/concepts/reactor/pattern.md` — Reactor/Event Loop architectural pattern
+- `agents/augur/memory/concepts/reactor/testing.md` — Reactor/Event Loop — testing guidance
+- `agents/augur/memory/concepts/read-through/concept.md` — Read-Through Cache architectural pattern
+- `agents/augur/memory/concepts/read-through/monitoring.md` — Read-Through Cache — monitoring guidance
+- `agents/augur/memory/concepts/read-through/pattern.md` — Read-Through Cache architectural pattern
+- `agents/augur/memory/concepts/read-through/testing.md` — Read-Through Cache — testing guidance
+- `agents/augur/memory/concepts/read-write-lock/concept.md` — Read-Write Lock architectural pattern
+- `agents/augur/memory/concepts/read-write-lock/pattern.md` — Read-Write Lock architectural pattern
+- `agents/augur/memory/concepts/read-write-lock/testing.md` — Read-Write Lock — testing guidance
+- `agents/augur/memory/concepts/refresh-ahead/concept.md` — Refresh-Ahead Cache architectural pattern
+- `agents/augur/memory/concepts/refresh-ahead/monitoring.md` — Refresh-Ahead Cache — monitoring guidance
+- `agents/augur/memory/concepts/refresh-ahead/pattern.md` — Refresh-Ahead Cache architectural pattern
+- `agents/augur/memory/concepts/refresh-ahead/testing.md` — Refresh-Ahead Cache — testing guidance
+- `agents/augur/memory/concepts/registry-model/concept.md` — Registry domain model — entities with lifecycle states, metadata, and lookups
+- `agents/augur/memory/concepts/reinventing-the-wheel/concept.md` — Reinventing the Wheel anti-pattern
+- `agents/augur/memory/concepts/reinventing-the-wheel/pattern.md` — Reinventing the Wheel anti-pattern
+- `agents/augur/memory/concepts/repository/concept.md` — Repository architectural pattern
+- `agents/augur/memory/concepts/repository/pattern.md` — Repository architectural pattern
+- `agents/augur/memory/concepts/repository/testing.md` — Repository — testing guidance
+- `agents/augur/memory/concepts/request-path/concept.md` — Request path flow — synchronous request through a handler chain with response
+- `agents/augur/memory/concepts/request-reply/concept.md` — Request-Reply architectural pattern
+- `agents/augur/memory/concepts/request-reply/deployment.md` — Request-Reply — deployment guidance
+- `agents/augur/memory/concepts/request-reply/monitoring.md` — Request-Reply — monitoring guidance
+- `agents/augur/memory/concepts/request-reply/pattern.md` — Request-Reply architectural pattern
+- `agents/augur/memory/concepts/request-reply/testing.md` — Request-Reply — testing guidance
+- `agents/augur/memory/concepts/rest/concept.md` — REST API architectural pattern
+- `agents/augur/memory/concepts/rest/monitoring.md` — REST API — monitoring guidance
+- `agents/augur/memory/concepts/rest/pattern.md` — REST API architectural pattern
+- `agents/augur/memory/concepts/rest/testing.md` — REST API — testing guidance
+- `agents/augur/memory/concepts/result-type/concept.md` — Result/Either Type architectural pattern
+- `agents/augur/memory/concepts/result-type/pattern.md` — Result/Either Type architectural pattern
+- `agents/augur/memory/concepts/result-type/testing.md` — Result/Either Type — testing guidance
+- `agents/augur/memory/concepts/retry/concept.md` — Retry architectural pattern
+- `agents/augur/memory/concepts/retry/deployment.md` — Retry with Backoff — deployment guidance
+- `agents/augur/memory/concepts/retry/monitoring.md` — Retry with Backoff — monitoring guidance
+- `agents/augur/memory/concepts/retry/pattern.md` — Retry architectural pattern
+- `agents/augur/memory/concepts/retry/testing.md` — Retry with Backoff — testing guidance
+- `agents/augur/memory/concepts/ring-buffer/concept.md` — Ring Buffer architectural pattern
+- `agents/augur/memory/concepts/ring-buffer/pattern.md` — Ring Buffer architectural pattern
+- `agents/augur/memory/concepts/ring-buffer/testing.md` — Ring Buffer — testing guidance
+- `agents/augur/memory/concepts/route-guard/concept.md` — Route Guard — conditional access control on route navigation
+- `agents/augur/memory/concepts/route-guard/pattern.md` — Route Guard — conditional access control on route navigation
+- `agents/augur/memory/concepts/router/concept.md` — Router — URL-based navigation and view switching
+- `agents/augur/memory/concepts/router/pattern.md` — Router — URL-based navigation and view switching
+- `agents/augur/memory/concepts/rule-engine/concept.md` — Rule engine pattern for declarative business logic evaluation
+- `agents/augur/memory/concepts/saga-orchestrator/concept.md` — Saga Orchestrator architectural pattern
+- `agents/augur/memory/concepts/saga-orchestrator/pattern.md` — Saga Orchestrator architectural pattern
+- `agents/augur/memory/concepts/saga/concept.md` — Saga architectural pattern
+- `agents/augur/memory/concepts/saga/deployment.md` — Saga — deployment guidance
+- `agents/augur/memory/concepts/saga/monitoring.md` — Saga — monitoring guidance
+- `agents/augur/memory/concepts/saga/pattern.md` — Saga architectural pattern
+- `agents/augur/memory/concepts/saga/testing.md` — Saga — testing guidance
+- `agents/augur/memory/concepts/scatter-gather/concept.md` — Scatter-gather flow — request dispatched to multiple services, responses aggregated
+- `agents/augur/memory/concepts/scheduler/concept.md` — Cron/Scheduler architectural pattern
+- `agents/augur/memory/concepts/scheduler/monitoring.md` — Cron/Scheduler — monitoring guidance
+- `agents/augur/memory/concepts/scheduler/pattern.md` — Cron/Scheduler architectural pattern
+- `agents/augur/memory/concepts/scheduler/testing.md` — Cron/Scheduler — testing guidance
+- `agents/augur/memory/concepts/schema-on-read/concept.md` — Schema-on-Read anti-pattern
+- `agents/augur/memory/concepts/schema-on-read/pattern.md` — Schema-on-Read anti-pattern
+- `agents/augur/memory/concepts/schema-on-read/testing.md` — Schema-on-Read — testing guidance
+- `agents/augur/memory/concepts/search-index/concept.md` — Search and inverted index pattern for full-text retrieval
+- `agents/augur/memory/concepts/secret-management/concept.md` — Secret Management architectural pattern
+- `agents/augur/memory/concepts/secret-management/pattern.md` — Secret Management architectural pattern
+- `agents/augur/memory/concepts/secret-management/testing.md` — Secret Management — testing guidance
+- `agents/augur/memory/concepts/select-star/concept.md` — Select Star anti-pattern
+- `agents/augur/memory/concepts/select-star/monitoring.md` — Select Star — monitoring guidance
+- `agents/augur/memory/concepts/select-star/pattern.md` — Select Star anti-pattern
+- `agents/augur/memory/concepts/select-star/testing.md` — Select Star — testing guidance
+- `agents/augur/memory/concepts/server-prefetch/concept.md` — Server Prefetch — fetching data on the server before client rendering
+- `agents/augur/memory/concepts/server-prefetch/pattern.md` — Server Prefetch — fetching data on the server before client rendering
+- `agents/augur/memory/concepts/server-sent-events/concept.md` — Server-Sent Events architectural pattern
+- `agents/augur/memory/concepts/server-sent-events/monitoring.md` — Server-Sent Events — monitoring guidance
+- `agents/augur/memory/concepts/server-sent-events/pattern.md` — Server-Sent Events architectural pattern
+- `agents/augur/memory/concepts/server-sent-events/testing.md` — Server-Sent Events — testing guidance
+- `agents/augur/memory/concepts/serverless/concept.md` — Serverless / FaaS architectural pattern
+- `agents/augur/memory/concepts/serverless/pattern.md` — Serverless / FaaS architectural pattern
+- `agents/augur/memory/concepts/service-discovery/concept.md` — Service Discovery architectural pattern
+- `agents/augur/memory/concepts/service-discovery/deployment.md` — Service Discovery — deployment guidance
+- `agents/augur/memory/concepts/service-discovery/monitoring.md` — Service Discovery — monitoring guidance
+- `agents/augur/memory/concepts/service-discovery/pattern.md` — Service Discovery architectural pattern
+- `agents/augur/memory/concepts/service-discovery/testing.md` — Service Discovery — testing guidance
+- `agents/augur/memory/concepts/service-manager/concept.md` — Service Manager architectural pattern
+- `agents/augur/memory/concepts/service-manager/deployment.md` — Service Manager — deployment guidance
+- `agents/augur/memory/concepts/service-manager/monitoring.md` — Service Manager — monitoring guidance
+- `agents/augur/memory/concepts/service-manager/orchestrator.md` — orchestrator library reference
+- `agents/augur/memory/concepts/service-manager/pattern.md` — Service Manager architectural pattern
+- `agents/augur/memory/concepts/service-manager/testing.md` — Service Manager — testing guidance
+- `agents/augur/memory/concepts/service-mesh/concept.md` — Service Mesh architectural pattern
+- `agents/augur/memory/concepts/service-mesh/deployment.md` — Service Mesh — deployment guidance
+- `agents/augur/memory/concepts/service-mesh/monitoring.md` — Service Mesh — monitoring guidance
+- `agents/augur/memory/concepts/service-mesh/pattern.md` — Service Mesh architectural pattern
+- `agents/augur/memory/concepts/session-auth/concept.md` — Session-Based Authentication architectural pattern
+- `agents/augur/memory/concepts/session-auth/monitoring.md` — Session-Based Authentication — monitoring guidance
+- `agents/augur/memory/concepts/session-auth/pattern.md` — Session-Based Authentication architectural pattern
+- `agents/augur/memory/concepts/session-auth/testing.md` — Session-Based Authentication — testing guidance
+- `agents/augur/memory/concepts/sharding/concept.md` — Sharding architectural pattern
+- `agents/augur/memory/concepts/sharding/deployment.md` — Sharding — deployment guidance
+- `agents/augur/memory/concepts/sharding/monitoring.md` — Sharding — monitoring guidance
+- `agents/augur/memory/concepts/sharding/pattern.md` — Sharding architectural pattern
+- `agents/augur/memory/concepts/sharding/testing.md` — Sharding — testing guidance
+- `agents/augur/memory/concepts/shotgun-surgery/concept.md` — Shotgun Surgery anti-pattern
+- `agents/augur/memory/concepts/shotgun-surgery/pattern.md` — Shotgun Surgery anti-pattern
+- `agents/augur/memory/concepts/shotgun-surgery/testing.md` — Shotgun Surgery — testing guidance
+- `agents/augur/memory/concepts/side-effect-hook/concept.md` — Side Effect Hook — lifecycle-bound execution of effects in component frameworks
+- `agents/augur/memory/concepts/side-effect-hook/pattern.md` — Side Effect Hook — lifecycle-bound execution of effects in component frameworks
+- `agents/augur/memory/concepts/sidecar-mesh/concept.md` — Sidecar mesh structure — services with co-located helper processes for cross-cutting concerns
+- `agents/augur/memory/concepts/sidecar/concept.md` — Sidecar architectural pattern
+- `agents/augur/memory/concepts/sidecar/deployment.md` — Sidecar — deployment guidance
+- `agents/augur/memory/concepts/sidecar/monitoring.md` — Sidecar — monitoring guidance
+- `agents/augur/memory/concepts/sidecar/pattern.md` — Sidecar architectural pattern
+- `agents/augur/memory/concepts/sidecar/testing.md` — Sidecar — testing guidance
+- `agents/augur/memory/concepts/singleton/concept.md` — Singleton architectural pattern
+- `agents/augur/memory/concepts/singleton/pattern.md` — Singleton architectural pattern
+- `agents/augur/memory/concepts/singleton/testing.md` — Singleton — testing guidance
+- `agents/augur/memory/concepts/snapshot-testing/concept.md` — Snapshot Testing architectural pattern
+- `agents/augur/memory/concepts/snapshot-testing/pattern.md` — Snapshot Testing architectural pattern
+- `agents/augur/memory/concepts/snapshot-testing/testing.md` — Snapshot Testing — testing guidance
+- `agents/augur/memory/concepts/snowflake-server/concept.md` — Snowflake Server anti-pattern
+- `agents/augur/memory/concepts/snowflake-server/pattern.md` — Snowflake Server anti-pattern
+- `agents/augur/memory/concepts/social-graph/concept.md` — Social graph pattern for user relationships and activity feeds
+- `agents/augur/memory/concepts/soft-delete/concept.md` — Soft Delete architectural pattern
+- `agents/augur/memory/concepts/soft-delete/pattern.md` — Soft Delete architectural pattern
+- `agents/augur/memory/concepts/soft-delete/testing.md` — Soft Delete — testing guidance
+- `agents/augur/memory/concepts/spaghetti-code/concept.md` — Spaghetti Code anti-pattern
+- `agents/augur/memory/concepts/spaghetti-code/pattern.md` — Spaghetti Code anti-pattern
+- `agents/augur/memory/concepts/spatial-partitioning/concept.md` — Spatial Partitioning architectural pattern
+- `agents/augur/memory/concepts/spatial-partitioning/pattern.md` — Spatial Partitioning architectural pattern
+- `agents/augur/memory/concepts/spatial-partitioning/testing.md` — Spatial Partitioning — testing guidance
+- `agents/augur/memory/concepts/spatial/concept.md` — Spatial data model for geographic and geometric computations
+- `agents/augur/memory/concepts/specification/concept.md` — Specification Pattern architectural pattern
+- `agents/augur/memory/concepts/specification/pattern.md` — Specification Pattern architectural pattern
+- `agents/augur/memory/concepts/specification/testing.md` — Specification Pattern — testing guidance
+- `agents/augur/memory/concepts/sql-injection/concept.md` — SQL Injection anti-pattern
+- `agents/augur/memory/concepts/sql-injection/pattern.md` — SQL Injection anti-pattern
+- `agents/augur/memory/concepts/sql-injection/testing.md` — SQL Injection — testing guidance
+- `agents/augur/memory/concepts/state-machine/concept.md` — State Machine architectural pattern
+- `agents/augur/memory/concepts/state-machine/monitoring.md` — State Machine — monitoring guidance
+- `agents/augur/memory/concepts/state-machine/pattern.md` — State Machine architectural pattern
+- `agents/augur/memory/concepts/state-machine/testing.md` — State Machine — testing guidance
+- `agents/augur/memory/concepts/strangler-fig/concept.md` — Strangler Fig architectural pattern
+- `agents/augur/memory/concepts/strangler-fig/deployment.md` — Strangler Fig — deployment guidance
+- `agents/augur/memory/concepts/strangler-fig/pattern.md` — Strangler Fig architectural pattern
+- `agents/augur/memory/concepts/strangler-fig/testing.md` — Strangler Fig — testing guidance
+- `agents/augur/memory/concepts/strategy/concept.md` — Strategy architectural pattern
+- `agents/augur/memory/concepts/strategy/pattern.md` — Strategy architectural pattern
+- `agents/augur/memory/concepts/strategy/testing.md` — Strategy — testing guidance
+- `agents/augur/memory/concepts/stream-to-store/concept.md` — Stream To Store architectural pattern
+- `agents/augur/memory/concepts/stream-to-store/deployment.md` — Stream-to-Store — deployment guidance
+- `agents/augur/memory/concepts/stream-to-store/monitoring.md` — Stream-to-Store — monitoring guidance
+- `agents/augur/memory/concepts/stream-to-store/pattern.md` — Stream To Store architectural pattern
+- `agents/augur/memory/concepts/stream-to-store/stoik.md` — stoik library reference
+- `agents/augur/memory/concepts/stream-to-store/testing.md` — Stream-to-Store — testing guidance
+- `agents/augur/memory/concepts/streaming-flow/concept.md` — Streaming flow — continuous data flow with backpressure and windowing
+- `agents/augur/memory/concepts/stringly-typed/concept.md` — Stringly Typed anti-pattern
+- `agents/augur/memory/concepts/stringly-typed/pattern.md` — Stringly Typed anti-pattern
+- `agents/augur/memory/concepts/structured-logging/concept.md` — Structured Logging architectural pattern
+- `agents/augur/memory/concepts/structured-logging/monitoring.md` — Structured Logging — monitoring guidance
+- `agents/augur/memory/concepts/structured-logging/pattern.md` — Structured Logging architectural pattern
+- `agents/augur/memory/concepts/structured-logging/testing.md` — Structured Logging — testing guidance
+- `agents/augur/memory/concepts/subscription/concept.md` — Subscription and recurring billing pattern for SaaS monetization
+- `agents/augur/memory/concepts/suspense-boundary/concept.md` — Suspense Boundary — declarative loading state management for async component trees
+- `agents/augur/memory/concepts/suspense-boundary/pattern.md` — Suspense Boundary — declarative loading state management for async component trees
+- `agents/augur/memory/concepts/swallowed-exception/concept.md` — Swallowed Exception anti-pattern
+- `agents/augur/memory/concepts/swallowed-exception/pattern.md` — Swallowed Exception anti-pattern
+- `agents/augur/memory/concepts/sync-in-async/concept.md` — Sync-in-Async anti-pattern
+- `agents/augur/memory/concepts/sync-in-async/pattern.md` — Sync-in-Async anti-pattern
+- `agents/augur/memory/concepts/sync-in-async/testing.md` — Sync-in-Async — testing guidance
+- `agents/augur/memory/concepts/template-method/concept.md` — Template Method architectural pattern
+- `agents/augur/memory/concepts/template-method/pattern.md` — Template Method architectural pattern
+- `agents/augur/memory/concepts/template-method/testing.md` — Template Method — testing guidance
+- `agents/augur/memory/concepts/temporal-coupling/concept.md` — Temporal Coupling anti-pattern
+- `agents/augur/memory/concepts/temporal-coupling/pattern.md` — Temporal Coupling anti-pattern
+- `agents/augur/memory/concepts/tenant-isolation/concept.md` — Tenant Isolation architectural pattern
+- `agents/augur/memory/concepts/tenant-isolation/deployment.md` — Tenant Isolation — deployment guidance
+- `agents/augur/memory/concepts/tenant-isolation/monitoring.md` — Tenant Isolation — monitoring guidance
+- `agents/augur/memory/concepts/tenant-isolation/pattern.md` — Tenant Isolation architectural pattern
+- `agents/augur/memory/concepts/tenant-isolation/testing.md` — Tenant Isolation — testing guidance
+- `agents/augur/memory/concepts/tenant-routing/concept.md` — Tenant-Aware Routing architectural pattern
+- `agents/augur/memory/concepts/tenant-routing/deployment.md` — Tenant-Aware Routing — deployment guidance
+- `agents/augur/memory/concepts/tenant-routing/monitoring.md` — Tenant-Aware Routing — monitoring guidance
+- `agents/augur/memory/concepts/tenant-routing/pattern.md` — Tenant-Aware Routing architectural pattern
+- `agents/augur/memory/concepts/tenant-routing/testing.md` — Tenant-Aware Routing — testing guidance
+- `agents/augur/memory/concepts/tensor/concept.md` — Tensor and matrix computation pattern for ML and numerical workloads
+- `agents/augur/memory/concepts/test-doubles/concept.md` — Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
+- `agents/augur/memory/concepts/test-doubles/pattern.md` — Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
+- `agents/augur/memory/concepts/test-doubles/testing.md` — Test Doubles — testing guidance
+- `agents/augur/memory/concepts/test-pollution/concept.md` — Test Pollution anti-pattern
+- `agents/augur/memory/concepts/test-pollution/pattern.md` — Test Pollution anti-pattern
+- `agents/augur/memory/concepts/test-pollution/testing.md` — Test Pollution — testing guidance
+- `agents/augur/memory/concepts/tick-simulation/concept.md` — Tick-Based Simulation architectural pattern
+- `agents/augur/memory/concepts/tick-simulation/pattern.md` — Tick-Based Simulation architectural pattern
+- `agents/augur/memory/concepts/tick-simulation/testing.md` — Tick-Based Simulation — testing guidance
+- `agents/augur/memory/concepts/tight-coupling/concept.md` — Tight Coupling anti-pattern
+- `agents/augur/memory/concepts/tight-coupling/pattern.md` — Tight Coupling anti-pattern
+- `agents/augur/memory/concepts/time-series/concept.md` — Time-series data pattern for temporal metrics and event streams
+- `agents/augur/memory/concepts/timeout/concept.md` — Timeout architectural pattern
+- `agents/augur/memory/concepts/timeout/deployment.md` — Timeout — deployment guidance
+- `agents/augur/memory/concepts/timeout/monitoring.md` — Timeout — monitoring guidance
+- `agents/augur/memory/concepts/timeout/pattern.md` — Timeout architectural pattern
+- `agents/augur/memory/concepts/timeout/testing.md` — Timeout — testing guidance
+- `agents/augur/memory/concepts/token-auth/concept.md` — Token-Based Authentication (JWT) architectural pattern
+- `agents/augur/memory/concepts/token-auth/monitoring.md` — Token-Based Authentication (JWT) — monitoring guidance
+- `agents/augur/memory/concepts/token-auth/pattern.md` — Token-Based Authentication (JWT) architectural pattern
+- `agents/augur/memory/concepts/token-auth/testing.md` — Token-Based Authentication (JWT) — testing guidance
+- `agents/augur/memory/concepts/train-wreck/concept.md` — Train Wreck anti-pattern
+- `agents/augur/memory/concepts/train-wreck/pattern.md` — Train Wreck anti-pattern
+- `agents/augur/memory/concepts/training-pipeline/concept.md` — Training Pipeline architectural pattern
+- `agents/augur/memory/concepts/training-pipeline/monitoring.md` — Training Pipeline — monitoring guidance
+- `agents/augur/memory/concepts/training-pipeline/pattern.md` — Training Pipeline architectural pattern
+- `agents/augur/memory/concepts/training-pipeline/testing.md` — Training Pipeline — testing guidance
+- `agents/augur/memory/concepts/trie/concept.md` — Trie (Prefix Tree) architectural pattern
+- `agents/augur/memory/concepts/trie/pattern.md` — Trie (Prefix Tree) architectural pattern
+- `agents/augur/memory/concepts/trie/testing.md` — Trie (Prefix Tree) — testing guidance
+- `agents/augur/memory/concepts/unbounded-growth/concept.md` — Unbounded Growth anti-pattern
+- `agents/augur/memory/concepts/unbounded-growth/pattern.md` — Unbounded Growth anti-pattern
+- `agents/augur/memory/concepts/unit-of-work/concept.md` — Unit of Work architectural pattern
+- `agents/augur/memory/concepts/unit-of-work/pattern.md` — Unit of Work architectural pattern
+- `agents/augur/memory/concepts/unit-of-work/testing.md` — Unit of Work — testing guidance
+- `agents/augur/memory/concepts/value-object/concept.md` — Value Object architectural pattern
+- `agents/augur/memory/concepts/value-object/pattern.md` — Value Object architectural pattern
+- `agents/augur/memory/concepts/value-object/testing.md` — Value Object — testing guidance
+- `agents/augur/memory/concepts/versioned-document/concept.md` — Versioned document pattern with revision history and conflict resolution
+- `agents/augur/memory/concepts/visitor/concept.md` — Visitor architectural pattern
+- `agents/augur/memory/concepts/visitor/pattern.md` — Visitor architectural pattern
+- `agents/augur/memory/concepts/visitor/testing.md` — Visitor — testing guidance
+- `agents/augur/memory/concepts/webhook/concept.md` — Webhook architectural pattern
+- `agents/augur/memory/concepts/webhook/deployment.md` — Webhook — deployment guidance
+- `agents/augur/memory/concepts/webhook/monitoring.md` — Webhook — monitoring guidance
+- `agents/augur/memory/concepts/webhook/pattern.md` — Webhook architectural pattern
+- `agents/augur/memory/concepts/webhook/testing.md` — Webhook — testing guidance
+- `agents/augur/memory/concepts/websocket/concept.md` — WebSocket architectural pattern
+- `agents/augur/memory/concepts/websocket/deployment.md` — WebSocket — deployment guidance
+- `agents/augur/memory/concepts/websocket/monitoring.md` — WebSocket — monitoring guidance
+- `agents/augur/memory/concepts/websocket/pattern.md` — WebSocket architectural pattern
+- `agents/augur/memory/concepts/websocket/testing.md` — WebSocket — testing guidance
+- `agents/augur/memory/concepts/worker-pool/concept.md` — Worker/Thread Pool architectural pattern
+- `agents/augur/memory/concepts/worker-pool/monitoring.md` — Worker/Thread Pool — monitoring guidance
+- `agents/augur/memory/concepts/worker-pool/pattern.md` — Worker/Thread Pool architectural pattern
+- `agents/augur/memory/concepts/worker-pool/testing.md` — Worker/Thread Pool — testing guidance
+- `agents/augur/memory/concepts/workflow-engine/concept.md` — Workflow Engine architectural pattern
+- `agents/augur/memory/concepts/workflow-engine/deployment.md` — Workflow Engine — deployment guidance
+- `agents/augur/memory/concepts/workflow-engine/monitoring.md` — Workflow Engine — monitoring guidance
+- `agents/augur/memory/concepts/workflow-engine/pattern.md` — Workflow Engine architectural pattern
+- `agents/augur/memory/concepts/workflow-engine/testing.md` — Workflow Engine — testing guidance
+- `agents/augur/memory/concepts/workflow-state-machine/concept.md` — Workflow/state machine domain model — entities with defined states, transitions, and guards
+- `agents/augur/memory/concepts/write-behind/concept.md` — Write-Behind architectural pattern
+- `agents/augur/memory/concepts/write-behind/monitoring.md` — Write-Behind — monitoring guidance
+- `agents/augur/memory/concepts/write-behind/pattern.md` — Write-Behind architectural pattern
+- `agents/augur/memory/concepts/write-behind/testing.md` — Write-Behind — testing guidance
+- `agents/augur/memory/feedback-story-refs.md` — Story bold references must match atlas node IDs exactly, not internal class or module names
+- `agents/augur/memory/pending/klog.md` — klog library reference
+- `agents/augur/memory/pending/nokrashi-tools.md` — nokrashi-tools library reference
+- `agents/augur/memory/scratchpad.md` — Augur working notes and observations
+- `agents/augur/memory/tools.md` — Designer tools reference — Gemini MCP for architecture validation
+- `agents/augur/memory/workflow.md` — Designer review workflow — identify, compare, review, report
+- `agents/charon/memory/infra.md` — Infrastructure Reference
+- `agents/charon/memory/migration.md` — Full migration lifecycle for deployments
+- `agents/charon/memory/scratchpad.md` — Deployer working notes and observations
+- `agents/charon/memory/tools.md` — Deployer tools reference — postgres.py and local utilities
+- `agents/charon/memory/troubleshooting.md` — Common deployment issues and their fixes
+- `agents/main/memory/scratchpad.md` — Operational notes and observations
+- `agents/main/memory/workflow.md` — Main session workflow rules
+- `agents/sauron/memory/grafana_renderer.md` — Prioritize Grafana renderer for visual dashboard auditing over JSON-only analysis
+- `agents/sauron/memory/logging.md` — Structured logging standards across all projects
+- `agents/sauron/memory/monitoring.md` — Two-layer monitoring model — Alloy collects, Vitals evaluates
+- `agents/sauron/memory/scratchpad.md` — Sauron working notes and observations
+- `agents/sauron/memory/tools.md` — Sauron tools reference — klog, nokrashi-tools, Grafana MCP
+- `agents/sauron/memory/workflow.md` — Sauron workflow — understand, implement, validate, report
+- `agents/scribe/memory/scratchpad.md` — Scribe working notes and observations
+- `agents/scribe/memory/skill-marketplace-evaluation.md` — Evaluation of external skill marketplaces (anthropic-agent-skills, alirezarezvani/claude-skills) for integration into deployer, sauron, designer, scribe — verdicts, priorities, cross-agent dependencies
+- `agents/scribe/memory/templates/agents/sauron/metrics.md` — Template for project metrics documentation
+- `agents/scribe/memory/templates/agents/sauron/vitals.md` — Template for project vitals documentation
+- `agents/scribe/memory/tools.md` — Scribe tools reference — Gemini MCP for doc review
+- `agents/scribe/memory/workflow.md` — Scribe authentication and write workflow
+- `agents/warden/memory/scratchpad.md` — Warden working notes and observations
+
+## Routes
+
+- `agents/warden/routes.yaml` — warden route: scan_secrets
+- `agents/warden/routes.yaml` — warden route: sanitize_content
+- `agents/warden/routes.yaml` — warden route: validate_output
+
+## Shared
+
+- `shared/auth-protocol.md` — Instructs agents to authenticate before guarded operations
+- `shared/credentials-protocol.md` — All credentials managed through pass store — never hardcoded in manifests or config
+- `shared/gemini-protocol.md` — How to call the Gemini CLI for peer review and second opinions
+- `shared/memory-protocol.md` — Instructs agents to save insights to memory before finishing
+- `shared/shared/auth-protocol.md` — Instructs agents to authenticate before guarded operations
+- `shared/shared/credentials-protocol.md` — All credentials managed through pass store — never hardcoded in manifests or config
+- `shared/shared/memory-protocol.md` — Instructs agents to save insights via /kord remember before finishing
