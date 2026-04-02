@@ -36,5 +36,12 @@
     "owner": "alfred",
     "validation": "alfred"
   },
+  {
+    "type": "file",
+    "path": "profile/overlays/platform/",
+    "description": "Platform overlays — per-environment agent pod scaling (KEDA) and resource limits",
+    "owner": "alfred",
+    "validation": "alfred"
+  },
   {"type":"resource","name":"environment","agent":"alfred","description":"Deployment preflight status — profile config, overlay validity, credentials.","scope":"global","guidelines":"Run a quick preflight check. Verify profile config, overlay validity, and pass store credential existence. Return ready/not-ready with issues. Keep under 30 lines.","cache":{"max_age":"7d","inputs":["profile/config.yaml","profile/overlays/"],"threshold":0.05,"stale_threshold":0.30}}
 ]

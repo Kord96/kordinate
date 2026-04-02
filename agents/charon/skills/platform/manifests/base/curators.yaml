@@ -3,13 +3,12 @@
 # Consumes memory.updates.<agent>, merges into shared PVC, updates CLAUDE.md.
 # v2: Uses Anthropic Haiku for semantic deduplication.
 #     Routes memory to memory/global/ or memory/projects/<project>/ based on scope.
-#     Requires Secret 'anthropic-api' in namespace 'dev' with key 'api-key'.
+#     Requires Secret 'anthropic-api' with key 'api-key'.
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: curator-augur
-  namespace: dev
   labels: { app: kord-curator, agent: augur }
 spec:
   replicas: 1
@@ -55,7 +54,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: curator-charon
-  namespace: dev
   labels: { app: kord-curator, agent: charon }
 spec:
   replicas: 1
@@ -101,7 +99,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: curator-warden
-  namespace: dev
   labels: { app: kord-curator, agent: warden }
 spec:
   replicas: 1
@@ -147,7 +144,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: curator-sauron
-  namespace: dev
   labels: { app: kord-curator, agent: sauron }
 spec:
   replicas: 1
@@ -193,7 +189,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: curator-scribe
-  namespace: dev
   labels: { app: kord-curator, agent: scribe }
 spec:
   replicas: 1
@@ -239,7 +234,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: curator-alfred
-  namespace: dev
   labels: { app: kord-curator, agent: alfred }
 spec:
   replicas: 1

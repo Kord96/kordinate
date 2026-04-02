@@ -3,16 +3,14 @@
 # Agents are project-agnostic; runner injects project context (name, memory paths) per-job.
 # Init container sets up /kord/agents/<name>/ with memory/global/ and memory/projects/ dirs.
 # Claude loads CLAUDE.md natively with @ imports for identity, memory, and team awareness.
-# KEDA ScaledObjects control replicas (see dev-agents-keda.yaml).
+# KEDA ScaledObjects control replicas (see keda.yaml).
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-augur
-  namespace: dev
   labels: { app: kord-agent, agent: augur }
 spec:
-  replicas: 1
   selector:
     matchLabels: { app: kord-agent, agent: augur }
   template:
@@ -74,10 +72,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-charon
-  namespace: dev
   labels: { app: kord-agent, agent: charon }
 spec:
-  replicas: 1
   selector:
     matchLabels: { app: kord-agent, agent: charon }
   template:
@@ -138,10 +134,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-warden
-  namespace: dev
   labels: { app: kord-agent, agent: warden }
 spec:
-  replicas: 1
   selector:
     matchLabels: { app: kord-agent, agent: warden }
   template:
@@ -201,10 +195,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-sauron
-  namespace: dev
   labels: { app: kord-agent, agent: sauron }
 spec:
-  replicas: 0
   selector:
     matchLabels: { app: kord-agent, agent: sauron }
   template:
@@ -264,10 +256,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-scribe
-  namespace: dev
   labels: { app: kord-agent, agent: scribe }
 spec:
-  replicas: 0
   selector:
     matchLabels: { app: kord-agent, agent: scribe }
   template:
@@ -327,10 +317,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent-alfred
-  namespace: dev
   labels: { app: kord-agent, agent: alfred }
 spec:
-  replicas: 0
   selector:
     matchLabels: { app: kord-agent, agent: alfred }
   template:

@@ -1,0 +1,15 @@
+# Resource limit overrides for dev environment.
+# Base defaults are already dev-appropriate; add patches here if needed.
+# Example:
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: agent-augur
+# spec:
+#   template:
+#     spec:
+#       containers:
+#         - name: agent
+#           resources:
+#             requests: { cpu: 200m, memory: 1Gi }
+#             limits: { memory: 8Gi }
