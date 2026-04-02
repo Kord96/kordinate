@@ -1,6 +1,7 @@
 # Agent pod Deployments — pod = persistent Claude session.
 # Each pod runs the stream-json bridge (runner.js) with Claude as a long-lived process.
-# Init container sets up the agent project directory (/kord/agents/<name>/).
+# Agents are project-agnostic; runner injects project context (name, memory paths) per-job.
+# Init container sets up /kord/agents/<name>/ with memory/global/ and memory/projects/ dirs.
 # Claude loads CLAUDE.md natively with @ imports for identity, memory, and team awareness.
 # KEDA ScaledObjects control replicas (see dev-agents-keda.yaml).
 ---
@@ -49,6 +50,7 @@ spec:
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: PROJECTS_ROOT, value: /kord/projects }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -114,6 +116,7 @@ spec:
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: PROJECTS_ROOT, value: /kord/projects }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -176,6 +179,7 @@ spec:
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: PROJECTS_ROOT, value: /kord/projects }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -238,6 +242,7 @@ spec:
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: PROJECTS_ROOT, value: /kord/projects }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -300,6 +305,7 @@ spec:
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: PROJECTS_ROOT, value: /kord/projects }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -362,6 +368,7 @@ spec:
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /kord/kordinate }
+            - { name: PROJECTS_ROOT, value: /kord/projects }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
