@@ -65,6 +65,9 @@ docs/.source-hashes/
 # MkDocs build output
 site/
 
+# Dependencies
+node_modules/
+
 # Legacy
 __pycache__/
 .merge-lock/
