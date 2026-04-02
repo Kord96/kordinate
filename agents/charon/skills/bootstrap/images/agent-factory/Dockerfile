@@ -1,6 +1,6 @@
 FROM node:22-alpine
 
-RUN apk add --no-cache git gnupg pass bash
+RUN apk add --no-cache git gnupg pass bash python3 py3-yaml
 
 # Create claude user (match workstation UID for shared PVC)
 RUN adduser -D -s /bin/bash -h /home/claude claude
@@ -18,4 +18,4 @@ USER claude
 WORKDIR /home/claude
 
 ENTRYPOINT ["/bin/bash", "-c"]
-CMD ["exec node $KORDINATE_HOME/lib/mcp-agent-server/server.js"]
+CMD ["exec node $KORDINATE_HOME/lib/agent-runner/runner.js"]
