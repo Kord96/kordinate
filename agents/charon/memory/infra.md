@@ -61,6 +61,15 @@ Single PVC `agent-runtime` mounted at `/kord` provides shared memory, repos, and
 Caddy runs inside the workstation pod. Charon patches the Caddy ConfigMap to add/remove routes
 for services (docs, dashboards, etc.). The workstation also hosts development tools.
 
+### Docs Site
+
+Astro + Starlight at `docs.khaledkord.com`. Deployment in master namespace with git-sync
+(pulls Kord96/kordinate-docs every 3s). Has password auth via Vite plugin — cookie-based,
+no OAuth. Passwords managed by alfred (`kordinate/docs/dev_password`, `kordinate/docs/guest_password`).
+
+Headless access: `curl -b "dev-auth=ok" http://docs.master.svc.cluster.local:80/...`
+or POST to `/dev/login` with `password=<dev_password>&role=admin`.
+
 ## Dev Deployment Model
 
 Dev services use **git-sync sidecar** pattern (see `docs.yaml` for reference):
