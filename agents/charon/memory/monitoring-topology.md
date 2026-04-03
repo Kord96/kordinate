@@ -1,115 +1,93 @@
-# Monitoring Infrastructure — Config & Topology
+---
+description: Monitoring Infrastructure Topology
+---
+# Monitoring Topology
 
-## Design Philosophy
+Canonical source: `memory/global/infra-atlas.json` (observability section).
+This file documents the monitoring architecture and operational patterns.
 
-Clusters are standalone and unaware of the master. The master pulls from clusters via Tailscale gateway. Each cluster operates independently — if the master goes down, local monitoring continues uninterrupted.
+## Stack Overview
 
-## Tailscale Gateway Topology
-
-### Mesh Endpoints
-
-| Cluster | Tailscale IP | Exposed Ports | Services |
-|---------|-------------|---------------|----------|
-| vandc | 100.107.8.117 | 9090, 9000 | Prom, MinIO |
-| home | 100.113.48.89 | 9090 | Prom |
-
-### Cross-Cluster Access Pattern
-
-Master Alloy reaches cluster services through Tailscale IPs:
-- **Metrics federation**: `GET http://<tailscale-ip>:9090/federate` (vandc, home)
-- **Log federation**: puller sidecar fetches from `http://<tailscale-ip>:9000/federate/` (MinIO bucket in gateway namespace)
-- **Vitals cross-namespace**: queries `gateway.gateway.svc.cluster.local:9090` (within vandc cluster)
-
-## Service Endpoints
-
-### Vandc Cluster — monitor namespace
-| Service | Port | Retention | Notes |
-|---------|------|-----------|-------|
-| Gateway Alloy | — | — | Scrapes pods (prometheus.io annotations), kubelet/cAdvisor, KSM, Kafka JMX, node-exporter. Injects `cluster=vandc`. |
-| Gateway Prometheus | 9090 | cluster-defined | Short-term buffer. Exposed over Tailscale. |
-| Gateway Loki | 3100 | 30d | Rate limit: 16MB/s ingestion. Exposed over Tailscale. |
-| Tailscale sidecar | 9090, 9000 | — | Mesh gateway exposing Prom /federate, MinIO |
-
-### Master Cluster — master namespace
-| Service | Port | Retention | Notes |
-|---------|------|-----------|-------|
-| Master Alloy | — | — | Pulls /federate from vandc (100.107.8.117:9090) and home (100.113.48.89:9090) for metrics. Puller sidecar fetches logs from vandc MinIO (100.107.8.117:9000). |
-| Master Prometheus | 9191 | 30d | Aggregated long-term metrics storage |
-| Master Loki | 3100 | 30d | Aggregated logs |
-| Grafana | — | — | Reads from Master Prom and Loki. Dashboards provisioned via ConfigMaps. |
-
-### Vandc Cluster — prod namespace
-| Service | Port | Notes |
-|---------|------|-------|
-| Vitals | — | Alert evaluator. Queries gateway Prom cross-namespace. 12 evaluation sections. |
-| MinIO | — | Snapshot backend (SNAPSHOT_BACKEND=minio). S3-compatible. NOT scraped by Prometheus (gap). Exposes metrics at /minio/v2/metrics/cluster. |
-
-## Config File Locations
-
-### Monitoring Stack Configs (profile repo)
-| Config | Path |
-|--------|------|
-| Gateway Alloy | `~/.claude/agents/charon/manifests/monitor/base/alloy.yaml` |
-| Master Alloy | `~/.claude/agents/charon/manifests/master/base/alloy.yaml` |
-| Gateway Prometheus | `~/.claude/agents/charon/manifests/monitor/base/prometheus.yaml` |
-
-### Application Monitoring Configs (logBD repo)
-| Config | Path |
-|--------|------|
-| Vitals deployment | `/home/claude/logbd/deploy/graphdb/monitoring/vitals.yaml` |
-| MinIO deployment | `/home/claude/logbd/deploy/graphdb/storage/minio.yaml` |
+| Component | Namespace | Endpoint | Purpose |
+|-----------|-----------|----------|---------|
+| Alloy | `monitor` | -- | Collects agent logs from kord namespace, ships to Loki |
+| Alloy | `master` | -- | Aggregates metrics + logs from all sources |
+| Prometheus | `master` | `prometheus.master.svc.cluster.local:9090` | Metrics store (30d retention) |
+| Loki | `master` | `loki.master.svc.cluster.local:3100` | Log store (30d retention) |
+| Grafana | `master` | `grafana.master.svc.cluster.local:3000` | Dashboards (external: `grafana.khaledkord.com`) |
 
 ## Data Flow
 
 ```
-Pod metrics → Gateway Alloy scrapes → Gateway Prom (cluster-defined) → Master Alloy federates (:9090/federate) → Master Prom (30d) → Grafana
-Pod logs    → Gateway Alloy tails   → Gateway Loki (30d)            → sidecar → MinIO (:9000) → puller → Alloy tails → Master Loki (30d) → Grafana
+Agent pods (kord) -> monitor Alloy collects logs -> Loki (master)
+App pods (/metrics) -> master Alloy scrapes (annotation-based) -> Prometheus (master)
+Pod stdout (JSON) -> master Alloy tails -> Loki (master)
+Grafana reads from Prometheus + Loki in master namespace
 ```
 
-## Vitals Details
+Agent logs flow through the `monitor` namespace Alloy, which ships them to Loki in `master`.
+Application metrics use annotation-based discovery (`prometheus.io/scrape=true`).
 
-- **Location**: prod namespace, vandc cluster
-- **Prometheus endpoint**: `gateway.gateway.svc.cluster.local:9090` (cross-namespace)
-- **12 evaluation sections**: process status, ingestion, buffers, enrichment, downloads, derived, storage, dependencies, clock skew, FD exhaustion, DB sizes, composites
-- **KNOWN GAP**: Vitals does not check MinIO health (now a critical dependency after snapshot migration)
+## Alloy Deployment
 
-## MinIO Gap
+Two Alloy instances serve different roles:
 
-- MinIO is deployed in prod namespace as the snapshot backend (SNAPSHOT_BACKEND=minio)
-- It is NOT scraped by Prometheus — no metrics are collected
-- It exposes metrics at `/minio/v2/metrics/cluster` (available but unused)
-- Neither Gateway Alloy nor Vitals monitor MinIO health
-- This is a critical gap since snapshots depend entirely on MinIO availability
+- **monitor/Alloy** -- Dedicated to collecting agent platform logs from the `kord` namespace. Ships structured JSON logs to Loki in master.
+- **master/Alloy** -- Handles metrics scraping (annotation-based pod discovery, kubelet/cAdvisor, KSM, node-exporter) and log tailing. Writes to local Prometheus and Loki.
+
+## Vitals Model
+
+Vitals are **standalone deployments** (one per app, not sidecars):
+- Port 9131, health gauges: `vitals_<section>{check}` (tri-state: 0=FAIL, 1=WARNING, 2=OK)
+- Queries Prometheus + Loki for app-level health evaluation
+- Required evaluations: `process`, `deps`
+- Meta-alert: `VitalsMissing: absent(vitals_process{app='<name>'}) for 5m`
+
+Env vars per vitals deployment:
+- `PROMETHEUS_URL=http://prometheus.master.svc.cluster.local:9191`
+- `LOKI_URL=http://loki.master.svc.cluster.local:3100`
+- `APP_NAME=<app label>`
+
+## Ownership
+
+| Domain | Owner |
+|--------|-------|
+| Dashboard JSON content, alert rule design | **Sauron** |
+| Monitoring infrastructure deployment | **Charon** |
+| Grafana credentials | **Alfred** (via pass store) |
 
 ## Dashboard Provisioning
 
-Grafana dashboards are provisioned via ConfigMaps (GitOps-compatible). Sauron owns dashboard content; deployer creates the ConfigMaps and patches the Grafana deployment at deploy time.
+Dashboards are provisioned via ConfigMaps (GitOps-compatible):
 
-The base `grafana.yaml` is generic — no project-specific references. Dashboard volumes are added via a JSON patch from the project profile.
+1. `kubectl apply -f grafana.yaml` -- generic base (no dashboards)
+2. Create ConfigMaps from dashboard JSON sources in master namespace
+3. Patch Grafana deployment to mount the ConfigMap volumes
 
-### Deploy flow
+| ConfigMap | Source | Content |
+|-----------|--------|---------|
+| `grafana-db-<project>` | `<project-repo>/monitoring/dashboards/*.json` | Project dashboards |
+| `grafana-db-<project>-drill` | `<project-repo>/monitoring/dashboards/drill/*.json` | Drill-down dashboards |
+| `grafana-db-infra` | Sauron's dashboard memory | Infrastructure dashboards |
 
-1. `kubectl apply -f grafana.yaml` — generic base (no dashboards)
-2. Create ConfigMaps from dashboard sources:
-   ```
-   kubectl create configmap grafana-db-<project> --from-file=<project-repo>/monitoring/dashboards/ -n master
-   kubectl create configmap grafana-db-<project>-drill --from-file=<project-repo>/monitoring/dashboards/drill/ -n master
-   kubectl create configmap grafana-db-infra --from-file=~/.claude/agent-memory/sauron/dashboards/ -n master
-   ```
-3. `kubectl patch deployment grafana -n master --type=json -p "$(cat <project-repo>/monitoring/grafana-dashboards-patch.json)"`
+Sauron owns dashboard content. Charon creates ConfigMaps and patches the Grafana deployment.
 
-### ConfigMap → source mapping
+## Observability Signals
 
-| ConfigMap | Source path | Content |
-|-----------|------------|---------|
-| `grafana-db-<project>` | `<project-repo>/monitoring/dashboards/*.json` | Project-specific dashboards |
-| `grafana-db-<project>-drill` | `<project-repo>/monitoring/dashboards/drill/*.json` | Project drill-down dashboards |
-| `grafana-db-infra` | `agent-memory/sauron/dashboards/*.json` | General infra dashboards |
+| Signal | Source | Collection |
+|--------|--------|------------|
+| App metrics | Pod `/metrics` | Pull, annotation-based discovery |
+| App logs | Pod stdout (JSON) | Pull, K8s API tail |
+| Container resources | Kubelet cAdvisor | Pull, all nodes |
+| Cluster state | KSM `:8080/metrics` | Pull |
+| Host metrics | node-exporter `:9100` | Pull, DaemonSet |
+
+Required log fields: `level`, `component`, `event`, `timestamp`.
+Required labels: `app` (pod label, used by Alloy for discovery).
 
 ## Operational Notes
 
-- Gateway Prometheus retention is cluster-defined — it is a buffer, not long-term storage
-- Master owns all long-term data (30d retention for both Prom and Loki)
-- The `cluster` label is injected by Gateway Alloy from `CLUSTER_NAME` env var (sourced from `cluster-identity` ConfigMap)
-- Metrics federation pulls from Gateway Prom `/federate` — never add direct pod scraping to Master Alloy
-- Log federation uses MinIO in gateway namespace — puller sidecar on master fetches via Tailscale :9000
+- Scrape discovery is annotation-based -- add `prometheus.io/scrape: "true"` and `prometheus.io/port` to pod annotations
+- The `cluster` label is injected by Alloy from `CLUSTER_NAME` env (sourced from `cluster-identity` ConfigMap)
+- Cluster is `homeserver` (ottawa) -- single-cluster setup, no federation needed
+- See infra-atlas `new_workload_contract` for full observability requirements on new workloads
