@@ -77,31 +77,6 @@ normalize_api_key_env() {
   esac
 }
 
-normalize_model_for_profile() {
-  local profile="$1"
-  local model="$2"
-  local base_url="$3"
-
-  case "$profile:$model" in
-    anthropic:sonnet) echo "claude-sonnet-4-6" ;;
-    anthropic:opus) echo "claude-opus-4-6" ;;
-    anthropic:haiku) echo "claude-haiku-4-5-20251001" ;;
-    openai:chat)
-      if [[ "$base_url" == *deepseek* ]]; then echo "deepseek-chat"; else echo "$model"; fi
-      ;;
-    openai:reasoner)
-      if [[ "$base_url" == *deepseek* ]]; then echo "deepseek-reasoner"; else echo "$model"; fi
-      ;;
-    openai:deepseek-v3p2)
-      if [[ "$base_url" == *fireworks* ]]; then echo "accounts/fireworks/models/deepseek-v3p2"; else echo "$model"; fi
-      ;;
-    openai:deepseek-r1)
-      if [[ "$base_url" == *fireworks* ]]; then echo "accounts/fireworks/models/deepseek-r1"; else echo "$model"; fi
-      ;;
-    *) echo "$model" ;;
-  esac
-}
-
 deploy_agent() {
   local AGENT="$1"
   local SRC="$REPO/agents/$AGENT"
@@ -216,7 +191,6 @@ deploy_agent() {
       ;;
   esac
 
-  MODEL=$(normalize_model_for_profile "$PROFILE" "$MODEL" "$BASE_URL")
   BACKEND_NAME=$(normalize_backend_name "$PROFILE" "$MODEL" "$BASE_URL" "$BACKEND_NAME")
   API_KEY_ENV=$(normalize_api_key_env "$PROFILE" "$BASE_URL" "$BACKEND_NAME" "$API_KEY_ENV")
   PROVIDER="$PROFILE"

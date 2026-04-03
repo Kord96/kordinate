@@ -21,6 +21,9 @@ This keeps single-backend agents simple.
 
 ### 2. deploy-runtime generates two runtime files
 
+The generic `BACKENDS.json` format is documented in `shared/openclaude-backends-schema.md` and can be used by any agent.
+
+
 For each runtime agent directory, `lib/scripts/deploy-runtime.sh` now writes:
 
 - `.openclaude-profile.json`
@@ -136,6 +139,7 @@ That gives:
 ### Done
 - OpenClaude is the harness runtime
 - deploy-runtime generates normalized backend config
+- daemon backend selection is driven by backend entries rather than legacy model maps
 - daemon selects a backend and hydrates env at runtime
 - router preserves backend attribution in delegated responses
 - helper scripts match the new per-agent runtime model
