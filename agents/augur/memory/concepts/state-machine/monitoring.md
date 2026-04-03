@@ -1,13 +1,23 @@
 ---
 description: State Machine — monitoring guidance
-type: supplementary
 ---
-# Monitoring
+## Monitoring
 
-- Track state transition counts per (source_state, event, target_state) tuple to detect unexpected paths
-- Alert on rejected transitions — high rejection rates indicate callers sending invalid events
-- Monitor time spent in each state to detect entities stuck in non-terminal states
-- Track concurrent transition attempts on the same entity (race condition indicator)
-- Alert on entities that have not progressed from a given state within an expected time window
-- Dashboard showing state distribution: count of entities in each state over time
-- Monitor guard condition evaluation failures to detect misconfigurations or data issues
+Track state distributions, transition activity, and stuck entities to ensure the machine progresses correctly.
+
+### Key Metrics
+
+- `state_machine_transitions_total` (counter) — transitions partitioned by source state, event, and target state
+- `state_machine_rejected_transitions_total` (counter) — invalid transition attempts (caller sending wrong events)
+- `state_machine_state_duration_seconds` (histogram) — time entities spend in each state before transitioning
+- `state_machine_entities_by_state` (gauge) — count of entities currently in each state
+- `state_machine_concurrent_transition_attempts_total` (counter) — simultaneous transitions on the same entity (race indicator)
+- `state_machine_guard_failures_total` (counter) — guard condition evaluation failures per transition
+
+### Alerts
+
+- Entity stuck in a non-terminal state beyond the expected time window
+- Rejected transition rate elevated (callers sending invalid events for the current state)
+- Concurrent transition attempts detected on the same entity (race condition)
+- Unexpected transition path appearing (source-event-target tuple not in the defined table)
+- Guard condition failures spiking (data issues or misconfiguration)

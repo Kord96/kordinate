@@ -1,13 +1,23 @@
 ---
 description: Server-Sent Events — monitoring guidance
-type: supplementary
 ---
-# Monitoring
+## Monitoring
 
-- Track concurrent SSE connection count per server instance and alert when approaching limits
-- Monitor event delivery latency from generation to client receipt
-- Alert on connection drop rates — high disconnection frequency indicates network or server issues
-- Track reconnection attempts via `Last-Event-ID` to measure resume reliability
-- Monitor server memory and file descriptor usage — each SSE connection holds an open connection
-- Dashboard showing active connections, events/second, and client distribution across instances
-- Alert when event backlog grows (server generating faster than clients can consume)
+Track connection lifecycle, event delivery throughput, and per-instance resource usage for SSE streams.
+
+### Key Metrics
+
+- `sse_active_connections` (gauge) — concurrent SSE connections per server instance
+- `sse_event_delivery_latency_seconds` (histogram) — time from event generation to client receipt
+- `sse_disconnections_total` (counter) — client disconnections partitioned by reason (client-close, timeout, error)
+- `sse_reconnections_total` (counter) — reconnection attempts tracked via Last-Event-ID header
+- `sse_events_sent_total` (counter) — events pushed to clients, partitioned by event type
+- `sse_event_backlog` (gauge) — queued events not yet delivered to consumers
+
+### Alerts
+
+- Active connection count approaching server or file descriptor limits
+- Event delivery latency exceeding acceptable threshold for the use case
+- High disconnection rate indicating network instability or server resource pressure
+- Event backlog growing (server producing faster than clients can consume)
+- Server memory or file descriptor usage elevated due to connection accumulation

@@ -1,13 +1,23 @@
 ---
 description: Cron/Scheduler — monitoring guidance
-type: supplementary
 ---
-# Monitoring
+## Monitoring
 
-- Track job execution duration, start/end timestamps, and success/fail counts per job name
-- Alert on missed schedules — if a job expected every 5 minutes has no run in 10 minutes, fire an alert
-- Monitor overlapping executions — concurrent runs of the same job indicate missing overlap protection
-- Track retry counts and dead-letter queue depth for failed jobs
-- Alert on job duration drift — a job that normally takes 30s suddenly taking 5m signals degradation
-- Dashboard showing last-run status per job with time-since-last-success
-- Monitor scheduler process health separately from job health (scheduler crash = all jobs stop)
+Track job execution health, schedule adherence, and scheduler process availability.
+
+### Key Metrics
+
+- `scheduler_job_duration_seconds` (histogram) — execution time per job name, detects performance drift
+- `scheduler_job_runs_total` (counter) — job executions partitioned by job name and status (success/failure)
+- `scheduler_missed_schedules_total` (counter) — expected runs that did not fire within the tolerance window
+- `scheduler_overlapping_runs` (gauge) — concurrent executions of the same job (should be 0 with overlap protection)
+- `scheduler_retry_total` (counter) — retry attempts per job, indicates transient or persistent failures
+- `scheduler_dead_letter_queue_depth` (gauge) — failed jobs awaiting manual intervention
+
+### Alerts
+
+- Job has not run within twice the expected schedule interval (missed schedule)
+- Job duration exceeds historical p99 by a significant margin (execution drift)
+- Overlapping executions detected for a job that should run exclusively
+- Scheduler process health check failing (all jobs stop if the scheduler crashes)
+- Dead-letter queue depth growing steadily (unresolved job failures)
