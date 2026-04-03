@@ -80,6 +80,29 @@ deploy_agent() {
     done
   fi
 
+  # Generate CLAUDE.md — Claude needs this to discover identity and skills
+  {
+    echo "@identity.md"
+    echo ""
+    # List available skills
+    if [ -d "$DST/skills" ]; then
+      echo "## Skills"
+      echo ""
+      for skill_dir in "$DST/skills"/*/; do
+        [ -d "$skill_dir" ] || continue
+        local sname=$(basename "$skill_dir")
+        if [ -f "$skill_dir/SKILL.md" ]; then
+          # Extract skill description from frontmatter
+          local sdesc=$(sed -n 's/^description: *//p' "$skill_dir/SKILL.md" | head -1 | sed 's/^> *//')
+          echo "- /$sname — $sdesc"
+        else
+          echo "- /$sname"
+        fi
+      done
+    fi
+  } > "$DST/CLAUDE.md"
+  log "  CLAUDE.md generated"
+
   log "  done"
 }
 
