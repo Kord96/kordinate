@@ -36,7 +36,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              mkdir -p "$HOME/.claude"
+              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
               cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
@@ -101,7 +102,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              mkdir -p "$HOME/.claude"
+              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
               cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
@@ -166,7 +168,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              mkdir -p "$HOME/.claude"
+              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
               cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
@@ -231,7 +234,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              mkdir -p "$HOME/.claude"
+              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
               cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
@@ -296,7 +300,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
+              mkdir -p "$HOME/.claude"
+              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
               cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
