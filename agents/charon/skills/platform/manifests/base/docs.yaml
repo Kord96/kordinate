@@ -32,6 +32,16 @@ spec:
               exec npm run dev -- --host 0.0.0.0
           env:
             - { name: CHOKIDAR_USEPOLLING, value: "true" }
+            - name: DEV_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: docs-auth
+                  key: dev-password
+            - name: GUEST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: docs-auth
+                  key: guest-password
           ports:
             - { containerPort: 4321 }
           volumeMounts:
