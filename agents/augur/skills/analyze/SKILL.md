@@ -41,7 +41,7 @@ CURRENT_SHA=$(git -C $ROOT rev-parse HEAD)
 ```
 
 If `$PREV_SHA` is empty or doesn't exist in git history: **mode = FULL**.
-If `$PREV_SHA == $CURRENT_SHA`: **mode = SKIP** — nothing changed, report "atlas is current" and exit.
+If `$PREV_SHA == $CURRENT_SHA`: **mode = SKIP** — nothing changed. Report "Atlas is current at SHA $CURRENT_SHA. No changes." and **exit immediately**. Do NOT read any source files, do NOT verify references, do NOT refine the atlas. Just report and stop.
 
 Otherwise, get the diff:
 
