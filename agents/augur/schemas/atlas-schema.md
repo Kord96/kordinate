@@ -189,7 +189,11 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
         {"component": "<component-id>", "effect": "<what happens>"}
       ],
       "impact": "<what end users experience>",
-      "detection": ["<signal — metric, log, error, or 'none'>"],
+      "detection": {
+        "signals": ["<observable symptom — metric behavior, log pattern, error type>"],
+        "concern": "<abstract category: dependency-availability | data-integrity | throughput | latency | resource-exhaustion | state-consistency>",
+        "source_pattern": "<concept name if detection derives from a known pattern, else null>"
+      },
       "recovery": ["<step — automatic or manual>"],
       "severity": "critical | high | medium | low",
       "grounded_in": ["<file:line>"]
@@ -489,7 +493,7 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
 - **Components should number 5-10** for most projects. >12 means not abstracting enough. <4 means over-abstracting
 - **Groups must number 3-5.** This is a hard constraint. If you have more, merge related groups. If you have fewer, the project may be too small to warrant grouping.
 - **Flows trace critical paths**, not every code path. 2-6 flows typical across all types
-- **Failure modes should cover** every external dependency and every stateful component
+- **Failure modes should cover** every external dependency and every stateful component. The `detection` field is structured: `signals` are observable symptoms (metric behavior, log patterns), `concern` is an abstract category (dependency-availability, data-integrity, throughput, latency, resource-exhaustion, state-consistency), and `source_pattern` links to the concept catalog entry the detection derives from. This structure is portable — any ops team can implement the signals in their monitoring stack. For /design, detection concerns are derived from the selected patterns' monitoring.md files
 - Components nest via `children`. Don't nest deeper than the code's natural structure
 - `deployment` field enables the deployment viewpoint. Only add to components that map to a k8s workload
 - `technology` on flow steps enables annotated sequence diagrams

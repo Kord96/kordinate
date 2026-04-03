@@ -143,7 +143,10 @@ Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../.
 - **detected_patterns** — all selected patterns, `confidence: 1.0`, `source: "design"`
 - **flows** — designed data flows based on communication patterns
 - **external_dependencies** — with endpoints from infra atlas
-- **failure_modes** — anticipated failures from resilience patterns
+- **failure_modes** — anticipated failures from resilience patterns. For each failure mode,
+  populate `detection` with structured fields: `signals` (from the pattern's monitoring.md
+  Key Metrics), `concern` (abstract category), `source_pattern` (concept name). These
+  are portable — sauron maps them to Prometheus queries and vitals evaluations
 - **domain_model** — from the data patterns
 - **debt** — empty (score: 0, grade: A)
 - **metadata.analysis_mode** — `"design"`
