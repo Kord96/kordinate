@@ -19,8 +19,8 @@ this skill repeatedly as the design progresses.
 |------|-------------|-------|--------|
 | (none) | Recommend patterns | Requirements in prompt | Pattern recommendations |
 | `--patterns "p1,p2,..."` | Generate design atlas | Approved pattern list | design-atlas.json + stories + journeys |
-| `--approve` | Generate agent specs | Existing design atlas | monitoring/deployment/test specs |
-| `--scaffold` | Generate code + repo | Approved design + specs | GitHub repo with stubs |
+| `--approve` | Lock design | Existing design atlas | Status → approved |
+| `--scaffold` | Generate code + repo | Approved atlas + stories | GitHub repo with stubs |
 
 ## Shared References
 
@@ -151,10 +151,7 @@ Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../.
 - **debt** — empty (score: 0, grade: A)
 - **metadata.analysis_mode** — `"design"`
 - **metadata.status** — `"draft"`
-- **metadata.patterns_with_monitoring** — patterns that have monitoring.md
-- **metadata.patterns_with_tests** — patterns that have testing.md
-- **metadata.patterns_with_deployment** — patterns that have deployment.md
-- **metadata.new_infrastructure** — services not in infra atlas
+- **metadata.new_infrastructure** — services not in infra atlas that charon needs to provision
 
 ### Step 4 — Compose stories and journeys
 
@@ -192,97 +189,30 @@ Review the design. Then:
 
 Invoked: `/design orders --approve`
 
-### Step 1 — Read design atlas
+### Step 1 — Verify
 
 Read `$MEM/design-atlas.json`. Verify `metadata.status` is `"draft"`.
 
-### Step 2 — Generate monitoring spec
-
-For each pattern in `metadata.patterns_with_monitoring`:
-1. Read `memory/global/concepts/<pattern>/monitoring.md`
-2. Extract metrics, alerts, dashboard guidance
-
-Write `$MEM/monitoring-spec.yaml`:
-```yaml
-version: "1"
-project: <name>
-source: design-atlas.json
-contract:  # from infra-atlas new_workload_contract.observability
-metrics:
-  - name: <metric>
-    type: counter|gauge|histogram
-    labels: [<labels>]
-    pattern: <source pattern>
-alerts:
-  - name: <alert>
-    condition: <from monitoring.md>
-    severity: critical|warning
-    pattern: <source pattern>
-  - name: VitalsMissing
-    condition: absent(vitals_process{app="<name>"}) for 5m
-    severity: critical
-    pattern: vitals-meta
-dashboards:
-  - name: <dashboard>
-    panels: [<metric references>]
-vitals:
-  # Standalone deployment — evaluates app health by querying Prometheus
-  deployment: standalone
-  port: 9131
-  prometheus_url: "http://prometheus.master.svc.cluster.local:9191"
-  loki_url: "http://loki.master.svc.cluster.local:3100"
-  evaluations:
-    - section: process
-      description: "Is the main process alive?"
-    - section: deps
-      description: "Are external dependencies reachable?"
-    # Additional sections derived from selected patterns:
-    # e.g., circuit-breaker → vitals_deps check for circuit state
-    # e.g., consumer-group → vitals_ingestion check for consumer lag
-```
-
-### Step 3 — Generate deployment spec
-
-For each pattern in `metadata.patterns_with_deployment`:
-1. Read `memory/global/concepts/<pattern>/deployment.md`
-2. Extract rollout concerns and pre-deploy checklist
-
-Write `$MEM/deployment-spec.yaml`:
-```yaml
-version: "1"
-project: <name>
-source: design-atlas.json
-contract:  # from infra-atlas new_workload_contract
-rollout_concerns:
-  - pattern: <pattern>
-    concern: <from deployment.md>
-    pre_deploy: <checklist item>
-new_infrastructure:  # from metadata.new_infrastructure
-```
-
-### Step 4 — Generate test spec
-
-For each pattern in `metadata.patterns_with_tests`:
-1. Read `memory/global/concepts/<pattern>/testing.md`
-2. Extract test cases by category
-
-Write `$MEM/test-spec.yaml`:
-```yaml
-version: "1"
-project: <name>
-source: design-atlas.json
-suites:
-  - pattern: <pattern>
-    unit: [<descriptions>]
-    integration: [<descriptions>]
-    failure_injection: [<descriptions>]
-```
-
-### Step 5 — Lock
+### Step 2 — Lock
 
 Update `design-atlas.json`: `metadata.status` → `"approved"`.
 
-Report specs generated with counts.
+### Step 3 — Report
+
+```
+## Approved: <project-name>
+
+Atlas: $MEM/design-atlas.json
+Stories: $MEM/stories/
+Journeys: $MEM/journeys/
+
+Other agents read the atlas + stories + journeys for full context:
+- Sauron: failure_modes.detection for monitoring, stories for architecture understanding
+- Charon: failure_modes for rollout concerns, flows for deployment dependencies
+- Developer: stories for onboarding, detected_patterns → testing.md for test guidance
+
+Next: `/design <name> --scaffold`
+```
 
 ---
 
@@ -293,50 +223,44 @@ Invoked: `/design orders --scaffold`
 ### Step 1 — Verify
 
 Read `$MEM/design-atlas.json` (`metadata.status` must be `"approved"`).
-Read all three spec files.
+Read infra-atlas for `new_workload_contract`.
 
 ### Step 2 — Generate project
+
+All scaffolding derives from the atlas — no separate spec files.
 
 ```
 <name>/
   README.md                purpose, architecture, patterns, getting started
-  Dockerfile               multi-stage build for app, satisfies new_workload_contract
+  Dockerfile               multi-stage build, satisfies new_workload_contract
   kustomize/
     base/
-      deployment.yaml      app deployment — from deployment-spec + contract
-      service.yaml         ClusterIP service for app
-      vitals.yaml          vitals deployment — standalone health evaluator
+      deployment.yaml      app deployment — from atlas + contract
+      service.yaml         ClusterIP service
+      vitals.yaml          standalone vitals deployment
       kustomization.yaml
-  src/                     code stubs per component
-  tests/                   test stubs from test-spec
+  src/                     code stubs per atlas component
+  tests/                   test stubs (detected_patterns → testing.md)
   vitals/
     Dockerfile             vitals container image
-    vitals.py              health evaluation script (queries Prometheus/Loki)
-    config.yaml            evaluation sections from monitoring-spec.vitals
+    vitals.py              evaluation stub (failure_modes → detection sections)
+    config.yaml            evaluation config from atlas failure_modes
   monitoring/
-    dashboards/            Grafana JSON from monitoring-spec
-    alerts.yaml            Prometheus rules from monitoring-spec (includes VitalsMissing)
+    dashboards/            Grafana JSON stubs from atlas failure_modes.detection
+    alerts.yaml            alert rules from atlas failure_modes (includes VitalsMissing)
 ```
 
-**App deployment** (`kustomize/base/deployment.yaml`):
-- App container with /metrics, app label, prometheus annotations
-- Resource limits from deployment-spec contract
-- Readiness/liveness probes at /health
+**App deployment**: from atlas components + infra-atlas contract (labels, probes, resources).
 
-**Vitals deployment** (`kustomize/base/vitals.yaml`):
-- Standalone pod (separate from app) — one per app per namespace
-- Queries Prometheus for app metrics, evaluates health rules
-- Exposes health gauges on :9131 with prometheus.io/scrape annotation
-- Env vars: PROMETHEUS_URL, LOKI_URL, APP_NAME
-- Evaluation sections from monitoring-spec.yaml vitals.evaluations
+**Vitals deployment**: standalone pod. Evaluation sections derived from atlas
+`failure_modes[].detection.concern` — each unique concern becomes a vitals section.
+Always includes `process` and `deps`.
 
-**Vitals script** (`vitals/vitals.py`):
-- Stub that implements the evaluation loop: query → evaluate → expose gauge
-- Sections configured via config.yaml (generated from monitoring-spec)
-- Each section produces a `vitals_<section>{check}` gauge (0=FAIL, 1=WARNING, 2=OK)
-- Always includes: `vitals_process` (is app alive) and `vitals_deps` (are deps reachable)
+**Tests**: for each `detected_patterns` entry that has a `testing.md`, read it
+and generate test stubs.
 
-Stubs implement pattern interfaces with TODO placeholders.
+**Monitoring**: for each `failure_modes` entry with `detection.signals`, generate
+alert rules. Dashboard panels from unique `detection.concern` categories.
 
 ### Step 3 — Create GitHub repo
 
