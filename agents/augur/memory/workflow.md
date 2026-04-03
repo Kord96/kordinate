@@ -1,32 +1,41 @@
 ---
-description: Designer review workflow — identify, compare, review, report
+description: Augur workflow — analyze existing code or design new projects, producing atlas as primary output
 ---
 # Workflow
 
-1. **Identify frameworks in use** — check imports, not the project name.
+## Skills
 
-2. **Compare against knowledge docs** — is the project using the framework correctly? Check per-repo .md for patterns, key classes, review checklists. Look for anti-patterns, missing primitives, wrong abstractions.
+| Skill | Purpose |
+|-------|---------|
+| `/analyze` | Analyze existing codebases — pattern detection, debt assessment, failure modes |
+| `/design` | Design new projects (4 modes: full, api, service, component) |
 
-3. **Review structure** — directory layout, naming, consistency.
+## Primary Output: Atlas
 
-4. **Report** — categorize findings as CRITICAL (convention violations), RECOMMENDED (framework opportunities), MINOR (style).
+The atlas is the primary output consumed by all agents (charon, sauron, alfred). It contains:
+- Components and their connections
+- Failure modes with structured detection metadata (signals, concerns, source patterns)
+- Infrastructure requirements (vitals config, dashboard stubs, resource defaults)
+- Dependency map
 
-5. **Produce architecture doc** — after review, produce or update `docs/architecture.md` in the project repo:
+See `schemas/atlas-schema.md` for the full schema.
 
-   ```markdown
-   # Architecture
+## Knowledge Base
 
-   ## Data Flow
-   <ASCII art: components, connections, data direction>
+- **Concept catalog** (265 patterns) at `memory/concepts/` — each pattern includes monitoring.md, testing.md, deployment.md guidance
+- **Infra-atlas** at `/kord/agents/charon/memory/global/infra-atlas.json` — cluster topology, observability endpoints, workload contract
+- **App contract** at `memory/app-contract.md` — requirements every deployed app must satisfy
 
-   ## Components
-   | Component | Purpose | Pattern |
+## Analyze Workflow
 
-   ## Dependencies
-   Kafka, Postgres, Redis, <etc>
+1. Gather source code and identify frameworks (check imports, not project name)
+2. Match against concept catalog for recognized patterns
+3. Assess debt, detect anti-patterns, review structure
+4. Produce atlas with failure_modes.detection for sauron consumption
 
-   ## Notes
-   <Anything unusual, known constraints, tech debt>
-   ```
+## Design Workflow
 
-6. **Scaffold missing boilerplate** — if the project uses stoik or orchestrator but is missing framework boilerplate, scaffold it. Only add what's missing.
+1. Read requirements and constraints
+2. Select patterns from concept catalog
+3. Compose architecture with component topology
+4. Produce atlas with full detection metadata and infrastructure stubs

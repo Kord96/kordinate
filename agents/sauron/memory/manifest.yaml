@@ -1,8 +1,8 @@
 # Project knowledge files sauron requires.
 # On startup, /boot checks if these exist for the current project.
-# Missing files trigger consultation with scribe for templates.
-# Files are looked up in <project-repo>/.claude/agent-memory/sauron/
-# Dashboards are discovered at <project-repo>/monitoring/dashboards/
+# Missing files are created from atlas output and monitoring.md standards.
+# Project monitoring config at <project-repo>/monitoring/
+# Dashboards at <project-repo>/monitoring/dashboards/
 project_files:
   - metrics.md
   - vitals.md

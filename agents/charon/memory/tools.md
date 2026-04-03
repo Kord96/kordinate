@@ -1,10 +1,14 @@
 ---
-description: Deployer tools reference — postgres.py and local utilities
+description: Deployer tools reference
 ---
 # Tools
 
 | Tool | Type | Purpose |
 |------|------|---------|
-| postgres.py | script (local, this agent's directory) | Compare SQLAlchemy models against live DB schema |
-| Container registry | infra (address from profile config) | Image distribution for k8s clusters |
-| Redis MCP | MCP server | Query Redis state and data across clusters |
+| kaniko | k8s Job (master namespace) | Image builds — triggered only on dependency changes |
+| webhook receiver | service | GitHub push event processing — gates deployment pipeline |
+| git-sync | sidecar | Dev pod hot reload — pulls main every 3s |
+| kubectl | CLI | Cluster operations — apply, patch, rollout, logs |
+| gh | CLI | GitHub repo management — PRs, releases, webhooks |
+| postgres.py | script (local) | Compare SQLAlchemy models against live DB schema |
+| Container registry | infra (localhost:30500) | Image distribution for k8s clusters |
