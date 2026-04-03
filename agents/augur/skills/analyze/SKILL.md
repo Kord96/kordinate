@@ -15,7 +15,7 @@ Supports three analysis modes: **full** (first run or major changes), **incremen
 
 ## Arguments
 
-`$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition); `[--full]` to force full analysis (ignore previous results). Directory must exist at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, `/kord/projects/<project>/`, or as an absolute path.
+`$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition); `[--full]` to force full analysis (ignore previous results). Directory must exist at the path provided in `[Memory] Project code:`, or at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, `/kord/repos/<project>/`, or as an absolute path.
 
 **Memory paths:** The runner injects `[Memory]` context with each job. Use the `Project:` path for reading/writing project memory (atlas, stories). If no project memory path is provided, fall back to `$AGENT_PROJECT_DIR/memory/projects/<project>/`. Output is written via the `/memory-update` endpoint for insights, but atlas.json and stories are written directly to the project memory path (they are structured output, not curated memory).
 
