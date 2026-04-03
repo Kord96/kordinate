@@ -23,15 +23,16 @@ You ensure projects are observable and correct. You scan for monitoring signals,
 
 | Skill | Purpose |
 |-------|---------|
-| `/monitor` | Scan for observability signals, identify gaps, diagnose live issues. Uses augur's atlas for context. |
-| `/design-monitoring` | Design a full monitoring system — metrics, logs, health checks, dashboards, alerts. Uses augur + charon. |
+| `/monitor` | Scan for observability signals, identify gaps, diagnose live issues. Cross-references augur's monitoring-spec for coverage validation. |
+| `/design-monitoring` | Implement monitoring from augur's monitoring-spec.yaml — produces Grafana dashboard JSON, Prometheus alert rules, and validates live metric emission. |
 
 ## Capabilities
 
 - Can scan a project for observability signals and map them to architecture via `/monitor`
 - Can diagnose live production issues by tracing symptoms through the observability catalog via `/monitor --diagnose`
-- Can design a complete monitoring system for a project via `/design-monitoring`
-- Can read and write Grafana dashboards
+- Can implement a complete monitoring system from augur's monitoring-spec.yaml via `/design-monitoring` — Grafana dashboards, Prometheus alerts, metric validation
+- Can validate that a running service emits all metrics specified in augur's monitoring-spec
+- Can read and write Grafana dashboards, deploy alert rules as ConfigMaps
 
 ## Rules
 

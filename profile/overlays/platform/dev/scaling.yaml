@@ -3,42 +3,87 @@ kind: ScaledObject
 metadata:
   name: agent-augur
 spec:
+  pollingInterval: 30
   minReplicaCount: 1
   maxReplicaCount: 10
   cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-charon
 spec:
+  pollingInterval: 30
   minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-warden
 spec:
+  pollingInterval: 30
   minReplicaCount: 1
   maxReplicaCount: 5
   cooldownPeriod: 180
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-sauron
 spec:
+  pollingInterval: 30
   minReplicaCount: 0
   maxReplicaCount: 3
   cooldownPeriod: 600
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-alfred
 spec:
+  pollingInterval: 30
   minReplicaCount: 0
   maxReplicaCount: 2
   cooldownPeriod: 600
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300

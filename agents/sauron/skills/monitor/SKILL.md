@@ -21,13 +21,22 @@ Default (no flags): full monitoring review — read all available signals, repor
 ## Dependencies
 
 1. **Augur** — architectural context:
-   Read atlas from `$MEM/atlas.json` (augur's project memory). Provides: components (what to check), flows (what paths to trace), failure modes (what cascades to look for), external dependencies (what external health to verify).
+   Read atlas from `/kord/agents/augur/memory/projects/<project>/atlas.json` (augur's project memory). Provides: components (what to check), flows (what paths to trace), failure modes (what cascades to look for), external dependencies (what external health to verify).
 
-2. **Charon/Alfred** — cluster access:
+2. **Augur monitoring-spec** (optional, enriches monitoring):
+   If available, read augur's monitoring-spec.yaml to know exactly which metrics the project should emit. Resolution order:
+   - Artifact path from prompt: `[Artifacts] monitoring-spec: <path>`
+   - Augur project memory: `/kord/agents/augur/memory/projects/<project>/monitoring-spec.yaml`
+   When the spec is available, use it to validate that all designed metrics are actually emitting (cross-reference with live scrape). Without the spec, fall back to convention-based checks.
+
+3. **Charon/Alfred** — cluster access:
    ```
    /kord alfred get config <cluster>
    ```
    Provides: Tailscale IPs, namespaces, service ports, kubeconfig context.
+
+4. **Sauron implementation status** (optional):
+   If `/design-monitoring` has been run, check `$MEM/implementation-status.yaml` for known metric validation results and deployed dashboards/alerts.
 
 If atlas doesn't exist, ask user to run `/analyze` first. If cluster config is unavailable, report what can be checked without live access.
 
@@ -35,7 +44,13 @@ If atlas doesn't exist, ask user to run `/analyze` first. If cluster config is u
 
 ### Step 1 — Load context
 
-Read atlas.json for component inventory. Get cluster config for access details. Build a monitoring checklist: each component × signal types (metrics, logs, health, traces).
+Read atlas.json for component inventory. Get cluster config for access details.
+
+If augur's monitoring-spec.yaml is available (artifact path or augur project memory), load it to get the designed metric names, alert conditions, and dashboard definitions. This enables precise validation: check whether the service emits exactly the metrics the spec expects, rather than relying only on convention.
+
+If sauron's `$MEM/implementation-status.yaml` exists (from a prior `/design-monitoring` run), load it for baseline comparison.
+
+Build a monitoring checklist: each component x signal types (metrics, logs, health, traces). When a monitoring spec is available, augment the checklist with the specific metric names and types from the spec.
 
 ### Step 2 — Check health endpoints
 
@@ -55,6 +70,15 @@ Query Prometheus for each component's key signals:
 - **Saturation**: CPU, memory, connection pool utilization
 
 Use Grafana MCP tools if available, or direct PromQL via API.
+
+**Spec cross-reference** (when monitoring-spec.yaml is available):
+For each metric in the spec, query Prometheus to verify it exists and is being scraped. Classify each as:
+- `EMITTING` — metric present in Prometheus with expected type
+- `MISSING` — metric not found (not instrumented or not scraped)
+- `TYPE_MISMATCH` — metric exists but type differs from spec
+- `LABELS_MISSING` — metric exists but expected labels are absent
+
+This produces a spec coverage score: `emitting / total_spec_metrics`.
 
 ### Step 4 — Read recent logs
 
@@ -105,6 +129,15 @@ Write catalog to `$MEM/observability-catalog.yaml`.
 ### Metrics (last 5m)
 | Component | Request Rate | Error Rate | p99 Latency |
 |-----------|-------------|------------|-------------|
+
+### Spec Coverage (if monitoring-spec.yaml available)
+**Source**: <path to monitoring-spec.yaml>
+| Metric | Type | Status |
+|--------|------|--------|
+| <metric_name> | counter | EMITTING / MISSING / TYPE_MISMATCH |
+
+**Coverage**: N/N metrics emitting (N%)
+**Missing**: <list of metrics not yet instrumented>
 
 ### External Dependencies
 | Dependency | Reachable | Latency | Circuit Breaker |

@@ -3,15 +3,30 @@
 #
 # Scaling parameters (minReplicaCount, maxReplicaCount, cooldownPeriod) are set
 # per-environment via overlay patches (e.g. overlays/platform/dev/scaling.yaml).
+#
+# stabilizationWindowSeconds prevents rapid scale-up/down oscillation.
+# restoreToOriginalReplicaCount returns to minReplicas on trigger deactivation.
+# pollingInterval of 30s avoids hammering the Kafka API for lag metrics.
+# offsetResetPolicy: latest ignores stale/historical consumer lag.
+# activationLagThreshold: 5 avoids scaling from 0 on trivial lag spikes.
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-augur
 spec:
+  pollingInterval: 30
   minReplicaCount: 0
   maxReplicaCount: 3
   cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
   scaleTargetRef:
     name: agent-augur
   triggers:
@@ -21,15 +36,26 @@ spec:
         consumerGroup: agent-augur
         topic: jobs.augur
         lagThreshold: "1"
+        activationLagThreshold: "5"
+        offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-charon
 spec:
+  pollingInterval: 30
   minReplicaCount: 0
   maxReplicaCount: 3
   cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
   scaleTargetRef:
     name: agent-charon
   triggers:
@@ -39,15 +65,26 @@ spec:
         consumerGroup: agent-charon
         topic: jobs.charon
         lagThreshold: "1"
+        activationLagThreshold: "5"
+        offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-warden
 spec:
+  pollingInterval: 30
   minReplicaCount: 0
   maxReplicaCount: 3
   cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
   scaleTargetRef:
     name: agent-warden
   triggers:
@@ -57,15 +94,26 @@ spec:
         consumerGroup: agent-warden
         topic: jobs.warden
         lagThreshold: "1"
+        activationLagThreshold: "5"
+        offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-sauron
 spec:
+  pollingInterval: 30
   minReplicaCount: 0
   maxReplicaCount: 3
   cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
   scaleTargetRef:
     name: agent-sauron
   triggers:
@@ -75,15 +123,26 @@ spec:
         consumerGroup: agent-sauron
         topic: jobs.sauron
         lagThreshold: "1"
+        activationLagThreshold: "5"
+        offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: agent-alfred
 spec:
+  pollingInterval: 30
   minReplicaCount: 0
   maxReplicaCount: 3
   cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
   scaleTargetRef:
     name: agent-alfred
   triggers:
@@ -93,3 +152,5 @@ spec:
         consumerGroup: agent-alfred
         topic: jobs.alfred
         lagThreshold: "1"
+        activationLagThreshold: "5"
+        offsetResetPolicy: latest
