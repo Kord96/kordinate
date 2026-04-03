@@ -48,7 +48,7 @@ spec:
           env:
             - { name: AGENT_NAME, value: augur }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -117,7 +117,7 @@ spec:
           env:
             - { name: AGENT_NAME, value: charon }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -183,7 +183,7 @@ spec:
           env:
             - { name: AGENT_NAME, value: warden }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -249,7 +249,7 @@ spec:
           env:
             - { name: AGENT_NAME, value: sauron }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -315,7 +315,7 @@ spec:
           env:
             - { name: AGENT_NAME, value: alfred }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
