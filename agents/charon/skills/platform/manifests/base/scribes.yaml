@@ -1,9 +1,7 @@
-# Agent Scribe v2 Deployments — one per agent type.
+# Agent Scribe Deployments — one per agent type.
 # Replicas=1, strategy=Recreate (never run two scribes simultaneously).
-# Consumes memory.updates.<agent>, merges into shared PVC, updates CLAUDE.md.
-# v2: Uses Anthropic Haiku for semantic deduplication.
-#     Routes memory to memory/global/ or memory/projects/<project>/ based on scope.
-#     Requires Secret 'anthropic-api' with key 'api-key'.
+# Consumes memory.updates.<agent> from Kafka, deduplicates with Haiku.
+# Code baked into image at /app/scribe/.
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,17 +21,15 @@ spec:
       containers:
         - name: scribe
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               mkdir -p /kord/agents/augur/memory/global /kord/agents/augur/memory/projects
-              cp -r /data/repos/kordinate/lib/agent-scribe /tmp/scribe
-              cd /tmp/scribe && npm install --production 2>/dev/null
-              exec node scribe.js
+              cd /app/scribe && exec node scribe.js
           env:
             - { name: AGENT_NAME, value: augur }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.kord.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - name: ANTHROPIC_API_KEY
               valueFrom:
@@ -44,13 +40,10 @@ spec:
             requests: { cpu: 50m, memory: 128Mi }
             limits: { memory: 512Mi }
           volumeMounts:
-            - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data/repos, readOnly: true }
+            - { name: runtime, mountPath: /kord }
       volumes:
-        - name: kord
-          persistentVolumeClaim: { claimName: kord }
-        - name: data
-          persistentVolumeClaim: { claimName: kord-repos }
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -70,17 +63,15 @@ spec:
       containers:
         - name: scribe
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               mkdir -p /kord/agents/charon/memory/global /kord/agents/charon/memory/projects
-              cp -r /data/repos/kordinate/lib/agent-scribe /tmp/scribe
-              cd /tmp/scribe && npm install --production 2>/dev/null
-              exec node scribe.js
+              cd /app/scribe && exec node scribe.js
           env:
             - { name: AGENT_NAME, value: charon }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.kord.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - name: ANTHROPIC_API_KEY
               valueFrom:
@@ -91,13 +82,10 @@ spec:
             requests: { cpu: 50m, memory: 128Mi }
             limits: { memory: 512Mi }
           volumeMounts:
-            - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data/repos, readOnly: true }
+            - { name: runtime, mountPath: /kord }
       volumes:
-        - name: kord
-          persistentVolumeClaim: { claimName: kord }
-        - name: data
-          persistentVolumeClaim: { claimName: kord-repos }
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -117,17 +105,15 @@ spec:
       containers:
         - name: scribe
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               mkdir -p /kord/agents/warden/memory/global /kord/agents/warden/memory/projects
-              cp -r /data/repos/kordinate/lib/agent-scribe /tmp/scribe
-              cd /tmp/scribe && npm install --production 2>/dev/null
-              exec node scribe.js
+              cd /app/scribe && exec node scribe.js
           env:
             - { name: AGENT_NAME, value: warden }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.kord.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - name: ANTHROPIC_API_KEY
               valueFrom:
@@ -138,13 +124,10 @@ spec:
             requests: { cpu: 50m, memory: 128Mi }
             limits: { memory: 512Mi }
           volumeMounts:
-            - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data/repos, readOnly: true }
+            - { name: runtime, mountPath: /kord }
       volumes:
-        - name: kord
-          persistentVolumeClaim: { claimName: kord }
-        - name: data
-          persistentVolumeClaim: { claimName: kord-repos }
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -164,17 +147,15 @@ spec:
       containers:
         - name: scribe
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               mkdir -p /kord/agents/sauron/memory/global /kord/agents/sauron/memory/projects
-              cp -r /data/repos/kordinate/lib/agent-scribe /tmp/scribe
-              cd /tmp/scribe && npm install --production 2>/dev/null
-              exec node scribe.js
+              cd /app/scribe && exec node scribe.js
           env:
             - { name: AGENT_NAME, value: sauron }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.kord.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - name: ANTHROPIC_API_KEY
               valueFrom:
@@ -185,13 +166,10 @@ spec:
             requests: { cpu: 50m, memory: 128Mi }
             limits: { memory: 512Mi }
           volumeMounts:
-            - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data/repos, readOnly: true }
+            - { name: runtime, mountPath: /kord }
       volumes:
-        - name: kord
-          persistentVolumeClaim: { claimName: kord }
-        - name: data
-          persistentVolumeClaim: { claimName: kord-repos }
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -211,17 +189,15 @@ spec:
       containers:
         - name: scribe
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               mkdir -p /kord/agents/alfred/memory/global /kord/agents/alfred/memory/projects
-              cp -r /data/repos/kordinate/lib/agent-scribe /tmp/scribe
-              cd /tmp/scribe && npm install --production 2>/dev/null
-              exec node scribe.js
+              cd /app/scribe && exec node scribe.js
           env:
             - { name: AGENT_NAME, value: alfred }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.kord.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - name: ANTHROPIC_API_KEY
               valueFrom:
@@ -232,10 +208,7 @@ spec:
             requests: { cpu: 50m, memory: 128Mi }
             limits: { memory: 512Mi }
           volumeMounts:
-            - { name: kord, mountPath: /kord }
-            - { name: data, mountPath: /data/repos, readOnly: true }
+            - { name: runtime, mountPath: /kord }
       volumes:
-        - name: kord
-          persistentVolumeClaim: { claimName: kord }
-        - name: data
-          persistentVolumeClaim: { claimName: kord-repos }
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }

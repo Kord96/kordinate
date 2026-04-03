@@ -1,5 +1,5 @@
-# Job Router — replaces the old MCP agent server (Beorn).
-# Routes MCP calls to Kafka topics, serves resource cache.
+# Job Router — HTTP gateway for agent delegation.
+# Code baked into image at /app/router/.
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -24,21 +24,16 @@ spec:
       containers:
         - name: router
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
-            - |
-              cp -r /data/repos/kordinate/lib/job-router /tmp/router
-              cd /tmp/router && npm install --production 2>/dev/null
-              exec node router.js
+            - cd /app/router && exec node router.js
           env:
             - name: PORT
               value: "3100"
             - name: KAFKA_BROKERS
-              value: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+              value: kafka-kafka-bootstrap.kord.svc.cluster.local:9092
             - name: HOME
               value: /home/claude
-            - name: KORDINATE_HOME
-              value: /data/repos/kordinate
           resources:
             requests: { cpu: 100m, memory: 256Mi }
             limits: { memory: 1Gi }
@@ -54,18 +49,12 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
           volumeMounts:
-            - name: kord
+            - name: runtime
               mountPath: /kord
-            - name: data
-              mountPath: /data/repos
-              readOnly: true
       volumes:
-        - name: kord
+        - name: runtime
           persistentVolumeClaim:
-            claimName: kord
-        - name: data
-          persistentVolumeClaim:
-            claimName: kord-repos
+            claimName: agent-runtime
 ---
 apiVersion: v1
 kind: Service
