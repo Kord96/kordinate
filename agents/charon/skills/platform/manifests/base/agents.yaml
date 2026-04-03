@@ -36,10 +36,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
-              ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
-              chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
+              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: augur }
@@ -63,9 +61,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: claude-creds
+          secret:
+            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -99,10 +101,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
-              ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
-              chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
+              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: charon }
@@ -126,9 +126,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: claude-creds
+          secret:
+            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -162,10 +166,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
-              ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
-              chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
+              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: warden }
@@ -189,9 +191,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: claude-creds
+          secret:
+            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -225,10 +231,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
-              ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
-              chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
+              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: sauron }
@@ -252,9 +256,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: claude-creds
+          secret:
+            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -288,10 +296,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              ln -sfn /kord/pass "$HOME/.password-store" 2>/dev/null
-              ln -sfn /kord/gnupg "$HOME/.gnupg" 2>/dev/null
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
-              chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
+              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: alfred }
@@ -315,6 +321,10 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: claude-creds
+          secret:
+            secretName: claude-credentials
