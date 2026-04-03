@@ -125,7 +125,7 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Actors and flows** — External actors. 2-4 critical data flows. Events (omit if none). When writing atlas: read [schema.md](schema.md).
 - **Domain model** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Record it as `domain_model` in the atlas.
 - **State** — Stores with concept vocabulary, readers/writers, persistence model.
-- **Failure modes** — ALL possible failures for every external dep and stateful component — both covered (has circuit breaker) and uncovered (no timeout). For each failure linked to a detected pattern, read its `monitoring.md` (detection signals) and `deployment.md` (rollout-specific failures). Populate structured `detection` fields. Uncovered failures get empty signals — debt section references them.
+- **Failure modes** — ALL possible failures for every external dep and stateful component, both covered and uncovered. For each failure linked to a detected pattern, read its `monitoring.md` and `deployment.md` to populate structured `detection` fields. Uncovered failures get empty signals — debt references them.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
 - **Stories** — When composing stories: read [../../schemas/story-schema.md](../../schemas/story-schema.md) and [../../schemas/writing-guide.md](../../schemas/writing-guide.md).
 
