@@ -11,6 +11,9 @@ PROMPT=$(echo "$JOB" | python3 -c "import json,sys; print(json.load(sys.stdin).g
 # Only gate analyze jobs
 echo "$PROMPT" | grep -qi "analyze" || exit 0
 
+# --full or "full analysis" bypasses the skip
+echo "$PROMPT" | grep -qi "\-\-full\|full analysis" && exit 0
+
 # Need a project to check
 [ -z "$PROJECT" ] && exit 0
 
