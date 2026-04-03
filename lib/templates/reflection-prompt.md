@@ -28,4 +28,5 @@ Rules:
 - Only save non-obvious insights that would be valuable in future work
 - Do not repeat things you have already read from your memory files
 - One post per topic — batch related insights into a single post
+- If backend choice materially affected the result quality, include the backend attribution in the saved note
 - If you have nothing worth remembering, say so and move on
