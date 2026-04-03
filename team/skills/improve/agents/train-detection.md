@@ -108,21 +108,15 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
 
 4. **Build ground truth.** For each repo, establish what concepts ACTUALLY exist using three oracles:
 
-   **Oracle 1: Gemini (primary).** Send the repo tree + key source files to Gemini. First, build the concept list from the same catalogs detect-concepts uses: extract the `Pattern | Description` column from `memory/global/concepts.md` and the `Anti-pattern | What to look for` column from `memory/global/anti-patterns.md`. Write the combined list to `/tmp/train-results/concept-list.txt`. The prompt provides this list and instructs: "Look for the BEHAVIOR, not the NAME. A strategy pattern might be called 'processor' or 'handler'."
-   ```bash
-   gemini -m gemini-2.5-pro -o json -p "Analyze this codebase. For each concept in this list, answer present/absent with file-level evidence. Look for BEHAVIOR, not naming. $(cat /tmp/train-results/concept-list.txt)" @/tmp/train-repos/<repo>/src/ > /tmp/train-results/<repo>/oracle-gemini.json
-   ```
-
-   **Oracle 2: Question-based analysis.** For each concept that passes a quick grep pre-filter (same as detection Pass 1 in /analyze), load `questions.yaml` and evaluate:
+   **Oracle 1: Question-based analysis.** For each concept that passes a quick grep pre-filter (same as detection Pass 1 in /analyze), load `questions.yaml` and evaluate:
    - For questions with `signals` hints, grep first; skip questions with zero evidence
    - Answer remaining questions yes/no by reading relevant code
    - Score: if weight sum >= threshold, mark present
 
-   **Oracle 3: Mechanical verification.** For concepts with clear markers (specific imports, config files, directory names), verify purely with grep/glob. Unambiguous evidence regardless of LLM opinion.
+   **Oracle 2: Mechanical verification.** For concepts with clear markers (specific imports, config files, directory names), verify purely with grep/glob. Unambiguous evidence regardless of LLM opinion.
 
    **Reconciliation:**
-   - Gemini + mechanical agree → **high confidence** ground truth
-   - Gemini + questions agree → **medium confidence** ground truth
+   - Questions + mechanical agree → **high confidence** ground truth
    - Only one oracle says yes → **low confidence** (flagged, excluded from training metrics)
    - Active disagreement → **excluded** (ambiguous, logged for manual review)
 
@@ -170,27 +164,19 @@ Ground truth uses three independent oracles to avoid circularity (Claude both de
      - AST rule matches unrelated code? → add constraints
      - Question threshold too low? → raise it
 
-10. **Gemini review** (background) -- before applying improvements, kick off a peer review of the proposed changes. Pipe the failure analysis and proposed fixes to Gemini:
-    ```bash
-    gemini -m gemini-2.5-pro -o json -p "Review these proposed changes to a pattern detection system. For each proposed change, flag: overfitting risk (change is too specific to one repo), collateral damage (broadening a keyword will cause false positives elsewhere), threshold changes that are unjustified. Be specific about which change and why." < /tmp/train-results/proposed-improvements.md > /tmp/train-results/gemini-review-improvements.json &
-    ```
-    Continue to step 11 immediately. Check whether the review has returned before finalizing writes in step 11.
-
-11. **Apply improvements.** For each concept with poor precision or recall:
+10. **Apply improvements.** For each concept with poor precision or recall:
    - Update `concept.md` Recognition signatures (add/remove keywords)
    - Update `questions.yaml` (refine questions, adjust weights/threshold)
    - Update `ast-grep.yaml` if the rule needs tightening/broadening
    - Keep a changelog in the scorecard
 
-   If the Gemini review from step 10 has returned, incorporate valid critiques: drop changes flagged as overfitting, add constraints to broadened keywords. Ignore critiques that contradict the scorecard evidence (measured false negatives/positives outweigh opinions).
-
-12. **Accumulate results.** Append the scorecard to a persistent log at:
+11. **Accumulate results.** Append the scorecard to a persistent log at:
     `memory/global/training-log.json`
     This allows tracking improvement over time across multiple runs.
 
-13. **Update manifest.** Update `/tmp/train-results/manifest.json` with `status: "complete"`, `completed_at`, `scorecard_path`, `commit_sha`, and `improvements_count`.
+12. **Update manifest.** Update `/tmp/train-results/manifest.json` with `status: "complete"`, `completed_at`, `scorecard_path`, `commit_sha`, and `improvements_count`.
 
-14. **Report** -- summarize: repos analyzed, aggregate precision/recall/F1, worst-performing concepts, improvements applied, whether Gemini review was incorporated, and where the scorecard was written.
+13. **Report** -- summarize: repos analyzed, aggregate precision/recall/F1, worst-performing concepts, improvements applied, and where the scorecard was written.
 
 ## Scorecard Schema
 
@@ -202,7 +188,7 @@ When the caller launches multiple training agents in parallel (e.g., one per lan
 
 1. **Create a task per agent** using TaskCreate with a descriptive name (e.g., "Train detection: Python round 3"). This persists independently of conversation context.
 2. **Check manifest on recovery** — if you lose track of running agents, read `/tmp/train-results/manifest.json` to see which runs completed, which are in-progress, and which failed.
-3. **Limit concurrency** — run at most 2 training agents in parallel. Each agent reads many files and calls Gemini, creating heavy context load. 4 concurrent agents risk the parent losing track.
+3. **Limit concurrency** — run at most 2 training agents in parallel. Each agent reads many files, creating heavy context load. 4 concurrent agents risk the parent losing track.
 4. **Sequential languages within one agent** — instead of 4 agents doing 1 language each, prefer 2 agents doing 2 languages each (sequentially). Fewer agents to track, same throughput.
 5. **Checkpoint to memory** — after each completed round, the caller should save a memory note via the memory-update endpoint with the cumulative training state: total repos analyzed, aggregate metrics, which languages/rounds are done, and what's remaining. Memory survives across sessions, so a new conversation can pick up where the last one left off. Example:
    ```bash
@@ -216,5 +202,4 @@ When the caller launches multiple training agents in parallel (e.g., one per lan
 - **GitHub API rate limit:** Back off and retry, or use `--skip-clone` with existing repos.
 - **Repo too large:** Skip repos over 10000 files with a warning.
 - **detection fails (analyze --detect-only):** Record the failure in the scorecard, continue with next repo.
-- **Gemini unavailable:** Fall back to running questions through the augur agent (Claude) instead. Slower but functional.
 - **No questions.yaml:** Skip question-based evaluation for that concept. Flag it for question generation.

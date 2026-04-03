@@ -104,22 +104,7 @@ honestly — the goal is self-awareness, not self-congratulation:
 Check your memory (loaded at boot) for evidence. Past scratchpad entries about recurring
 manual work, failed approaches, or workarounds are signals for gaps.
 
-### Step 1.4 — Gemini Peer Review
-
-Write your portfolio assessment to a temp file, then send it to Gemini for a second opinion.
-Run in background:
-
-```bash
-cat > /tmp/improve-portfolio-<agent>.md << 'EOF'
-<your portfolio assessment from Step 1.3>
-EOF
-
-gemini -m gemini-2.5-pro -o json -p "Review this agent self-assessment. The agent's role: <role summary>. Current skills: <skill list>. Assessment: $(cat /tmp/improve-portfolio-<agent>.md). What did it miss? What do you disagree with? Are there blind spots? Be specific and constructive." > /tmp/improve-gemini-<agent>.json &
-```
-
-Continue to Step 1.5. Read Gemini's response in Step 1.6.
-
-### Step 1.5 — Clone Test Repos
+### Step 1.4 — Clone Test Repos
 
 Always clone **fresh repos** — never reuse repos from previous runs. Testing against the same repos repeatedly causes overfitting to their specific patterns. Fresh repos expose new edge cases, new concept gaps, and new architectural styles.
 
@@ -151,16 +136,14 @@ Record each repo in the manifest's `test_repos` array:
 {"nameWithOwner": "owner/repo", "language": "python", "stars": 1200, "cloned_at": "ISO-8601"}
 ```
 
-### Step 1.6 — Incorporate External Input
+### Step 1.5 — Incorporate External Input
 
-Read results from Step 1.2 (web search) and Step 1.4 (Gemini review):
+Read results from Step 1.2 (web search):
 
 - **Web research**: extract specifically relevant patterns or community approaches. Tag
   findings as `source: research` so they are distinguishable from self-assessment.
-- **Gemini review**: incorporate valid critiques. Discard opinions that contradict evidence
-  from the actual codebase or your memory. Gemini's opinion is a second signal, not gospel.
 
-### Step 1.7 — Check Improvement History
+### Step 1.6 — Check Improvement History
 
 Read `$DATA_DIR/<agent>/history.json` if it exists. This file accumulates findings across
 runs. Check for:
@@ -248,29 +231,8 @@ For each skill output, build independent ground truth to compare against. Use mu
 oracles to avoid circularity (the agent both running the skill AND judging its own output
 is circular). At least two oracles must agree for high-confidence ground truth.
 
-**Oracle 1 — Gemini (primary).** Send the repo's key source files to Gemini with a
-targeted prompt. Run in background:
-
-```bash
-gemini -m gemini-2.5-pro -o json -p "<oracle prompt for skill type>" \
-  @/data/repos/<repo>/src/ > $DATA_DIR/<agent>/ground-truth/<skill>-<repo>-gemini.json &
-```
-
-Oracle prompts by output type:
-
-| Output | Gemini oracle prompt |
-|--------|---------------------|
-| **atlas.json (structure)** | "Describe the architecture of this codebase: main components (5-10), their responsibilities, how they group into 3-5 runtime boundaries, and their dependencies. Cite specific files for each component." |
-| **atlas.json (flows)** | "Trace the 2-4 most critical data flows through this codebase. For each: what triggers it, what components are involved, what data moves, what protocol is used. Cite files." |
-| **atlas.json (concepts)** | "List every architectural pattern, anti-pattern, and domain model present in this codebase. For each, cite the specific file and line range as evidence. Look for BEHAVIOR, not naming." |
-| **atlas.json (debt)** | "Identify every instance of tech debt: code smells, anti-patterns, missing tests, hardcoded values, dead code. For each, cite the file and describe the impact." |
-| **atlas.json (security)** | "Describe the authentication, authorization, and secrets management in this codebase. List every entry point and whether it has auth. Cite files." |
-| **atlas.json (observability)** | "List every observability signal: log statements (with level), metrics (with names), health endpoints, tracing spans. Cite file and line." |
-| **stories** | "For each component group in this codebase, write a 2-paragraph summary explaining what it does and why it's organized this way. Then identify 2-3 specific concerns worth drilling into (a key flow, a data store, a failure mode)." |
-| **journeys** | "If you were onboarding a new developer to this codebase, what order would you teach things? List 5-8 topics in teaching order, explaining why each builds on the previous." |
-
-**Oracle 2 — Mechanical verification.** Use grep/glob/AST to independently verify
-specific claims. This catches hallucinations from both the skill and Gemini:
+**Oracle 1 — Mechanical verification.** Use grep/glob/AST to independently verify
+specific claims:
 
 | Output | Mechanical checks |
 |--------|------------------|
@@ -283,7 +245,7 @@ specific claims. This catches hallucinations from both the skill and Gemini:
 | **stories** | Every `**bold ref**` resolves to an atlas node ID. Every `grounded_in` file exists. Structure node IDs exist in atlas. |
 | **journeys** | Every story ID in the journey exists in `stories/`. Order makes pedagogical sense (doesn't reference concepts before they're introduced). |
 
-**Oracle 3 — Schema compliance.** Validate the output against the v4 schema:
+**Oracle 2 — Schema compliance.** Validate the output against the v4 schema:
 
 - Run `python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py` on atlas.json
 - Check: version is "4", 3-5 groups, 5-10 components, flow types are valid enum values
@@ -360,7 +322,6 @@ Save to `$DATA_DIR/<agent>/test-results/<skill>-<repo>.json`:
   "repo": "<nameWithOwner>",
   "tested_at": "ISO-8601",
   "ground_truth": {
-    "gemini_oracle": "<path to gemini output>",
     "mechanical_checks": {"endpoints_found": 12, "skill_reported": 10, "match": false},
     "cross_skill": {"consistent_with": ["architect", "map-dependencies"], "conflicts": []}
   },
@@ -445,25 +406,17 @@ unless the structure itself is the problem.
 When adding 3rd-layer resources (scripts, templates, schemas), create them as supporting
 files referenced from SKILL.md, not inline content.
 
-### Step 2.5b — Gemini diff review (structural changes only)
-
-For structural changes that touch multiple files or alter a skill's procedure flow,
-send the diff to Gemini for a quick review before committing. Skip this for cosmetic-only
-or single-line fixes.
-
-```bash
-git diff --no-color > /tmp/improve-diff-<agent>-<skill>.patch
-gemini -m gemini-2.5-flash -p "Review this diff to a Claude Code skill definition. Flag: instructions that contradict themselves, steps that reference nonexistent tools or files, changes that break the skill's output format, or regressions (removing something that was correct). Be terse — just list issues or say 'looks good'." @/tmp/improve-diff-<agent>-<skill>.patch
-```
-
-Use `gemini-2.5-flash` (not pro) to keep this fast. If Gemini flags a real issue, fix it
-before proceeding. If it flags style preferences, ignore them.
-
-### Step 2.6 — Anti-oscillation check
+### Step 2.5b — Anti-oscillation check
 
 Before committing to the changes, compare your diff against diffs from previous
 iterations. If you are reverting or undoing a change you made in a prior iteration,
 discard your changes for this iteration, stop, and report "revert-detected".
+
+### Step 2.6 — Validate Behavior on Tests
+
+Re-run the tests from Step 2.2 that exercise the changed behavior. Confirm the skill now
+produces the expected output on the same repo(s) that exposed the issue. If the change was
+structural rather than behavioral, verify the procedure still executes cleanly end-to-end.
 
 ### Step 2.7 — Log iteration
 
@@ -678,7 +631,6 @@ Agent: <agent-name>
   Staleness: <list or "none">
   Resource gaps: <list or "none">
   Research insights: <list or "none">
-  Gemini critiques incorporated: <list or "none">
   Immediate actions taken: <list or "none">
   Proposed actions (needs approval): <list or "none">
 

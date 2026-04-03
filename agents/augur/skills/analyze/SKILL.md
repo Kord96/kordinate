@@ -129,17 +129,9 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
 - **Stories** — When composing stories: read [../../schemas/story-schema.md](../../schemas/story-schema.md) and [../../schemas/writing-guide.md](../../schemas/writing-guide.md).
 
-### Step 3 — Gemini review (background)
+### Step 3 — Write atlas.json
 
-Feed the draft atlas, source code, and our constraints to Gemini:
-```bash
-gemini -m gemini-2.5-pro -o json -p "You are AUDITING this atlas for ERRORS. Your job is to find mistakes, not confirm quality. For each component: verify the listed files exist, check the description matches actual code, verify depends_on edges by checking imports. For each detected pattern: find evidence that CONTRADICTS the detection — false positives are your target. For each grounded_in reference: does the cited file:line actually support the claim? For each failure mode: is the severity correct or exaggerated? Constraints: 3-5 groups (hard), 5-10 components (4-12 acceptable), 2-4 flows. Report EVERY error with specific file paths." @$ROOT/ < /tmp/atlas-draft.json > /tmp/gemini-review-atlas.json &
-```
-Continue immediately.
-
-### Step 4 — Write atlas.json
-
-Assemble into [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Incorporate valid Gemini critiques if available. Write to `$MEM/atlas.json`.
+Assemble into [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Write to `$MEM/atlas.json`.
 
 If `--detect-only`: skip Phase 2, go to Report.
 
@@ -169,13 +161,7 @@ With validated output, run quality checks:
 
 2. **Coverage**: critical atlas nodes in at least one story / total critical nodes. Target: >= 0.80.
 
-3. **Gemini story review** (background) — review against the **codebase**:
-   ```bash
-   gemini -m gemini-2.5-pro -o json -p "You are AUDITING these stories for ERRORS against the source code. The code is ground truth, not the atlas. For each bold-ref component name: verify it matches an actual module. For each claim about behavior: find the code that proves or disproves it. For each observation: read the grounded_in file and check the claim holds. Find: fabricated claims not in the code, missing critical concerns, wrong causality, exaggerated severity. Root summaries must be 50-80 words, child 80-120. Report EVERY error." @$ROOT/ @$MEM/stories/ @$MEM/atlas.json > /tmp/gemini-review-stories.json &
-   ```
-   If changes are made after Gemini feedback, **call warden again** for a fresh token.
-
-If groundedness is low, fix claims. If coverage is low, add stories. Always revalidate after changes.
+3. If groundedness is low, fix claims. If coverage is low, add stories. Always revalidate after changes.
 
 ---
 

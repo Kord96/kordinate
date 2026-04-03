@@ -102,22 +102,7 @@ honestly — the goal is self-awareness, not self-congratulation:
 Check your memory (loaded at boot) for evidence. Past scratchpad entries about recurring
 manual work, failed approaches, or workarounds are signals for gaps.
 
-### Step 1.4 — Gemini Peer Review
-
-Write your portfolio assessment to a temp file, then send it to Gemini for a second opinion.
-Run in background:
-
-```bash
-cat > /tmp/improve-portfolio-<agent>.md << 'EOF'
-<your portfolio assessment from Step 1.3>
-EOF
-
-gemini -m gemini-2.5-pro -o json -p "Review this agent self-assessment. The agent's role: <role summary>. Current skills: <skill list>. Assessment: $(cat /tmp/improve-portfolio-<agent>.md). What did it miss? What do you disagree with? Are there blind spots? Be specific and constructive." > /tmp/improve-gemini-<agent>.json &
-```
-
-Continue to Step 1.5. Read Gemini's response in Step 1.6.
-
-### Step 1.5 — Clone Test Repos
+### Step 1.4 — Clone Test Repos
 
 Select 2-3 repos to test your skills against real codebases. Use GitHub CLI:
 
@@ -141,16 +126,14 @@ Record each repo in the manifest's `test_repos` array:
 {"nameWithOwner": "owner/repo", "language": "python", "stars": 1200, "cloned_at": "ISO-8601"}
 ```
 
-### Step 1.6 — Incorporate External Input
+### Step 1.5 — Incorporate External Input
 
-Read results from Step 1.2 (web search) and Step 1.4 (Gemini review):
+Read results from Step 1.2 (web search):
 
 - **Web research**: extract specifically relevant patterns or community approaches. Tag
   findings as `source: research` so they are distinguishable from self-assessment.
-- **Gemini review**: incorporate valid critiques. Discard opinions that contradict evidence
-  from the actual codebase or your memory. Gemini's opinion is a second signal, not gospel.
 
-### Step 1.7 — Portfolio Decision
+### Step 1.6 — Portfolio Decision
 
 Classify each finding:
 
@@ -332,7 +315,6 @@ Agent: <agent-name>
   Staleness: <list or "none">
   Resource gaps: <list or "none">
   Research insights: <list or "none">
-  Gemini critiques incorporated: <list or "none">
   Immediate actions taken: <list or "none">
   Proposed actions (needs approval): <list or "none">
 
