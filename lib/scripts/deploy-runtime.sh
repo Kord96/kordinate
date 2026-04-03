@@ -80,6 +80,13 @@ deploy_agent() {
     done
   fi
 
+  # Preflight script (if agent provides one)
+  if [ -f "$SRC/scripts/preflight.sh" ]; then
+    cp "$SRC/scripts/preflight.sh" "$DST/preflight.sh"
+    chmod +x "$DST/preflight.sh"
+    log "  preflight.sh installed"
+  fi
+
   # Generate CLAUDE.md — Claude needs this to discover identity and skills
   {
     echo "@identity.md"
