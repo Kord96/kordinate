@@ -25,7 +25,7 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "augur"]
+          command: ["/bin/bash", "-c", "bash /data/repos/kordinate/lib/scripts/setup-agent-dir.sh augur && KORDINATE_HOME=/data/repos/kordinate bash /data/repos/kordinate/lib/scripts/deploy-runtime.sh augur"]
           env:
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
@@ -42,12 +42,13 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cp -r /data/repos/kordinate/lib/agent-pod-daemon /tmp/daemon
+              cd /tmp/daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: augur }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -92,7 +93,7 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "charon"]
+          command: ["/bin/bash", "-c", "bash /data/repos/kordinate/lib/scripts/setup-agent-dir.sh charon && KORDINATE_HOME=/data/repos/kordinate bash /data/repos/kordinate/lib/scripts/deploy-runtime.sh charon"]
           env:
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
@@ -110,12 +111,13 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg /kord/ssh 2>/dev/null || true
-              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cp -r /data/repos/kordinate/lib/agent-pod-daemon /tmp/daemon
+              cd /tmp/daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: charon }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -158,7 +160,7 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "warden"]
+          command: ["/bin/bash", "-c", "bash /data/repos/kordinate/lib/scripts/setup-agent-dir.sh warden && KORDINATE_HOME=/data/repos/kordinate bash /data/repos/kordinate/lib/scripts/deploy-runtime.sh warden"]
           env:
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
@@ -175,12 +177,13 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cp -r /data/repos/kordinate/lib/agent-pod-daemon /tmp/daemon
+              cd /tmp/daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: warden }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -223,7 +226,7 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "sauron"]
+          command: ["/bin/bash", "-c", "bash /data/repos/kordinate/lib/scripts/setup-agent-dir.sh sauron && KORDINATE_HOME=/data/repos/kordinate bash /data/repos/kordinate/lib/scripts/deploy-runtime.sh sauron"]
           env:
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
@@ -240,12 +243,13 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cp -r /data/repos/kordinate/lib/agent-pod-daemon /tmp/daemon
+              cd /tmp/daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: sauron }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }
@@ -288,7 +292,7 @@ spec:
       initContainers:
         - name: setup
           image: localhost:30500/agent-factory:latest
-          command: ["/bin/bash", "/data/repos/kordinate/lib/scripts/setup-agent-dir.sh", "alfred"]
+          command: ["/bin/bash", "-c", "bash /data/repos/kordinate/lib/scripts/setup-agent-dir.sh alfred && KORDINATE_HOME=/data/repos/kordinate bash /data/repos/kordinate/lib/scripts/deploy-runtime.sh alfred"]
           env:
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
           volumeMounts:
@@ -305,12 +309,13 @@ spec:
               ln -sfn "$AGENT_PROJECT_DIR/.claude" "$HOME/.claude" 2>/dev/null
               cp /kord/claude-home.json "$AGENT_PROJECT_DIR/.claude.json" 2>/dev/null
               chmod 700 /kord/pass /kord/gnupg 2>/dev/null || true
-              cd /data/repos/kordinate/lib/agent-pod-daemon && npm install --production 2>/dev/null
+              cp -r /data/repos/kordinate/lib/agent-pod-daemon /tmp/daemon
+              cd /tmp/daemon && npm install --production 2>/dev/null
               exec node daemon.js
           env:
             - { name: AGENT_NAME, value: alfred }
             - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.master.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /data/repos/kordinate }
             - { name: PROJECTS_ROOT, value: /data/repos }

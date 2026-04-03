@@ -9,12 +9,15 @@ kind: ScaledObject
 metadata:
   name: agent-augur
 spec:
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 300
   scaleTargetRef:
     name: agent-augur
   triggers:
     - type: kafka
       metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        bootstrapServers: kafka-kafka-bootstrap.master.svc.cluster.local:9092
         consumerGroup: agent-augur
         topic: jobs.augur
         lagThreshold: "1"
@@ -24,12 +27,15 @@ kind: ScaledObject
 metadata:
   name: agent-charon
 spec:
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 300
   scaleTargetRef:
     name: agent-charon
   triggers:
     - type: kafka
       metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        bootstrapServers: kafka-kafka-bootstrap.master.svc.cluster.local:9092
         consumerGroup: agent-charon
         topic: jobs.charon
         lagThreshold: "1"
@@ -39,12 +45,15 @@ kind: ScaledObject
 metadata:
   name: agent-warden
 spec:
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 300
   scaleTargetRef:
     name: agent-warden
   triggers:
     - type: kafka
       metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        bootstrapServers: kafka-kafka-bootstrap.master.svc.cluster.local:9092
         consumerGroup: agent-warden
         topic: jobs.warden
         lagThreshold: "1"
@@ -54,12 +63,15 @@ kind: ScaledObject
 metadata:
   name: agent-sauron
 spec:
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 300
   scaleTargetRef:
     name: agent-sauron
   triggers:
     - type: kafka
       metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        bootstrapServers: kafka-kafka-bootstrap.master.svc.cluster.local:9092
         consumerGroup: agent-sauron
         topic: jobs.sauron
         lagThreshold: "1"
@@ -69,12 +81,15 @@ kind: ScaledObject
 metadata:
   name: agent-alfred
 spec:
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 300
   scaleTargetRef:
     name: agent-alfred
   triggers:
     - type: kafka
       metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        bootstrapServers: kafka-kafka-bootstrap.master.svc.cluster.local:9092
         consumerGroup: agent-alfred
         topic: jobs.alfred
         lagThreshold: "1"

@@ -27,7 +27,8 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              cd /data/repos/kordinate/lib/job-router && npm install --production 2>/dev/null
+              cp -r /data/repos/kordinate/lib/job-router /tmp/router
+              cd /tmp/router && npm install --production 2>/dev/null
               exec node router.js
           env:
             - name: PORT
