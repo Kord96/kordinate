@@ -23,11 +23,15 @@ spec:
               # Copy repo to /app, install deps
               cp -r /repo/kordinate-docs/. /app/
               npm install 2>/dev/null
-              # Background sync: copy changed source files every 3s
+              # Background sync: only copy when git-sync pulls a new revision
+              LAST_REV=""
               (while true; do
                 sleep 3
-                cp -r /repo/kordinate-docs/src /repo/kordinate-docs/public /app/ 2>/dev/null
-                [ -f /repo/kordinate-docs/astro.config.mjs ] && cp /repo/kordinate-docs/astro.config.mjs /app/ 2>/dev/null
+                CURRENT_REV=$(readlink /repo/kordinate-docs 2>/dev/null)
+                if [ -n "$CURRENT_REV" ] && [ "$CURRENT_REV" != "$LAST_REV" ]; then
+                  cp -r /repo/kordinate-docs/src /repo/kordinate-docs/public /app/ 2>/dev/null
+                  LAST_REV="$CURRENT_REV"
+                fi
               done) &
               exec npm run dev -- --host 0.0.0.0
           env:
