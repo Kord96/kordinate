@@ -227,40 +227,24 @@ Read infra-atlas for `new_workload_contract`.
 
 ### Step 2 — Generate project
 
-All scaffolding derives from the atlas — no separate spec files.
+All scaffolding derives from the atlas — code only, no deployment artifacts.
+Deployment is charon's responsibility.
 
 ```
 <name>/
-  README.md                purpose, architecture, patterns, getting started
-  Dockerfile               multi-stage build, satisfies new_workload_contract
-  kustomize/
-    base/
-      deployment.yaml      app deployment — from atlas + contract
-      service.yaml         ClusterIP service
-      vitals.yaml          standalone vitals deployment
-      kustomization.yaml
-  src/                     code stubs per atlas component
-  tests/                   test stubs (detected_patterns → testing.md)
-  vitals/
-    Dockerfile             vitals container image
-    vitals.py              evaluation stub (failure_modes → detection sections)
-    config.yaml            evaluation config from atlas failure_modes
-  monitoring/
-    dashboards/            Grafana JSON stubs from atlas failure_modes.detection
-    alerts.yaml            alert rules from atlas failure_modes (includes VitalsMissing)
+  README.md       purpose, architecture, patterns, getting started
+  src/            code stubs per atlas component
+  tests/          test stubs (from detected_patterns → testing.md)
 ```
 
-**App deployment**: from atlas components + infra-atlas contract (labels, probes, resources).
-
-**Vitals deployment**: standalone pod. Evaluation sections derived from atlas
-`failure_modes[].detection.concern` — each unique concern becomes a vitals section.
-Always includes `process` and `deps`.
+**Code stubs**: from atlas components — one module per component with interfaces
+and placeholder implementations.
 
 **Tests**: for each `detected_patterns` entry that has a `testing.md`, read it
 and generate test stubs.
 
-**Monitoring**: for each `failure_modes` entry with `detection.signals`, generate
-alert rules. Dashboard panels from unique `detection.concern` categories.
+Do NOT generate: Dockerfile, kustomize/, vitals/, monitoring/. Those are
+charon's job and will be added when charon wraps the project for deployment.
 
 ### Step 3 — Create GitHub repo
 
@@ -270,13 +254,17 @@ gh repo create <owner>/<name> --private --description "<purpose>"
 
 Push initial scaffold.
 
-### Step 4 — Deploy
+### Step 4 — Delegate to charon
 
-Delegate to charon via the memory endpoint or report the delegation command:
-```bash
-curl -s http://job-router.kord.svc.cluster.local:3100/api/delegate \
-  -d '{"agent":"charon","prompt":"Deploy <name> to dev","project":"<name>","repo":"<url>"}'
+After the repo is created, delegate deployment wrapping to charon:
+
 ```
+Delegate to charon: "Wrap project <name> for deployment. Read the atlas at
+/kord/agents/augur/memory/projects/<name>/design-atlas.json"
+```
+
+Charon then adds the deployment layer (Dockerfile, manifests, git-sync config,
+vitals, monitoring).
 
 ### Step 5 — Report
 
@@ -286,8 +274,7 @@ curl -s http://job-router.kord.svc.cluster.local:3100/api/delegate \
 Repo: <url>
 Components: N stubs
 Tests: N stubs
-Manifests: kustomize ready
 
-For sauron: monitoring-spec at $MEM/monitoring-spec.yaml
-For charon: deployment-spec at $MEM/deployment-spec.yaml
+Delegated to charon for deployment wrapping (Dockerfile, manifests, vitals, monitoring).
+Charon reads: /kord/agents/augur/memory/projects/<name>/design-atlas.json
 ```

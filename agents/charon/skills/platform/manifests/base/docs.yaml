@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docs
+  labels: { app: docs }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: docs }
+  template:
+    metadata:
+      labels: { app: docs }
+    spec:
+      containers:
+        - name: docs
+          image: localhost:30500/docs:latest
+          workingDir: /app
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # Install deps from synced repo
+              cp /repo/kordinate-docs/package.json /repo/kordinate-docs/package-lock.json* /app/ 2>/dev/null
+              npm install 2>/dev/null
+              # Link source from git-sync volume
+              ln -sfn /repo/kordinate-docs/src /app/src
+              ln -sfn /repo/kordinate-docs/public /app/public
+              ln -sfn /repo/kordinate-docs/astro.config.mjs /app/astro.config.mjs 2>/dev/null
+              exec npm run dev
+          env:
+            - { name: CHOKIDAR_USEPOLLING, value: "true" }
+          ports:
+            - { containerPort: 4321 }
+          volumeMounts:
+            - name: repo
+              mountPath: /repo
+              readOnly: true
+        - name: git-sync
+          image: registry.k8s.io/git-sync/git-sync:v4.4.1
+          args:
+            - --repo=https://github.com/Kord96/kordinate-docs.git
+            - --period=3s
+            - --root=/repo
+            - --link=kordinate-docs
+          volumeMounts:
+            - name: repo
+              mountPath: /repo
+      volumes:
+        - name: repo
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: docs
+spec:
+  selector:
+    app: docs
+  ports:
+    - port: 80
+      targetPort: 4321
