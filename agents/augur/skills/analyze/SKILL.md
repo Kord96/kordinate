@@ -127,7 +127,7 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **State** — Stores with concept vocabulary, readers/writers, persistence model.
 - **Failure modes** — Cascading failures for every external dep and stateful component. Detection signals, recovery steps. `"none"` if absent.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
-- **Stories** — When composing stories: read [story-schema.md](story-schema.md) and [writing-guide.md](writing-guide.md).
+- **Stories** — When composing stories: read [../../schemas/story-schema.md](../../schemas/story-schema.md) and [../../schemas/writing-guide.md](../../schemas/writing-guide.md).
 
 ### Step 3 — Gemini review (background)
 
@@ -139,7 +139,7 @@ Continue immediately.
 
 ### Step 4 — Write atlas.json
 
-Assemble into [atlas-schema.md](atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Incorporate valid Gemini critiques if available. Write to `$MEM/atlas.json`.
+Assemble into [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Incorporate valid Gemini critiques if available. Write to `$MEM/atlas.json`.
 
 If `--detect-only`: skip Phase 2, go to Report.
 
@@ -147,34 +147,7 @@ If `--detect-only`: skip Phase 2, go to Report.
 
 ## Phase 2 — Compose
 
-With all Phase 1 findings in context, compose stories and journeys together as one coherent thought per [story-schema.md](story-schema.md).
-
-### Step 5 — Compose the story tree
-
-Build a tree of stories that mirrors the atlas structure. Top-down per [story-schema.md](story-schema.md):
-
-**1. Root stories (3-5, one per atlas group).** For each group, write a root story that orients the reader: what components this group contains, how they relate, why this grouping exists. Root summaries are 2 paragraphs max, ~50-80 words. Set `parent: null`, list `children`.
-
-**2. Child stories (2-5 per root).** For each root, identify the concerns worth zooming into — a key flow, a data store, a failure mode, a design decision. Write a child story for each. Child summaries are 3 paragraphs max, ~80-120 words. Set `parent: "<root-id>"`. Children can reference atlas nodes from outside the parent's group when the concern crosses boundaries.
-
-**3. Journeys.** Always create `getting-started.yaml` — a teaching-order journey for someone new to the codebase, pulling stories from all groups in the sequence they should be read. Beyond that, create additional journeys for cross-cutting concerns that span multiple groups (e.g., resilience review, security audit). 3-8 stories per journey.
-
-**Getting-started journey requirements:**
-- The first story must orient with the domain model and purpose — what this system is and one concrete thing to follow through it.
-- Each story must identify its anchor — promote the best `grounded_in` reference to the anchor field (the one file:line a new developer should open first).
-- Include bridge text between each story — one sentence question that pulls the reader forward to the next story. Pattern: "[What you just learned]. But [question that pulls you forward]?"
-- Bridge text is not required for other journeys (e.g., resilience-review).
-
-Each story is assembled from building blocks:
-- **summary** (required) — short paragraphs, depth-dependent length
-- **structures** — nested components + typed edges
-- **flows** — ordered steps, typed
-- **observations** — evidence-backed findings
-- **rationale** — design decisions, trade-offs, alternatives
-
-All prose follows [writing-guide.md](writing-guide.md). For failure flows: include trigger, severity, detection, recovery. For data structures: use `reads`/`writes` edge types.
-
-**Typical output:** 3-5 root stories, 8-20 child stories, 0-3 journeys.
+With all Phase 1 findings in context, compose stories and journeys following [../../schemas/composition-guide.md](../../schemas/composition-guide.md). Read [../../schemas/story-schema.md](../../schemas/story-schema.md) for the YAML format.
 
 ### Step 6 — Refine (Detect-Compose-Refine)
 

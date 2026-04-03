@@ -1,251 +1,193 @@
 ---
 name: design
 description: >
-  Design a new project: structured top-down discussion with human, pattern selection
-  from concept catalog by abstraction level, design atlas for visual review, then
-  scaffold generation with monitoring/deployment/test specs for other agents.
-argument-hint: "<project-name> [--approve] [--scaffold]"
+  Design a new project: pattern recommendation from concept catalog, design atlas
+  with stories/journeys for visual review, monitoring/deployment/test specs for
+  agent handoff, and scaffold generation. Supports flag-driven modes for
+  workstation orchestration.
+argument-hint: "<project-name> [--patterns 'p1,p2,...'] [--approve] [--scaffold]"
 context: inherit
 ---
 
-Design a new project through a structured, top-down process. Decisions flow from
-architecture style down to implementation patterns. Each level constrains the next.
-The concept catalog (265 patterns, 80 monitoring guides, 160 testing guides, 58
-deployment guides) informs every choice.
+Design a new project. Each invocation does one focused task based on flags.
+The workstation Claude orchestrates the conversation with the human and calls
+this skill repeatedly as the design progresses.
 
-## Arguments
+## Modes
 
-`$ARGUMENTS` — Required: `<project-name>`. Optional:
-- `--approve` — approve existing design, generate agent handoff specs
-- `--scaffold` — generate code scaffold and create GitHub repo
+| Flag | What it does | Input | Output |
+|------|-------------|-------|--------|
+| (none) | Recommend patterns | Requirements in prompt | Pattern recommendations |
+| `--patterns "p1,p2,..."` | Generate design atlas | Approved pattern list | design-atlas.json + stories + journeys |
+| `--approve` | Generate agent specs | Existing design atlas | monitoring/deployment/test specs |
+| `--scaffold` | Generate code + repo | Approved design + specs | GitHub repo with stubs |
 
-## Phases
+## Shared References
 
-| Phase | Trigger | Output |
-|-------|---------|--------|
-| **Design** | `/design <name>` | `design-atlas.json` + stories |
-| **Approve** | `/design <name> --approve` | monitoring/deployment/test specs |
-| **Scaffold** | `/design <name> --scaffold` | GitHub repo with stubs + manifests |
+These files are shared with /analyze — read them when producing output:
+- [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) — atlas JSON structure
+- [../../schemas/schema.md](../../schemas/schema.md) — field-level details
+- [../../schemas/story-schema.md](../../schemas/story-schema.md) — story/journey YAML format
+- [../../schemas/composition-guide.md](../../schemas/composition-guide.md) — how to build story trees
+- [../../schemas/writing-guide.md](../../schemas/writing-guide.md) — prose style
+- [../../schemas/augur-output-contract.md](../../schemas/augur-output-contract.md) — downstream consumer contract
 
 ---
 
-## Phase 1 — Design
+## Mode: Recommend Patterns (default)
 
-Structured discussion with the human, working top-down through six decision levels.
-Each level narrows the options for the next. Present choices with rationale, confirm
-with the human before moving on.
+Invoked: `/design orders` with requirements in the prompt.
 
 ### Step 1 — Read context
 
-Before any questions, silently read:
-
 1. **Infra atlas** — `$AGENT_PROJECT_DIR/memory/global/infra-atlas.json`
-   - What services exist in dev (Kafka, Postgres, etc.)
-   - The `new_workload_contract` (metrics, logging, health, packaging requirements)
-   - If missing, ask charon to run `/survey` first
+   - Available services in dev, new_workload_contract
+   - If missing, respond: "Need infra atlas. Ask charon to run /survey first."
 
 2. **Concept indexes** — `memory/global/concepts.md` and `memory/global/anti-patterns.md`
-   - Know the full catalog before advising
+   - Note the categories and entry counts
 
-### Step 2 — Understand purpose
+### Step 2 — Understand requirements
 
-Ask the human ONE focused question:
+The prompt contains requirements from the human (relayed by the workstation Claude).
+Extract:
+- Purpose — what the service does
+- Inputs/outputs — what data enters and leaves
+- Scale — single instance or horizontally scaled
+- Constraints — language, framework, timeline
 
-> "What does this service do? Describe the core job in 1-2 sentences."
+### Step 3 — Select patterns top-down
 
-From their answer, infer:
-- Is it a service, library, CLI tool, or pipeline?
-- Does it process events, serve APIs, transform data, or orchestrate work?
-- What enters and what leaves?
+Work through the concept catalog by abstraction level. At each level, browse
+the relevant **categories** in `concepts.md` — don't hardcode pattern names.
+Read concept summaries from the index to find fits. Only read full `concept.md`
+files for the strongest candidates.
 
-Summarize your understanding and confirm before proceeding.
+**Level 1 — Architecture** (categories: `architecture`, `structural`)
+Pick 1-2 patterns that define the overall structure. These constrain everything below.
 
-### Step 3 — Decision levels
+**Level 2 — Domain model** (categories: `data`, `storage`)
+Based on Level 1, what data patterns fit? Event sourcing, aggregates, repositories?
 
-Work through each level in order. At each level, present your recommendation with
-rationale, then confirm. Don't dump all levels at once — one level per exchange.
+**Level 3 — Communication** (categories: `integration`, `messaging`, `api`)
+How data enters and leaves. Cross-reference with infra atlas: what's available in dev?
 
----
+**Level 4 — Resilience** (categories: `resilience`, `error-handling`)
+For each external dependency from Level 3, which resilience patterns apply?
+This level is mostly derived — present as a package, not individual questions.
 
-#### Level 1: Architecture style (constrains everything)
+**Level 5 — Data storage** (categories: `storage`, `data`)
+Based on Levels 2 and 3, what storage approach? Check infra atlas for availability.
 
-Based on the purpose, recommend ONE primary architecture style:
+**Level 6 — Cross-cutting** (categories: `security`, `lifecycle`, `distributed`)
+Auth, feature flags, tracing, graceful shutdown.
 
-| If the service... | Recommend | Concept |
-|-------------------|-----------|---------|
-| Has a clear domain with complex business rules | Hexagonal / Clean Architecture | hexagonal |
-| Reacts to events from other services | Event-driven architecture | event-driven |
-| Exposes a CRUD API with simple logic | Layered / MVC | layered |
-| Orchestrates multiple services | Orchestrator / Saga coordinator | saga |
-| Is a reusable library | Module / Package structure | (no concept) |
-| Processes data in batches | Pipeline / ETL | batch-processing |
+### Step 4 — Report recommendations
 
-**Ask**: "I recommend [style] because [reason]. Does this fit, or do you see it differently?"
-
----
-
-#### Level 2: Domain model (what's the core data shape?)
-
-Based on the architecture style, recommend the domain model approach:
-
-| If level 1 is... | Options | Key question for human |
-|-------------------|---------|----------------------|
-| Hexagonal | Aggregate + entities, or simple repository | "Is the data model complex enough for aggregates, or is a flat repository sufficient?" |
-| Event-driven | Event sourcing vs state-based | "Should we reconstruct state from events, or just store current state?" |
-| Layered | Active record vs repository | "Simple data-object mapping, or explicit repository layer?" |
-| Pipeline | Stream transforms vs batch | "Continuous stream processing or batch windows?" |
-
-Read `memory/global/concepts/<chosen>/concept.md` to inform the recommendation.
-
----
-
-#### Level 3: Communication (how data enters and leaves)
-
-Based on the purpose and available infrastructure from infra-atlas:
-
-**Inbound** — how data arrives:
-- REST API (`api-gateway`, `rest-api`)
-- Kafka consumer (`consumer-group`) — available at `kafka-kafka-bootstrap.dev.svc.cluster.local:9092`
-- gRPC (`grpc`)
-- Webhook receiver (`webhook`)
-- Scheduled/cron (`batch-processing`)
-
-**Outbound** — how results leave:
-- Kafka producer
-- API calls to other services
-- Database writes
-- Webhook dispatch
-
-For each external service the project calls, note it — this feeds Level 4.
-
-**Ask**: "This service receives [X] via [method] and produces [Y] via [method]. I see [service Z] is available in dev from the infra atlas. Sound right?"
-
----
-
-#### Level 4: Resilience (derived from Level 3)
-
-For each external dependency identified in Level 3, recommend resilience patterns.
-This level is mostly automated — don't ask the human for each one, just present the package:
-
-| External dependency type | Implied patterns |
-|--------------------------|-----------------|
-| HTTP API call | circuit-breaker, retry, timeout |
-| Database | connection-pool, retry |
-| Kafka consumer | dead-letter-queue, idempotent-consumer |
-| Kafka producer | retry, outbox (if exactly-once needed) |
-| Cache | cache-aside, fallback-on-miss |
-| External webhook | retry, circuit-breaker |
-
-For each recommended pattern, read its `concept.md` briefly to verify fit.
-
-**Present** (don't ask per-pattern): "For resilience, I'm including: [list with one-line reasons]. Any you'd remove or add?"
-
----
-
-#### Level 5: Data storage (derived from Levels 2 and 3)
-
-Based on the domain model and communication patterns:
-
-| If... | Storage recommendation |
-|-------|----------------------|
-| Event sourcing | Event store (Kafka topics or dedicated store) + snapshots |
-| Simple CRUD | PostgreSQL with repository pattern |
-| High-read, low-write | PostgreSQL + Redis cache-aside |
-| Stream processing | Kafka state stores or DuckDB |
-| Config/metadata only | ConfigMap or environment variables |
-
-Check infra-atlas: is the recommended storage already available in dev?
-If not, note it as "new infrastructure needed — charon will provision."
-
-**Ask**: "For storage I recommend [X]. [It's already available in dev / We'll need charon to set up X]. Good?"
-
----
-
-#### Level 6: Cross-cutting (always asked)
-
-Quick decisions on standard concerns:
-
-| Concern | Question | Default |
-|---------|----------|---------|
-| Auth | "Does this service need authentication? If so: API key, JWT, or OAuth?" | None for internal services |
-| Feature flags | "Need feature flags for gradual rollout?" | No |
-| Distributed tracing | "Part of a multi-service flow that needs tracing?" | Yes if >1 service interaction |
-
----
-
-### Step 4 — Compile pattern set
-
-After all levels, compile the final pattern list. For each selected pattern:
-
-1. Read `memory/global/concepts/<pattern>/concept.md` — extract the summary
-2. Check for `monitoring.md` → flag for monitoring spec
-3. Check for `testing.md` → flag for test spec
-4. Check for `deployment.md` → flag for deployment spec
-
-Present the complete list:
+For each recommended pattern, note:
+- Which concept catalog entry it maps to
+- Whether it has `monitoring.md`, `testing.md`, `deployment.md`
+- One-sentence rationale
 
 ```
-## Selected Patterns
+## Pattern Recommendations: <project>
 
-| # | Pattern | Level | Has Monitoring | Has Tests | Has Deploy |
-|---|---------|-------|----------------|-----------|------------|
-| 1 | hexagonal | architecture | ✓ | ✓ | ✓ |
-| 2 | consumer-group | communication | — | ✓ | — |
-| 3 | circuit-breaker | resilience | ✓ | ✓ | ✓ |
-| ... |
+Based on: <1-sentence requirements summary>
+Infrastructure: <available services from infra atlas>
+
+### Architecture
+- **hexagonal** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
+
+### Communication
+- **consumer-group** — [reason]. Has: testing ✓
+- **webhook** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
+
+### Resilience
+- **circuit-breaker** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
+- **retry** — [reason]. Has: testing ✓
+
+### Data
+- **event-sourcing** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
+
+### Cross-cutting
+- **distributed-tracing** — [reason]. Has: monitoring ✓
+
+New infrastructure needed: <list> or "none — all available in dev"
+
+To proceed: ask the workstation to call `/design <name> --patterns "hexagonal,consumer-group,circuit-breaker,retry,event-sourcing,distributed-tracing"`
 ```
 
-### Step 5 — Produce design atlas
+---
 
-Generate `design-atlas.json` in atlas v4 schema:
+## Mode: Generate Design Atlas (`--patterns`)
 
-- **components** — proposed modules based on architecture style
-- **detected_patterns** — all selected patterns with `confidence: 1.0`, `source: "design"`
-- **flows** — designed data flows from Level 3 decisions
-- **external_dependencies** — from Level 3, with endpoints from infra-atlas
-- **failure_modes** — from Level 4 resilience patterns + deployment.md files
-- **domain_model** — from Level 2
+Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,retry,event-sourcing"`
+
+### Step 1 — Load patterns
+
+For each pattern in the comma-separated list:
+1. Read `memory/global/concepts/<pattern>/concept.md`
+2. Note availability of `monitoring.md`, `testing.md`, `deployment.md`
+
+### Step 2 — Read infra atlas
+
+Read `$AGENT_PROJECT_DIR/memory/global/infra-atlas.json` for:
+- Service endpoints (for external_dependencies in atlas)
+- new_workload_contract (for compliance)
+
+### Step 3 — Produce design atlas
+
+Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) v4 format:
+
+- **components** — proposed modules based on the architecture pattern
+- **detected_patterns** — all selected patterns, `confidence: 1.0`, `source: "design"`
+- **flows** — designed data flows based on communication patterns
+- **external_dependencies** — with endpoints from infra atlas
+- **failure_modes** — anticipated failures from resilience patterns
+- **domain_model** — from the data patterns
 - **debt** — empty (score: 0, grade: A)
 - **metadata.analysis_mode** — `"design"`
 - **metadata.status** — `"draft"`
-- **metadata.patterns_with_monitoring** — list of patterns that have monitoring.md
-- **metadata.patterns_with_tests** — list of patterns that have testing.md
-- **metadata.patterns_with_deployment** — list of patterns that have deployment.md
-- **metadata.new_infrastructure** — list of services not in infra-atlas that charon needs to provision
+- **metadata.patterns_with_monitoring** — patterns that have monitoring.md
+- **metadata.patterns_with_tests** — patterns that have testing.md
+- **metadata.patterns_with_deployment** — patterns that have deployment.md
+- **metadata.new_infrastructure** — services not in infra atlas
 
-Also generate stories — same schema as /analyze output:
-- Root stories per component group
-- Child stories for key flows and design decisions
-- Rationale blocks explaining why each pattern was chosen, citing concept.md
+### Step 4 — Compose stories and journeys
 
-Write to `$MEM/design-atlas.json` and `$MEM/stories/`.
+Follow [../../schemas/composition-guide.md](../../schemas/composition-guide.md).
 
-### Step 6 — Present for review
+For a design atlas, stories explain the PROPOSED architecture:
+- Root stories per component group — what it does and why
+- Child stories for key flows — how data moves through the design
+- Child stories for design decisions — why this pattern was chosen (use rationale blocks)
+- Getting-started journey — the reading order for someone onboarding to this new project
+
+Write to `$MEM/stories/` and `$MEM/journeys/`.
+
+### Step 5 — Report
 
 ```
-## Design: <project-name>
+## Design Atlas: <project>
 
-**Purpose**: <one sentence>
-**Architecture**: <level 1 choice>
-**Components** (N): <names>
-**Patterns** (N): <names grouped by level>
-**Flows** (N): <names>
-**External deps**: <list with endpoints from infra-atlas>
-**New infrastructure needed**: <list for charon> or "none"
+Components (N): <names>
+Patterns (N): <grouped by level>
+Flows (N): <names>
+Stories: N root, N child
+Journeys: N
 
-Design atlas: $MEM/design-atlas.json
-Stories: $MEM/stories/
+Written to: $MEM/design-atlas.json, $MEM/stories/, $MEM/journeys/
 
-Review, then:
+Review the design. Then:
 - To approve: `/design <name> --approve`
-- To change: tell me what to modify
+- To change patterns: `/design <name> --patterns "new,list"`
 ```
 
 ---
 
-## Phase 2 — Approve
+## Mode: Approve (`--approve`)
 
-Lock the design and generate agent handoff specs.
+Invoked: `/design orders --approve`
 
 ### Step 1 — Read design atlas
 
@@ -262,17 +204,12 @@ Write `$MEM/monitoring-spec.yaml`:
 version: "1"
 project: <name>
 source: design-atlas.json
-contract:
-  # from infra-atlas new_workload_contract.observability
-  endpoint: /metrics
-  format: prometheus
-  logging: { output: stdout, format: json, fields: [level, component, event, timestamp] }
+contract:  # from infra-atlas new_workload_contract.observability
 metrics:
   - name: <metric>
     type: counter|gauge|histogram
     labels: [<labels>]
     pattern: <source pattern>
-    description: <from monitoring.md>
 alerts:
   - name: <alert>
     condition: <from monitoring.md>
@@ -287,35 +224,26 @@ dashboards:
 
 For each pattern in `metadata.patterns_with_deployment`:
 1. Read `memory/global/concepts/<pattern>/deployment.md`
-2. Extract rollout implications and pre-deploy checklist
+2. Extract rollout concerns and pre-deploy checklist
 
 Write `$MEM/deployment-spec.yaml`:
 ```yaml
 version: "1"
 project: <name>
 source: design-atlas.json
-contract:
-  # from infra-atlas new_workload_contract
-  health: { readiness: "GET /health", liveness: "GET /health" }
-  labels: { app: <name> }
-  image: localhost:30500/<name>:latest
-  manifests: kustomize
+contract:  # from infra-atlas new_workload_contract
 rollout_concerns:
   - pattern: <pattern>
     concern: <from deployment.md>
     pre_deploy: <checklist item>
-new_infrastructure:
-  # from metadata.new_infrastructure
-  - service: <name>
-    type: <postgres|redis|etc>
-    action: "charon to provision"
+new_infrastructure:  # from metadata.new_infrastructure
 ```
 
 ### Step 4 — Generate test spec
 
 For each pattern in `metadata.patterns_with_tests`:
 1. Read `memory/global/concepts/<pattern>/testing.md`
-2. Extract test categories and specific test cases
+2. Extract test cases by category
 
 Write `$MEM/test-spec.yaml`:
 ```yaml
@@ -324,34 +252,22 @@ project: <name>
 source: design-atlas.json
 suites:
   - pattern: <pattern>
-    unit:
-      - <test description from testing.md>
-    integration:
-      - <test description>
-    failure_injection:
-      - <test description>
+    unit: [<descriptions>]
+    integration: [<descriptions>]
+    failure_injection: [<descriptions>]
 ```
 
 ### Step 5 — Lock
 
 Update `design-atlas.json`: `metadata.status` → `"approved"`.
 
-```
-## Approved: <project-name>
-
-Specs:
-  monitoring-spec.yaml — N metrics, N alerts → sauron
-  deployment-spec.yaml — N rollout concerns → charon
-  test-spec.yaml — N test suites → developer
-
-Next: `/design <name> --scaffold`
-```
+Report specs generated with counts.
 
 ---
 
-## Phase 3 — Scaffold
+## Mode: Scaffold (`--scaffold`)
 
-Generate code and create the repo.
+Invoked: `/design orders --scaffold`
 
 ### Step 1 — Verify
 
@@ -359,8 +275,6 @@ Read `$MEM/design-atlas.json` (`metadata.status` must be `"approved"`).
 Read all three spec files.
 
 ### Step 2 — Generate project
-
-Based on the design atlas, generate:
 
 ```
 <name>/
@@ -378,10 +292,9 @@ Based on the design atlas, generate:
     alerts.yaml          Prometheus rules from monitoring-spec
 ```
 
-Source stubs implement the selected patterns' interfaces with TODO placeholders
-for business logic. Each file references which pattern it implements.
+Stubs implement pattern interfaces with TODO placeholders.
 
-### Step 3 — Create repo
+### Step 3 — Create GitHub repo
 
 ```bash
 gh repo create <owner>/<name> --private --description "<purpose>"
@@ -391,7 +304,7 @@ Push initial scaffold.
 
 ### Step 4 — Deploy
 
-Delegate to charon:
+Delegate to charon via the memory endpoint or report the delegation command:
 ```bash
 curl -s http://job-router.kord.svc.cluster.local:3100/api/delegate \
   -d '{"agent":"charon","prompt":"Deploy <name> to dev","project":"<name>","repo":"<url>"}'
@@ -407,8 +320,6 @@ Components: N stubs
 Tests: N stubs
 Manifests: kustomize ready
 
-Next steps:
-  Developer: clone, implement TODOs, push
-  Sauron: delegate "implement monitoring for <name>" with monitoring-spec
-  Charon: redeploy after code changes via /roll
+For sauron: monitoring-spec at $MEM/monitoring-spec.yaml
+For charon: deployment-spec at $MEM/deployment-spec.yaml
 ```
