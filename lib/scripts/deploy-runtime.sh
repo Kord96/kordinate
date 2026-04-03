@@ -23,18 +23,35 @@ deploy_agent() {
   local DST="$RUNTIME/agents/$AGENT"
 
   if [ ! -d "$SRC" ]; then
-    log "WARN: no source for agent $AGENT"
+    log "WARN: no source dir at $SRC"
     return
   fi
 
-  log "deploying $AGENT..."
+  log "deploying $AGENT (src=$SRC dst=$DST)..."
 
   # Memory: recursive copy, don't overwrite scribe's merged files
   if [ -d "$SRC/memory" ]; then
     mkdir -p "$DST/memory/global"
-    cp -rn "$SRC/memory/." "$DST/memory/global/" 2>/dev/null || true
+    local src_count=$(find "$SRC/memory" -type f | wc -l)
+    log "  memory source: $SRC/memory ($src_count files)"
+    # cp -rn requires GNU coreutils (BusyBox cp lacks -n / --no-clobber).
+    # Fall back to a find-based copy if cp -n is not supported.
+    if cp --help 2>&1 | grep -q 'no-clobber\|-n'; then
+      cp -rn "$SRC/memory/." "$DST/memory/global/"
+    else
+      log "  WARN: cp -n not available, using find-based no-clobber copy"
+      (cd "$SRC/memory" && find . -type f) | while read -r f; do
+        if [ ! -e "$DST/memory/global/$f" ]; then
+          mkdir -p "$(dirname "$DST/memory/global/$f")"
+          cp "$SRC/memory/$f" "$DST/memory/global/$f"
+        fi
+      done
+    fi
     rm -rf "$DST/memory/global/dynamic" "$DST/memory/global/pending" 2>/dev/null || true
-    log "  memory/global/ seeded"
+    local dst_count=$(find "$DST/memory/global" -type f | wc -l)
+    log "  memory/global/ seeded ($dst_count files)"
+  else
+    log "  WARN: no memory dir at $SRC/memory"
   fi
 
   # Identity: strip frontmatter
@@ -73,6 +90,7 @@ deploy_team() {
   mkdir -p "$DST"
 
   if [ -d "$SRC" ]; then
+    log "team source: $SRC"
     for f in "$SRC/"*.md; do
       [ -f "$f" ] || continue
       local base=$(basename "$f")
@@ -80,6 +98,8 @@ deploy_team() {
       sed '/^---$/,/^---$/d' "$f" > "$DST/$base"
       log "team/memory/global/$base deployed"
     done
+  else
+    log "WARN: no shared dir at $SRC"
   fi
 
   # Generate team.md if missing

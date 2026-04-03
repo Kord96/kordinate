@@ -36,9 +36,6 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              mkdir -p "$HOME/.claude"
-              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
-              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: augur }
@@ -47,6 +44,11 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/repos }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -62,13 +64,9 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: claude-creds
-          secret:
-            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -102,9 +100,6 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              mkdir -p "$HOME/.claude"
-              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
-              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: charon }
@@ -113,6 +108,11 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/repos }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -128,13 +128,9 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: claude-creds
-          secret:
-            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -168,9 +164,6 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              mkdir -p "$HOME/.claude"
-              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
-              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: warden }
@@ -179,6 +172,11 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/repos }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -194,13 +192,9 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: claude-creds
-          secret:
-            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -234,9 +228,6 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              mkdir -p "$HOME/.claude"
-              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
-              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: sauron }
@@ -245,6 +236,11 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/repos }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -260,13 +256,9 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: claude-creds
-          secret:
-            secretName: claude-credentials
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -300,9 +292,6 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              mkdir -p "$HOME/.claude"
-              cp /secrets/credentials.json "$HOME/.claude/.credentials.json" 2>/dev/null
-              cp /secrets/claude.json "$HOME/.claude.json" 2>/dev/null
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: alfred }
@@ -311,6 +300,11 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/repos }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -326,10 +320,6 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: claude-creds, mountPath: /secrets, readOnly: true }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: claude-creds
-          secret:
-            secretName: claude-credentials

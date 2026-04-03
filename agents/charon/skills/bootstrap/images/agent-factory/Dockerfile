@@ -1,6 +1,6 @@
 FROM node:22-alpine
 
-RUN apk add --no-cache git gnupg pass bash python3 py3-yaml curl
+RUN apk add --no-cache git gnupg pass bash python3 py3-yaml curl coreutils
 
 # Create claude user (match workstation UID for shared PVC)
 RUN adduser -D -s /bin/bash -h /home/claude claude
