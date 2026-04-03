@@ -18,14 +18,18 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              # Install deps from synced repo
-              cp /repo/kordinate-docs/package.json /repo/kordinate-docs/package-lock.json* /app/ 2>/dev/null
+              # Wait for git-sync initial clone
+              while [ ! -d /repo/kordinate-docs/src ]; do sleep 1; done
+              # Copy repo to /app, install deps
+              cp -r /repo/kordinate-docs/. /app/
               npm install 2>/dev/null
-              # Link source from git-sync volume
-              ln -sfn /repo/kordinate-docs/src /app/src
-              ln -sfn /repo/kordinate-docs/public /app/public
-              ln -sfn /repo/kordinate-docs/astro.config.mjs /app/astro.config.mjs 2>/dev/null
-              exec npm run dev
+              # Background sync: copy changed source files every 3s
+              (while true; do
+                sleep 3
+                cp -r /repo/kordinate-docs/src /repo/kordinate-docs/public /app/ 2>/dev/null
+                [ -f /repo/kordinate-docs/astro.config.mjs ] && cp /repo/kordinate-docs/astro.config.mjs /app/ 2>/dev/null
+              done) &
+              exec npm run dev -- --host 0.0.0.0
           env:
             - { name: CHOKIDAR_USEPOLLING, value: "true" }
           ports:
