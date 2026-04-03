@@ -99,10 +99,16 @@ Alert rules are defined per-app based on vitals gauges (e.g., `vitals_deps == 0`
 
 ## Onboarding a New App
 
+**For new projects designed via augur `/design`:**
+The scaffold includes vitals deployment, dashboard stubs, and alert rules.
+Sauron's role is to implement the vitals evaluation logic and finalize dashboards
+from the monitoring-spec.yaml that augur produces.
+
+**For existing projects being onboarded manually:**
 1. Add the `app` label to all pods
-2. Optionally expose `/metrics` with `prometheus.io/scrape` annotation
-3. Deploy a vitals pod that evaluates health and derived metrics
+2. Expose `/metrics` with `prometheus.io/scrape` annotation
+3. Deploy a standalone vitals pod that evaluates health and derived metrics
 4. Add a Grafana dashboard
-5. Add alert rules for critical vitals gauges
+5. Add alert rules for critical vitals gauges (including VitalsMissing meta-alert)
 
 Vitals is not required for short-lived jobs or CronJobs. Platform infrastructure has its own health mechanisms and does not use vitals.

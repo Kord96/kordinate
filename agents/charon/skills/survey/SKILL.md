@@ -156,6 +156,19 @@ This file is in charon's global memory — all agents can read it.
         "readiness": "GET /health → 200 when ready to serve",
         "liveness": "GET /health → 200 when process is alive",
         "startup_grace": "30s"
+      },
+      "vitals": {
+        "model": "standalone deployment (one per app, not sidecar)",
+        "port": 9131,
+        "health_gauges": "vitals_<section>{check} — tri-state 0=FAIL, 1=WARNING, 2=OK",
+        "derived_metrics": "App-level aggregations computed from pod-level data",
+        "required_evaluations": ["process", "deps"],
+        "env": {
+          "PROMETHEUS_URL": "http://prometheus.master.svc.cluster.local:9191",
+          "LOKI_URL": "http://loki.master.svc.cluster.local:3100",
+          "APP_NAME": "<app label value>"
+        },
+        "meta_alert": "VitalsMissing: absent(vitals_process{app='<name>'}) for 5m"
       }
     },
     "packaging": {

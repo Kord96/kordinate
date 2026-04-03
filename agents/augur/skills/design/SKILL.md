@@ -215,9 +215,27 @@ alerts:
     condition: <from monitoring.md>
     severity: critical|warning
     pattern: <source pattern>
+  - name: VitalsMissing
+    condition: absent(vitals_process{app="<name>"}) for 5m
+    severity: critical
+    pattern: vitals-meta
 dashboards:
   - name: <dashboard>
     panels: [<metric references>]
+vitals:
+  # Standalone deployment — evaluates app health by querying Prometheus
+  deployment: standalone
+  port: 9131
+  prometheus_url: "http://prometheus.master.svc.cluster.local:9191"
+  loki_url: "http://loki.master.svc.cluster.local:3100"
+  evaluations:
+    - section: process
+      description: "Is the main process alive?"
+    - section: deps
+      description: "Are external dependencies reachable?"
+    # Additional sections derived from selected patterns:
+    # e.g., circuit-breaker → vitals_deps check for circuit state
+    # e.g., consumer-group → vitals_ingestion check for consumer lag
 ```
 
 ### Step 3 — Generate deployment spec
@@ -278,19 +296,42 @@ Read all three spec files.
 
 ```
 <name>/
-  README.md              purpose, architecture, patterns, getting started
-  Dockerfile             multi-stage, satisfies new_workload_contract
+  README.md                purpose, architecture, patterns, getting started
+  Dockerfile               multi-stage build for app, satisfies new_workload_contract
   kustomize/
     base/
-      deployment.yaml    from deployment-spec + contract
-      service.yaml
+      deployment.yaml      app deployment — from deployment-spec + contract
+      service.yaml         ClusterIP service for app
+      vitals.yaml          vitals deployment — standalone health evaluator
       kustomization.yaml
-  src/                   code stubs per component
-  tests/                 test stubs from test-spec
+  src/                     code stubs per component
+  tests/                   test stubs from test-spec
+  vitals/
+    Dockerfile             vitals container image
+    vitals.py              health evaluation script (queries Prometheus/Loki)
+    config.yaml            evaluation sections from monitoring-spec.vitals
   monitoring/
-    dashboards/          Grafana JSON from monitoring-spec
-    alerts.yaml          Prometheus rules from monitoring-spec
+    dashboards/            Grafana JSON from monitoring-spec
+    alerts.yaml            Prometheus rules from monitoring-spec (includes VitalsMissing)
 ```
+
+**App deployment** (`kustomize/base/deployment.yaml`):
+- App container with /metrics, app label, prometheus annotations
+- Resource limits from deployment-spec contract
+- Readiness/liveness probes at /health
+
+**Vitals deployment** (`kustomize/base/vitals.yaml`):
+- Standalone pod (separate from app) — one per app per namespace
+- Queries Prometheus for app metrics, evaluates health rules
+- Exposes health gauges on :9131 with prometheus.io/scrape annotation
+- Env vars: PROMETHEUS_URL, LOKI_URL, APP_NAME
+- Evaluation sections from monitoring-spec.yaml vitals.evaluations
+
+**Vitals script** (`vitals/vitals.py`):
+- Stub that implements the evaluation loop: query → evaluate → expose gauge
+- Sections configured via config.yaml (generated from monitoring-spec)
+- Each section produces a `vitals_<section>{check}` gauge (0=FAIL, 1=WARNING, 2=OK)
+- Always includes: `vitals_process` (is app alive) and `vitals_deps` (are deps reachable)
 
 Stubs implement pattern interfaces with TODO placeholders.
 
