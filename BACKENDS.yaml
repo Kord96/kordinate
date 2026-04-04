@@ -1,0 +1,76 @@
+version: 1
+backends:
+  anthropic-sonnet:
+    profile: anthropic
+    provider: anthropic
+    model: claude-sonnet-4-6
+    api_key_env: ANTHROPIC_API_KEY
+  anthropic-opus:
+    profile: anthropic
+    provider: anthropic
+    model: claude-opus-4-6
+    api_key_env: ANTHROPIC_API_KEY
+  deepseek-chat:
+    profile: openai
+    provider: openai
+    model: deepseek-chat
+    base_url: https://api.deepseek.com
+    api_key_env: DEEPSEEK_API_KEY
+  deepseek-reasoner:
+    profile: openai
+    provider: openai
+    model: deepseek-reasoner
+    base_url: https://api.deepseek.com
+    api_key_env: DEEPSEEK_API_KEY
+  gpt-5.2-codex:
+    profile: openai
+    provider: openai
+    model: gpt-5.2-codex
+    base_url: https://api.openai.com/v1
+    api_key_env: CODEX_API_KEY
+    extra_env:
+      CHATGPT_ACCOUNT_ID: ${CHATGPT_ACCOUNT_ID}
+      CLAUDE_CODE_USE_OPENAI: "1"
+  gpt-5.4:
+    profile: openai
+    provider: openai
+    model: gpt-5.4
+    base_url: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    extra_env:
+      CLAUDE_CODE_USE_OPENAI: "1"
+  gemini-3.1-pro-preview:
+    profile: openai
+    provider: openai
+    model: gemini-3.1-pro-preview
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    api_key_env: GEMINI_API_KEY
+  fireworks-glm-5:
+    profile: openai
+    provider: openai
+    model: accounts/fireworks/models/glm-5
+    base_url: https://api.fireworks.ai/inference/v1
+    api_key_env: FIREWORKS_API_KEY
+  fireworks-deepseek-v3p2:
+    profile: openai
+    provider: openai
+    model: accounts/fireworks/models/deepseek-v3p2
+    base_url: https://api.fireworks.ai/inference/v1
+    api_key_env: FIREWORKS_API_KEY
+selection_sets:
+  augur-comparison:
+    selection: first
+    backends:
+      - deepseek-reasoner
+      - gpt-5.4
+      - gemini-3.1-pro-preview
+      - fireworks-glm-5
+      - anthropic-opus
+  cheap-ops:
+    selection: first
+    backends:
+      - deepseek-chat
+  codex-ops:
+    selection: first
+    backends:
+      - gpt-5.2-codex

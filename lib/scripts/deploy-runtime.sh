@@ -14,6 +14,7 @@ set -euo pipefail
 
 REPO="${KORDINATE_HOME:-/data/repos/kordinate}"
 RUNTIME="${KORD_RUNTIME:-/kord}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[deploy-runtime] $*"; }
 
@@ -314,19 +315,33 @@ EOF
     log "  preflight.sh installed"
   fi
 
-  # Generate CLAUDE.md — Claude needs this to discover identity and skills
+  local AGENT_BUNDLE_NAME="AGENT.md"
+  local AGENT_BUNDLE_SRC="$SRC/INDEX.yaml"
+  local AGENT_BUNDLE_DST="$DST/$AGENT_BUNDLE_NAME"
+
+  if [ -f "$AGENT_BUNDLE_SRC" ]; then
+    python3 "$SCRIPT_DIR/generate-agent-bundle.py" "$SRC" "$AGENT_BUNDLE_DST"
+    log "  $AGENT_BUNDLE_NAME generated"
+  fi
+
+  # Generate CLAUDE.md — static shim only
   {
     echo "@identity.md"
+    if [ -f "$AGENT_BUNDLE_DST" ]; then
+      echo "@$AGENT_BUNDLE_NAME"
+    fi
+  } > "$DST/CLAUDE.md"
+  log "  CLAUDE.md generated"
+
+  # Write a separate skills index for human/runtime discoverability without mutating CLAUDE.md
+  {
+    echo "# Skills"
     echo ""
-    # List available skills
     if [ -d "$DST/skills" ]; then
-      echo "## Skills"
-      echo ""
       for skill_dir in "$DST/skills"/*/; do
         [ -d "$skill_dir" ] || continue
         local sname=$(basename "$skill_dir")
         if [ -f "$skill_dir/SKILL.md" ]; then
-          # Extract skill description from frontmatter
           local sdesc=$(sed -n 's/^description: *//p' "$skill_dir/SKILL.md" | head -1 | sed 's/^> *//')
           echo "- /$sname — $sdesc"
         else
@@ -334,8 +349,8 @@ EOF
         fi
       done
     fi
-  } > "$DST/CLAUDE.md"
-  log "  CLAUDE.md generated"
+  } > "$DST/SKILLS.md"
+  log "  SKILLS.md generated"
 
   log "  done"
 }
