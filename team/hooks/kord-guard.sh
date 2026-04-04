@@ -103,7 +103,7 @@ guard_bash() {
       # Special: merge validation = just block force push
       if [ "$validation" = "merge" ]; then
         echo "$cmd" | grep -q '\-\-force\|\-f ' && \
-          deny "Force push to main is not allowed. Use /merge to resolve conflicts."
+          deny "Force push to main is not allowed. Use /integrate to resolve conflicts."
         allow
       fi
 

@@ -12,17 +12,6 @@
             "command": "$KORDINATE_HOME/team/hooks/kord-guard.sh"
           }
         ]
-      },
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$KORDINATE_HOME/team/hooks/auto-merge.sh"
-          }
-        ]
       }
     ]
   },

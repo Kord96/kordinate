@@ -1,178 +1,311 @@
 #!/usr/bin/env bash
-# Start Claude Code in an isolated git worktree.
-# - In tmux: worktree is keyed by tmux session+window (reused on re-run = auto resume)
-# - Outside tmux: falls back to timestamp-based worktree
-# - On exit: commits uncommitted work, cleans up if no changes
-# Usage: bin/claude-session [claude args...]
+# Start Claude Code with explicit worktree selection.
+#
+# Behavior:
+# - Outside tmux: attach/create 0-general and rerun inside it
+# - Outside a git repo: run Claude directly
+# - Inside an existing worktree: use it as-is
+# - From repo main tree: select existing worktree, create a new worktree, or inspect current tree
+#
+# Launcher-only: no implicit pull/commit/push/merge/cleanup.
+# Usage: bin/claude-session [--pick-worktree] [--new-worktree <slug>] [--select-worktree <selector>] [--inspect-current-tree] [claude args...]
 
-set -e
+set -euo pipefail
 
-CLAUDE="claude"
+CLAUDE_BIN="claude"
+TMUX_DEFAULT="0-general"
+PICK_WORKTREE=0
+INSPECT_CURRENT_TREE=0
+NEW_WORKTREE_SLUG=""
+SELECT_WORKTREE=""
+CLAUDE_ARGS=()
 
-# If not in tmux, start/attach to 0-general and re-run inside it
-if [ -z "$TMUX" ]; then
-  TMUX_DEFAULT="0-general"
+usage() {
+  cat <<'EOF'
+Usage: claude-session [launcher options] [--] [claude args...]
+
+Launcher options:
+  --pick-worktree             Show worktree picker when launched from repo main tree
+  --new-worktree <slug>       Create or reuse the named session worktree
+  --select-worktree <value>   Select an existing worktree by path, slug, or session/* branch
+  --inspect-current-tree      Run Claude in the current tree without creating/selecting a worktree
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --pick-worktree)
+      PICK_WORKTREE=1
+      shift
+      ;;
+    --inspect-current-tree)
+      INSPECT_CURRENT_TREE=1
+      shift
+      ;;
+    --new-worktree)
+      NEW_WORKTREE_SLUG="${2:-}"
+      [[ -n "$NEW_WORKTREE_SLUG" ]] || { echo "Missing value for --new-worktree" >&2; exit 1; }
+      shift 2
+      ;;
+    --select-worktree)
+      SELECT_WORKTREE="${2:-}"
+      [[ -n "$SELECT_WORKTREE" ]] || { echo "Missing value for --select-worktree" >&2; exit 1; }
+      shift 2
+      ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      CLAUDE_ARGS+=("$@")
+      break
+      ;;
+    *)
+      CLAUDE_ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+rerun_inside_tmux() {
+  local cmd
+  printf -v cmd '%q ' "$0"
+  if [[ $PICK_WORKTREE -eq 1 ]]; then
+    cmd+="--pick-worktree "
+  fi
+  if [[ $INSPECT_CURRENT_TREE -eq 1 ]]; then
+    cmd+="--inspect-current-tree "
+  fi
+  if [[ -n "$NEW_WORKTREE_SLUG" ]]; then
+    printf -v cmd '%s--new-worktree %q ' "$cmd" "$NEW_WORKTREE_SLUG"
+  fi
+  if [[ -n "$SELECT_WORKTREE" ]]; then
+    printf -v cmd '%s--select-worktree %q ' "$cmd" "$SELECT_WORKTREE"
+  fi
+  for arg in "${CLAUDE_ARGS[@]}"; do
+    printf -v cmd '%s%q ' "$cmd" "$arg"
+  done
+  exec command tmux attach-session -t "$TMUX_DEFAULT" \; send-keys "$cmd" Enter
+}
+
+if [[ -z "${TMUX:-}" ]]; then
   command tmux has-session -t "$TMUX_DEFAULT" 2>/dev/null || command tmux new-session -d -s "$TMUX_DEFAULT"
-  exec command tmux attach-session -t "$TMUX_DEFAULT" \; send-keys "$0 $*" Enter
+  rerun_inside_tmux
 fi
 
-repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
-if [ -z "$repo_root" ]; then
-  echo "Not in a git repo — running claude directly"
-  exec $CLAUDE "$@"
-fi
-
-# Ensure tmux session name matches the repo name
-repo=$(basename "$repo_root")
-if [ -n "$TMUX" ]; then
-  current_session=$(tmux display-message -p '#{session_name}')
-  if [ "$current_session" != "$repo" ]; then
-    if tmux has-session -t "=$repo" 2>/dev/null; then
-      # Session exists — create a new window there
-      tmux new-window -t "=$repo" -c "$repo_root" "$0 $*"
-      exit 0
-    else
-      # No session with repo name — create one and attach
-      tmux new-session -d -s "$repo" -c "$repo_root" "$0 $*"
-      tmux switch-client -t "=$repo"
-      exit 0
-    fi
-  fi
-fi
-
-# Already in a worktree? Just run claude.
-main_worktree=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
-if [ "$repo_root" != "$main_worktree" ]; then
-  echo "Already in a worktree — running claude directly"
-  exec $CLAUDE "$@"
-fi
-
-# Create a worktree. All runtime state lives at ~/.claude/ — nothing to copy.
-create_worktree() {
-  local wt_path="$1" branch_arg="$2"
-  git -C "$repo_root" worktree add "$wt_path" $branch_arg
-  mkdir -p "$wt_path/.claude/agent-state"
+safe_fetch() {
+  local tree_root="$1"
+  git -C "$tree_root" remote 2>/dev/null | grep -q . || return 0
+  git -C "$tree_root" fetch --all --prune 2>/dev/null || true
 }
 
-# Create a parallel ~/.kord/ worktree for memory isolation.
-# Each session gets its own kord branch so agent memory writes don't conflict.
-KORD_HOME="${KORDINATE_HOME:-$HOME/.kord}"
-kord_branch=""
-create_kord_worktree() {
-  local sid="$1"
-  # Only if ~/.kord/ is a git repo
-  git -C "$KORD_HOME" rev-parse --git-dir >/dev/null 2>&1 || return 0
-  kord_branch="session/${sid}"
-  local kord_wt="$KORD_HOME/.worktrees/${sid}"
-  if [ -d "$kord_wt" ]; then
-    return 0  # already exists (resume)
-  elif git -C "$KORD_HOME" show-ref --verify --quiet "refs/heads/$kord_branch" 2>/dev/null; then
-    # Branch exists but worktree gone — recreate
-    git -C "$KORD_HOME" worktree add "$kord_wt" "$kord_branch"
+prune_worktrees() {
+  local repo_root="$1"
+  git -C "$repo_root" worktree prune >/dev/null 2>&1 || true
+}
+
+current_tree_root() {
+  git rev-parse --show-toplevel 2>/dev/null || true
+}
+
+main_repo_root() {
+  local common_dir candidate
+  common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)
+  candidate="${common_dir%/.git}"
+  if [[ -n "$candidate" && -d "$candidate/.git" ]]; then
+    printf '%s\n' "$candidate"
+    return 0
+  fi
+  git rev-parse --show-toplevel 2>/dev/null || true
+}
+
+sanitize_slug() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//; s/-+/-/g'
+}
+
+print_sync_summary() {
+  local tree_root="$1"
+  local branch dirty upstream ahead=0 behind=0 main_behind=0
+  branch=$(git -C "$tree_root" branch --show-current 2>/dev/null || echo "detached")
+  if [[ -n "$(git -C "$tree_root" status --porcelain 2>/dev/null)" ]]; then
+    dirty="dirty"
   else
-    # New session — branch from main
-    git -C "$KORD_HOME" worktree add "$kord_wt" -b "$kord_branch" main
+    dirty="clean"
   fi
-  export KORDINATE_HOME="$kord_wt"
+  if upstream=$(git -C "$tree_root" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null); then
+    read -r ahead behind < <(git -C "$tree_root" rev-list --left-right --count HEAD..."$upstream" 2>/dev/null || printf '0 0')
+  fi
+  if git -C "$tree_root" show-ref --verify --quiet refs/remotes/origin/main 2>/dev/null; then
+    read -r _ main_behind < <(git -C "$tree_root" rev-list --left-right --count HEAD...origin/main 2>/dev/null || printf '0 0')
+  elif git -C "$tree_root" show-ref --verify --quiet refs/heads/main 2>/dev/null; then
+    read -r _ main_behind < <(git -C "$tree_root" rev-list --left-right --count HEAD...main 2>/dev/null || printf '0 0')
+  fi
+  printf 'branch:%s upstream:+%s/-%s main:+%s %s\n' "$branch" "$ahead" "$behind" "$main_behind" "$dirty"
 }
 
-cleanup_kord_worktree() {
-  local sid="$1"
-  git -C "$KORD_HOME" rev-parse --git-dir >/dev/null 2>&1 || return 0
-  local kord_wt="$KORD_HOME/.worktrees/${sid}"
-  local kord_branch="session/${sid}"
-  [ -d "$kord_wt" ] || return 0
-  # Commit any uncommitted memory changes
-  local kord_dirty=$(git -C "$kord_wt" status --porcelain 2>/dev/null)
-  if [ -n "$kord_dirty" ]; then
-    git -C "$kord_wt" add -A
-    git -C "$kord_wt" commit -m "memory: session $sid exit" 2>/dev/null || true
-  fi
-  local kord_commits=$(git -C "$KORD_HOME" log main.."$kord_branch" --oneline 2>/dev/null | wc -l | tr -d ' ')
-  if [ "$kord_commits" -eq 0 ]; then
-    git -C "$KORD_HOME" worktree remove "$kord_wt" 2>/dev/null || true
-    git -C "$KORD_HOME" branch -d "$kord_branch" 2>/dev/null || true
-  fi
-}
-
-# Generate session ID: tmux-based (stable) or timestamp (fallback)
-if [ -n "$TMUX" ]; then
-  tmux_window=$(tmux display-message -p '#{window_index}')
-  # Window 0 stays on main — no worktree
-  if [ "$tmux_window" = "0" ]; then
-    echo "Window 0 — running on main directly"
-    exec $CLAUDE "$@"
-  fi
-  session_id="w${tmux_window}-${repo}"
-else
-  session_id="$(date +%Y%m%d-%H%M%S)-${repo}"
-fi
-
-branch="session/${session_id}"
-worktree="${repo_root}/.worktrees/${session_id}"
-
-# Try --continue, fall back to fresh start if no conversation exists
 run_claude_continue() {
+  local exit_code
   set +e
-  $CLAUDE --continue "$@"
+  "$CLAUDE_BIN" --continue "${CLAUDE_ARGS[@]}"
   exit_code=$?
   set -e
-  if [ $exit_code -ne 0 ]; then
+  if [[ $exit_code -ne 0 ]]; then
     echo "No prior conversation — starting fresh"
-    set +e
-    $CLAUDE "$@"
-    exit_code=$?
-    set -e
+    exec "$CLAUDE_BIN" "${CLAUDE_ARGS[@]}"
+  fi
+  return 0
+}
+
+run_claude_fresh() {
+  exec "$CLAUDE_BIN" "${CLAUDE_ARGS[@]}"
+}
+
+enter_tree() {
+  local tree_root="$1"
+  local mode="${2:-resume}"
+  safe_fetch "$tree_root"
+  cd "$tree_root"
+  printf 'Using %s\n' "$tree_root"
+  print_sync_summary "$tree_root"
+  if [[ "$mode" == "fresh" ]]; then
+    run_claude_fresh
+  else
+    run_claude_continue
   fi
 }
 
-# Reuse existing worktree if it exists (auto-resume)
-if [ -d "$worktree" ]; then
-  create_kord_worktree "$session_id"
-  echo "Resuming session: $worktree (branch: $branch)"
-  cd "$worktree"
-  run_claude_continue "$@"
-# Branch exists but worktree was cleaned up — recreate worktree and resume
-elif git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
-  create_worktree "$worktree" "$branch"
-  create_kord_worktree "$session_id"
-  echo "Resuming session (worktree recreated): $worktree (branch: $branch)"
-  cd "$worktree"
-  run_claude_continue "$@"
-# Fresh session
-else
-  git -C "$repo_root" pull --ff-only 2>/dev/null || true
-  create_worktree "$worktree" "-b $branch"
-  create_kord_worktree "$session_id"
-  echo "New session: $worktree (branch: $branch)"
-  cd "$worktree"
-  set +e
-  $CLAUDE "$@"
-  exit_code=$?
-  set -e
-fi
+list_session_worktrees() {
+  local repo_root="$1"
+  local path=""
+  local branch=""
+  while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        path="${line#worktree }"
+        branch=""
+        ;;
+      branch\ refs/heads/session/*)
+        branch="${line#branch refs/heads/}"
+        if [[ -n "$path" && -d "$path" ]]; then
+          printf '%s\t%s\t%s\n' "$(basename "$path")" "$branch" "$path"
+        fi
+        ;;
+      '')
+        path=""
+        branch=""
+        ;;
+    esac
+  done < <(git -C "$repo_root" worktree list --porcelain 2>/dev/null)
+}
 
-# Cleanup or preserve
-commits=$(git log main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
-dirty=$(git status --porcelain 2>/dev/null)
-
-if [ "$commits" -eq 0 ] && [ -z "$dirty" ]; then
-  echo "No changes — cleaning up worktree"
-  cd "$repo_root"
-  git worktree remove "$worktree" 2>/dev/null || true
-  git branch -d "$branch" 2>/dev/null || true
-  cleanup_kord_worktree "$session_id"
-else
-  # Commit any uncommitted work
-  if [ -n "$dirty" ]; then
-    echo "Committing uncommitted changes..."
-    git add -A
-    git commit -m "wip: uncommitted changes at session exit"
+ensure_session_worktree() {
+  local repo_root="$1"
+  local slug branch worktree_path
+  slug=$(sanitize_slug "$2")
+  [[ -n "$slug" ]] || { echo "Worktree name cannot be empty" >&2; return 1; }
+  branch="session/$slug"
+  worktree_path="$repo_root/.worktrees/$slug"
+  mkdir -p "$repo_root/.worktrees"
+  if [[ -d "$worktree_path" ]]; then
+    printf '%s\n' "$worktree_path"
+    return 0
   fi
+  if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch" 2>/dev/null; then
+    git -C "$repo_root" worktree add "$worktree_path" "$branch"
+  else
+    git -C "$repo_root" worktree add "$worktree_path" -b "$branch"
+  fi
+  printf '%s\n' "$worktree_path"
+}
 
-  # Commit kord worktree changes too
-  cleanup_kord_worktree "$session_id"
-  echo "Session preserved at: $worktree (branch: $branch)"
+resolve_selected_worktree() {
+  local repo_root="$1"
+  local selector="$2"
+  local name branch path
+  while IFS=$'\t' read -r name branch path; do
+    if [[ "$selector" == "$path" || "$selector" == "$name" || "$selector" == "$branch" ]]; then
+      printf '%s\n' "$path"
+      return 0
+    fi
+  done < <(list_session_worktrees "$repo_root")
+  return 1
+}
+
+pick_worktree_action() {
+  local repo_root="$1"
+  local labels=("create new worktree" "inspect current tree")
+  local mappings=("__CREATE__" "__INSPECT__")
+  local name branch path
+  while IFS=$'\t' read -r name branch path; do
+    labels+=("$name [$branch] — $path")
+    mappings+=("$path")
+  done < <(list_session_worktrees "$repo_root")
+
+  echo "Select Claude session target:"
+  PS3='Choice: '
+  select choice in "${labels[@]}"; do
+    if [[ -n "${choice:-}" ]]; then
+      printf '%s\n' "${mappings[$((REPLY - 1))]}"
+      return 0
+    fi
+  done
+}
+
+prompt_new_slug() {
+  local default_slug slug
+  default_slug="$(date +%Y%m%d-%H%M%S)"
+  read -r -p "New worktree name [$default_slug]: " slug
+  slug="${slug:-$default_slug}"
+  sanitize_slug "$slug"
+}
+
+repo_root=$(current_tree_root)
+if [[ -z "$repo_root" ]]; then
+  echo "Not in a git repo — running claude directly"
+  exec "$CLAUDE_BIN" "${CLAUDE_ARGS[@]}"
 fi
 
-exit $exit_code
+main_root=$(main_repo_root)
+prune_worktrees "$repo_root"
+if [[ -z "$main_root" ]]; then
+  echo "Could not determine repository root — running claude directly"
+  exec "$CLAUDE_BIN" "${CLAUDE_ARGS[@]}"
+fi
+
+if [[ $INSPECT_CURRENT_TREE -eq 1 ]]; then
+  enter_tree "$repo_root" fresh
+  exit 0
+fi
+
+if [[ "$repo_root" != "$main_root" ]]; then
+  enter_tree "$repo_root" resume
+  exit 0
+fi
+
+selected_path=""
+if [[ -n "$SELECT_WORKTREE" ]]; then
+  selected_path=$(resolve_selected_worktree "$main_root" "$SELECT_WORKTREE" || true)
+  [[ -n "$selected_path" ]] || { echo "No worktree matched: $SELECT_WORKTREE" >&2; exit 1; }
+elif [[ -n "$NEW_WORKTREE_SLUG" ]]; then
+  selected_path=$(ensure_session_worktree "$main_root" "$NEW_WORKTREE_SLUG")
+else
+  selection=$(pick_worktree_action "$main_root")
+  case "$selection" in
+    __CREATE__)
+      selected_path=$(ensure_session_worktree "$main_root" "$(prompt_new_slug)")
+      ;;
+    __INSPECT__)
+      selected_path="$main_root"
+      ;;
+    *)
+      selected_path="$selection"
+      ;;
+  esac
+fi
+
+if [[ -n "$NEW_WORKTREE_SLUG" ]]; then
+  enter_tree "$selected_path" fresh
+else
+  enter_tree "$selected_path" resume
+fi

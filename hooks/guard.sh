@@ -170,8 +170,8 @@ guard_bash() {
 
       case "$branch" in
         main)
-          # Allow if /merge is running (lock exists)
-          [ -n "$repo_root" ] && [ -d "$repo_root/.merge-lock" ] && allow
+          # Allow if /integrate is running (lock exists)
+          [ -n "$repo_root" ] && [ -d "$repo_root/.integrate-lock" ] && allow
           # Allow if fast-forward is possible
           if [ -n "$repo_root" ]; then
             git -C "$repo_root" fetch origin main 2>/dev/null
@@ -179,7 +179,7 @@ guard_bash() {
               allow
             fi
           fi
-          deny "Push to main blocked — your branch has diverged from main. Use /merge to rebase and resolve."
+          deny "Push to main blocked — your branch has diverged from main. Use /integrate to reconcile and resolve."
           ;;
         session/*|memory/*)
           allow

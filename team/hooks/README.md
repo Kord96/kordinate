@@ -1,6 +1,6 @@
 # Hooks
 
-Pre/post-tool hooks that enforce domain boundaries and automate workflows. Configured in `settings.json`.
+Hooks that enforce domain boundaries. Configured in `settings.json`.
 
 ## Unified Guard
 
@@ -12,7 +12,7 @@ Pre/post-tool hooks that enforce domain boundaries and automate workflows. Confi
 |---------|-----------|------|-------------|
 | Write/Edit to `*/.kord/*` | `curated: true` in KORD.json | — | Use the `write_memory` tool |
 | Write/Edit to `*/dashboards/*.json` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
-| Bash `git push` to main | branch has diverged | — | Use `/merge` to rebase |
+| Bash `git push` to main | branch has diverged | — | Use `/integrate` to reconcile |
 | Bash `git push` to test/prod | any | `/tmp/.deployer-auth` | Use `/infra roll` |
 | Bash `kubectl` write ops | mutating verbs | `/tmp/.deployer-auth` | Use `/infra` |
 | Bash `kubectl` workstation/master/drain/cordon | any | **always blocked** | Never allowed |
@@ -28,6 +28,10 @@ Guards check lock files via `/authenticate`. The flow:
 1. Agent runs `/authenticate` → copies `profile/locks/<agent>` to `/tmp/.<agent>-auth`
 2. Guard compares `/tmp/.<agent>-auth` contents against `profile/locks/<agent>`
 3. Match → allow. No match or missing → deny.
+
+## Merge-on-push status
+
+Legacy merge-on-push hooks are now disabled. Integration is explicit via `/integrate`.
 
 ## Dev Sync
 

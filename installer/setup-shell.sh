@@ -49,7 +49,7 @@ bind -T copy-mode WheelDownPane send-keys -X -N 5 scroll-down
 bind -T copy-mode-vi WheelUpPane send-keys -X -N 5 scroll-up
 bind -T copy-mode-vi WheelDownPane send-keys -X -N 5 scroll-down
 
-# New window: route to repo-named session if inside a git repo
+# New window: stay in the current worktree/path
 bind-key c run-shell '$HOME/.claude/bin/tmux-new-window "#{pane_current_path}"'
 EOF
 echo "  +   $TMUX_CONF"
@@ -60,30 +60,16 @@ HELPER_DIR="$HOME/.claude/bin"
 mkdir -p "$HELPER_DIR"
 cat > "$HELPER_DIR/tmux-new-window" << 'EOF'
 #!/usr/bin/env bash
-# Create a new tmux window, routing to a repo-named session if inside a git repo.
+# Create a new tmux window in the current worktree/path.
 set -euo pipefail
 
-pane_path="$1"
-repo_name=""
-if cd "$pane_path" 2>/dev/null; then
-  toplevel=$(git rev-parse --show-toplevel 2>/dev/null || true)
-  if [[ -n "$toplevel" ]]; then
-    repo_name=$(basename "$toplevel")
-  fi
+pane_path="${1:-}"
+
+if [[ -n "$pane_path" && -d "$pane_path" ]]; then
+  exec tmux new-window -c "$pane_path"
 fi
 
-if [[ -z "$repo_name" ]]; then
-  tmux new-window
-  exit 0
-fi
-
-if ! tmux has-session -t "=$repo_name" 2>/dev/null; then
-  tmux new-session -d -s "$repo_name" -c "$toplevel"
-else
-  tmux new-window -t "=$repo_name" -c "$pane_path"
-fi
-
-tmux switch-client -t "=$repo_name"
+exec tmux new-window
 EOF
 chmod +x "$HELPER_DIR/tmux-new-window"
 echo "  +   $HELPER_DIR/tmux-new-window"

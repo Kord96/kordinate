@@ -265,9 +265,23 @@
   },
   {
     "type": "skill",
-    "name": "merge",
+    "name": "integrate",
     "agent": "team",
-    "description": "Merge session or memory branches into main, resolve conflicts.",
+    "description": "Explicitly reconcile session or memory branches with main and resolve conflicts.",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "publish",
+    "agent": "team",
+    "description": "Push the current branch explicitly and optionally prepare it for review.",
+    "public": true
+  },
+  {
+    "type": "skill",
+    "name": "session",
+    "agent": "team",
+    "description": "Inspect and manage worktree-backed Claude sessions.",
     "public": true
   },
   {
@@ -307,7 +321,7 @@
     "pattern": "git push .* main",
     "tool": "Bash",
     "validation": "merge",
-    "description": "Push to main requires fast-forward check via /merge"
+    "description": "Push to main requires explicit reconciliation via /integrate"
   },
   {
     "type": "dir",

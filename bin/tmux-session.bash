@@ -1,11 +1,11 @@
-# Tmux session management for .bashrc
-# Source this file to get organized tmux sessions.
+# Tmux session management for .bashrc.
 #
 # Features:
 # - Generates ~/.tmux.conf on first source
 # - Auto-attach to default session on SSH login
 # - Bare `tmux` command attaches to default (instead of creating new sessions)
-# - New windows route to repo-named sessions (via tmux-new-window)
+# - New windows stay in the current worktree/path
+# - Use `bin/session-status` for session listing/status commands
 
 _tmux_bin_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

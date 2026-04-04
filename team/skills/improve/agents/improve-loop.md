@@ -590,8 +590,7 @@ For domain insights discovered during improvement:
 
 ### Step 3.5 — Commit and Push
 
-Commit all changes and push. The worktree-push hook will automatically merge
-to main on push.
+Commit all changes and push the branch explicitly. This does **not** update `main`.
 
 ```bash
 git -C $KORDINATE_HOME add -A
@@ -599,8 +598,7 @@ git -C $KORDINATE_HOME commit -m "improve: <agent> — <one-line summary of chan
 git -C $KORDINATE_HOME push 2>/dev/null || true
 ```
 
-If the push triggers a merge conflict, the hook will report it. The next `/merge`
-run will resolve it.
+When the branch is ready to land, run `/integrate` explicitly.
 
 ### Step 3.6 — Finalize Manifest
 
