@@ -1,0 +1,121 @@
+schema: augur-concept-meta/v2
+concept: api-key-auth
+kind: pattern
+summary: API Key Authentication architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-system-extract-api-keys-from-request-headers-or-paramet
+    prompt: Does the system extract API keys from request headers or parameters and validate them against a stored key registry?
+    weight: 3
+    signals:
+    - X-API-Key header extraction
+    - key lookup in database/cache
+    - middleware validates key
+  - id: are-api-keys-hashed-before-storage-so-the-database-never-contain
+    prompt: Are API keys hashed before storage so the database never contains plaintext keys?
+    weight: 2
+    signals:
+    - key hashing
+    - stored as hash not plaintext
+    - bcrypt/sha256 on key
+  - id: is-rate-limiting-or-quota-enforcement-applied-per-api-key-to-iso
+    prompt: Is rate limiting or quota enforcement applied per API key to isolate tenant usage?
+    weight: 2
+    signals:
+    - per-key rate limit
+    - quota per tenant
+    - key-scoped throttling
+  - id: does-the-system-support-key-lifecycle-operations-generation-with
+    prompt: 'Does the system support key lifecycle operations: generation with sufficient entropy, rotation, and immediate revocation?'
+    weight: 2
+    signals:
+    - key generation endpoint
+    - key rotation with grace period
+    - revocation invalidates immediately
+  - id: is-there-a-mapping-from-api-key-to-tenant-user-or-permission-sco
+    prompt: Is there a mapping from API key to tenant, user, or permission scope that determines what the key authorizes?
+    weight: 1
+    signals:
+    - key-to-tenant mapping
+    - scoped permissions per key
+    - key resolves to identity
+analysis:
+  testing:
+    summary: Verify key validation, rejection of invalid credentials, and rate limiting behavior.
+    unit:
+    - Assert valid keys are accepted and the correct principal is resolved
+    - Assert invalid, expired, and revoked keys return 401 with appropriate error messages
+    - 'Test rate limiting: verify requests beyond the quota return 429'
+    integration:
+    - Issue a real API key, make authenticated requests, and verify access to protected resources
+    - 'Test key rotation: old key is rejected after rotation, new key works immediately'
+    - Verify audit trail entries are created for authentication events
+    failure_injection:
+    - Simulate key store unavailability and verify requests fail closed (deny), not open
+  monitoring:
+    summary: Track authentication outcomes, key usage patterns, and abuse signals.
+    metrics:
+    - name: api_auth_requests_total
+      kind: counter
+      description: authentication attempts by outcome (success, invalid, expired)
+    - name: api_key_usage_total
+      kind: counter
+      description: requests per API key for usage tracking
+    - name: api_auth_latency_seconds
+      kind: histogram
+      description: time spent validating keys
+    - name: api_rate_limit_exceeded_total
+      kind: counter
+      description: rate limit hits per key
+    alerts:
+    - Spike in invalid key attempts (potential credential stuffing)
+    - Single key exceeding rate limits repeatedly
+    - Expired key still receiving traffic (client misconfiguration)

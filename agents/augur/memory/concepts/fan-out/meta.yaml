@@ -1,0 +1,75 @@
+schema: augur-concept-meta/v2
+concept: fan-out
+kind: flow-shape
+summary: Fan-out flow — one event triggers parallel processing across multiple consumers
+taxonomy:
+  type: flow-shape
+  categories:
+  - messaging
+  - integration
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: does-one-event-or-message-trigger-processing-by-multiple-indepen
+    prompt: Does one event or message trigger processing by multiple independent consumers?
+    weight: 1
+  - id: is-there-a-pub-sub-topic-with-multiple-subscriber-groups
+    prompt: Is there a pub/sub topic with multiple subscriber groups?
+    weight: 1
+    signals:
+    - subscribe
+    - consumer_group
+    - SNS
+    - fanout
+  - id: does-the-code-use-promise-all-asyncio-gather-to-dispatch-paralle
+    prompt: Does the code use Promise.all/asyncio.gather to dispatch parallel work?
+    weight: 1
+    signals:
+    - Promise.all
+    - asyncio.gather
+    - WaitGroup
+    - CompletableFuture
+  - id: are-there-webhook-dispatchers-sending-the-same-event-to-multiple
+    prompt: Are there webhook dispatchers sending the same event to multiple URLs?
+    weight: 1
+    signals:
+    - webhook
+    - dispatch
+    - notify_all

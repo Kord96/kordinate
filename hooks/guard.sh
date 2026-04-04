@@ -1,6 +1,9 @@
 #!/bin/bash
 # Unified guard for kordinate
 #
+# Primary guard for the current pod-agent runtime path. This hook uses dedicated
+# guard logic and replaces the removed KORD-driven compatibility path.
+#
 # Enforces domain boundaries:
 #   deployer → git push (test/prod), kubectl writes
 #   sauron   → Grafana dashboards, API, MCP
@@ -8,12 +11,14 @@
 #
 # Registered in settings.json as PreToolUse on Write|Edit, Bash, mcp__grafana*
 # See README.md for the full rules table.
+# KORD-driven compatibility guard behavior has been removed from the primary runtime path.
 
 set -uo pipefail
 
 INPUT=$(cat)
 TOOL=$(echo "$INPUT" | jq -r '.tool_name // empty')
 KORD_HOME="${KORDINATE_HOME:-$HOME/.kord}"
+OWNERSHIP_FILE="${REPO_ROOT:-/kord/projects/kordinate}/shared/runtime-ownership.yaml"
 
 allow() { echo '{}'; exit 0; }
 
@@ -29,6 +34,36 @@ check_auth() {
   local lock_file="$KORD_HOME/profile/locks/${agent}"
   [ -f "$auth_file" ] && [ -f "$lock_file" ] || return 1
   [ "$(cat "$auth_file")" = "$(cat "$lock_file")" ]
+}
+
+lookup_runtime_owner() {
+  local relative_path="$1"
+  [ -f "$OWNERSHIP_FILE" ] || return 0
+  OWNERSHIP_FILE="$OWNERSHIP_FILE" RELATIVE_PATH="$relative_path" python3 - <<'PY'
+import os
+from pathlib import Path
+import yaml
+
+ownership_file = Path(os.environ['OWNERSHIP_FILE'])
+relative_path = os.environ['RELATIVE_PATH'].strip('/')
+config = yaml.safe_load(ownership_file.read_text()) or {}
+entries = config.get('protected_paths') or []
+match = None
+for entry in entries:
+    path = str(entry.get('path', '')).strip('/')
+    if not path:
+        continue
+    is_dir = entry.get('path', '').endswith('/')
+    if is_dir:
+        if relative_path.startswith(path):
+            if match is None or len(path) > len(match.get('path', '')):
+                match = entry
+    elif relative_path == path:
+        if match is None or len(path) > len(match.get('path', '')):
+            match = entry
+if match:
+    print(match.get('owner', ''))
+PY
 }
 
 # --- Write / Edit ---------------------------------------------------------
@@ -91,25 +126,17 @@ print(' '.join(sorted(agents)) if agents else '')
       ;;
   esac
 
-  # Curated .kord/ files
+  # Protected runtime files under .kord/
   case "$file_path" in
     */.kord/*)
-      # Allow non-curated, non-templated files without auth
-      local kord_json="$KORD_HOME/KORD.json"
-      if [ -f "$kord_json" ]; then
-        local entry
-        entry=$(jq -r --arg p "$file_path" \
-          '.[] | select(.path and ($p | endswith(.path)))' \
-          "$kord_json" 2>/dev/null)
-        if [ -n "$entry" ]; then
-          local curated template
-          curated=$(echo "$entry" | jq -r '.curated // false')
-          template=$(echo "$entry" | jq -r '.template // "none"')
-          [ "$curated" = "false" ] && [ "$template" = "none" ] && allow
-        fi
+      local rel_path owner
+      rel_path=$(echo "$file_path" | sed 's|.*\.kord/||')
+      owner=$(lookup_runtime_owner "$rel_path")
+      if [ -n "$owner" ]; then
+        check_auth "$owner" && allow
+        deny "This runtime-managed path is owned by $owner. Authenticate as $owner before editing it."
       fi
-
-      deny "This file is managed by kordinate. Use the write_memory tool to write memories."
+      allow
       ;;
   esac
 

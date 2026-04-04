@@ -1,0 +1,49 @@
+schema: runtime-ownership/v1
+
+# Current pod-agent runtime ownership manifest.
+# This file is for the main guard path and intentionally replaces the former
+# KORD-based ownership lookup for curated runtime files.
+
+protected_paths:
+  - path: settings.json
+    owner: team
+    reason: Hook and environment configuration
+  - path: shared/auth-protocol.md
+    owner: team
+    reason: Authentication protocol
+  - path: shared/credentials-protocol.md
+    owner: team
+    reason: Credentials protocol
+  - path: shared/memory-protocol.md
+    owner: team
+    reason: Memory protocol
+  - path: shared/gemini-protocol.md
+    owner: team
+    reason: Gemini protocol
+  - path: profile/locks/
+    owner: warden
+    reason: Auth lock files
+  - path: agents/augur/memory/concepts.md
+    owner: augur
+    reason: Augur concept catalog
+  - path: agents/augur/memory/anti-patterns.md
+    owner: augur
+    reason: Augur anti-pattern catalog
+  - path: agents/augur/memory/abstractions.md
+    owner: augur
+    reason: Augur abstraction catalog
+  - path: agents/augur/memory/app-contract.md
+    owner: augur
+    reason: Augur app contract
+  - path: agents/augur/memory/tools.md
+    owner: augur
+    reason: Augur tool reference
+  - path: agents/augur/memory/workflow.md
+    owner: augur
+    reason: Augur workflow reference
+  - path: profile/config.yaml
+    owner: alfred
+    reason: Cluster and service configuration
+  - path: profile/overlays/
+    owner: alfred
+    reason: Kustomize overlays

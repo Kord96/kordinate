@@ -1,0 +1,100 @@
+schema: augur-concept-meta/v2
+concept: observer
+kind: pattern
+summary: Observer/Event Emitter architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - messaging
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-subscribe-on-addlistener-methods-paired-with-emit-noti
+    prompt: Are there subscribe/on/addListener methods paired with emit/notify/publish for event-driven communication?
+    weight: 3
+    signals:
+    - emitter.on('event', handler)
+    - subscribe() / emit()
+    - addListener / dispatch
+  - id: are-subscriptions-cleaned-up-on-teardown-to-prevent-memory-leaks
+    prompt: Are subscriptions cleaned up on teardown to prevent memory leaks from ghost handlers?
+    weight: 3
+    signals:
+    - removeEventListener in cleanup
+    - unsubscribe on destroy
+    - off() in componentWillUnmount
+  - id: do-event-contracts-define-typed-events-rather-than-relying-on-ar
+    prompt: Do event contracts define typed events rather than relying on arbitrary untyped string keys?
+    weight: 2
+    signals:
+    - typed event classes
+    - event enum
+    - no stringly-typed event names
+  - id: does-an-error-in-one-observer-prevent-notification-of-remaining-
+    prompt: Does an error in one observer prevent notification of remaining observers?
+    weight: 2
+    signals:
+    - try-catch per observer
+    - error isolation in notification loop
+    - one handler failure does not block others
+analysis:
+  testing:
+    summary: Verify correct subscription lifecycle, event delivery guarantees, and isolation between observers.
+    unit:
+    - Subscribe a handler, emit an event, and assert the handler was called with the correct payload
+    - Unsubscribe a handler and verify it no longer receives subsequent events
+    - Register multiple observers and verify all are notified on a single emit (fan-out)
+    - Verify an error thrown by one observer does not prevent remaining observers from being notified
+    additional_sections:
+    - title: Lifecycle Tests
+      items:
+      - Subscribe and unsubscribe in rapid succession and verify no dangling handlers remain
+      - Verify that observers registered during an emission cycle are not called for the current event (consistent snapshot)
+      - 'Test teardown: destroy the subject and confirm all subscriptions are cleaned up (no memory leaks)'
+    - title: Edge Cases
+      items:
+      - Emit with zero subscribers and verify no error or hang
+      - Test that observer notification order matches documented guarantees (or verify order-independence)
+      - Subscribe the same handler twice and verify behavior matches the contract (deduplicated or called twice)

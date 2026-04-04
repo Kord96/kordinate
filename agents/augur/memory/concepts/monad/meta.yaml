@@ -1,0 +1,100 @@
+schema: augur-concept-meta/v2
+concept: monad
+kind: pattern
+summary: Monad/Railway-Oriented Programming architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - error-handling
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-operations-chained-via-bind-flatmap-and-then-on-container-ty
+    prompt: Are operations chained via bind/flatMap/and_then on container types that propagate failure automatically?
+    weight: 3
+    signals:
+    - .flatMap()
+    - .bind()
+    - .and_then()
+    - '>>= operator'
+  - id: do-success-and-failure-paths-use-explicit-types-rather-than-exce
+    prompt: Do success and failure paths use explicit types rather than exceptions or null checks?
+    weight: 3
+    signals:
+    - Result/Either type
+    - Option/Maybe chaining
+    - no try-catch in pipeline
+  - id: does-the-happy-path-read-as-a-clean-pipeline-with-error-handling
+    prompt: Does the happy path read as a clean pipeline with error handling deferred to the terminal boundary?
+    weight: 2
+    signals:
+    - fold/match at boundary
+    - pipeline of map/flatMap
+    - unwrap only at edge
+  - id: are-for-comprehensions-or-do-notation-used-to-flatten-nested-mon
+    prompt: Are for-comprehensions or do-notation used to flatten nested monadic composition?
+    weight: 2
+    signals:
+    - for { x <- ... }
+    - do notation
+    - flow() composition
+analysis:
+  testing:
+    summary: Verify monadic laws, chain composition, and correct error propagation through pipelines.
+    unit:
+    - 'Verify left identity: `unit(a).bind(f)` equals `f(a)` for representative values and functions'
+    - 'Verify right identity: `m.bind(unit)` equals `m` for representative monadic values'
+    - 'Verify associativity: `m.bind(f).bind(g)` equals `m.bind(x -> f(x).bind(g))`'
+    additional_sections:
+    - title: Pipeline Tests
+      items:
+      - Compose a multi-step pipeline and verify the happy path produces the expected final value
+      - Introduce a failure at each step and verify the error short-circuits through the remaining steps
+      - Assert that error types carry enough context to diagnose which step failed and why
+    - title: Edge Cases
+      items:
+      - Test with `None`/`Nothing` input to an `Option`/`Maybe` chain and verify clean propagation
+      - Verify that `unwrap()` or `get()` on a failure value raises an appropriate error, not a silent default
+      - Test nested monads (e.g., `Option<Result>`) and verify correct flattening via `bind`/`flatMap`

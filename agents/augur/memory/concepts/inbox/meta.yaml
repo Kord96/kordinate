@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: inbox
+kind: pattern
+summary: Inbox architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - messaging
+  - data
+  - resilience
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-dedicated-database-table-named-inbox-processed-messag
+    prompt: Is there a dedicated database table named inbox, processed_messages, or received_events for message deduplication?
+    weight: 3
+    signals:
+    - inbox table
+    - processed_messages table
+    - received_events table
+  - id: does-the-table-have-a-uniqueness-constraint-on-message-id-to-enf
+    prompt: Does the table have a uniqueness constraint on message_id to enforce deduplication at the database level?
+    weight: 3
+    signals:
+    - UNIQUE on message_id
+    - unique constraint
+    - INSERT ON CONFLICT DO NOTHING
+  - id: does-the-consumer-write-the-message-id-to-the-inbox-table-in-the
+    prompt: Does the consumer write the message ID to the inbox table in the same transaction as the business logic?
+    weight: 2
+    signals:
+    - same transaction for inbox and logic
+    - atomic dedup and process
+    - transactional inbox write
+  - id: is-there-a-cleanup-mechanism-to-prevent-unbounded-growth-of-the-
+    prompt: Is there a cleanup mechanism to prevent unbounded growth of the inbox table?
+    weight: 1
+    signals:
+    - TTL on inbox records
+    - cleanup old entries
+    - periodic purge of processed messages

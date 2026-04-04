@@ -1,0 +1,129 @@
+schema: augur-concept-meta/v2
+concept: tenant-isolation
+kind: pattern
+summary: Tenant Isolation architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-database-tables-include-a-tenant-id-column-and-are-queries-co
+    prompt: Do database tables include a tenant_id column and are queries consistently filtered by the current tenant?
+    weight: 3
+    signals:
+    - tenant_id column
+    - WHERE tenant_id = ?
+    - filter by current_tenant
+  - id: is-tenant-context-extracted-at-the-request-boundary-via-middlewa
+    prompt: Is tenant context extracted at the request boundary via middleware and propagated through the execution chain?
+    weight: 3
+    signals:
+    - tenant middleware
+    - request.tenant_id or ctx.tenant
+    - TenantContext.current()
+  - id: does-the-database-enforce-tenant-isolation-via-row-level-securit
+    prompt: Does the database enforce tenant isolation via row-level security policies, schema-per-tenant, or database-per-tenant?
+    weight: 2
+    signals:
+    - CREATE POLICY
+    - ENABLE ROW LEVEL SECURITY
+    - schema-per-tenant or SET search_path
+  - id: do-background-jobs-and-async-tasks-carry-tenant-context-through-
+    prompt: Do background jobs and async tasks carry tenant context through their execution rather than running unscoped?
+    weight: 1
+    signals:
+    - tenant context in async workers
+    - tenant propagation in background jobs
+    - scoped task execution
+analysis:
+  testing:
+    summary: '# Testing - Test cross-tenant access: authenticate as tenant A and attempt to read/write tenant B data (must fail) - Verify that every data access query includes tenant filtering by inspecting generated SQL in tests - Test tenant context propagation through async workers and background jobs - Verify RLS policies by connecting directly to the database and attempting unscoped queries - Test tenant middleware extraction from subdomain, header, and JWT claim sources - Test that tenant ID is validated against the authenticated user''s permissions, not blindly trusted - Test tenant onboarding: create a new tenant and verify isolation from day one - Assert that JOINs and aggregations respect tenant boundaries and do not leak cross-tenant data'
+  monitoring:
+    summary: Track tenant boundary enforcement, cross-tenant access attempts, and per-tenant resource usage.
+    metrics:
+    - name: tenant_unscoped_queries_total
+      kind: counter
+      description: queries executing without a tenant filter (data leakage risk)
+    - name: tenant_resource_usage
+      kind: gauge
+      description: per-tenant query volume, storage, and API call counts for noisy-neighbor detection
+    - name: tenant_rls_policy_status
+      kind: gauge
+      description: row-level security enforcement status per table (1=enabled, 0=disabled)
+    - name: tenant_cross_access_blocked_total
+      kind: counter
+      description: cross-tenant access attempts caught by the isolation layer
+    - name: tenant_context_propagation_failures_total
+      kind: counter
+      description: requests where tenant context was lost in async workers or background jobs
+    - name: tenant_id_validation_failures_total
+      kind: counter
+      description: invalid or spoofed tenant ID submissions
+    alerts:
+    - Query executing without a tenant filter detected (immediate cross-tenant leakage risk)
+    - Row-level security disabled or bypassed on any production table
+    - Tenant context propagation failure in async worker or background job
+    - Single tenant consuming disproportionate resources (noisy-neighbor effect)
+    - Tenant ID validation failure rate elevated (potential spoofing or misconfiguration)
+  deployment:
+    summary: Verify that isolation boundaries survive every migration and deployment, since a single missed tenant filter can expose cross-tenant data.
+    rollout_implications:
+    - Database migrations that alter RLS policies or tenant-scoped columns can temporarily disable isolation if the migration runs between the old and new application code
+    - Schema-per-tenant deployments require migration tooling that applies changes to all tenant schemas atomically — partial application leaves some tenants on the old schema
+    - Rolling deployments where old and new code coexist may have inconsistent tenant scoping if the new code adds a tenant filter that the old code lacks
+    - Background job deployments must carry tenant context through the execution chain — deploying new job logic without verifying context propagation can cause jobs to run with no tenant or the wrong tenant
+    - Changes to auth or routing middleware can silently break tenant ID extraction — a deployment that changes header parsing may route requests to the wrong tenant
+    pre_deploy_checklist:
+    - Verify RLS policies and tenant scoping are active after every database migration before releasing traffic
+    - Test tenant isolation in staging with explicit cross-tenant access attempts
+    - Audit tenant ID validation logic in middleware after every deployment touching auth or routing
+    - Confirm schema-per-tenant migrations have been applied to all tenant schemas, not just the default
+    - Ensure background jobs carry tenant context end-to-end after deploying changes to job logic

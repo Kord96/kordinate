@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: god-object
+kind: anti-pattern
+summary: God Object/Class anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-a-single-class-exceed-1000-lines-with-20-public-methods-spa
+    prompt: Does a single class exceed 1000 lines with 20+ public methods spanning unrelated concerns?
+    weight: 3
+    signals:
+    - class over 1000 lines
+    - 20+ methods
+    - imports from 5+ packages
+  - id: does-the-class-mix-concerns-like-http-handling-database-access-a
+    prompt: Does the class mix concerns like HTTP handling, database access, and business logic in one place?
+    weight: 3
+    signals:
+    - handles HTTP and DB
+    - email sending and PDF generation
+    - presentation and persistence
+  - id: does-the-class-name-use-generic-terms-like-manager-handler-proce
+    prompt: Does the class name use generic terms like Manager, Handler, Processor, Utils, or Helper?
+    weight: 1
+    signals:
+    - AppManager
+    - MainService
+    - GlobalHandler
+  - id: do-tests-for-this-class-require-mocking-a-large-number-of-unrela
+    prompt: Do tests for this class require mocking a large number of unrelated dependencies to instantiate it?
+    weight: 2
+    signals:
+    - dozens of mocks in setup
+    - complex test fixture
+    - every test patches many dependencies

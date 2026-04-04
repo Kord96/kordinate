@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: ledger
+kind: domain-model
+summary: Double-entry ledger pattern for financial data integrity
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - financial
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-every-transaction-produce-paired-debit-and-credit-entries-t
+    prompt: Does every transaction produce paired debit and credit entries that must sum to zero?
+    weight: 3
+    signals:
+    - JournalEntry with debit and credit fields
+    - transaction validation enforcing debit == credit
+    - double-entry constraint on insert
+  - id: are-ledger-entries-immutable-and-append-only-with-corrections-ma
+    prompt: Are ledger entries immutable and append-only, with corrections made via new reversing entries?
+    weight: 3
+    signals:
+    - insert-only table with no UPDATE allowed
+    - reversing or correcting journal entries
+    - no DELETE on ledger rows
+  - id: is-there-a-balance-invariant-check-that-verifies-total-debits-eq
+    prompt: Is there a balance invariant check that verifies total debits equal total credits?
+    weight: 2
+    signals:
+    - SUM(debit) = SUM(credit) assertion
+    - reconciliation job or balance check
+    - invariant violation alerts
+  - id: does-the-system-support-reconciliation-between-internal-ledger-a
+    prompt: Does the system support reconciliation between internal ledger and external sources?
+    weight: 1
+    signals:
+    - reconciliation report or job
+    - bank feed matching
+    - external balance comparison

@@ -1,0 +1,129 @@
+schema: augur-concept-meta/v2
+concept: hexagonal
+kind: pattern
+summary: Hexagonal architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-ports-and-adapters-directory-structure-with-port-suff
+    prompt: Is there a ports/ and adapters/ directory structure with Port-suffixed interfaces and Adapter-suffixed implementations?
+    weight: 3
+    signals:
+    - ports/ directory
+    - adapters/ directory
+    - RepositoryPort interface
+    - PostgresAdapter class
+  - id: is-the-domain-layer-free-of-infrastructure-imports-like-http-lib
+    prompt: Is the domain layer free of infrastructure imports like HTTP libraries, database drivers, or cloud SDKs?
+    weight: 3
+    signals:
+    - no requests import in domain
+    - no boto3 in domain
+    - no DB driver in domain
+  - id: are-adapters-wired-to-ports-via-dependency-injection-at-applicat
+    prompt: Are adapters wired to ports via dependency injection at application startup?
+    weight: 2
+    signals:
+    - inject adapter at startup
+    - bind port to adapter
+    - DI container wiring
+  - id: do-tests-use-in-memory-adapter-implementations-rather-than-mocki
+    prompt: Do tests use in-memory adapter implementations rather than mocking concrete infrastructure classes?
+    weight: 1
+    signals:
+    - InMemoryRepository in tests
+    - fake adapter for testing
+    - test adapter implements port
+analysis:
+  testing:
+    summary: Verify that domain logic is fully decoupled from infrastructure by testing ports and adapters independently.
+    unit:
+    - Test domain services using in-memory adapter stubs — assert business rules without any infrastructure
+    - Verify that port interfaces reject invalid inputs at the boundary (e.g., malformed DTOs never reach domain)
+    - Assert that domain layer compiles and passes tests with zero infrastructure imports
+    - Test adapter output mapping — confirm adapters translate domain objects to infrastructure formats correctly
+    integration:
+    - Test each adapter against its real infrastructure target (actual DB, HTTP endpoint, message broker)
+    - Verify that swapping one adapter for another (e.g., Postgres to SQLite) produces identical domain behavior
+    - Test the full request path from inbound adapter through domain to outbound adapter
+    failure_injection:
+    - Simulate outbound adapter failure (DB down, API timeout) and verify domain layer receives a port-defined error, not an infrastructure exception
+    - Kill an infrastructure dependency mid-operation and confirm the domain transaction rolls back cleanly
+    - Introduce latency in an adapter and verify domain-level timeouts trigger correctly
+  monitoring:
+    summary: Track port and adapter health to catch infrastructure failures before they leak into the domain.
+    metrics:
+    - name: adapter_call_duration_seconds
+      kind: histogram
+      description: latency per adapter, broken down by port
+    - name: adapter_errors_total
+      kind: counter
+      description: failures per adapter (connection errors, timeouts)
+    - name: domain_call_total
+      kind: counter
+      description: domain service invocations vs adapter invocations (ratio check)
+    - name: adapter_health
+      kind: gauge
+      description: availability state per adapter (1=healthy, 0=degraded)
+    alerts:
+    - Adapter error rate exceeding threshold for any single port
+    - Domain-to-adapter call ratio inversion (infra calls dominating domain calls)
+    - Adapter latency p99 exceeding SLA for a sustained period
+  deployment:
+    summary: Adapter swaps during rollout can break port contracts if old and new adapters behave differently.
+    rollout_implications:
+    - Rolling updates may run old and new adapter implementations simultaneously — ensure both satisfy the same port interface version
+    - Swapping an adapter (e.g., switching from REST to gRPC for a port) should be a separate deployment from business logic changes
+    - If adapter configuration is injected at startup, verify new config is available before rolling new pods
+    - Database adapters with schema changes require migration to complete before the new adapter version rolls out
+    pre_deploy_checklist:
+    - Verify port interface version compatibility between outgoing and incoming adapter implementations
+    - Run integration tests with the new adapter against a staging instance of the external dependency
+    - Confirm adapter configuration (connection strings, timeouts) is present in the target environment

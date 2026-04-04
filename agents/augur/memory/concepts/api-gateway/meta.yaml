@@ -1,0 +1,136 @@
+schema: augur-concept-meta/v2
+concept: api-gateway
+kind: pattern
+summary: API Gateway architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - integration
+  - infrastructure
+  - security
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-single-entry-point-that-routes-requests-to-multiple-b
+    prompt: Is there a single entry point that routes requests to multiple backend services based on path, header, or method?
+    weight: 3
+    signals:
+    - centralized routing
+    - path-based dispatch to backends
+    - ingress routing rules
+  - id: are-cross-cutting-concerns-like-authentication-rate-limiting-and
+    prompt: Are cross-cutting concerns like authentication, rate limiting, and request logging applied at a gateway layer before reaching backend services?
+    weight: 3
+    signals:
+    - auth middleware at gateway
+    - rate limit before backend
+    - centralized policy enforcement
+  - id: does-the-gateway-contain-no-business-logic-delegating-all-domain
+    prompt: Does the gateway contain no business logic, delegating all domain operations to downstream services?
+    weight: 2
+    signals:
+    - thin routing layer
+    - no domain logic in gateway
+    - pure proxy with policy
+  - id: are-timeouts-circuit-breakers-or-retry-policies-configured-per-u
+    prompt: Are timeouts, circuit breakers, or retry policies configured per upstream backend at the gateway level?
+    weight: 2
+    signals:
+    - per-backend timeout config
+    - circuit breaker at gateway
+    - upstream resilience settings
+analysis:
+  testing:
+    summary: Verify routing rules, cross-cutting policy enforcement, and graceful handling of upstream failures.
+    unit:
+    - 'Test routing rules: given a request path and method, assert it routes to the correct upstream backend'
+    - Verify auth enforcement — requests with missing or invalid tokens are rejected before reaching any backend
+    - 'Test rate limiting logic: assert that requests exceeding the configured limit receive 429 responses'
+    - Verify request/response transformation rules produce the expected output format
+    integration:
+    - Send requests through the gateway to real backend services and verify end-to-end routing correctness
+    - 'Test auth + rate limiting together: authenticated requests within limits succeed; over-limit requests are throttled regardless of valid auth'
+    - Verify gateway behavior with multiple backends — route to each and confirm correct upstream selection under load
+    failure_injection:
+    - Take a backend service down and verify the gateway returns a meaningful error (502/503) rather than hanging
+    - Simulate slow backend responses and verify gateway timeouts fire, returning errors to clients within SLA
+    - Kill the auth service and verify the gateway's fail-open or fail-closed policy matches its configuration
+  monitoring:
+    summary: Track request routing, upstream health, and policy enforcement to detect gateway degradation and abuse.
+    metrics:
+    - name: gateway_request_duration_seconds
+      kind: histogram
+      description: end-to-end request latency by route and upstream
+    - name: gateway_upstream_errors_total
+      kind: counter
+      description: upstream failures by backend service and error class
+    - name: gateway_rate_limit_rejected_total
+      kind: counter
+      description: requests rejected by rate limiting
+    - name: gateway_auth_failures_total
+      kind: counter
+      description: authentication/authorization failures by type
+    - name: gateway_upstream_health
+      kind: gauge
+      description: health status per upstream backend (1=healthy, 0=down)
+    alerts:
+    - Upstream error rate exceeding threshold for any backend
+    - Rate-limit rejections spiking (potential abuse or misconfigured limits)
+    - Authentication failure rate increasing sharply (credential stuffing or misconfiguration)
+    - Gateway latency p99 exceeding SLA (upstream slowness or gateway overload)
+  deployment:
+    summary: Route changes and upstream health checks during rollout determine whether traffic reaches the correct backends.
+    rollout_implications:
+    - Route configuration changes should deploy separately from backend service changes — avoid deploying both simultaneously
+    - During rolling updates of backend services, the gateway must detect unhealthy upstream pods and stop routing to them
+    - Rate limit and auth policy changes take effect immediately on reload — verify new limits do not inadvertently block legitimate traffic
+    - Gateway reload or restart drops in-flight connections — use graceful reload mechanisms that drain existing connections
+    pre_deploy_checklist:
+    - Verify upstream backend services are healthy and have sufficient capacity before deploying gateway route changes
+    - Confirm rate limit and auth policy changes have been tested against expected traffic patterns
+    - Check that health check intervals and thresholds are tuned for the rollout speed (avoid marking healthy pods as down during restart)

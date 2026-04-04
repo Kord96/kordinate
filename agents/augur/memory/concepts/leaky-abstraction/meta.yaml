@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: leaky-abstraction
+kind: anti-pattern
+summary: Leaky Abstraction anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 7
+  questions:
+  - id: do-interface-signatures-expose-implementation-details-like-sql-f
+    prompt: Do interface signatures expose implementation details like SQL fragments, HTTP headers, or file paths?
+    weight: 3
+    signals:
+    - SQL in repository method name
+    - HTTP header in domain interface
+    - file path in service interface
+  - id: do-callers-catch-implementation-specific-exceptions-through-abst
+    prompt: Do callers catch implementation-specific exceptions through abstraction layers?
+    weight: 3
+    signals:
+    - catch psycopg2 error through repo
+    - handle HttpError through service
+    - infrastructure exception in domain
+  - id: do-domain-objects-carry-serialization-or-orm-annotations-that-ti
+    prompt: Do domain objects carry serialization or ORM annotations that tie them to a specific storage mechanism?
+    weight: 2
+    signals:
+    - JSON tags on domain object
+    - ORM column mapping in entity
+    - '@Column in domain model'
+  - id: does-swapping-the-underlying-implementation-require-changes-to-c
+    prompt: Does swapping the underlying implementation require changes to callers despite the abstraction layer?
+    weight: 2
+    signals:
+    - callers depend on implementation
+    - change DB requires changing service
+    - abstraction mirrors library API

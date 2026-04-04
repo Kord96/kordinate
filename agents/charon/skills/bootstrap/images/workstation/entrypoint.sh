@@ -8,7 +8,7 @@ if ! grep -q 'KORDINATE_HOME' ~/.bashrc 2>/dev/null; then
 export KORD_ROOT="${KORD_ROOT:-/kord}"
 export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
 export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"
-alias claude="claude-session --dangerously-skip-permissions"
+alias openclaude="NODE_OPTIONS=\"--max-old-space-size=4096\" claude-session --dangerously-skip-permissions"
 [ -f "$KORDINATE_HOME/bin/tmux-session.bash" ] && source "$KORDINATE_HOME/bin/tmux-session.bash"
 BASHRC
 fi

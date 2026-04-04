@@ -1,0 +1,93 @@
+schema: augur-concept-meta/v2
+concept: insecure-deserialization
+kind: anti-pattern
+summary: Insecure Deserialization anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: true
+    file: semgrep.yaml
+    detector_strength: 5
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: semgrep.yaml
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: false
+diagnostic_questions:
+  threshold: 7
+  questions:
+  - id: is-pickle-loads-eval-or-exec-called-on-data-received-from-networ
+    prompt: Is pickle.loads(), eval(), or exec() called on data received from network requests, file uploads, or message queues?
+    weight: 3
+    signals:
+    - pickle.loads on request body
+    - eval on user input
+    - exec on external data
+  - id: is-yaml-load-used-without-specifying-safeloader-on-data-from-ext
+    prompt: Is yaml.load() used without specifying SafeLoader on data from external sources?
+    weight: 3
+    signals:
+    - yaml.load without SafeLoader
+    - yaml.load(data) no Loader
+    - unsafe YAML parsing
+  - id: are-deserialized-objects-used-without-schema-validation-to-verif
+    prompt: Are deserialized objects used without schema validation to verify their structure and types?
+    weight: 2
+    signals:
+    - no schema after deserialize
+    - trust deserialized object
+    - no type check post-parse
+  - id: is-java-objectinputstream-readobject-or-php-unserialize-called-o
+    prompt: Is Java ObjectInputStream.readObject() or PHP unserialize() called on user-supplied data?
+    weight: 2
+    signals:
+    - readObject on network stream
+    - unserialize user data
+    - no ObjectInputFilter
+analysis:
+  testing:
+    summary: Verify that untrusted input is never deserialized with unsafe functions and payloads are schema-validated.
+    unit:
+    - Assert that deserialization uses safe loaders (`yaml.safe_load`, JSON, MessagePack), not `pickle.loads` or `eval`
+    - Submit a crafted pickle or YAML payload with a `__reduce__` exploit and verify it is rejected
+    - Validate that deserialized data is checked against a schema (Pydantic, JSON Schema) before use
+    integration:
+    - Send a malformed serialized payload to an API endpoint and verify it returns a validation error, not a crash
+    - Confirm that switching from an unsafe deserializer to a safe one does not break any legitimate data flows
+    additional_sections:
+    - title: Static Analysis
+      items:
+      - Scan for `pickle.loads`, `eval()`, `exec()`, `yaml.load()` without SafeLoader, and `unserialize()` on untrusted input
+      - Add a CI lint rule that flags unsafe deserialization functions in non-test code

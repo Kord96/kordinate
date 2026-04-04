@@ -1,0 +1,136 @@
+schema: augur-concept-meta/v2
+concept: saga
+kind: pattern
+summary: Saga architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - integration
+  - resilience
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-each-step-in-a-distributed-transaction-have-a-corresponding
+    prompt: Does each step in a distributed transaction have a corresponding compensating action?
+    weight: 3
+    signals:
+    - compensate method paired with execute
+    - rollback logic per step
+    - SagaStep with execute and compensate
+  - id: is-step-state-tracked-and-persisted-across-the-saga-lifecycle
+    prompt: Is step state tracked and persisted across the saga lifecycle?
+    weight: 3
+    signals:
+    - step status tracking pending/completed/compensated
+    - saga state persisted to durable store
+    - saga coordinator tracks step progress
+  - id: are-compensating-actions-idempotent-and-safe-to-retry-on-partial
+    prompt: Are compensating actions idempotent and safe to retry on partial failure?
+    weight: 2
+    signals:
+    - compensation is idempotent
+    - safe to re-run compensate
+    - deduplication on compensation retry
+  - id: are-timeouts-defined-for-steps-that-may-hang-during-the-distribu
+    prompt: Are timeouts defined for steps that may hang during the distributed workflow?
+    weight: 1
+    signals:
+    - per-step timeout configuration
+    - deadline for step completion
+    - timeout triggers compensation
+analysis:
+  testing:
+    summary: Verify that compensation chains execute correctly and that partial failures leave the system in a consistent state.
+    unit:
+    - Test each step's compensating action in isolation — assert it reverses the effect of its forward step
+    - 'Verify that compensation is idempotent: calling a compensating action twice produces the same result'
+    - Test the saga coordinator's state machine — assert correct transitions (pending, completed, compensating, compensated)
+    - Assert that timeout handling triggers compensation after the configured deadline
+    integration:
+    - Run a full saga across real services and verify all steps complete and the final state is consistent
+    - Fail a middle step and verify all preceding steps are compensated in reverse order
+    - Test concurrent sagas operating on overlapping resources — verify no deadlocks or inconsistent compensation
+    failure_injection:
+    - Kill the saga coordinator mid-execution and restart it — verify it resumes from the last recorded step state
+    - Simulate a compensating action failure and verify the saga retries compensation with backoff
+    - Introduce a step that times out and confirm the saga transitions to compensating state without waiting indefinitely
+  monitoring:
+    summary: Track distributed transaction outcomes and compensation events.
+    metrics:
+    - name: saga_completed_total
+      kind: counter
+      description: successfully finished sagas
+    - name: saga_failed_total
+      kind: counter
+      description: sagas that triggered compensation
+    - name: saga_compensation_total
+      kind: counter
+      description: individual compensation steps executed
+    - name: saga_duration_seconds
+      kind: histogram
+      description: end-to-end saga duration
+    - name: saga_step_duration_seconds
+      kind: histogram
+      description: per-step latency to find bottlenecks
+    alerts:
+    - Saga failure rate exceeding threshold
+    - Compensation failures (compensation step itself failed)
+    - Saga duration exceeding expected SLA
+    - Stuck sagas (started but neither completed nor compensated)
+  deployment:
+    summary: Step ordering and compensation compatibility must be maintained across old and new code versions during rollout.
+    rollout_implications:
+    - In-flight sagas started by old code must be completable by new code — compensation logic must remain backward-compatible
+    - Adding or reordering saga steps during rollout requires that both old and new step orderings can reach a terminal state
+    - Saga state persistence format changes need migration before new code deploys — old saga records must be readable by new code
+    - Rolling back a saga participant service without rolling back the coordinator leaves sagas in an inconsistent state
+    pre_deploy_checklist:
+    - Verify compensation actions for all steps are compatible across old and new code versions
+    - Confirm saga state store migrations are applied before deploying new coordinator logic
+    - Check that no long-running sagas are in a mid-step state that would be incompatible with the new step definitions
+    - Validate timeout values for each step still make sense with the new deployment topology

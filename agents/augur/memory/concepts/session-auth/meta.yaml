@@ -1,0 +1,112 @@
+schema: augur-concept-meta/v2
+concept: session-auth
+kind: pattern
+summary: Session-Based Authentication architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-server-side-session-store-with-session-ids-transporte
+    prompt: Is there a server-side session store with session IDs transported via cookies?
+    weight: 3
+    signals:
+    - Redis or database session store
+    - Set-Cookie with session_id
+    - express-session or django.contrib.sessions middleware
+  - id: are-session-cookies-set-with-httponly-secure-and-samesite-attrib
+    prompt: Are session cookies set with HttpOnly, Secure, and SameSite attributes?
+    weight: 3
+    signals:
+    - HttpOnly flag on session cookie
+    - Secure flag preventing plaintext transport
+    - SameSite=Strict or SameSite=Lax
+  - id: is-csrf-protection-enabled-for-state-changing-requests-alongside
+    prompt: Is CSRF protection enabled for state-changing requests alongside sessions?
+    weight: 2
+    signals:
+    - csrf_token in forms
+    - X-CSRF-Token header validation
+    - CSRF middleware registered
+  - id: is-the-session-regenerated-on-login-to-prevent-session-fixation-
+    prompt: Is the session regenerated on login to prevent session fixation attacks?
+    weight: 1
+    signals:
+    - session ID regenerated on auth
+    - new session created on login
+    - old session invalidated on privilege change
+analysis:
+  testing:
+    summary: '# Testing - Test session creation on login and destruction on logout (server-side deletion, not just cookie removal) - Verify session regeneration on login to prevent session fixation attacks - Test cookie attributes: assert `HttpOnly`, `Secure`, and `SameSite` flags are set correctly - Test session expiry by advancing time past the TTL and verifying the session is rejected - Verify CSRF protection by submitting state-changing requests without the CSRF token and expecting rejection - Test concurrent sessions: verify behavior when the same user logs in from multiple clients - Test session store failover — verify graceful degradation when the session backend is unavailable - Assert that sensitive data (passwords, tokens) is never stored in the session object'
+  monitoring:
+    summary: Track session store health, session lifecycle events, and security-relevant anomalies.
+    metrics:
+    - name: session_active_count
+      kind: gauge
+      description: number of active sessions in the session store
+    - name: session_store_size_bytes
+      kind: gauge
+      description: total session store size, detects unbounded growth from missing TTL
+    - name: session_store_latency_seconds
+      kind: histogram
+      description: session lookup time (Redis/DB), on the critical path of every request
+    - name: session_creation_rate
+      kind: counter
+      description: new sessions created per interval, partitioned by source
+    - name: session_csrf_validation_failures_total
+      kind: counter
+      description: CSRF token mismatches, may indicate attack or misconfiguration
+    - name: session_duration_seconds
+      kind: histogram
+      description: distribution of session lifetimes before expiry or logout
+    alerts:
+    - Session creation rate spike (potential brute-force or session fixation attack)
+    - Session store unavailable (blocks all authenticated requests)
+    - Sessions exceeding configured TTL (cleanup mechanism broken)
+    - CSRF validation failure rate elevated beyond baseline
+    - Session store latency degraded (impacts every authenticated request)

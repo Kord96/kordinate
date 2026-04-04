@@ -20,7 +20,7 @@ Two legacy nodes (`colima`, `kkord-latitude-5420`) are SchedulingDisabled.
 | `dev` | Kafka message bus | Strimzi Kafka (broker + entity operator) |
 | `gateway` | Ingress + object storage | MinIO |
 | `monitor` | Agent log collection | Alloy (ships agent logs to Loki in master) |
-| `registry` | Container images | Registry (NodePort 30500) |
+| `registry` | Container images | Registry service resolved through cluster config/overlay (`REGISTRY`) |
 | `prod` | Production workloads | Project apps, Kafka, Postgres, Redis |
 
 ## PVC Layout
@@ -53,7 +53,7 @@ All agent workloads run in `kord`, not `master`. Components:
 - **Webhook Receiver** -- GitHub push events, routes to job-router for CI triggers
 - **Kafka** in `dev` namespace -- `kafka-kafka-bootstrap.dev.svc.cluster.local:9092` (Strimzi-managed)
 
-All pods use image `localhost:30500/agent-factory:latest` from the cluster registry.
+Pods now use a layered image model from the configured cluster registry: `REGISTRY/agent-base:latest` for shared runtime, with derived images like `REGISTRY/agent-charon:latest` and `REGISTRY/agent-augur:latest` for agent-specific tooling.
 Single PVC `agent-runtime` mounted at `/kord` provides shared memory, repos, and team data.
 
 ## Workstation (master namespace)
@@ -85,7 +85,7 @@ GitHub push -> webhook-receiver -> job-router -> charon (via Kafka)
 ```
 
 Charon runs deterministic gates (lint, test, schema drift) before building.
-Builds use **kaniko** Jobs. Images push to `localhost:30500/<name>:latest`.
+Builds use **kaniko** Jobs or an equivalent Docker-capable build environment. Images push to `REGISTRY/<name>:latest`, where `REGISTRY` comes from cluster config/overlay resolution. For the first layered-agent rollout, build and push `agent-base`, `agent-charon`, and `agent-augur` before restarting platform deployments.
 `--cache-from` the registry image for layer caching. Never delete the latest pushed image.
 
 ## Networking
@@ -93,7 +93,7 @@ Builds use **kaniko** Jobs. Images push to `localhost:30500/<name>:latest`.
 - Internal: ClusterIP services, DNS `<svc>.<ns>.svc.cluster.local`
 - External: Cloudflare tunnels for public endpoints
 - Mesh: Tailscale between clusters
-- Registry: `localhost:30500` (NodePort)
+- Registry: resolved from cluster config/overlay as `REGISTRY`
 
 ## Manifests
 

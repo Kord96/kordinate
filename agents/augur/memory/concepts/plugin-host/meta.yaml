@@ -1,0 +1,75 @@
+schema: augur-concept-meta/v2
+concept: plugin-host
+kind: structure-shape
+summary: Plugin host structure — core system with pluggable extensions via defined interfaces
+taxonomy:
+  type: structure-shape
+  categories:
+  - architectural
+  - design
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: is-there-a-plugin-interface-or-abstract-base-class-that-extensio
+    prompt: Is there a plugin interface or abstract base class that extensions implement?
+    weight: 1
+    signals:
+    - Plugin
+    - Extension
+    - register_plugin
+    - activate
+  - id: does-the-system-discover-plugins-at-runtime-scanning-dirs-entry-
+    prompt: Does the system discover plugins at runtime (scanning dirs, entry_points, registries)?
+    weight: 1
+    signals:
+    - entry_points
+    - plugins/
+    - loadPlugins
+    - discover
+  - id: is-there-a-plugin-lifecycle-register-initialize-activate-deactiv
+    prompt: Is there a plugin lifecycle (register → initialize → activate → deactivate)?
+    weight: 1
+  - id: can-features-be-enabled-disabled-via-configuration
+    prompt: Can features be enabled/disabled via configuration?
+    weight: 1
+    signals:
+    - enabled_plugins
+    - feature_flag
+    - config

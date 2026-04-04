@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: temporal-coupling
+kind: anti-pattern
+summary: Temporal Coupling anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-methods-that-must-be-called-in-a-specific-order-where-
+    prompt: Are there methods that must be called in a specific order where calling them out of order produces runtime errors or silent corruption?
+    weight: 3
+    signals:
+    - init before run
+    - connect before query
+    - order-dependent method calls
+  - id: do-comments-in-the-code-warn-about-required-call-sequences-like-
+    prompt: Do comments in the code warn about required call sequences like 'must call X before Y' or 'call after init'?
+    weight: 2
+    signals:
+    - must call before
+    - call after init
+    - order-dependent comments
+  - id: are-there-objects-that-require-separate-configure-or-setup-calls
+    prompt: Are there objects that require separate configure or setup calls after construction before they are usable?
+    weight: 3
+    signals:
+    - two-phase initialization
+    - configure after constructor
+    - setup call required post-construction
+  - id: does-the-type-system-or-api-allow-calling-methods-in-the-wrong-o
+    prompt: Does the type system or API allow calling methods in the wrong order without compile-time or type-check errors?
+    weight: 2
+    signals:
+    - no typestate enforcement
+    - runtime-only order checks
+    - implicit preconditions

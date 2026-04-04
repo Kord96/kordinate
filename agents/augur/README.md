@@ -1,6 +1,6 @@
-# Designer
+# Augur
 
-Architecture review and pattern authority — reviews design consistency and identifies patterns.
+Architecture review and pattern authority — reviews design consistency, identifies patterns, and produces architectural analysis.
 
 ## Skills
 
@@ -8,12 +8,14 @@ Architecture review and pattern authority — reviews design consistency and ide
 |-------|---------|---------|
 | [detect-patterns](skills/detect-patterns/SKILL.md) | `/designer:detect-patterns <project>` | Scan a project for recognized architectural patterns |
 
-## Kords Provided
+## Legacy Kord Contracts
+
+These entries describe older compatibility contracts and are no longer the preferred orchestration path. Use explicit delegation to `augur` instead.
 
 | Kord | Mode | Requesters | Description |
 |------|------|-----------|-------------|
-| [designer-default](../../kords/designer-default/contract.md) | stateful | any | General architecture and design questions — topology, patterns, data flow, failure modes |
-| [pattern-review](../../kords/pattern-review/contract.md) | stateful | deployer, sauron | Architecture review for deployment and monitoring changes — violations by severity |
+| [designer-default](../../kords/designer-default/contract.md) | stateful | any | Legacy architecture/design questions contract |
+| [pattern-review](../../kords/pattern-review/contract.md) | stateful | deployer, sauron | Legacy deployment/monitoring review contract |
 
 ## Memory
 

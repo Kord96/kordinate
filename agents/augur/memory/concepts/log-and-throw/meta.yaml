@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: log-and-throw
+kind: anti-pattern
+summary: Log and Throw anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: true
+    file: semgrep.yaml
+    detector_strength: 5
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: semgrep.yaml
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 7
+  questions:
+  - id: do-catch-blocks-both-log-the-exception-at-error-level-and-rethro
+    prompt: Do catch blocks both log the exception at error level and rethrow it in the same block?
+    weight: 3
+    signals:
+    - logger.error(e); raise e
+    - log(e); throw e
+    - catch log and rethrow
+  - id: is-the-same-exception-logged-at-multiple-layers-as-it-propagates
+    prompt: Is the same exception logged at multiple layers as it propagates up the call stack?
+    weight: 3
+    signals:
+    - duplicate error entries
+    - same exception logged at each layer
+    - multiple stack depths
+  - id: do-error-count-dashboards-show-inflated-numbers-that-are-multipl
+    prompt: Do error count dashboards show inflated numbers that are multiples of actual failure occurrences?
+    weight: 2
+    signals:
+    - error rate inflation
+    - 3x actual failures
+    - duplicate error metrics
+  - id: do-catch-blocks-log-the-full-stack-trace-and-then-rethrow-the-sa
+    prompt: Do catch blocks log the full stack trace and then rethrow the same exception unchanged?
+    weight: 2
+    signals:
+    - log stack trace then throw
+    - catch rethrow unchanged
+    - no wrapping on rethrow

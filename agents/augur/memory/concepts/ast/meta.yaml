@@ -1,0 +1,93 @@
+schema: augur-concept-meta/v2
+concept: ast
+kind: pattern
+summary: Abstract Syntax Tree (AST) architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+  - compiler
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-tree-of-typed-node-classes-or-tagged-unions-represent
+    prompt: Is there a tree of typed node classes or tagged unions representing parsed language constructs (expressions, statements, declarations)?
+    weight: 3
+    signals:
+    - node type hierarchy
+    - ExprNode/StmtNode/DeclNode
+    - tagged union of syntax forms
+  - id: do-nodes-carry-source-location-information-span-line-column-for-
+    prompt: Do nodes carry source location information (span, line, column) for error reporting and diagnostics?
+    weight: 2
+    signals:
+    - span field on nodes
+    - source location tracking
+    - loc/pos attached to each node
+  - id: is-there-a-visitor-or-walker-pattern-that-traverses-the-tree-wit
+    prompt: Is there a visitor or walker pattern that traverses the tree without requiring modifications to node definitions?
+    weight: 3
+    signals:
+    - visit_* methods
+    - accept() dispatch
+    - walk/traverse/fold utilities
+  - id: are-tree-transformations-performed-by-producing-new-trees-rather
+    prompt: Are tree transformations performed by producing new trees rather than mutating existing nodes in place?
+    weight: 2
+    signals:
+    - immutable AST
+    - transformation returns new tree
+    - no in-place node mutation
+analysis:
+  testing:
+    summary: Test parsing correctness, tree traversal, and transformation output for representative input cases.
+    unit:
+    - Parse known input strings and assert the resulting AST structure matches expected node types and hierarchy
+    - Test visitor/walker traversal visits nodes in the correct order (pre-order, post-order)
+    - 'Verify transformation: apply a rewrite rule and assert the output AST reflects the change'
+    integration:
+    - 'Round-trip test: parse input to AST, transform, then serialize back and verify semantic equivalence'
+    - Test with real-world input samples to catch edge cases in grammar handling
+    failure_injection:
+    - Feed malformed input and verify the parser produces clear syntax errors with line/column positions

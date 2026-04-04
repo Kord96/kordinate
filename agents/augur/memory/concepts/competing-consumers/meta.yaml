@@ -1,0 +1,126 @@
+schema: augur-concept-meta/v2
+concept: competing-consumers
+kind: pattern
+summary: Competing Consumers architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - messaging
+  - concurrency
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-multiple-consumer-instances-reading-from-the-same-queue-or-t
+    prompt: Are multiple consumer instances reading from the same queue or topic, each processing a subset of messages?
+    weight: 3
+    signals:
+    - consumer group
+    - multiple readers on one queue
+    - partitioned consumption
+  - id: is-there-consumer-group-configuration-with-partition-assignment-
+    prompt: Is there consumer group configuration with partition assignment or rebalancing logic?
+    weight: 3
+    signals:
+    - group.id configuration
+    - partition rebalance handler
+    - consumer group membership
+  - id: is-message-processing-idempotent-to-handle-redelivery-during-con
+    prompt: Is message processing idempotent to handle redelivery during consumer rebalancing?
+    weight: 2
+    signals:
+    - idempotent processing
+    - deduplication on redelivery
+    - at-least-once with idempotency
+  - id: does-the-consumer-count-scale-based-on-queue-depth-or-lag-metric
+    prompt: Does the consumer count scale based on queue depth or lag metrics?
+    weight: 1
+    signals:
+    - autoscale on queue depth
+    - consumer lag monitoring
+    - scale workers by backlog
+analysis:
+  testing:
+    summary: Verify messages are processed exactly once across consumers and that work distributes evenly.
+    unit:
+    - Publish N messages with M consumers and assert each message is processed exactly once
+    - 'Verify message acknowledgment: unacknowledged messages are redelivered to another consumer'
+    - 'Test idempotency: redelivered messages do not produce duplicate side effects'
+    integration:
+    - Run multiple consumer instances against a real broker and verify even work distribution
+    - 'Test consumer group rebalancing: add/remove a consumer mid-stream and verify no messages are lost or duplicated'
+    failure_injection:
+    - Kill a consumer mid-processing and verify the message is redelivered to a surviving consumer
+    - Introduce a poison message and verify it routes to a DLQ after max retries without blocking the queue
+  monitoring:
+    summary: Track queue depth, consumer throughput, and processing distribution across instances.
+    metrics:
+    - name: queue_depth
+      kind: gauge
+      description: pending messages in the queue
+    - name: consumer_messages_processed_total
+      kind: counter
+      description: messages processed per consumer instance
+    - name: consumer_processing_latency_seconds
+      kind: histogram
+      description: per-message processing time
+    - name: consumer_redeliveries_total
+      kind: counter
+      description: messages redelivered after failed processing
+    alerts:
+    - Queue depth growing steadily (consumers not keeping up with producers)
+    - Consumer instance processing zero messages (stuck or disconnected)
+    - Redelivery rate exceeding threshold (poison message or systemic failure)
+  deployment:
+    summary: Scale consumers independently of producers and ensure no messages are lost during rolling restarts.
+    rollout_implications:
+    - During rolling restart, in-flight messages on terminating instances must be nacked or completed before shutdown
+    - Old and new consumer versions may process messages concurrently — ensure message format backward compatibility
+    - Scaling down reduces parallelism; verify remaining consumers can handle the full message rate
+    pre_deploy_checklist:
+    - Verify consumer shutdown drains in-flight messages within terminationGracePeriodSeconds
+    - Confirm consumer group rebalancing completes without message loss

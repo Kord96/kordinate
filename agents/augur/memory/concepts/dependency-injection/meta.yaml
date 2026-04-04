@@ -1,0 +1,93 @@
+schema: augur-concept-meta/v2
+concept: dependency-injection
+kind: pattern
+summary: Dependency Injection/IoC architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - architectural
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-dependencies-received-through-constructor-or-method-paramete
+    prompt: Are dependencies received through constructor or method parameters rather than constructed internally?
+    weight: 3
+    signals:
+    - constructor accepts interfaces not concrete classes
+    - no new ConcreteClass() inside business logic
+  - id: is-there-a-composition-root-or-di-container-that-wires-dependenc
+    prompt: Is there a composition root or DI container that wires dependencies at startup?
+    weight: 3
+    signals:
+    - Container or Injector class with bindings
+    - centralized binding configuration at app entry point
+  - id: do-bindings-map-interfaces-to-implementations-rather-than-regist
+    prompt: Do bindings map interfaces to implementations rather than registering concrete classes directly?
+    weight: 2
+    signals:
+    - bind(Interface).to(Implementation)
+    - container.register(protocol, concrete)
+  - id: can-tests-substitute-real-dependencies-with-fakes-without-modify
+    prompt: Can tests substitute real dependencies with fakes without modifying production code?
+    weight: 1
+    signals:
+    - test container with mock bindings
+    - constructor injection allows passing test doubles
+analysis:
+  testing:
+    summary: Verify that components receive dependencies through injection and that swapping implementations works without code changes.
+    unit:
+    - Inject mock dependencies and verify the component under test calls them with expected arguments
+    - 'Test constructor injection: missing required dependencies should fail fast at construction, not at first use'
+    - Verify that components do not create their own dependencies internally — they should be purely injectable
+    - 'Test scoped lifetimes: request-scoped dependencies should produce distinct instances per scope'
+    integration:
+    - Wire the real DI container and verify the full dependency graph resolves without circular dependency errors
+    - Swap a real implementation for a test double via the container and confirm the component behaves accordingly
+    - Test that the container disposes/cleans up dependencies in the correct order on shutdown
+    additional_sections:
+    - title: Anti-pattern Detection
+      items:
+      - Assert that service locator calls (container.resolve inside business logic) are absent — dependencies should be injected, not fetched

@@ -127,7 +127,7 @@ Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,re
 
 For each pattern in the comma-separated list:
 1. Read `memory/global/concepts/<pattern>/concept.md`
-2. Note availability of `monitoring.md`, `testing.md`, `deployment.md`
+2. Use the shared loader at `agents/augur/scripts/concept_loader.py` to load structured concept metadata, preferring `memory/global/concepts/<pattern>/meta.yaml` and falling back to `monitoring.md`, `testing.md`, and `deployment.md`
 
 ### Step 2 — Read infra atlas
 
@@ -144,9 +144,7 @@ Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../.
 - **flows** — designed data flows based on communication patterns
 - **external_dependencies** — with endpoints from infra atlas
 - **failure_modes** — anticipated failures from resilience patterns. For each failure mode,
-  populate `detection` with structured fields: `signals` (from the pattern's monitoring.md
-  Key Metrics), `concern` (abstract category), `source_pattern` (concept name). These
-  are portable — sauron maps them to Prometheus queries and vitals evaluations
+  populate `detection` with structured fields by loading the concept through `agents/augur/scripts/concept_loader.py`: `signals` (prefer structured monitoring metrics/signals from `meta.yaml`; if absent, derive them from legacy `monitoring.md`), `concern` (abstract category), `source_pattern` (concept name). These are portable — sauron maps them to Prometheus queries and vitals evaluations
 - **domain_model** — from the data patterns
 - **debt** — empty (score: 0, grade: A)
 - **metadata.analysis_mode** — `"design"`

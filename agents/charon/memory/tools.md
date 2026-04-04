@@ -11,4 +11,4 @@ description: Deployer tools reference
 | kubectl | CLI | Cluster operations — apply, patch, rollout, logs |
 | gh | CLI | GitHub repo management — PRs, releases, webhooks |
 | postgres.py | script (local) | Compare SQLAlchemy models against live DB schema |
-| Container registry | infra (localhost:30500) | Image distribution for k8s clusters |
+| Container registry | infra (configured `REGISTRY` host) | Image distribution for k8s clusters |

@@ -12,7 +12,7 @@ master:
   - master-kord-storage.yaml
   - master-docs.yaml                 # Astro Starlight docs site (docs.khaledkord.com)
   - master-workstation.yaml          # Caddyfile ConfigMap generated in overlay
-  - master-agent-factory.yaml        # MCP server that spawns beorn agents
+  - master-job-router.yaml           # job router / control-plane service manifest
   - prometheus.yaml                  # base — overlay sets: port=9191, retention=30d, PVC
   - loki.yaml                       # base — overlay sets: PVC name
   - master-grafana.yaml
@@ -33,7 +33,9 @@ shared:
 
 images:
   - workstation
-  - agent-factory
+  - agent-base
+  - agent-charon
+  - agent-augur
   - docs
   - log-puller
   - loki-federate

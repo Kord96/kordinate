@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: circular-dependency
+kind: anti-pattern
+summary: Circular Dependency anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-two-or-more-modules-import-each-other-directly-or-through-a-t
+    prompt: Do two or more modules import each other directly or through a transitive chain (A imports B imports A, or A->B->C->A)?
+    weight: 3
+    signals:
+    - mutual import
+    - transitive import cycle
+    - A-imports-B-imports-A
+  - id: are-there-deferred-imports-inside-function-bodies-or-type-checki
+    prompt: Are there deferred imports inside function bodies or TYPE_CHECKING blocks used to work around import cycles?
+    weight: 3
+    signals:
+    - function-level import
+    - TYPE_CHECKING guard
+    - deferred import to break cycle
+  - id: does-rearranging-imports-or-moving-code-between-files-cause-runt
+    prompt: Does rearranging imports or moving code between files cause runtime ImportError or AttributeError?
+    weight: 2
+    signals:
+    - order-dependent imports
+    - partially initialized module
+    - runtime import failure
+  - id: does-unit-testing-a-single-module-pull-in-a-chain-of-seemingly-u
+    prompt: Does unit testing a single module pull in a chain of seemingly unrelated modules?
+    weight: 1
+    signals:
+    - test pulls transitive deps
+    - unexpected import chain in tests
+    - isolated test requires full graph

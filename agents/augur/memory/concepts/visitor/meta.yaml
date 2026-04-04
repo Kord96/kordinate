@@ -1,0 +1,83 @@
+schema: augur-concept-meta/v2
+concept: visitor
+kind: pattern
+summary: Visitor architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-element-or-node-classes-have-an-accept-visitor-method-that-di
+    prompt: Do element or node classes have an accept(visitor) method that dispatches to a type-specific visit method on the visitor?
+    weight: 3
+    signals:
+    - accept(visitor) method
+    - visitor.visit_X(self) double dispatch
+    - element dispatches to visitor
+  - id: are-there-visitor-classes-with-multiple-visit-type-methods-corre
+    prompt: Are there visitor classes with multiple visit_Type methods corresponding to different element types?
+    weight: 3
+    signals:
+    - visit_BinaryExpr or visit_Literal methods
+    - visit_ method per element type
+    - visitor with type-specific handlers
+  - id: is-the-pattern-used-for-ast-walking-tree-traversal-compiler-pass
+    prompt: Is the pattern used for AST walking, tree traversal, compiler passes, or serialization?
+    weight: 2
+    signals:
+    - AST walker or NodeVisitor
+    - tree traversal visitor
+    - compiler pass or serialization visitor
+  - id: can-new-visitors-be-added-without-modifying-existing-element-cla
+    prompt: Can new visitors be added without modifying existing element classes?
+    weight: 1
+    signals:
+    - new visitor without element changes
+    - open for visitor extension
+    - algorithm separated from structure
+analysis:
+  testing:
+    summary: '# Testing - Test each `visit_*` method independently with a single element type to verify correct behavior - Verify double dispatch: `accept(visitor)` calls the correct `visit_*` method for each element type - Test traversal order (depth-first, breadth-first) with a known tree structure and recorded visit sequence - Test the fallback handler (`generic_visit`) for unvisited element types - Verify that adding a new visitor does not require modifying element classes - Test visitor state accumulation: verify reset boundaries between independent traversals - Assert that visitors access only the element''s public interface, not private internals - Test with deeply nested and wide trees to verify no stack overflow or performance degradation'

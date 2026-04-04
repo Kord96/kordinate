@@ -1,0 +1,130 @@
+schema: augur-concept-meta/v2
+concept: event-sourcing
+kind: pattern
+summary: Event Sourcing architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-aggregate-state-derived-solely-by-replaying-an-append-only-se
+    prompt: Is aggregate state derived solely by replaying an append-only sequence of events?
+    weight: 3
+    signals:
+    - apply() methods on aggregates that mutate state from events
+    - load_events() and replay to reconstruct state
+  - id: are-events-stored-in-an-append-only-event-store-or-stream
+    prompt: Are events stored in an append-only event store or stream?
+    weight: 3
+    signals:
+    - EventStore or EventStream with append_events()
+    - EventStoreDB client or append-only table
+  - id: are-events-named-as-immutable-past-tense-facts
+    prompt: Are events named as immutable past-tense facts?
+    weight: 2
+    signals:
+    - OrderPlaced, PaymentReceived event class names
+    - events describe what happened, never mutated after write
+  - id: do-snapshots-exist-for-aggregates-with-long-event-histories
+    prompt: Do snapshots exist for aggregates with long event histories?
+    weight: 1
+    signals:
+    - Snapshot class or snapshot repository
+    - snapshot interval configuration for aggregate replay
+analysis:
+  testing:
+    summary: Ensure event replay produces consistent state and that schema evolution does not break reconstruction.
+    unit:
+    - Replay a known sequence of events and assert the resulting aggregate state matches expected values exactly
+    - 'Test snapshot + replay: load a snapshot, apply subsequent events, and verify state matches full replay from scratch'
+    - Verify event schema versioning — apply an upcaster to a v1 event and assert it produces a valid v2 event
+    - Test that applying an invalid event (wrong aggregate, bad sequence number) is rejected by the aggregate
+    integration:
+    - Write events to the real event store, rebuild aggregate state, and compare against expected projections
+    - Test full replay from an empty state across a large event history — verify correctness and measure rebuild time
+    - Verify that two concurrent commands on the same aggregate produce an optimistic concurrency conflict, not corrupted state
+    failure_injection:
+    - Corrupt a single event in the store and verify replay detects the inconsistency rather than silently producing wrong state
+    - Simulate event store unavailability mid-write and confirm no partial event batches are persisted
+    - Delete a snapshot and verify the system rebuilds state correctly from the full event history
+  monitoring:
+    summary: Track event store throughput, replay performance, and snapshot health to prevent unbounded growth from degrading the system.
+    metrics:
+    - name: event_store_append_total
+      kind: counter
+      description: events written per aggregate type
+    - name: event_store_append_duration_seconds
+      kind: histogram
+      description: write latency to the event store
+    - name: event_replay_duration_seconds
+      kind: histogram
+      description: time to rebuild aggregate state from events
+    - name: snapshot_age_seconds
+      kind: gauge
+      description: time since last snapshot per aggregate type
+    - name: events_since_snapshot
+      kind: gauge
+      description: event count since last snapshot per aggregate
+    alerts:
+    - Event replay duration exceeding acceptable threshold (snapshot may be stale or missing)
+    - Events-since-snapshot count growing beyond configured limit
+    - Event store append latency degrading (storage pressure)
+    - Snapshot creation failures accumulating
+  deployment:
+    summary: Handle event store migrations and replay behavior during rollouts.
+    rollout_implications:
+    - Event schema changes require versioned events — deploy consumers that read both old and new versions before deploying producers that write new versions
+    - 'Replay during rollout: if a new version triggers a full replay, expect increased load on the event store — scale accordingly'
+    - 'Snapshot invalidation: schema changes may invalidate existing snapshots — plan for snapshot rebuild time'
+    - Blue-green deployments are safer than rolling updates for event schema migrations
+    pre_deploy_checklist:
+    - Confirm backward-compatible event schema (old consumers can read new events)
+    - Verify snapshot rebuild time fits within maintenance window if snapshots are invalidated

@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: graph
+kind: domain-model
+summary: Generic graph model covering dependency graphs, DAGs, and general graph algorithms
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - algorithmic
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-an-explicit-graph-data-structure-adjacency-list-adjacen
+    prompt: Is there an explicit graph data structure (adjacency list, adjacency matrix, or graph library) modeling entity relationships?
+    weight: 3
+    signals:
+    - networkx or petgraph Graph
+    - adjacency list or matrix
+    - custom Graph class with nodes and edges
+  - id: are-graph-traversal-algorithms-bfs-dfs-topological-sort-used-for
+    prompt: Are graph traversal algorithms (BFS, DFS, topological sort) used for ordering or reachability?
+    weight: 3
+    signals:
+    - topological_sort for dependency ordering
+    - BFS or DFS traversal
+    - shortest_path computation
+  - id: is-cycle-detection-implemented-for-graphs-that-must-maintain-dag
+    prompt: Is cycle detection implemented for graphs that must maintain DAG properties?
+    weight: 2
+    signals:
+    - has_cycle or is_acyclic check
+    - cycle detection on graph mutation
+    - DAG validation before processing
+  - id: are-graph-operations-add-node-add-edge-remove-encapsulated-with-
+    prompt: Are graph operations (add node, add edge, remove) encapsulated with invariant enforcement?
+    weight: 1
+    signals:
+    - graph mutation methods with validation
+    - edge addition checks for cycles
+    - graph integrity constraints

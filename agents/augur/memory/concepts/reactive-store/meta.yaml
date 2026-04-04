@@ -1,0 +1,79 @@
+schema: augur-concept-meta/v2
+concept: reactive-store
+kind: pattern
+summary: Reactive Store — client-side state container with reactive subscriptions
+taxonomy:
+  type: pattern
+  categories:
+  - frontend
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-centralized-state-container-that-components-subscribe
+    prompt: Is there a centralized state container that components subscribe to for reactive updates?
+    weight: 3
+    signals:
+    - create() or createSlice() store definition
+    - defineStore with storeToRefs
+    - atom() with useAtomValue subscriptions
+  - id: do-state-mutations-go-through-defined-actions-or-setters-rather-
+    prompt: Do state mutations go through defined actions or setters rather than direct object mutation?
+    weight: 3
+    signals:
+    - dispatch action to update state
+    - set() function for mutations
+    - commit mutation through store API
+  - id: are-selectors-or-derived-values-used-to-compute-state-instead-of
+    prompt: Are selectors or derived values used to compute state instead of duplicating it?
+    weight: 2
+    signals:
+    - createSelector for derived state
+    - computed getters on store
+    - derived() from base atoms
+  - id: is-the-store-segmented-by-domain-rather-than-stored-as-a-single-
+    prompt: Is the store segmented by domain rather than stored as a single monolithic object?
+    weight: 1
+    signals:
+    - separate slices per feature
+    - multiple stores or atoms per domain
+    - module-based store organization

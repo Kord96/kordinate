@@ -1,0 +1,93 @@
+schema: augur-concept-meta/v2
+concept: adapter
+kind: pattern
+summary: Adapter architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - integration
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 5
+  questions:
+  - id: is-there-a-class-that-implements-one-interface-by-delegating-to-
+    prompt: Is there a class that implements one interface by delegating to an object with a different interface, translating between the two?
+    weight: 3
+    signals:
+    - interface translation
+    - wraps adaptee and exposes target interface
+    - delegates to foreign API
+  - id: are-third-party-library-types-isolated-behind-a-project-specific
+    prompt: Are third-party library types isolated behind a project-specific interface so callers never import the external SDK directly?
+    weight: 3
+    signals:
+    - vendor wrapper
+    - SDK isolation
+    - swap vendor by changing adapter only
+  - id: does-the-translation-layer-map-errors-and-exceptions-from-the-ex
+    prompt: Does the translation layer map errors and exceptions from the external system into domain-appropriate error types?
+    weight: 2
+    signals:
+    - exception translation
+    - error mapping
+    - adaptee errors converted to domain errors
+  - id: is-the-adapter-stateless-holding-only-a-reference-to-the-adaptee
+    prompt: Is the adapter stateless, holding only a reference to the adaptee without accumulating its own mutable state?
+    weight: 1
+    signals:
+    - stateless wrapper
+    - passthrough delegation
+    - no adapter-owned state
+analysis:
+  testing:
+    summary: Verify that the adapter correctly translates between the target interface and the adaptee's API.
+    unit:
+    - Assert every method on the target interface delegates to the correct adaptee method
+    - 'Test data transformation: input to the adapter produces correctly mapped output from the adaptee'
+    - Verify edge cases in translation (nulls, empty collections, type mismatches)
+    integration:
+    - Wire the adapter with a real adaptee and verify end-to-end behavior matches the target contract
+    - Swap adapters for different backends and verify the client code works identically
+    failure_injection:
+    - Simulate adaptee failures and verify the adapter surfaces errors through the target interface cleanly

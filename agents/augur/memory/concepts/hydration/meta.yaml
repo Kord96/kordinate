@@ -1,0 +1,79 @@
+schema: augur-concept-meta/v2
+concept: hydration
+kind: pattern
+summary: Hydration — transferring server-rendered state to the client for interactive rendering
+taxonomy:
+  type: pattern
+  categories:
+  - frontend
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-application-use-framework-ssr-hydration-apis-like-hydra
+    prompt: Does the application use framework SSR hydration APIs like hydrateRoot, createSSRApp, or TransferState?
+    weight: 3
+    signals:
+    - hydrateRoot
+    - createSSRApp
+    - TransferState
+  - id: is-serialized-state-embedded-in-server-rendered-html-for-the-cli
+    prompt: Is serialized state embedded in server-rendered HTML for the client to consume without re-fetching?
+    weight: 3
+    signals:
+    - __NEXT_DATA__
+    - window.__NUXT__
+    - script type=application/json with state
+  - id: are-hydration-mismatch-warnings-treated-as-bugs-and-investigated
+    prompt: Are hydration mismatch warnings treated as bugs and investigated rather than globally suppressed?
+    weight: 2
+    signals:
+    - hydration mismatch fix
+    - suppressHydrationWarning on specific element
+    - server/client render match
+  - id: is-there-a-two-phase-rendering-process-where-the-server-generate
+    prompt: Is there a two-phase rendering process where the server generates HTML and the client attaches event handlers?
+    weight: 1
+    signals:
+    - SSR render then client hydrate
+    - dehydrate/rehydrate boundary
+    - HydrationBoundary component

@@ -1,0 +1,93 @@
+schema: augur-concept-meta/v2
+concept: database-migration
+kind: pattern
+summary: Database Migration architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - lifecycle
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-schema-changes-captured-as-versioned-migration-files-with-se
+    prompt: Are schema changes captured as versioned migration files with sequential ordering?
+    weight: 3
+    signals:
+    - numbered or timestamped migration files
+    - 001_create_users.sql or V2__add_index.sql naming
+  - id: do-migration-files-contain-both-up-upgrade-and-down-rollback-log
+    prompt: Do migration files contain both up/upgrade and down/rollback logic?
+    weight: 2
+    signals:
+    - def upgrade() and def downgrade()
+    - exports.up and exports.down
+  - id: is-there-a-schema-version-tracking-table-or-migration-state-stor
+    prompt: Is there a schema version tracking table or migration state store?
+    weight: 2
+    signals:
+    - alembic_version or flyway_schema_history table
+    - schema_migrations table referenced in code
+  - id: is-a-migration-framework-configured-to-manage-execution-order
+    prompt: Is a migration framework configured to manage execution order?
+    weight: 2
+    signals:
+    - alembic.ini or flyway config present
+    - knex migrate or django migrate commands in scripts
+analysis:
+  testing:
+    summary: Validate that migrations apply cleanly, are reversible, and preserve existing data across schema transitions.
+    unit:
+    - Run each migration up and down on an empty database and verify no SQL errors
+    - Assert that the resulting schema matches expected table definitions, indexes, and constraints
+    - Test idempotency — running the same migration twice should either no-op or fail gracefully
+    integration:
+    - Seed a database with representative data, apply the migration, and verify existing rows are preserved and correctly transformed
+    - Test the full migration chain from the initial schema to HEAD to catch ordering or dependency issues
+    - Run rollback after migration and confirm the schema returns to its prior state without data corruption
+    additional_sections:
+    - title: Data Safety
+      items:
+      - Verify that destructive operations (column drops, type changes) include a backfill or data-copy step in the migration
+      - Test migrations against a production-sized dataset copy to catch performance issues before deploy

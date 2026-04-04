@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: stringly-typed
+kind: anti-pattern
+summary: Stringly Typed anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-string-literals-used-for-branching-logic-where-enums-or-type
+    prompt: Are string literals used for branching logic where enums or typed constants should be?
+    weight: 3
+    signals:
+    - if type == 'admin' string comparison
+    - status = 'active' without enum
+    - same magic string in 3+ files for branching
+  - id: are-function-parameters-typed-as-string-when-they-only-accept-a-
+    prompt: Are function parameters typed as string when they only accept a fixed set of known values?
+    weight: 3
+    signals:
+    - string parameter with known valid values
+    - no type narrowing on string input
+    - function accepts any string for a finite domain
+  - id: are-string-constants-scattered-across-multiple-files-with-no-sin
+    prompt: Are string constants scattered across multiple files with no single defining location?
+    weight: 2
+    signals:
+    - magic strings duplicated in multiple modules
+    - no central constant definition
+    - string values repeated without shared reference
+  - id: is-refactoring-of-string-based-values-difficult-due-to-lack-of-c
+    prompt: Is refactoring of string-based values difficult due to lack of compiler or IDE assistance?
+    weight: 1
+    signals:
+    - rename requires project-wide search-replace
+    - no autocomplete for valid values
+    - typo in string causes silent runtime bug

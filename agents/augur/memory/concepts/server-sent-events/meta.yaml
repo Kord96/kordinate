@@ -1,0 +1,113 @@
+schema: augur-concept-meta/v2
+concept: server-sent-events
+kind: pattern
+summary: Server-Sent Events architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - infrastructure
+  - integration
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-server-respond-with-content-type-text-event-stream-usin
+    prompt: Does the server respond with Content-Type text/event-stream using SSE wire format?
+    weight: 3
+    signals:
+    - text/event-stream content type header
+    - 'data: prefixed lines in response stream'
+    - 'event: field for named event types'
+  - id: does-the-client-use-eventsource-to-receive-server-pushed-events
+    prompt: Does the client use EventSource to receive server-pushed events?
+    weight: 3
+    signals:
+    - new EventSource(url)
+    - onmessage or addEventListener on EventSource
+    - onerror handler for reconnection
+  - id: do-events-include-id-fields-enabling-resume-via-last-event-id-af
+    prompt: Do events include id fields enabling resume via Last-Event-ID after reconnection?
+    weight: 2
+    signals:
+    - 'id: field in event stream'
+    - Last-Event-ID header on reconnect
+    - resume from last received event ID
+  - id: does-the-server-handle-client-disconnection-gracefully-and-clean
+    prompt: Does the server handle client disconnection gracefully and clean up resources?
+    weight: 1
+    signals:
+    - detect closed connection
+    - cleanup on client disconnect
+    - bounded concurrent SSE client count
+analysis:
+  testing:
+    summary: '# Testing - Test the SSE wire format: verify `data:`, `event:`, `id:`, and `retry:` fields are correctly formatted - Simulate client disconnection and verify the server detects it and cleans up resources - Test resume after reconnection by sending `Last-Event-ID` and verifying missed events are replayed - Load test with many concurrent SSE clients to verify connection limits and backpressure behavior - Test named event types by subscribing to specific `event:` values and ignoring others - Verify that the `Content-Type: text/event-stream` header is set on the response - Test that the server streams incrementally, not buffering the entire response before sending - Assert connection cleanup under error conditions (server crash, network timeout)'
+  monitoring:
+    summary: Track connection lifecycle, event delivery throughput, and per-instance resource usage for SSE streams.
+    metrics:
+    - name: sse_active_connections
+      kind: gauge
+      description: concurrent SSE connections per server instance
+    - name: sse_event_delivery_latency_seconds
+      kind: histogram
+      description: time from event generation to client receipt
+    - name: sse_disconnections_total
+      kind: counter
+      description: client disconnections partitioned by reason (client-close, timeout, error)
+    - name: sse_reconnections_total
+      kind: counter
+      description: reconnection attempts tracked via Last-Event-ID header
+    - name: sse_events_sent_total
+      kind: counter
+      description: events pushed to clients, partitioned by event type
+    - name: sse_event_backlog
+      kind: gauge
+      description: queued events not yet delivered to consumers
+    alerts:
+    - Active connection count approaching server or file descriptor limits
+    - Event delivery latency exceeding acceptable threshold for the use case
+    - High disconnection rate indicating network instability or server resource pressure
+    - Event backlog growing (server producing faster than clients can consume)
+    - Server memory or file descriptor usage elevated due to connection accumulation

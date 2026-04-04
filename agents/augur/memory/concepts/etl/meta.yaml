@@ -1,0 +1,129 @@
+schema: augur-concept-meta/v2
+concept: etl
+kind: pattern
+summary: ETL architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-explicit-extract-transform-and-load-stages-with-clear-
+    prompt: Are there explicit extract, transform, and load stages with clear boundaries between them?
+    weight: 3
+    signals:
+    - separate extract/transform/load functions or classes
+    - pipeline DAG with distinct ETL operator steps
+  - id: does-the-extract-phase-track-a-bookmark-or-offset-for-incrementa
+    prompt: Does the extract phase track a bookmark or offset for incremental runs?
+    weight: 2
+    signals:
+    - timestamp or offset checkpoint between runs
+    - incremental extraction based on last processed marker
+  - id: is-the-load-phase-idempotent-so-re-running-does-not-create-dupli
+    prompt: Is the load phase idempotent so re-running does not create duplicates?
+    weight: 2
+    signals:
+    - upsert or merge on load
+    - idempotent write with deduplication key
+  - id: is-a-pipeline-orchestration-framework-managing-execution-order-a
+    prompt: Is a pipeline orchestration framework managing execution order and dependencies?
+    weight: 2
+    signals:
+    - Airflow DAG or dbt models/ directory
+    - Dagster @op/@job or Prefect @flow/@task decorators
+analysis:
+  testing:
+    summary: Verify transform logic purity, bookmark tracking accuracy, and idempotent load behavior across repeated runs.
+    unit:
+    - Test transform functions as pure functions — given the same input records, assert identical output with no side effects
+    - 'Verify bookmark tracking: after a successful run, the bookmark advances; after a failed run, it remains at the previous position'
+    - Test schema validation between extract and transform — confirm malformed records are rejected with descriptive errors
+    - Assert that the load phase handles duplicate keys gracefully (upsert semantics, not duplicate inserts)
+    integration:
+    - Run a full extract-transform-load cycle against real sources and sinks, then verify row counts and data integrity
+    - Execute two consecutive incremental runs and verify the second run only processes new records from the bookmark
+    - Test load idempotency by running the same batch twice and asserting the target state is identical after both runs
+    failure_injection:
+    - Crash the process mid-load and verify the bookmark was not advanced — next run reprocesses the incomplete batch
+    - Inject corrupt records in the extract phase and verify the pipeline logs errors without silently dropping data
+    - Simulate target database unavailability during load and confirm the pipeline retries or fails cleanly without advancing the bookmark
+  monitoring:
+    summary: Track job execution, per-stage throughput, and error rates to detect pipeline degradation across extract, transform, and load phases.
+    metrics:
+    - name: etl_job_duration_seconds
+      kind: histogram
+      description: end-to-end job execution time
+    - name: etl_records_extracted_total
+      kind: counter
+      description: records pulled per extraction run
+    - name: etl_transform_errors_total
+      kind: counter
+      description: records that failed transformation
+    - name: etl_records_loaded_total
+      kind: counter
+      description: records successfully written to the target store
+    - name: etl_checkpoint_lag_seconds
+      kind: gauge
+      description: time since last successful checkpoint
+    alerts:
+    - Job duration exceeding expected window (pipeline slowing down)
+    - Transform error rate exceeding threshold (bad source data or broken logic)
+    - Checkpoint lag growing (jobs failing silently without advancing bookmark)
+    - Extracted-to-loaded record ratio diverging (data loss between stages)
+  deployment:
+    summary: Job scheduling and bookmark state must be coordinated to avoid partial loads or duplicate processing.
+    rollout_implications:
+    - Deploying new transform logic while a job is running may cause the in-flight job to produce inconsistent output — pause scheduling before rollout
+    - Bookmark/checkpoint format changes require migration — new code reading old bookmarks must handle the previous format
+    - Schema changes in the load target (new columns, type changes) must be applied before new ETL code deploys
+    - Parallel job execution during rollout can cause duplicate loads if both old and new versions process the same bookmark window
+    pre_deploy_checklist:
+    - Verify no ETL jobs are currently running or scheduled to start during the deployment window
+    - Confirm bookmark/checkpoint state is compatible with the new code version
+    - Validate that target schema migrations are applied before deploying new transform or load logic

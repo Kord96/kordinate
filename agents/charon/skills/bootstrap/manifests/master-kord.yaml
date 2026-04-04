@@ -67,7 +67,8 @@ spec:
       serviceAccountName: kord
       containers:
         - name: kord
-          image: localhost:30500/agent-factory:latest  # base image (Node.js + claude CLI), code from PVC
+          image: REGISTRY/agent-base:latest  # shared agent base image (Node.js + OpenClaude), code from PVC
+          imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - |

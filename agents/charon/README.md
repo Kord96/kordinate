@@ -1,4 +1,4 @@
-# Deployer
+# Charon
 
 Infrastructure operations — deployments, cluster management, kubectl authority.
 
@@ -10,11 +10,13 @@ Infrastructure operations — deployments, cluster management, kubectl authority
 
 Infra subcommands: `bootstrap`, `generate-overlays`, `roll`, `stop`, `clean`, `diff`, `migrate`.
 
-## Kords Provided
+## Legacy Kord Contracts
+
+These entries describe older compatibility contracts and are no longer the preferred orchestration path. Use explicit delegation to `charon` instead.
 
 | Kord | Mode | Requesters | Description |
 |------|------|-----------|-------------|
-| [deployer-default](../../kords/deployer-default/contract.md) | stateful | any | General deployment and cluster questions — current state, versions, configuration |
+| [deployer-default](../../kords/deployer-default/contract.md) | stateful | any | Legacy deployment and cluster questions contract |
 
 ## Memory
 
@@ -28,7 +30,7 @@ Infra subcommands: `bootstrap`, `generate-overlays`, `roll`, `stop`, `clean`, `d
 
 ## Rules
 
-- Consult designer for deployment perspective on recognized patterns
+- Consult augur for deployment perspective on recognized patterns
 - Consult sauron when modifying monitoring infrastructure
 - Forward rolls: verify source health. Backward: warn before overwriting.
 - Manifests are namespace-agnostic — always `kubectl apply -n <namespace>`

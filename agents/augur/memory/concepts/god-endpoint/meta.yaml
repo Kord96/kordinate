@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: god-endpoint
+kind: anti-pattern
+summary: God Endpoint anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-a-single-api-route-dispatch-to-multiple-unrelated-operation
+    prompt: Does a single API route dispatch to multiple unrelated operations based on an action or type parameter?
+    weight: 3
+    signals:
+    - switch on action
+    - if type ==
+    - request.body.operation
+  - id: does-one-endpoint-accept-different-request-response-shapes-depen
+    prompt: Does one endpoint accept different request/response shapes depending on which operation is requested?
+    weight: 3
+    signals:
+    - different schemas per action
+    - polymorphic request body
+    - union response type
+  - id: is-there-a-large-switch-case-or-if-else-chain-inside-a-single-ha
+    prompt: Is there a large switch/case or if-else chain inside a single handler routing to unrelated business logic?
+    weight: 2
+    signals:
+    - case 'createUser'
+    - case 'sendEmail'
+    - 5+ branches in handler
+  - id: do-authorization-checks-rate-limits-or-caching-behave-differentl
+    prompt: Do authorization checks, rate limits, or caching behave differently per operation but share the same route?
+    weight: 1
+    signals:
+    - per-action permission logic
+    - cannot cache by URL
+    - shared rate limit bucket

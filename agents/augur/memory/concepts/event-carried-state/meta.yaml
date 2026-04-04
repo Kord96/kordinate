@@ -1,0 +1,105 @@
+schema: augur-concept-meta/v2
+concept: event-carried-state
+kind: pattern
+summary: Event-Carried State Transfer architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - messaging
+  - data
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - deployment.md
+traits:
+  testable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-events-carry-full-entity-state-rather-than-just-identifiers
+    prompt: Do events carry full entity state rather than just identifiers?
+    weight: 3
+    signals:
+    - event payload contains complete entity snapshot
+    - order.created event with full order object in data field
+  - id: do-consumers-operate-without-calling-back-to-the-source-service-
+    prompt: Do consumers operate without calling back to the source service for data?
+    weight: 3
+    signals:
+    - no API callback to source after receiving event
+    - consumer builds local projection from event data alone
+  - id: do-consumers-maintain-local-read-replicas-or-projections-built-f
+    prompt: Do consumers maintain local read replicas or projections built from event data?
+    weight: 2
+    signals:
+    - local cache or table updated from event payloads
+    - projection store populated by event consumers
+  - id: is-the-event-schema-versioned-to-handle-field-additions-and-remo
+    prompt: Is the event schema versioned to handle field additions and removals?
+    weight: 1
+    signals:
+    - schema version field in event metadata
+    - event versioning or upcasting logic
+analysis:
+  testing:
+    summary: Verify that consumers correctly build and maintain local state projections from event streams.
+    unit:
+    - Apply a sequence of events to a consumer and assert the resulting local state matches the expected projection
+    - 'Test idempotency: replaying the same event should not corrupt or duplicate local state'
+    - Verify that events with missing optional fields are handled gracefully with defaults
+    - 'Test out-of-order delivery: consumer should either reorder or reject events that violate causality'
+    integration:
+    - Publish a stream of state-carrying events and verify the consumer's local store matches the producer's authoritative state
+    - 'Test schema evolution: publish events in the old format and new format and confirm the consumer handles both'
+    - Verify that a full replay from the event log produces the same local state as incremental consumption
+    additional_sections:
+    - title: Consistency Tests
+      items:
+      - Compare the consumer's local projection against the source of truth after a burst of concurrent updates to detect drift
+  deployment:
+    summary: Manage schema evolution carefully since consumers maintain local copies of state derived from event payloads.
+    rollout_implications:
+    - Deploy consumers that handle the new event schema before deploying producers that emit it — consumers must tolerate unknown fields
+    - State rebuild from event replay may be needed if the local projection schema changes — plan for backfill time in the rollout window
+    - Rolling updates may cause consumers to temporarily hold divergent local state versions — ensure reads tolerate eventual consistency
+    - If adding new fields to events, use additive-only changes; removing fields requires a deprecation period
+    pre_deploy_checklist:
+    - Verify that the event schema registry (if used) contains the new version and compatibility checks pass
+    - Confirm consumers can rebuild local state from the event log within acceptable time if a full replay is needed

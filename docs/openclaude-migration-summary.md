@@ -28,6 +28,7 @@ For each runtime agent directory, `lib/scripts/deploy-runtime.sh` now writes:
 
 - `.openclaude-profile.json`
   - the active backend configuration the daemon should boot with
+  - generated runtime/local state, not a repo-managed source file
 - `.openclaude-backends.json`
   - the full backend pool for that agent
 
@@ -157,6 +158,10 @@ That gives:
 - `/kord/projects/kordinate/lib/scripts/toggle-profile.sh`
 - `/kord/projects/kordinate/test_deploy.sh`
 - `/kord/projects/kordinate/test-spawn.js`
+
+## Repo ownership note
+
+Treat `.openclaude-profile.json` as generated runtime/local state. The repo may contain examples or test fixtures, but normal local profile files should stay untracked.
 
 ## Practical outcome
 

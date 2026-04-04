@@ -1,0 +1,69 @@
+schema: augur-concept-meta/v2
+concept: scatter-gather
+kind: flow-shape
+summary: Scatter-gather flow — request dispatched to multiple services, responses aggregated
+taxonomy:
+  type: flow-shape
+  categories:
+  - integration
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: does-the-code-send-the-same-request-to-multiple-services-and-agg
+    prompt: Does the code send the same request to multiple services and aggregate responses?
+    weight: 1
+  - id: is-there-parallel-dispatch-with-timeout-handling-for-slow-respon
+    prompt: Is there parallel dispatch with timeout handling for slow responders?
+    weight: 1
+    signals:
+    - Promise.all
+    - asyncio.gather
+    - timeout
+    - race
+  - id: does-an-api-endpoint-call-multiple-backends-to-compose-a-single-
+    prompt: Does an API endpoint call multiple backends to compose a single response?
+    weight: 1
+  - id: is-there-partial-result-support-return-what-s-available-if-some-
+    prompt: Is there partial result support (return what's available if some services are slow)?
+    weight: 1
+    signals:
+    - partial
+    - allSettled
+    - timeout

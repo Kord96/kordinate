@@ -1,0 +1,93 @@
+schema: augur-concept-meta/v2
+concept: command
+kind: pattern
+summary: Command architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-operations-encapsulated-as-objects-with-an-execute-method-en
+    prompt: Are operations encapsulated as objects with an execute() method, enabling them to be queued, logged, or stored?
+    weight: 3
+    signals:
+    - command object with execute()
+    - operation as first-class object
+    - action class with run method
+  - id: is-there-undo-or-rollback-functionality-backed-by-a-history-stac
+    prompt: Is there undo or rollback functionality backed by a history stack of executed command objects?
+    weight: 3
+    signals:
+    - undo method on command
+    - command history stack
+    - reversible operations
+  - id: are-command-objects-self-contained-carrying-all-parameters-neede
+    prompt: Are command objects self-contained, carrying all parameters needed for execution?
+    weight: 2
+    signals:
+    - self-contained command parameters
+    - command carries own data
+    - no external state lookup in execute
+  - id: is-the-invoker-decoupled-from-the-concrete-command-types-it-trig
+    prompt: Is the invoker decoupled from the concrete command types it triggers?
+    weight: 1
+    signals:
+    - invoker holds abstract command
+    - command interface decoupling
+    - polymorphic dispatch of commands
+analysis:
+  testing:
+    summary: Verify command execution, undo capability, and correct decoupling of invoker from receiver.
+    unit:
+    - Execute a command and assert the receiver's state changes as expected
+    - 'Test undo: execute then undo a command and verify the receiver returns to its prior state'
+    - 'Verify command serialization: serialize and deserialize a command, then execute it with the same result'
+    integration:
+    - Queue multiple commands and execute them in order — verify the cumulative state is correct
+    - 'Test macro commands (composite): execute a macro and verify all sub-commands run in sequence'
+    - 'Verify command history: replay a sequence of commands and assert the final state matches'
+    failure_injection:
+    - Inject a failure mid-execution in a macro command and verify partial undo rolls back completed sub-commands

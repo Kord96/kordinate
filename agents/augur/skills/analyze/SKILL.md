@@ -118,14 +118,14 @@ Read the source code. As you build your understanding, cover all concerns below.
 
 **Completeness checklist:**
 
-- **Patterns and concepts** — 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. When starting this: read [detection.md](detection.md).
+- **Patterns and concepts** — 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. Use the shared concept loader at `agents/augur/scripts/concept_loader.py` for structured concept metadata (questions, testing, monitoring, deployment, references), and prefer the end-to-end detector at `skills/analyze/scripts/run_concept_detection.py` so `/analyze` follows one consistent evidence pipeline. When starting this: read [detection.md](detection.md).
 - **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [dep-analysis.md](dep-analysis.md).
 - **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
 - **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [source-gathering.md](source-gathering.md).
 - **Actors and flows** — External actors. 2-4 critical data flows. Events (omit if none). When writing atlas: read [schema.md](schema.md).
 - **Domain model** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Record it as `domain_model` in the atlas.
 - **State** — Stores with concept vocabulary, readers/writers, persistence model.
-- **Failure modes** — ALL possible failures for every external dep and stateful component, both covered and uncovered. For each failure linked to a detected pattern, read its `monitoring.md` and `deployment.md` to populate structured `detection` fields. Uncovered failures get empty signals — debt references them.
+- **Failure modes** — ALL possible failures for every external dep and stateful component, both covered and uncovered. For each failure linked to a detected pattern, use `agents/augur/scripts/concept_loader.py` to load structured operational guidance, preferring `meta.yaml` and falling back to legacy `monitoring.md` and `deployment.md`. Uncovered failures get empty signals — debt references them.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
 - **Stories** — When composing stories: read [../../schemas/story-schema.md](../../schemas/story-schema.md) and [../../schemas/writing-guide.md](../../schemas/writing-guide.md).
 

@@ -10,16 +10,16 @@ Hooks that enforce domain boundaries. Configured in `settings.json`.
 
 | Trigger | Condition | Auth | Deny message |
 |---------|-----------|------|-------------|
-| Write/Edit to `*/.kord/*` | `curated: true` in KORD.json | — | Use the `write_memory` tool |
+| Write/Edit to `*/.kord/*` | protected in `shared/runtime-ownership.yaml` | owner auth | authenticate as the owning agent |
 | Write/Edit to `*/dashboards/*.json` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 | Bash `git push` to main | branch has diverged | — | Use `/integrate` to reconcile |
-| Bash `git push` to test/prod | any | `/tmp/.deployer-auth` | Use `/infra roll` |
-| Bash `kubectl` write ops | mutating verbs | `/tmp/.deployer-auth` | Use `/infra` |
+| Bash `git push` to test/prod | any | `/tmp/.charon-auth` | Use `/infra roll` |
+| Bash `kubectl` write ops | mutating verbs | `/tmp/.charon-auth` | Use `/infra` |
 | Bash `kubectl` workstation/master/drain/cordon | any | **always blocked** | Never allowed |
 | Bash Grafana API calls | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 | `mcp__grafana*` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 
-Non-curated, non-templated `.kord/` files are allowed without auth.
+The primary runtime guard no longer depends on the old KORD metadata path and no longer uses the removed KORD compatibility hook.
 
 ### Authentication
 

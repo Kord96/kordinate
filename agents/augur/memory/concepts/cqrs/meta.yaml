@@ -1,0 +1,136 @@
+schema: augur-concept-meta/v2
+concept: cqrs
+kind: pattern
+summary: CQRS architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-separate-handler-classes-or-modules-for-commands-write
+    prompt: Are there separate handler classes or modules for commands (writes) and queries (reads)?
+    weight: 3
+    signals:
+    - CommandHandler vs QueryHandler
+    - separate write and read handlers
+    - command/query class split
+  - id: do-write-operations-target-a-different-store-or-model-than-read-
+    prompt: Do write operations target a different store or model than read operations?
+    weight: 3
+    signals:
+    - separate read/write stores
+    - write model vs read model
+    - distinct data sources for reads and writes
+  - id: is-there-an-explicit-projection-or-sync-mechanism-that-keeps-the
+    prompt: Is there an explicit projection or sync mechanism that keeps the read model consistent with the write model?
+    weight: 2
+    signals:
+    - projection from write to read
+    - event-driven read model sync
+    - materialized view rebuild
+  - id: do-queries-read-exclusively-from-the-read-model-never-directly-f
+    prompt: Do queries read exclusively from the read model, never directly from the write store?
+    weight: 1
+    signals:
+    - read-only query path
+    - queries bypass write store
+    - read model as sole query source
+analysis:
+  testing:
+    summary: Validate strict read/write separation, projection correctness, and behavior under eventual consistency.
+    unit:
+    - Test that commands modify only the write model — assert no side effects on the read store
+    - 'Verify projection logic: given a sequence of domain events, assert the read model reflects the correct denormalized state'
+    - Test that queries return data exclusively from the read model, even when the write model has newer uncommitted state
+    - Assert that projections handle duplicate events idempotently (replaying the same event does not corrupt the read model)
+    integration:
+    - Issue a command, wait for projection sync, then query the read model and verify consistency with the write
+    - Rebuild the read model from scratch by replaying all events and assert it matches the incrementally projected state
+    - Test read model under concurrent writes — multiple commands projecting simultaneously should not produce race conditions
+    failure_injection:
+    - Halt the projection sync process and verify the read model serves stale but valid data without errors
+    - Simulate projection failure mid-batch and verify it resumes from the correct offset without skipping events
+    - Drop and rebuild the read store while the write model is active — confirm the projection catches up fully
+  monitoring:
+    summary: Track read/write path health and projection lag to catch sync divergence before it becomes user-visible.
+    metrics:
+    - name: projection_lag_seconds
+      kind: gauge
+      description: delay between write model update and read model sync
+    - name: command_processed_total
+      kind: counter
+      description: commands handled by the write path
+    - name: query_processed_total
+      kind: counter
+      description: queries served by the read path
+    - name: projection_errors_total
+      kind: counter
+      description: failures during read model projection/sync
+    - name: projection_rebuild_duration_seconds
+      kind: histogram
+      description: time to rebuild read model from scratch
+    alerts:
+    - Projection lag exceeding acceptable consistency window
+    - Projection error rate spiking (sync mechanism broken)
+    - Read model rebuild taking longer than maintenance window allows
+    - Write-to-read ratio diverging unexpectedly (indicates stale projections or lost events)
+  deployment:
+    summary: Read and write model schema changes must be synchronized to avoid projection drift or query failures.
+    rollout_implications:
+    - Write model schema changes must deploy before read model projections that depend on the new fields
+    - Projection rebuild may be required after deploying new read model schemas — plan for rebuild time and increased load
+    - During rollout, old pods may serve stale read models while new pods serve updated projections — clients must tolerate temporary inconsistency
+    - Deploying a new projection alongside the old one (blue-green) avoids downtime but requires sufficient storage for both
+    pre_deploy_checklist:
+    - Verify write model migrations are applied before deploying updated projection logic
+    - Estimate projection rebuild time and confirm it fits within acceptable staleness windows
+    - Confirm read model storage has capacity for a full rebuild if required
+    - Check that query clients handle missing or null fields gracefully during the transition

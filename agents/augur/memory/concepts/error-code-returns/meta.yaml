@@ -1,0 +1,72 @@
+schema: augur-concept-meta/v2
+concept: error-code-returns
+kind: anti-pattern
+summary: Error Code Returns anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-functions-return-1-0-null-or-magic-sentinel-values-to-indicat
+    prompt: Do functions return -1, 0, null, or magic sentinel values to indicate errors in a language with exceptions?
+    weight: 3
+    signals:
+    - return -1 or return None for error in Python/Java
+    - magic sentinel like return -999 for missing data
+  - id: do-callers-check-return-values-with-comparisons-if-result-1-inst
+    prompt: Do callers check return values with comparisons (if result == -1) instead of try/catch?
+    weight: 3
+    signals:
+    - if result == -1 or if result is None checks after calls
+    - error checking via comparison rather than exception handling
+  - id: is-null-none-returned-for-both-not-found-and-error-occurred-with
+    prompt: Is null/None returned for both not-found and error-occurred with no way to distinguish?
+    weight: 2
+    signals:
+    - return None for missing and for failure
+    - caller cannot distinguish not-found from error
+  - id: are-error-code-checks-inconsistent-with-some-callers-checking-an
+    prompt: Are error code checks inconsistent, with some callers checking and others ignoring?
+    weight: 1
+    signals:
+    - some call sites check return, others proceed unchecked
+    - inconsistent error handling across callers

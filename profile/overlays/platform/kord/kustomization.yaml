@@ -3,6 +3,17 @@ kind: Kustomization
 namespace: kord
 resources:
   - ../../../../agents/charon/skills/platform/manifests/base
+images:
+  - name: REGISTRY/agent-base
+    newName: registry.kord/agent-base
+  - name: REGISTRY/agent-charon
+    newName: registry.kord/agent-charon
+  - name: REGISTRY/agent-augur
+    newName: registry.kord/agent-augur
+  - name: REGISTRY/docs
+    newName: registry.kord/docs
+  - name: REGISTRY/log-puller
+    newName: registry.kord/log-puller
 patches:
   - path: scaling.yaml
   - path: agent-backends.yaml

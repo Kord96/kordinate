@@ -1,0 +1,99 @@
+schema: augur-concept-meta/v2
+concept: lexer-parser
+kind: pattern
+summary: Lexer/Parser architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - compiler
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-two-phase-processing-pipeline-with-a-lexer-scanner-pr
+    prompt: Is there a two-phase processing pipeline with a Lexer/Scanner producing tokens consumed by a Parser?
+    weight: 3
+    signals:
+    - Lexer class
+    - Scanner with next_token
+    - Parser consuming token stream
+  - id: is-there-a-token-type-or-enum-with-variants-for-identifiers-lite
+    prompt: Is there a Token type or enum with variants for identifiers, literals, keywords, and operators?
+    weight: 3
+    signals:
+    - Token enum
+    - TokenKind::Identifier
+    - token type variants
+  - id: does-the-parser-use-peek-advance-expect-or-consume-methods-to-na
+    prompt: Does the parser use peek(), advance(), expect(), or consume() methods to navigate the token stream?
+    weight: 2
+    signals:
+    - peek() method
+    - advance()
+    - expect(TokenKind)
+  - id: do-tokens-carry-source-location-information-line-column-for-erro
+    prompt: Do tokens carry source location information (line, column) for error reporting?
+    weight: 1
+    signals:
+    - token.line
+    - token.column
+    - source location on token
+analysis:
+  testing:
+    summary: Test the lexer and parser independently, then verify end-to-end parsing with a golden test corpus.
+    additional_sections:
+    - title: Lexer Tests
+      items:
+      - Tokenize known input strings and assert the exact token sequence (type, value, position)
+      - 'Test edge cases: empty input, unterminated strings, nested comments, escape sequences'
+      - Verify that source locations (line, column) are accurate for error reporting
+    - title: Parser Tests
+      items:
+      - Parse token streams into ASTs and assert structural equality with expected trees
+      - 'Test error recovery: malformed input should produce a useful error message with source location, not a crash'
+      - Verify precedence and associativity rules with ambiguous expressions
+    - title: End-to-End Tests
+      items:
+      - Maintain a corpus of valid and invalid source files with expected AST output or error messages
+      - Add a regression test for every parser bug fix to prevent recurrence

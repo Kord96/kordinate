@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: event-log
+kind: domain-model
+summary: Event log domain model — append-only log of events as source of truth
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - messaging
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: are-there-append-only-tables-or-streams-inserts-only-no-updates-
+    prompt: Are there append-only tables or streams (inserts only, no updates/deletes)?
+    weight: 1
+    signals:
+    - append
+    - immutable
+    - insert_only
+    - event_type
+  - id: can-system-state-be-rebuilt-by-replaying-events-from-the-log
+    prompt: Can system state be rebuilt by replaying events from the log?
+    weight: 1
+    signals:
+    - replay
+    - rebuild
+    - snapshot
+    - rehydrate
+  - id: is-there-event-schema-versioning-avro-protobuf-schema-registry
+    prompt: Is there event schema versioning (Avro, Protobuf, schema registry)?
+    weight: 1
+    signals:
+    - schema_registry
+    - avro
+    - protobuf
+    - event_version
+  - id: are-events-the-source-of-truth-rather-than-mutable-database-reco
+    prompt: Are events the source of truth rather than mutable database records?
+    weight: 1

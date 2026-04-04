@@ -1,0 +1,94 @@
+schema: augur-concept-meta/v2
+concept: component
+kind: pattern
+summary: Component Architecture architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - frontend
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-self-contained-ui-units-with-explicit-props-interfaces
+    prompt: Are there self-contained UI units with explicit props interfaces that compose into a tree?
+    weight: 3
+    signals:
+    - component with props
+    - composable UI tree
+    - typed props interface
+  - id: does-data-flow-unidirectionally-through-the-tree-props-down-even
+    prompt: Does data flow unidirectionally through the tree -- props down, events up?
+    weight: 2
+    signals:
+    - props passed down
+    - events emitted up
+    - unidirectional data flow
+  - id: are-side-effects-api-calls-subscriptions-isolated-in-lifecycle-h
+    prompt: Are side effects (API calls, subscriptions) isolated in lifecycle hooks or dedicated composables/hooks?
+    weight: 2
+    signals:
+    - useEffect for side effects
+    - lifecycle hook isolation
+    - composable for data fetching
+  - id: do-components-have-a-render-function-or-template-that-returns-ui
+    prompt: Do components have a render function or template that returns UI markup from component logic?
+    weight: 2
+    signals:
+    - render method
+    - JSX return
+    - template block in component file
+analysis:
+  testing:
+    summary: Test components in isolation with defined inputs and outputs, then verify composition behavior.
+    unit:
+    - Render/execute the component with known props/inputs and assert the output matches expectations
+    - 'Test component lifecycle: initialization, update on input change, and cleanup/teardown'
+    - Verify default behavior when optional inputs are omitted
+    integration:
+    - Compose parent and child components together and verify data flows correctly through the hierarchy
+    - 'Test event propagation: child emits an event, parent handles it, and state updates accordingly'
+    - Verify slot/projection content renders in the correct location
+    failure_injection:
+    - Supply invalid input types and verify the component surfaces a validation error rather than crashing

@@ -1,0 +1,135 @@
+schema: augur-concept-meta/v2
+concept: ddd
+kind: pattern
+summary: Domain-Driven Design architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+  - design
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 7
+  questions:
+  - id: do-aggregate-root-classes-enforce-invariants-by-rejecting-invali
+    prompt: Do aggregate root classes enforce invariants by rejecting invalid state transitions?
+    weight: 3
+    signals:
+    - validation logic in aggregate methods
+    - state mutation only through aggregate operations
+  - id: are-domain-events-published-when-aggregate-state-changes
+    prompt: Are domain events published when aggregate state changes?
+    weight: 3
+    signals:
+    - DomainEvent classes with past-tense names
+    - publish_event or emit after state change
+  - id: are-repository-interfaces-defined-in-the-domain-layer-with-imple
+    prompt: Are repository interfaces defined in the domain layer with implementations in infrastructure?
+    weight: 2
+    signals:
+    - Repository interface in domain/ package
+    - repository implementation in infrastructure/ or infra/
+  - id: is-the-codebase-organized-into-bounded-contexts-with-separate-do
+    prompt: Is the codebase organized into bounded contexts with separate domain models per context?
+    weight: 2
+    signals:
+    - separate domain directories per context like ordering/ shipping/
+    - no cross-context domain object imports
+  - id: do-value-objects-enforce-equality-by-value-rather-than-identity
+    prompt: Do value objects enforce equality by value rather than identity?
+    weight: 1
+    signals:
+    - __eq__ based on fields not id
+    - ValueObject base class or immutable data classes
+analysis:
+  testing:
+    summary: Validate that aggregates enforce invariants and bounded contexts remain isolated through their public contracts.
+    unit:
+    - Test aggregate invariants by attempting illegal state transitions and asserting they are rejected
+    - Verify that domain events are published with correct data when aggregate state changes
+    - Test value objects for equality semantics and validation rules (e.g., invalid email rejected at construction)
+    - Assert that factory methods produce aggregates in a valid initial state
+    integration:
+    - Test anti-corruption layer translations — send upstream context events and verify downstream context receives correctly mapped domain objects
+    - Verify that domain events published by one aggregate are consumed and handled by other aggregates without shared internal state
+    - Test repository implementations against the actual store, asserting aggregate reconstitution preserves invariants
+    failure_injection:
+    - Simulate anti-corruption layer failure and verify the downstream context rejects or queues rather than accepting corrupted data
+    - Inject duplicate domain events and confirm aggregate handlers are idempotent
+    - Simulate repository write failure mid-aggregate-update and verify no partial state is persisted
+  monitoring:
+    summary: Track aggregate operations and cross-context communication to detect boundary violations and performance issues.
+    metrics:
+    - name: aggregate_command_total
+      kind: counter
+      description: commands processed per aggregate type
+    - name: domain_event_published_total
+      kind: counter
+      description: events published per bounded context
+    - name: cross_context_call_total
+      kind: counter
+      description: calls between bounded contexts (should be low and intentional)
+    - name: aggregate_command_duration_seconds
+      kind: histogram
+      description: time to process commands per aggregate type
+    - name: anti_corruption_translation_errors_total
+      kind: counter
+      description: failures in anti-corruption layer translations
+    alerts:
+    - Cross-context call rate increasing unexpectedly (boundary erosion)
+    - Aggregate command latency exceeding SLA
+    - Event publishing failures accumulating in any context
+    - Anti-corruption layer error rate exceeding threshold
+  deployment:
+    summary: Bounded context boundaries and aggregate schema changes require careful coordination during rollouts.
+    rollout_implications:
+    - Aggregate schema changes need database migrations applied before new code rolls out — never deploy code expecting a schema that does not yet exist
+    - Deploying a bounded context that emits new domain events requires downstream consumers to handle unknown event fields gracefully
+    - Anti-corruption layer changes must be backward-compatible — old and new versions of the ACL may run simultaneously during rollout
+    - Shared-nothing contexts can deploy independently, but contexts with synchronous dependencies need ordered rollouts
+    pre_deploy_checklist:
+    - Verify database migrations for aggregate schema changes are applied and backward-compatible
+    - Confirm downstream bounded contexts can tolerate new or changed domain events
+    - Check that anti-corruption layer translations handle both old and new upstream formats

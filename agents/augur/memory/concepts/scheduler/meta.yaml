@@ -1,0 +1,112 @@
+schema: augur-concept-meta/v2
+concept: scheduler
+kind: pattern
+summary: Cron/Scheduler architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - lifecycle
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-tasks-triggered-by-cron-expressions-or-scheduled-time-interv
+    prompt: Are tasks triggered by cron expressions or scheduled time intervals?
+    weight: 3
+    signals:
+    - cron expression in config or decorator
+    - CronJob resource in Kubernetes manifest
+    - '@scheduled or @periodic_task decorator'
+  - id: is-there-a-scheduler-library-managing-periodic-task-registration
+    prompt: Is there a scheduler library managing periodic task registration and execution?
+    weight: 3
+    signals:
+    - APScheduler or celery.beat import
+    - node-cron or Quartz scheduler
+    - periodic task registration at startup
+  - id: are-overlapping-executions-of-the-same-job-handled-to-prevent-st
+    prompt: Are overlapping executions of the same job handled to prevent stacking?
+    weight: 2
+    signals:
+    - skip if previous run still active
+    - overlap protection on job trigger
+    - mutex or lock on concurrent job execution
+  - id: are-failed-jobs-retried-or-routed-to-a-dead-letter-mechanism
+    prompt: Are failed jobs retried or routed to a dead-letter mechanism?
+    weight: 1
+    signals:
+    - job retry on failure
+    - dead-letter for failed scheduled tasks
+    - error handling with retry count
+analysis:
+  testing:
+    summary: '# Testing - Unit test job logic independently from the scheduler — inject a fake clock and trigger manually - Test overlap protection by simulating a long-running job and verifying the next trigger is skipped or queued - Test retry behavior by injecting failures and asserting retry count, backoff intervals, and dead-letter handling - Verify graceful shutdown waits for in-progress jobs before terminating - Test timezone handling with explicit timezone fixtures — daylight saving transitions cause real bugs - Test cron expression parsing against known edge cases (leap years, month boundaries, `*/5` vs `5`) - Integration test the full schedule-to-execution path with an accelerated clock, not real-time waits - Assert that failed jobs produce observable side effects (log entries, metrics, alerts)'
+  monitoring:
+    summary: Track job execution health, schedule adherence, and scheduler process availability.
+    metrics:
+    - name: scheduler_job_duration_seconds
+      kind: histogram
+      description: execution time per job name, detects performance drift
+    - name: scheduler_job_runs_total
+      kind: counter
+      description: job executions partitioned by job name and status (success/failure)
+    - name: scheduler_missed_schedules_total
+      kind: counter
+      description: expected runs that did not fire within the tolerance window
+    - name: scheduler_overlapping_runs
+      kind: gauge
+      description: concurrent executions of the same job (should be 0 with overlap protection)
+    - name: scheduler_retry_total
+      kind: counter
+      description: retry attempts per job, indicates transient or persistent failures
+    - name: scheduler_dead_letter_queue_depth
+      kind: gauge
+      description: failed jobs awaiting manual intervention
+    alerts:
+    - Job has not run within twice the expected schedule interval (missed schedule)
+    - Job duration exceeds historical p99 by a significant margin (execution drift)
+    - Overlapping executions detected for a job that should run exclusively
+    - Scheduler process health check failing (all jobs stop if the scheduler crashes)
+    - Dead-letter queue depth growing steadily (unresolved job failures)

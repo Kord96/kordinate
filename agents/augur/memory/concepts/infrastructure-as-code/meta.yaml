@@ -1,0 +1,97 @@
+schema: augur-concept-meta/v2
+concept: infrastructure-as-code
+kind: pattern
+summary: Infrastructure as Code architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - infrastructure
+  - deployment
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-all-infrastructure-defined-in-declarative-version-controlled-
+    prompt: Is all infrastructure defined in declarative, version-controlled files such as Terraform, Pulumi, or CloudFormation?
+    weight: 3
+    signals:
+    - .tf files with resource blocks
+    - pulumi program
+    - CloudFormation template
+  - id: are-infrastructure-changes-applied-through-a-plan-review-apply-w
+    prompt: Are infrastructure changes applied through a plan/review/apply workflow in CI/CD rather than manually?
+    weight: 3
+    signals:
+    - terraform plan in CI
+    - pulumi preview
+    - plan step before apply
+  - id: is-infrastructure-state-stored-remotely-with-locking-to-prevent-
+    prompt: Is infrastructure state stored remotely with locking to prevent concurrent modifications?
+    weight: 2
+    signals:
+    - S3 backend with DynamoDB lock
+    - remote state
+    - state locking enabled
+  - id: are-parameterized-modules-used-to-avoid-duplication-across-envir
+    prompt: Are parameterized modules used to avoid duplication across environments?
+    weight: 1
+    signals:
+    - module block with variables
+    - reusable module
+    - environment parameterization
+analysis:
+  testing:
+    summary: Validate infrastructure definitions before apply to catch misconfigurations and drift early.
+    unit:
+    - Validate IaC templates with linters (`tflint`, `cfn-lint`, `pulumi preview`) and assert zero errors
+    - Test Terraform modules with `terraform validate` and plan output assertions
+    - Assert that no secrets or credentials appear in `.tf`, template, or overlay files
+    integration:
+    - Apply infrastructure to an ephemeral environment and verify all resources are created as expected
+    - Run drift detection against a known-good state and assert no out-of-band changes
+    - Destroy and recreate the environment to verify full reproducibility from code
+    additional_sections:
+    - title: Policy Tests
+      items:
+      - Use OPA/Rego or Sentinel policies to enforce tagging, encryption, and network rules on plan output
+      - Validate that state is stored remotely with locking enabled (not committed to git or stored locally)

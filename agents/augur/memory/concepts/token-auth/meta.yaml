@@ -1,0 +1,112 @@
+schema: augur-concept-meta/v2
+concept: token-auth
+kind: pattern
+summary: Token-Based Authentication (JWT) architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-middleware-extract-bearer-tokens-from-authorization-headers
+    prompt: Does middleware extract Bearer tokens from Authorization headers and verify JWT signatures before processing requests?
+    weight: 3
+    signals:
+    - 'Authorization: Bearer extraction'
+    - jwt.verify or jwt.decode
+    - signature verification in middleware
+  - id: are-jwt-claims-like-exp-iss-and-aud-validated-on-every-request-n
+    prompt: Are JWT claims like exp, iss, and aud validated on every request, not just decoded?
+    weight: 3
+    signals:
+    - exp claim validation
+    - iss and aud verification
+    - claim checks beyond decode
+  - id: is-there-a-refresh-token-flow-with-a-dedicated-endpoint-that-iss
+    prompt: Is there a refresh token flow with a dedicated endpoint that issues new access tokens?
+    weight: 2
+    signals:
+    - refresh token endpoint
+    - token renewal flow
+    - short-lived access with refresh rotation
+  - id: does-the-system-use-a-jwks-endpoint-or-key-rotation-mechanism-fo
+    prompt: Does the system use a JWKS endpoint or key rotation mechanism for token signing keys?
+    weight: 1
+    signals:
+    - JWKS URI configuration
+    - .well-known/jwks.json
+    - signing key rotation
+analysis:
+  testing:
+    summary: '# Testing - Test signature verification: a token signed with the wrong key or modified payload must be rejected - Verify claim validation: expired `exp`, wrong `iss`, wrong `aud` tokens are all rejected - Test the `none` algorithm attack: a token with `alg: none` must be rejected regardless of payload - Test refresh token flow: valid refresh produces new access token, expired refresh is rejected - Verify refresh token rotation: a used refresh token cannot be reused (one-time use) - Test token revocation: after logout, previously valid tokens are rejected - Assert that tokens are not stored in localStorage — verify httpOnly cookie or memory-only storage - Test that token payloads do not contain sensitive data (PII, secrets) by decoding and inspecting'
+  monitoring:
+    summary: Track token validation outcomes, key infrastructure health, and refresh token lifecycle for security visibility.
+    metrics:
+    - name: token_validation_total
+      kind: counter
+      description: token verifications partitioned by result (valid, expired, invalid_signature, malformed)
+    - name: token_algorithm_mismatch_total
+      kind: counter
+      description: tokens presenting an unexpected or disallowed algorithm (none, algorithm confusion)
+    - name: token_refresh_total
+      kind: counter
+      description: refresh token usage partitioned by outcome (success, expired, reuse_detected)
+    - name: token_jwks_fetch_latency_seconds
+      kind: histogram
+      description: time to retrieve signing keys from the JWKS endpoint
+    - name: token_revocation_list_size
+      kind: gauge
+      description: entries in the token blacklist/revocation store
+    - name: token_revocation_lookup_latency_seconds
+      kind: histogram
+      description: time to check a token against the revocation list
+    alerts:
+    - Token validation failure rate spike (mass expiry, key rotation issue, or attack)
+    - Algorithm mismatch or `none` algorithm detected (algorithm confusion attack attempt)
+    - Rotated refresh token reused (token theft indicator)
+    - JWKS endpoint unavailable (blocks all token verification)
+    - Tokens with abnormally long TTLs bypassing the short-lived access token policy

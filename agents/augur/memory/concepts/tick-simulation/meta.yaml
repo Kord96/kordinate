@@ -1,0 +1,84 @@
+schema: augur-concept-meta/v2
+concept: tick-simulation
+kind: pattern
+summary: Tick-Based Simulation architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - lifecycle
+  - realtime
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-code-contain-a-tick-or-step-method-called-at-a-fixed-ra
+    prompt: Does the code contain a tick() or step() method called at a fixed rate with a monotonic tick counter tracking simulation progress?
+    weight: 3
+    signals:
+    - tick() or step() method
+    - tick counter or tick number
+    - TICKS_PER_SECOND constant
+  - id: are-state-updates-deterministic-such-that-identical-inputs-at-th
+    prompt: Are state updates deterministic such that identical inputs at the same tick always produce identical outputs?
+    weight: 3
+    signals:
+    - deterministic update functions
+    - seeded randomness in tick
+    - same input same output per tick
+  - id: is-the-simulation-tick-rate-decoupled-from-the-rendering-frame-r
+    prompt: Is the simulation tick rate decoupled from the rendering frame rate with a separate fixed_update or physics step?
+    weight: 2
+    signals:
+    - fixed_update separate from render
+    - tick rate independent of frame rate
+    - simulation clock distinct from wall clock
+  - id: does-the-system-support-replay-or-lockstep-synchronization-by-re
+    prompt: Does the system support replay or lockstep synchronization by recording per-tick inputs?
+    weight: 2
+    signals:
+    - replay from tick inputs
+    - lockstep networking
+    - input log per tick
+analysis:
+  testing:
+    summary: '# Testing - Test determinism: identical inputs at the same tick must always produce identical state - Verify tick rate is decoupled from frame rate — simulation produces the same result at any render speed - Test replay by recording per-tick inputs, replaying them, and comparing final state to the original run - Verify that the tick counter is monotonic and never skips or repeats - Test late or missing input handling: prediction, rollback, or pause behavior under network delay - Test state snapshots: save at tick N, advance to tick N+10, restore to tick N, and verify state - Assert that no non-deterministic operations (unseeded random, floating-point inconsistency) exist in tick updates - Test lockstep synchronization between multiple clients exchanging inputs per tick'

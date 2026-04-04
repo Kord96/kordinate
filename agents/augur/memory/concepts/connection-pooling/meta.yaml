@@ -1,0 +1,113 @@
+schema: augur-concept-meta/v2
+concept: connection-pooling
+kind: pattern
+summary: Connection Pooling architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - infrastructure
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-connections-to-external-resources-database-cache-http-manage
+    prompt: Are connections to external resources (database, cache, HTTP) managed through a pool with configured size limits?
+    weight: 3
+    signals:
+    - pool_size configuration
+    - max_connections setting
+    - connection pool instantiation
+  - id: are-pooled-connections-validated-or-health-checked-before-being-
+    prompt: Are pooled connections validated or health-checked before being handed to callers?
+    weight: 2
+    signals:
+    - test-on-borrow
+    - connection health check
+    - validation query before checkout
+  - id: is-there-defined-behavior-for-pool-exhaustion-block-with-timeout
+    prompt: Is there defined behavior for pool exhaustion (block with timeout, reject, or overflow)?
+    weight: 2
+    signals:
+    - pool timeout on exhaustion
+    - overflow strategy
+    - connection wait queue
+  - id: are-connections-always-returned-to-the-pool-in-both-success-and-
+    prompt: Are connections always returned to the pool in both success and error paths?
+    weight: 2
+    signals:
+    - connection return in finally
+    - pool checkin on error
+    - no leaked connections
+analysis:
+  testing:
+    summary: Verify pool lifecycle, bounded concurrency, and correct connection reuse behavior.
+    unit:
+    - Acquire and release a connection — verify it returns to the pool for reuse
+    - Acquire connections up to the max pool size and verify the next request waits or times out
+    - 'Test idle eviction: leave a connection idle beyond the TTL and verify it is closed and replaced'
+    integration:
+    - Run concurrent workloads through the pool against a real database and verify no connection leaks
+    - 'Test pool warm-up: verify minimum connections are established at startup'
+    failure_injection:
+    - Kill the database server and verify the pool detects dead connections, evicts them, and reconnects when the server recovers
+  monitoring:
+    summary: Track pool utilization, wait times, and connection health.
+    metrics:
+    - name: pool_active_connections
+      kind: gauge
+      description: currently checked-out connections
+    - name: pool_idle_connections
+      kind: gauge
+      description: available connections in the pool
+    - name: pool_wait_duration_seconds
+      kind: histogram
+      description: time callers wait for an available connection
+    - name: pool_timeout_total
+      kind: counter
+      description: requests that timed out waiting for a connection
+    alerts:
+    - 'Pool exhaustion: active connections at max with waiters queuing'
+    - Connection wait time exceeding latency SLA
+    - High rate of stale connection evictions (upstream instability)

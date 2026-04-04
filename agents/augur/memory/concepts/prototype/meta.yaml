@@ -1,0 +1,99 @@
+schema: augur-concept-meta/v2
+concept: prototype
+kind: pattern
+summary: Prototype architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-new-objects-created-by-cloning-existing-template-instances-r
+    prompt: Are new objects created by cloning existing template instances rather than constructing from scratch?
+    weight: 3
+    signals:
+    - clone() method
+    - deepcopy(template)
+    - Object.create(prototype)
+  - id: is-there-a-prototype-registry-or-catalog-of-pre-configured-templ
+    prompt: Is there a prototype registry or catalog of pre-configured template objects that callers clone from?
+    weight: 3
+    signals:
+    - prototype registry
+    - template catalog
+    - pre-configured instances for cloning
+  - id: are-deep-copy-vs-shallow-copy-semantics-explicitly-chosen-and-do
+    prompt: Are deep copy vs shallow copy semantics explicitly chosen and documented for cloned objects?
+    weight: 2
+    signals:
+    - deepcopy for nested objects
+    - shallow copy documented
+    - copy semantics explicit
+  - id: does-the-clone-method-maintain-class-invariants-so-the-cloned-ob
+    prompt: Does the clone method maintain class invariants so the cloned object is in a valid state?
+    weight: 2
+    signals:
+    - cloned object passes validation
+    - clone preserves invariants
+    - no broken state after clone
+analysis:
+  testing:
+    summary: Verify clone correctness, deep-copy isolation, and that cloned objects satisfy all class invariants.
+    unit:
+    - Clone a prototype and verify the clone equals the original in value but is a distinct instance (not same reference)
+    - Modify the clone and verify the original is not affected (deep-copy isolation for nested mutable objects)
+    - Clone an object with circular references and verify the clone completes without infinite recursion
+    - Verify the cloned object satisfies all class invariants and validation rules
+    additional_sections:
+    - title: Registry Tests
+      items:
+      - Register prototypes in the registry and verify lookup by key returns a fresh clone each time
+      - Request a prototype for an unregistered key and verify a clear error, not a null or partial object
+      - Verify the registry's template objects are not mutated by clones (defensive copy on retrieval)
+    - title: Edge Cases
+      items:
+      - Clone an object with lazy-initialized fields and verify those fields are correctly handled (initialized or deferred)
+      - 'Test shallow-copy vs deep-copy boundary: verify which fields are shared and which are independent'
+      - Clone immutable objects and verify the pattern does not add unnecessary overhead (clone can return self)

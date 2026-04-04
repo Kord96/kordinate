@@ -1,0 +1,98 @@
+schema: augur-concept-meta/v2
+concept: mvvm
+kind: pattern
+summary: Model-View-ViewModel architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+  - frontend
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-viewmodel-classes-expose-observable-properties-that-the-view-
+    prompt: Do ViewModel classes expose observable properties that the view binds to declaratively?
+    weight: 3
+    signals:
+    - '@observable property'
+    - '@Published var'
+    - LiveData in ViewModel
+    - reactive state binding
+  - id: is-the-viewmodel-the-single-source-of-truth-for-view-state-with-
+    prompt: Is the ViewModel the single source of truth for view state, with no parallel state maintained in the view?
+    weight: 3
+    signals:
+    - view reads from ViewModel only
+    - no local view state duplicating ViewModel
+    - one-way data flow to view
+  - id: are-viewmodels-testable-in-isolation-without-instantiating-any-v
+    prompt: Are ViewModels testable in isolation without instantiating any view or UI framework?
+    weight: 2
+    signals:
+    - ViewModel unit test with no UI imports
+    - test asserts on ViewModel properties
+    - no view dependency in test
+  - id: are-subscriptions-and-bindings-cleaned-up-when-the-view-is-destr
+    prompt: Are subscriptions and bindings cleaned up when the view is destroyed to prevent leaks?
+    weight: 2
+    signals:
+    - dispose subscriptions on unmount
+    - onCleared() cleanup
+    - binding lifecycle management
+analysis:
+  testing:
+    summary: Verify that ViewModels are testable without views and that data binding keeps UI and state in sync.
+    unit:
+    - Test ViewModels in isolation without instantiating any view or UI framework
+    - Modify a ViewModel property and assert that observable notifications fire with the correct value
+    - Test commands/actions on the ViewModel and verify state transitions without touching the view layer
+    integration:
+    - Bind a view to a ViewModel, trigger a user action, and verify the view updates reflect the ViewModel state
+    - 'Verify two-way binding: modify the view input and assert the ViewModel property updates accordingly'
+    - Test that disposing a view cleans up all subscriptions (no leaked observers)
+    additional_sections:
+    - title: Architectural Tests
+      items:
+      - Assert that ViewModel classes have no imports from the view or UI framework (decoupling check)
+      - 'Verify that the ViewModel is the single source of truth: no parallel state stored in the view layer'

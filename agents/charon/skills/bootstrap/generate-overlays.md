@@ -123,16 +123,37 @@ $KORDINATE_HOME/profile/overlays/platform/<env>/
 
 ### kustomization.yaml
 
+Generate this file with:
+
+```bash
+python3 $KORDINATE_HOME/lib/scripts/generate-platform-kustomization.py <env> <resolved-registry> --output profile/overlays/platform/<env>/kustomization.yaml
+```
+
+The generated file contains:
+
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: <env>
 resources:
   - ../../../../agents/charon/skills/platform/manifests/base
+images:
+  - name: REGISTRY/agent-base
+    newName: <resolved-registry>/agent-base
+  - name: REGISTRY/agent-charon
+    newName: <resolved-registry>/agent-charon
+  - name: REGISTRY/agent-augur
+    newName: <resolved-registry>/agent-augur
+  - name: REGISTRY/docs
+    newName: <resolved-registry>/docs
+  - name: REGISTRY/log-puller
+    newName: <resolved-registry>/log-puller
 patches:
   - path: scaling.yaml
   - path: resources.yaml
 ```
+
+Resolve `<resolved-registry>` from `clusters.<name>.services.registry.url` in `profile/config.yaml`.
 
 ### scaling.yaml
 

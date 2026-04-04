@@ -6,7 +6,6 @@ Skills available to all agents, not owned by any single agent.
 |-------|---------|---------|
 | [boot](boot/SKILL.md) | `/boot` | Load memory and shared protocols on spawn — run before starting any task |
 | [authenticate](authenticate/SKILL.md) | `/authenticate` | Copy lock file for guarded operations — authenticate once per task |
-| [kord](kord/SKILL.md) | `/kord <question>` | Route requests to other agents through kord contracts |
 | [integrate](integrate/SKILL.md) | `/integrate` | Explicitly reconcile session branches with main and clean up stale worktrees |
 | [publish](publish/SKILL.md) | `/publish` | Push the current branch explicitly and optionally prepare it for review |
 | [session](session/SKILL.md) | `/session` | List worktree-backed sessions, show sync state, and print resume/create commands |

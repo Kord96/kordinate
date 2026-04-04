@@ -1,0 +1,100 @@
+schema: augur-concept-meta/v2
+concept: ring-buffer
+kind: pattern
+summary: Ring Buffer architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+  - concurrency
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-fixed-size-buffer-with-wrap-around-indexing-using-mod
+    prompt: Is there a fixed-size buffer with wrap-around indexing using modulo or bitwise arithmetic?
+    weight: 3
+    signals:
+    - index % capacity for wrap-around
+    - head and tail pointers on fixed array
+    - power-of-two capacity with bitwise AND
+  - id: does-the-buffer-overwrite-the-oldest-entry-when-full-rather-than
+    prompt: Does the buffer overwrite the oldest entry when full rather than resizing?
+    weight: 3
+    signals:
+    - overwrite-oldest policy on full buffer
+    - no dynamic resize
+    - FIFO eviction on capacity limit
+  - id: is-the-full-vs-empty-state-distinguishable-when-head-equals-tail
+    prompt: Is the full vs empty state distinguishable when head equals tail?
+    weight: 2
+    signals:
+    - separate count tracking occupancy
+    - sentinel distinguishing full from empty
+    - write pointer never equals read pointer ambiguity resolved
+  - id: are-read-and-write-operations-o-1-with-pre-allocated-storage
+    prompt: Are read and write operations O(1) with pre-allocated storage?
+    weight: 1
+    signals:
+    - pre-allocated array at construction
+    - constant-time enqueue and dequeue
+    - no heap allocation per operation
+analysis:
+  testing:
+    summary: Verify wrap-around correctness, full/empty distinction, and overwrite semantics at buffer boundaries.
+    unit:
+    - Write items up to capacity and read them back in FIFO order
+    - Write beyond capacity and verify the oldest items are overwritten (overwrite-on-full policy)
+    - Verify empty buffer read returns nothing or blocks as specified (no stale data from previous cycle)
+    - Test the full vs empty distinction when head equals tail (unambiguous state after wrap-around)
+    additional_sections:
+    - title: Boundary Tests
+      items:
+      - Write exactly capacity items, read all, write again, and verify wrap-around indexing is correct
+      - Test with capacity as a power of two and a non-power-of-two to verify modulo arithmetic handles both
+      - Write a single item, read it, repeat many times, and verify indices wrap correctly over multiple cycles
+    - title: Concurrency Tests
+      items:
+      - 'For SPSC buffers: run a producer and consumer on separate threads and verify no data corruption or loss'
+      - 'For MPSC/MPMC variants: run multiple producers and verify all items are consumed exactly once'
+      - Verify lock-free implementations with a race detector enabled to catch unsynchronized memory access

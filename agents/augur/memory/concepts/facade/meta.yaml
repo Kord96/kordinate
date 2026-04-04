@@ -1,0 +1,88 @@
+schema: augur-concept-meta/v2
+concept: facade
+kind: pattern
+summary: Facade architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-a-single-class-provide-a-simplified-interface-that-delegate
+    prompt: Does a single class provide a simplified interface that delegates to multiple subsystem classes?
+    weight: 3
+    signals:
+    - one class orchestrating calls to several internal components
+    - simplified method hiding multi-step subsystem interaction
+  - id: does-the-facade-delegate-to-subsystem-classes-without-containing
+    prompt: Does the facade delegate to subsystem classes without containing business logic itself?
+    weight: 3
+    signals:
+    - facade methods only coordinate and delegate
+    - no domain rules or computations in the facade
+  - id: are-the-underlying-subsystem-classes-still-directly-accessible-f
+    prompt: Are the underlying subsystem classes still directly accessible for advanced use cases?
+    weight: 2
+    signals:
+    - subsystem classes have public APIs independent of facade
+    - facade is optional convenience, not mandatory indirection
+  - id: is-the-facade-interface-stable-even-as-subsystem-internals-chang
+    prompt: Is the facade interface stable even as subsystem internals change?
+    weight: 1
+    signals:
+    - subsystem refactors do not change facade method signatures
+    - facade shields callers from internal restructuring
+analysis:
+  testing:
+    summary: Test the facade's simplified interface independently from the subsystems it wraps, then verify correct delegation.
+    unit:
+    - Mock the underlying subsystems and verify the facade calls them in the correct order with expected arguments
+    - Assert that the facade translates subsystem exceptions into its own simplified error types
+    - Test each facade method covers the documented use case — inputs map to the correct subsystem orchestration
+    - Verify the facade does not expose subsystem internals (return types, configuration objects) through its public API
+    integration:
+    - Wire the facade to real subsystem implementations and verify end-to-end behavior matches the simplified contract
+    - Test that subsystem failures are handled gracefully — the facade should provide meaningful errors, not raw subsystem exceptions
+    - Verify that the facade remains a thin coordination layer — business logic belongs in the subsystems, not the facade

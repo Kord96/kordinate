@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: swallowed-exception
+kind: anti-pattern
+summary: Swallowed Exception anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: true
+    file: semgrep.yaml
+    detector_strength: 5
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: semgrep.yaml
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-empty-catch-blocks-or-except-pass-statements-that-sile
+    prompt: Are there empty catch blocks or except:pass statements that silently discard errors?
+    weight: 3
+    signals:
+    - 'except Exception: pass'
+    - catch(e) {} with empty body
+    - catch-all with no logging or re-raise
+  - id: do-catch-blocks-return-default-values-without-recording-the-orig
+    prompt: Do catch blocks return default values without recording the original exception?
+    weight: 3
+    signals:
+    - return None in except without logging
+    - return empty list on error silently
+    - default value masking original failure
+  - id: are-try-except-blocks-wrapped-around-large-code-sections-with-ba
+    prompt: Are try/except blocks wrapped around large code sections with bare pass handlers?
+    weight: 2
+    signals:
+    - broad try block with pass in except
+    - catch-all around 50+ lines
+    - TODO handle this comment in catch
+  - id: do-users-report-incorrect-data-or-missing-results-while-logs-sho
+    prompt: Do users report incorrect data or missing results while logs show no errors?
+    weight: 1
+    signals:
+    - silent data corruption
+    - missing results with no error trace
+    - bugs untraceable due to discarded exceptions

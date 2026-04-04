@@ -13,7 +13,8 @@ spec:
     spec:
       containers:
         - name: docs
-          image: localhost:30500/docs:latest
+          image: REGISTRY/docs:latest
+          imagePullPolicy: Always
           workingDir: /app
           command: ["/bin/sh", "-c"]
           args:

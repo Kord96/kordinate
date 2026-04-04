@@ -1,0 +1,129 @@
+schema: augur-concept-meta/v2
+concept: plugin
+kind: pattern
+summary: Plugin architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-plugin-registry-or-manager-that-handles-registration-
+    prompt: Is there a plugin registry or manager that handles registration, initialization, and teardown of plugins?
+    weight: 3
+    signals:
+    - PluginManager class
+    - register_plugin()
+    - load_plugins() at startup
+  - id: do-plugins-implement-a-well-defined-interface-or-base-class-that
+    prompt: Do plugins implement a well-defined interface or base class that the core depends on?
+    weight: 3
+    signals:
+    - plugin interface contract
+    - PluginBase class
+    - hookspec / hookimpl decorators
+  - id: are-plugins-discovered-dynamically-at-startup-via-directory-scan
+    prompt: Are plugins discovered dynamically at startup via directory scanning or entry_points configuration?
+    weight: 2
+    signals:
+    - plugins/ directory scanned
+    - entry_points in pyproject.toml
+    - auto-discovery at boot
+  - id: does-the-core-application-function-correctly-without-any-plugins
+    prompt: Does the core application function correctly without any plugins loaded?
+    weight: 2
+    signals:
+    - graceful degradation without plugins
+    - optional plugin hooks
+    - core runs standalone
+analysis:
+  testing:
+    summary: Confirm that the core runs cleanly without plugins and that plugins conform to the published interface contract.
+    unit:
+    - Test plugin registration — verify that registering a valid plugin adds it to the registry and duplicate registration is handled
+    - 'Assert interface compliance: create a minimal plugin implementation and verify all required methods are callable with expected signatures'
+    - Test core functionality with zero plugins loaded — confirm graceful degradation, not crashes
+    - Verify plugin lifecycle hooks (init, start, stop) are called in the correct order
+    integration:
+    - Load multiple plugins simultaneously and verify they do not interfere with each other
+    - Test plugin hot-reload or re-registration if supported — verify the core picks up the new version
+    - Test that a plugin built against an older interface version is either compatible or cleanly rejected with a version mismatch error
+    failure_injection:
+    - Inject a plugin that throws during initialization and verify the core starts without it and logs the failure
+    - Simulate a plugin that blocks indefinitely in its stop hook and verify the core enforces a shutdown timeout
+    - Load a plugin that panics during request handling and confirm the core isolates the failure without crashing
+  monitoring:
+    summary: Track plugin lifecycle events and failure rates to catch misbehaving plugins before they affect the core.
+    metrics:
+    - name: plugin_registered_total
+      kind: counter
+      description: plugin registrations at startup and runtime
+    - name: plugin_active
+      kind: gauge
+      description: currently active plugins by name and version
+    - name: plugin_errors_total
+      kind: counter
+      description: failures per plugin (init, execution, shutdown)
+    - name: plugin_execution_duration_seconds
+      kind: histogram
+      description: per-plugin invocation latency
+    alerts:
+    - Plugin failing to register or initialize at startup
+    - Plugin error rate exceeding threshold (noisy or broken plugin)
+    - Plugin execution latency p99 degrading core response times
+    - Active plugin count dropping unexpectedly (plugin crash or deregistration)
+  deployment:
+    summary: Plugin compatibility during rolling updates depends on interface versioning and registration order.
+    rollout_implications:
+    - Core and plugin versions must be compatible — deploying a new core version may break plugins that depend on the old interface
+    - Plugin registration order can create startup race conditions during rolling updates if plugins depend on each other
+    - Rolling restart may temporarily leave some pods with the old plugin set and others with the new — verify both sets are functional
+    - Hot-reloading plugins at runtime requires careful lifecycle management to avoid resource leaks
+    pre_deploy_checklist:
+    - Verify all loaded plugins are compatible with the target core plugin interface version
+    - Confirm plugin registration order is deterministic and does not depend on pod startup timing
+    - Test that the core functions correctly if a plugin fails to load (graceful degradation)

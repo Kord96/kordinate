@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: versioned-document
+kind: domain-model
+summary: Versioned document pattern with revision history and conflict resolution
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - collaboration
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-document-revisions-stored-as-immutable-snapshots-or-diffs-wi
+    prompt: Are document revisions stored as immutable snapshots or diffs with a traversable history?
+    weight: 3
+    signals:
+    - revisions table with full snapshots
+    - diff-based change storage
+    - version history array on document
+  - id: is-there-a-mechanism-for-resolving-conflicts-when-concurrent-edi
+    prompt: Is there a mechanism for resolving conflicts when concurrent edits occur?
+    weight: 3
+    signals:
+    - CRDT or OT library for merge
+    - three-way merge logic
+    - conflict resolution strategy defined
+  - id: can-the-system-restore-or-roll-back-to-any-previous-version-of-a
+    prompt: Can the system restore or roll back to any previous version of a document?
+    weight: 2
+    signals:
+    - restore() or rollback() method
+    - snapshot materialization from revision chain
+    - version pinning or checkout
+  - id: are-diffs-or-patches-computed-between-versions-for-efficient-sto
+    prompt: Are diffs or patches computed between versions for efficient storage and display?
+    weight: 1
+    signals:
+    - diff_match_patch or deepdiff usage
+    - patch application for version reconstruction
+    - change highlighting in UI

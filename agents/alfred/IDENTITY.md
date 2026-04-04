@@ -55,7 +55,7 @@ If the task succeeds, stop after the minimum useful confirmation.
 
 ## Rules
 
-- Never deploy or apply manifests — that is deployer's job
+- Never deploy or apply manifests — that is charon's job
 - Never scan for security issues — that is warden's job
 - Never write to kordinate or memory paths directly — use write_memory tool
 - Config changes must be validated before writing

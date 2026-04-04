@@ -28,18 +28,79 @@ Work category by category through the prioritized list. For each entry in a cate
 
 ## Pass 2 — Tool Rules (ast-grep / semgrep)
 
+Use tool rules to gather structured evidence, not to force binary detection. Prefer concept-level detector policy from `meta.yaml` when present.
+
+### Detector strength
+
+Treat the 1-5 scale as policy weight for the detector, not as a prose note about whether AST is a good fit:
+
+- **5** — highly trustworthy and specific; may be eligible for auto-confirm
+- **4** — strong evidence source, but may still need light verification
+- **3** — useful but requires corroboration
+- **2** — weak clue only
+- **1** — never decisive on its own
+
+`detector_strength` belongs to concept metadata. `match_confidence` is run-level and comes from the evidence emitted by the detector.
+
+Architecture-level and semantics-heavy concepts should still prefer semantic questions whenever the structural match is broad or ambiguous.
+
+### Rule files
+
 For each candidate, check for a rule file:
 
-- `memory/global/concepts/<name>/ast-grep.yaml` — used by ~15 pattern entries (structural GoF patterns like factory, singleton, observer, decorator, strategy, builder, etc.)
-- `memory/global/concepts/<name>/semgrep.yaml` — used by ~8 anti-pattern entries (security and error-handling: hardcoded-credentials, sql-injection, swallowed-exception, race-condition, etc.)
+- `memory/global/concepts/<name>/ast-grep.yaml`
+- `memory/global/concepts/<name>/semgrep.yaml`
 
-Most entries have neither. Each entry has at most one type — no entry currently has both. Check file existence before running.
+Most entries have neither. Check file existence before running. A rule file may contain multiple YAML documents for different languages or variants.
 
 Run the available rule against the project:
 - `ast-grep scan --rule <rule-path> <project-dir>`
 - `semgrep --config <rule-path> <project-dir> --json`
 
-A tool match is strong evidence — mark the candidate as confirmed with high confidence. Parse semgrep JSON for file paths and line numbers. Remove confirmed candidates from the Pass 3 worklist.
+Augur's end-to-end concept detection driver is `skills/analyze/scripts/run_concept_detection.py`. It orchestrates:
+- `skills/analyze/scripts/run_ast_grep.py`
+- `skills/analyze/scripts/run_semgrep.py`
+- diagnostic-question result synthesis
+- deterministic concept decision synthesis
+
+The lower-level runners should still emit `augur-evidence-record/v1` records.
+
+### Evidence-first interpretation
+
+Do not treat rule output as the final concept decision. Each rule run should be interpreted as an evidence record containing at least:
+
+- detector type
+- detector strength
+- match confidence
+- specificity (`exact`, `narrow`, `broad`)
+- grounding locations
+- contradiction notes, if any
+- a local verdict: `confirmed`, `candidate`, `inconclusive`, or `contradicted`
+
+A precise high-strength match with no contradiction can confirm a concept directly. A broad or noisy match should usually produce a `candidate` and trigger semantic questions.
+
+### Core policy
+
+- high-strength, high-confidence, low-noise structural evidence → usually `confirmed`
+- medium or broad structural evidence → ask semantic questions first
+- no match, missing tool, or rule failure → treat as neutral and continue
+- if multiple concepts explain the same broad match, keep them as `candidate` until questions or signatures resolve them
+
+For `semgrep`, parse JSON output for file paths and line numbers. Rule runners should emit `augur-evidence-record/v1` records, and only confidently confirmed concepts should leave the Pass 3 worklist.
+
+### Quality bar
+
+Prefer tool rules that are:
+- high precision — most matches are true positives
+- acceptable recall — they catch canonical implementations
+- general enough for common coding styles
+- low noise on large codebases
+
+If a rule does not meet that bar in practice, downgrade it to supporting evidence rather than letting it decide detection on its own.
+
+### Error fallback
+
+If `ast-grep` or `semgrep` is unavailable, or a rule crashes, continue with grep and manual signature verification. Record the limitation in scan metadata rather than blocking the analysis.
 
 ## Pass 3 — Manual Signature Verification
 
@@ -47,18 +108,22 @@ For each candidate still unconfirmed after Pass 2 (no rule file exists, or the t
 
 ## Pass 3.5 — Diagnostic Question Evaluation
 
-For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), check for a question file at `memory/global/concepts/<name>/questions.yaml`. If one exists, load it and evaluate:
+For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), use the shared loader at `agents/augur/scripts/concept_loader.py` to load structured diagnostic metadata. It should prefer `memory/global/concepts/<name>/meta.yaml` and fall back to the legacy `questions.yaml` file.
+
+When either source provides diagnostic questions, evaluate them like this. Until semantic evaluation is implemented, unanswered questions must stay neutral in the emitted `augur-question-result/v1` record rather than counting as yes or no. Feed those records into `agents/augur/scripts/concept_decision.py` alongside rule evidence:
 
 - For questions with `signals` hints, grep for those signals first. If all signals return zero results, answer "no" without further analysis.
 - For remaining questions, read relevant code and answer yes/no with a one-line justification.
 - Compute the weighted score (sum of weights for "yes" answers).
 - If score >= `threshold`, mark as detected. Derive confidence from score/max_score ratio: >= 80% = high, >= threshold = medium.
 
+`meta.yaml` should be treated as the canonical structured source because it can also carry testing, monitoring, and deployment guidance for the same concept. Keep `ast-grep.yaml` and `semgrep.yaml` as separate support artifacts, and route all structured concept loading through `agents/augur/scripts/concept_loader.py` so `/analyze` and `/design` use the same fallback behavior.
+
 Batch all questions for one concept into a single analysis pass — do not make separate passes per question. This pass typically adds 2-5 minutes for 10-30 candidate concepts.
 
 ## Confidence Assessment
 
-After confirming a candidate in Pass 2, 3, or 3.5, read its `## Recognition > ### Confidence` section, which defines what constitutes high, medium, and low for that specific pattern. If the entry lacks a `### Confidence` section, apply the default rubric:
+After confirming a candidate in Pass 2, 3, or 3.5, synthesize concept-level verdicts through the deterministic decision layer (`agents/augur/scripts/concept_decision.py`). Then read the concept's `## Recognition > ### Confidence` section to refine the final human-facing confidence narrative. Combine that narrative with the evidence record verdict (`confirmed`, `candidate`, `inconclusive`, `contradicted`) rather than relying on scores alone. If the entry lacks a `### Confidence` section, apply the default rubric:
 
 - **high** — unambiguous: library import, framework config, or tool rule match with no false-positive risk.
   Example: `from pybreaker import CircuitBreaker` in `client.py` — direct library usage, high.

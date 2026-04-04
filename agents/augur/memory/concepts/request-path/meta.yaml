@@ -1,0 +1,78 @@
+schema: augur-concept-meta/v2
+concept: request-path
+kind: flow-shape
+summary: Request path flow — synchronous request through a handler chain with response
+taxonomy:
+  type: flow-shape
+  categories:
+  - api
+  - integration
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: does-the-project-have-http-route-handlers-express-app-get-fastap
+    prompt: Does the project have HTTP route handlers (Express app.get, FastAPI @app.get, Spring @RestController)?
+    weight: 1
+    signals:
+    - app.get
+    - app.post
+    - '@app.get'
+    - '@RestController'
+    - HandleFunc
+  - id: do-route-handlers-delegate-to-a-service-or-use-case-layer-rather
+    prompt: Do route handlers delegate to a service or use-case layer rather than containing business logic directly?
+    weight: 1
+  - id: is-there-a-middleware-chain-auth-validation-error-handling-that-
+    prompt: Is there a middleware chain (auth, validation, error handling) that requests pass through?
+    weight: 1
+    signals:
+    - middleware
+    - Depends(
+    - '@UseGuards'
+    - router.use
+  - id: are-there-request-response-dtos-or-schemas-at-the-api-boundary
+    prompt: Are there request/response DTOs or schemas at the API boundary?
+    weight: 1
+    signals:
+    - Pydantic
+    - BaseModel
+    - Zod
+    - schema
+    - DTO

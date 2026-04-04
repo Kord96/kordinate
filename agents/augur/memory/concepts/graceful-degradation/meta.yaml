@@ -1,0 +1,131 @@
+schema: augur-concept-meta/v2
+concept: graceful-degradation
+kind: pattern
+summary: Graceful Degradation architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - resilience
+  - lifecycle
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-services-define-explicit-fallback-responses-when-a-dependency
+    prompt: Do services define explicit fallback responses when a dependency is unavailable or slow?
+    weight: 3
+    signals:
+    - fallback response
+    - return cached value
+    - return default on timeout
+  - id: are-dependencies-classified-as-critical-vs-non-critical-with-dif
+    prompt: Are dependencies classified as critical vs non-critical with different failure handling for each?
+    weight: 2
+    signals:
+    - critical dependency list
+    - non-essential feature disabled
+    - optional service check
+  - id: is-degraded-mode-observable-through-logs-or-metrics-that-indicat
+    prompt: Is degraded mode observable through logs or metrics that indicate when fallbacks activate?
+    weight: 2
+    signals:
+    - fallback activated metric
+    - degraded mode log
+    - staleness indicator in response
+  - id: does-the-system-recover-automatically-when-a-failed-dependency-c
+    prompt: Does the system recover automatically when a failed dependency comes back online?
+    weight: 2
+    signals:
+    - circuit breaker half-open
+    - health check re-enables
+    - automatic recovery
+analysis:
+  testing:
+    summary: Verify that each degradation path activates correctly and provides acceptable reduced functionality.
+    unit:
+    - Simulate dependency failure and assert the degradation handler activates, returning the fallback response
+    - Verify the fallback response meets minimum acceptability criteria (cached data, static default, not an error)
+    - 'Test recovery: when the dependency becomes healthy again, assert the system exits degraded mode and resumes full operation'
+    - Assert that degradation is scoped — failure of one dependency should not degrade unrelated features
+    integration:
+    - Take down a real dependency in a test environment and verify the user-facing behavior degrades gracefully rather than failing entirely
+    - 'Test cascading degradation: if a degraded feature depends on another degraded feature, verify the system remains stable'
+    - Verify metrics and alerts fire correctly when degradation activates
+    additional_sections:
+    - title: Chaos Tests
+      items:
+      - Randomly disable dependencies and verify the system remains functional at a reduced capacity
+      - Simulate slow dependencies (high latency, not full failure) and verify degradation triggers based on timeout thresholds, not just connection errors
+  monitoring:
+    summary: Track degradation activations and dependency health so operators know when the system is running in a reduced mode.
+    metrics:
+    - name: degradation_active
+      kind: gauge
+      description: boolean per feature indicating whether degraded mode is currently active
+    - name: degradation_activations_total
+      kind: counter
+      description: number of times degraded mode was triggered, by feature and cause
+    - name: degradation_duration_seconds
+      kind: histogram
+      description: how long each degradation episode lasts before recovery
+    - name: dependency_health
+      kind: gauge
+      description: health status of each dependency that can trigger degradation (0=down, 1=healthy)
+    alerts:
+    - Degradation active for longer than expected recovery window (dependency not recovering)
+    - Multiple features degrading simultaneously (systemic issue, not isolated dependency failure)
+    - Degradation flapping (rapid activation/deactivation suggesting unstable dependency)
+  deployment:
+    summary: Verify degradation paths are functional before relying on them in production, and test them as part of every rollout.
+    rollout_implications:
+    - Deploy degradation fallback logic before the primary path it protects — if the primary fails during rollout, the fallback must already be in place
+    - Rolling updates may temporarily activate degradation if new pods cannot reach a dependency the old pods could — monitor for transient degradation during rollout
+    - If changing degradation thresholds, deploy the new thresholds to a canary first to verify they do not trigger false activations
+    - Test degradation paths in staging before each production deploy — untested fallbacks fail when needed most
+    pre_deploy_checklist:
+    - Verify all degradation fallbacks return acceptable responses (cached data, static defaults) not error pages
+    - Confirm alerting is active for degradation activation so operators are aware the system is running in reduced mode

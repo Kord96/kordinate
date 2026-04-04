@@ -1,0 +1,79 @@
+schema: augur-concept-meta/v2
+concept: route-guard
+kind: pattern
+summary: Route Guard — conditional access control on route navigation
+taxonomy:
+  type: pattern
+  categories:
+  - frontend
+  - security
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-navigation-guards-or-middleware-checking-auth-state-before-r
+    prompt: Are navigation guards or middleware checking auth state before rendering protected routes?
+    weight: 3
+    signals:
+    - beforeEach with auth check
+    - CanActivate guard interface
+    - middleware.ts with NextResponse.redirect
+  - id: do-failed-guards-redirect-to-a-login-page-with-a-return-url-pres
+    prompt: Do failed guards redirect to a login page with a return URL preserved?
+    weight: 3
+    signals:
+    - redirect to /login with returnUrl param
+    - redirect on authentication failure
+    - return URL encoded in redirect
+  - id: is-guard-logic-centralized-or-composable-rather-than-duplicated-
+    prompt: Is guard logic centralized or composable rather than duplicated in every page component?
+    weight: 2
+    signals:
+    - route-level guard configuration
+    - layout-level auth wrapper
+    - shared ProtectedRoute component
+  - id: do-guards-handle-loading-or-pending-auth-state-without-flashing-
+    prompt: Do guards handle loading or pending auth state without flashing protected content?
+    weight: 1
+    signals:
+    - loading spinner while auth resolving
+    - guard blocks render until auth checked
+    - no flash of protected content before redirect

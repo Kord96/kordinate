@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: tensor
+kind: domain-model
+summary: Tensor and matrix computation pattern for ML and numerical workloads
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - compute
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-multi-dimensional-arrays-tensors-a-core-data-structure-with-
+    prompt: Are multi-dimensional arrays (tensors) a core data structure with explicit shape and dtype management?
+    weight: 3
+    signals:
+    - torch.Tensor or tf.Tensor usage
+    - ndarray with shape manipulation
+    - tensor creation with specified dtype and device
+  - id: is-gpu-acceleration-used-for-tensor-operations-via-cuda-or-simil
+    prompt: Is GPU acceleration used for tensor operations via CUDA or similar dispatch?
+    weight: 3
+    signals:
+    - .to('cuda') or device placement
+    - CUDA availability check
+    - GPU memory management
+  - id: is-there-a-model-serving-or-inference-pipeline-that-processes-ba
+    prompt: Is there a model serving or inference pipeline that processes batched tensor inputs?
+    weight: 2
+    signals:
+    - model.predict() or model.forward()
+    - DataLoader with batch_size
+    - batch inference endpoint
+  - id: are-tensor-operations-composed-into-differentiable-computation-g
+    prompt: Are tensor operations composed into differentiable computation graphs for training?
+    weight: 1
+    signals:
+    - autograd or gradient computation
+    - loss.backward() calls
+    - optimizer.step() in training loop

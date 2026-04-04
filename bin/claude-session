@@ -12,7 +12,16 @@
 
 set -euo pipefail
 
-CLAUDE_BIN="claude"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INSTALL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT_DEFAULT="/kord/projects/kordinate"
+
+CLAUDE_BIN="openclaude"
+# Source nvm to make openclaude available when launched outside a login shell.
+if [ -f "$HOME/.nvm/nvm.sh" ]; then
+  source "$HOME/.nvm/nvm.sh"
+fi
+
 TMUX_DEFAULT="0-general"
 PICK_WORKTREE=0
 INSPECT_CURRENT_TREE=0
@@ -67,6 +76,35 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+warn_if_repo_drift() {
+  local repo_root="${KORDINATE_REPO:-$REPO_ROOT_DEFAULT}"
+  local repo_bin="$repo_root/bin"
+  local compared=0
+  local drift=0
+  local name repo_file installed_file
+
+  [[ "$INSTALL_ROOT" != "$repo_root" ]] || return 0
+  [[ -d "$repo_bin" ]] || return 0
+
+  for name in claude-session session-status tmux-new-window tmux-session.bash tmux-save tmux-restore; do
+    repo_file="$repo_bin/$name"
+    installed_file="$INSTALL_ROOT/bin/$name"
+    [[ -f "$repo_file" && -f "$installed_file" ]] || continue
+    compared=1
+    if ! cmp -s "$repo_file" "$installed_file"; then
+      drift=1
+      break
+    fi
+  done
+
+  if [[ $compared -eq 1 && $drift -eq 1 ]]; then
+    printf 'Warning: installed kordinate runtime differs from %s; refresh /kord/kordinate from repo to pick up latest session behavior.\n' "$repo_root" >&2
+  fi
+}
+
+warn_if_repo_drift
+
 
 rerun_inside_tmux() {
   local cmd
@@ -242,7 +280,7 @@ pick_worktree_action() {
     mappings+=("$path")
   done < <(list_session_worktrees "$repo_root")
 
-  echo "Select Claude session target:"
+  echo "Select OpenClaude session target:" >&2
   PS3='Choice: '
   select choice in "${labels[@]}"; do
     if [[ -n "${choice:-}" ]]; then

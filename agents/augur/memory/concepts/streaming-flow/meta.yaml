@@ -1,0 +1,82 @@
+schema: augur-concept-meta/v2
+concept: streaming-flow
+kind: flow-shape
+summary: Streaming flow — continuous data flow with backpressure and windowing
+taxonomy:
+  type: flow-shape
+  categories:
+  - data
+  - messaging
+  - realtime
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: does-the-project-have-a-continuous-consumer-loop-not-batch-cron
+    prompt: Does the project have a continuous consumer loop (not batch/cron)?
+    weight: 1
+    signals:
+    - poll
+    - consume
+    - XREAD
+    - subscribe
+  - id: is-there-backpressure-handling-bounded-buffers-rate-limiting-dro
+    prompt: Is there backpressure handling (bounded buffers, rate limiting, dropping)?
+    weight: 1
+    signals:
+    - backpressure
+    - maxsize
+    - capacity
+    - buffer
+  - id: are-there-windowed-operations-tumbling-sliding-session-windows
+    prompt: Are there windowed operations (tumbling, sliding, session windows)?
+    weight: 1
+    signals:
+    - window
+    - tumbling
+    - sliding
+    - buffer(
+  - id: does-the-code-use-streaming-libraries-rxjs-reactor-akka-streams-
+    prompt: Does the code use streaming libraries (RxJS, Reactor, Akka Streams, Kafka Streams)?
+    weight: 1
+    signals:
+    - Observable
+    - Flux
+    - akka.stream
+    - KStream

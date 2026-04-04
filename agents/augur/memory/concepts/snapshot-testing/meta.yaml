@@ -1,0 +1,83 @@
+schema: augur-concept-meta/v2
+concept: snapshot-testing
+kind: pattern
+summary: Snapshot Testing architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - testing
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-snapshot-assertions-used-to-capture-complex-output-and-detec
+    prompt: Are snapshot assertions used to capture complex output and detect unintended changes via diff?
+    weight: 3
+    signals:
+    - toMatchSnapshot() in test assertions
+    - assert snapshot == result with syrupy
+    - .snap files committed to version control
+  - id: are-snapshot-files-tracked-in-version-control-and-reviewed-in-pu
+    prompt: Are snapshot files tracked in version control and reviewed in pull requests?
+    weight: 3
+    signals:
+    - __snapshots__ directory in repo
+    - .snap files in git
+    - snapshot changes visible in PR diff
+  - id: is-volatile-data-normalized-before-snapshotting-to-prevent-false
+    prompt: Is volatile data normalized before snapshotting to prevent false failures?
+    weight: 2
+    signals:
+    - timestamps masked in snapshot
+    - random IDs replaced with deterministic values
+    - absolute paths normalized
+  - id: are-obsolete-snapshots-cleaned-up-when-corresponding-tests-are-r
+    prompt: Are obsolete snapshots cleaned up when corresponding tests are removed?
+    weight: 1
+    signals:
+    - obsolete snapshot detection in CI
+    - snapshot cleanup on test deletion
+    - no orphaned .snap files
+analysis:
+  testing:
+    summary: '# Testing - Normalize volatile data (timestamps, UUIDs, absolute paths) before taking snapshots to avoid false diffs - Review snapshot updates in PRs — never commit bulk `--update-snapshot` without inspecting the changes - Use inline snapshots for small, focused assertions; file-based snapshots for larger structured output - Test that obsolete snapshot files are cleaned up when corresponding tests are removed - Run snapshot tests in CI to catch unintended output changes before merge - Avoid snapshotting implementation details (internal state, DOM trees) — snapshot observable outputs only - Combine snapshot testing with targeted assertions for critical fields to prevent snapshot blindness'

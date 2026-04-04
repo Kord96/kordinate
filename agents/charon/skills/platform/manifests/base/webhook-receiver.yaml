@@ -23,7 +23,8 @@ spec:
       serviceAccountName: kord
       containers:
         - name: receiver
-          image: localhost:30500/agent-factory:latest
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - cd /app/webhook-receiver && exec node receiver.js

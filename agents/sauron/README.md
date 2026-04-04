@@ -29,5 +29,5 @@ Monitoring, observability, and code validation — ensures projects are observab
 
 ## Rules
 
-- Consult designer for monitoring perspective on recognized patterns
-- After editing dashboard JSON, auto-deploy to Grafana immediately
+- Consult augur for monitoring perspective on recognized patterns
+- After editing dashboard JSON, delegate any Grafana or cluster-visible deployment step to charon immediately

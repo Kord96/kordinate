@@ -20,7 +20,8 @@ spec:
       serviceAccountName: kord
       containers:
         - name: scribe
-          image: localhost:30500/agent-factory:latest
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -62,7 +63,8 @@ spec:
       serviceAccountName: kord
       containers:
         - name: scribe
-          image: localhost:30500/agent-factory:latest
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -104,7 +106,8 @@ spec:
       serviceAccountName: kord
       containers:
         - name: scribe
-          image: localhost:30500/agent-factory:latest
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -146,7 +149,8 @@ spec:
       serviceAccountName: kord
       containers:
         - name: scribe
-          image: localhost:30500/agent-factory:latest
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -188,7 +192,8 @@ spec:
       serviceAccountName: kord
       containers:
         - name: scribe
-          image: localhost:30500/agent-factory:latest
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - |

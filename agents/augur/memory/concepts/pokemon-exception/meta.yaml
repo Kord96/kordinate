@@ -1,0 +1,77 @@
+schema: augur-concept-meta/v2
+concept: pokemon-exception
+kind: anti-pattern
+summary: Pokemon Exception anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-bare-except-or-catch-exception-blocks-that-catch-all-e
+    prompt: Are there bare except or catch(Exception) blocks that catch all exception types without filtering?
+    weight: 3
+    signals:
+    - 'except:'
+    - 'except Exception:'
+    - catch(Throwable t)
+    - bare catch {}
+  - id: do-broad-catch-blocks-swallow-errors-silently-with-pass-empty-bl
+    prompt: Do broad catch blocks swallow errors silently with pass, empty blocks, or generic logging without re-raising?
+    weight: 3
+    signals:
+    - 'except: pass'
+    - catch { /* empty */ }
+    - log and continue without raise
+  - id: could-the-broad-catch-accidentally-intercept-system-signals-like
+    prompt: Could the broad catch accidentally intercept system signals like KeyboardInterrupt or SystemExit?
+    weight: 2
+    signals:
+    - 'except: catches KeyboardInterrupt'
+    - Ctrl+C fails to stop
+    - SystemExit swallowed
+  - id: are-catch-all-handlers-scattered-throughout-the-codebase-rather-
+    prompt: Are catch-all handlers scattered throughout the codebase rather than consolidated in a top-level error boundary?
+    weight: 2
+    signals:
+    - multiple bare except blocks
+    - catch-all in business logic
+    - no centralized error handler

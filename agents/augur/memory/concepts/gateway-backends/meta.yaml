@@ -1,0 +1,77 @@
+schema: augur-concept-meta/v2
+concept: gateway-backends
+kind: structure-shape
+summary: Gateway-backends structure — single entry point routing to multiple backend services
+taxonomy:
+  type: structure-shape
+  categories:
+  - architectural
+  - api
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: is-there-a-reverse-proxy-or-api-gateway-routing-to-multiple-back
+    prompt: Is there a reverse proxy or API gateway routing to multiple backend services?
+    weight: 1
+    signals:
+    - nginx
+    - kong
+    - traefik
+    - gateway
+    - proxy_pass
+    - upstream
+  - id: does-path-based-routing-send-different-url-prefixes-to-different
+    prompt: Does path-based routing send different URL prefixes to different services?
+    weight: 1
+    signals:
+    - /api/users
+    - /api/orders
+    - location /
+    - pathPrefix
+  - id: are-cross-cutting-concerns-auth-rate-limiting-logging-applied-at
+    prompt: Are cross-cutting concerns (auth, rate limiting, logging) applied at the gateway?
+    weight: 1
+  - id: does-docker-compose-or-k8s-config-show-a-gateway-service-with-mu
+    prompt: Does docker-compose or k8s config show a gateway service with multiple backends?
+    weight: 1
+    signals:
+    - docker-compose
+    - Service
+    - Ingress

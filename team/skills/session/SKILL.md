@@ -34,9 +34,9 @@ bin/session-status $ARGUMENTS
 Behavior by mode:
 - `list` — enumerate `session/*` worktrees and report worktree/path, branch, dirty/clean, ahead/behind, and drift from `main`
 - `current` — report the same fields for the current tree
-- `new` — print `claude --new-worktree <name>`
-- `resume` — print `claude --select-worktree <selector>`
-- `inspect` — print `claude --inspect-current-tree`
+- `new` — print `claude-session --new-worktree <name>`
+- `resume` — print `claude-session --select-worktree <selector>`
+- `inspect` — print `claude-session --inspect-current-tree`
 
 The helper may fetch safely before reporting sync state, but it must not mutate branches.
 

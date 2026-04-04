@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/data/repos/kordinate/lib/hooks/kord-guard.sh"
+            "command": "/data/repos/kordinate/hooks/guard.sh"
           }
         ]
       }

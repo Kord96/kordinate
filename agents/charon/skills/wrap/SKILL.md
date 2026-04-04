@@ -145,7 +145,7 @@ ClusterIP service exposing the app port. DNS: `<project>.<namespace>.svc.cluster
 #### vitals.yaml
 
 Standalone vitals deployment (not a sidecar) from contract:
-- Image: `localhost:30500/<project>-vitals:latest`
+- Image: `REGISTRY/<project>-vitals:latest`
 - Port: 9131
 - Environment from contract:
   - `PROMETHEUS_URL=http://prometheus.master.svc.cluster.local:9191`
@@ -247,10 +247,10 @@ With a `requirements.txt` containing: `prometheus_client`, `requests`, `pyyaml`.
      --restart=Never -n master -- \
      --dockerfile=Dockerfile \
      --context=git://<github-url>#refs/heads/deploy \
-     --destination=localhost:30500/<project>:latest \
+     --destination=REGISTRY/<project>:latest \
      --target=dev \
      --cache=true \
-     --cache-repo=localhost:30500/<project>/cache
+     --cache-repo=REGISTRY/<project>/cache
    ```
    Wait for the kaniko pod to complete.
 
@@ -260,9 +260,9 @@ With a `requirements.txt` containing: `prometheus_client`, `requests`, `pyyaml`.
      --restart=Never -n master -- \
      --dockerfile=vitals/Dockerfile \
      --context=git://<github-url>#refs/heads/deploy \
-     --destination=localhost:30500/<project>-vitals:latest \
+     --destination=REGISTRY/<project>-vitals:latest \
      --cache=true \
-     --cache-repo=localhost:30500/<project>-vitals/cache
+     --cache-repo=REGISTRY/<project>-vitals/cache
    ```
    Wait for completion.
 
@@ -303,7 +303,7 @@ Add the project to the webhook receiver's watch list so that future pushes trigg
 ### Deployed to dev
 - App: <project> deployment — <status>
 - Vitals: <project>-vitals deployment — <status>
-- Images: localhost:30500/<project>:latest, localhost:30500/<project>-vitals:latest
+- Images: REGISTRY/<project>:latest, REGISTRY/<project>-vitals:latest
 
 ### Webhook
 - Registered: <status>

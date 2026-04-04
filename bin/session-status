@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-command_name="claude"
+command_name="claude-session"
 mode="${1:-list}"
 shift || true
 

@@ -1,0 +1,138 @@
+schema: augur-concept-meta/v2
+concept: oauth-oidc
+kind: pattern
+summary: OAuth2/OpenID Connect architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-an-authorization-code-flow-with-authorize-token-and-cal
+    prompt: Is there an authorization code flow with /authorize, /token, and /callback endpoints?
+    weight: 3
+    signals:
+    - /authorize endpoint
+    - /token endpoint
+    - /callback redirect_uri
+  - id: are-access-tokens-validated-by-checking-signature-expiry-issuer-
+    prompt: Are access tokens validated by checking signature, expiry, issuer, and audience claims?
+    weight: 3
+    signals:
+    - JWT signature verification
+    - exp claim check
+    - issuer and audience validation
+  - id: are-client-credentials-client-id-client-secret-stored-securely-o
+    prompt: Are client credentials (client_id, client_secret) stored securely outside source code?
+    weight: 2
+    signals:
+    - client_secret from env var
+    - secret in vault
+    - no hardcoded client_secret
+  - id: is-pkce-used-for-public-clients-that-cannot-securely-store-a-cli
+    prompt: Is PKCE used for public clients that cannot securely store a client secret?
+    weight: 2
+    signals:
+    - code_verifier
+    - code_challenge
+    - PKCE for SPA or mobile
+analysis:
+  testing:
+    summary: Test the full authorization flow, token validation logic, and edge cases around expiry and revocation.
+    unit:
+    - Verify JWT validation rejects tokens with wrong issuer, wrong audience, expired `exp`, and invalid signature
+    - Test PKCE code verifier/challenge generation and verification for public clients
+    - Assert that missing or malformed Authorization headers return 401, not 500
+    - 'Verify scope enforcement: requests with insufficient scopes are denied even with a valid token'
+    integration:
+    - Run the full authorization code flow against a local IdP (Keycloak, mock OIDC server) and verify token exchange
+    - 'Test refresh token rotation: use a refresh token, verify a new pair is issued, and confirm the old refresh token is invalidated'
+    - Verify callback handler rejects state parameter mismatches (CSRF protection)
+    - 'Test token caching: repeated requests with the same token do not re-validate against the IdP on every call'
+    additional_sections:
+    - title: Security Tests
+      items:
+      - Attempt token reuse after revocation and verify rejection
+      - Send tokens signed with an unknown key and verify they are rejected, not silently accepted
+      - Verify tokens in localStorage are not accessible (httpOnly cookie enforcement)
+  monitoring:
+    summary: Track token lifecycle health and authentication flow success rates.
+    metrics:
+    - name: oauth_token_issued_total
+      kind: counter
+      description: '- tokens issued by grant type (authorization_code, refresh_token, client_credentials)'
+    - name: oauth_token_validation_errors_total
+      kind: counter
+      description: '- failed validations by reason (expired, invalid_signature, wrong_audience)'
+    - name: oauth_authorization_latency_seconds
+      kind: histogram
+      description: '- end-to-end authorization code flow duration'
+    - name: oauth_refresh_failures_total
+      kind: counter
+      description: '- refresh token failures (expired, revoked, reuse detected)'
+    - name: oidc_discovery_fetch_errors_total
+      kind: counter
+      description: '- failures fetching the well-known configuration or JWKS'
+    alerts:
+    - Token validation error rate exceeds baseline (possible key rotation issue or misconfigured audience)
+    - Refresh token failure spike (may indicate mass token revocation or IdP outage)
+    - OIDC discovery endpoint unreachable for more than one polling interval
+    - Authorization flow latency exceeds SLA threshold (IdP or callback handler degraded)
+  deployment:
+    summary: Coordinate with IdP configuration and ensure secrets are rotated safely during rollouts.
+    rollout_implications:
+    - Client secrets must be available in the new deployment before the old one is terminated (use Kubernetes Secrets, not env vars baked into images)
+    - JWKS key rotation at the IdP can invalidate cached keys -- ensure the service refetches JWKS on signature validation failure
+    - Redirect URI changes must be registered with the IdP before deploying the code that uses them
+    - Rolling deployments with mixed old/new pods must agree on the same token validation rules (audience, issuer, scopes)
+    pre_deploy_checklist:
+    - Confirm client_id and client_secret are present in the secret store for the target environment
+    - Verify redirect_uri registered at the IdP matches the new deployment's callback URL
+    - Test OIDC discovery endpoint reachability from the deployment network
+    - Ensure JWKS cache TTL is short enough to pick up key rotations within the expected window

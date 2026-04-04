@@ -1,0 +1,94 @@
+schema: augur-concept-meta/v2
+concept: cors
+kind: pattern
+summary: CORS architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+  - api
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 5
+  questions:
+  - id: is-there-cors-middleware-or-configuration-that-sets-access-contr
+    prompt: Is there CORS middleware or configuration that sets Access-Control-Allow-Origin with an explicit origin allowlist?
+    weight: 3
+    signals:
+    - CORS middleware
+    - origin allowlist
+    - Access-Control-Allow-Origin configuration
+  - id: are-preflight-options-requests-handled-with-appropriate-access-c
+    prompt: Are preflight OPTIONS requests handled with appropriate Access-Control headers?
+    weight: 2
+    signals:
+    - OPTIONS handler
+    - preflight response
+    - Access-Control-Allow-Methods header
+  - id: are-allowed-methods-headers-and-credentials-explicitly-restricte
+    prompt: Are allowed methods, headers, and credentials explicitly restricted rather than wildcarded?
+    weight: 2
+    signals:
+    - restricted allowed methods
+    - explicit header allowlist
+    - credentials policy
+  - id: is-access-control-max-age-set-to-reduce-the-frequency-of-preflig
+    prompt: Is Access-Control-Max-Age set to reduce the frequency of preflight requests?
+    weight: 1
+    signals:
+    - max-age on preflight
+    - preflight cache duration
+    - Access-Control-Max-Age header
+analysis:
+  testing:
+    summary: Verify preflight handling, allowed origins enforcement, and header propagation for cross-origin requests.
+    unit:
+    - Send an OPTIONS preflight and verify Access-Control-Allow-Origin matches the allowed origin
+    - Verify disallowed origins receive no CORS headers (request is rejected)
+    - Test Access-Control-Allow-Methods and Access-Control-Allow-Headers match the configured whitelist
+    - Verify Access-Control-Max-Age is set to reduce preflight frequency
+    integration:
+    - Make cross-origin requests from a browser-like client and verify the full preflight-then-request flow
+    - 'Test credentialed requests: verify Access-Control-Allow-Credentials is set and wildcard origin is not used'
+    failure_injection:
+    - Send a request with a spoofed Origin header not in the allow list and verify it is rejected

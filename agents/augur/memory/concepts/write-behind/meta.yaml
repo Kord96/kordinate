@@ -1,0 +1,119 @@
+schema: augur-concept-meta/v2
+concept: write-behind
+kind: pattern
+summary: Write-Behind architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-writes-target-a-cache-or-in-memory-buffer-first-with-asynchro
+    prompt: Do writes target a cache or in-memory buffer first, with asynchronous flush workers propagating changes to the backing store?
+    weight: 3
+    signals:
+    - write to cache then async flush
+    - write-behind buffer
+    - deferred persistence to backing store
+  - id: is-there-write-coalescing-where-multiple-writes-to-the-same-key-
+    prompt: Is there write coalescing where multiple writes to the same key are batched into a single store write?
+    weight: 3
+    signals:
+    - write coalescing logic
+    - batch writes to same key
+    - dirty flag tracking on cached entries
+  - id: are-flush-failures-retried-with-backoff-and-is-there-a-dead-lett
+    prompt: Are flush failures retried with backoff and is there a dead-letter mechanism for permanently failed writes?
+    weight: 2
+    signals:
+    - flush retry with backoff
+    - dead-letter for failed writes
+    - write failure handling
+  - id: is-cache-warming-or-preloading-from-the-backing-store-implemente
+    prompt: Is cache warming or preloading from the backing store implemented on startup before accepting new writes?
+    weight: 1
+    signals:
+    - cache warming on startup
+    - preload from backing store
+    - hydrate cache before writes
+  - id: is-the-write-ordering-strategy-explicit-when-coalescing-last-wri
+    prompt: Is the write ordering strategy explicit when coalescing (last-write-wins or merge strategy documented)?
+    weight: 1
+    signals:
+    - last-write-wins strategy
+    - write ordering on coalesce
+    - merge strategy for concurrent writes
+analysis:
+  testing:
+    summary: '# Testing - Test that writes to cache are eventually flushed to the backing store within the configured delay - Simulate cache crash before flush and verify the data durability guarantee (what is lost, what survives) - Test write coalescing: multiple writes to the same key produce a single flush with last-write-wins or merge - Verify flush failure retry with backoff and dead-letter handling for permanently failing writes - Test write ordering preservation: verify the backing store reflects the correct final state - Test cache warm-up on startup: verify data is loaded from backing store before accepting new writes - Assert that the write-behind buffer is bounded — reject or backpressure when buffer is full - Test consistency monitoring: verify drift detection between cache and backing store catches divergence'
+  monitoring:
+    summary: Track write buffer health, flush reliability, and cache-to-store consistency for the write-behind layer.
+    metrics:
+    - name: write_behind_buffer_depth
+      kind: gauge
+      description: pending writes in the buffer, detects unbounded growth
+    - name: write_behind_buffer_bytes
+      kind: gauge
+      description: buffer memory usage, alerts before memory exhaustion
+    - name: write_behind_flush_latency_seconds
+      kind: histogram
+      description: time to flush buffered writes to the backing store
+    - name: write_behind_flush_results_total
+      kind: counter
+      description: flush outcomes partitioned by result (success, failure, partial)
+    - name: write_behind_coalescing_ratio
+      kind: gauge
+      description: writes received divided by writes flushed, measures batching effectiveness
+    - name: write_behind_flush_retries_total
+      kind: counter
+      description: retry attempts for failed flushes
+    alerts:
+    - Buffer depth approaching configured memory limit (unbounded growth, potential OOM)
+    - Flush failure rate elevated (data loss risk if writes are not reaching the backing store)
+    - Cache-to-store drift detected during consistency check (stale or missing data in backing store)
+    - Flush retry count sustained (persistently failing backing store writes)
+    - Cache warm-up from backing store incomplete before accepting writes on startup

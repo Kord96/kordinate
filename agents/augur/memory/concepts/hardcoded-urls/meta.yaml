@@ -1,0 +1,92 @@
+schema: augur-concept-meta/v2
+concept: hardcoded-urls
+kind: anti-pattern
+summary: Hardcoded URLs anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-url-string-literals-with-hostnames-or-ip-addresses-present-i
+    prompt: Are URL string literals with hostnames or IP addresses present in production code paths rather than sourced from config?
+    weight: 3
+    signals:
+    - http://localhost:8080 in source
+    - https://api.example.com literal
+    - IP address in code
+  - id: are-api-base-urls-defined-as-constants-in-application-code-rathe
+    prompt: Are API base URLs defined as constants in application code rather than read from environment variables or config files?
+    weight: 3
+    signals:
+    - BASE_URL = 'https://...'
+    - const API_HOST =
+    - no env var for endpoint
+  - id: would-deploying-to-a-new-environment-require-code-changes-to-upd
+    prompt: Would deploying to a new environment require code changes to update service addresses?
+    weight: 2
+    signals:
+    - no config override for URL
+    - hardcoded port number
+    - environment-specific code paths
+  - id: do-localhost-or-127-0-0-1-references-appear-in-non-test-code-wit
+    prompt: Do localhost or 127.0.0.1 references appear in non-test code without an environment-specific override?
+    weight: 1
+    signals:
+    - localhost in production path
+    - 127.0.0.1 without config fallback
+    - no service discovery
+analysis:
+  testing:
+    summary: Verify that all external endpoints are configurable and no URL literals leak into production code paths.
+    unit:
+    - Assert that HTTP client base URLs are read from configuration or environment variables, not hardcoded
+    - Override endpoint config in tests and verify requests target the overridden URL
+    integration:
+    - Deploy to a staging environment with distinct endpoint configuration and verify all service-to-service calls route correctly
+    - Change a dependency URL via config and confirm the application uses the new address without redeployment
+    additional_sections:
+    - title: Static Analysis
+      items:
+      - Add a CI check that scans source files (excluding tests and docs) for URL-like string literals (`http://`, `https://`)
+      - Validate that all environment-specific URLs have corresponding entries in config templates or `.env.example`

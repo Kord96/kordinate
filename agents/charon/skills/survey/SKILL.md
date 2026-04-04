@@ -123,7 +123,7 @@ This file is in charon's global memory — all agents can read it.
     "internal": "ClusterIP services, DNS: <svc>.<ns>.svc.cluster.local",
     "mesh": "Tailscale between clusters",
     "external": "Cloudflare tunnels for public endpoints",
-    "registry": "localhost:30500 (NodePort)"
+    "registry": "REGISTRY (resolved from cluster config/overlay)"
   },
 
   "storage": {
@@ -173,7 +173,7 @@ This file is in charon's global memory — all agents can read it.
     },
     "packaging": {
       "container": "Dockerfile at repo root or /docker/",
-      "image_registry": "localhost:30500/<name>:latest",
+      "image_registry": "REGISTRY/<name>:latest",
       "build": "kaniko Job in master namespace",
       "manifests": "kustomize base (namespace-agnostic) + env overlays",
       "labels": {

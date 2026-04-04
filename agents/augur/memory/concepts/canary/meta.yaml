@@ -1,0 +1,112 @@
+schema: augur-concept-meta/v2
+concept: canary
+kind: pattern
+summary: Canary Release architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - deployment
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - monitoring.md
+  - deployment.md
+traits:
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-traffic-split-between-a-stable-version-and-a-new-version-usin
+    prompt: Is traffic split between a stable version and a new version using explicit percentage weights?
+    weight: 3
+    signals:
+    - traffic weight configuration
+    - percentage-based routing
+    - canary vs stable split
+  - id: are-deployments-promoted-or-rolled-back-based-on-metrics-compari
+    prompt: Are deployments promoted or rolled back based on metrics comparison (error rate, latency)?
+    weight: 3
+    signals:
+    - metrics-driven promotion
+    - automated rollback on degradation
+    - canary analysis step
+  - id: do-deployment-configurations-define-gradual-traffic-shifting-in-
+    prompt: Do deployment configurations define gradual traffic shifting in incremental steps?
+    weight: 2
+    signals:
+    - stepWeight progression
+    - incremental traffic increase
+    - graduated rollout steps
+  - id: is-there-a-separate-deployment-or-pod-set-labeled-as-canary-runn
+    prompt: Is there a separate deployment or pod set labeled as canary running alongside the stable version?
+    weight: 1
+    signals:
+    - canary-labeled deployment
+    - parallel canary pods
+    - canary subset definition
+analysis:
+  monitoring:
+    summary: Compare canary metrics against the baseline to decide promotion or rollback.
+    metrics:
+    - name: canary_traffic_ratio
+      kind: gauge
+      description: percentage of traffic routed to the canary
+    - name: canary_error_rate
+      kind: gauge
+      description: error rate on canary versus baseline
+    - name: canary_latency_seconds
+      kind: histogram
+      description: response latency on canary versus baseline
+    - name: canary_promotion_total
+      kind: counter
+      description: successful canary promotions to full rollout
+    alerts:
+    - Canary error rate exceeding baseline by configured threshold (auto-rollback trigger)
+    - Canary latency regression beyond acceptable margin
+    - Canary stuck at partial traffic (promotion/rollback decision not taken within time window)
+  deployment:
+    summary: Route a small percentage of traffic to the new version and promote gradually based on health signals.
+    rollout_implications:
+    - Start with a small traffic slice (1-5%) and increase only after metrics confirm health
+    - Canary and baseline must run simultaneously — ensure resource capacity for both versions
+    - Sticky sessions may cause uneven canary exposure; verify traffic distribution is representative
+    pre_deploy_checklist:
+    - Define success criteria (error rate, latency, business metrics) before starting the canary
+    - Configure automatic rollback triggers tied to the success criteria
+    - Verify monitoring dashboards compare canary versus baseline side-by-side

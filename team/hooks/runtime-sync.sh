@@ -8,7 +8,6 @@
 #        agent skills/memory → ~/.kord/agents/ (global memory)
 #        team skills → ~/.claude/skills/
 #        server code → ~/.kord/lib/
-#        KORD.json (assembled) → ~/.kord/KORD.json
 
 set -uo pipefail
 
@@ -68,20 +67,6 @@ if [ -f "$KORD_PKG/lib/mcp-agent-server/server.js" ]; then
   cp "$KORD_PKG/lib/mcp-agent-server/server.js" "$KORDINATE_HOME/lib/mcp-agent-server/server.js" 2>/dev/null
 fi
 
-# --- Assemble and sync KORD.json ---
-ASSEMBLER="$KORD_PKG/team/scripts/assemble-kord.py"
-if [ -f "$ASSEMBLER" ]; then
-  python3 "$ASSEMBLER" "$KORD_PKG" > "$KORDINATE_HOME/KORD.json" 2>/dev/null
-else
-  # Fallback: concatenate per-agent KORD.json files
-  python3 -c "
-import json, glob
-entries = []
-for f in sorted(glob.glob('$KORD_PKG/agents/*/KORD.json')):
-    entries.extend(json.load(open(f)))
-json.dump(entries, open('$KORDINATE_HOME/KORD.json', 'w'), indent=2)
-" 2>/dev/null
-fi
 
 log "synced kordinate → runtime"
 exit 0

@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: time-series
+kind: domain-model
+summary: Time-series data pattern for temporal metrics and event streams
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - temporal
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-data-primarily-append-only-and-indexed-by-timestamp-as-the-le
+    prompt: Is data primarily append-only and indexed by timestamp as the leading dimension?
+    weight: 3
+    signals:
+    - timestamp as primary index
+    - hypertable or time-partitioned table
+    - append-only writes with time ordering
+  - id: are-there-retention-policies-that-automatically-expire-or-archiv
+    prompt: Are there retention policies that automatically expire or archive old data?
+    weight: 3
+    signals:
+    - retention_policy configuration
+    - TTL on data points
+    - automatic purge of aged data
+  - id: does-the-system-use-windowed-aggregation-or-downsampling-for-tim
+    prompt: Does the system use windowed aggregation or downsampling for time-range queries?
+    weight: 2
+    signals:
+    - time_bucket or resample functions
+    - rollup jobs producing coarser granularity
+    - continuous aggregate or recording rules
+  - id: is-a-specialized-time-series-database-or-extension-used-instead-
+    prompt: Is a specialized time-series database or extension used instead of a general-purpose store?
+    weight: 1
+    signals:
+    - InfluxDB or TimescaleDB
+    - Prometheus TSDB
+    - dedicated time-series engine

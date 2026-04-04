@@ -1,0 +1,79 @@
+schema: augur-concept-meta/v2
+concept: serverless
+kind: pattern
+summary: Serverless / FaaS architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+  - deployment
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-handlers-stateless-with-event-context-function-signatures-an
+    prompt: Are handlers stateless with event/context function signatures and no in-memory state between invocations?
+    weight: 3
+    signals:
+    - handler(event, context) function signature
+    - stateless request processing
+    - no global state carried between invocations
+  - id: is-there-faas-infrastructure-as-code-defining-function-deploymen
+    prompt: Is there FaaS infrastructure-as-code defining function deployments and triggers?
+    weight: 3
+    signals:
+    - serverless.yml with function definitions
+    - SAM template.yaml with Lambda resources
+    - CDK Stack with Lambda constructs
+  - id: are-connections-and-heavy-initializations-placed-outside-the-han
+    prompt: Are connections and heavy initializations placed outside the handler for warm invocation reuse?
+    weight: 2
+    signals:
+    - database connection initialized at module level
+    - client created outside handler function
+    - connection pooling in global scope
+  - id: are-event-driven-triggers-handled-idempotently-for-at-least-once
+    prompt: Are event-driven triggers handled idempotently for at-least-once delivery?
+    weight: 1
+    signals:
+    - idempotency key on event processing
+    - deduplication for SQS or stream triggers
+    - safe to replay same event

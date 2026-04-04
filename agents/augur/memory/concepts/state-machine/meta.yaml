@@ -1,0 +1,113 @@
+schema: augur-concept-meta/v2
+concept: state-machine
+kind: pattern
+summary: State Machine architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - lifecycle
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-an-explicit-transition-table-mapping-state-event-pairs-
+    prompt: Is there an explicit transition table mapping (state, event) pairs to next states?
+    weight: 3
+    signals:
+    - transition dict from state-event to next state
+    - createMachine with state definitions
+    - transition function with guard conditions
+  - id: are-states-defined-as-enums-or-constants-with-no-implicit-state-
+    prompt: Are states defined as enums or constants with no implicit state changes via direct assignment?
+    weight: 3
+    signals:
+    - State enum with defined members
+    - status constants with transition enforcement
+    - state only changed through transition mechanism
+  - id: are-entry-and-exit-actions-tied-to-transitions-rather-than-scatt
+    prompt: Are entry and exit actions tied to transitions rather than scattered through business logic?
+    weight: 2
+    signals:
+    - on_enter and on_exit hooks on states
+    - before_transition and after_transition callbacks
+    - lifecycle actions declared in state definition
+  - id: are-invalid-transitions-rejected-with-clear-errors-rather-than-s
+    prompt: Are invalid transitions rejected with clear errors rather than silently ignored?
+    weight: 1
+    signals:
+    - error raised on invalid transition
+    - transition validation before state change
+    - guard rejects disallowed state move
+analysis:
+  testing:
+    summary: '# Testing - Test every valid transition in the transition table: correct source state + event = expected target state - Test that invalid transitions are rejected with clear errors, not silently ignored - Verify entry/exit actions fire on the correct transitions and in the correct order - Test guard conditions: transition should only occur when guards evaluate to true - Test that state is persisted correctly if the machine must survive restarts - Verify that terminal states are reachable from the initial state via valid transition paths - Test concurrent transitions on the same entity to verify race condition protection - Assert that direct state assignment bypassing the transition mechanism is impossible'
+  monitoring:
+    summary: Track state distributions, transition activity, and stuck entities to ensure the machine progresses correctly.
+    metrics:
+    - name: state_machine_transitions_total
+      kind: counter
+      description: transitions partitioned by source state, event, and target state
+    - name: state_machine_rejected_transitions_total
+      kind: counter
+      description: invalid transition attempts (caller sending wrong events)
+    - name: state_machine_state_duration_seconds
+      kind: histogram
+      description: time entities spend in each state before transitioning
+    - name: state_machine_entities_by_state
+      kind: gauge
+      description: count of entities currently in each state
+    - name: state_machine_concurrent_transition_attempts_total
+      kind: counter
+      description: simultaneous transitions on the same entity (race indicator)
+    - name: state_machine_guard_failures_total
+      kind: counter
+      description: guard condition evaluation failures per transition
+    alerts:
+    - Entity stuck in a non-terminal state beyond the expected time window
+    - Rejected transition rate elevated (callers sending invalid events for the current state)
+    - Concurrent transition attempts detected on the same entity (race condition)
+    - Unexpected transition path appearing (source-event-target tuple not in the defined table)
+    - Guard condition failures spiking (data issues or misconfiguration)

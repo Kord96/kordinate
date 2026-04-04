@@ -1,0 +1,81 @@
+schema: augur-concept-meta/v2
+concept: error-boundary
+kind: pattern
+summary: Error Boundary — component-level error catching and fallback rendering
+taxonomy:
+  type: pattern
+  categories:
+  - frontend
+  - error-handling
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-error-boundary-components-wrap-subtrees-to-catch-rendering-er
+    prompt: Do error boundary components wrap subtrees to catch rendering errors and display fallback UI?
+    weight: 3
+    signals:
+    - ErrorBoundary with componentDidCatch or getDerivedStateFromError
+    - react-error-boundary with fallbackRender
+  - id: are-error-boundaries-placed-at-meaningful-subtree-boundaries-not
+    prompt: Are error boundaries placed at meaningful subtree boundaries, not just the application root?
+    weight: 2
+    signals:
+    - per-route or per-feature error boundaries
+    - nested boundaries for granular degradation
+  - id: do-caught-errors-get-reported-to-an-error-tracking-service
+    prompt: Do caught errors get reported to an error tracking service?
+    weight: 2
+    signals:
+    - Sentry.captureException in error boundary
+    - error reporting call in componentDidCatch
+  - id: does-the-fallback-ui-offer-a-recovery-action-like-retry-or-navig
+    prompt: Does the fallback UI offer a recovery action like retry or navigation?
+    weight: 1
+    signals:
+    - resetErrorBoundary or retry button in fallback
+    - fallback with link to navigate away
+  - id: are-async-errors-from-data-fetching-handled-in-addition-to-synch
+    prompt: Are async errors from data fetching handled in addition to synchronous render errors?
+    weight: 1
+    signals:
+    - Suspense with error boundary for async errors
+    - promise rejection handling in boundary

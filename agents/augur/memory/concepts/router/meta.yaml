@@ -1,0 +1,86 @@
+schema: augur-concept-meta/v2
+concept: router
+kind: pattern
+summary: Router — URL-based navigation and view switching
+taxonomy:
+  type: pattern
+  categories:
+  - frontend
+  - integration
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-declarative-mapping-between-url-paths-and-components-
+    prompt: Is there a declarative mapping between URL paths and components with route definitions?
+    weight: 3
+    signals:
+    - Routes with Route elements mapping path to component
+    - createRouter with route config array
+    - file-based routing in pages/ directory
+  - id: are-nested-routes-configured-with-layout-components-and-outlet-p
+    prompt: Are nested routes configured with layout components and outlet placeholders?
+    weight: 2
+    signals:
+    - Outlet for nested child rendering
+    - RouterView for nested routes
+    - layout.svelte wrapping child pages
+  - id: are-path-parameters-extracted-and-used-for-data-fetching-within-
+    prompt: Are path parameters extracted and used for data fetching within route handlers?
+    weight: 2
+    signals:
+    - useParams for route parameter access
+    - :id path parameter definition
+    - route params passed to loader
+  - id: is-code-splitting-applied-per-route-to-avoid-loading-the-entire-
+    prompt: Is code splitting applied per route to avoid loading the entire application upfront?
+    weight: 1
+    signals:
+    - lazy() or React.lazy for route components
+    - dynamic import in route config
+    - route-level chunk splitting
+  - id: are-404-and-error-fallback-routes-explicitly-defined
+    prompt: Are 404 and error fallback routes explicitly defined?
+    weight: 1
+    signals:
+    - catch-all wildcard route
+    - errorElement on route definition
+    - NotFound page for unmatched paths

@@ -5,7 +5,7 @@ A framework for kording specialized agents into a team.
 ```
 kordinate/
 ├── core/           # framework — root agent, hooks, commands, lib
-├── team/           # your agents — deployer, sauron, designer
+├── team/           # your agents — charon, augur, sauron, alfred, warden
 │   └── config.yaml # site-specific configuration
 ├── installer/      # setup-shell.sh, kordinate-cli
 ├── bin/            # claude-session

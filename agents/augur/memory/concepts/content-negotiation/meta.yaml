@@ -1,0 +1,92 @@
+schema: augur-concept-meta/v2
+concept: content-negotiation
+kind: pattern
+summary: Content/Protocol Negotiation architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - api
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 5
+  questions:
+  - id: does-the-server-inspect-the-accept-or-content-type-headers-to-se
+    prompt: Does the server inspect the Accept or Content-Type headers to select the response or request format?
+    weight: 3
+    signals:
+    - Accept header parsing
+    - Content-Type dispatch
+    - format selection from headers
+  - id: are-multiple-serialization-formats-json-xml-protobuf-supported-a
+    prompt: Are multiple serialization formats (JSON, XML, protobuf) supported and dispatched based on client preference?
+    weight: 2
+    signals:
+    - multi-format serializers
+    - format-specific response rendering
+    - media type routing
+  - id: does-the-api-return-406-not-acceptable-or-415-unsupported-media-
+    prompt: Does the API return 406 Not Acceptable or 415 Unsupported Media Type for unsupported formats?
+    weight: 2
+    signals:
+    - 406 response
+    - 415 response
+    - unsupported format error handling
+  - id: is-a-vary-accept-header-set-on-responses-to-prevent-cache-poison
+    prompt: 'Is a Vary: Accept header set on responses to prevent cache poisoning across formats?'
+    weight: 1
+    signals:
+    - 'Vary: Accept header'
+    - cache-safe content negotiation
+    - format-aware caching
+analysis:
+  testing:
+    summary: Verify that responses match the client's requested format and unsupported types are rejected cleanly.
+    unit:
+    - 'Send Accept: application/json and assert the response is JSON with correct Content-Type header'
+    - 'Send Accept: application/xml and assert the response is XML (if supported)'
+    - Send an unsupported Accept header and verify a 406 Not Acceptable response
+    integration:
+    - Test all supported media types end-to-end and verify response serialization is correct for each
+    - 'Verify quality-value negotiation: send Accept with multiple types and q-values, assert the highest-priority supported type wins'
+    failure_injection:
+    - Send a malformed Accept header and verify the server returns a clear error rather than crashing

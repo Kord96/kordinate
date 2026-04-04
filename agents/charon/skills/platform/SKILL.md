@@ -82,9 +82,10 @@ Default environment is `dev` if not specified.
 ## Key Resources
 
 - [manifests/base/](manifests/base/) — base platform kustomize manifests
+- [layered-image-rollout.md](layered-image-rollout.md) — first rollout procedure for `agent-base`, `agent-charon`, and `agent-augur`
+- [../../../../docs/bootstrap-image-policy.md](../../../../docs/bootstrap-image-policy.md) — bootstrap rule for prebuilt agent images and post-bootstrap Charon ownership
 - `profile/overlays/platform/<env>/` — environment-specific overlays (managed by alfred)
-- `profile/config.yaml` — cluster IPs, domains, services
-
+- `profile/config.yaml` — cluster IPs, domains, services (including `clusters.<name>.services.registry.url` for `REGISTRY`)
 ## Rules
 
 - Authenticate before any operation: use `/authenticate`.

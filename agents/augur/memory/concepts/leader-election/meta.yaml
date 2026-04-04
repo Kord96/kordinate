@@ -1,0 +1,130 @@
+schema: augur-concept-meta/v2
+concept: leader-election
+kind: pattern
+summary: Leader Election architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - concurrency
+  - resilience
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 7
+  questions:
+  - id: is-there-an-explicit-leader-election-protocol-using-lease-object
+    prompt: Is there an explicit leader election protocol using Lease objects, etcd keys, or ZooKeeper nodes?
+    weight: 3
+    signals:
+    - Lease object
+    - etcd compare-and-swap
+    - ZooKeeper ephemeral node
+  - id: does-only-the-current-leader-execute-write-operations-while-foll
+    prompt: Does only the current leader execute write operations while followers redirect or reject them?
+    weight: 3
+    signals:
+    - leader-only write path
+    - follower redirects to leader
+    - if isLeader then process
+  - id: are-fencing-tokens-or-epoch-numbers-used-to-prevent-split-brain-
+    prompt: Are fencing tokens or epoch numbers used to prevent split-brain where two nodes act as leader?
+    weight: 2
+    signals:
+    - fencing token
+    - epoch number
+    - leader epoch check
+  - id: does-the-leader-renew-its-lease-periodically-with-a-ttl-and-do-f
+    prompt: Does the leader renew its lease periodically with a TTL, and do followers trigger re-election on leader failure?
+    weight: 2
+    signals:
+    - lease renewal
+    - TTL on leader lock
+    - re-election on timeout
+analysis:
+  testing:
+    summary: Verify correct election, fencing, and failover behavior under normal and partitioned conditions.
+    unit:
+    - Start multiple candidates and assert exactly one wins the election
+    - Verify that the leader renews its lease and followers do not attempt to take over while the lease is valid
+    - Assert that fencing tokens or epoch numbers increment on each new election
+    integration:
+    - Kill the leader process and verify a follower wins the new election within the expected TTL window
+    - Simulate a network partition between leader and the coordination store and confirm the leader steps down after lease expiry
+    - Restore the partition and verify the old leader does not reclaim leadership using a stale fencing token
+    failure_injection:
+    - Introduce clock skew between nodes and verify the election protocol still produces a single leader
+    - Simulate a slow leader that cannot renew its lease in time and confirm followers take over cleanly
+  monitoring:
+    summary: Track leader identity, lease health, and election frequency to detect split-brain or stale leaders.
+    metrics:
+    - name: leader_identity
+      kind: info gauge
+      description: current leader node identity, exposed as a label
+    - name: leader_lease_renewals_total
+      kind: counter
+      description: successful lease renewals by the current leader
+    - name: leader_elections_total
+      kind: counter
+      description: number of election events (should be rare in steady state)
+    - name: leader_lease_ttl_remaining_seconds
+      kind: gauge
+      description: time until the current lease expires
+    alerts:
+    - No leader detected for longer than the lease TTL (election stuck or all candidates down)
+    - Frequent re-elections (flapping leadership indicating network instability)
+    - Two nodes reporting leader status simultaneously (split-brain, fencing failure)
+    - Lease renewal failures approaching TTL expiry (leader about to lose leadership)
+  deployment:
+    summary: Coordinate rollouts with leader lease lifecycle to avoid split-brain or prolonged leaderless windows.
+    rollout_implications:
+    - Rolling updates should terminate the leader pod last to minimize unnecessary re-elections
+    - New pods must be able to participate in elections before old pods are terminated (readiness-gated)
+    - If the leader pod is killed mid-lease, followers should detect the expired lease and elect a new leader within the TTL
+    - Avoid deploying all replicas simultaneously -- staggered rollout prevents a leaderless gap
+    pre_deploy_checklist:
+    - Verify the lease TTL is shorter than the deployment's pod termination grace period
+    - Confirm the leader releases its lease on graceful shutdown (preStop hook or signal handler)
+    - Test that a new version can win elections against the old version without protocol incompatibility

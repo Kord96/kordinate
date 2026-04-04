@@ -24,6 +24,7 @@ agent-state/
 
 # Session worktrees
 .worktrees/
+.openclaude-profile.json
 
 # Secrets and credentials
 .credentials.json
@@ -34,8 +35,37 @@ agent-state/
 /keybindings.json
 /.mcp.json
 /agents
+!/agents/
+/agents/*
+!/agents/augur/
+/agents/augur/*
+!/agents/augur/scripts/
+/agents/augur/scripts/*
+!/agents/augur/scripts/concept_meta_migration.py
+!/agents/augur/memory/
+/agents/augur/memory/*
+!/agents/augur/memory/tools.md
+!/agents/augur/memory/workflow.md
+!/agents/augur/memory/concepts/
+/agents/augur/memory/concepts/*
+!/agents/augur/memory/concepts/README.md
+!/agents/augur/memory/concepts/meta-schema.md
+!/agents/augur/memory/concepts/**/
+!/agents/augur/memory/concepts/**/meta.yaml
+!/agents/augur/skills/
+/agents/augur/skills/*
+!/agents/augur/skills/analyze/
+/agents/augur/skills/analyze/*
+!/agents/augur/skills/analyze/SKILL.md
+!/agents/augur/skills/analyze/detection.md
+!/agents/augur/skills/design/
+/agents/augur/skills/design/*
+!/agents/augur/skills/design/SKILL.md
 /agent-memory
 /commands
+agents/alfred/profile
+
+# Keep Augur authored files trackable during concept metadata migration
 agents/alfred/profile
 
 # Agent runtime state

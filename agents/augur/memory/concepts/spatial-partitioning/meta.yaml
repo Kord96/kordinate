@@ -1,0 +1,84 @@
+schema: augur-concept-meta/v2
+concept: spatial-partitioning
+kind: pattern
+summary: Spatial Partitioning architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+  - realtime
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-spatial-data-structure-that-accelerates-range-or-prox
+    prompt: Is there a spatial data structure that accelerates range or proximity queries over positioned objects?
+    weight: 3
+    signals:
+    - QuadTree or Octree class with insert and query
+    - SpatialHash bucketing objects by position
+    - RTree or BVH for bounding volume queries
+  - id: are-spatial-queries-returning-candidates-for-a-broad-phase-rathe
+    prompt: Are spatial queries returning candidates for a broad phase rather than doing final collision checks?
+    weight: 3
+    signals:
+    - broad-phase candidate list from spatial query
+    - query_radius or query_rect returning nearby objects
+    - separate narrow-phase after spatial lookup
+  - id: does-the-structure-use-recursive-subdivision-with-bounded-depth-
+    prompt: Does the structure use recursive subdivision with bounded depth or cell size?
+    weight: 2
+    signals:
+    - max depth limit on tree
+    - cell size bounded to prevent degenerate splits
+    - recursive subdivision of space into nodes
+  - id: is-the-spatial-structure-updated-incrementally-as-objects-move-r
+    prompt: Is the spatial structure updated incrementally as objects move rather than rebuilt entirely each frame?
+    weight: 1
+    signals:
+    - incremental update on object move
+    - remove and re-insert on position change
+    - no full rebuild every frame
+analysis:
+  testing:
+    summary: '# Testing - Test insert, query, and remove operations with objects at partition boundaries and overlapping cells - Verify range and radius queries return all candidates within the search area (no false negatives) - Test degenerate cases: all objects at the same position, objects at extreme coordinates - Benchmark query performance against a brute-force O(n^2) baseline to confirm the structure provides speedup - Test incremental updates when objects move — verify the structure stays correct without full rebuild - Assert bounded tree depth or cell count to prevent degenerate performance on clustered data - Test memory allocation: verify no per-frame heap churn in hot paths (object pools, pre-allocated nodes) - Verify that the query interface returns broad-phase candidates, not narrow-phase final results'

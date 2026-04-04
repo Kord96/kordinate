@@ -1,0 +1,119 @@
+schema: augur-concept-meta/v2
+concept: model-registry
+kind: pattern
+summary: Model Registry architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - lifecycle
+  - ml
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-ml-model-artifacts-stored-with-version-numbers-and-stage-tra
+    prompt: Are ML model artifacts stored with version numbers and stage transitions such as staging to production?
+    weight: 3
+    signals:
+    - register_model() with version
+    - transition_model_version_stage
+    - staging -> production
+  - id: does-each-model-version-record-its-training-metrics-parameters-a
+    prompt: Does each model version record its training metrics, parameters, and data lineage?
+    weight: 3
+    signals:
+    - log_model() with metrics
+    - training parameters stored alongside
+    - data lineage tracked
+  - id: are-model-artifacts-immutable-once-registered-with-new-versions-
+    prompt: Are model artifacts immutable once registered, with new versions created rather than overwritten?
+    weight: 2
+    signals:
+    - new version on retrain
+    - no overwrite of existing model
+    - immutable artifact storage
+  - id: can-a-model-be-loaded-by-name-resolving-to-the-correct-version-f
+    prompt: Can a model be loaded by name, resolving to the correct version for a given stage?
+    weight: 2
+    signals:
+    - load_model(name, stage='production')
+    - version resolution by stage
+    - model name lookup
+analysis:
+  testing:
+    summary: Verify model versioning, stage transitions, and artifact integrity through the full lifecycle.
+    unit:
+    - Register a model version and assert it appears in the registry with correct metadata (metrics, parameters, lineage)
+    - Transition a model through stages (staging, production, archived) and verify each transition is recorded
+    - Load a model by name and stage and assert the correct version and artifact are returned
+    integration:
+    - Register a model, promote to production, and verify a serving endpoint resolves to the correct artifact
+    - Attempt to overwrite an existing model version and verify it is rejected (immutability)
+    - Archive a model and confirm it is no longer served but remains available for audit
+    additional_sections:
+    - title: Validation Tests
+      items:
+      - Register a model without required metadata (metrics, lineage) and assert the registry rejects or warns
+      - Promote a model that fails validation gates and verify the transition is blocked
+  monitoring:
+    summary: Track model lifecycle transitions, serving health, and registry availability.
+    metrics:
+    - name: model_versions_registered_total
+      kind: counter
+      description: new model versions added to the registry
+    - name: model_stage_transitions_total
+      kind: counter
+      description: stage changes (staging, production, archived) per model
+    - name: model_serving_version
+      kind: info gauge
+      description: currently serving model version, exposed as a label
+    - name: model_registry_latency_seconds
+      kind: histogram
+      description: time to load or register a model version
+    alerts:
+    - No new model versions registered for an unexpectedly long period (training pipeline stalled)
+    - Model promoted to production without passing validation gates (if enforcement is advisory, not blocking)
+    - Registry unavailable or latency spiking (serving cannot resolve model versions)
+    - Model in production stage with no recorded training metrics or data lineage

@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: multi-tenant
+kind: domain-model
+summary: Multi-tenant isolation pattern for shared infrastructure
+taxonomy:
+  type: domain-model
+  categories:
+  - architectural
+  - data
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-tenant-id-or-organization-id-present-on-all-data-tables-and-e
+    prompt: Is tenant_id or organization_id present on all data tables and enforced in every query path?
+    weight: 3
+    signals:
+    - tenant_id column on all tables
+    - automatic query scoping by tenant
+    - row-level security policy per tenant
+  - id: does-middleware-or-context-propagation-ensure-tenant-identity-is
+    prompt: Does middleware or context propagation ensure tenant identity is available throughout the request lifecycle?
+    weight: 3
+    signals:
+    - TenantContext middleware
+    - tenant_id extracted from JWT or subdomain
+    - current_tenant available in request context
+  - id: is-there-database-level-isolation-rls-schema-per-tenant-beyond-a
+    prompt: Is there database-level isolation (RLS, schema-per-tenant) beyond application-layer filtering?
+    weight: 2
+    signals:
+    - row_level_security policies
+    - schema-per-tenant strategy
+    - database-enforced tenant boundary
+  - id: are-caches-queues-and-other-shared-resources-scoped-by-tenant-to
+    prompt: Are caches, queues, and other shared resources scoped by tenant to prevent data leakage?
+    weight: 1
+    signals:
+    - tenant-prefixed cache keys
+    - per-tenant queue routing
+    - tenant-scoped background jobs

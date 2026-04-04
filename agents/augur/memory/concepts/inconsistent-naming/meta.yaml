@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: inconsistent-naming
+kind: anti-pattern
+summary: Inconsistent Naming anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-same-file-or-module-mix-camelcase-and-snake-case-for-no
+    prompt: Does the same file or module mix camelCase and snake_case for non-FFI identifiers?
+    weight: 3
+    signals:
+    - camelCase and snake_case in same file
+    - mixed casing convention
+    - inconsistent variable style
+  - id: is-the-same-domain-concept-referred-to-by-different-names-across
+    prompt: Is the same domain concept referred to by different names across the codebase?
+    weight: 3
+    signals:
+    - user vs usr vs u
+    - config vs conf vs cfg
+    - order vs purchase for same entity
+  - id: are-abbreviations-used-inconsistently-with-full-names-in-some-mo
+    prompt: Are abbreviations used inconsistently, with full names in some modules and shortened forms in others?
+    weight: 2
+    signals:
+    - repo in one file repository in another
+    - msg vs message
+    - inconsistent abbreviation
+  - id: do-similar-functions-follow-inconsistent-verb-or-tense-conventio
+    prompt: Do similar functions follow inconsistent verb or tense conventions in their names?
+    weight: 1
+    signals:
+    - get_users vs fetch_item
+    - userCreated vs deleteUser
+    - mixed verb patterns

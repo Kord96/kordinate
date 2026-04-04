@@ -1,0 +1,135 @@
+schema: augur-concept-meta/v2
+concept: rate-limiting
+kind: pattern
+summary: Rate Limiting/Throttling architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+  - resilience
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-request-counters-tracked-per-client-or-ip-with-time-window-e
+    prompt: Are request counters tracked per client or IP with time window expiration?
+    weight: 3
+    signals:
+    - token bucket implementation
+    - sliding window counter
+    - Redis INCR with EXPIRE for rate tracking
+  - id: does-the-api-return-429-status-codes-with-rate-limit-headers
+    prompt: Does the API return 429 status codes with rate limit headers?
+    weight: 3
+    signals:
+    - 429 Too Many Requests response
+    - X-RateLimit-Remaining header
+    - Retry-After header in responses
+  - id: is-rate-limit-state-shared-across-replicas-via-an-external-store
+    prompt: Is rate limit state shared across replicas via an external store?
+    weight: 2
+    signals:
+    - Redis-based rate counter
+    - distributed rate limit store
+    - shared counter across instances
+  - id: are-rate-limits-applied-before-expensive-operations-in-the-reque
+    prompt: Are rate limits applied before expensive operations in the request pipeline?
+    weight: 1
+    signals:
+    - rate limit middleware early in chain
+    - throttle check before handler
+    - limit applied at gateway layer
+analysis:
+  testing:
+    summary: Verify correct enforcement at configured thresholds, proper header responses, and behavior when the limit store is unavailable.
+    unit:
+    - Send exactly the limit number of requests and verify all succeed, then send one more and verify 429 response
+    - 'Verify rate limit headers in the response: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`'
+    - 'Test window reset: after the time window elapses, verify the client can make requests again'
+    - Verify different endpoints have independent limits (hitting the limit on one does not affect another)
+    integration:
+    - Deploy multiple replicas with a shared Redis store and verify global limits are enforced (not per-instance)
+    - Simulate Redis unavailability and verify the limiter fails open or closed as configured
+    - Test with realistic traffic patterns and verify the rejection rate matches expectations
+    additional_sections:
+    - title: Algorithm Tests
+      items:
+      - Test the specific algorithm (token bucket, sliding window, fixed window) boundary behavior at window edges
+      - 'Verify per-client isolation: one client hitting its limit does not affect other clients'
+      - 'Test with burst traffic: send all allowed requests at once and verify the limiter enforces the correct shape'
+  monitoring:
+    summary: Track limit enforcement, rejection rates, and per-client usage to tune thresholds and detect abuse.
+    metrics:
+    - name: rate_limit_requests_total
+      kind: counter
+      description: '- total requests evaluated by the rate limiter, by endpoint'
+    - name: rate_limit_rejected_total
+      kind: counter
+      description: '- requests rejected with 429, by client/API key and endpoint'
+    - name: rate_limit_remaining
+      kind: gauge
+      description: '- remaining quota per client in the current window'
+    - name: rate_limit_latency_seconds
+      kind: histogram
+      description: '- overhead added by rate limit evaluation (should be sub-millisecond)'
+    alerts:
+    - Rejection rate exceeds threshold for a specific client (possible abuse or misconfigured integration)
+    - Global rejection rate spikes across all clients (may indicate limits set too low for legitimate traffic)
+    - Rate limit store (Redis) latency increases (degraded shared state lookup slowing all requests)
+    - Rate limit evaluation latency exceeds acceptable overhead (middleware performance issue)
+  deployment:
+    summary: Ensure rate limit state is shared across replicas and limits are tuned for the new deployment's capacity.
+    rollout_implications:
+    - Distributed rate limiting requires a shared store (Redis); verify the store is accessible from all new pods before cutover
+    - Scaling up replicas does not automatically increase per-client limits -- limits are global, not per-instance
+    - Scaling down replicas does not reduce throughput capacity if limits are correctly shared
+    - Changing limit values should be deployable independently from application code (config or feature flags)
+    pre_deploy_checklist:
+    - Verify the shared rate limit store (Redis) is healthy and reachable from the target environment
+    - Confirm rate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`) are returned for 429 responses
+    - 'Review per-endpoint limits: authentication endpoints should have stricter limits than read-only endpoints'
+    - Test that the rate limiter fails open or closed as intended when the shared store is unavailable

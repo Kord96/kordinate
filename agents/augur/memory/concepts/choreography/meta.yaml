@@ -1,0 +1,135 @@
+schema: augur-concept-meta/v2
+concept: choreography
+kind: pattern
+summary: Choreography architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - integration
+  - architectural
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-services-communicate-exclusively-through-events-with-no-centr
+    prompt: Do services communicate exclusively through events with no central orchestrator coordinating the workflow?
+    weight: 3
+    signals:
+    - event-only communication
+    - no orchestrator class
+    - decentralized service coordination
+  - id: does-each-service-consume-events-from-one-source-and-produce-eve
+    prompt: Does each service consume events from one source and produce events to another, forming a chain?
+    weight: 2
+    signals:
+    - topic-to-topic chaining
+    - consume-then-publish flow
+    - event relay between services
+  - id: are-event-schemas-versioned-and-do-events-carry-correlation-ids-
+    prompt: Are event schemas versioned and do events carry correlation IDs for end-to-end traceability?
+    weight: 2
+    signals:
+    - versioned event schema
+    - correlation ID in events
+    - traceable event contracts
+  - id: is-there-an-absence-of-saga-orchestrator-or-workflow-coordinator
+    prompt: Is there an absence of Saga, Orchestrator, or Workflow coordinator classes for multi-service flows?
+    weight: 2
+    signals:
+    - no saga coordinator
+    - no workflow engine
+    - no centralized process manager
+analysis:
+  testing:
+    summary: Validate event contracts between services and ensure each participant can be tested and deployed independently.
+    unit:
+    - Test each service's event handler in isolation — given an input event, assert the correct output event or state change
+    - 'Verify event schema compliance: validate produced events against the published contract (required fields, types, version)'
+    - Test that services handle unknown event fields gracefully (forward compatibility)
+    - Assert correlation ID propagation — every output event carries the correlation ID from the input event
+    integration:
+    - Deploy two adjacent services and verify the end-to-end event flow between them produces the expected outcome
+    - 'Test independent deployability: upgrade one service''s event version and verify downstream consumers still function'
+    - Run the full choreographed workflow end-to-end and verify the final system state using correlation ID tracing
+    failure_injection:
+    - Stop a downstream consumer and verify upstream services continue operating without blocking or failing
+    - Inject a malformed event and verify the consuming service rejects it to dead-letter without crashing the pipeline
+    - Simulate event broker unavailability and confirm services buffer or retry rather than silently dropping events
+  monitoring:
+    summary: Track event flow across services and dead-letter accumulation to detect broken chains and stalled workflows.
+    metrics:
+    - name: event_published_total
+      kind: counter
+      description: events emitted per service and event type
+    - name: event_consumed_total
+      kind: counter
+      description: events processed per consuming service
+    - name: event_processing_duration_seconds
+      kind: histogram
+      description: time from event receipt to processing completion
+    - name: dead_letter_events_total
+      kind: counter
+      description: events that failed processing and landed in dead-letter
+    - name: event_flow_lag_seconds
+      kind: gauge
+      description: end-to-end delay from first event to final outcome per correlation ID
+    alerts:
+    - Published-to-consumed event ratio diverging (events being dropped or not consumed)
+    - Dead-letter queue depth growing without remediation
+    - Event processing latency exceeding SLA for any service in the chain
+    - Correlation IDs with no terminal event within expected time window (stalled workflows)
+  deployment:
+    summary: Event schema versioning and consumer deployment ordering determine whether the event chain breaks during rollout.
+    rollout_implications:
+    - Deploy consumers before producers when introducing new event fields — consumers must be able to handle the new schema before events arrive
+    - Event schema changes must be backward-compatible (additive only) since old and new consumers run simultaneously during rollout
+    - Deploying a producer that emits a new event type before any consumer exists creates unprocessed event buildup
+    - Rolling back a single service may break the choreography if other services have already adapted to its new event schema
+    pre_deploy_checklist:
+    - Verify event schema changes are backward-compatible (no removed or renamed fields)
+    - Confirm all downstream consumers are deployed and ready before upstream producers emit new event types
+    - Check that correlation ID propagation is intact across all services involved in the rollout

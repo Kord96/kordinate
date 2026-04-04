@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: search-index
+kind: domain-model
+summary: Search and inverted index pattern for full-text retrieval
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - search
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-dedicated-search-engine-or-inverted-index-powering-fu
+    prompt: Is there a dedicated search engine or inverted index powering full-text queries?
+    weight: 3
+    signals:
+    - Elasticsearch or Solr client
+    - Meilisearch or Typesense index
+    - tantivy or whoosh index creation
+  - id: are-index-mappings-or-schemas-defined-with-analyzers-and-tokeniz
+    prompt: Are index mappings or schemas defined with analyzers and tokenizers?
+    weight: 3
+    signals:
+    - field mappings with text analyzers
+    - custom tokenizer configuration
+    - index schema with field types
+  - id: does-the-system-support-faceted-filtering-or-relevance-scored-re
+    prompt: Does the system support faceted filtering or relevance-scored results?
+    weight: 2
+    signals:
+    - aggregation queries for facets
+    - boost or score parameters
+    - facet counts in search response
+  - id: is-there-a-sync-mechanism-keeping-the-search-index-consistent-wi
+    prompt: Is there a sync mechanism keeping the search index consistent with the primary data store?
+    weight: 1
+    signals:
+    - indexing job or CDC pipeline
+    - reindex command or task
+    - index lag monitoring

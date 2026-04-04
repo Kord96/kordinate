@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: reinventing-the-wheel
+kind: anti-pattern
+summary: Reinventing the Wheel anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-custom-implementations-of-functionality-already-availa
+    prompt: Are there custom implementations of functionality already available in the standard library or well-maintained packages?
+    weight: 3
+    signals:
+    - custom JSON parser replacing json.loads
+    - hand-rolled HTTP client over raw sockets
+    - reimplemented deepcopy or uuid generation
+  - id: do-custom-utility-modules-overlap-with-libraries-already-in-the-
+    prompt: Do custom utility modules overlap with libraries already in the project's dependency tree?
+    weight: 3
+    signals:
+    - custom retry logic when tenacity is a dependency
+    - custom caching alongside existing cache library
+    - custom validation duplicating installed schema library
+  - id: do-the-custom-implementations-lack-edge-case-handling-present-in
+    prompt: Do the custom implementations lack edge case handling present in established solutions?
+    weight: 2
+    signals:
+    - no unicode handling in custom parser
+    - missing timezone edge cases
+    - no encoding fallback in custom serializer
+  - id: is-there-documentation-explaining-why-the-custom-implementation-
+    prompt: Is there documentation explaining why the custom implementation was chosen over an existing library?
+    weight: 1
+    signals:
+    - no rationale comment for custom code
+    - no build-vs-buy decision recorded
+    - missing justification for reimplementation

@@ -1,0 +1,96 @@
+schema: augur-concept-meta/v2
+concept: flux
+kind: pattern
+summary: Flux/Redux (Unidirectional Data Flow) architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+  - frontend
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-application-state-held-in-a-central-store-as-a-single-source-
+    prompt: Is application state held in a central store as a single source of truth?
+    weight: 3
+    signals:
+    - store object holding global state
+    - createStore or defineStore with centralized state
+  - id: are-state-changes-driven-by-dispatching-action-objects-to-reduce
+    prompt: Are state changes driven by dispatching action objects to reducer or mutation functions?
+    weight: 3
+    signals:
+    - dispatch(action) calls triggering state updates
+    - reducer functions transforming state in response to actions
+  - id: are-reducers-or-mutations-pure-functions-with-no-side-effects
+    prompt: Are reducers or mutations pure functions with no side effects?
+    weight: 2
+    signals:
+    - reducer returns new state without mutating arguments
+    - no API calls or async logic inside reducers
+  - id: are-side-effects-handled-in-middleware-thunks-or-sagas-rather-th
+    prompt: Are side effects handled in middleware, thunks, or sagas rather than in reducers or components?
+    weight: 1
+    signals:
+    - redux-thunk or redux-saga for async operations
+    - side effects isolated in middleware layer
+analysis:
+  testing:
+    summary: Test reducers as pure functions and verify the unidirectional data flow from action dispatch through state update to view render.
+    unit:
+    - Test each reducer with a given state and action, asserting the exact new state returned
+    - Verify reducers return the previous state unchanged for unknown action types
+    - 'Assert that reducers are pure: no mutations to the input state, no side effects, no API calls'
+    - Test action creators produce correctly typed and shaped action objects
+    - Verify selectors compute derived state correctly from the store shape
+    integration:
+    - Dispatch a sequence of actions and assert the final store state matches the expected cumulative result
+    - Test middleware (thunks, sagas, epics) by dispatching an action and verifying the resulting async action sequence
+    - Verify that connected components re-render with the correct props when relevant state slices change
+    additional_sections:
+    - title: State Management Tests
+      items:
+      - Test that dispatching the same action sequence from the same initial state always produces identical final state (deterministic replay)
+      - Verify that large state trees remain performant — selectors with memoization should not recompute on unrelated state changes

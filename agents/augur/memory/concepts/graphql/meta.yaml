@@ -1,0 +1,120 @@
+schema: augur-concept-meta/v2
+concept: graphql
+kind: pattern
+summary: GraphQL architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - api
+  - integration
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-sdl-schema-files-defining-query-mutation-or-subscripti
+    prompt: Are there SDL schema files defining Query, Mutation, or Subscription types with resolver functions mapping fields to data sources?
+    weight: 3
+    signals:
+    - type Query {}
+    - type Mutation {}
+    - resolver function
+  - id: does-the-api-expose-a-single-graphql-endpoint-handling-queries-a
+    prompt: Does the API expose a single /graphql endpoint handling queries and mutations via selection sets?
+    weight: 3
+    signals:
+    - /graphql endpoint
+    - selection set in query
+    - POST to single endpoint
+  - id: are-query-depth-or-complexity-limits-enforced-to-prevent-abusive
+    prompt: Are query depth or complexity limits enforced to prevent abusive queries?
+    weight: 2
+    signals:
+    - depth limit
+    - complexity cost
+    - query validation rule
+  - id: is-the-n-1-problem-addressed-with-dataloader-or-batching-in-reso
+    prompt: Is the N+1 problem addressed with DataLoader or batching in resolvers?
+    weight: 1
+    signals:
+    - DataLoader
+    - batch loader
+    - batched resolver
+analysis:
+  testing:
+    summary: Test schema validity, resolver correctness, and query behavior including edge cases around nullability and errors.
+    unit:
+    - Test each resolver independently with mocked data sources and assert correct return shapes
+    - Verify nullable fields return null without causing resolver chain failures
+    - 'Test input validation: invalid arguments should produce structured GraphQL errors, not 500s'
+    - Assert that resolvers do not over-fetch from data sources — verify only requested fields trigger backend calls
+    integration:
+    - Execute full queries against a running server and compare responses against expected JSON snapshots
+    - 'Test mutations end-to-end: mutate, then query the affected data and verify consistency'
+    - 'Verify N+1 query prevention: use a data loader/batch loader and assert the number of backend calls is bounded'
+    - 'Test subscription delivery: subscribe, trigger a mutation, and verify the subscriber receives the update'
+    additional_sections:
+    - title: Schema Tests
+      items:
+      - Validate the schema against breaking change detection rules before merge (removed fields, type changes)
+      - Test that deprecated fields still resolve correctly and return deprecation warnings
+  monitoring:
+    summary: Track query complexity, resolver performance, and error rates to prevent abuse and detect regressions.
+    metrics:
+    - name: graphql_query_duration_seconds
+      kind: histogram
+      description: total query execution time, by operation name
+    - name: graphql_resolver_duration_seconds
+      kind: histogram
+      description: per-resolver execution time to identify slow fields
+    - name: graphql_query_complexity
+      kind: histogram
+      description: computed complexity score per query to detect expensive operations
+    - name: graphql_errors_total
+      kind: counter
+      description: resolver and validation errors, by error type and field path
+    alerts:
+    - Query complexity exceeding the configured maximum (potential abuse or unoptimized client query)
+    - Resolver latency p99 spike for a specific field (backend regression behind that resolver)
+    - Error rate increase in a specific resolver (data source issue or schema mismatch)

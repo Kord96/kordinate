@@ -1,0 +1,137 @@
+schema: augur-concept-meta/v2
+concept: websocket
+kind: pattern
+summary: WebSocket architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - infrastructure
+  - integration
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-code-use-ws-or-wss-url-schemes-with-message-handler-cal
+    prompt: Does the code use ws:// or wss:// URL schemes with message handler callbacks like on_message, on_connect, on_close?
+    weight: 3
+    signals:
+    - ws:// or wss:// URLs
+    - on_message and on_close handlers
+    - WebSocket connection lifecycle
+  - id: is-there-http-upgrade-handshake-handling-with-connection-upgrade
+    prompt: 'Is there HTTP Upgrade handshake handling with Connection: Upgrade headers for establishing WebSocket connections?'
+    weight: 2
+    signals:
+    - 'Upgrade: websocket header'
+    - 'Connection: Upgrade'
+    - HTTP upgrade handshake
+  - id: does-the-implementation-include-ping-pong-keepalive-or-applicati
+    prompt: Does the implementation include ping/pong keepalive or application-level heartbeat to detect dead connections?
+    weight: 2
+    signals:
+    - ping pong frame handling
+    - heartbeat for keepalive
+    - dead connection detection
+  - id: is-there-client-side-reconnection-logic-with-backoff-to-recover-
+    prompt: Is there client-side reconnection logic with backoff to recover from disconnections?
+    weight: 2
+    signals:
+    - reconnection with backoff
+    - auto-reconnect on disconnect
+    - reconnection strategy
+  - id: is-authentication-performed-during-the-upgrade-handshake-rather-
+    prompt: Is authentication performed during the upgrade handshake rather than after the connection is established?
+    weight: 1
+    signals:
+    - auth during upgrade
+    - handshake authentication
+    - token validation before upgrade
+analysis:
+  testing:
+    summary: '# Testing - Test the full connection lifecycle: open, send/receive messages, error handling, and graceful close - Verify ping/pong heartbeat keeps connections alive and detects silent drops - Test client reconnection with exponential backoff after server disconnection - Test authentication during the upgrade handshake — unauthenticated upgrades must be rejected - Load test with many concurrent connections to verify server connection limits and backpressure - Test message serialization format (JSON, protobuf) with schema validation on both sides - Verify that the server detects and cleans up abandoned connections (no heartbeat response) - Test rate limiting: clients sending messages faster than the server can process are throttled'
+  monitoring:
+    summary: Track connection lifecycle, message throughput, and server resource consumption for WebSocket channels.
+    metrics:
+    - name: websocket_active_connections
+      kind: gauge
+      description: concurrent WebSocket connections per server instance
+    - name: websocket_connections_total
+      kind: counter
+      description: connections opened, partitioned by outcome (established, auth_failed, rejected)
+    - name: websocket_disconnections_total
+      kind: counter
+      description: disconnections partitioned by reason (client_close, server_close, error, timeout)
+    - name: websocket_heartbeat_failures_total
+      kind: counter
+      description: ping/pong heartbeats that failed, indicating silent connection drops
+    - name: websocket_messages_total
+      kind: counter
+      description: messages sent and received, partitioned by direction (inbound, outbound)
+    - name: websocket_message_size_bytes
+      kind: histogram
+      description: per-message payload size for backpressure detection
+    alerts:
+    - Active connection count approaching server capacity or file descriptor limits
+    - Heartbeat failure rate elevated (silent connection drops going undetected)
+    - High connection churn (rapid connect/disconnect cycling indicates client instability)
+    - Authentication failures during upgrade handshake (potential unauthorized access attempts)
+    - Message throughput or size anomalies indicating abuse or backpressure issues
+  deployment:
+    summary: Plan for mass reconnection storms during rollouts, since every terminated pod forces all its connected clients to reconnect simultaneously.
+    rollout_implications:
+    - Terminating a pod kills all WebSocket connections on that pod at once — clients reconnect simultaneously, creating a thundering herd on the remaining pods
+    - Connection draining must allow existing WebSocket connections to close gracefully — unlike HTTP requests, WebSocket connections are long-lived and may be mid-stream when a pod is marked for termination
+    - Load balancer configuration must support WebSocket upgrade headers — a deploy that changes load balancer settings can silently break the HTTP-to-WebSocket upgrade handshake
+    - Rolling deployments cause clients to reconnect to new pods, potentially losing in-memory session state — any state tied to the connection (subscriptions, cursor position) must be recoverable on reconnect
+    - Message format changes must be backward-compatible because connected clients may be on older versions and do not redeploy on your schedule
+    pre_deploy_checklist:
+    - Verify load balancer supports WebSocket upgrade headers and sticky sessions if required
+    - Configure terminationGracePeriodSeconds long enough for existing WebSocket connections to close gracefully
+    - Test client reconnection behavior during rolling deployments to ensure seamless recovery
+    - Confirm server-side connection limits and backpressure are configured before scaling up client-facing capacity
+    - Verify authentication during the upgrade handshake works correctly after any auth infrastructure changes
+    - Monitor connection counts during deployment to verify clients reconnect to new instances without pile-up

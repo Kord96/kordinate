@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: hidden-side-effects
+kind: anti-pattern
+summary: Hidden Side Effects anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 7
+  questions:
+  - id: do-functions-with-query-like-names-get-find-calculate-perform-wr
+    prompt: Do functions with query-like names (get, find, calculate) perform writes to databases, files, or external services?
+    weight: 3
+    signals:
+    - get_ function writes to DB
+    - find_ method sends HTTP
+    - calculate_ updates cache
+  - id: do-functions-mutate-their-input-arguments-in-place-while-also-re
+    prompt: Do functions mutate their input arguments in place while also returning a value?
+    weight: 2
+    signals:
+    - modifies list argument
+    - mutates dict parameter
+    - in-place mutation with return
+  - id: do-property-accessors-or-getters-trigger-i-o-database-queries-or
+    prompt: Do property accessors or getters trigger I/O, database queries, or network calls?
+    weight: 3
+    signals:
+    - '@property performs HTTP'
+    - getter queries database
+    - accessor triggers network call
+  - id: do-constructors-perform-i-o-operations-like-network-calls-file-w
+    prompt: Do constructors perform I/O operations like network calls, file writes, or database access?
+    weight: 2
+    signals:
+    - __init__ sends request
+    - constructor writes file
+    - constructor opens connection

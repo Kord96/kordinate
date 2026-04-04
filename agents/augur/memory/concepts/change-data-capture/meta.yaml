@@ -1,0 +1,126 @@
+schema: augur-concept-meta/v2
+concept: change-data-capture
+kind: pattern
+summary: Change Data Capture (CDC) architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+  - integration
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-the-database-transaction-log-wal-binlog-oplog-being-tailed-to
+    prompt: Is the database transaction log (WAL, binlog, oplog) being tailed to capture data changes?
+    weight: 3
+    signals:
+    - WAL reader
+    - binlog consumer
+    - oplog tailing
+  - id: are-database-changes-published-as-events-to-downstream-consumers
+    prompt: Are database changes published as events to downstream consumers via a connector or pipeline?
+    weight: 3
+    signals:
+    - Debezium connector
+    - change event publishing
+    - CDC pipeline to message bus
+  - id: does-the-system-track-its-position-in-the-change-stream-lsn-offs
+    prompt: Does the system track its position in the change stream (LSN, offset) to survive restarts?
+    weight: 2
+    signals:
+    - offset tracking
+    - LSN checkpoint
+    - connector position persistence
+  - id: is-there-an-outbox-table-that-is-polled-or-tailed-as-an-alternat
+    prompt: Is there an outbox table that is polled or tailed as an alternative to direct log capture?
+    weight: 2
+    signals:
+    - outbox table
+    - outbox polling
+    - transactional outbox pattern
+analysis:
+  testing:
+    summary: Verify event emission for all DML operations and ensure consumers handle ordering, duplicates, and schema changes.
+    unit:
+    - Assert insert, update, and delete operations each produce a CDC event with correct before/after state
+    - 'Verify event ordering: updates to the same row arrive in commit order'
+    - 'Test schema evolution: events with added/removed columns are handled by the consumer deserializer'
+    integration:
+    - Write to the source database, consume events through the full pipeline, and verify downstream state matches
+    - 'Test initial snapshot: start a new connector and verify it captures all existing rows before streaming changes'
+    failure_injection:
+    - Kill the connector mid-stream, restart it, and verify no events are lost or duplicated beyond idempotency guarantees
+  monitoring:
+    summary: Track replication lag, connector health, and event throughput from source to consumers.
+    metrics:
+    - name: cdc_lag_seconds
+      kind: gauge
+      description: delay between source commit and event availability to consumers
+    - name: cdc_events_total
+      kind: counter
+      description: events captured by table/collection and operation type
+    - name: cdc_connector_status
+      kind: gauge
+      description: connector health (0=failed, 1=running, 2=paused)
+    - name: cdc_snapshot_progress
+      kind: gauge
+      description: initial snapshot completion percentage
+    alerts:
+    - Replication lag exceeding acceptable threshold
+    - Connector failure or repeated restart
+    - Event throughput drop to zero (silent connector failure)
+  deployment:
+    summary: Coordinate connector updates with schema changes and ensure no events are lost during rollout.
+    rollout_implications:
+    - Schema changes on the source database must be backward-compatible with the running connector
+    - Deploy connector updates during low-traffic windows to minimize replication lag during restart
+    - Connector restart triggers a catch-up phase — consumers may see a burst of events
+    pre_deploy_checklist:
+    - Verify the connector's stored offset is valid and will resume from the correct position
+    - Test schema compatibility between the new connector version and current source schema
+    - Confirm consumer idempotency — duplicate events during catch-up must be handled safely

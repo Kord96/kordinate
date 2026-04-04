@@ -22,7 +22,7 @@ See `schemas/atlas-schema.md` for the full schema.
 
 ## Knowledge Base
 
-- **Concept catalog** (265 patterns) at `memory/concepts/` — each pattern includes monitoring.md, testing.md, deployment.md guidance
+- **Concept catalog** (265 patterns) at `memory/concepts/` — `concept.md` stays canonical, while `meta.yaml` carries detector policy and structured ops guidance where migrated
 - **Infra-atlas** at `/kord/agents/charon/memory/global/infra-atlas.json` — cluster topology, observability endpoints, workload contract
 - **App contract** at `memory/app-contract.md` — requirements every deployed app must satisfy
 

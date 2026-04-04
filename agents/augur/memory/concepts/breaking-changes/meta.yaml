@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: breaking-changes
+kind: anti-pattern
+summary: Breaking Changes anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: have-fields-been-removed-or-had-their-types-changed-in-api-respo
+    prompt: Have fields been removed or had their types changed in API responses without a version increment or deprecation period?
+    weight: 3
+    signals:
+    - field removed without warning
+    - type changed in response
+    - schema change with no version bump
+  - id: is-there-no-api-versioning-strategy-no-v1-prefix-no-accept-heade
+    prompt: Is there no API versioning strategy (no /v1/ prefix, no Accept header versioning, no version parameter)?
+    weight: 3
+    signals:
+    - unversioned endpoints
+    - no versioning scheme
+    - single URL with no version
+  - id: have-endpoint-paths-been-renamed-or-restructured-without-maintai
+    prompt: Have endpoint paths been renamed or restructured without maintaining backward-compatible aliases?
+    weight: 2
+    signals:
+    - URL path renamed
+    - endpoint moved with no redirect
+    - route change breaks clients
+  - id: is-there-no-machine-readable-api-schema-openapi-protobuf-or-cont
+    prompt: Is there no machine-readable API schema (OpenAPI, Protobuf) or contract test suite that would catch breaking changes in CI?
+    weight: 2
+    signals:
+    - no API schema
+    - no contract tests
+    - changes detected only by downstream failures

@@ -1,0 +1,71 @@
+schema: augur-concept-meta/v2
+concept: fan-in
+kind: flow-shape
+summary: Fan-in flow — parallel results converge into a single aggregation point
+taxonomy:
+  type: flow-shape
+  categories:
+  - data
+  - integration
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 3
+  questions:
+  - id: does-the-code-collect-results-from-multiple-parallel-operations-
+    prompt: Does the code collect results from multiple parallel operations before proceeding?
+    weight: 1
+  - id: is-there-a-barrier-join-pattern-promise-all-waitgroup-completabl
+    prompt: Is there a barrier/join pattern (Promise.all, WaitGroup, CompletableFuture.allOf)?
+    weight: 1
+    signals:
+    - Promise.all
+    - WaitGroup
+    - allOf
+    - asyncio.gather
+  - id: does-an-aggregation-service-call-multiple-backends-and-merge-the
+    prompt: Does an aggregation service call multiple backends and merge their responses?
+    weight: 1
+  - id: is-there-a-map-reduce-pattern-where-map-fans-out-and-reduce-coll
+    prompt: Is there a map-reduce pattern where map fans out and reduce collects?
+    weight: 1
+    signals:
+    - reduce
+    - aggregate
+    - merge
+    - collect

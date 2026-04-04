@@ -1,0 +1,112 @@
+schema: augur-concept-meta/v2
+concept: structured-logging
+kind: pattern
+summary: Structured Logging architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - observability
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-log-entries-emitted-as-json-with-typed-key-value-fields-rath
+    prompt: Are log entries emitted as JSON with typed key-value fields rather than plain text?
+    weight: 3
+    signals:
+    - JSON log formatter configured
+    - logger.info with key=value fields
+    - structured encoder producing JSON output
+  - id: is-a-context-bound-logger-propagated-through-the-request-lifecyc
+    prompt: Is a context-bound logger propagated through the request lifecycle with correlation IDs?
+    weight: 3
+    signals:
+    - logger.bind(request_id=rid)
+    - log.WithFields attached to context
+    - correlation ID in every log entry
+  - id: are-structured-logging-libraries-used-consistently-rather-than-p
+    prompt: Are structured logging libraries used consistently rather than printf-style formatting?
+    weight: 2
+    signals:
+    - structlog or zap or pino imported
+    - key-value logging API used throughout
+    - no f-string interpolation in log calls
+  - id: is-sensitive-data-explicitly-redacted-from-log-output
+    prompt: Is sensitive data explicitly redacted from log output?
+    weight: 1
+    signals:
+    - password field filtered from logs
+    - PII redaction in log processor
+    - no tokens logged in structured fields
+analysis:
+  testing:
+    summary: '# Testing - Test that all log entries are valid JSON with required fields (level, timestamp, correlation_id, message) - Verify that sensitive data (passwords, tokens, PII) is redacted or absent from log output - Test context binding: a correlation ID bound at request entry appears in all subsequent log entries - Assert that log levels are meaningful — ERROR for actionable failures, not for expected conditions - Test that string formatting is not used inside structured log calls (field=value, not f-string) - Verify that log output does not mix structured and unstructured formats within a service - Test log output under error conditions to confirm stack traces are captured as structured fields - Assert that log field names are consistent across services (agreed-upon schema, not ad-hoc)'
+  monitoring:
+    summary: Track log pipeline health, format compliance, and field quality to maintain reliable observability.
+    metrics:
+    - name: log_entries_total
+      kind: counter
+      description: log volume per service and severity level (ERROR, WARN, INFO, DEBUG)
+    - name: log_missing_correlation_id_total
+      kind: counter
+      description: entries without a request/correlation ID, breaking traceability
+    - name: log_unstructured_entries_total
+      kind: counter
+      description: non-JSON entries in a service that should emit only structured output
+    - name: log_ingestion_lag_seconds
+      kind: gauge
+      description: delay between log emission and availability in the aggregator
+    - name: log_pipeline_drop_rate
+      kind: counter
+      description: log entries dropped or failed to parse in the ingestion pipeline
+    - name: log_field_cardinality
+      kind: gauge
+      description: distinct values per indexed field, detects unbounded fields that overwhelm indexing
+    alerts:
+    - Sudden spike in ERROR or WARN log volume (emerging incident)
+    - Log entries appearing without correlation IDs (traceability gap)
+    - Unstructured log entries detected in a service expected to emit JSON only
+    - Log ingestion pipeline lag or drop rate exceeding acceptable thresholds
+    - Sensitive data patterns (tokens, passwords, PII) detected in log entries

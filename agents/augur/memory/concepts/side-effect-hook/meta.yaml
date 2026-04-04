@@ -1,0 +1,79 @@
+schema: augur-concept-meta/v2
+concept: side-effect-hook
+kind: pattern
+summary: Side Effect Hook — lifecycle-bound execution of effects in component frameworks
+taxonomy:
+  type: pattern
+  categories:
+  - frontend
+  - lifecycle
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-side-effects-bound-to-component-lifecycle-via-framework-hook
+    prompt: Are side effects bound to component lifecycle via framework hooks with dependency tracking?
+    weight: 3
+    signals:
+    - useEffect with dependency array
+    - onMounted or watch lifecycle hooks
+    - ngOnInit for initialization side effects
+  - id: do-effect-callbacks-return-cleanup-functions-for-subscriptions-t
+    prompt: Do effect callbacks return cleanup functions for subscriptions, timers, or listeners?
+    weight: 3
+    signals:
+    - return unsubscribe from useEffect
+    - clearInterval in cleanup
+    - AbortController aborted in effect cleanup
+  - id: are-dependency-arrays-complete-and-accurate-avoiding-stale-closu
+    prompt: Are dependency arrays complete and accurate, avoiding stale closures or excessive re-runs?
+    weight: 2
+    signals:
+    - all referenced variables in dependency array
+    - empty array for mount-only effect
+    - no missing deps causing stale data
+  - id: are-data-fetching-effects-guarded-against-race-conditions-from-u
+    prompt: Are data-fetching effects guarded against race conditions from unmounted components?
+    weight: 1
+    signals:
+    - abort controller for fetch cancellation
+    - isMounted check before setState
+    - stale closure guard in async effect

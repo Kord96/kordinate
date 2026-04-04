@@ -1,0 +1,129 @@
+schema: augur-concept-meta/v2
+concept: tenant-routing
+kind: pattern
+summary: Tenant-Aware Routing architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+  - integration
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-system-extract-tenant-identity-from-subdomains-headers-
+    prompt: Does the system extract tenant identity from subdomains, headers, or JWT claims and use it to route requests to tenant-specific backends or shards?
+    weight: 3
+    signals:
+    - subdomain tenant extraction
+    - X-Tenant-ID header routing
+    - shard router by tenant
+  - id: are-there-tenant-specific-connection-pools-or-database-connectio
+    prompt: Are there tenant-specific connection pools or database connections selected based on tenant identity?
+    weight: 3
+    signals:
+    - ConnectionPool.for_tenant
+    - pool registry keyed by tenant
+    - tenant-specific connection strings
+  - id: does-tenant-resolution-happen-at-the-edge-layer-gateway-load-bal
+    prompt: Does tenant resolution happen at the edge layer (gateway, load balancer, first middleware) before business logic executes?
+    weight: 2
+    signals:
+    - gateway tenant extraction
+    - routing before business logic
+    - edge-level tenant resolution
+  - id: is-there-a-shard-map-or-tenant-configuration-lookup-that-maps-te
+    prompt: Is there a shard map or tenant configuration lookup that maps tenant IDs to specific backends or database instances?
+    weight: 2
+    signals:
+    - ShardRouter.route
+    - consistent hashing by tenant
+    - TenantConfig.get mapping
+analysis:
+  testing:
+    summary: '# Testing - Test tenant resolution from all supported sources (subdomain, header, JWT) and verify correct routing - Verify that connection pools are bounded per tenant and one tenant cannot exhaust shared resources - Test routing for unknown or misconfigured tenants — must reject, not route to a default tenant - Test shard rebalancing: move a tenant between shards and verify requests route correctly afterward - Verify routing cache behavior: cached routes expire and refresh when tenant mappings change - Test that routing happens at the edge (gateway/middleware) before any business logic executes - Load test with many tenants to verify routing performance does not degrade with tenant count - Test failover: designated backend goes down, verify behavior (error, retry, or fallback)'
+  monitoring:
+    summary: Track routing accuracy, per-tenant backend health, and connection pool utilization across the routing layer.
+    metrics:
+    - name: tenant_routing_decisions_total
+      kind: counter
+      description: routing lookups partitioned by tenant and target backend
+    - name: tenant_routing_latency_seconds
+      kind: histogram
+      description: time to resolve tenant-to-backend mapping per request
+    - name: tenant_routing_failures_total
+      kind: counter
+      description: requests that could not be routed (unknown or misconfigured tenant)
+    - name: tenant_connection_pool_utilization
+      kind: gauge
+      description: active connections as a fraction of pool capacity per tenant
+    - name: tenant_routing_mapping_changes_total
+      kind: counter
+      description: tenant-to-shard mapping updates from rebalancing events
+    - name: tenant_backend_request_distribution
+      kind: gauge
+      description: request rate per backend to detect routing imbalance
+    alerts:
+    - Routing failure for an unknown or misconfigured tenant (requests cannot reach a backend)
+    - Per-tenant connection pool approaching exhaustion
+    - Routing decision latency elevated (missing cache or per-request database lookup)
+    - Tenant's designated backend is unhealthy or unreachable
+    - Unexpected tenant-to-shard mapping change outside of a planned rebalance window
+  deployment:
+    summary: Deploy routing configuration changes before backend topology changes, and verify that tenant resolution works end-to-end after every infrastructure change.
+    rollout_implications:
+    - Routing configuration (shard map, tenant-to-backend mapping) must be deployed before scaling or removing backends — new pods must be routable before they receive tenant traffic
+    - Routing cache invalidation must trigger on deployment of new tenant mappings — stale cache entries send tenants to old backends that may no longer exist
+    - Load balancer or gateway changes can break tenant extraction from subdomains or headers — a deploy that changes host parsing silently misroutes all tenants
+    - Shard rebalancing during an application rollout creates two simultaneous changes to the routing path — one from the new code, one from the new shard map
+    - Unknown or misconfigured tenants should be explicitly rejected, not silently routed to a default backend — deploying new tenants without updating the routing map causes silent misrouting
+    pre_deploy_checklist:
+    - Verify that new backend instances are registered in the routing map and reachable before directing tenant traffic
+    - Test routing fallback behavior for unknown tenants in staging
+    - Confirm routing cache invalidation fires correctly after deploying new tenant mappings
+    - Validate tenant extraction from subdomains and headers after any load balancer or gateway changes
+    - Coordinate shard rebalancing separately from application deployments to avoid compounding routing changes

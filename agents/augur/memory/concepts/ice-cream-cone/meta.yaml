@@ -1,0 +1,76 @@
+schema: augur-concept-meta/v2
+concept: ice-cream-cone
+kind: anti-pattern
+summary: Ice Cream Cone anti-pattern
+taxonomy:
+  type: anti-pattern
+  categories: []
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+traits:
+  graphable: false
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: does-the-e2e-or-integration-test-directory-contain-significantly
+    prompt: Does the e2e or integration test directory contain significantly more tests than the unit test directory?
+    weight: 3
+    signals:
+    - test/e2e larger than test/unit
+    - more integration files than unit files
+    - inverted test count
+  - id: is-ci-runtime-dominated-by-integration-or-end-to-end-tests-takin
+    prompt: Is CI runtime dominated by integration or end-to-end tests taking 20+ minutes?
+    weight: 3
+    signals:
+    - CI takes 30+ minutes
+    - test runtime dominated by e2e
+    - slow pipeline from integration tests
+  - id: do-test-fixtures-primarily-spin-up-full-application-stacks-rathe
+    prompt: Do test fixtures primarily spin up full application stacks rather than isolating individual units?
+    weight: 2
+    signals:
+    - Docker Compose in test setup
+    - full stack test fixture
+    - conftest spins up services
+  - id: are-there-many-selenium-playwright-or-cypress-tests-with-few-cor
+    prompt: Are there many Selenium, Playwright, or Cypress tests with few corresponding unit tests for the same logic?
+    weight: 1
+    signals:
+    - Playwright tests without unit tests
+    - Cypress covering business logic
+    - browser tests for validation

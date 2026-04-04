@@ -1,13 +1,14 @@
 # Agents
 
-Four specialized agents, each with a distinct role and exclusive authority over its domain.
+Five specialized agents, each with a distinct role and exclusive authority over its domain.
 
-| Agent | Role | Kords provided |
-|-------|------|---------------|
-| [deployer](deployer/) | Infrastructure operations — deployments, cluster management, kubectl | `deployer-default` |
-| [designer](designer/) | Architecture review and pattern authority | `designer-default`, `pattern-review` |
-| [sauron](sauron/) | Monitoring, observability, and code validation | `sauron-default`, `monitoring-impact` |
-| [scribe](scribe/) | Documentation gate and runtime linker | `scribe-default`, `create-kord`, `onboard`, `remember`, `sanitize` |
+| Agent | Role |
+|-------|------|
+| [charon](charon/) | Infrastructure operations — deployments, cluster management, kubectl |
+| [augur](augur/) | Architecture review, pattern authority, and design analysis |
+| [sauron](sauron/) | Monitoring, observability, and diagnostics |
+| [alfred](alfred/) | Profile/config, credentials, overlays, and environment setup |
+| [warden](warden/) | Security scanning, secret detection, and credential hygiene |
 
 ## Agent Structure
 
@@ -22,6 +23,6 @@ Each agent directory contains:
 
 ## How Agents Interact
 
-Agents communicate through **kords** — contracts that define a provider, requester, mode, and response format. Any agent can consult another by invoking `/kord <question>`, which routes to the appropriate provider based on the contract.
+Agents communicate through delegated tasks and shared filesystem artifacts. The workstation orchestrator routes work to the correct specialist and preserves domain boundaries.
 
-Guards in [hooks/](../hooks/) enforce domain boundaries — deployer owns kubectl, sauron owns Grafana, scribe owns markdown and memory paths.
+Guards in [hooks/](../hooks/) enforce domain boundaries — charon owns kubectl and deployment operations, sauron owns Grafana/monitoring surfaces, and specialized agents own their scoped files and outputs.

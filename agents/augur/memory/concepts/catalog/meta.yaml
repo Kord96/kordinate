@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: catalog
+kind: domain-model
+summary: Catalog and inventory pattern for product management and stock tracking
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - commerce
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-product-variant-sku-hierarchy-modeling-purchasable-it
+    prompt: Is there a Product/Variant/SKU hierarchy modeling purchasable items with attributes?
+    weight: 3
+    signals:
+    - Product model with Variant children
+    - SKU identifiers on variants
+    - variant attributes like size and color
+  - id: is-inventory-or-stock-tracked-with-quantity-management-and-avail
+    prompt: Is inventory or stock tracked with quantity management and availability checks?
+    weight: 3
+    signals:
+    - stock or inventory model
+    - quantity_on_hand field
+    - stock reservation on purchase
+  - id: are-pricing-rules-or-price-models-defined-separately-from-produc
+    prompt: Are pricing rules or price models defined separately from product data?
+    weight: 2
+    signals:
+    - Price model with currency and amount
+    - pricing rule evaluation
+    - discount or promotion models
+  - id: is-there-a-cart-or-line-item-model-aggregating-selected-products
+    prompt: Is there a cart or line-item model aggregating selected products for purchase?
+    weight: 1
+    signals:
+    - Cart or CartItem model
+    - line_item with quantity and price
+    - cart total calculation

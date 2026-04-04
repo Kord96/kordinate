@@ -1,0 +1,80 @@
+schema: augur-concept-meta/v2
+concept: block-content
+kind: domain-model
+summary: Block-based content model for structured rich text editing
+taxonomy:
+  type: domain-model
+  categories:
+  - data
+  - content
+  legacy:
+    type: pattern
+    category: domain-model
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-content-structured-as-typed-blocks-with-a-defined-schema-rath
+    prompt: Is content structured as typed blocks with a defined schema rather than raw HTML?
+    weight: 3
+    signals:
+    - Block model with block_type field
+    - typed content units in JSON structure
+    - block schema definition
+  - id: do-blocks-form-a-nested-hierarchy-with-children-arrays-supportin
+    prompt: Do blocks form a nested hierarchy with children arrays supporting composition?
+    weight: 3
+    signals:
+    - children array on block nodes
+    - recursive block nesting
+    - tree structure in content model
+  - id: is-a-structured-editor-framework-prosemirror-slate-tiptap-used-f
+    prompt: Is a structured editor framework (ProseMirror, Slate, Tiptap) used for editing?
+    weight: 2
+    signals:
+    - ProseMirror or Slate imports
+    - Tiptap editor configuration
+    - Editor.js tool setup
+  - id: can-the-block-content-be-rendered-to-multiple-output-formats-fro
+    prompt: Can the block content be rendered to multiple output formats from a single source?
+    weight: 1
+    signals:
+    - block-to-HTML renderer
+    - block-to-markdown converter
+    - cross-platform rendering from block JSON

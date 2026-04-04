@@ -1,0 +1,112 @@
+schema: augur-concept-meta/v2
+concept: blue-green
+kind: pattern
+summary: Blue-Green Deployment architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - deployment
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - monitoring.md
+  - deployment.md
+traits:
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-there-two-parallel-identical-environments-blue-green-or-acti
+    prompt: Are there two parallel, identical environments (blue/green or active/standby) with only one receiving production traffic at a time?
+    weight: 3
+    signals:
+    - dual environments
+    - blue/green labels
+    - active/standby deployment pair
+  - id: is-there-an-atomic-traffic-switch-mechanism-dns-load-balancer-se
+    prompt: Is there an atomic traffic switch mechanism (DNS, load balancer, service selector) that cuts over from one environment to the other?
+    weight: 3
+    signals:
+    - traffic switch
+    - LB target group swap
+    - service selector toggle
+  - id: is-the-standby-environment-validated-with-health-checks-or-smoke
+    prompt: Is the standby environment validated with health checks or smoke tests before receiving production traffic?
+    weight: 2
+    signals:
+    - pre-switch health check
+    - smoke test on standby
+    - validation before cutover
+  - id: can-traffic-be-reverted-to-the-previous-environment-as-a-rollbac
+    prompt: Can traffic be reverted to the previous environment as a rollback without redeployment?
+    weight: 2
+    signals:
+    - instant rollback
+    - switch back to previous env
+    - revert traffic without redeploy
+analysis:
+  monitoring:
+    summary: Track health of both environments and switch-over success metrics.
+    metrics:
+    - name: deployment_active_environment
+      kind: gauge
+      description: which environment (blue/green) is currently live
+    - name: deployment_switch_duration_seconds
+      kind: histogram
+      description: time to complete traffic cutover
+    - name: deployment_rollback_total
+      kind: counter
+      description: rollbacks triggered after switch
+    - name: environment_health_status
+      kind: gauge
+      description: readiness of each environment (0=unhealthy, 1=healthy)
+    alerts:
+    - Idle environment health degradation (standby must stay healthy for rollback)
+    - Error rate spike immediately after traffic switch
+    - Switch duration exceeding expected window
+  deployment:
+    summary: Maintain two identical environments; deploy to the idle one, verify, then switch traffic atomically.
+    rollout_implications:
+    - Traffic switch is atomic — all users move at once, no gradual rollout
+    - Database migrations must be backward-compatible since both environments share the data layer
+    - Keep the old environment running post-switch as an instant rollback target
+    pre_deploy_checklist:
+    - Verify the idle environment mirrors production configuration (env vars, secrets, feature flags)
+    - Run smoke tests against the idle environment before switching traffic
+    - Confirm database schema compatibility between both application versions

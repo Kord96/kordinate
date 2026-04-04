@@ -1,0 +1,126 @@
+schema: augur-concept-meta/v2
+concept: timeout
+kind: pattern
+summary: Timeout architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - resilience
+  - integration
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-external-calls-http-database-grpc-have-explicit-timeout-param
+    prompt: Do external calls (HTTP, database, gRPC) have explicit timeout parameters set rather than relying on framework defaults?
+    weight: 3
+    signals:
+    - timeout= parameter on calls
+    - context.WithTimeout
+    - connect_timeout and read_timeout configured
+  - id: are-timeout-errors-caught-and-handled-distinctly-from-other-fail
+    prompt: Are timeout errors caught and handled distinctly from other failure types with specific error handling logic?
+    weight: 2
+    signals:
+    - TimeoutError handling
+    - DeadlineExceeded catch block
+    - timeout-specific error path
+  - id: do-timeouts-propagate-through-the-call-chain-with-downstream-dea
+    prompt: Do timeouts propagate through the call chain with downstream deadlines shorter than upstream deadlines?
+    weight: 3
+    signals:
+    - deadline propagation
+    - downstream timeout shorter than upstream
+    - context deadline forwarding
+  - id: are-timeout-values-configurable-through-external-configuration-r
+    prompt: Are timeout values configurable through external configuration rather than hardcoded as literal numbers?
+    weight: 1
+    signals:
+    - timeout from config
+    - configurable timeout values
+    - no hardcoded timeout literals
+analysis:
+  testing:
+    summary: '# Testing - Test that every external call (HTTP, DB, gRPC, message broker) has an explicit timeout set - Simulate slow dependencies and verify that calls time out within the configured window - Test timeout error handling: timeout errors should be caught and handled distinctly from other failures - Verify deadline propagation across service boundaries — downstream timeout must be shorter than upstream - Test that connection timeouts and read/write timeouts are configured separately - Assert that timeout values are configurable, not hardcoded literals in the source - Test behavior when a deadline expires mid-call: verify cleanup and resource release - Integration test the interaction between timeouts, retries, and circuit breakers'
+  monitoring:
+    summary: Track timeout rates per dependency and monitor latency relative to configured thresholds.
+    metrics:
+    - name: timeout_errors_total
+      kind: counter
+      description: timeout occurrences partitioned by dependency and timeout type (connect, read, write)
+    - name: dependency_latency_seconds
+      kind: histogram
+      description: request latency per dependency with configured timeout value as reference
+    - name: timeout_deadline_remaining_seconds
+      kind: histogram
+      description: remaining deadline at each service hop, detects tight propagation
+    - name: timeout_unconfigured_calls_total
+      kind: counter
+      description: external calls detected with no explicit timeout set (silent hang risk)
+    - name: timeout_rate_ratio
+      kind: gauge
+      description: fraction of requests timing out per dependency over a sliding window
+    alerts:
+    - Timeout rate spike on any dependency (upstream latency or capacity degradation)
+    - Latency p99 approaching the configured timeout value (near-miss, threshold too tight)
+    - Deadline already expired or near-zero when reaching a downstream service (propagation too tight)
+    - External calls detected without explicit timeout configuration (silent hang risk)
+    - Connection timeout and read/write timeout errors conflated in the same metric (mask different root causes)
+  deployment:
+    summary: Review timeout values whenever network topology or dependencies change, and keep timeout configuration decoupled from feature deployments.
+    rollout_implications:
+    - Adding a new downstream dependency without adjusting the caller's timeout can cause the caller to time out before the dependency responds under normal load
+    - During rolling deployments, old and new pods may have different timeout values — if the new code has a shorter timeout, it may start failing on calls that the old code tolerates
+    - Timeout changes interact with circuit breaker and retry configurations — lowering a timeout without adjusting retry count can cause more retries within the same wall-clock budget, compounding load on the dependency
+    - Deploying timeout changes alongside feature changes makes it impossible to isolate whether errors are from the new feature or the new timeout value
+    - Deadline propagation must be consistent across the call chain after a deploy — if a parent service tightens its deadline but a child service is not yet redeployed, the child may outlive the parent's deadline
+    pre_deploy_checklist:
+    - Confirm downstream service timeouts are shorter than the upstream caller's timeout at every hop in the call chain
+    - Verify timeout values are configurable via environment or config, not requiring a code deploy to change
+    - Test timeout behavior in staging under realistic latency conditions
+    - Review interaction between timeout, retry, and circuit breaker settings to avoid compounding failures
+    - Monitor timeout error rates during and after deployment to catch misconfigured values early

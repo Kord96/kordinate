@@ -1,0 +1,93 @@
+schema: augur-concept-meta/v2
+concept: entity-component-system
+kind: pattern
+summary: Entity-Component-System (ECS) architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - architectural
+  - realtime
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-entities-represented-as-plain-integer-ids-or-opaque-handles-
+    prompt: Are entities represented as plain integer IDs or opaque handles rather than class hierarchies?
+    weight: 3
+    signals:
+    - entity IDs as integers or u32/u64 handles
+    - no inheritance hierarchy for game objects
+  - id: are-components-pure-data-structs-with-no-behavior-or-methods
+    prompt: Are components pure data structs with no behavior or methods?
+    weight: 3
+    signals:
+    - Position, Velocity, Health as plain data structs
+    - components contain only fields, no logic
+  - id: do-systems-iterate-over-entities-by-querying-for-specific-compon
+    prompt: Do systems iterate over entities by querying for specific component combinations?
+    weight: 2
+    signals:
+    - query() or each() over entities matching component sets
+    - system function declares required components
+  - id: is-there-a-central-world-or-registry-that-owns-all-entities-and-
+    prompt: Is there a central World or Registry that owns all entities and components?
+    weight: 2
+    signals:
+    - World or Registry class with add_component/spawn
+    - single owner of entity-component relationships
+analysis:
+  testing:
+    summary: Test systems in isolation with minimal component sets and verify that entity composition produces correct emergent behavior.
+    unit:
+    - Test each system with a single entity carrying the minimum required components and assert the expected state mutation
+    - Verify that systems skip entities missing required components — no errors, just no processing
+    - 'Test component addition and removal: adding a component mid-frame should include the entity in the relevant system next tick'
+    - Assert that systems with ordering dependencies process in the declared order
+    integration:
+    - Compose entities with multiple components and verify interacting systems produce correct combined behavior
+    - 'Test entity lifecycle: create, add components, process through systems, remove components, destroy — no dangling references'
+    - Verify that archetype/query caches update correctly when entity composition changes dynamically
+    additional_sections:
+    - title: Performance Tests
+      items:
+      - Benchmark system iteration over large entity counts to catch O(n^2) regressions in query or iteration logic

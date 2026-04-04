@@ -1,0 +1,83 @@
+schema: augur-concept-meta/v2
+concept: soft-delete
+kind: pattern
+summary: Soft Delete architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-records-marked-with-a-deleted-at-timestamp-or-is-deleted-fla
+    prompt: Are records marked with a deleted_at timestamp or is_deleted flag instead of being physically removed?
+    weight: 3
+    signals:
+    - deleted_at column NULL for active records
+    - is_deleted boolean flag on table
+    - paranoid mode or SoftDeletes trait
+  - id: do-default-query-scopes-automatically-exclude-soft-deleted-recor
+    prompt: Do default query scopes automatically exclude soft-deleted records from reads?
+    weight: 3
+    signals:
+    - WHERE deleted_at IS NULL in default scope
+    - global query filter for active records
+    - default manager excludes deleted
+  - id: is-there-a-restore-or-undelete-mechanism-for-soft-deleted-record
+    prompt: Is there a restore or undelete mechanism for soft-deleted records?
+    weight: 2
+    signals:
+    - restore() method on model
+    - undelete operation available
+    - set deleted_at back to NULL
+  - id: is-there-a-retention-policy-with-scheduled-hard-delete-for-recor
+    prompt: Is there a retention policy with scheduled hard-delete for records past the retention period?
+    weight: 1
+    signals:
+    - purge job for old soft-deleted records
+    - hard delete after retention period
+    - scheduled cleanup of deleted data
+analysis:
+  testing:
+    summary: '# Testing - Test that default query scopes exclude soft-deleted records without any explicit filter - Verify that explicit queries can retrieve soft-deleted records when needed (admin, audit, restore) - Test unique constraint behavior: re-creating a record with the same natural key as a soft-deleted one - Test cascading soft delete: deleting a parent soft-deletes all children consistently - Verify the restore/undelete operation correctly reinstates the record and its relationships - Test the purge job: records past the retention period are hard-deleted and no longer accessible - Assert that foreign key relationships handle soft-deleted parents correctly (no orphaned active children)'

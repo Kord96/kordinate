@@ -1,0 +1,115 @@
+schema: augur-concept-meta/v2
+concept: cache-stampede-prevention
+kind: pattern
+summary: Cache Stampede Prevention architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+  - resilience
+  - concurrency
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+traits:
+  testable: true
+  observable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-lock-or-mutex-that-ensures-only-one-caller-recomputes
+    prompt: Is there a lock or mutex that ensures only one caller recomputes a cache entry while others wait?
+    weight: 3
+    signals:
+    - singleflight
+    - mutex around cache miss
+    - lock-then-compute pattern
+  - id: do-concurrent-requests-for-the-same-cache-key-get-coalesced-so-t
+    prompt: Do concurrent requests for the same cache key get coalesced so that only one fetch executes?
+    weight: 3
+    signals:
+    - request coalescing
+    - deduplicated in-flight requests
+    - shared future for same key
+  - id: is-there-a-distributed-lock-mechanism-e-g-setnx-used-during-cach
+    prompt: Is there a distributed lock mechanism (e.g., SETNX) used during cache population?
+    weight: 2
+    signals:
+    - SETNX for cache lock
+    - distributed mutex on miss
+    - redis lock for recompute
+  - id: is-stale-while-revalidate-or-probabilistic-early-recomputation-u
+    prompt: Is stale-while-revalidate or probabilistic early recomputation used to avoid synchronous stampedes?
+    weight: 2
+    signals:
+    - stale-while-revalidate
+    - probabilistic early expiry
+    - XFetch algorithm
+analysis:
+  testing:
+    summary: Verify that concurrent cache misses for the same key produce exactly one origin fetch.
+    unit:
+    - Expire a cache key and send N concurrent requests — assert only one origin fetch occurs
+    - Verify all N waiters receive the same recomputed value once the single fetch completes
+    - 'Test lock timeout: if the recomputing request hangs, waiters eventually fall through or receive an error'
+    integration:
+    - Wire against real cache and origin, expire a hot key, and verify origin query count equals 1 under load
+    - 'Test probabilistic early recompute (XFetch): verify refresh happens before TTL, avoiding any stampede window'
+    failure_injection:
+    - Kill the holder of the recompute lock mid-fetch and verify waiters recover rather than deadlock
+  monitoring:
+    summary: Track lock contention, origin load during recomputation, and coalesced request counts.
+    metrics:
+    - name: cache_recompute_total
+      kind: counter
+      description: actual origin fetches (should be 1 per expired key, not N)
+    - name: cache_coalesced_requests_total
+      kind: counter
+      description: requests that waited on another's recomputation
+    - name: cache_lock_wait_seconds
+      kind: histogram
+      description: time waiters spend blocked on the recompute lock
+    - name: cache_early_recompute_total
+      kind: counter
+      description: probabilistic early refreshes (if using XFetch)
+    alerts:
+    - Multiple concurrent recomputes for the same key (stampede prevention failure)
+    - Lock wait time exceeding acceptable latency threshold
+    - Origin load spike correlating with cache expiration events

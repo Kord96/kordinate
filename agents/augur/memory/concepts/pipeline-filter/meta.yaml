@@ -1,0 +1,100 @@
+schema: augur-concept-meta/v2
+concept: pipeline-filter
+kind: pattern
+summary: Pipeline/Filter architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+  - data
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-an-ordered-chain-of-transform-functions-where-the-outpu
+    prompt: Is there an ordered chain of transform functions where the output of one feeds the input of the next?
+    weight: 3
+    signals:
+    - pipe() chaining transforms
+    - stage output feeds next input
+    - sequential filter chain
+  - id: does-each-stage-have-a-uniform-interface-and-operate-independent
+    prompt: Does each stage have a uniform interface and operate independently without shared hidden state?
+    weight: 3
+    signals:
+    - same input/output type per stage
+    - no shared mutable state between stages
+    - stages testable in isolation
+  - id: is-the-pipeline-order-explicit-and-configurable-rather-than-hard
+    prompt: Is the pipeline order explicit and configurable rather than hardcoded in scattered locations?
+    weight: 2
+    signals:
+    - pipeline defined as ordered list
+    - addStage() registration
+    - stage order in config
+  - id: are-stages-reusable-across-different-pipelines-without-modificat
+    prompt: Are stages reusable across different pipelines without modification?
+    weight: 2
+    signals:
+    - stage used in multiple pipelines
+    - generic transform function
+    - composable filter
+analysis:
+  testing:
+    summary: Test each stage in isolation, then verify correct data flow and error propagation through the full pipeline.
+    unit:
+    - Test each filter/stage independently with known inputs and verify the output matches the expected transformation
+    - Verify stages conform to the uniform interface contract (same input/output shape or protocol)
+    - 'Pass edge-case inputs through individual stages: empty collections, null fields, maximum-size payloads'
+    - Assert stages are pure (no hidden shared state) by running the same input twice and comparing outputs
+    additional_sections:
+    - title: Pipeline Tests
+      items:
+      - Compose the full pipeline and verify end-to-end output for a representative input
+      - Remove a stage from the pipeline and verify the remaining stages still function (no implicit coupling)
+      - Insert a new stage at different positions and verify it integrates without breaking adjacent stages
+      - 'Test error propagation: inject a failure in a mid-pipeline stage and verify it surfaces correctly (not swallowed)'
+    - title: Performance Tests
+      items:
+      - Measure throughput of the full pipeline and identify bottleneck stages
+      - Test with large inputs to verify no stage buffers the entire dataset in memory when streaming is expected

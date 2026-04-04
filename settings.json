@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$KORDINATE_HOME/team/hooks/kord-guard.sh"
+            "command": "$KORDINATE_HOME/hooks/guard.sh"
           }
         ]
       }

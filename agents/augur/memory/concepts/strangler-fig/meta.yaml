@@ -1,0 +1,100 @@
+schema: augur-concept-meta/v2
+concept: strangler-fig
+kind: pattern
+summary: Strangler Fig architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - lifecycle
+  - architectural
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - deployment.md
+traits:
+  testable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-routing-layer-splitting-traffic-between-legacy-and-re
+    prompt: Is there a routing layer splitting traffic between legacy and replacement systems by feature?
+    weight: 3
+    signals:
+    - reverse proxy routing to old vs new service
+    - feature flag controlling which system handles request
+    - path-based routing between legacy and replacement
+  - id: can-each-migrated-feature-be-independently-toggled-back-to-legac
+    prompt: Can each migrated feature be independently toggled back to legacy if issues arise?
+    weight: 3
+    signals:
+    - per-feature rollback toggle
+    - migration flag reverts to legacy system
+    - independent cutover per endpoint
+  - id: is-data-consistency-maintained-during-dual-write-periods-with-re
+    prompt: Is data consistency maintained during dual-write periods with reconciliation?
+    weight: 2
+    signals:
+    - dual-write to old and new stores
+    - reconciliation logic comparing systems
+    - event replay for data consistency
+  - id: is-migration-progress-measurable-with-a-defined-end-state-for-le
+    prompt: Is migration progress measurable with a defined end state for legacy decommission?
+    weight: 1
+    signals:
+    - percentage of traffic migrated tracked
+    - feature migration checklist
+    - plan for legacy system removal
+analysis:
+  testing:
+    summary: '# Testing - Test routing layer toggle: verify requests route to legacy or new system based on feature flag state - Test rollback by toggling a migrated feature back to legacy and confirming correct behavior - Verify data consistency during dual-write periods with reconciliation tests comparing both stores - Test the anti-corruption layer translating between old and new data models in both directions - Integration test each migrated feature against both the legacy and new system to confirm parity - Test that the legacy system is not modified — the strangler wraps it without code changes - Load test the routing layer to verify it does not become a bottleneck as more features are migrated - Test the end state: all features migrated, legacy fully removed, routing layer decommissioned'
+  deployment:
+    summary: Deploy the routing layer first and migrate features one at a time, always preserving the ability to fall back to the legacy system.
+    rollout_implications:
+    - The routing layer (proxy, gateway, feature flag) must be deployed and stable before migrating any feature — it is the control surface for the entire migration
+    - Each migrated feature should be deployed, traffic-shifted, and verified independently — migrating multiple features simultaneously makes it impossible to isolate which one caused a regression
+    - Dual-write periods require both old and new data stores to receive writes simultaneously — if one side fails during a deploy, data diverges silently without reconciliation checks
+    - Rolling back a migrated feature means switching the route back to legacy — if the legacy code path has degraded or been partially decommissioned, rollback may not work cleanly
+    - The strangler proxy itself accumulates routing rules over time — deploying changes to it becomes increasingly risky as it grows in complexity
+    pre_deploy_checklist:
+    - Verify that each migrated feature has an independent rollback toggle to fall back to legacy
+    - Run reconciliation checks during dual-write periods to detect data drift between old and new stores
+    - Confirm the legacy system is still functional for any features that may need to be rolled back
+    - 'Track migration progress as a deployment metric: percentage of traffic or features on the new system'
+    - Define a decommissioning plan for the legacy system — do not let the strangler proxy become permanent infrastructure

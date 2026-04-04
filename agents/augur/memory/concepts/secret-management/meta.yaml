@@ -1,0 +1,91 @@
+schema: augur-concept-meta/v2
+concept: secret-management
+kind: pattern
+summary: Secret Management architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+  - infrastructure
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: are-secrets-sourced-from-a-dedicated-store-rather-than-hardcoded
+    prompt: Are secrets sourced from a dedicated store rather than hardcoded in source code or config files?
+    weight: 3
+    signals:
+    - Vault integration or pass store
+    - external-secrets operator in K8s
+    - secretKeyRef in manifests not inline value
+  - id: is-secret-rotation-possible-without-code-changes-or-redeployment
+    prompt: Is secret rotation possible without code changes or redeployment?
+    weight: 2
+    signals:
+    - rotation policy configured
+    - secrets fetched at runtime from store
+    - dynamic secret refresh without restart
+  - id: are-secrets-excluded-from-version-control-with-scanning-enforcem
+    prompt: Are secrets excluded from version control with scanning enforcement?
+    weight: 2
+    signals:
+    - .env in .gitignore
+    - gitleaks or trufflehog in CI
+    - secret scanning blocking commits
+  - id: is-access-to-secrets-auditable-with-logging-of-who-accessed-what
+    prompt: Is access to secrets auditable with logging of who accessed what?
+    weight: 1
+    signals:
+    - audit log on secret access
+    - Vault audit backend enabled
+    - access tracking for credentials
+  - id: do-ci-cd-pipelines-avoid-exposing-secret-values-in-build-output
+    prompt: Do CI/CD pipelines avoid exposing secret values in build output?
+    weight: 1
+    signals:
+    - secrets masked in CI logs
+    - no echo of credential values
+    - build output redacts sensitive vars
+analysis:
+  testing:
+    summary: '# Testing - Scan the entire codebase and git history for hardcoded secrets using tools like gitleaks or trufflehog - Test that manifests and config files reference secrets via `secretKeyRef`, never inline `value` - Verify that CI/CD pipelines do not log or expose secret values in build output (grep build logs) - Test secret rotation by swapping a credential and confirming the application picks up the new value - Assert that `.env` files are in `.gitignore` and only `.env.example` with placeholder values is committed - Test that application startup fails gracefully with a clear error when a required secret is missing - Verify audit logging captures secret access events (who accessed which secret and when)'

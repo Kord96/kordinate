@@ -1,0 +1,129 @@
+schema: augur-concept-meta/v2
+concept: sharding
+kind: pattern
+summary: Sharding architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - data
+  - infrastructure
+detectors:
+  ast_grep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: null
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+  - monitoring.md
+  - deployment.md
+traits:
+  testable: true
+  observable: true
+  distributed: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-there-a-shard-router-that-deterministically-maps-keys-to-spec
+    prompt: Is there a shard router that deterministically maps keys to specific database connections or partitions?
+    weight: 3
+    signals:
+    - consistent hashing or hash-ring implementation
+    - shard key derivation logic
+    - shard router mapping keys to connections
+  - id: are-shard-keys-defined-on-models-or-tables-to-direct-data-placem
+    prompt: Are shard keys defined on models or tables to direct data placement?
+    weight: 3
+    signals:
+    - shard_key or partition_key field
+    - tenant_id used for shard routing
+    - multiple database connection configs per shard
+  - id: are-cross-shard-queries-identified-and-handled-explicitly
+    prompt: Are cross-shard queries identified and handled explicitly?
+    weight: 2
+    signals:
+    - scatter-gather for cross-shard reads
+    - denormalization to avoid cross-shard joins
+    - explicit handling of cross-partition queries
+  - id: is-there-a-rebalancing-strategy-for-adding-or-removing-shards-wi
+    prompt: Is there a rebalancing strategy for adding or removing shards without downtime?
+    weight: 1
+    signals:
+    - shard split tooling
+    - resharding migration scripts
+    - live rebalancing without service interruption
+analysis:
+  testing:
+    summary: '# Testing - Test shard key routing: verify the same key always resolves to the same shard deterministically - Test data distribution with synthetic keys to confirm even spread across shards (no hot shard) - Verify cross-shard queries return correct results via scatter-gather or denormalization paths - Test shard addition and removal: add a new shard, rebalance, and verify data accessibility - Test shard router behavior when a shard is unreachable (timeout, fallback, or clear error) - Assert that shard routing is centralized — no duplicate routing logic across services - Test concurrent writes to different shards to verify connection pool isolation - Load test with realistic shard key distributions to detect performance cliffs on skewed data'
+  monitoring:
+    summary: Track data distribution, per-shard performance, and cross-shard query patterns to maintain balanced throughput.
+    metrics:
+    - name: shard_data_size_bytes
+      kind: gauge
+      description: data volume per shard, surfaces distribution skew
+    - name: shard_query_latency_seconds
+      kind: histogram
+      description: per-shard query latency to detect hot shards
+    - name: shard_query_rate
+      kind: counter
+      description: queries per second per shard, reveals load imbalance
+    - name: shard_connection_pool_utilization
+      kind: gauge
+      description: active connections as a fraction of pool capacity per shard
+    - name: shard_cross_shard_queries_total
+      kind: counter
+      description: scatter-gather operations indicating shard key misalignment
+    - name: shard_rebalance_duration_seconds
+      kind: histogram
+      description: time spent on shard rebalancing operations
+    alerts:
+    - Single shard holding disproportionately more data than peers (skewed distribution)
+    - Per-shard latency or throughput diverging significantly from the cluster average (hot shard)
+    - Connection pool approaching exhaustion on any individual shard
+    - High cross-shard query rate (shard key does not match access patterns)
+    - Shard health check failing (affects an entire partition of the user base)
+  deployment:
+    summary: Synchronize shard map changes with application deployments to prevent routing mismatches while old and new code coexist.
+    rollout_implications:
+    - Shard routing changes (new shard map) must be deployed before adding or removing shard nodes — the application must know where to route before the topology changes
+    - During rolling deployments, old and new application code coexist — the shard router must be backward-compatible so both versions route correctly
+    - Rebalancing shards while a rollout is in progress creates two simultaneous sources of instability — data is migrating while the application code is changing
+    - Adding shards without updating connection pool configuration causes new shards to be unreachable — connection pools must match the new shard count before enabling traffic
+    - Dual-read during migration (reading from both old and new shard locations) doubles read load temporarily — capacity must account for this
+    pre_deploy_checklist:
+    - Verify connection pool configuration matches the new shard count
+    - Test rebalancing in staging with production-like data volumes before executing in production
+    - Confirm the shard router handles both old and new shard maps during the rolling window
+    - Prepare a rollback plan for the shard map that is independent of the application rollback
+    - Monitor query error rates per shard during topology changes

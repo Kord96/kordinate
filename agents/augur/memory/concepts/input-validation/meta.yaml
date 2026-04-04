@@ -1,0 +1,97 @@
+schema: augur-concept-meta/v2
+concept: input-validation
+kind: pattern
+summary: Input Validation architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - security
+  - api
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: is-schema-validation-applied-at-api-boundaries-before-request-da
+    prompt: Is schema validation applied at API boundaries before request data reaches business logic?
+    weight: 3
+    signals:
+    - pydantic BaseModel on endpoint
+    - zod schema validation
+    - joi.validate on request
+  - id: do-validation-errors-return-specific-field-level-messages-indica
+    prompt: Do validation errors return specific field-level messages indicating what failed and why?
+    weight: 2
+    signals:
+    - field-level error response
+    - validation error details
+    - which field and constraint
+  - id: are-sql-queries-and-shell-commands-parameterized-rather-than-bui
+    prompt: Are SQL queries and shell commands parameterized rather than built with string concatenation?
+    weight: 3
+    signals:
+    - parameterized query with ?
+    - bind parameters $1
+    - no string concatenation for SQL
+  - id: is-validation-enforced-on-the-server-side-as-the-authoritative-c
+    prompt: Is validation enforced on the server side as the authoritative check, not relying solely on client-side validation?
+    weight: 1
+    signals:
+    - server-side validation
+    - not trusting client input
+    - re-validate on server
+analysis:
+  testing:
+    summary: Verify that all external input is validated at the boundary and rejected inputs produce clear errors.
+    unit:
+    - Submit valid input and assert it passes validation and reaches business logic
+    - Submit invalid input (missing fields, wrong types, out-of-range values) and assert rejection with field-level error messages
+    - 'Test boundary values: empty strings, max-length strings, zero, negative numbers, extremely large numbers'
+    integration:
+    - Send malformed requests (invalid JSON, wrong content type) and verify the API returns 400 with a descriptive error
+    - Validate that server-side validation rejects input even when client-side validation is bypassed
+    additional_sections:
+    - title: Injection Tests
+      items:
+      - Submit SQL injection payloads and verify parameterized queries prevent execution
+      - Submit XSS payloads in string fields and confirm output is sanitized or escaped
+      - Submit command injection strings and verify they are not interpreted by the shell

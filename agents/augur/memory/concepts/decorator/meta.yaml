@@ -1,0 +1,90 @@
+schema: augur-concept-meta/v2
+concept: decorator
+kind: pattern
+summary: Decorator/Wrapper architectural pattern
+taxonomy:
+  type: pattern
+  categories:
+  - design
+detectors:
+  ast_grep:
+    enabled: true
+    file: ast-grep.yaml
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    file: null
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+    - noisy_rule_match
+    - conflicting_evidence
+    - broad_match
+    - low_rule_confidence
+    - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+artifacts:
+  support_rules:
+    ast_grep: ast-grep.yaml
+    semgrep: null
+migration:
+  replaces:
+  - questions.yaml
+  - testing.md
+traits:
+  testable: true
+  graphable: true
+diagnostic_questions:
+  threshold: 6
+  questions:
+  - id: do-wrapper-classes-implement-the-same-interface-as-the-object-th
+    prompt: Do wrapper classes implement the same interface as the object they wrap?
+    weight: 3
+    signals:
+    - wrapper implements same interface or protocol
+    - delegates calls to wrapped object with added behavior
+  - id: is-behavior-added-before-or-after-delegating-to-the-wrapped-obje
+    prompt: Is behavior added before or after delegating to the wrapped object without altering its interface?
+    weight: 3
+    signals:
+    - logging or timing around delegated call
+    - pre/post processing with passthrough to inner object
+  - id: are-decorators-composable-through-nesting-each-adding-a-single-c
+    prompt: Are decorators composable through nesting, each adding a single concern?
+    weight: 2
+    signals:
+    - new AuthDecorator(new LoggingDecorator(service))
+    - middleware chain with single-responsibility wrappers
+  - id: is-the-wrapped-object-unaware-that-it-is-being-decorated
+    prompt: Is the wrapped object unaware that it is being decorated?
+    weight: 1
+    signals:
+    - no back-reference to decorator from wrapped object
+    - wrapped object has no decorator-specific code
+analysis:
+  testing:
+    summary: Test each decorator in isolation and verify that stacking multiple decorators composes behavior correctly.
+    unit:
+    - Test the decorator independently by wrapping a mock/stub of the inner component and asserting the added behavior
+    - Verify the decorator delegates to the wrapped component — calls pass through and return values are forwarded
+    - Assert that the decorator does not alter the interface contract (same inputs produce expected outputs plus the decoration)
+    - Test decorator with a null or no-op inner component to verify the decoration logic works even when the inner does nothing
+    additional_sections:
+    - title: Composition Tests
+      items:
+      - Stack multiple decorators and verify behaviors compose in the correct order (e.g., logging wraps caching wraps validation)
+      - Test that removing a decorator from the chain does not break the remaining decorators
+      - Verify that decorator ordering matters where expected — swapping order should produce observably different behavior
