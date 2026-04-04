@@ -145,9 +145,9 @@ That gives:
 - helper scripts match the new per-agent runtime model
 
 ### Still to do
-- add `BACKENDS.json` to agents that should run multiple backends
 - expose backend attribution in any downstream dashboards/log consumers that should compare model quality
 - decide whether reflection memory should automatically include backend attribution in saved notes
+- automate pass-store-to-runtime-secret reconciliation so Alfred-owned credentials flow into agent runtime without manual steps
 
 ## Files touched by this migration work
 

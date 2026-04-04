@@ -8,7 +8,7 @@
 # restoreToOriginalReplicaCount returns to minReplicas on trigger deactivation.
 # pollingInterval of 30s avoids hammering the Kafka API for lag metrics.
 # offsetResetPolicy: earliest makes first-message wake-up deterministic for zero-scaled agents.
-# activationLagThreshold: 1 ensures a single queued job can wake an idle agent.
+# activationLagThreshold: 0 ensures a single queued job wakes an idle agent immediately.
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
