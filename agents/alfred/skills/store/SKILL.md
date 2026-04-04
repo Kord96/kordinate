@@ -14,6 +14,7 @@ Store personal information managed by alfred. Agents call this via `/kord alfred
 |---------|--------|
 | `key <path> <value>` | Insert or update a pass store entry |
 | `config <yaml-path> <value>` | Update a field in config.yaml |
+| `profile <name> <yaml-or-json>` | Create or update one entry in `profile/model-profiles.yaml` |
 | `overlay <cluster> <namespace>` | Write or update a namespace overlay (content from stdin or subsequent message) |
 | `platform <env> scaling <agent> <min> <max> <cooldown>` | Update KEDA scaling parameters for one agent in the environment's scaling.yaml |
 
@@ -24,6 +25,7 @@ Store personal information managed by alfred. Agents call this via `/kord alfred
 2. **Store**:
    - `key` → run `pass insert -f <path>` with the value. Verify with `pass show <path>`.
    - `config` → update the specified YAML path in `$KORDINATE_HOME/profile/config.yaml`. Validate the result with the internal config validation procedure.
+   - `profile` → update the named entry in `$KORDINATE_HOME/profile/model-profiles.yaml`. Validate that required fields are present (`profile`, `model`, optional `base_url`, credential refs).
    - `overlay` → write to `$KORDINATE_HOME/profile/overlays/<cluster>/<namespace>/`. Create directories if needed. Validate kustomization.yaml if present.
    - `platform` → update the agent's entry in `$KORDINATE_HOME/profile/overlays/platform/<env>/scaling.yaml`. Set minReplicaCount to `<min>`, maxReplicaCount to `<max>`, cooldownPeriod to `<cooldown>`. Create the directory and file if they don't exist.
 

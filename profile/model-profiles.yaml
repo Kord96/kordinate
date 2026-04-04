@@ -1,0 +1,56 @@
+profiles:
+  opus-4.6:
+    profile: anthropic
+    model: claude-opus-4-6
+    credential_ref: kordinate/anthropic/api-key
+    notes: High-end Anthropic comparison candidate for deep architectural analysis.
+
+  gpt-5.4:
+    profile: openai
+    model: gpt-5.4
+    base_url: https://api.openai.com/v1
+    credential_ref: kordinate/charon/codex-api-key
+    notes: Standard OpenAI API candidate for comparison.
+
+  deepseek-chat:
+    profile: openai
+    model: deepseek-chat
+    base_url: https://api.deepseek.com
+    credential_ref: kordinate/deepseek/api-key
+    notes: Cheap default for clerical/config agents like Alfred.
+
+  deepseek-reasoner:
+    profile: openai
+    model: deepseek-reasoner
+    base_url: https://api.deepseek.com
+    credential_ref: kordinate/deepseek/api-key
+    notes: Stronger DeepSeek reasoning profile for analysis workloads.
+
+  codex-gpt-5.2:
+    profile: openai
+    model: gpt-5.2-codex
+    base_url: https://api.openai.com/v1
+    credential_ref: kordinate/charon/codex-api-key
+    account_id_ref: kordinate/charon/codex-account-id
+    notes: Operational Codex profile currently used by Charon.
+
+  fireworks-glm-5:
+    profile: openai
+    model: accounts/fireworks/models/glm-5
+    base_url: https://api.fireworks.ai/inference/v1
+    credential_ref: kordinate/fireworks/api-key
+    notes: Fireworks-hosted GLM-5 candidate for model comparison.
+
+  fireworks-deepseek-v3p2:
+    profile: openai
+    model: accounts/fireworks/models/deepseek-v3p2
+    base_url: https://api.fireworks.ai/inference/v1
+    credential_ref: kordinate/fireworks/api-key
+    notes: Fireworks-hosted DeepSeek V3.2 candidate for model comparison.
+
+  gemini-3.1-pro-preview:
+    profile: gemini
+    model: gemini-3.1-pro-preview
+    base_url: https://generativelanguage.googleapis.com/v1beta/openai
+    credential_ref: kordinate/google/gemini_api_key
+    notes: Gemini comparison candidate.

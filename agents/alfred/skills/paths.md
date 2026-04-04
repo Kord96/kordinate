@@ -6,9 +6,10 @@ Level 3 resource for get and store skills. Maps each domain to its storage locat
 |--------|------|--------|-------|
 | config | `$KORDINATE_HOME/profile/config.yaml` | YAML | Validate: required fields (name, nodes, namespaces), valid IPs, valid ports |
 | keys | `pass store` at `kordinate/` prefix | GPG-encrypted | Access via `pass show <path>`, insert via `pass insert -f <path>`. Never write plaintext. |
+| profiles | `$KORDINATE_HOME/profile/model-profiles.yaml` | YAML | Alfred-managed source of truth for reusable LLM/backend profile definitions |
 | overlays | `$KORDINATE_HOME/profile/overlays/<cluster>/<namespace>/` | Kustomize dirs | Each namespace has a `kustomization.yaml`. Created by charon, stored by alfred. |
 | platform | `$KORDINATE_HOME/profile/overlays/platform/<env>/` | Kustomize dirs | Per-environment agent pod scaling and resource limits. Created by charon, stored/validated/updated by alfred. |
-
+}},{
 ## Platform overlay contents
 
 Each environment directory under `profile/overlays/platform/<env>/` contains:
