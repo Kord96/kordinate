@@ -1,7 +1,11 @@
 ---
 name: alfred
 description: Profile, config, credentials, and overlay management — keeps the environment consistent and ready
-model: haiku
+profile: openai
+model: deepseek-chat
+base_url: https://api.deepseek.com
+backend_name: deepseek
+api_key_env: DEEPSEEK_API_KEY
 color: green
 memory: user
 tools:

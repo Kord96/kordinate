@@ -7,8 +7,8 @@
 # stabilizationWindowSeconds prevents rapid scale-up/down oscillation.
 # restoreToOriginalReplicaCount returns to minReplicas on trigger deactivation.
 # pollingInterval of 30s avoids hammering the Kafka API for lag metrics.
-# offsetResetPolicy: latest ignores stale/historical consumer lag.
-# activationLagThreshold: 5 avoids scaling from 0 on trivial lag spikes.
+# offsetResetPolicy: earliest makes first-message wake-up deterministic for zero-scaled agents.
+# activationLagThreshold: 1 ensures a single queued job can wake an idle agent.
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -36,8 +36,8 @@ spec:
         consumerGroup: agent-augur
         topic: jobs.augur
         lagThreshold: "1"
-        activationLagThreshold: "1"
-        offsetResetPolicy: latest
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -65,8 +65,8 @@ spec:
         consumerGroup: agent-charon
         topic: jobs.charon
         lagThreshold: "1"
-        activationLagThreshold: "1"
-        offsetResetPolicy: latest
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -94,8 +94,8 @@ spec:
         consumerGroup: agent-warden
         topic: jobs.warden
         lagThreshold: "1"
-        activationLagThreshold: "1"
-        offsetResetPolicy: latest
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -123,8 +123,8 @@ spec:
         consumerGroup: agent-sauron
         topic: jobs.sauron
         lagThreshold: "1"
-        activationLagThreshold: "1"
-        offsetResetPolicy: latest
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -152,5 +152,5 @@ spec:
         consumerGroup: agent-alfred
         topic: jobs.alfred
         lagThreshold: "1"
-        activationLagThreshold: "1"
-        offsetResetPolicy: latest
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
