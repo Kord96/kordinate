@@ -36,6 +36,11 @@ spec:
               value: gpt-5.2-codex
             - name: CLAUDE_CODE_USE_OPENAI
               value: "1"
+            - name: FIRECRAWL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: firecrawl-api
+                  key: api-key
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -70,6 +75,11 @@ spec:
               value: deepseek-reasoner
             - name: CLAUDE_CODE_USE_OPENAI
               value: "1"
+            - name: FIRECRAWL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: firecrawl-api
+                  key: api-key
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -104,3 +114,8 @@ spec:
               value: deepseek-chat
             - name: CLAUDE_CODE_USE_OPENAI
               value: "1"
+            - name: FIRECRAWL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: firecrawl-api
+                  key: api-key
