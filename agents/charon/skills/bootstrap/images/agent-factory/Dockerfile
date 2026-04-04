@@ -20,13 +20,13 @@ RUN cd /app/daemon && npm install --production \
     && cd /app/scribe && npm install --production \
     && cd /app/router && npm install --production
 
-# Claude Code CLI
+# OpenClaude CLI
 USER claude
 RUN mkdir -p /home/claude/.npm-global \
     && npm config set prefix /home/claude/.npm-global
 ENV NPM_CONFIG_PREFIX=/home/claude/.npm-global \
     PATH="/home/claude/.npm-global/bin:$PATH"
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @gitlawb/openclaude
 
 WORKDIR /home/claude
 

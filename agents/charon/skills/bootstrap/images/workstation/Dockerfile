@@ -44,8 +44,8 @@ RUN mkdir -p /home/claude/.npm-global \
 ENV NPM_CONFIG_PREFIX=/home/claude/.npm-global \
     PATH="/home/claude/.npm-global/bin:$PATH"
 
-# Claude Code (installed as claude user into user prefix)
-RUN npm install -g @anthropic-ai/claude-code
+# OpenClaude (installed as claude user into user prefix)
+RUN npm install -g @gitlawb/openclaude
 
 USER root
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

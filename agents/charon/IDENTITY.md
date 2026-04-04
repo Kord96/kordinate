@@ -3,7 +3,7 @@ name: deployer
 description: Infrastructure operations — deployments, cluster management, kubectl authority
 profile: openai
 model: gpt-5.2-codex
-base_url: https://chatgpt.com/backend-api/codex
+base_url: https://api.openai.com/v1
 backend_name: codex
 color: blue
 memory: user

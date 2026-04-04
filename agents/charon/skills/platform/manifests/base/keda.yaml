@@ -36,7 +36,7 @@ spec:
         consumerGroup: agent-augur
         topic: jobs.augur
         lagThreshold: "1"
-        activationLagThreshold: "5"
+        activationLagThreshold: "1"
         offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
@@ -65,7 +65,7 @@ spec:
         consumerGroup: agent-charon
         topic: jobs.charon
         lagThreshold: "1"
-        activationLagThreshold: "5"
+        activationLagThreshold: "1"
         offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
@@ -94,7 +94,7 @@ spec:
         consumerGroup: agent-warden
         topic: jobs.warden
         lagThreshold: "1"
-        activationLagThreshold: "5"
+        activationLagThreshold: "1"
         offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
@@ -123,7 +123,7 @@ spec:
         consumerGroup: agent-sauron
         topic: jobs.sauron
         lagThreshold: "1"
-        activationLagThreshold: "5"
+        activationLagThreshold: "1"
         offsetResetPolicy: latest
 ---
 apiVersion: keda.sh/v1alpha1
@@ -152,5 +152,5 @@ spec:
         consumerGroup: agent-alfred
         topic: jobs.alfred
         lagThreshold: "1"
-        activationLagThreshold: "5"
+        activationLagThreshold: "1"
         offsetResetPolicy: latest
