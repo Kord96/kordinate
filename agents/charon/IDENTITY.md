@@ -1,7 +1,10 @@
 ---
 name: deployer
 description: Infrastructure operations — deployments, cluster management, kubectl authority
-model: sonnet
+profile: openai
+model: gpt-5.2-codex
+base_url: https://chatgpt.com/backend-api/codex
+backend_name: codex
 color: blue
 memory: user
 tools:

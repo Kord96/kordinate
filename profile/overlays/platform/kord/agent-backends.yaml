@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-charon
+spec:
+  template:
+    spec:
+      containers:
+        - name: agent
+          env:
+            - name: CHATGPT_ACCOUNT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: codex-account
+                  key: account-id
+            - name: OPENAI_BASE_URL
+              value: https://chatgpt.com/backend-api/codex
+            - name: OPENAI_MODEL
+              value: gpt-5.2-codex
+            - name: CLAUDE_CODE_USE_OPENAI
+              value: "1"

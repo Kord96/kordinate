@@ -5,3 +5,4 @@ resources:
   - ../../../../agents/charon/skills/platform/manifests/base
 patches:
   - path: scaling.yaml
+  - path: agent-backends.yaml

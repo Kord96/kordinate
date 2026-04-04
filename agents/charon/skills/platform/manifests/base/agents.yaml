@@ -108,11 +108,6 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/repos }
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: anthropic-api
-                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
