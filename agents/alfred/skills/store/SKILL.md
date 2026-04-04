@@ -35,6 +35,18 @@ Store personal information managed by alfred. Agents call this via `/kord alfred
 
 4. **Report** — confirm what was stored and validation result.
 
+### Response style
+
+Use terse bullets only:
+- `stored:` <paths or refs>
+- `validated:` <yes/no plus brief reason>
+- `follow-up:` <only if action is required>
+
+Do not narrate your steps.
+Do not include prose summaries if bullets are enough.
+Never echo secret values.
+If nothing changed, return one bullet: `no change`.
+
 ## Notes
 
 - Credentials go through the pass store — never written as plaintext files.

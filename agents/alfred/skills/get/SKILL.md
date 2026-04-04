@@ -34,6 +34,13 @@ Retrieve personal information managed by alfred. Agents call this via `/kord alf
 
 3. **Return** the requested information. For `key`, return the value directly — the caller is responsible for handling it securely.
 
+### Response style
+
+Default to terse bullets.
+If the request is not for a secret value, avoid narration and return only the requested data plus minimal labels.
+If the request is for `status`, use short bullets only.
+Do not include process commentary.
+
 ## Notes
 
 - This is read-only. To modify config/keys/overlays, use `/kord alfred store`.
