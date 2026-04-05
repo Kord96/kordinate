@@ -18,14 +18,18 @@ print(name.lower())
 # No agent type or empty — allow
 [ -z "$AGENT" ] && { echo '{}'; exit 0; }
 
-KORDINATE_HOME="${KORDINATE_HOME:-$HOME/.kord}"
+WORKSTATION_HOME="${WORKSTATION_HOME:-$HOME}"
+KORD_SOURCE_ROOT="${KORD_SOURCE_ROOT:-$HOME/repos/kordinate}"
+KORD_LOCAL_STATE="${KORD_LOCAL_STATE:-$HOME/.local/share/kordinate}"
+KORD_LOCKS_DIR="${KORD_LOCKS_DIR:-$KORD_LOCAL_STATE/locks}"
 
 # Only gate kordinate agents (has a directory in agents/)
-if [ -d "$KORDINATE_HOME/agents/$AGENT" ] && [ "$AGENT" != "main" ]; then
+if [ -d "$KORD_SOURCE_ROOT/agents/$AGENT" ] && [ "$AGENT" != "main" ]; then
+  mkdir -p "$KORD_LOCKS_DIR"
 
   # Check for kord gate secret — one-time use, consumed on check
   GATE_FILE="/tmp/.kord-gate-${AGENT}"
-  LOCK_FILE="$KORDINATE_HOME/profile/locks/${AGENT}"
+  LOCK_FILE="$KORD_LOCKS_DIR/${AGENT}"
   if [ -f "$GATE_FILE" ] && [ -f "$LOCK_FILE" ]; then
     if [ "$(cat "$GATE_FILE")" = "$(cat "$LOCK_FILE")" ]; then
       rm -f "$GATE_FILE"

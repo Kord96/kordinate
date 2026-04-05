@@ -1,7 +1,8 @@
 #!/bin/bash
 # Shared setup utilities. Source this, don't execute it.
 
-KORDINATE_HOME="${KORDINATE_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+WORKSTATION_HOME="${WORKSTATION_HOME:-$HOME}"
+RUNTIME_ROOT="${RUNTIME_ROOT:-$WORKSTATION_HOME/kordinate}"
 CLAUDE_DIR="$HOME/.claude"
 
 # Colors

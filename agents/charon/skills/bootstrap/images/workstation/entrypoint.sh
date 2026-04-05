@@ -2,41 +2,204 @@
 # Workstation entrypoint — minimal boot. Auth is handled by auth-check.sh.
 set -euo pipefail
 
-# ─── Shell config (once) ───
-if ! grep -q 'KORDINATE_HOME' ~/.bashrc 2>/dev/null; then
-  cat >> ~/.bashrc <<'BASHRC'
 export KORD_ROOT="${KORD_ROOT:-/kord}"
-export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
-export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"
-alias openclaude="NODE_OPTIONS=\"--max-old-space-size=4096\" claude-session --dangerously-skip-permissions"
-[ -f "$KORDINATE_HOME/bin/tmux-session.bash" ] && source "$KORDINATE_HOME/bin/tmux-session.bash"
-BASHRC
-fi
+export HOME="${HOME:-/home/claude}"
+export WORKSTATION_HOME="${WORKSTATION_HOME:-$KORD_ROOT/workstation/home}"
+export KORD_SOURCE_ROOT="${KORD_SOURCE_ROOT:-$HOME/repos/kordinate}"
+export KORD_LOCAL_STATE="${KORD_LOCAL_STATE:-$HOME/.local/share/kordinate}"
+export KORD_LOCKS_DIR="${KORD_LOCKS_DIR:-$KORD_LOCAL_STATE/locks}"
+export KORD_WORKTREES_DIR="${KORD_WORKTREES_DIR:-$KORD_LOCAL_STATE/worktrees}"
+export KORD_SESSION_STATE_DIR="${KORD_SESSION_STATE_DIR:-$HOME/.claude/session-state}"
 
-# .bash_profile so login shells (SSH) source .bashrc
-if [ ! -f ~/.bash_profile ]; then
-  cat > ~/.bash_profile <<'PROF'
+PERSIST_ROOT="$(dirname "$WORKSTATION_HOME")"
+LEGACY_ROOT="$KORD_ROOT/kordinate"
+LEGACY_TMUX_LAYOUT="$KORD_ROOT/claude-home/tmux-layout.json"
+LOCAL_BIN="$HOME/.local/bin"
+CLAUDE_HOOKS_DIR="$HOME/.claude/hooks"
+TMUX_STATE_DIR="$HOME/.local/state/kordinate"
+KORD_PROFILE_STATE_DIR="$KORD_LOCAL_STATE/profile"
+OWNERSHIP_STATE_FILE="$HOME/.claude/runtime-ownership.yaml"
+CLAUDE_STATE_ENTRIES="projects history.jsonl sessions session-env tasks backups cache file-history shell-snapshots settings.json .mcp.json keybindings.json"
+LEGACY_REPO_SNAPSHOT_ENTRIES=".git .gitignore CLAUDE.md README.md requirements.txt kordinate agents commands dashboards profile setup agent-memory config.yaml config.yaml.template shared"
+LOCAL_HELPERS="claude-session tmux-save tmux-restore tmux-session.bash tmux-new-window session-status"
+CLAUDE_HOOKS="guard.sh subagent-invocation-gate.sh"
+
+ensure_persistent_home() {
+  local uid gid current_target
+  uid="$(id -u)"
+  gid="$(id -g)"
+
+  sudo mkdir -p "$WORKSTATION_HOME"
+  sudo chown "$uid:$gid" "$PERSIST_ROOT" "$WORKSTATION_HOME" 2>/dev/null || true
+
+  if [ -L "$HOME" ]; then
+    current_target="$(readlink -f "$HOME" 2>/dev/null || true)"
+    if [ "$current_target" != "$WORKSTATION_HOME" ]; then
+      sudo rm -f "$HOME"
+      sudo ln -sfn "$WORKSTATION_HOME" "$HOME"
+    fi
+    return
+  fi
+
+  if [ -d "$HOME" ] && [ -z "$(find "$WORKSTATION_HOME" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+    shopt -s dotglob nullglob
+    if [ -n "$(printf '%s' "$HOME"/* 2>/dev/null)" ]; then
+      sudo cp -a "$HOME"/. "$WORKSTATION_HOME/"
+      sudo chown -R "$uid:$gid" "$WORKSTATION_HOME" 2>/dev/null || true
+    fi
+    shopt -u dotglob nullglob
+  fi
+
+  if [ -d "$HOME" ]; then
+    sudo rm -rf "$HOME"
+  fi
+
+  sudo ln -sfn "$WORKSTATION_HOME" "$HOME"
+}
+
+copy_entries_if_missing() {
+  local src_root="$1"
+  local dst_root="$2"
+  local entries="$3"
+  local entry
+
+  [ -d "$src_root" ] || return 0
+  mkdir -p "$dst_root"
+  for entry in $entries; do
+    [ -e "$src_root/$entry" ] || continue
+    [ -e "$dst_root/$entry" ] && continue
+    cp -an "$src_root/$entry" "$dst_root/$entry"
+  done
+}
+
+install_local_helpers() {
+  local source_root="$1"
+  local helper
+
+  [ -d "$source_root" ] || return 0
+  mkdir -p "$LOCAL_BIN"
+  for helper in $LOCAL_HELPERS; do
+    [ -f "$source_root/$helper" ] || continue
+    cp -a "$source_root/$helper" "$LOCAL_BIN/$helper"
+    chmod +x "$LOCAL_BIN/$helper" 2>/dev/null || true
+  done
+}
+
+install_claude_hooks() {
+  local source_root="$1"
+  local hook
+
+  [ -d "$source_root" ] || return 0
+  mkdir -p "$CLAUDE_HOOKS_DIR"
+  for hook in $CLAUDE_HOOKS; do
+    [ -f "$source_root/$hook" ] || continue
+    cp -a "$source_root/$hook" "$CLAUDE_HOOKS_DIR/$hook"
+    chmod +x "$CLAUDE_HOOKS_DIR/$hook" 2>/dev/null || true
+  done
+}
+
+sync_workstation_state() {
+  mkdir -p "$HOME/.claude" "$CLAUDE_HOOKS_DIR" "$LOCAL_BIN" "$TMUX_STATE_DIR" "$KORD_LOCKS_DIR" "$KORD_WORKTREES_DIR" "$KORD_SESSION_STATE_DIR" "$KORD_PROFILE_STATE_DIR"
+
+  if [ -d "$KORD_SOURCE_ROOT/bin" ]; then
+    install_local_helpers "$KORD_SOURCE_ROOT/bin"
+  else
+    install_local_helpers "$LEGACY_ROOT/bin"
+  fi
+
+  if [ -d "$KORD_SOURCE_ROOT/hooks" ]; then
+    install_claude_hooks "$KORD_SOURCE_ROOT/hooks"
+  else
+    install_claude_hooks "$LEGACY_ROOT/hooks"
+  fi
+
+  if [ -f "$KORD_SOURCE_ROOT/shared/runtime-ownership.yaml" ]; then
+    cp -a "$KORD_SOURCE_ROOT/shared/runtime-ownership.yaml" "$OWNERSHIP_STATE_FILE"
+  elif [ -f "$LEGACY_ROOT/shared/runtime-ownership.yaml" ] && [ ! -f "$OWNERSHIP_STATE_FILE" ]; then
+    cp -a "$LEGACY_ROOT/shared/runtime-ownership.yaml" "$OWNERSHIP_STATE_FILE"
+  fi
+
+  if [ -f "$KORD_SOURCE_ROOT/profile/config-acl.yaml" ]; then
+    cp -a "$KORD_SOURCE_ROOT/profile/config-acl.yaml" "$KORD_PROFILE_STATE_DIR/config-acl.yaml"
+  elif [ -f "$LEGACY_ROOT/profile/config-acl.yaml" ] && [ ! -f "$KORD_PROFILE_STATE_DIR/config-acl.yaml" ]; then
+    cp -a "$LEGACY_ROOT/profile/config-acl.yaml" "$KORD_PROFILE_STATE_DIR/config-acl.yaml"
+  fi
+
+  if [ -d "$LEGACY_ROOT/profile/locks" ] && [ -z "$(find "$KORD_LOCKS_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+    cp -an "$LEGACY_ROOT/profile/locks/." "$KORD_LOCKS_DIR/"
+  fi
+
+  if [ -f "$LEGACY_TMUX_LAYOUT" ] && [ ! -f "$TMUX_STATE_DIR/tmux-layout.json" ]; then
+    cp -an "$LEGACY_TMUX_LAYOUT" "$TMUX_STATE_DIR/tmux-layout.json"
+  fi
+
+  mkdir -p "$HOME/.claude/bin"
+  [ -e "$LOCAL_BIN/claude-session" ] && ln -sfn "$LOCAL_BIN/claude-session" "$HOME/.claude/bin/claude-session"
+  [ -e "$LOCAL_BIN/tmux-new-window" ] && ln -sfn "$LOCAL_BIN/tmux-new-window" "$HOME/.claude/bin/tmux-new-window"
+}
+
+migrate_legacy_state() {
+  if [ -d "$LEGACY_ROOT" ]; then
+    if [ -L "$HOME/.claude" ] && [ "$(readlink -f "$HOME/.claude" 2>/dev/null || true)" = "$LEGACY_ROOT" ]; then
+      rm -f "$HOME/.claude"
+    fi
+
+    copy_entries_if_missing "$LEGACY_ROOT" "$HOME/.claude" "$CLAUDE_STATE_ENTRIES"
+    copy_entries_if_missing "$LEGACY_ROOT" "$KORD_LOCAL_STATE/legacy-repo" "$LEGACY_REPO_SNAPSHOT_ENTRIES"
+  fi
+}
+
+ensure_shell_config() {
+  if ! grep -q 'KORD_LOCAL_STATE' ~/.bashrc 2>/dev/null; then
+    cat >> ~/.bashrc <<'BASHRC'
+export KORD_ROOT="${KORD_ROOT:-/kord}"
+export WORKSTATION_HOME="${WORKSTATION_HOME:-$HOME}"
+export KORD_SOURCE_ROOT="${KORD_SOURCE_ROOT:-$HOME/repos/kordinate}"
+export KORD_LOCAL_STATE="${KORD_LOCAL_STATE:-$HOME/.local/share/kordinate}"
+export KORD_LOCKS_DIR="${KORD_LOCKS_DIR:-$KORD_LOCAL_STATE/locks}"
+export KORD_WORKTREES_DIR="${KORD_WORKTREES_DIR:-$KORD_LOCAL_STATE/worktrees}"
+export KORD_SESSION_STATE_DIR="${KORD_SESSION_STATE_DIR:-$HOME/.claude/session-state}"
+export PATH="$HOME/.npm-global/bin:$HOME/.local/bin:$PATH"
+alias openclaude="NODE_OPTIONS=\"--max-old-space-size=4096\" claude-session --dangerously-skip-permissions"
+[ -f "$HOME/.local/bin/tmux-session.bash" ] && source "$HOME/.local/bin/tmux-session.bash"
+BASHRC
+  fi
+
+  python3 - <<'PY'
+from pathlib import Path
+bashrc = Path.home() / '.bashrc'
+text = bashrc.read_text()
+replacements = {
+    'export KORDINATE_HOME="$HOME/kordinate"\n': '',
+    'export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"\n': 'export PATH="$HOME/.npm-global/bin:$HOME/.local/bin:$PATH"\n',
+    '[ -f "$KORDINATE_HOME/bin/tmux-session.bash" ] && source "$KORDINATE_HOME/bin/tmux-session.bash"\n': '[ -f "$HOME/.local/bin/tmux-session.bash" ] && source "$HOME/.local/bin/tmux-session.bash"\n',
+    'export PATH="$HOME/.npm-global/bin:$WORKSTATION_HOME/kordinate/bin:$PATH"\n': 'export PATH="$HOME/.npm-global/bin:$HOME/.local/bin:$PATH"\n',
+    '[ -f "$WORKSTATION_HOME/kordinate/bin/tmux-session.bash" ] && source "$WORKSTATION_HOME/kordinate/bin/tmux-session.bash"\n': '[ -f "$HOME/.local/bin/tmux-session.bash" ] && source "$HOME/.local/bin/tmux-session.bash"\n',
+}
+for old, new in replacements.items():
+    text = text.replace(old, new)
+bashrc.write_text(text)
+PY
+
+  if [ ! -f ~/.bash_profile ]; then
+    cat > ~/.bash_profile <<'PROF'
 [ -f ~/.bashrc ] && source ~/.bashrc
 PROF
-fi
+  fi
+}
 
-export KORD_ROOT="${KORD_ROOT:-/kord}"
-export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
-export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"
+ensure_persistent_home
+migrate_legacy_state
+sync_workstation_state
+ensure_shell_config
 
-# ─── Symlink persistent state from /kord into ephemeral home ───
-ln -sfn "$KORD_ROOT/pass" "$HOME/.password-store"
-ln -sfn "$KORD_ROOT/ssh" "$HOME/.ssh"
-ln -sfn "$KORD_ROOT/gnupg" "$HOME/.gnupg"
-ln -sfn "$KORDINATE_HOME" "$HOME/.kord"
-ln -sfn "$KORD_ROOT/projects" "$HOME/projects"
-chmod 700 "$KORD_ROOT/pass" "$KORD_ROOT/ssh" "$KORD_ROOT/gnupg" 2>/dev/null || true
+mkdir -p "$HOME/.claude" "$HOME/projects" "$KORD_LOCAL_STATE/state"
 
-# ─── Symlink Claude Code state from /kord into ephemeral home ───
-# Remove ephemeral .claude if it exists (upgrade path from non-persistent state)
-[ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && rm -rf "$HOME/.claude"
-mkdir -p "$KORD_ROOT/claude-home"
-ln -sfn "$KORD_ROOT/claude-home" "$HOME/.claude"
+ln -sfn "$KORD_ROOT/alfred/pass" "$HOME/.password-store"
+ln -sfn "$KORD_ROOT/alfred/ssh" "$HOME/.ssh"
+ln -sfn "$KORD_ROOT/alfred/gnupg" "$HOME/.gnupg"
+ln -sfn "$KORD_ROOT/shared/repos" "$HOME/repos"
+chmod 700 "$KORD_ROOT/alfred/pass" "$KORD_ROOT/alfred/ssh" "$KORD_ROOT/alfred/gnupg" 2>/dev/null || true
 
 # Provision authorized keys from pass store (key-based auth fallback)
 SSH_KEY=$(pass show kordinate/ssh/authorized_key 2>/dev/null || true)
@@ -112,29 +275,17 @@ fi
 # Unpack to loose objects instead of pack files to avoid this.
 git config --global transfer.unpackLimit 10000
 
-# ─── Initialize kord state ───
-mkdir -p "${KORD_WORKTREE_ROOT:-$KORDINATE_HOME/.worktrees}"
-mkdir -p "$KORDINATE_HOME/.locks"
-if [ -d "$KORDINATE_HOME/.git" ]; then
-  git -C "$KORDINATE_HOME" worktree prune 2>/dev/null || true
-fi
-
-# ─── Update kordinate (if runtime repo exists) ───
-if [ -d "$KORDINATE_HOME/.git" ]; then
-  git -C "$KORDINATE_HOME" pull --ff-only 2>/dev/null || true
-fi
-
 # ─── Hydrate MCP config ───
 kord-hydrate 2>/dev/null || echo "WARNING: kord-hydrate failed — MCP config not generated"
 
-# ─── Restore tmux layout from persistent state ───
-if [ -x "$KORDINATE_HOME/bin/tmux-restore" ]; then
-  "$KORDINATE_HOME/bin/tmux-restore" || echo "WARNING: tmux-restore failed — starting with empty tmux"
+# ─── Restore tmux layout from standard user path ───
+if [ -x "$LOCAL_BIN/tmux-restore" ]; then
+  "$LOCAL_BIN/tmux-restore" || echo "WARNING: tmux-restore failed — starting with empty tmux"
 fi
 
 # ─── Periodic tmux layout save (every 60s) ───
-if [ -x "$KORDINATE_HOME/bin/tmux-save" ]; then
-  (while true; do sleep 60; "$KORDINATE_HOME/bin/tmux-save" 2>/dev/null; done) &
+if [ -x "$LOCAL_BIN/tmux-save" ]; then
+  (while true; do sleep 60; "$LOCAL_BIN/tmux-save" 2>/dev/null; done) &
   echo "tmux auto-save started (every 60s)"
 fi
 

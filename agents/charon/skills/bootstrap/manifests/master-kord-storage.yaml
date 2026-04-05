@@ -3,15 +3,16 @@
 ## RWX via Longhorn — allows multiple pods to mount (workstation, docs, etc).
 ##
 ## Layout:
-##   /kord/pass/         — password store (GPG-encrypted credentials)
-##   /kord/gnupg/        — GPG keyring (required for pass)
-##   /kord/ssh/          — SSH keys (user + host)
-##   /kord/kordinate/    — kordinate runtime (~/.kord)
-##   /kord/projects/     — cloned repos (each may have <repo>/.kord)
-##   /kord/claude-home/  — Claude Code state (~/.claude)
+##   /kord/shared/memory/   — shared runtime memory/protocols for all agents
+##   /kord/shared/repos/    — shared cloned repos (readable by all)
+##   /kord/workstation/home — persisted workstation home; mounted at /home/claude via symlink
+##   /kord/alfred/          — Alfred-owned secrets and exported materials
+##   /kord/<agent>/         — per-agent persistent state
+##     /memory/             — canonical agent memory
+##     /tmp/                — agent scratch space
 ##
 ## Initialized by a one-shot Job that creates the directory structure
-## and an empty git repo for the kordinate runtime.
+## for built-in agents and shared platform state.
 ##
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -44,19 +45,21 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              mkdir -p /kord/pass /kord/ssh /kord/gnupg /kord/projects /kord/claude-home
+              mkdir -p \
+                /kord/shared/memory \
+                /kord/shared/repos \
+                /kord/workstation/home \
+                /kord/alfred/pass \
+                /kord/alfred/ssh \
+                /kord/alfred/gnupg \
+                /kord/alfred/exports \
+                /kord/augur/memory /kord/augur/tmp \
+                /kord/charon/memory /kord/charon/tmp \
+                /kord/warden/memory /kord/warden/tmp \
+                /kord/sauron/memory /kord/sauron/tmp \
+                /kord/alfred/memory /kord/alfred/tmp
 
-              if [ -d /kord/kordinate/.git ]; then
-                echo "kordinate runtime already initialized, skipping"
-              else
-                git init /kord/kordinate
-                cd /kord/kordinate
-                git commit --allow-empty -m "init kord runtime"
-                mkdir -p .worktrees .locks
-                echo "kordinate runtime initialized"
-              fi
-
-              chmod 700 /kord/pass /kord/ssh /kord/gnupg
+              chmod 700 /kord/alfred/pass /kord/alfred/ssh /kord/alfred/gnupg
               echo "kord volume ready"
           volumeMounts:
             - name: kord

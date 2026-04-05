@@ -1,6 +1,11 @@
 {
   "env": {
-    "KORDINATE_HOME": "$HOME/.kord"
+    "WORKSTATION_HOME": "$HOME",
+    "KORD_SOURCE_ROOT": "$HOME/repos/kordinate",
+    "KORD_LOCAL_STATE": "$HOME/.local/share/kordinate",
+    "KORD_LOCKS_DIR": "$HOME/.local/share/kordinate/locks",
+    "KORD_WORKTREES_DIR": "$HOME/.local/share/kordinate/worktrees",
+    "KORD_SESSION_STATE_DIR": "$HOME/.claude/session-state"
   },
   "hooks": {
     "PreToolUse": [
@@ -9,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$KORDINATE_HOME/hooks/guard.sh"
+            "command": "$HOME/.claude/hooks/guard.sh"
           }
         ]
       }

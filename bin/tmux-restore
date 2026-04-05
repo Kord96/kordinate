@@ -3,7 +3,7 @@
 # Called by entrypoint at boot, before SSH connections arrive.
 set -euo pipefail
 
-LAYOUT_FILE="${KORD_ROOT:-/kord}/claude-home/tmux-layout.json"
+LAYOUT_FILE="${HOME:-/home/claude}/.local/state/kordinate/tmux-layout.json"
 
 # No saved layout — first boot or data cleared
 if [ ! -f "$LAYOUT_FILE" ]; then

@@ -3,8 +3,10 @@
 # Called periodically by entrypoint and by preStop hook.
 set -euo pipefail
 
-LAYOUT_FILE="${KORD_ROOT:-/kord}/claude-home/tmux-layout.json"
+LAYOUT_FILE="${HOME:-/home/claude}/.local/state/kordinate/tmux-layout.json"
 LAYOUT_TMP="${LAYOUT_FILE}.tmp.$$"
+
+mkdir -p "$(dirname "$LAYOUT_FILE")"
 
 # Bail if tmux server is not running
 tmux list-sessions &>/dev/null || exit 0

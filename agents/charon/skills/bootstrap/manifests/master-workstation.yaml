@@ -3,7 +3,7 @@
 ## Runs in master namespace.
 ##
 ## Storage: single 'kord' PVC mounted at /kord with persistent system state.
-## /home/claude is ephemeral — entrypoint symlinks to /kord subdirectories.
+## /home/claude is symlinked to /kord/workstation/home so the full workstation home persists across reinstalls.
 ## Tailscale runs inside the container for SSH access.
 ##
 ## Ingress: cloudflared + Caddy run as sidecars in this pod.
@@ -82,10 +82,6 @@ spec:
               value: xterm-256color
             - name: TS_HOSTNAME
               value: workstation
-            - name: KORDINATE_HOME
-              value: /kord/kordinate
-            - name: KORD_WORKTREE_ROOT
-              value: /kord/kordinate/.worktrees
             - name: KORD_ROOT
               value: /kord
           lifecycle:
@@ -94,7 +90,7 @@ spec:
                 command:
                   - /bin/bash
                   - -c
-                  - /kord/kordinate/bin/tmux-save 2>/dev/null || true
+                  - /home/claude/.local/bin/tmux-save 2>/dev/null || true
           securityContext:
             capabilities:
               add: ["NET_ADMIN", "NET_RAW"]

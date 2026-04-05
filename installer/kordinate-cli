@@ -342,24 +342,25 @@ cmd_init() {
   echo ""
   echo -e "${BOLD}Step 7: Link repo${NC}"
 
-  # Copy kordinate files into workstation ~/.kord (no git repo — just files).
-  # The workstation entrypoint symlinks ~/.kord to $KORDINATE_HOME on the PVC.
+  # Seed standard workstation runtime paths. Source repo material remains optional.
   local KORD_SRC="$SCRIPT_DIR/.."
-  info "Copying kordinate files to workstation..."
+  info "Copying workstation helpers and hooks..."
   local POD
   POD=$(ws_pod)
-  local TMP_KORD
-  TMP_KORD=$(mktemp -d)
-  cp -r "$KORD_SRC/agents" "$KORD_SRC/skills" "$KORD_SRC/shared" \
-        "$KORD_SRC/lib" "$KORD_SRC/bin" "$KORD_SRC/kordinate" \
-        "$KORD_SRC/CLAUDE.md" "$KORD_SRC/KORD.md" "$KORD_SRC/KORD.json" \
-        "$TMP_KORD/" 2>/dev/null || true
-  [ -d "$KORD_SRC/installer/profile" ] && cp -r "$KORD_SRC/installer/profile" "$TMP_KORD/"
-  tar czf /tmp/kordinate-files.tar.gz -C "$TMP_KORD" .
-  kc cp /tmp/kordinate-files.tar.gz "master/$POD:/tmp/kordinate-files.tar.gz" -c workstation
-  ws_exec "mkdir -p /data/repos/kordinate && tar xzf /tmp/kordinate-files.tar.gz -C /data/repos/kordinate && rm /tmp/kordinate-files.tar.gz"
-  rm -rf "$TMP_KORD" /tmp/kordinate-files.tar.gz
-  log "Kordinate files copied to workstation (no git repo)"
+  local TMP_RUNTIME
+  TMP_RUNTIME=$(mktemp -d)
+  mkdir -p "$TMP_RUNTIME/local-bin" "$TMP_RUNTIME/claude-hooks" "$TMP_RUNTIME/local-share/kordinate/profile"
+  cp "$KORD_SRC/bin/claude-session" "$KORD_SRC/bin/tmux-save" "$KORD_SRC/bin/tmux-restore" \
+     "$KORD_SRC/bin/tmux-session.bash" "$KORD_SRC/bin/tmux-new-window" "$KORD_SRC/bin/session-status" \
+     "$TMP_RUNTIME/local-bin/"
+  cp "$KORD_SRC/hooks/guard.sh" "$KORD_SRC/hooks/subagent-invocation-gate.sh" "$TMP_RUNTIME/claude-hooks/"
+  cp "$KORD_SRC/shared/runtime-ownership.yaml" "$TMP_RUNTIME/claude-hooks/runtime-ownership.yaml"
+  cp "$KORD_SRC/profile/config-acl.yaml" "$TMP_RUNTIME/local-share/kordinate/profile/config-acl.yaml"
+  tar czf /tmp/kordinate-runtime-seed.tar.gz -C "$TMP_RUNTIME" .
+  kc cp /tmp/kordinate-runtime-seed.tar.gz "master/$POD:/tmp/kordinate-runtime-seed.tar.gz" -c workstation
+  ws_exec 'mkdir -p "$HOME/.local/bin" "$HOME/.claude/hooks" "$HOME/.local/share/kordinate/profile" && tar xzf /tmp/kordinate-runtime-seed.tar.gz -C /tmp && cp -a /tmp/local-bin/. "$HOME/.local/bin/" && cp -a /tmp/claude-hooks/guard.sh "$HOME/.claude/hooks/guard.sh" && cp -a /tmp/claude-hooks/subagent-invocation-gate.sh "$HOME/.claude/hooks/subagent-invocation-gate.sh" && cp -a /tmp/claude-hooks/runtime-ownership.yaml "$HOME/.claude/runtime-ownership.yaml" && cp -a /tmp/local-share/kordinate/profile/config-acl.yaml "$HOME/.local/share/kordinate/profile/config-acl.yaml" && rm -rf /tmp/local-bin /tmp/claude-hooks /tmp/local-share /tmp/kordinate-runtime-seed.tar.gz'
+  rm -rf "$TMP_RUNTIME" /tmp/kordinate-runtime-seed.tar.gz
+  log "Workstation helpers and hooks copied"
 
   # ─── Step 8: Credentials ───
   echo ""

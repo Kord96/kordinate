@@ -14,7 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTALL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT_DEFAULT="/kord/projects/kordinate"
+REPO_ROOT_DEFAULT="${KORD_SOURCE_ROOT:-$HOME/repos/kordinate}"
 
 CLAUDE_BIN="openclaude"
 # Source nvm to make openclaude available when launched outside a login shell.
@@ -99,7 +99,7 @@ warn_if_repo_drift() {
   done
 
   if [[ $compared -eq 1 && $drift -eq 1 ]]; then
-    printf 'Warning: installed kordinate runtime differs from %s; refresh /kord/kordinate from repo to pick up latest session behavior.\n' "$repo_root" >&2
+    printf 'Warning: installed workstation helpers differ from %s; refresh ~/.local/bin from repo to pick up latest session behavior.\n' "$repo_root" >&2
   fi
 }
 

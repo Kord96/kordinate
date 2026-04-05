@@ -1,6 +1,6 @@
 #!/bin/bash
 # dev-sync.sh — git post-commit hook for kordinate developers
-# Copies changed package files from the repo to $KORDINATE_HOME after each commit.
+# Copies changed package files from the repo to the workstation runtime after each commit.
 # Only active when dev mode is enabled (register runtime --dev).
 #
 # Install: symlink to .git/hooks/post-commit (or append if hook exists)
@@ -9,8 +9,9 @@
 
 set -euo pipefail
 
-KORD_HOME="${KORDINATE_HOME:-$HOME/.kord}"
-DEV_SOURCE_FILE="$KORD_HOME/.dev-source"
+WORKSTATION_HOME="${WORKSTATION_HOME:-$HOME}"
+RUNTIME_ROOT="${RUNTIME_ROOT:-$WORKSTATION_HOME/kordinate}"
+DEV_SOURCE_FILE="$RUNTIME_ROOT/.dev-source"
 
 # Only run if dev mode is active
 [ -f "$DEV_SOURCE_FILE" ] || exit 0
@@ -20,7 +21,7 @@ EXPECTED_REPO=$(cat "$DEV_SOURCE_FILE")
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 [ "$REPO_ROOT" = "$EXPECTED_REPO" ] || exit 0
 
-MANIFEST="$KORD_HOME/.manifest.json"
+MANIFEST="$RUNTIME_ROOT/.manifest.json"
 
 # Get files changed in the last commit under kordinate/
 CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD -- kordinate/ 2>/dev/null)
@@ -31,7 +32,7 @@ REMOVED=0
 
 for file in $CHANGED; do
     rel="${file#kordinate/}"
-    dest="$KORD_HOME/$rel"
+    dest="$RUNTIME_ROOT/$rel"
     src="$REPO_ROOT/$file"
 
     if [ -f "$src" ]; then
@@ -52,7 +53,7 @@ done
 if [ -f "$MANIFEST" ] && command -v jq >/dev/null 2>&1; then
     for file in $CHANGED; do
         rel="${file#kordinate/}"
-        dest="$KORD_HOME/$rel"
+        dest="$RUNTIME_ROOT/$rel"
         if [ -f "$dest" ]; then
             hash=$(sha256sum "$dest" | cut -d' ' -f1)
             # Update hash in manifest

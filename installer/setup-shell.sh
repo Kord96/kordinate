@@ -1,5 +1,5 @@
 #!/bin/bash
-# Set up shell environment: PATH, KORDINATE_HOME, tmux config.
+# Set up shell environment: PATH, WORKSTATION_HOME, tmux config.
 #
 # Usage: ./installer/setup-shell.sh
 #
@@ -13,7 +13,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SHELL_RC="$HOME/.bashrc"
 [ "$(uname)" = "Darwin" ] && SHELL_RC="$HOME/.zshrc"
 
-# ── PATH + KORDINATE_HOME ───────────────────────────────────
+# ── PATH + WORKSTATION_HOME ─────────────────────────────────
 
 echo "=== Shell environment ==="
 
@@ -22,10 +22,10 @@ if ! grep -q "$MARKER" "$SHELL_RC" 2>/dev/null; then
   cat >> "$SHELL_RC" <<EOF
 
 $MARKER
-export KORDINATE_HOME="$REPO_ROOT"
-export PATH="$REPO_ROOT/bin:\$PATH"
+export WORKSTATION_HOME="${WORKSTATION_HOME:-$HOME}"
+export PATH="$WORKSTATION_HOME/kordinate/bin:\$PATH"
 EOF
-  echo "  +   PATH + KORDINATE_HOME added to $SHELL_RC"
+  echo "  +   PATH + WORKSTATION_HOME added to $SHELL_RC"
 else
   echo "  ok  PATH already configured"
 fi
