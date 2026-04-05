@@ -49,7 +49,8 @@ RUN npm install -g @gitlawb/openclaude
 
 USER root
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY readiness-check.sh /usr/local/bin/readiness-check.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/readiness-check.sh
 
 USER claude
 WORKDIR /home/claude

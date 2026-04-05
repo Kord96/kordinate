@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/data/repos/kordinate/lib/hooks/memory-intercept.sh"
+            "command": "/data/repos/kore/lib/hooks/memory-intercept.sh"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/data/repos/kordinate/hooks/guard.sh"
+            "command": "/data/repos/kore/hooks/guard.sh"
           }
         ]
       }

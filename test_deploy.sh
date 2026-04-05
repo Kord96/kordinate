@@ -9,7 +9,7 @@ mkdir -p "$TEST_ROOT/agents/test-agent/memory"
 mkdir -p "$TEST_ROOT/agents/test-agent/skills/test-skill"
 mkdir -p "$TEST_ROOT/lib/scripts"
 
-cp /kord/projects/kordinate/lib/scripts/deploy-runtime.sh "$TEST_ROOT/lib/scripts/deploy-runtime.sh"
+cp /kord/projects/kore/lib/scripts/deploy-runtime.sh "$TEST_ROOT/lib/scripts/deploy-runtime.sh"
 chmod +x "$TEST_ROOT/lib/scripts/deploy-runtime.sh"
 
 cat > "$TEST_ROOT/agents/test-agent/IDENTITY.md" << 'IDENTITY'
