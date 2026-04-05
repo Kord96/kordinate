@@ -1,0 +1,10 @@
+version: 1
+aliases:
+  opus-4.6:
+    backend: anthropic-opus
+  deepseek-v3.2:
+    backend: fireworks-deepseek-v3p2
+  gemini:
+    backend: gemini-3.1-pro-preview
+  glm5:
+    backend: fireworks-glm-5

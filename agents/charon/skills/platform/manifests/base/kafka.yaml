@@ -112,6 +112,54 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
+  name: jobs.opus-4.6
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 2
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: jobs.deepseek-v3.2
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 2
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: jobs.gemini
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 2
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: jobs.glm5
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 2
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
   name: jobs.result
   labels:
     strimzi.io/cluster: kafka
