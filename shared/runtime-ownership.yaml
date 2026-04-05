@@ -8,17 +8,17 @@ protected_paths:
   - path: settings.json
     owner: team
     reason: Hook and environment configuration
-  - path: shared/auth-protocol.md
-    owner: team
+  - path: shared/memory/auth-protocol.md
+    owner: shared
     reason: Authentication protocol
-  - path: shared/credentials-protocol.md
-    owner: team
+  - path: shared/memory/credentials-protocol.md
+    owner: shared
     reason: Credentials protocol
-  - path: shared/memory-protocol.md
-    owner: team
+  - path: shared/memory/memory-protocol.md
+    owner: shared
     reason: Memory protocol
-  - path: shared/gemini-protocol.md
-    owner: team
+  - path: shared/memory/gemini-protocol.md
+    owner: shared
     reason: Gemini protocol
   - path: profile/locks/
     owner: warden
