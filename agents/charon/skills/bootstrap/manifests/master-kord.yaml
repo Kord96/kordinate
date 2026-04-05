@@ -76,24 +76,15 @@ spec:
               # Bump file descriptor limits for concurrent agent spawns
               ulimit -n 1048576 2>/dev/null || true
               export KORD_ROOT="${KORD_ROOT:-/kord}"
-              export KORDINATE_HOME="${KORDINATE_HOME:-$KORD_ROOT/kordinate}"
+              export KORDINATE_HOME="${KORDINATE_HOME:-/app}"
               export PATH="$HOME/.npm-global/bin:$KORDINATE_HOME/bin:$PATH"
 
-              # Symlink persistent state from PVC
-              ln -sfn "$KORD_ROOT/pass" "$HOME/.password-store"
-              ln -sfn "$KORD_ROOT/gnupg" "$HOME/.gnupg"
-              ln -sfn "$KORDINATE_HOME" "$HOME/.kord"
-              chmod 700 "$KORD_ROOT/pass" "$KORD_ROOT/gnupg" 2>/dev/null || true
+              # Symlink persistent shared state from PVC
+              ln -sfn "$KORD_ROOT/alfred/pass" "$HOME/.password-store"
+              ln -sfn "$KORD_ROOT/alfred/gnupg" "$HOME/.gnupg"
+              chmod 700 "$KORD_ROOT/alfred/pass" "$KORD_ROOT/alfred/gnupg" 2>/dev/null || true
 
-              # Claude credentials (shared PVC with workstation)
-              [ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && rm -rf "$HOME/.claude"
-              ln -sfn "$KORD_ROOT/claude-home" "$HOME/.claude"
-              ln -sfn "$KORD_ROOT/claude-home.json" "$HOME/.claude.json"
-
-              # Install dependencies (safety net — node_modules are on PVC)
               MCP_SERVER="$KORDINATE_HOME/lib/mcp-agent-server"
-              (cd "$MCP_SERVER" && npm install --production 2>/dev/null || true)
-
               echo "Starting kord server on port ${PORT:-3100}..."
               exec node "$MCP_SERVER/server.js"
           ports:
@@ -103,9 +94,7 @@ spec:
             - name: HOME
               value: /home/claude
             - name: KORDINATE_HOME
-              value: /kord/kordinate
-            - name: REPO_ROOT
-              value: /kord/projects/kordinate
+              value: /app
             - name: KORD_ROOT
               value: /kord
             - name: PORT

@@ -28,9 +28,10 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh augur
-              KORDINATE_HOME=/app bash /app/scripts/deploy-runtime.sh augur
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-augur:latest
@@ -41,11 +42,12 @@ spec:
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: augur }
-            - { name: AGENT_PROJECT_DIR, value: /kord/agents/augur }
+            - { name: AGENT_PROJECT_DIR, value: /runtime/augur }
+            - { name: AGENT_STATE_DIR, value: /kord/augur }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/repos }
+            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -66,9 +68,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -94,9 +99,10 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh charon
-              KORDINATE_HOME=/app bash /app/scripts/deploy-runtime.sh charon
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh charon
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-charon:latest
@@ -107,11 +113,12 @@ spec:
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: charon }
-            - { name: AGENT_PROJECT_DIR, value: /kord/agents/charon }
+            - { name: AGENT_PROJECT_DIR, value: /runtime/charon }
+            - { name: AGENT_STATE_DIR, value: /kord/charon }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/repos }
+            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -127,9 +134,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -155,9 +165,10 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh warden
-              KORDINATE_HOME=/app bash /app/scripts/deploy-runtime.sh warden
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh warden
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -168,11 +179,12 @@ spec:
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: warden }
-            - { name: AGENT_PROJECT_DIR, value: /kord/agents/warden }
+            - { name: AGENT_PROJECT_DIR, value: /runtime/warden }
+            - { name: AGENT_STATE_DIR, value: /kord/warden }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/repos }
+            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -193,9 +205,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -221,9 +236,10 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh sauron
-              KORDINATE_HOME=/app bash /app/scripts/deploy-runtime.sh sauron
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh sauron
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -234,11 +250,12 @@ spec:
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: sauron }
-            - { name: AGENT_PROJECT_DIR, value: /kord/agents/sauron }
+            - { name: AGENT_PROJECT_DIR, value: /runtime/sauron }
+            - { name: AGENT_STATE_DIR, value: /kord/sauron }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/repos }
+            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -259,9 +276,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -287,9 +307,10 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh alfred
-              KORDINATE_HOME=/app bash /app/scripts/deploy-runtime.sh alfred
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -300,11 +321,12 @@ spec:
               cd /app/daemon && exec node daemon.js
           env:
             - { name: AGENT_NAME, value: alfred }
-            - { name: AGENT_PROJECT_DIR, value: /kord/agents/alfred }
+            - { name: AGENT_PROJECT_DIR, value: /runtime/alfred }
+            - { name: AGENT_STATE_DIR, value: /kord/alfred }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/repos }
+            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
             - name: ANTHROPIC_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -325,6 +347,9 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}

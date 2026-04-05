@@ -2,18 +2,18 @@
 # deploy-runtime.sh [agent-name|all]
 #
 # Copies from repo → runtime:
-#   repo/agents/<name>/memory/   → /kord/agents/<name>/memory/global/ (recursive, no-clobber)
-#   repo/agents/<name>/IDENTITY.md → /kord/agents/<name>/identity.md (strip frontmatter)
-#   repo/agents/<name>/skills/   → /kord/agents/<name>/skills/ (symlinks to repo)
-#   repo/shared/                 → /kord/team/ (copy, overwrite)
+#   repo/agents/<name>/memory/    → <runtime>/<name>/memory/global/ (recursive, no-clobber)
+#   repo/agents/<name>/IDENTITY.md → <runtime>/<name>/identity.md (strip frontmatter)
+#   repo/agents/<name>/skills/    → <runtime>/<name>/skills/ (symlinks to repo)
+#   repo/shared/memory/           → /kord/shared/memory/ (copy, no-clobber)
 #
 # If "all" is passed, deploys for all agents. Otherwise just the named agent.
-# Does NOT create directory structure — that's setup-agent-dir.sh's job.
+# Does NOT create the PVC layout — bootstrap owns that.
 
 set -euo pipefail
 
-REPO="${KORDINATE_HOME:-/data/repos/kordinate}"
-RUNTIME="${KORD_RUNTIME:-/kord}"
+REPO="${KORDINATE_HOME:-/app}"
+RUNTIME="${KORD_RUNTIME:-/runtime}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[deploy-runtime] $*"; }
@@ -81,7 +81,7 @@ normalize_api_key_env() {
 deploy_agent() {
   local AGENT="$1"
   local SRC="$REPO/agents/$AGENT"
-  local DST="$RUNTIME/agents/$AGENT"
+  local DST="$RUNTIME/$AGENT"
 
   if [ ! -d "$SRC" ]; then
     log "WARN: no source dir at $SRC"
