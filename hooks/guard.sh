@@ -29,32 +29,106 @@ check_auth() {
 
 lookup_runtime_owner() {
   local relative_path="$1"
-  [ -f "$OWNERSHIP_FILE" ] || return 0
-  OWNERSHIP_FILE="$OWNERSHIP_FILE" RELATIVE_PATH="$relative_path" python3 - <<'PY'
+  local acl_file="$KORD_PROFILE_STATE_DIR/config-acl.yaml"
+  ACL_FILE="$acl_file" OWNERSHIP_FILE="$OWNERSHIP_FILE" RELATIVE_PATH="$relative_path" python3 - <<'PY'
 import os
 from pathlib import Path
 import yaml
 
-ownership_file = Path(os.environ['OWNERSHIP_FILE'])
 relative_path = os.environ['RELATIVE_PATH'].strip('/')
-config = yaml.safe_load(ownership_file.read_text()) or {}
-entries = config.get('protected_paths') or []
+paths = []
+acl_file = Path(os.environ['ACL_FILE'])
+ownership_file = Path(os.environ['OWNERSHIP_FILE'])
+if acl_file.exists():
+    cfg = yaml.safe_load(acl_file.read_text()) or {}
+    paths.extend(cfg.get('paths') or [])
+if ownership_file.exists():
+    cfg = yaml.safe_load(ownership_file.read_text()) or {}
+    paths.extend(cfg.get('protected_paths') or [])
 match = None
-for entry in entries:
+for entry in paths:
     path = str(entry.get('path', '')).strip('/')
     if not path:
         continue
-    is_dir = entry.get('path', '').endswith('/')
+    is_dir = str(entry.get('path', '')).endswith('/')
     if is_dir:
         if relative_path.startswith(path):
-            if match is None or len(path) > len(match.get('path', '')):
+            if match is None or len(path) > len(str(match.get('path', ''))):
                 match = entry
     elif relative_path == path:
-        if match is None or len(path) > len(match.get('path', '')):
+        if match is None or len(path) > len(str(match.get('path', ''))):
             match = entry
 if match:
     print(match.get('owner', ''))
 PY
+}
+
+lookup_config_owner() {
+  local file_path="$1"
+  local old_str="$2"
+  local acl_file="$KORD_PROFILE_STATE_DIR/config-acl.yaml"
+  [ -f "$acl_file" ] || return 0
+  ACL_FILE="$acl_file" CONFIG_FILE="$file_path" OLD_STR="$old_str" python3 - <<'PY'
+import os
+from pathlib import Path
+import yaml
+
+acl = yaml.safe_load(Path(os.environ['ACL_FILE']).read_text()) or {}
+config_entries = acl.get('config') or []
+config_file = os.environ['CONFIG_FILE']
+old_str = os.environ.get('OLD_STR', '')
+target = None
+for entry in config_entries:
+    if entry.get('file') == 'profile/config.yaml':
+        target = entry
+        break
+if not target:
+    raise SystemExit(0)
+ownership = target.get('ownership') or {}
+try:
+    with open(config_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    full = ''.join(lines)
+    pos = full.find(old_str[:60]) if old_str else -1
+    if pos >= 0:
+        before = full[:pos].splitlines()
+        for line in reversed(before):
+            if line and not line[0].isspace() and ':' in line:
+                top_key = line.split(':')[0].strip()
+                owner = ownership.get(top_key)
+                if owner:
+                    print(owner)
+                break
+except Exception:
+    pass
+PY
+}
+
+runtime_relative_path() {
+  local file_path="$1"
+  case "$file_path" in
+    "$HOME/.claude"/*)
+      printf '.claude/%s\n' "${file_path#"$HOME/.claude"/}"
+      ;;
+    "$KORD_LOCAL_STATE"/*)
+      printf '.local/share/kordinate/%s\n' "${file_path#"$KORD_LOCAL_STATE"/}"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+repo_relative_path() {
+  local file_path="$1"
+  case "$file_path" in
+    "$KORD_SOURCE_ROOT"/*)
+      printf '%s\n' "${file_path#"$KORD_SOURCE_ROOT"/}"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 guard_write() {
@@ -64,56 +138,31 @@ guard_write() {
 
   case "$file_path" in
     */profile/config.yaml)
-      local acl_file="$KORD_PROFILE_STATE_DIR/config-acl.yaml"
-      if [ -f "$acl_file" ]; then
-        local old_str required_agent
-        old_str=$(echo "$INPUT" | jq -r '.tool_input.old_string // .tool_input.content // empty')
-        required_agent=$(ACL_FILE="$acl_file" CONFIG_FILE="$file_path" OLD_STR="$old_str" python3 -c "
-import yaml, os
-acl = yaml.safe_load(open(os.environ['ACL_FILE']))
-config_file = os.environ['CONFIG_FILE']
-old_str = os.environ.get('OLD_STR', '')
-agents = set()
-try:
-    with open(config_file) as f:
-        lines = f.readlines()
-    full = ''.join(lines)
-    pos = full.find(old_str[:60])
-    if pos >= 0:
-        before = full[:pos].splitlines()
-        for line in reversed(before):
-            if line and not line[0].isspace() and ':' in line:
-                top_key = line.split(':')[0].strip()
-                for path, agent in acl.items():
-                    if path.split('.')[0] == top_key:
-                        agents.add(agent)
-                break
-except Exception:
-    pass
-print(' '.join(sorted(agents)) if agents else '')
-" 2>/dev/null)
-        if [ -n "$required_agent" ]; then
-          for agent in $required_agent; do
-            check_auth "$agent" && allow
-          done
-          deny "config.yaml edit touches fields owned by: $required_agent. Authenticate as one of them."
-        fi
+      local old_str required_agent
+      old_str=$(echo "$INPUT" | jq -r '.tool_input.old_string // .tool_input.content // empty')
+      required_agent=$(lookup_config_owner "$file_path" "$old_str")
+      if [ -n "$required_agent" ]; then
+        check_auth "$required_agent" && allow
+        deny "config.yaml edit touches fields owned by: $required_agent. Authenticate as one of them."
       fi
       deny "config.yaml edit requires field-owner authentication."
       ;;
   esac
 
-  case "$file_path" in
-    "$HOME/.claude"/*)
-      local rel_path owner
-      rel_path="${file_path#"$HOME/.claude"/}"
-      owner=$(lookup_runtime_owner "$rel_path")
-      if [ -n "$owner" ]; then
-        check_auth "$owner" && allow
-        deny "This runtime-managed path is owned by $owner. Authenticate as $owner before editing it."
-      fi
-      ;;
-  esac
+  local rel_path owner
+  if rel_path=$(runtime_relative_path "$file_path"); then
+    owner=$(lookup_runtime_owner "$rel_path")
+    if [ -n "$owner" ]; then
+      check_auth "$owner" && allow
+      deny "This runtime-managed path is owned by $owner. Authenticate as $owner before editing it."
+    fi
+  elif rel_path=$(repo_relative_path "$file_path"); then
+    owner=$(lookup_runtime_owner "$rel_path")
+    if [ -n "$owner" ]; then
+      check_auth "$owner" && allow
+      deny "This repo path is owned by $owner. Authenticate as $owner before editing it."
+    fi
+  fi
 
   case "$file_path" in
     */dashboards/*.json|*/grafana*)

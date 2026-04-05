@@ -1,0 +1,17 @@
+version: 1
+
+config:
+  - file: profile/config.yaml
+    mode: top_level_key
+    ownership:
+      clusters: alfred
+      network: alfred
+      cloudflare: charon
+
+paths:
+  - path: .claude/runtime-ownership.yaml
+    owner: team
+  - path: .local/share/kordinate/locks/
+    owner: warden
+  - path: dashboards/
+    owner: sauron
