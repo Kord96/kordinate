@@ -1,8 +1,11 @@
-# KEDA ScaledObjects for agent pods.
+# KEDA ScaledObjects for Klaude-based agent pods.
 # Prerequisite: KEDA operator installed (kubectl apply -f https://keda.sh/docs/latest/deploy/)
 #
+# Each ScaledObject follows the per-agent request topic model: one request topic per agent.
+# reply_to handling is owned by Klaude, not by Kordinate manifests.
+#
 # Scaling parameters (minReplicaCount, maxReplicaCount, cooldownPeriod) are set
-# per-environment via overlay patches (e.g. overlays/platform/dev/scaling.yaml).
+# per-environment via overlay patches.
 #
 # stabilizationWindowSeconds prevents rapid scale-up/down oscillation.
 # restoreToOriginalReplicaCount returns to minReplicas on trigger deactivation.

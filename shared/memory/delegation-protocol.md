@@ -40,34 +40,35 @@ These are non-negotiable. Do not attempt these operations locally.
 
 ## How to Delegate
 
-Publish a job to the target agent inbox topic `agent.<name>`. Include a sender identity in `from`; the receiving daemon replies to `agent.<from>` by default, or to `reply_to` when provided.
+Publish a job to the target agent inbox topic `agent.<name>`.
+
+Request contract:
 
 ```json
 {
-  "id": "uuid",
-  "type": "job",
-  "from": "master-workstation",
-  "reply_to": "agent.master-workstation",
-  "agent": "charon",
   "prompt": "Deploy the api-gateway service to staging. Use the latest image tag from CI.",
-  "project": "api-gateway",
-  "repo": "/home/claude/repos/api-gateway",
-  "correlation_id": "uuid",
-  "created_at": "2026-04-06T00:00:00.000Z"
+  "timeout_ms": 1800000,
+  "reflect": true,
+  "reply_to": "agent.master-workstation"
 }
 ```
+
+Notes:
+- `reply_to` is required
+- `timeout_ms` and `reflect` are optional
+- callers may include additional metadata such as `correlation_id` if they need tracking
 
 The response arrives on the reply topic as a result message:
 
 ```json
 {
-  "type": "result",
-  "id": "uuid",
-  "from": "charon-abc123",
-  "correlation_id": "uuid",
-  "agent": "charon",
   "status": "success",
-  "output": "The agent's response text"
+  "output": "The agent's response text",
+  "reflection": {
+    "project": "optional project-specific reflection",
+    "general": "optional general reflection"
+  },
+  "errors": []
 }
 ```
 

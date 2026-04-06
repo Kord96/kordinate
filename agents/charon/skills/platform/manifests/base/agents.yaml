@@ -1,8 +1,12 @@
-# Agent pod Deployments — pod = persistent Claude session.
-# Code is baked into layered images (agent-base plus per-agent derivatives). No runtime cloning.
-# Init: setup-agent-dir.sh + deploy-runtime.sh seed memory from /app/agents/.
+# Agent pod Deployments — pod = persistent Klaude session.
+# Klaude owns the agent harness/runtime, including Kafka mode and request/reply handling.
+# Kordinate owns platform orchestration only: images, manifests, PVC layout, and runtime seeding.
+# Each agent consumes its own Kafka request topic and must receive requests with reply_to.
+# Code is baked into layered images (agent-base plus per-agent customizations). No runtime cloning.
+# Init: setup-agent-dir.sh + deploy-runtime.sh seed runtime files from /app/agents/.
 # Single PVC: agent-runtime mounted at /kord for memory, repos, team.
 # KEDA ScaledObjects control replicas (see keda.yaml).
+# Future source of truth: ../agent-spec.yaml
 ---
 apiVersion: apps/v1
 kind: Deployment

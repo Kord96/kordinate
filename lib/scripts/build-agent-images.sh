@@ -16,6 +16,8 @@ build_and_push() {
   docker push "$REGISTRY/$name:latest"
 }
 
+# Current minimal set: agent-base plus explicit customizations that still exist.
+# Future direction: drive this from agents/charon/skills/platform/agent-spec.yaml.
 build_and_push "agent-base" "$REPO_ROOT/agents/charon/skills/bootstrap/images/agent-base/Dockerfile"
 build_and_push "agent-charon" "$REPO_ROOT/agents/charon/skills/bootstrap/images/charon/Dockerfile"
 build_and_push "agent-augur" "$REPO_ROOT/agents/charon/skills/bootstrap/images/augur/Dockerfile"

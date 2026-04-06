@@ -48,7 +48,12 @@ spec:
   entityOperator:
     topicOperator: {}
 ---
-# Agent inbox topics
+# Agent request topics — one request topic per agent.
+# Requests are expected to include: { prompt, timeout_ms?, reflect?, reply_to }.
+# reply_to is required by the new runtime contract.
+# Responses are published by Klaude to the caller-specified reply topic and use:
+# { status, output, reflection?: { project, general }, errors?: string[] }.
+# Kordinate only provisions the request topics and supporting topics.
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:

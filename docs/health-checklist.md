@@ -80,9 +80,11 @@ For each agent (augur, charon, sauron, alfred, warden):
 ## End-to-End Flow
 
 ### Job delegation
-- Publish a simple job to `agent.charon` and receive a reply on the configured reply topic
-- Response contains agent output (not error)
-- The reply topic receives the result message with matching `correlation_id`
+- Publish a simple job to `agent.charon` with at least `{ prompt, reply_to }`
+- `reply_to` is required
+- Response contains `status` and `output`
+- If reflection is requested, response may include `reflection.project` and/or `reflection.general`
+- The reply topic receives the result message with matching `correlation_id` when provided
 
 ### Memory pipeline
 - Agent reflection produces a curl to `:9090/memory-update`

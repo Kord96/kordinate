@@ -1,14 +1,18 @@
 #!/bin/bash
 # deploy-runtime.sh [agent-name|all]
 #
+# Kordinate-side runtime seeding only. Klaude owns the harness/runtime behavior.
+# This script prepares runtime files and metadata that the Klaude daemon reads.
+#
 # Copies from repo → runtime:
-#   repo/agents/<name>/memory/    → <runtime>/<name>/memory/global/ (recursive, no-clobber)
+#   repo/agents/<name>/memory/     → <runtime>/<name>/memory/global/ (recursive, no-clobber)
 #   repo/agents/<name>/IDENTITY.md → <runtime>/<name>/identity.md (strip frontmatter)
-#   repo/agents/<name>/skills/    → <runtime>/<name>/skills/ (symlinks to repo)
-#   repo/shared/memory/           → /kord/shared/memory/ (copy, no-clobber)
+#   repo/agents/<name>/skills/     → <runtime>/<name>/skills/ (symlinks to repo)
+#   repo/shared/memory/            → /kord/shared/memory/ (copy, no-clobber)
 #
 # If "all" is passed, deploys for all agents. Otherwise just the named agent.
 # Does NOT create the PVC layout — bootstrap owns that.
+# Does NOT implement Kafka request/reply semantics — Klaude does.
 
 set -euo pipefail
 
@@ -389,13 +393,16 @@ deploy_team() {
 
 ## Delegation
 
-Publish a job to the target Kafka inbox topic `agent.<name>` and wait for the reply topic for your sender identity.
-Example payload:
+Publish a request to the target Kafka topic `agent.<name>`.
+Example request:
 ```
-{"id":"<uuid>","type":"job","from":"master-workstation","reply_to":"agent.master-workstation","agent":"<name>","prompt":"<what you need>","project":"<optional>","correlation_id":"<uuid>","created_at":"<iso8601>"}
+{"prompt":"<what you need>","timeout_ms":1800000,"reflect":true,"reply_to":"agent.master-workstation"}
 ```
 
-Replies come back as `type: "result"` messages with the same `correlation_id`.
+Replies are published by Klaude to `reply_to` and use:
+```
+{"status":"success|error|timeout|cancelled","output":"<text>","reflection":{"project":"<optional>","general":"<optional>"},"errors":["<optional>"]}
+```
 TEAM
     log "team/memory/global/team.md generated"
   fi

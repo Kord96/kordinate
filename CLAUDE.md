@@ -4,13 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Kordinate is a framework for running specialized AI agents as Kubernetes pods with persistent Claude sessions. Each agent runs the `openclaude` CLI in `--input-format stream-json` mode, managed by `agent-pod-daemon`. The daemon bridges Kafka jobs to Claude's stdin/stdout and publishes results back to Kafka.
+Kordinate is a framework for running specialized AI agents as Kubernetes pods with persistent Klaude sessions. Klaude owns the harness/runtime, including Kafka mode. Kordinate owns platform orchestration: images, manifests, PVC layout, runtime seeding, and agent metadata.
 
+Each agent consumes its own Kafka request topic. Requests follow the runtime contract:
+- `{ prompt, timeout_ms?, reflect?, reply_to }`
+- `reply_to` is required
+
+Responses are published by Klaude and follow:
+- `{ status, output, reflection?: { project, general }, errors?: string[] }`
+
+Agent-to-agent communication is direct through Kafka; no HTTP router is required.
+
+"},{
 ## Running the Services
 
 ```bash
-# Agent pod daemon (per-agent, needs AGENT_NAME env)
-cd lib/agent-pod-daemon && AGENT_NAME=charon node daemon.js
+# Klaude daemon (per-agent, needs AGENT_NAME env)
+AGENT_NAME=charon openclaude-daemon
 ```
 
 Key environment variables for the daemon:
@@ -39,18 +49,23 @@ lib/scripts/toggle-profile.sh <agent> <backend-name>
 
 ### Job Routing
 
-Each agent has a single Kafka inbox: `agent.<name>`. Messages are routed there directly — no HTTP router, no shared result topic.
+Each agent has a single Kafka request topic: `agent.<name>`. Messages are routed there directly — no HTTP router and no shared result topic.
 
-The daemon consumes `agent.<AGENT_NAME>` one message at a time (pauses/resumes the consumer around each job). When a job has a `reply_to` field, the daemon publishes the result to that topic. Agent-to-agent delegation sets `reply_to: agent.<sender>`.
+Requests must include:
+- `prompt`
+- optional `timeout_ms`
+- optional `reflect`
+- required `reply_to`
 
-### Agent Pod Daemon (`lib/agent-pod-daemon/daemon.js`)
+Klaude consumes `agent.<AGENT_NAME>`, runs the persistent agent session, and publishes the result to `reply_to`.
 
-- Spawns `openclaude` as a child process with `--input-format stream-json --output-format stream-json --dangerously-skip-permissions`
-- Claude is kept alive across jobs (persistent session). Auto-respawns on exit after 3s.
-- Before each job, diffs MD5 hashes of `memory/global/` and `shared/memory/` dirs; prepends a change summary to the job prompt so Claude re-reads updated files
-- Appends memory paths and backend context to every job prompt
-- Result is published to `job.reply_to` topic (if set); no reply_to means fire-and-forget
-- Status/cancel/health endpoints on port 9090 (`/status`, `/cancel`, `/health`, `/memory-update`)
+### Klaude daemon runtime
+
+- Klaude owns the persistent harness/runtime and Kafka mode
+- Kordinate provides runtime seeding, PVC layout, image composition, and deployment manifests
+- Before each job, the runtime can diff shared/agent memory state so updated files are re-read
+- Results follow the runtime contract: `{ status, output, reflection?: { project, general }, errors?: string[] }`
+- Status and memory endpoints remain on port 9090 (`/status`, `/health`, `/memory-update`)
 
 ### Agent Structure (`agents/<name>/`)
 

@@ -2,6 +2,7 @@
 # setup-agent-dir.sh <agent-name>
 #
 # Init container script — validates that the PVC layout exists for this agent.
+# Klaude owns the runtime process; Kordinate only validates the platform-owned PVC layout.
 # The PVC init job owns directory creation; agent startup should not reshape it.
 # The deploy-runtime.sh script handles seeding from repo → runtime.
 #
