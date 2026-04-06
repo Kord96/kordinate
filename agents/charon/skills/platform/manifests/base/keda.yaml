@@ -1,17 +1,6 @@
-# KEDA ScaledObjects for Klaude-based agent pods.
-# Prerequisite: KEDA operator installed (kubectl apply -f https://keda.sh/docs/latest/deploy/)
-#
-# Each ScaledObject follows the per-agent request topic model: one request topic per agent.
-# reply_to handling is owned by Klaude, not by Kordinate manifests.
-#
-# Scaling parameters (minReplicaCount, maxReplicaCount, cooldownPeriod) are set
-# per-environment via overlay patches.
-#
-# stabilizationWindowSeconds prevents rapid scale-up/down oscillation.
-# restoreToOriginalReplicaCount returns to minReplicas on trigger deactivation.
-# pollingInterval of 30s avoids hammering the Kafka API for lag metrics.
-# offsetResetPolicy: earliest makes first-message wake-up deterministic for zero-scaled agents.
-# activationLagThreshold: 0 ensures a single queued job wakes an idle agent immediately.
+# Generated from agents/charon/skills/platform/agent-spec.yaml
+# One request topic and one ScaledObject per agent.
+
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -41,6 +30,7 @@ spec:
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
+
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -70,6 +60,7 @@ spec:
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
+
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -99,6 +90,7 @@ spec:
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
+
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -128,6 +120,7 @@ spec:
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
+
 ---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject

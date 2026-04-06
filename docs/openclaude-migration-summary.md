@@ -1,15 +1,15 @@
-# OpenClaude Migration Summary
+# Klaude Runtime Migration Summary
 
 ## Overview
 
-Kordinate now uses OpenClaude as the harness layer while allowing each agent pod to target different backend model providers. The runtime no longer assumes a single hardcoded provider mapping like `profile: openai -> deepseek`. Instead, each agent gets a generated per-agent backend config, and the daemon records which backend actually handled each job.
+Kordinate now uses Klaude as the harness/runtime layer while allowing each agent pod to target different backend model providers. The runtime no longer assumes a single hardcoded provider mapping like `profile: openai -> deepseek`. Instead, each agent gets a generated per-agent backend config, and the runtime records which backend actually handled each job.
 
 ## Current Runtime Model
 
 ### 1. Agent identity stays simple
 
 Agents still declare a primary runtime in `IDENTITY.md`:
-- `profile` — OpenClaude harness profile (`anthropic`, `openai`, `gemini`, `ollama`, etc.)
+- `profile` — Klaude harness profile (`anthropic`, `openai`, `gemini`, `ollama`, etc.)
 - `model` — backend model name
 - optional `base_url`
 - optional `api_key_env`
@@ -21,7 +21,7 @@ This keeps single-backend agents simple.
 
 ### 2. deploy-runtime generates two runtime files
 
-The generic `BACKENDS.json` format is documented in `shared/openclaude-backends-schema.md` and can be used by any agent.
+The generic `BACKENDS.json` format is documented in `shared/openclaude-backends-schema.md` and can be used by any agent runtime profile, including Klaude.
 
 
 For each runtime agent directory, `lib/scripts/deploy-runtime.sh` now writes:
@@ -41,7 +41,7 @@ If it does not exist, the deploy script synthesizes a one-backend pool from `IDE
 - reads `.openclaude-backends.json`
 - selects a backend using the configured strategy
 - hydrates provider-specific environment variables at runtime from real pod env vars
-- starts OpenClaude with the selected backend profile/model
+- starts Klaude with the selected backend profile/model
 
 Supported selection modes today:
 - `first`
@@ -138,7 +138,7 @@ That gives:
 ## Migration status
 
 ### Done
-- OpenClaude is the harness runtime
+- Klaude is the harness/runtime
 - deploy-runtime generates normalized backend config
 - daemon backend selection is driven by backend entries rather than legacy model maps
 - daemon selects a backend and hydrates env at runtime
@@ -163,7 +163,7 @@ Treat `.openclaude-profile.json` as generated runtime/local state. The repo may 
 ## Practical outcome
 
 The platform can now move toward:
-- “OpenClaude as harness”
+- “Klaude as harness/runtime”
 - “backend chosen per agent pod”
 - “replicas distributed across a backend set”
 - “job outputs labeled with the backend that produced them”

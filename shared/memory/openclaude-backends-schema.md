@@ -1,11 +1,11 @@
 ---
-description: Generic BACKENDS.json schema for any agent using OpenClaude as the harness
+description: Generic BACKENDS.json schema for any agent using Klaude as the harness/runtime
 audience: all-agents
 ---
 
 # BACKENDS.json
 
-Any agent may define `BACKENDS.json` in its agent directory to declare one or more backend model targets behind the same OpenClaude harness.
+Any agent may define `BACKENDS.json` in its agent directory to declare one or more backend model targets behind the same Klaude harness/runtime.
 
 Path:
 - `agents/<agent>/BACKENDS.json`
@@ -19,7 +19,7 @@ Path:
   "backends": [
     {
       "name": "human-readable-backend-name",
-      "profile": "anthropic|openai|gemini|ollama|<other-openclaude-profile>",
+      "profile": "anthropic|openai|gemini|ollama|<other-klaude-profile>",
       "provider": "anthropic|openai|gemini|...",
       "model": "provider-specific-model-name",
       "base_url": "https://optional-provider-endpoint.example/v1",
@@ -52,7 +52,7 @@ Per backend:
 
 ## Notes
 
-- `profile` describes the OpenClaude harness mode.
+- `profile` describes the Klaude harness/runtime mode.
 - `provider` is optional; if omitted, it defaults to `profile`.
 - `base_url` is typically used for `openai`, `ollama`, or other compatible endpoints.
 - `api_key_env` should usually be preferred over embedding secrets in generated files.

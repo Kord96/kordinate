@@ -1,12 +1,6 @@
-# Agent pod Deployments — pod = persistent Klaude session.
-# Klaude owns the agent harness/runtime, including Kafka mode and request/reply handling.
-# Kordinate owns platform orchestration only: images, manifests, PVC layout, and runtime seeding.
-# Each agent consumes its own Kafka request topic and must receive requests with reply_to.
-# Code is baked into layered images (agent-base plus per-agent customizations). No runtime cloning.
-# Init: setup-agent-dir.sh + deploy-runtime.sh seed runtime files from /app/agents/.
-# Single PVC: agent-runtime mounted at /kord for memory, repos, team.
-# KEDA ScaledObjects control replicas (see keda.yaml).
-# Future source of truth: ../agent-spec.yaml
+# Generated from agents/charon/skills/platform/agent-spec.yaml
+# Klaude owns the runtime semantics; Kordinate owns platform orchestration.
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -52,11 +46,6 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/shared/repos }
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: anthropic-api
-                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -78,6 +67,7 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -144,6 +134,7 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -189,11 +180,6 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/shared/repos }
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: anthropic-api
-                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -215,6 +201,7 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -260,11 +247,6 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/shared/repos }
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: anthropic-api
-                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -286,6 +268,7 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -331,11 +314,6 @@ spec:
             - { name: HOME, value: /home/claude }
             - { name: KORDINATE_HOME, value: /app }
             - { name: PROJECTS_ROOT, value: /kord/shared/repos }
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: anthropic-api
-                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }

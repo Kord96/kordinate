@@ -67,7 +67,7 @@ spec:
       serviceAccountName: kord
       containers:
         - name: kord
-          image: REGISTRY/agent-base:latest  # shared agent base image (Node.js + OpenClaude), code from PVC
+          image: REGISTRY/agent-base:latest  # shared agent base image (Node.js + Klaude compatibility CLI), code from PVC
           imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
