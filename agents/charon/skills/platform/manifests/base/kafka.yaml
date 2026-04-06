@@ -48,11 +48,11 @@ spec:
   entityOperator:
     topicOperator: {}
 ---
-# Agent job topics
+# Agent inbox topics
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.augur
+  name: agent.augur
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -64,7 +64,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.charon
+  name: agent.charon
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -76,7 +76,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.sauron
+  name: agent.sauron
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -88,7 +88,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.warden
+  name: agent.warden
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -100,7 +100,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.alfred
+  name: agent.alfred
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -112,7 +112,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.opus-4.6
+  name: agent.opus-4.6
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -124,7 +124,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.deepseek-v3.2
+  name: agent.deepseek-v3.2
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -136,7 +136,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.gemini
+  name: agent.gemini
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -148,7 +148,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.glm5
+  name: agent.glm5
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -160,19 +160,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: jobs.result
-  labels:
-    strimzi.io/cluster: kafka
-spec:
-  partitions: 6
-  replicas: 1
-  config:
-    retention.ms: "86400000"
----
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaTopic
-metadata:
-  name: jobs.dlq
+  name: agent.dlq
   labels:
     strimzi.io/cluster: kafka
 spec:

@@ -350,10 +350,14 @@ cmd_init() {
   local TMP_RUNTIME
   TMP_RUNTIME=$(mktemp -d)
   mkdir -p "$TMP_RUNTIME/local-bin" "$TMP_RUNTIME/claude-hooks" "$TMP_RUNTIME/local-share/kordinate/profile"
-  cp "$KORD_SRC/bin/claude-session" "$KORD_SRC/bin/tmux-save" "$KORD_SRC/bin/tmux-restore" \
-     "$KORD_SRC/bin/tmux-session.bash" "$KORD_SRC/bin/tmux-new-window" "$KORD_SRC/bin/session-status" \
+  cp "$KORD_SRC/agents/charon/skills/bootstrap/images/workstation/bin/legacy/claude-session" \
+     "$KORD_SRC/agents/charon/skills/bootstrap/images/workstation/bin/legacy/session-status" \
+     "$KORD_SRC/agents/charon/skills/bootstrap/images/workstation/bin/tmux-save" \
+     "$KORD_SRC/agents/charon/skills/bootstrap/images/workstation/bin/tmux-restore" \
+     "$KORD_SRC/agents/charon/skills/bootstrap/images/workstation/bin/tmux-session.bash" \
+     "$KORD_SRC/agents/charon/skills/bootstrap/images/workstation/bin/tmux-new-window" \
      "$TMP_RUNTIME/local-bin/"
-  cp "$KORD_SRC/hooks/guard.sh" "$KORD_SRC/hooks/subagent-invocation-gate.sh" "$TMP_RUNTIME/claude-hooks/"
+  cp "$KORD_SRC/shared/hooks/guard.sh" "$KORD_SRC/shared/hooks/subagent-invocation-gate.sh" "$TMP_RUNTIME/claude-hooks/"
   cp "$KORD_SRC/shared/runtime-ownership.yaml" "$TMP_RUNTIME/claude-hooks/runtime-ownership.yaml"
   cp "$KORD_SRC/profile/config-acl.yaml" "$TMP_RUNTIME/local-share/kordinate/profile/config-acl.yaml"
   tar czf /tmp/kordinate-runtime-seed.tar.gz -C "$TMP_RUNTIME" .

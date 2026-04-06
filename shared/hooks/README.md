@@ -35,7 +35,7 @@ Legacy merge-on-push hooks are now disabled. Integration is explicit via `/integ
 
 ## Dev Sync
 
-[dev-sync.sh](../../hooks/dev-sync.sh) is a git `post-commit` hook for kordinate developers. It lives in the repo-root `hooks/` directory (not in this package directory) because it is a dev tool, not an installed package file.
+[dev-sync.sh](dev-sync.sh) is a git `post-commit` hook for kordinate developers. It now lives alongside the rest of the shared framework hooks because it is part of the kordinate hook surface.
 
 | Trigger | Condition | Action |
 |---------|-----------|--------|

@@ -80,15 +80,11 @@ This file is in charon's global memory — all agents can read it.
         "status": "running|stopped"
       }
     },
-    "job_router": {
-      "endpoint": "job-router.kord.svc.cluster.local:3100",
-      "delegate": "POST /api/delegate {agent, prompt, project?, repo?}"
-    },
     "kafka": {
       "endpoint": "kafka-kafka-bootstrap.dev.svc.cluster.local:9092",
       "topics": {
-        "jobs": ["jobs.augur", "jobs.charon", "jobs.warden", "jobs.sauron", "jobs.alfred"],
-        "results": ["jobs.result", "jobs.dlq"],
+        "agent_inboxes": ["agent.augur", "agent.charon", "agent.warden", "agent.sauron", "agent.alfred"],
+        "replies": ["agent.dlq"],
         "memory": ["memory.updates.augur", "memory.updates.charon", "memory.updates.warden", "memory.updates.sauron", "memory.updates.alfred"]
       }
     },
@@ -222,7 +218,7 @@ Assemble the JSON from the gathered state:
 1. **cluster** — from `kubectl get nodes`
 2. **environments.dev** — scan dev namespace for services, deployments, PVCs, Kafka topics
 3. **environments.test/prod** — stub entries only
-4. **platform** — from kord namespace: agents, job-router, scribes, KEDA config
+4. **platform** — from kord namespace: agents, scribes, KEDA config
 5. **observability** — from master/monitor namespaces: Prometheus, Loki, Grafana, Alloy
 6. **networking** — from services, Tailscale status
 7. **storage** — from PVCs across namespaces
@@ -248,7 +244,7 @@ Write to `$AGENT_PROJECT_DIR/memory/global/infra-atlas.json`.
 **Cluster**: <name> (<version>)
 **Nodes**: <count> (<status summary>)
 **Environments**: dev (N services), test (stub), prod (stub)
-**Platform**: <agent count> agents, job-router, <scribe count> scribes
+**Platform**: <agent count> agents, <scribe count> scribes
 **Services**: <list>
 **Contract**: <N> requirements across observability, packaging, resilience
 **Hash**: <cluster_hash>

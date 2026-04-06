@@ -4,8 +4,8 @@
 # Only active when dev mode is enabled (register runtime --dev).
 #
 # Install: symlink to .git/hooks/post-commit (or append if hook exists)
-#   ln -sf ../../hooks/dev-sync.sh .git/hooks/post-commit
-# Make executable: chmod +x hooks/dev-sync.sh
+#   ln -sf ../../shared/hooks/dev-sync.sh .git/hooks/post-commit
+# Make executable: chmod +x shared/hooks/dev-sync.sh
 
 set -euo pipefail
 

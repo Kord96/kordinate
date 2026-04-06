@@ -15,7 +15,7 @@ Two legacy nodes (`colima`, `kkord-latitude-5420`) are SchedulingDisabled.
 
 | Namespace | Purpose | Key workloads |
 |-----------|---------|---------------|
-| `kord` | Agent platform | Agents, scribes, job-router, webhook-receiver, KEDA |
+| `kord` | Agent platform | Agents, scribes, KEDA |
 | `master` | Workstation + monitoring backend | Workstation (Caddy), Alloy, Prometheus, Loki, Grafana |
 | `dev` | Kafka message bus | Strimzi Kafka (broker + entity operator) |
 | `gateway` | Ingress + object storage | MinIO |
@@ -27,7 +27,7 @@ Two legacy nodes (`colima`, `kkord-latitude-5420`) are SchedulingDisabled.
 
 | PVC | Namespace | Size | Access | Purpose |
 |-----|-----------|------|--------|---------|
-| `agent-runtime` | kord | 20Gi | RWX | Shared `/kord` mount for all agents, scribes, job-router |
+| `agent-runtime` | kord | 20Gi | RWX | Shared `/kord` mount for all agents, scribes, and shared runtime state |
 | `kord` | master | 20Gi | RWX | Workstation kord volume |
 | `kord-repos` | master | 20Gi | RWX | Workstation repo storage |
 | `workstation-home` | master | 20Gi | RWO | Workstation home directory |
@@ -47,10 +47,8 @@ See infra-atlas `storage.pvcs` for the full PVC inventory.
 
 All agent workloads run in `kord`, not `master`. Components:
 
-- **Agents** (augur, charon, sauron, warden, alfred) -- Deployments, KEDA-scaled from Kafka topics
+- **Agents** (augur, charon, sauron, warden, alfred) -- Deployments, KEDA-scaled from Kafka inbox topics `agent.<name>`
 - **Scribes** (one per agent) -- Consume `memory.updates.<agent>`, deduplicate with Haiku
-- **Job Router** -- HTTP gateway (`job-router.kord.svc.cluster.local:3100`), delegates to agents via Kafka
-- **Webhook Receiver** -- GitHub push events, routes to job-router for CI triggers
 - **Kafka** in `dev` namespace -- `kafka-kafka-bootstrap.dev.svc.cluster.local:9092` (Strimzi-managed)
 
 Pods now use a layered image model from the configured cluster registry: `REGISTRY/agent-base:latest` for shared runtime, with derived images like `REGISTRY/agent-charon:latest` and `REGISTRY/agent-augur:latest` for agent-specific tooling.
@@ -81,7 +79,6 @@ Dev services use **git-sync sidecar** pattern (see `docs.yaml` for reference):
 ## Build Pipeline
 
 ```
-GitHub push -> webhook-receiver -> job-router -> charon (via Kafka)
 ```
 
 Charon runs deterministic gates (lint, test, schema drift) before building.
@@ -98,7 +95,7 @@ Builds use **kaniko** Jobs or an equivalent Docker-capable build environment. Im
 ## Manifests
 
 Platform manifests: `agents/charon/skills/platform/manifests/base/`
-  - `agents.yaml`, `scribes.yaml`, `job-router.yaml`, `webhook-receiver.yaml`
+  - `agents.yaml`, `scribes.yaml`
   - `kafka.yaml`, `keda.yaml`, `docs.yaml`
   - `kustomization.yaml` ties them together
 

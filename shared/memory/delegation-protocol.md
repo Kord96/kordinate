@@ -1,10 +1,10 @@
 ---
-description: How to delegate work to pod agents through the job-router
+description: How to delegate work to pod agents through Kafka inbox topics
 ---
 
 # Delegation Protocol
 
-You are the orchestrator running on the master workstation. You do not perform infrastructure, monitoring, security, or architecture work directly. You delegate to specialized agents through the job-router.
+You are the orchestrator running on the master workstation. You do not perform infrastructure, monitoring, security, or architecture work directly. You delegate to specialized agents through Kafka inbox topics.
 
 ## Agent Roster
 
@@ -40,55 +40,44 @@ These are non-negotiable. Do not attempt these operations locally.
 
 ## How to Delegate
 
-Send a POST to the job-router REST endpoint:
-
-```bash
-curl -s http://job-router.kord.svc.cluster.local:3100/api/delegate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "agent": "<agent-name>",
-    "prompt": "<what you need done>",
-    "project": "<optional: project name>",
-    "repo": "<optional: repo path>"
-  }'
-```
-
-The response is synchronous (blocks until the agent finishes, up to 15 minutes):
+Publish a job to the target agent inbox topic `agent.<name>`. Include a sender identity in `from`; the receiving daemon replies to `agent.<from>` by default, or to `reply_to` when provided.
 
 ```json
 {
+  "id": "uuid",
+  "type": "job",
+  "from": "master-workstation",
+  "reply_to": "agent.master-workstation",
   "agent": "charon",
-  "job_id": "uuid",
+  "prompt": "Deploy the api-gateway service to staging. Use the latest image tag from CI.",
+  "project": "api-gateway",
+  "repo": "/home/claude/repos/api-gateway",
   "correlation_id": "uuid",
+  "created_at": "2026-04-06T00:00:00.000Z"
+}
+```
+
+The response arrives on the reply topic as a result message:
+
+```json
+{
+  "type": "result",
+  "id": "uuid",
+  "from": "charon-abc123",
+  "correlation_id": "uuid",
+  "agent": "charon",
   "status": "success",
   "output": "The agent's response text"
 }
 ```
 
-Error responses return `status: "error"` with an `error` field. Timeout returns HTTP 504.
-
 ### Examples
 
-Deploy a service:
-```bash
-curl -s http://job-router.kord.svc.cluster.local:3100/api/delegate \
-  -H "Content-Type: application/json" \
-  -d '{"agent": "charon", "prompt": "Deploy the api-gateway service to staging. Use the latest image tag from CI.", "project": "api-gateway"}'
-```
+Deploy a service: publish a job to `agent.charon` with `prompt: "Deploy the api-gateway service to staging..."` and `project: "api-gateway"`.
 
-Set up monitoring:
-```bash
-curl -s http://job-router.kord.svc.cluster.local:3100/api/delegate \
-  -H "Content-Type: application/json" \
-  -d '{"agent": "sauron", "prompt": "Create Grafana dashboards for the payments service. Include request rate, error rate, and p99 latency.", "project": "payments"}'
-```
+Set up monitoring: publish a job to `agent.sauron` with `prompt: "Create Grafana dashboards for the payments service..."`.
 
-Architecture review:
-```bash
-curl -s http://job-router.kord.svc.cluster.local:3100/api/delegate \
-  -H "Content-Type: application/json" \
-  -d '{"agent": "augur", "prompt": "Review the architecture of the new auth module. Check for anti-patterns and consistency with existing services.", "repo": "/home/claude/repos/auth-module"}'
-```
+Architecture review: publish a job to `agent.augur` with the repo path in `repo` and the review request in `prompt`.
 
 ## Artifact Passing Convention
 

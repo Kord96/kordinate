@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/data/repos/kore/hooks/guard.sh"
+            "command": "/data/repos/kore/shared/hooks/guard.sh"
           }
         ]
       }

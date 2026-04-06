@@ -60,7 +60,7 @@ Each job result now includes backend metadata:
 - model spec
 - selection strategy
 
-This metadata is emitted by the daemon and preserved by the router’s `/api/delegate` response path.
+This metadata is emitted by the daemon and preserved in Kafka result messages.
 
 That gives us a clean way to later compare strengths/weaknesses by backend for the same logical agent.
 
@@ -98,9 +98,9 @@ But they are now derived from the normalized active backend profile rather than 
 ## Testing helpers updated
 
 The local helper scripts now reflect the new architecture:
-- `test_deploy.sh` validates generated per-agent backend pool/profile files
-- `test-spawn.js` validates backend selection + env hydration
 - `toggle-profile.sh` now acts as a per-agent backend selector against `/kord/agents/<agent>/`
+
+The older top-level scratch helpers (`test_deploy.sh`, `test-spawn.js`, `test_parse.sh`) were temporary migration aids and are no longer part of the supported runtime workflow.
 
 ## Recommended multi-backend pattern
 
@@ -142,7 +142,7 @@ That gives:
 - deploy-runtime generates normalized backend config
 - daemon backend selection is driven by backend entries rather than legacy model maps
 - daemon selects a backend and hydrates env at runtime
-- router preserves backend attribution in delegated responses
+- Kafka result messages preserve backend attribution in delegated responses
 - helper scripts match the new per-agent runtime model
 
 ### Still to do
@@ -154,10 +154,7 @@ That gives:
 
 - `/kord/projects/kordinate/lib/scripts/deploy-runtime.sh`
 - `/kord/projects/kordinate/lib/agent-pod-daemon/daemon.js`
-- `/kord/projects/kordinate/lib/job-router/router.js`
 - `/kord/projects/kordinate/lib/scripts/toggle-profile.sh`
-- `/kord/projects/kordinate/test_deploy.sh`
-- `/kord/projects/kordinate/test-spawn.js`
 
 ## Repo ownership note
 

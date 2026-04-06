@@ -33,8 +33,8 @@ spec:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent-augur
-        topic: jobs.augur
+        consumerGroup: agent.augur
+        topic: agent.augur
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -62,8 +62,8 @@ spec:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent-charon
-        topic: jobs.charon
+        consumerGroup: agent.charon
+        topic: agent.charon
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -91,8 +91,8 @@ spec:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent-warden
-        topic: jobs.warden
+        consumerGroup: agent.warden
+        topic: agent.warden
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -120,8 +120,8 @@ spec:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent-sauron
-        topic: jobs.sauron
+        consumerGroup: agent.sauron
+        topic: agent.sauron
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -149,8 +149,8 @@ spec:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent-alfred
-        topic: jobs.alfred
+        consumerGroup: agent.alfred
+        topic: agent.alfred
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest

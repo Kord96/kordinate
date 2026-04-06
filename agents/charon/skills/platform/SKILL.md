@@ -1,12 +1,12 @@
 ---
 name: platform
 description: >
-  Deploy and manage the agent runtime platform — agents, curators, kafka, job-router, KEDA scaling.
+  Deploy and manage the agent runtime platform — agents, curators, kafka, and KEDA scaling.
   Use for platform deploys, scaling changes, status checks, and component restarts.
 argument-hint: "deploy <env> | status [env] | scale <agent> <min> <max> [env] | restart <component> [env]"
 ---
 
-Deploy and manage the agent runtime platform. Applies kustomize overlays for platform components (agents, curators, kafka, job-router, KEDA) to target environments.
+Deploy and manage the agent runtime platform. Applies kustomize overlays for platform components (agents, curators, kafka, KEDA) to target environments.
 
 ## Usage
 
@@ -47,7 +47,7 @@ Default environment is `dev` if not specified.
 1. Parse env from `$ARGUMENTS` (default: `dev`).
 
 2. **Gather** — collect:
-   - Pod counts and ready state for agents, curators, kafka, job-router
+   - Pod counts and ready state for agents, curators, and kafka
    - KEDA ScaledObject configuration (min/max replicas, triggers)
    - Kafka consumer group lag for agent topics
 

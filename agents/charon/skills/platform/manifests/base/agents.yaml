@@ -39,7 +39,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              cd /app/daemon && exec node daemon.js
+              exec openclaude-daemon
           env:
             - { name: AGENT_NAME, value: augur }
             - { name: AGENT_PROJECT_DIR, value: /runtime/augur }
@@ -110,7 +110,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              cd /app/daemon && exec node daemon.js
+              exec openclaude-daemon
           env:
             - { name: AGENT_NAME, value: charon }
             - { name: AGENT_PROJECT_DIR, value: /runtime/charon }
@@ -176,7 +176,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              cd /app/daemon && exec node daemon.js
+              exec openclaude-daemon
           env:
             - { name: AGENT_NAME, value: warden }
             - { name: AGENT_PROJECT_DIR, value: /runtime/warden }
@@ -247,7 +247,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              cd /app/daemon && exec node daemon.js
+              exec openclaude-daemon
           env:
             - { name: AGENT_NAME, value: sauron }
             - { name: AGENT_PROJECT_DIR, value: /runtime/sauron }
@@ -318,7 +318,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              cd /app/daemon && exec node daemon.js
+              exec openclaude-daemon
           env:
             - { name: AGENT_NAME, value: alfred }
             - { name: AGENT_PROJECT_DIR, value: /runtime/alfred }

@@ -21,7 +21,7 @@ KORD_PROFILE_STATE_DIR="$KORD_LOCAL_STATE/profile"
 OWNERSHIP_STATE_FILE="$HOME/.claude/runtime-ownership.yaml"
 CLAUDE_STATE_ENTRIES="projects history.jsonl sessions session-env tasks backups cache file-history shell-snapshots settings.json .mcp.json keybindings.json"
 LEGACY_REPO_SNAPSHOT_ENTRIES=".git .gitignore CLAUDE.md README.md requirements.txt kordinate agents commands dashboards profile setup agent-memory config.yaml config.yaml.template shared"
-LOCAL_HELPERS="claude-session tmux-save tmux-restore tmux-session.bash tmux-new-window session-status"
+LOCAL_HELPERS="legacy/claude-session legacy/session-status tmux-save tmux-restore tmux-session.bash tmux-new-window"
 CLAUDE_HOOKS="guard.sh subagent-invocation-gate.sh"
 
 ensure_persistent_home() {
@@ -80,8 +80,8 @@ install_local_helpers() {
   mkdir -p "$LOCAL_BIN"
   for helper in $LOCAL_HELPERS; do
     [ -f "$source_root/$helper" ] || continue
-    cp -a "$source_root/$helper" "$LOCAL_BIN/$helper"
-    chmod +x "$LOCAL_BIN/$helper" 2>/dev/null || true
+    cp -a "$source_root/$helper" "$LOCAL_BIN/$(basename "$helper")"
+    chmod +x "$LOCAL_BIN/$(basename "$helper")" 2>/dev/null || true
   done
 }
 

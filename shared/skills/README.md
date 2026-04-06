@@ -10,6 +10,6 @@ Skills available to all agents, not owned by any single agent.
 | [publish](publish/SKILL.md) | `/publish` | Push the current branch explicitly and optionally prepare it for review |
 | [session](session/SKILL.md) | `/session` | List worktree-backed sessions, show sync state, and print resume/create commands |
 
-`/session` is backed by `bin/session-status` for operational listing and control-plane output.
+`/session` is backed by the legacy workstation helper `agents/charon/skills/bootstrap/images/workstation/bin/legacy/session-status` for operational listing and control-plane output.
 | [improve](improve/SKILL.md) | `/improve` | Improve skills, agents, or the whole team — run evals, benchmark, iterate, and optimize |
 | [install](install/SKILL.md) | `/install` | Install or reinstall kordinate — creates ~/.kord/, links runtime, optionally bootstraps infra |

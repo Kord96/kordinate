@@ -6,9 +6,7 @@ RUN apk add --no-cache git gnupg pass bash python3 py3-yaml curl coreutils
 RUN adduser -D -s /bin/bash -h /home/claude claude
 
 # Platform code — baked into image, no runtime cloning needed
-COPY lib/agent-pod-daemon /app/daemon
 COPY lib/agent-scribe /app/scribe
-COPY lib/job-router /app/router
 COPY lib/scripts /app/scripts
 COPY lib/hooks /app/hooks
 COPY lib/templates /app/templates
@@ -16,9 +14,7 @@ COPY shared /app/shared
 COPY agents /app/agents
 
 # Install dependencies
-RUN cd /app/daemon && npm install --production \
-    && cd /app/scribe && npm install --production \
-    && cd /app/router && npm install --production
+RUN cd /app/scribe && npm install --production
 
 # OpenClaude CLI
 USER claude

@@ -25,10 +25,10 @@ Inspect and manage worktree-backed Claude sessions.
 
 ## Procedure
 
-Use the helper backend:
+Use the legacy workstation helper backend:
 
 ```bash
-bin/session-status $ARGUMENTS
+agents/charon/skills/bootstrap/images/workstation/bin/legacy/session-status $ARGUMENTS
 ```
 
 Behavior by mode:

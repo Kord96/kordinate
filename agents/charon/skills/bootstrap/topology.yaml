@@ -12,7 +12,6 @@ master:
   - master-kord-storage.yaml
   - master-docs.yaml                 # Astro Starlight docs site (docs.khaledkord.com)
   - master-workstation.yaml          # Caddyfile ConfigMap generated in overlay
-  - master-job-router.yaml           # job router / control-plane service manifest
   - prometheus.yaml                  # base — overlay sets: port=9191, retention=30d, PVC
   - loki.yaml                       # base — overlay sets: PVC name
   - master-grafana.yaml

@@ -7,4 +7,3 @@ resources:
   - kafka.yaml
   - keda.yaml
   - generic-keda.yaml
-  - job-router.yaml

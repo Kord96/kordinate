@@ -389,12 +389,13 @@ deploy_team() {
 
 ## Delegation
 
-POST to the job router:
+Publish a job to the target Kafka inbox topic `agent.<name>` and wait for the reply topic for your sender identity.
+Example payload:
 ```
-curl -s http://job-router:3100/api/delegate \
-  -H "Content-Type: application/json" \
-  -d '{"agent":"<name>","prompt":"<what you need>","project":"<optional>"}'
+{"id":"<uuid>","type":"job","from":"master-workstation","reply_to":"agent.master-workstation","agent":"<name>","prompt":"<what you need>","project":"<optional>","correlation_id":"<uuid>","created_at":"<iso8601>"}
 ```
+
+Replies come back as `type: "result"` messages with the same `correlation_id`.
 TEAM
     log "team/memory/global/team.md generated"
   fi

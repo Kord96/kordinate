@@ -60,14 +60,9 @@ For each agent (augur, charon, sauron, alfred, warden):
 - Kafka cluster is running in KRaft mode
 - Broker is reachable at the configured address
 - Topics exist:
-  - `jobs.augur`, `jobs.charon`, `jobs.warden`, `jobs.sauron`, `jobs.alfred`
-  - `jobs.result`, `jobs.dlq`
+  - `agent.augur`, `agent.charon`, `agent.warden`, `agent.sauron`, `agent.alfred`
+  - `agent.dlq`
   - `memory.updates.augur`, `memory.updates.charon`, `memory.updates.warden`, `memory.updates.sauron`, `memory.updates.alfred`
-
-### Job Router
-- Pod is running
-- `/health` returns 200
-- Port 3100 is accessible from within the cluster
 
 ### Agent Pods
 - KEDA ScaledObjects exist for all 5 agents
@@ -85,9 +80,9 @@ For each agent (augur, charon, sauron, alfred, warden):
 ## End-to-End Flow
 
 ### Job delegation
-- POST to `job-router:3100/api/delegate` with a simple prompt returns a response
+- Publish a simple job to `agent.charon` and receive a reply on the configured reply topic
 - Response contains agent output (not error)
-- `jobs.result` topic receives the result message
+- The reply topic receives the result message with matching `correlation_id`
 
 ### Memory pipeline
 - Agent reflection produces a curl to `:9090/memory-update`

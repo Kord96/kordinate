@@ -31,7 +31,7 @@ Static analysis of all SKILL.md files for quality, completeness, and best practi
 
 1. **Parse arguments** — defaults: read-only, scan all agents and global skills. Restrict with `--agent` or `--skill`.
 
-2. **Discover skills** — find every `SKILL.md` under `$KORDINATE_HOME/agents/*/skills/` and `$KORDINATE_HOME/skills/`. Build inventory: skill name, agent, path, file size.
+2. **Discover skills** — find every `SKILL.md` under `$KORDINATE_HOME/agents/*/skills/` and `$KORDINATE_HOME/shared/skills/`. Build inventory: skill name, agent, path, file size.
 
 3. **Run per-skill checks** — for each skill, run the Structure, Quality, and Security checks in [checks.md](checks.md):
    - **Structure** — frontmatter presence, required fields, file organization
