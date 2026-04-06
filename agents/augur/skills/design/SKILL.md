@@ -44,7 +44,7 @@ Invoked: `/design orders` with requirements in the prompt.
    - Available services in dev, new_workload_contract
    - If missing, respond: "Need infra atlas. Ask charon to run /survey first."
 
-2. **Concept indexes** — `memory/global/concepts.md` and `memory/global/anti-patterns.md`
+2. **Index layer** — `memory/indexes/concepts.md` and `memory/indexes/anti-patterns.md`
    - Note the categories and entry counts
 
 ### Step 2 — Understand requirements
@@ -86,7 +86,7 @@ Auth, feature flags, tracing, graceful shutdown.
 
 For each recommended pattern, note:
 - Which concept catalog entry it maps to
-- Whether it has `monitoring.md`, `testing.md`, `deployment.md`
+- Which detector and semantic assets are available (for example policy, signatures, or executable rules)
 - One-sentence rationale
 
 ```
@@ -96,21 +96,21 @@ Based on: <1-sentence requirements summary>
 Infrastructure: <available services from infra atlas>
 
 ### Architecture
-- **hexagonal** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
+- **hexagonal** — [reason]. Assets: policy ✓, signatures ✓
 
 ### Communication
-- **consumer-group** — [reason]. Has: testing ✓
-- **webhook** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
+- **consumer-group** — [reason]. Assets: semantics ✓
+- **webhook** — [reason]. Assets: semantics ✓, detector rules ✓
 
 ### Resilience
-- **circuit-breaker** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
-- **retry** — [reason]. Has: testing ✓
+- **circuit-breaker** — [reason]. Assets: semantics ✓, detector rules ✓
+- **retry** — [reason]. Assets: semantics ✓, detector rules ✓
 
 ### Data
-- **event-sourcing** — [reason]. Has: monitoring ✓, testing ✓, deployment ✓
+- **event-sourcing** — [reason]. Assets: policy ✓, signatures ✓, detector rules ✓
 
 ### Cross-cutting
-- **distributed-tracing** — [reason]. Has: monitoring ✓
+- **distributed-tracing** — [reason]. Assets: semantics ✓, detector rules ✓
 
 New infrastructure needed: <list> or "none — all available in dev"
 
@@ -126,8 +126,8 @@ Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,re
 ### Step 1 — Load patterns
 
 For each pattern in the comma-separated list:
-1. Read `memory/global/concepts/<pattern>/concept.md`
-2. Use the shared loader at `agents/augur/scripts/concept_loader.py` to load structured concept metadata, preferring `memory/global/concepts/<pattern>/meta.yaml` and falling back to `monitoring.md`, `testing.md`, and `deployment.md`
+1. Read `memory/catalog/concepts/<pattern>/concept.md`
+2. Load deterministic detector metadata from `detectors/concepts/<pattern>/` when needed, and treat any legacy `memory/catalog/concepts/<pattern>/meta.yaml` as migration-era mixed metadata rather than the long-term source of truth
 
 ### Step 2 — Read infra atlas
 
@@ -144,7 +144,7 @@ Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../.
 - **flows** — designed data flows based on communication patterns
 - **external_dependencies** — with endpoints from infra atlas
 - **failure_modes** — anticipated failures from resilience patterns. For each failure mode,
-  populate `detection` with structured fields by loading the concept through `agents/augur/scripts/concept_loader.py`: `signals` (prefer structured monitoring metrics/signals from `meta.yaml`; if absent, derive them from legacy `monitoring.md`), `concern` (abstract category), `source_pattern` (concept name). These are portable — sauron maps them to Prometheus queries and vitals evaluations
+  populate `detection` with structured fields from semantic concept guidance plus detector-side policy/signatures when helpful: `signals`, `concern`, and `source_pattern`. These are portable — sauron maps them to Prometheus queries and vitals evaluations
 - **domain_model** — from the data patterns
 - **debt** — empty (score: 0, grade: A)
 - **metadata.analysis_mode** — `"design"`
@@ -207,7 +207,7 @@ Journeys: $MEM/journeys/
 Other agents read the atlas + stories + journeys for full context:
 - Sauron: failure_modes.detection for monitoring, stories for architecture understanding
 - Charon: failure_modes for rollout concerns, flows for deployment dependencies
-- Developer: stories for onboarding, detected_patterns → testing.md for test guidance
+- Developer: stories for onboarding, detected_patterns → concept semantics and detector assets for implementation guidance
 
 Next: `/design <name> --scaffold`
 ```
@@ -232,14 +232,13 @@ Deployment is charon's responsibility.
 <name>/
   README.md       purpose, architecture, patterns, getting started
   src/            code stubs per atlas component
-  tests/          test stubs (from detected_patterns → testing.md)
+  tests/          test stubs (derived from selected patterns and concept semantics)
 ```
 
 **Code stubs**: from atlas components — one module per component with interfaces
 and placeholder implementations.
 
-**Tests**: for each `detected_patterns` entry that has a `testing.md`, read it
-and generate test stubs.
+**Tests**: for each `detected_patterns` entry, use concept semantics and any structured analysis guidance still present during migration to generate test stubs.
 
 Do NOT generate: Dockerfile, kustomize/, vitals/, monitoring/. Those are
 charon's job and will be added when charon wraps the project for deployment.

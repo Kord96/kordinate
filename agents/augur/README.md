@@ -6,28 +6,27 @@ Architecture review and pattern authority — reviews design consistency, identi
 
 | Skill | Command | Purpose |
 |-------|---------|---------|
-| [detect-patterns](skills/detect-patterns/SKILL.md) | `/designer:detect-patterns <project>` | Scan a project for recognized architectural patterns |
+| [analyze](skills/analyze/SKILL.md) | `/analyze <project>` | Scan a project for recognized architectural patterns and produce atlas/story outputs |
+| [design](skills/design/SKILL.md) | `/design <mode>` | Design new systems or components using Augur's pattern vocabulary |
 
-## Legacy Kord Contracts
+## Memory and detectors
 
-These entries describe older compatibility contracts and are no longer the preferred orchestration path. Use explicit delegation to `augur` instead.
+### Source memory
+- [memory/MEMORY.md](memory/MEMORY.md) — Memory entrypoint
+- [memory/workflow.md](memory/workflow.md) — Review workflow
+- [memory/tools.md](memory/tools.md) — Tool reference
+- [memory/indexes/](memory/indexes/) — Ontology and index layer
+- [memory/contracts/](memory/contracts/) — Normative contracts
+- [memory/catalog/concepts/](memory/catalog/concepts/) — Concept semantics catalog
+- [memory/catalog/frameworks/](memory/catalog/frameworks/) — Framework semantics catalog
 
-| Kord | Mode | Requesters | Description |
-|------|------|-----------|-------------|
-| [designer-default](../../kords/designer-default/contract.md) | stateful | any | Legacy architecture/design questions contract |
-| [pattern-review](../../kords/pattern-review/contract.md) | stateful | deployer, sauron | Legacy deployment/monitoring review contract |
+### Detector source
+- [detectors/concepts/](detectors/concepts/) — Deterministic concept detector assets
+- [detectors/frameworks/](detectors/frameworks/) — Deterministic framework detector assets
 
-## Memory
-
-| File | Description |
-|------|-------------|
-| [app-contract.md](memory/app-contract.md) | App contract |
-| [patterns.md](memory/patterns.md) | Index of recognized architectural patterns by category |
-| [patterns/](memory/patterns/) | 16 pattern references (circuit-breaker, saga, CQRS, DDD, hexagonal, etc.) |
-| [libraries.md](memory/libraries.md) | Index of shared libraries that implement patterns |
-| [libraries/](memory/libraries/) | Library references (klog, nokrashi-tools, orchestrator, stoik) |
-| [tools.md](memory/tools.md) | Tools reference — Gemini MCP for architecture validation |
-| [workflow.md](memory/workflow.md) | Review workflow — identify, compare, review, report |
+### Generated bundles
+- [bundles/memory/](bundles/memory/) — Model-facing compiled memory bundles
+- [bundles/detectors/](bundles/detectors/) — Generated detector execution bundles
 
 ## Rules
 

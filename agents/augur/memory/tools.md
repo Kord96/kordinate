@@ -7,5 +7,7 @@ description: Augur tools reference
 |------|------|---------|
 | Gemini CLI | CLI | Peer review — validate analysis outputs, catch factual errors |
 | Infra-atlas | global memory | Cluster topology, observability config, workload contract |
-| Concept catalog | local memory (265 patterns) | `concept.md` semantics plus `meta.yaml` detector policy / ops guidance, with legacy support files during migration |
-| ast-grep | CLI | Pattern matching against source code for concept detection |
+| Concept catalog | semantic memory | Canonical concept meaning and architectural implications |
+| Framework catalog | semantic memory | Framework primitives, conventions, and framework-native patterns |
+| Detector source | deterministic assets | Framework and concept detection policy plus executable AST/semgrep rules |
+| ast-grep | CLI | Pattern matching against source code for deterministic concept and framework detection |

@@ -4,9 +4,9 @@ Level 3 resource for the architect skill. Referenced from step 2 (detect concept
 
 ## Catalog
 
-The pattern and anti-pattern indexes (`concepts.md`, `anti-patterns.md`) are pre-loaded in your global memory. Each index header states its entry and category counts — use those numbers in the report, do not hardcode them.
+The ontology and index layer lives under `memory/indexes/`. Use the indexes there as the stable navigational layer for categories and entry counts — use those numbers in the report, do not hardcode them.
 
-Individual concept details live in `memory/global/concepts/<name>/concept.md` — read these on demand during detection, not upfront. The `type` field in frontmatter distinguishes them (`pattern` vs `anti-pattern`). The two indexes use different category names (e.g., `resilience` in patterns vs `Error Handling` in anti-patterns) — always pull the category from whichever index the entry appears in.
+Individual concept semantics live in `memory/catalog/concepts/<name>/concept.md` and framework semantics live in `memory/catalog/frameworks/<name>/framework.md`. Read these on demand in selective mode rather than loading every entry up front. Concepts remain the semantic layer; deterministic detection assets live separately under `detectors/`.
 
 ## Stack Detection and Category Prioritization
 
@@ -28,7 +28,7 @@ Work category by category through the prioritized list. For each entry in a cate
 
 ## Pass 2 — Tool Rules (ast-grep / semgrep)
 
-Use tool rules to gather structured evidence, not to force binary detection. Prefer concept-level detector policy from `meta.yaml` when present.
+Use tool rules to gather structured evidence, not to force binary detection. Prefer concept-level detector policy from `detectors/concepts/<name>/policy.yaml` when present.
 
 ### Detector strength
 
@@ -46,12 +46,16 @@ Architecture-level and semantics-heavy concepts should still prefer semantic que
 
 ### Rule files
 
-For each candidate, check for a rule file:
+For each candidate, check the deterministic detector assets under `detectors/concepts/<name>/`.
 
-- `memory/global/concepts/<name>/ast-grep.yaml`
-- `memory/global/concepts/<name>/semgrep.yaml`
+Typical files:
 
-Most entries have neither. Check file existence before running. A rule file may contain multiple YAML documents for different languages or variants.
+- `detectors/concepts/<name>/ast-grep.yaml`
+- `detectors/concepts/<name>/semgrep.yaml`
+- `detectors/concepts/<name>/policy.yaml`
+- `detectors/concepts/<name>/signatures.yaml`
+
+Most entries will only have a subset. Check file existence before running. A rule file may contain multiple YAML documents for different languages or variants.
 
 Run the available rule against the project:
 - `ast-grep scan --rule <rule-path> <project-dir>`
@@ -108,7 +112,7 @@ For each candidate still unconfirmed after Pass 2 (no rule file exists, or the t
 
 ## Pass 3.5 — Diagnostic Question Evaluation
 
-For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), use the shared loader at `agents/augur/scripts/concept_loader.py` to load structured diagnostic metadata. It should prefer `memory/global/concepts/<name>/meta.yaml` and fall back to the legacy `questions.yaml` file.
+For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), load structured detector metadata from `detectors/concepts/<name>/`. During migration, legacy `memory/catalog/concepts/<name>/meta.yaml` may still exist as a mixed metadata source.
 
 When either source provides diagnostic questions, evaluate them like this. Until semantic evaluation is implemented, unanswered questions must stay neutral in the emitted `augur-question-result/v1` record rather than counting as yes or no. Feed those records into `agents/augur/scripts/concept_decision.py` alongside rule evidence:
 
@@ -117,7 +121,7 @@ When either source provides diagnostic questions, evaluate them like this. Until
 - Compute the weighted score (sum of weights for "yes" answers).
 - If score >= `threshold`, mark as detected. Derive confidence from score/max_score ratio: >= 80% = high, >= threshold = medium.
 
-`meta.yaml` should be treated as the canonical structured source because it can also carry testing, monitoring, and deployment guidance for the same concept. Keep `ast-grep.yaml` and `semgrep.yaml` as separate support artifacts, and route all structured concept loading through `agents/augur/scripts/concept_loader.py` so `/analyze` and `/design` use the same fallback behavior.
+`detectors/concepts/<name>/policy.yaml` should be treated as the canonical structured detector source. Legacy `meta.yaml` may still exist during migration for fallback analysis guidance, but it is no longer the long-term detector authority. Keep `ast-grep.yaml` and `semgrep.yaml` as separate support artifacts, and route structured detector loading through the detector layer so `/analyze` and `/design` converge on one deterministic path.
 
 Batch all questions for one concept into a single analysis pass — do not make separate passes per question. This pass typically adds 2-5 minutes for 10-30 candidate concepts.
 

@@ -4,7 +4,7 @@
 Usage:
     python run_ast_grep.py <project-root> [--kordinate-home <path>]
 
-Finds all ast-grep.yaml rule files in the concept catalog and runs them
+Finds concept detector ast-grep rule files in the detector source tree and runs them
 against the target project. Outputs JSON array of structured evidence records.
 """
 
@@ -130,10 +130,10 @@ def main():
         if idx + 1 < len(sys.argv):
             kordinate_home = sys.argv[idx + 1]
 
-    concepts_dir = Path(kordinate_home) / "agents" / "augur" / "memory" / "concepts"
+    concepts_dir = Path(kordinate_home) / "agents" / "augur" / "detectors" / "concepts"
 
     if not concepts_dir.exists():
-        print(f"Concepts directory not found: {concepts_dir}", file=sys.stderr)
+        print(f"Detector directory not found: {concepts_dir}", file=sys.stderr)
         sys.exit(1)
 
     rule_files = sorted(glob.glob(str(concepts_dir / "*/ast-grep.yaml")))

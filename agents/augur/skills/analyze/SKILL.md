@@ -110,7 +110,7 @@ Read the existing atlas. Then read **only** the changed files and the files belo
 
 Resolve the project directory (`$ROOT`). If not found, report and exit. If empty, produce minimal atlas.json.
 
-Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runtime). In **INCREMENTAL** mode, only glob changed files + affected component files per [source-gathering.md](source-gathering.md). In **FULL** mode, glob everything. Load concept catalogs (abstractions, concepts, anti-patterns indexes).
+Detect the stack (languages, frameworks via [frameworks.md](frameworks.md), runtime). In **INCREMENTAL** mode, only glob changed files + affected component files per [source-gathering.md](source-gathering.md). In **FULL** mode, glob everything. Load the semantic index layer from `memory/indexes/` and use the detector execution plan from `bundles/detectors/execution-plan.json` as the deterministic detection entrypoint.
 
 ### Step 2 — Read and analyze
 
@@ -118,14 +118,14 @@ Read the source code. As you build your understanding, cover all concerns below.
 
 **Completeness checklist:**
 
-- **Patterns and concepts** — 4-pass catalog scan: batch grep → AST/semgrep → signatures → diagnostic questions. Assess confidence. Identify gaps. Use the shared concept loader at `agents/augur/scripts/concept_loader.py` for structured concept metadata (questions, testing, monitoring, deployment, references), and prefer the end-to-end detector at `skills/analyze/scripts/run_concept_detection.py` so `/analyze` follows one consistent evidence pipeline. When starting this: read [detection.md](detection.md).
+- **Patterns and concepts** — Framework-first deterministic detection, then concept detection: framework bundles → prioritized concept bundles → signatures → diagnostic questions. Assess confidence and identify gaps. Use semantic catalogs in `memory/catalog/` for interpretation, and prefer bundled detector execution from `bundles/detectors/` so `/analyze` follows one consistent evidence pipeline. When starting this: read [detection.md](detection.md).
 - **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [dep-analysis.md](dep-analysis.md).
-- **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
+- **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. Frameworks are stack context, not concepts; use them to choose framework-native expectations and then map architectural concepts separately. When starting this: read [api-review.md](api-review.md) and [frameworks.md](frameworks.md).
 - **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [source-gathering.md](source-gathering.md).
 - **Actors and flows** — External actors. 2-4 critical data flows. Events (omit if none). When writing atlas: read [schema.md](schema.md).
 - **Domain model** — Identify the project's core data shape by examining schemas, models, and data stores. Use `category: domain-model` concepts from the catalog for detection signals. Most projects have one primary model (e.g., property-graph, ledger, catalog). Record it as `domain_model` in the atlas.
 - **State** — Stores with concept vocabulary, readers/writers, persistence model.
-- **Failure modes** — ALL possible failures for every external dep and stateful component, both covered and uncovered. For each failure linked to a detected pattern, use `agents/augur/scripts/concept_loader.py` to load structured operational guidance, preferring `meta.yaml` and falling back to legacy `monitoring.md` and `deployment.md`. Uncovered failures get empty signals — debt references them.
+- **Failure modes** — ALL possible failures for every external dep and stateful component, both covered and uncovered. For each failure linked to a detected pattern, use concept semantics and any remaining migration-era metadata from `memory/catalog/concepts/<name>/meta.yaml` only as fallback. Uncovered failures get empty signals — debt references them.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [debt.md](debt.md).
 - **Stories** — When composing stories: read [../../schemas/story-schema.md](../../schemas/story-schema.md) and [../../schemas/writing-guide.md](../../schemas/writing-guide.md).
 

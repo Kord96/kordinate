@@ -22,20 +22,25 @@ See `schemas/atlas-schema.md` for the full schema.
 
 ## Knowledge Base
 
-- **Concept catalog** (265 patterns) at `memory/concepts/` — `concept.md` stays canonical, while `meta.yaml` carries detector policy and structured ops guidance where migrated
+- **Concept catalog semantics** at `memory/catalog/concepts/` — `concept.md` remains canonical for concept meaning and architectural implications
+- **Framework catalog semantics** at `memory/catalog/frameworks/` — framework primitives, conventions, and common co-occurring concepts
+- **Ontology/index layer** at `memory/indexes/` — abstractions, concept index, anti-pattern index
+- **Detector source assets** at `detectors/` — deterministic framework and concept detection rules and policies
+- **Generated bundles** at `bundles/` — compiled memory bundles for model preload and bundled detector execution assets
 - **Infra-atlas** at `/kord/agents/charon/memory/global/infra-atlas.json` — cluster topology, observability endpoints, workload contract
-- **App contract** at `memory/app-contract.md` — requirements every deployed app must satisfy
+- **App contract** at `memory/contracts/app-contract.md` — requirements every deployed app must satisfy
 
 ## Analyze Workflow
 
-1. Gather source code and identify frameworks (check imports, not project name)
-2. Match against concept catalog for recognized patterns
-3. Assess debt, detect anti-patterns, review structure
-4. Produce atlas with failure_modes.detection for sauron consumption
+1. Gather source code and identify languages and frameworks
+2. Use framework detector assets to establish stack context and prioritize concept families
+3. Run deterministic concept detection (signatures, AST/semgrep bundles, questions as needed)
+4. Interpret the evidence using concept semantics and anti-pattern vocabulary
+5. Produce atlas with failure_modes.detection for sauron consumption
 
 ## Design Workflow
 
 1. Read requirements and constraints
-2. Select patterns from concept catalog
+2. Select frameworks and patterns from the semantic catalogs
 3. Compose architecture with component topology
 4. Produce atlas with full detection metadata and infrastructure stubs
