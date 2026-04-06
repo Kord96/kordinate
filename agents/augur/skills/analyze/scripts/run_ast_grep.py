@@ -18,8 +18,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
-from concept_loader import load_structured_support  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from concept_decision import evidence_verdict  # noqa: E402
+from detector_loader import load_detector_support  # noqa: E402
 
 
 def infer_specificity(match_count: int) -> str:
@@ -147,8 +148,13 @@ def main():
 
     for rule_file in rule_files:
         concept = Path(rule_file).parent.name
-        support = load_structured_support(Path(rule_file).parent)
-        detector_strength = int(support.get("detectors", {}).get("ast_grep", {}).get("detector_strength", 2))
+        support = load_detector_support(Path(rule_file).parent)
+        detector_strength = int(
+            support.get("policy", {})
+            .get("detectors", {})
+            .get("ast_grep", {})
+            .get("detector_strength", 2)
+        )
         matches = []
         try:
             result = subprocess.run(

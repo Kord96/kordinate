@@ -127,7 +127,7 @@ Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,re
 
 For each pattern in the comma-separated list:
 1. Read `memory/catalog/concepts/<pattern>/concept.md`
-2. Load deterministic detector metadata from `detectors/concepts/<pattern>/` when needed, and treat any legacy `memory/catalog/concepts/<pattern>/meta.yaml` as migration-era mixed metadata rather than the long-term source of truth
+2. Load deterministic detector metadata from `detectors/concepts/<pattern>/` when needed
 
 ### Step 2 — Read infra atlas
 
@@ -144,7 +144,7 @@ Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../.
 - **flows** — designed data flows based on communication patterns
 - **external_dependencies** — with endpoints from infra atlas
 - **failure_modes** — anticipated failures from resilience patterns. For each failure mode,
-  populate `detection` with structured fields from semantic concept guidance plus detector-side policy/signatures when helpful: `signals`, `concern`, and `source_pattern`. These are portable — sauron maps them to Prometheus queries and vitals evaluations
+  populate `detection` with structured fields from concept semantics (especially review checklists and anti-patterns) plus detector-side policy/signatures when helpful: `signals`, `concern`, and `source_pattern`. These are portable — sauron maps them to Prometheus queries and vitals evaluations
 - **domain_model** — from the data patterns
 - **debt** — empty (score: 0, grade: A)
 - **metadata.analysis_mode** — `"design"`
@@ -238,7 +238,7 @@ Deployment is charon's responsibility.
 **Code stubs**: from atlas components — one module per component with interfaces
 and placeholder implementations.
 
-**Tests**: for each `detected_patterns` entry, use concept semantics and any structured analysis guidance still present during migration to generate test stubs.
+**Tests**: for each `detected_patterns` entry, use concept semantics — especially the review checklist, anti-patterns, and signatures — to generate test stubs.
 
 Do NOT generate: Dockerfile, kustomize/, vitals/, monitoring/. Those are
 charon's job and will be added when charon wraps the project for deployment.

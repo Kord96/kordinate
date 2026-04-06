@@ -25,7 +25,7 @@ Architecture review and pattern authority — reviews design consistency, identi
 - [detectors/frameworks/](detectors/frameworks/) — Deterministic framework detector assets
 
 ### Generated bundles
-- [bundles/memory/](bundles/memory/) — Model-facing compiled memory bundles
+- [bundles/memory/](bundles/memory/) — Model-facing compiled memory bundles, including `analyze-holistic-v1.md` and `analyze-selective-v1.md`
 - [bundles/detectors/](bundles/detectors/) — Generated detector execution bundles
 
 ## Rules

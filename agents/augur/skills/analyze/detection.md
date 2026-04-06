@@ -61,10 +61,10 @@ Run the available rule against the project:
 - `ast-grep scan --rule <rule-path> <project-dir>`
 - `semgrep --config <rule-path> <project-dir> --json`
 
-Augur's end-to-end concept detection driver is `skills/analyze/scripts/run_concept_detection.py`. It orchestrates:
+Augur's end-to-end concept detection driver is `skills/analyze/scripts/run_concept_detection.py`. It consumes the execution plan from `bundles/detectors/execution-plan.json` and currently orchestrates:
 - `skills/analyze/scripts/run_ast_grep.py`
-- `skills/analyze/scripts/run_semgrep.py`
-- diagnostic-question result synthesis
+- detector bundle loading via `skills/analyze/scripts/detector_loader.py`
+- diagnostic-question result synthesis (as the next layer to flesh out)
 - deterministic concept decision synthesis
 
 The lower-level runners should still emit `augur-evidence-record/v1` records.
@@ -112,7 +112,7 @@ For each candidate still unconfirmed after Pass 2 (no rule file exists, or the t
 
 ## Pass 3.5 — Diagnostic Question Evaluation
 
-For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), load structured detector metadata from `detectors/concepts/<name>/`. During migration, legacy `memory/catalog/concepts/<name>/meta.yaml` may still exist as a mixed metadata source.
+For candidates still unconfirmed after Pass 3 (signature verification was inconclusive or contradictory), load structured detector metadata from `detectors/concepts/<name>/`.
 
 When either source provides diagnostic questions, evaluate them like this. Until semantic evaluation is implemented, unanswered questions must stay neutral in the emitted `augur-question-result/v1` record rather than counting as yes or no. Feed those records into `agents/augur/scripts/concept_decision.py` alongside rule evidence:
 
@@ -121,7 +121,7 @@ When either source provides diagnostic questions, evaluate them like this. Until
 - Compute the weighted score (sum of weights for "yes" answers).
 - If score >= `threshold`, mark as detected. Derive confidence from score/max_score ratio: >= 80% = high, >= threshold = medium.
 
-`detectors/concepts/<name>/policy.yaml` should be treated as the canonical structured detector source. Legacy `meta.yaml` may still exist during migration for fallback analysis guidance, but it is no longer the long-term detector authority. Keep `ast-grep.yaml` and `semgrep.yaml` as separate support artifacts, and route structured detector loading through the detector layer so `/analyze` and `/design` converge on one deterministic path.
+`detectors/concepts/<name>/policy.yaml` should be treated as the canonical structured detector source. Keep `ast-grep.yaml` and `semgrep.yaml` as separate support artifacts, and route structured detector loading through the detector layer so `/analyze` and `/design` converge on one deterministic path.
 
 Batch all questions for one concept into a single analysis pass — do not make separate passes per question. This pass typically adds 2-5 minutes for 10-30 candidate concepts.
 
