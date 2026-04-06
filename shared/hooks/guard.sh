@@ -79,7 +79,7 @@ config_file = os.environ['CONFIG_FILE']
 old_str = os.environ.get('OLD_STR', '')
 target = None
 for entry in config_entries:
-    if entry.get('file') == 'profile/config.yaml':
+    if entry.get('file') == 'agents/alfred/profile/config.yaml':
         target = entry
         break
 if not target:
@@ -137,7 +137,7 @@ guard_write() {
   [ -z "$file_path" ] && allow
 
   case "$file_path" in
-    */profile/config.yaml)
+    */agents/alfred/profile/config.yaml|*/shared/runtime/profile/config.yaml)
       local old_str required_agent
       old_str=$(echo "$INPUT" | jq -r '.tool_input.old_string // .tool_input.content // empty')
       required_agent=$(lookup_config_owner "$file_path" "$old_str")

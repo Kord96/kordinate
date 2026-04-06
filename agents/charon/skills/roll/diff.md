@@ -20,7 +20,7 @@ Roll checks for `/tmp/diff/manifest.json` and applies everything listed in it.
 
 ## Steps
 
-1. Parse project, source, and target from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `profile/config.yaml`.
+1. Parse project, source, and target from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster info from `shared/runtime/profile/config.yaml`.
 
 2. SSH to the cluster. **Inventory both environments**:
 

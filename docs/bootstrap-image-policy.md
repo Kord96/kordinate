@@ -41,7 +41,7 @@ Bootstrap never depends on those later self-management paths.
 
 ## Registry policy
 
-Image references in manifests should use `REGISTRY/<image>:<tag>` placeholders or equivalent config-driven resolution. `REGISTRY` should resolve from `profile/config.yaml` using `clusters.<name>.services.registry.url` during overlay generation or manifest templating.
+Image references in manifests should use `REGISTRY/<image>:<tag>` placeholders or equivalent config-driven resolution. `REGISTRY` should resolve from Alfred-owned profile source (`agents/alfred/profile/config.yaml`) or the published runtime projection (`shared/runtime/profile/config.yaml`) using `clusters.<name>.services.registry.url` during overlay generation or manifest templating.
 
 Do not hardcode localhost-based registry addresses in platform manifests.
 

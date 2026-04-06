@@ -33,7 +33,7 @@ Authenticate before starting: use `/authenticate`.
 ### 1. Read config and resolve cluster
 
 1. Parse `ssh-target` (and `cluster` if provided) from arguments
-2. Read `profile/config.yaml` — collect all entries under `clusters`
+2. Read `agents/alfred/profile/config.yaml` — collect all entries under `clusters`
 3. **If a cluster name was provided:**
    - Look up `clusters.<cluster>`
    - If found → proceed to step 2 (join existing cluster path)
@@ -154,7 +154,7 @@ The deployer already has Tailscale access to the control plane.
 
 ### 8. Update config and verify
 
-1. Read `profile/config.yaml`
+1. Read `agents/alfred/profile/config.yaml`
 2. Add the new node to `clusters.<cluster>.nodes`:
    ```yaml
    - name: <hostname>
@@ -211,7 +211,7 @@ Same as steps 3, 4, and 5 from Path A. The node needs SSH access, architecture d
 
 ### 4a. Add cluster to config.yaml
 
-1. Read `profile/config.yaml`
+1. Read `agents/alfred/profile/config.yaml`
 2. Add a new entry under `clusters.<cluster-name>`:
    ```yaml
    <cluster-name>:
@@ -247,7 +247,7 @@ Run the standard cluster bootstrap sequence. Each step is idempotent:
    Install `open-iscsi` on the node, install Longhorn, wait for rollout. See `deploy-cluster.md` → `setup-storage`.
 
 3. **Generate overlays:**
-   Run `/infra generate-overlays <cluster-name>` to produce the kustomize overlay directory at `profile/overlays/<cluster-name>/`.
+   Run `/infra generate-overlays <cluster-name>` to produce the Alfred-owned source overlay directory at `agents/alfred/profile/overlays/<cluster-name>/` and refresh the runtime projection.
 
 4. **Setup secrets:**
    Create Kubernetes Secrets from `pass` store entries. See `deploy-cluster.md` → Secrets.

@@ -19,7 +19,7 @@ Retrieve personal information managed by alfred. Agents call this via `/kord alf
 | `overlay <cluster> <namespace>` | Specific namespace overlay content |
 | `platform <env>` | All platform overlay contents (kustomization.yaml, scaling.yaml, resources.yaml) for an environment |
 | `platform <env> scaling` | Just the KEDA scaling config (scaling.yaml) for an environment |
-| `profile <name>` | A reusable backend profile definition from `profile/model-profiles.yaml` |
+| `profile <name>` | A reusable backend profile definition from `agents/alfred/profile/model-profiles.yaml` |
 | `status` | Summary: config validity, credential count, overlay readiness |
 
 ## Procedure
@@ -27,14 +27,16 @@ Retrieve personal information managed by alfred. Agents call this via `/kord alf
 1. **Parse** the first word to determine what's being requested.
 
 2. **Retrieve**:
-   - `config` → read `$KORDINATE_HOME/profile/config.yaml`. If cluster specified, extract that cluster's section.
+   - `config` → read `$KORDINATE_HOME/agents/alfred/profile/config.yaml`. If cluster specified, extract that cluster's section.
    - `key` → run `pass show <path>`. Never log or echo the value outside the response.
-   - `overlay` → read from `$KORDINATE_HOME/profile/overlays/<cluster>/`. List contents or read specific namespace.
-   - `platform` → read from `$KORDINATE_HOME/profile/overlays/platform/<env>/`. Return all files, or just scaling.yaml if `scaling` subcommand given.
-   - `profile` → read the named entry from `$KORDINATE_HOME/profile/model-profiles.yaml`.
+   - `overlay` → read from `$KORDINATE_HOME/agents/alfred/profile/overlays/<cluster>/`. List contents or read specific namespace.
+   - `platform` → read from `$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/`. Return all files, or just scaling.yaml if `scaling` subcommand given.
+   - `profile` → read the named entry from `$KORDINATE_HOME/agents/alfred/profile/model-profiles.yaml`.
    - `status` → run config validation, count pass entries, check overlay directories exist.
 
 3. **Return** the requested information. For `key`, return the value directly — the caller is responsible for handling it securely.
+
+Runtime/bootstrap consumers should prefer the published projection under `$KORDINATE_HOME/shared/runtime/profile/` when they do not need Alfred's authoritative source tree.
 
 ### Response style
 

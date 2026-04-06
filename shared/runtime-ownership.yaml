@@ -20,9 +20,51 @@ protected_paths:
   - path: shared/memory/gemini-protocol.md
     owner: shared
     reason: Gemini protocol
-  - path: profile/locks/
+  - path: agents/alfred/profile/locks/
     owner: warden
-    reason: Auth lock files
+    reason: Alfred-owned auth lock source
+  - path: shared/runtime/profile/locks/
+    owner: shared
+    reason: Runtime lock projection
+  - path: .local/share/kordinate/locks/
+    owner: warden
+    reason: Runtime lock cache
+  - path: .local/share/kordinate/profile/
+    owner: shared
+    reason: Runtime profile projection cache
+  - path: shared/runtime/profile/config-acl.yaml
+    owner: shared
+    reason: Runtime ACL projection
+  - path: shared/runtime/profile/overlays/
+    owner: shared
+    reason: Runtime overlay projection
+  - path: shared/runtime/profile/backend-aliases.yaml
+    owner: shared
+    reason: Runtime backend alias projection
+  - path: shared/runtime/profile/model-profiles.yaml
+    owner: shared
+    reason: Runtime model profile projection
+  - path: agents/alfred/profile/config-acl.yaml
+    owner: alfred
+    reason: Alfred-owned ACL source
+  - path: agents/alfred/profile/backend-aliases.yaml
+    owner: alfred
+    reason: Alfred-owned backend alias source
+  - path: agents/alfred/profile/model-profiles.yaml
+    owner: alfred
+    reason: Alfred-owned model profile source
+  - path: agents/alfred/profile/config.example.yaml
+    owner: alfred
+    reason: Alfred-owned config example source
+  - path: agents/alfred/profile/overlays/
+    owner: alfred
+    reason: Alfred-owned overlay source
+  - path: agents/alfred/profile/config.yaml
+    owner: alfred
+    reason: Alfred-owned cluster and service configuration source
+  - path: shared/runtime/profile/config.yaml
+    owner: shared
+    reason: Runtime config projection
   - path: agents/augur/memory/concepts.md
     owner: augur
     reason: Augur concept catalog
@@ -41,9 +83,3 @@ protected_paths:
   - path: agents/augur/memory/workflow.md
     owner: augur
     reason: Augur workflow reference
-  - path: profile/config.yaml
-    owner: alfred
-    reason: Cluster and service configuration
-  - path: profile/overlays/
-    owner: alfred
-    reason: Kustomize overlays

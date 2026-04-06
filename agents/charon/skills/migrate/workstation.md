@@ -17,7 +17,7 @@ tar czf /tmp/kord-migration.tar.gz --exclude='S.gpg-agent*' \
 scp /tmp/kord-migration.tar.gz kkord@<CONTROL_PLANE_IP>:/tmp/
 ```
 
-Resolve CONTROL_PLANE_IP from `profile/config.yaml` — use the cluster's `tailscale_ip`.
+Resolve CONTROL_PLANE_IP from `shared/runtime/profile/config.yaml` — use the cluster's `tailscale_ip`.
 
 ### Phase 2: Ensure Longhorn is installed
 
@@ -86,8 +86,8 @@ Generate overlays if needed, then apply generated ConfigMaps:
 
 ```bash
 # Apply overlay-generated ConfigMaps (Caddyfile, datasources, etc.)
-ssh kkord@<IP> "sudo kubectl apply -n master -f -" < profile/overlays/<cluster>/master/workstation-caddyfile.yaml
-ssh kkord@<IP> "sudo kubectl apply -n master -f -" < profile/overlays/<cluster>/master/datasources.yaml
+ssh kkord@<IP> "sudo kubectl apply -n master -f -" < shared/runtime/profile/overlays/<cluster>/master/workstation-caddyfile.yaml
+ssh kkord@<IP> "sudo kubectl apply -n master -f -" < shared/runtime/profile/overlays/<cluster>/master/datasources.yaml
 ```
 
 ### Phase 8: Monitor rolling update

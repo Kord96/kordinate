@@ -22,7 +22,7 @@ Install Longhorn and configure storage classes. Idempotent.
    ```
    ssh kkord@<IP> "sudo apt-get install -y open-iscsi && sudo systemctl enable --now iscsid"
    ```
-   Repeat for each node in `profile/config.yaml` clusters.<name>.nodes.
+   Repeat for each node in `shared/runtime/profile/config.yaml` clusters.<name>.nodes.
    Skip nodes that are macOS/Docker VMs (e.g. colima) — they cannot run Longhorn.
 4. Check if Longhorn is installed: `kubectl get ns longhorn-system`
 5. If not: install Longhorn v1.7.3:
@@ -51,7 +51,7 @@ Install Longhorn and configure storage classes. Idempotent.
 
 Deploy master namespace infrastructure. Includes workstation (with Beorn inside) and kord storage.
 
-1. Parse cluster name. Read `profile/config.yaml` for control plane IP.
+1. Parse cluster name. Read `shared/runtime/profile/config.yaml` for control plane IP.
 2. **Run `generate-overlays <cluster>`** if overlays don't exist
 3. **Run `setup-secrets <cluster>`** if secrets don't exist
 4. **Run `setup-kord-storage <cluster>`** if kord PVC doesn't exist
@@ -62,7 +62,7 @@ Deploy master namespace infrastructure. Includes workstation (with Beorn inside)
    ```
 7. SSH and apply remaining master resources via kustomize overlay:
    ```
-   kubectl apply -k profile/overlays/<cluster>/master/ --load-restrictor LoadRestrictionsNone
+   kubectl apply -k shared/runtime/profile/overlays/<cluster>/master/ --load-restrictor LoadRestrictionsNone
    ```
    This applies base manifests with overlay patches plus generated ConfigMaps
    (workstation-caddyfile, grafana-datasources, alloy-config, gateway-registry).
@@ -85,7 +85,7 @@ Create the shared kord PVC and initialize the git repo. Must run BEFORE `deploy-
 
 Deploy the observability gateway stack.
 
-1. Parse cluster name. Read `profile/config.yaml` for Tailscale IP.
+1. Parse cluster name. Read `shared/runtime/profile/config.yaml` for Tailscale IP.
 2. **Run `generate-overlays <cluster>`** if overlays don't exist
 3. **Run `setup-secrets <cluster>`** if secrets don't exist
 4. SSH to cluster:
@@ -101,7 +101,7 @@ node can reach the control plane over the tailnet, then joins it as a k3s agent.
 Ephemeral nodes auto-deregister from Tailscale when they go offline — no device pollution.
 
 1. Parse cluster name and node IP (the node's reachable IP for initial SSH)
-2. Read `profile/config.yaml` for control plane Tailscale IP and node token
+2. Read `shared/runtime/profile/config.yaml` for control plane Tailscale IP and node token
 3. SSH to node, install Tailscale:
    ```bash
    curl -fsSL https://tailscale.com/install.sh | sh
@@ -124,7 +124,7 @@ Ephemeral nodes auto-deregister from Tailscale when they go offline — no devic
    ```
    Using `tailscale ip -4` as `--node-ip` so k3s traffic flows over the tailnet.
 6. Wait for node to appear: `kubectl get nodes` on control plane
-7. Update `profile/config.yaml` — append new entry to cluster's nodes list with both
+7. Update `agents/alfred/profile/config.yaml` — append new entry to cluster's nodes list with both, then refresh the runtime projection
    the initial SSH IP and the Tailscale IP
 
 ## add-cluster `<name> <node-ip>`
@@ -135,7 +135,7 @@ Bootstrap a new k3s cluster on a remote machine.
 2. SSH to node, run k3s server install via `setup-cluster.sh`
 3. Run `setup-namespaces` and `setup-storage`
 4. Apply RBAC
-5. Add new cluster entry to `profile/config.yaml`
+5. Add new cluster entry to `agents/alfred/profile/config.yaml`
 
 ## Secrets
 
@@ -159,8 +159,8 @@ ssh <control-plane> "kubectl create secret generic <name> -n <namespace> \
 
 For master namespace writes, use both auth tokens:
 
-1. `cp profile/locks/charon /tmp/.charon-auth`
-2. `cp profile/locks/charon /tmp/.bootstrap-auth`
+1. `cp $KORD_LOCKS_DIR/charon /tmp/.charon-auth`
+2. `cp $KORD_LOCKS_DIR/charon /tmp/.bootstrap-auth`
 3. Run commands
 4. `rm /tmp/.bootstrap-auth /tmp/.charon-auth`
 

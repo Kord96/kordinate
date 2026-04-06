@@ -4,15 +4,16 @@ Level 3 resource for get and store skills. Maps each domain to its storage locat
 
 | Domain | Path | Format | Notes |
 |--------|------|--------|-------|
-| config | `$KORDINATE_HOME/profile/config.yaml` | YAML | Validate: required fields (name, nodes, namespaces), valid IPs, valid ports |
+| config | `$KORDINATE_HOME/agents/alfred/profile/config.yaml` | YAML | Alfred-owned source of truth. Validate: required fields (name, nodes, namespaces), valid IPs, valid ports |
 | keys | `pass store` at `kordinate/` prefix | GPG-encrypted | Access via `pass show <path>`, insert via `pass insert -f <path>`. Never write plaintext. |
-| profiles | `$KORDINATE_HOME/profile/model-profiles.yaml` | YAML | Alfred-managed source of truth for reusable LLM/backend profile definitions |
-| overlays | `$KORDINATE_HOME/profile/overlays/<cluster>/<namespace>/` | Kustomize dirs | Each namespace has a `kustomization.yaml`. Created by charon, stored by alfred. |
-| platform | `$KORDINATE_HOME/profile/overlays/platform/<env>/` | Kustomize dirs | Per-environment agent pod scaling and resource limits. Created by charon, stored/validated/updated by alfred. |
+| profiles | `$KORDINATE_HOME/agents/alfred/profile/model-profiles.yaml` | YAML | Alfred-owned source of truth for reusable LLM/backend profile definitions |
+| overlays | `$KORDINATE_HOME/agents/alfred/profile/overlays/<cluster>/<namespace>/` | Kustomize dirs | Alfred-owned source of truth for generated overlays. |
+| platform | `$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/` | Kustomize dirs | Alfred-owned source of truth for per-environment agent runtime scaling and resources. |
+| runtime projection | `$KORDINATE_HOME/shared/runtime/profile/` | Mixed | Read-only projection published from Alfred-owned source via `shared/scripts/publish-profile.sh` for bootstrap/runtime consumers |
 }},{
 ## Platform overlay contents
 
-Each environment directory under `profile/overlays/platform/<env>/` contains:
+Each environment directory under `agents/alfred/profile/overlays/platform/<env>/` contains:
 
 - `kustomization.yaml` — Kustomize entry point; references scaling.yaml and resources.yaml as patches.
 - `scaling.yaml` — KEDA ScaledObject parameters per agent: minReplicaCount, maxReplicaCount, cooldownPeriod, and trigger thresholds.

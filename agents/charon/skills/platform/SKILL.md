@@ -32,9 +32,9 @@ Default environment is `dev` if not specified.
 
 1. Parse env from `$ARGUMENTS`.
 
-2. **Preflight** — verify the overlay exists at `$KORDINATE_HOME/profile/overlays/platform/<env>/`. If alfred is available, run alfred `/preflight` for additional validation. If preflight fails, report and exit.
+2. **Preflight** — verify the overlay exists at `$KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/`. If alfred is available, run alfred `/preflight` for additional validation against the source profile tree. If preflight fails, report and exit.
 
-3. **Apply** — execute `kubectl apply -k $KORDINATE_HOME/profile/overlays/platform/<env>/ -n <env>`.
+3. **Apply** — execute `kubectl apply -k $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/ -n <env>`.
 
 4. **Verify** — check rollout status for all platform deployments in the namespace. If any deployment fails to roll out, report clearly with pod logs.
 
@@ -59,9 +59,9 @@ Default environment is `dev` if not specified.
 
 1. Parse agent, min, max, and env from `$ARGUMENTS` (default env: `dev`).
 
-2. **Patch** — update the KEDA scaling configuration in the overlay's `scaling.yaml` at `$KORDINATE_HOME/profile/overlays/platform/<env>/scaling.yaml`.
+2. **Patch** — update the KEDA scaling configuration in Alfred-owned source at `$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/scaling.yaml`, then refresh the runtime projection.
 
-3. **Apply** — re-apply the overlay: `kubectl apply -k $KORDINATE_HOME/profile/overlays/platform/<env>/ -n <env>`.
+3. **Apply** — re-apply the projection: `kubectl apply -k $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/ -n <env>`.
 
 4. **Verify** — confirm the ScaledObject reflects the new min/max values.
 
@@ -85,8 +85,8 @@ Default environment is `dev` if not specified.
 - [layered-image-rollout.md](layered-image-rollout.md) — first rollout procedure for `agent-base`, `agent-charon`, and `agent-augur`
 - [generic-backend-agents.md](generic-backend-agents.md) — generic backend-based consultation agents routed through the same platform path as specialized agents
 - [../../../../docs/bootstrap-image-policy.md](../../../../docs/bootstrap-image-policy.md) — bootstrap rule for prebuilt agent images and post-bootstrap Charon ownership
-- `profile/overlays/platform/<env>/` — environment-specific overlays (managed by alfred)
-- `profile/config.yaml` — cluster IPs, domains, services (including `clusters.<name>.services.registry.url` for `REGISTRY`)
+- `shared/runtime/profile/overlays/platform/<env>/` — runtime projection used for deploy/apply
+- `agents/alfred/profile/config.yaml` — Alfred-owned cluster IPs, domains, services source (including `clusters.<name>.services.registry.url` for `REGISTRY`)
 ## Rules
 
 - Authenticate before any operation: use `/authenticate`.

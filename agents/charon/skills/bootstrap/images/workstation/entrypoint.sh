@@ -119,14 +119,16 @@ sync_workstation_state() {
     cp -a "$LEGACY_ROOT/shared/runtime-ownership.yaml" "$OWNERSHIP_STATE_FILE"
   fi
 
-  if [ -f "$KORD_SOURCE_ROOT/profile/config-acl.yaml" ]; then
-    cp -a "$KORD_SOURCE_ROOT/profile/config-acl.yaml" "$KORD_PROFILE_STATE_DIR/config-acl.yaml"
-  elif [ -f "$LEGACY_ROOT/profile/config-acl.yaml" ] && [ ! -f "$KORD_PROFILE_STATE_DIR/config-acl.yaml" ]; then
-    cp -a "$LEGACY_ROOT/profile/config-acl.yaml" "$KORD_PROFILE_STATE_DIR/config-acl.yaml"
+  if [ -f "$KORD_SOURCE_ROOT/shared/runtime/profile/config-acl.yaml" ]; then
+    cp -a "$KORD_SOURCE_ROOT/shared/runtime/profile/config-acl.yaml" "$KORD_PROFILE_STATE_DIR/config-acl.yaml"
+  elif [ -f "$LEGACY_ROOT/shared/runtime/profile/config-acl.yaml" ] && [ ! -f "$KORD_PROFILE_STATE_DIR/config-acl.yaml" ]; then
+    cp -a "$LEGACY_ROOT/shared/runtime/profile/config-acl.yaml" "$KORD_PROFILE_STATE_DIR/config-acl.yaml"
   fi
 
-  if [ -d "$LEGACY_ROOT/profile/locks" ] && [ -z "$(find "$KORD_LOCKS_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
-    cp -an "$LEGACY_ROOT/profile/locks/." "$KORD_LOCKS_DIR/"
+  if [ -d "$KORD_SOURCE_ROOT/shared/runtime/profile/locks" ] && [ -z "$(find "$KORD_LOCKS_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+    cp -an "$KORD_SOURCE_ROOT/shared/runtime/profile/locks/." "$KORD_LOCKS_DIR/"
+  elif [ -d "$LEGACY_ROOT/shared/runtime/profile/locks" ] && [ -z "$(find "$KORD_LOCKS_DIR" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null)" ]; then
+    cp -an "$LEGACY_ROOT/shared/runtime/profile/locks/." "$KORD_LOCKS_DIR/"
   fi
 
   if [ -f "$LEGACY_TMUX_LAYOUT" ] && [ ! -f "$TMUX_STATE_DIR/tmux-layout.json" ]; then

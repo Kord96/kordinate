@@ -9,7 +9,7 @@ Classify content and route it to the right place. $ARGUMENTS should include the 
 
 | Type | Indicators | Destination |
 |------|-----------|-------------|
-| **Config** | IPs, endpoints, hostnames, domains, ports, namespace names, storage classes | `/config` to update `profile/config.yaml` |
+| **Config** | IPs, endpoints, hostnames, domains, ports, namespace names, storage classes | `/config` to update `agents/alfred/profile/config.yaml` |
 | **Credential** | Tokens, passwords, API keys, secrets, auth keys | `pass insert kordinate/<service>/<key>` |
 | **Memory** | Facts, observations, patterns, knowledge, decisions | `write_memory` tool |
 
@@ -61,5 +61,5 @@ Scan base manifests in `$KORDINATE_HOME/agents/charon/skills/infra/manifests/` f
 1. Glob for `*.yaml` in `$KORDINATE_HOME/agents/charon/skills/infra/manifests/`
 2. For each file, grep for domain patterns, IPs, and `.svc.cluster.local`
 3. Filter against the allowlist
-4. Cross-reference: if a value from `profile/config.yaml` (`network.*`, `clusters.*.services.*`) appears in a base manifest, flag it
+4. Cross-reference: if a value from `shared/runtime/profile/config.yaml` (`network.*`, `clusters.*.services.*`) appears in a base manifest, flag it
 5. Report findings with file:line, severity, and recommendation

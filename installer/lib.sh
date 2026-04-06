@@ -41,7 +41,7 @@ setup_kc() {
   fi
 
   # 3. SSH fallback (used by deployer agent for remote clusters)
-  local config="$CLAUDE_DIR/profile/config.yaml"
+  local config="$CLAUDE_DIR/runtime/profile/config.yaml"
   local default_node
   default_node=$(python3 -c "
 import yaml, sys

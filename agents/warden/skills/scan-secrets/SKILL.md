@@ -11,7 +11,7 @@ Compare what secrets exist on Kubernetes clusters against what is stored in the 
 
 ## Procedure
 
-1. **Load cluster config** — read `$KORDINATE_HOME/profile/config.yaml` for cluster IPs and namespaces.
+1. **Load cluster config** — read `$KORDINATE_HOME/shared/runtime/profile/config.yaml` for cluster IPs and namespaces.
 2. **List pass store** — run `pass ls kordinate/` to get all local credential entries.
 3. **List cluster secrets** — SSH to each cluster node and run `kubectl get secrets --all-namespaces`. Parse namespace, name, and key count.
 4. **Cross-reference cluster vs pass** — for each cluster secret, check if a corresponding `pass` entry exists under `kordinate/<service>/`. For each `pass` entry, check if a matching cluster secret exists.

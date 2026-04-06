@@ -26,7 +26,7 @@
 ## Secret 'cloudflared-tunnel' is created by charon from pass store at deploy time.
 ## Do not include it here — MUST_BE_SET placeholder overwrites the real token on apply.
 ##
-## Caddyfile ConfigMap: generated in overlay (profile/overlays/<cluster>/master/).
+## Caddyfile ConfigMap: generated in runtime projection overlay (shared/runtime/profile/overlays/<cluster>/master/).
 ## The Deployment mounts it but this base does not define it.
 ---
 apiVersion: v1

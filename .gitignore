@@ -65,14 +65,14 @@ agent-state/
 /commands
 agents/alfred/profile
 
-# Keep Augur authored files trackable during concept metadata migration
+# Keep Alfred-owned profile source trackable
 agents/alfred/profile
 
 # Agent runtime state
 kordinate/agents/*/deploys/
 
-# Site-specific profile data (generated from real config by alfred)
-kordinate/profile/overlays/
+# Site-specific runtime profile projection data (generated from Alfred-owned source)
+shared/runtime/profile/overlays/
 
 # CLAUDE.md copies (created by scribe /onboard sync, not tracked)
 kordinate/agents/*/CLAUDE.md

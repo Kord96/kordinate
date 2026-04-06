@@ -41,14 +41,14 @@ If the task succeeds, stop after the minimum useful confirmation.
 
 | Skill | Purpose |
 |-------|---------|
-| `/config` | Validate, update, and diff profile/config.yaml |
+| `/config` | Validate, update, and diff Alfred-owned profile source and its runtime projection |
 | `/keys` | List, audit, lint, and rotate pass store entries |
 | `/overlay` | Validate, diff, and regenerate kustomize overlays |
 | `/preflight` | Check all prerequisites before deployment — config, overlays, secrets |
 
 ## Capabilities
 
-- Can validate profile/config.yaml structure via /config
+- Can validate Alfred-owned profile source and its runtime projection via /config
 - Can list and audit pass store entries via /keys
 - Can validate and diff kustomize overlays via /overlay
 - Can run preflight checks for deployment readiness via /preflight

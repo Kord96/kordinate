@@ -4,11 +4,11 @@ description: Authenticate before performing guarded operations. Copy the agent's
 disable-model-invocation: true
 ---
 
-Authenticate for guarded operations. Each agent has a lock file at `profile/locks/<agent-name>`.
+Authenticate for guarded operations. Each agent has a lock file published into the runtime lock cache from Alfred-owned profile state.
 
 ## Procedure
 
-1. `cp profile/locks/<your-agent-name> /tmp/.<your-agent-name>-auth`
+1. `cp $KORD_LOCKS_DIR/<your-agent-name> /tmp/.<your-agent-name>-auth`
 2. Perform all guarded operations for the task
 3. `rm /tmp/.<your-agent-name>-auth`
 

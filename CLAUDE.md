@@ -85,7 +85,7 @@ Markdown files loaded by agents at boot via `@` imports in CLAUDE.md:
 
 ### Infrastructure Manifests
 
-Kubernetes manifests live in `agents/charon/skills/bootstrap/manifests/`. KEDA scales agent pods. Kustomize overlays are in `profile/overlays/`. Bootstrap scripts are in `installer/`.
+Kubernetes manifests live in `agents/charon/skills/bootstrap/manifests/`. KEDA scales agent pods. Alfred owns the profile source under `agents/alfred/profile/`, and the runtime projection lives under `shared/runtime/profile/`. Bootstrap scripts are in `installer/`.
 
 ## Settings
 

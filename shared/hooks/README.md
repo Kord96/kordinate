@@ -25,8 +25,8 @@ The primary runtime guard no longer depends on the old KORD metadata path and no
 
 Guards check lock files via `/authenticate`. The flow:
 
-1. Agent runs `/authenticate` → copies `profile/locks/<agent>` to `/tmp/.<agent>-auth`
-2. Guard compares `/tmp/.<agent>-auth` contents against `profile/locks/<agent>`
+1. Agent runs `/authenticate` → copies the projected runtime lock to `/tmp/.<agent>-auth`
+2. Guard compares `/tmp/.<agent>-auth` contents against the runtime lock cache in `.local/share/kordinate/locks/<agent>`
 3. Match → allow. No match or missing → deny.
 
 ## Merge-on-push status

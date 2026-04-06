@@ -2,16 +2,16 @@
 
 Level 3 resource for the infra skill.
 
-Read `profile/config.yaml` and generate kustomize overlays for a cluster. Base manifests use placeholders — overlays fill in cluster-specific values.
+Read Alfred-owned profile source at `agents/alfred/profile/config.yaml` and generate kustomize overlays for a cluster. Base manifests use placeholders — overlays fill in cluster-specific values.
 
 ## Procedure
 
-1. Read `$KORDINATE_HOME/profile/config.yaml`
+1. Read `$KORDINATE_HOME/agents/alfred/profile/config.yaml`
 2. Find the cluster entry matching the argument
 3. For each namespace (gateway, monitor, master), generate an overlay directory:
 
 ```
-$KORDINATE_HOME/profile/overlays/<cluster>/
+$KORDINATE_HOME/agents/alfred/profile/overlays/<cluster>/
 ├── gateway/
 │   ├── kustomization.yaml
 │   └── patches.yaml
@@ -46,7 +46,7 @@ The kord volume is referenced by the Workstation deployment (which runs Beorn as
 
 ## Placeholder → Config Mapping
 
-Read from `profile/config.yaml` for the target cluster:
+Read from `agents/alfred/profile/config.yaml` for the target cluster:
 
 | Placeholder | Config path | Example |
 |------------|-------------|---------|
@@ -73,7 +73,7 @@ These are too complex for simple kustomize patches — generate the full ConfigM
 
 ### workstation-caddyfile (master namespace)
 
-Read `network.grafana_public` and `network.docs_public` from config.yaml. Construct service DNS from namespace context. Generate:
+Read `network.grafana_public` and `network.docs_public` from Alfred-owned source config. Construct service DNS from namespace context. Generate:
 - `@grafana` host matcher → reverse proxy to `grafana.master.svc.cluster.local:3000`
 - `@docs` host matcher → reverse proxy to `docs.master.svc.cluster.local:80`
 - Fallback 404 handler
@@ -84,7 +84,7 @@ Construct Prometheus and Loki URLs from namespace context. Generate the full pro
 
 ### alloy-config (master namespace)
 
-Read all clusters from config.yaml. For each cluster with a `gateway_tailscale_ip`, generate:
+Read all clusters from Alfred-owned source config. For each cluster with a `gateway_tailscale_ip`, generate:
 - A `prometheus.scrape` block targeting `<tailscale_ip>:9090` for metrics federation
 - A `local.file_match` + `loki.source.file` block for log tailing from `/data/federate/<cluster>/*.jsonl`
 
@@ -107,15 +107,15 @@ gateways:
 
 ## Platform Overlays
 
-In addition to cluster infrastructure overlays, generate platform overlays for the agent runtime. These live at `profile/overlays/platform/<env>/` and customize the base manifests at `agents/charon/skills/platform/manifests/base/`.
+In addition to cluster infrastructure overlays, generate platform overlays for the agent runtime. Alfred owns the source at `agents/alfred/profile/overlays/platform/<env>/` and publishes the runtime projection at `shared/runtime/profile/overlays/platform/<env>/`, which customizes the base manifests at `agents/charon/skills/platform/manifests/base/`.
 
 ### Procedure
 
-1. Read `$KORDINATE_HOME/profile/config.yaml` — look for a `platform:` section with per-environment config
+1. Read `$KORDINATE_HOME/agents/alfred/profile/config.yaml` — look for a `platform:` section with per-environment config
 2. For each environment (default: `dev`), generate:
 
 ```
-$KORDINATE_HOME/profile/overlays/platform/<env>/
+$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/
 ├── kustomization.yaml      # namespace, base reference
 ├── scaling.yaml             # KEDA ScaledObject patches (min/max replicas, cooldown)
 └── resources.yaml           # resource limit overrides (optional)
@@ -126,7 +126,7 @@ $KORDINATE_HOME/profile/overlays/platform/<env>/
 Generate this file with:
 
 ```bash
-python3 $KORDINATE_HOME/lib/scripts/generate-platform-kustomization.py <env> <resolved-registry> --output profile/overlays/platform/<env>/kustomization.yaml
+python3 $KORDINATE_HOME/lib/scripts/generate-platform-kustomization.py <env> <resolved-registry> --output agents/alfred/profile/overlays/platform/<env>/kustomization.yaml
 ```
 
 The generated file contains:
@@ -153,7 +153,7 @@ patches:
   - path: resources.yaml
 ```
 
-Resolve `<resolved-registry>` from `clusters.<name>.services.registry.url` in `profile/config.yaml`.
+Resolve `<resolved-registry>` from `clusters.<name>.services.registry.url` in `agents/alfred/profile/config.yaml`.
 
 ### scaling.yaml
 
@@ -192,8 +192,9 @@ After generating, store via: `/kord alfred store overlay platform/<env>`.
 
 ## Notes
 
-- Cluster overlays live at `profile/overlays/<cluster>/` — infrastructure-specific
-- Platform overlays live at `profile/overlays/platform/<env>/` — agent runtime config
+- Cluster overlays live at `agents/alfred/profile/overlays/<cluster>/` — Alfred-owned source for infrastructure-specific overlays
+- Platform overlays live at `agents/alfred/profile/overlays/platform/<env>/` — Alfred-owned source for agent runtime config
+- Runtime consumers read the published projection at `shared/runtime/profile/overlays/...`
 - Secrets (Tailscale auth keys, MinIO credentials, Anthropic API key) are NOT in overlays — created at deploy time from `pass`
-- If `profile/config.yaml` changes, re-run `/bootstrap generate-overlays <cluster>` for infra and `/platform deploy <env>` for agent runtime
+- If `agents/alfred/profile/config.yaml` changes, re-run `/bootstrap generate-overlays <cluster>` for infra and `/platform deploy <env>` for agent runtime
 - Base manifests stay abstract — never edit them with cluster-specific or env-specific values

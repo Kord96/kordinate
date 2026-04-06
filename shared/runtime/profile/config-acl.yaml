@@ -1,7 +1,7 @@
 version: 1
 
 config:
-  - file: profile/config.yaml
+  - file: agents/alfred/profile/config.yaml
     mode: top_level_key
     ownership:
       clusters: alfred

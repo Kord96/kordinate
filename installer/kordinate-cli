@@ -42,7 +42,7 @@ require_root() {
 read_config() {
   python3 -c "
 import yaml, sys
-c = yaml.safe_load(open('$SCRIPT_DIR/profile/config.yaml'))
+c = yaml.safe_load(open('$SCRIPT_DIR/agents/alfred/profile/config.yaml'))
 path = sys.argv[1].split('.')
 v = c
 for p in path:
@@ -87,7 +87,7 @@ ws_pod() { kc get pod -n master -l app=workstation -o jsonpath='{.items[0].metad
 # ═══════════════════════════════════════════════════════════════
 
 discover_clusters() {
-  local config="$SCRIPT_DIR/profile/config.yaml"
+  local config="$SCRIPT_DIR/agents/alfred/profile/config.yaml"
   [ -f "$config" ] || return 1
   local found=false
   while IFS=' ' read -r name ip; do
@@ -166,7 +166,7 @@ install_k3s_agent() {
 
 update_config_add_node() {
   local cluster_name="$1" node_ip="$2"
-  local config="$SCRIPT_DIR/profile/config.yaml"
+  local config="$SCRIPT_DIR/agents/alfred/profile/config.yaml"
   [ -f "$config" ] || return 0
   python3 -c "
 import yaml, sys
@@ -359,10 +359,10 @@ cmd_init() {
      "$TMP_RUNTIME/local-bin/"
   cp "$KORD_SRC/shared/hooks/guard.sh" "$KORD_SRC/shared/hooks/subagent-invocation-gate.sh" "$TMP_RUNTIME/claude-hooks/"
   cp "$KORD_SRC/shared/runtime-ownership.yaml" "$TMP_RUNTIME/claude-hooks/runtime-ownership.yaml"
-  cp "$KORD_SRC/profile/config-acl.yaml" "$TMP_RUNTIME/local-share/kordinate/profile/config-acl.yaml"
+  cp -a "$KORD_SRC/shared/runtime/profile/." "$TMP_RUNTIME/local-share/kordinate/profile/"
   tar czf /tmp/kordinate-runtime-seed.tar.gz -C "$TMP_RUNTIME" .
   kc cp /tmp/kordinate-runtime-seed.tar.gz "master/$POD:/tmp/kordinate-runtime-seed.tar.gz" -c workstation
-  ws_exec 'mkdir -p "$HOME/.local/bin" "$HOME/.claude/hooks" "$HOME/.local/share/kordinate/profile" && tar xzf /tmp/kordinate-runtime-seed.tar.gz -C /tmp && cp -a /tmp/local-bin/. "$HOME/.local/bin/" && cp -a /tmp/claude-hooks/guard.sh "$HOME/.claude/hooks/guard.sh" && cp -a /tmp/claude-hooks/subagent-invocation-gate.sh "$HOME/.claude/hooks/subagent-invocation-gate.sh" && cp -a /tmp/claude-hooks/runtime-ownership.yaml "$HOME/.claude/runtime-ownership.yaml" && cp -a /tmp/local-share/kordinate/profile/config-acl.yaml "$HOME/.local/share/kordinate/profile/config-acl.yaml" && rm -rf /tmp/local-bin /tmp/claude-hooks /tmp/local-share /tmp/kordinate-runtime-seed.tar.gz'
+  ws_exec 'mkdir -p "$HOME/.local/bin" "$HOME/.claude/hooks" "$HOME/.local/share/kordinate/profile" "$HOME/.claude/runtime/profile" && tar xzf /tmp/kordinate-runtime-seed.tar.gz -C /tmp && cp -a /tmp/local-bin/. "$HOME/.local/bin/" && cp -a /tmp/claude-hooks/guard.sh "$HOME/.claude/hooks/guard.sh" && cp -a /tmp/claude-hooks/subagent-invocation-gate.sh "$HOME/.claude/hooks/subagent-invocation-gate.sh" && cp -a /tmp/claude-hooks/runtime-ownership.yaml "$HOME/.claude/runtime-ownership.yaml" && cp -a /tmp/local-share/kordinate/profile/config-acl.yaml "$HOME/.local/share/kordinate/profile/config-acl.yaml" && cp -an /tmp/local-share/kordinate/profile/. "$HOME/.claude/runtime/profile/" 2>/dev/null || true && rm -rf /tmp/local-bin /tmp/claude-hooks /tmp/local-share /tmp/kordinate-runtime-seed.tar.gz'
   rm -rf "$TMP_RUNTIME" /tmp/kordinate-runtime-seed.tar.gz
   log "Workstation helpers and hooks copied"
 
@@ -414,8 +414,8 @@ cmd_init() {
 
   if [ "$IS_AGENT_JOIN" = "true" ]; then
     log "Agent join — config.yaml already updated"
-  elif [ -f "$SCRIPT_DIR/profile/config.yaml" ]; then
-    log "profile/config.yaml already exists"
+  elif [ -f "$SCRIPT_DIR/agents/alfred/profile/config.yaml" ]; then
+    log "agents/alfred/profile/config.yaml already exists"
   else
     local NODE_IP CLUSTER_NAME TS_IP
     NODE_IP=$(detect_node_ip)
@@ -443,10 +443,10 @@ config = {
     'network': {'tailnet': '', 'grafana_public': ''},
     'cloudflare': {'account_id': '', 'tunnel_id': '', 'tunnel_name': '', 'domains': []},
 }
-with open('$SCRIPT_DIR/profile/config.yaml', 'w') as f:
+with open('$SCRIPT_DIR/agents/alfred/profile/config.yaml', 'w') as f:
     yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 "
-    log "Generated profile/config.yaml for cluster $CLUSTER_NAME"
+    log "Generated agents/alfred/profile/config.yaml for cluster $CLUSTER_NAME"
   fi
 
   echo ""
@@ -479,7 +479,7 @@ cmd_connect() {
   fi
   if [ -z "$DOMAIN" ]; then
     err "No domain found. Usage: ./kordinate connect <domain>"
-    err "Or add domains to profile/config.yaml under cloudflare.domains"
+    err "Or add domains to agents/alfred/profile/config.yaml under cloudflare.domains"
     exit 1
   fi
   local SSH_HOSTNAME="ssh.${DOMAIN}"

@@ -36,8 +36,10 @@ Set up a cluster from scratch. Generates kustomize overlays, creates namespaces,
 - [manifests/](manifests/) — flat k8s yaml (namespace-prefixed)
 - [images/](images/) — container build contexts
 - [dashboards/](dashboards/) — Grafana dashboard JSON
-- `profile/config.yaml` — cluster IPs, domains, services
-- `profile/overlays/<cluster>/` — generated kustomize overlays
+- `agents/alfred/profile/config.yaml` — Alfred-owned cluster IPs, domains, services source
+- `shared/runtime/profile/config.yaml` — published runtime config projection for deploy/bootstrap consumers
+- `agents/alfred/profile/overlays/<cluster>/` — Alfred-owned generated overlay source
+- `shared/runtime/profile/overlays/<cluster>/` — published runtime overlay projection
 
 ## Rules
 

@@ -15,7 +15,7 @@ Authenticate before running: use `/authenticate`.
 
 ## Steps
 
-1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster/registry from `profile/config.yaml`.
+1. Parse project and env from `$ARGUMENTS`. Discover manifests at `<project-repo>/manifests/` and get cluster/registry from `shared/runtime/profile/config.yaml`.
 
 2. **Manifest validation** — dry-run all manifests:
    ```
