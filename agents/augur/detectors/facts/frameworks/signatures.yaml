@@ -1,0 +1,15 @@
+domain: frameworks
+positive:
+  strong:
+    - framework imports and package manifests
+    - route registration idioms
+    - typed request and response models
+  medium:
+    - dependency manifest hints
+    - framework-specific decorators or macros
+  weak:
+    - runtime server/bootstrap entrypoints
+negative:
+  - incompatible framework signals from another stack
+notes:
+  - Framework facts should be confirmed early because they guide the rest of the fact extraction pipeline.

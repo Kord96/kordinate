@@ -1,0 +1,32 @@
+[
+  {
+    "repo": "thingsboard/thingsboard",
+    "url": "https://github.com/thingsboard/thingsboard",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Messy, stable Java IoT platform with complex event processing.",
+    "what_it_tests": "Large modular monolith with Kafka, gRPC, and queue-based messaging.",
+    "risks_or_caveats": "Very large codebase. Complex setup with multiple services."
+  },
+  {
+    "repo": "tremor-rs/tremor",
+    "url": "https://github.com/tremor-rs/tremor",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Mid-sized, event-driven data processing system in Rust.",
+    "what_it_tests": "Pipeline and stream processing architecture with custom language.",
+    "risks_or_caveats": "Rust not requested, but unique event-driven model."
+  },
+  {
+    "repo": "GoogleCloudPlatform/microservices-demo",
+    "url": "https://github.com/GoogleCloudPlatform/microservices-demo",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Small, clean microservices demo with distinct architectural boundaries.",
+    "what_it_tests": "Inter-service communication, deployment, and polyglot service integration.",
+    "risks_or_caveats": "Purposefully clean; less real-world technical debt."
+  }
+]

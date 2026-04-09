@@ -1,0 +1,14 @@
+domain: jobs
+positive:
+  strong:
+    - cron entries and scheduled tasks
+    - worker or consumer entrypoints
+    - queue processor registrations
+  medium:
+    - background task decorators or schedulers
+  weak:
+    - main loops that run outside request handling
+negative:
+  - ordinary library functions without runtime scheduling
+notes:
+  - Job facts should capture the process boundary so lifecycle and failure analysis can use them directly.

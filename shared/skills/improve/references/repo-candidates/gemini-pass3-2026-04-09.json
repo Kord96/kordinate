@@ -1,0 +1,62 @@
+[
+  {
+    "repo": "keepassxc/keepassxc",
+    "url": "https://github.com/keepassxc/keepassxc",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A stable, actively maintained, mid-sized desktop application written in C++ and Qt, with clear desktop architecture and security-critical components.",
+    "what_it_tests": "C++ and Qt architecture, UI and backend separation, security-focused design, plugin understanding, and persistence handling in a desktop app.",
+    "risks_or_caveats": "C++ GUI code can be challenging for some agents, and it requires reasoning across both system-level and interface layers."
+  },
+  {
+    "repo": "TeamNewPipe/NewPipe",
+    "url": "https://github.com/TeamNewPipe/NewPipe",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A maintained Android application with real-world mobile complexity and reliance on unstable external service behavior rather than formal SDKs.",
+    "what_it_tests": "Android app architecture, network-layer resilience, UI patterns, media playback integration, and adaptation to changing unofficial APIs.",
+    "risks_or_caveats": "Its scraping-heavy network layer is less formally structured than typical API clients, which may confuse agents expecting standard client patterns."
+  },
+  {
+    "repo": "sqlite/sqlite",
+    "url": "https://github.com/sqlite/sqlite",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A robust and architecturally unusual C database engine whose amalgamated build structure is adversarial but fair for architecture inference.",
+    "what_it_tests": "Deep C analysis, database-engine structure, unconventional file layout, and whether an agent can infer architecture beyond superficial directories.",
+    "risks_or_caveats": "Predominantly C and layout-unconventional. Agents that rely on file structure shortcuts may fail badly."
+  },
+  {
+    "repo": "caddyserver/caddy",
+    "url": "https://github.com/caddyserver/caddy",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A modern mid-sized Go application with a modular plugin-based server architecture and meaningful concurrency patterns.",
+    "what_it_tests": "Go application structure, plugin systems, concurrency, HTTP handling, and modular non-framework application reasoning.",
+    "risks_or_caveats": "Static analysis may understate dynamic plugin behavior, and Go may still be underrepresented for some models."
+  },
+  {
+    "repo": "htop-dev/htop",
+    "url": "https://github.com/htop-dev/htop",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A small but architecturally clear C utility with OS interaction, event loops, and text UI rendering.",
+    "what_it_tests": "OS-facing C code, ncurses-style UI architecture, event-driven programming, and architecture extraction from a compact codebase.",
+    "risks_or_caveats": "Its small size limits breadth, and the C plus terminal-UI domain may be niche for some models."
+  },
+  {
+    "repo": "neovim/neovim",
+    "url": "https://github.com/neovim/neovim",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A hybrid C and Lua application with rich extensibility, long-lived complexity, and a real plugin-heavy architecture.",
+    "what_it_tests": "Multi-language architecture, plugin boundaries, editor core versus extension logic, and dynamic extension-aware analysis.",
+    "risks_or_caveats": "Macros in C and dynamic Lua behavior can make holistic static analysis difficult."
+  }
+]

@@ -2,7 +2,7 @@
 
 Level 3 resource for the analyze skill. Referenced from step 9 (write atlas). Defines the structural inventory output format.
 
-Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capabilities`, adds `metadata` section. All detection sections (concepts, module_graph, api_surface, debt) are unchanged.
+Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capabilities`, adds `metadata` section. In practice Augur now uses a facts-first pipeline, so concept evidence should be traced back to normalized fact IDs whenever possible.
 
 ## Schema
 
@@ -160,9 +160,12 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
         "confidence": "high | medium | low",
         "components": ["<component-id>"],
         "evidence": {
+          "fact_ids": ["<fact-id>"],
           "files": ["<path>"],
-          "method": "grep | ast-grep | semgrep | questions | manual",
-          "note": "<one sentence>"
+          "method": "grep | ast-grep | semgrep | question | manual | inferred-from-facts",
+          "detector_class": "ast | semgrep | signature | regex | manifest | question | inference",
+          "note": "<one sentence>",
+          "questions_asked": ["<question id>"]
         }
       }
     ],
@@ -173,9 +176,12 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
         "confidence": "high | medium | low",
         "components": ["<component-id>"],
         "evidence": {
+          "fact_ids": ["<fact-id>"],
           "files": ["<path>"],
-          "method": "grep | ast-grep | semgrep | questions | manual",
-          "note": "<one sentence>"
+          "method": "grep | ast-grep | semgrep | question | manual | inferred-from-facts",
+          "detector_class": "ast | semgrep | signature | regex | manifest | question | inference",
+          "note": "<one sentence>",
+          "questions_asked": ["<question id>"]
         }
       }
     ],
@@ -189,7 +195,9 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
     "scan_metadata": {
       "catalog_size": {"patterns": "<N>", "anti_patterns": "<N>"},
       "tools_used": ["grep", "ast-grep", "semgrep"],
-      "categories_scanned": ["<category>"]
+      "categories_scanned": ["<category>"],
+      "facts_index": "facts/index.json",
+      "fact_domains_used": ["<domain>"]
     }
   },
 

@@ -19,12 +19,14 @@ Agent-to-agent communication is direct through Kafka; no HTTP router is required
 ## Running the Services
 
 ```bash
-# Klaude daemon (per-agent, needs AGENT_NAME env)
-AGENT_NAME=charon openclaude-daemon
+# Klaude daemon package (per-agent, needs AGENT_NAME env)
+cd shared/klaude-daemon
+AGENT_NAME=charon npm run start
 ```
 
 Key environment variables for the daemon:
 - `AGENT_NAME` — required; selects which Kafka topic (`agent.<AGENT_NAME>`) to consume
+- `AGENT_PROFILE` — optional; selects the specialist flavor/profile independently of the deployed agent name
 - `AGENT_PROJECT_DIR` — agent working dir, defaults to `/runtime/<AGENT_NAME>`
 - `AGENT_STATE_DIR` — persistent state dir, defaults to `/kord/<AGENT_NAME>`
 - `KAFKA_BROKERS` — defaults to `kafka-kafka-bootstrap.dev.svc.cluster.local:9092`
@@ -32,8 +34,9 @@ Key environment variables for the daemon:
 ## Deployment Scripts
 
 ```bash
-# Deploy agent runtime files (memory, identity, skills) from repo → /runtime/<agent>/
-lib/scripts/deploy-runtime.sh <agent-name|all>
+# Deploy agent runtime files from repo → runtime
+# Optional second arg seeds one agent flavor into another deployed agent name.
+lib/scripts/deploy-runtime.sh <source-agent|all> [destination-agent]
 
 # Generate agent bundle (AGENT.md static preload)
 lib/scripts/generate-agent-bundle.py <agent>
@@ -63,6 +66,7 @@ Klaude consumes `agent.<AGENT_NAME>`, runs the persistent agent session, and pub
 
 - Klaude owns the persistent harness/runtime and Kafka mode
 - Kordinate provides runtime seeding, PVC layout, image composition, and deployment manifests
+- The shared daemon implementation lives in `shared/klaude-daemon/`
 - Before each job, the runtime can diff shared/agent memory state so updated files are re-read
 - Results follow the runtime contract: `{ status, output, reflection?: { project, general }, errors?: string[] }`
 - Status and memory endpoints remain on port 9090 (`/status`, `/health`, `/memory-update`)
@@ -94,7 +98,7 @@ Markdown files loaded by agents at boot via `@` imports in CLAUDE.md:
 
 - **Global** (`/kord/<agent>/memory/global/`) — agent-specific durable knowledge, seeded from `agents/<agent>/memory/` on first deploy
 - **Shared** (`/kord/shared/memory/`) — cross-agent facts, seeded from `shared/memory/`
-- **Team** — team-scoped directory (see `runtime-ownership.yaml`)
+- **Team** — team-scoped directory (see `ownership-policy.yaml`)
 - The daemon watches for changes via MD5 hashing before each job and injects a diff summary into the prompt
 - Agents write new memories via `POST http://localhost:9090/memory-update`; the scribe (`lib/agent-scribe/`) deduplicates and merges
 

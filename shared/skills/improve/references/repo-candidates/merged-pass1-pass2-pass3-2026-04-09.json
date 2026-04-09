@@ -1,0 +1,762 @@
+[
+  {
+    "repo": "GoogleCloudPlatform/microservices-demo",
+    "url": "https://github.com/GoogleCloudPlatform/microservices-demo",
+    "suggested_by": [
+      "deepseek-reasoner",
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A smaller repository that is still highly architecturally discriminative, with clear polyglot microservice boundaries and observable request flow.\n\n---\n\nSmall, clean microservices demo with distinct architectural boundaries.",
+    "what_it_tests": "Microservice boundary identification, inter-service communication, polyglot architecture, and request tracing through a distributed demo.\n\n---\n\nInter-service communication, deployment, and polyglot service integration.",
+    "risks_or_caveats": "As a demo, it may be cleaner and more didactic than real production systems.\n\n---\n\nPurposefully clean; less real-world technical debt.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json",
+      "shared/skills/improve/references/repo-candidates/deepseek-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "HandBrake/HandBrake",
+    "url": "https://github.com/HandBrake/HandBrake",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A cross-platform transcoder with a shared core and multiple frontends, making UI-core separation explicit and important.",
+    "what_it_tests": "Library versus application boundary detection, multi-frontend architecture, and cross-language integration patterns.",
+    "risks_or_caveats": "Native GUI diversity and codec-domain complexity increase labeling cost.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "Netflix/conductor",
+    "url": "https://github.com/Netflix/conductor",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A Java application that reinforces event-driven and worker-heavy architecture, with workflow orchestration and asynchronous task execution.",
+    "what_it_tests": "Analysis of Java microservices, asynchronous task workers, workflow definitions, state persistence, and orchestration logic.",
+    "risks_or_caveats": "Some overlap with Temporal as a workflow platform. Complexity may still require scoped evaluation.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "PostgREST/postgrest",
+    "url": "https://github.com/PostgREST/postgrest",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Haskell codebase that turns a PostgreSQL schema directly into a REST API. The architecture is deeply non-conventional and the language will challenge agents trained primarily on Python/JS. The architectural concept is brilliant and unusual.",
+    "what_it_tests": "Cross-language architectural reasoning, ability to understand systems where the data layer IS the schema definition layer, and comfort with unfamiliar paradigms.",
+    "risks_or_caveats": "Haskell syntax may be a near-total blocker for some agents. Could be more useful as a test of graceful degradation when facing unfamiliar syntax than as a pure architecture test.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "ShareX/ShareX",
+    "url": "https://github.com/ShareX/ShareX",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A feature-rich screen capture and file sharing utility for Windows, written in C#. It showcases a complex desktop application with extensive UI, system integration, and interaction with many third-party services.",
+    "what_it_tests": "Desktop application architecture (WinForms/WPF), interaction with OS APIs, plugin system for custom uploaders/actions, extensive third-party API integrations, and handling various media types and file operations in a desktop environment.",
+    "risks_or_caveats": "A Windows-specific application, potentially making cross-platform analysis or runtime evaluation more difficult. UI-heavy, so architectural insights might need to differentiate between UI logic and core functionality.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "TeamNewPipe/NewPipe",
+    "url": "https://github.com/TeamNewPipe/NewPipe",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A maintained Android application with real-world mobile complexity and reliance on unstable external service behavior rather than formal SDKs.",
+    "what_it_tests": "Android app architecture, network-layer resilience, UI patterns, media playback integration, and adaptation to changing unofficial APIs.",
+    "risks_or_caveats": "Its scraping-heavy network layer is less formally structured than typical API clients, which may confuse agents expecting standard client patterns.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "WordPress/WordPress",
+    "url": "https://github.com/WordPress/WordPress",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "The world's most popular CMS, written in PHP. It's a classic example of an evolving 'monolith' with a mixture of modern and legacy code, extensive plugin system, and database interactions. It's messy but highly functional.",
+    "what_it_tests": "Understanding a large, evolving PHP codebase, identifying plugin/theme architecture, database schema interaction, handling of HTML/CSS/JS alongside PHP, security vulnerabilities in older code, and distinguishing core functionality from extension points.",
+    "risks_or_caveats": "Known for architectural debt and a mix of coding styles. PHP's dynamic nature can make static analysis harder than strongly typed languages. The sheer volume of files and historical context adds significant complexity.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "Wox-launcher/Wox",
+    "url": "https://github.com/Wox-launcher/Wox",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Windows launcher with a plugin-host architecture hidden behind a deceptively flat repository layout.",
+    "what_it_tests": "Detection of plugin hosts, dependency inversion, and architecture inference beyond shallow directory reading.",
+    "risks_or_caveats": "Intermittent development means some bundled plugin code may be stale.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "airbytehq/airbyte",
+    "url": "https://github.com/airbytehq/airbyte",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A strong data-pipeline candidate. Airbyte is a complex ELT platform with connectors, scheduling, sync engines, and polyglot subsystems.",
+    "what_it_tests": "Analysis of data flow, pipeline orchestration, connector architectures, job management, and multi-language system boundaries.",
+    "risks_or_caveats": "Large and actively evolving. External data-source integrations add complexity beyond the core platform.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "apache/airflow",
+    "url": "https://github.com/apache/airflow",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Python project that has grown organically over many years and carries significant architectural debt alongside intentional design. The DAG scheduling model is a specific architectural idea that is implemented in ways that are sometimes inconsistent with the original concept.",
+    "what_it_tests": "Ability to detect architectural drift, recognize where historical decisions constrain current design, and distinguish intentional patterns from accumulated technical debt in a large codebase.",
+    "risks_or_caveats": "Very large and famous. The debt and inconsistency that make it interesting also make it hard to write ground-truth evaluation criteria. Human expert annotation would be needed to validate agent responses.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "apache/fineract",
+    "url": "https://github.com/apache/fineract",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "Fills the gap for a large, complex Java application rather than a library or framework. It is a mature core banking solution with deep domain logic and multiple modules.",
+    "what_it_tests": "Understanding of enterprise Java application patterns, business domain modeling, module dependencies, and complex CRUD and state transitions.",
+    "risks_or_caveats": "Its size and finance-specific domain can be overwhelming. It may lean toward traditional enterprise Java patterns more than modern services.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "apache/flink",
+    "url": "https://github.com/apache/flink",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Java stateful stream processing engine with first-class runtime components and fault-tolerant execution architecture.",
+    "what_it_tests": "Execution graph construction, operator chaining, state backends, and checkpoint-based fault tolerance in distributed dataflow systems.",
+    "risks_or_caveats": "Extremely large, with broad API surface that can distract from the core engine.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "apache/kafka",
+    "url": "https://github.com/apache/kafka",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Canonical event-driven distributed log system in Java, with layered broker, controller, consumer group, and replication architecture.",
+    "what_it_tests": "Tracing data flow through producer, broker, and consumer paths, plus runtime configuration and distributed consensus boundaries.",
+    "risks_or_caveats": "Very large, mixed Scala and Java, and currently carries dual Zookeeper and KRaft architectural paths.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "bitcoin/bitcoin",
+    "url": "https://github.com/bitcoin/bitcoin",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Legacy C++ system with critical performance and security constraints.",
+    "what_it_tests": "Analysis of low-level, security-conscious, and performance-critical code.",
+    "risks_or_caveats": "Specialized domain knowledge required for full assessment.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/deepseek-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "caddyserver/caddy",
+    "url": "https://github.com/caddyserver/caddy",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A modern mid-sized Go application with a modular plugin-based server architecture and meaningful concurrency patterns.",
+    "what_it_tests": "Go application structure, plugin systems, concurrency, HTTP handling, and modular non-framework application reasoning.",
+    "risks_or_caveats": "Static analysis may understate dynamic plugin behavior, and Go may still be underrepresented for some models.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "calcom/cal.com",
+    "url": "https://github.com/calcom/cal.com",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A large, actively maintained Next.js monorepo with real enterprise-grade complexity. Has turborepo setup, multiple apps, shared packages, and reflects the current messy reality of modern full-stack TypeScript projects.",
+    "what_it_tests": "Monorepo comprehension, ability to map dependency graphs across packages, understanding of how frontend and backend concerns are split in a modern full-stack TypeScript codebase.",
+    "risks_or_caveats": "Changes rapidly, making benchmark stability difficult. The sheer size may exceed context windows. Best used with scoped subtree questions.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "checkstyle/checkstyle",
+    "url": "https://github.com/checkstyle/checkstyle",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A mature, actively maintained Java static analysis tool. It has a well-defined plugin architecture, complex AST manipulation logic, and a long history of contributions, making it a good candidate for understanding tool-oriented software rather than a typical web app.",
+    "what_it_tests": "Identification of plugin architectures, abstract syntax tree (AST) manipulation logic, visitor patterns, configuration parsing, command-line interface design, and understanding of a large, non-web Java application's internal structure.",
+    "risks_or_caveats": "Domain-specific (static analysis), which might require some understanding of compilers/parsers. Primarily Java, so less useful for polyglot analysis. The sheer number of checks and configurations can be overwhelming.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "dani-garcia/vaultwarden",
+    "url": "https://github.com/dani-garcia/vaultwarden",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "An unofficial, self-hosted Bitwarden server implementation written in Rust. It's a practical, security-sensitive web application demonstrating modern Rust best practices, async programming, and database interaction.",
+    "what_it_tests": "Modern Rust async/await patterns, understanding web framework usage (e.g., Axum/Actix-web), database interactions (SQLx), cryptography and security-related code analysis, and managing configuration/environment variables.",
+    "risks_or_caveats": "Rust's unique ownership and borrowing model might pose challenges for static analysis tools not specifically designed for it. The security-sensitive nature means subtle bugs could be hard to detect without deep understanding.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "dbeaver/dbeaver",
+    "url": "https://github.com/dbeaver/dbeaver",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "Targets the messy but stable non-framework gap. DBeaver is a mature Java desktop application with long-lived complexity and broad functionality.",
+    "what_it_tests": "Analysis of a large desktop Java app, plugin architecture, architectural debt, pragmatic workarounds, and database-specific abstractions.",
+    "risks_or_caveats": "Its desktop nature and Eclipse RCP/SWT stack may be less relevant for web-focused evaluation.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "directus/directus",
+    "url": "https://github.com/directus/directus",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A headless CMS and data API written in TypeScript with a modern architecture (Node.js backend, Vue.js frontend). It represents a real-world, full-stack application with database interactions, authentication, and a flexible data model.",
+    "what_it_tests": "Full-stack TypeScript analysis, database schema inference (from ORM or migrations), API endpoint discovery, authentication/authorization patterns, modularity in a large web application, understanding configuration over code.",
+    "risks_or_caveats": "The data model is highly configurable, making static analysis of actual usage patterns potentially difficult without runtime context. The Vue.js frontend, while well-structured, adds a layer of complexity for full-stack analysis.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "discourse/discourse",
+    "url": "https://github.com/discourse/discourse",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A large, modern, and actively developed forum software built with Ruby on Rails and Ember.js. It's a full-stack, real-world application with significant complexity in its frontend, backend, and background processing, representing a typical large web application.",
+    "what_it_tests": "Large-scale Ruby on Rails architecture, integration with a complex JavaScript frontend (Ember.js), background job processing (Sidekiq), database interactions, real-time features (websockets), and complex deployment/configuration.",
+    "risks_or_caveats": "Two major frameworks (Rails and Ember.js) create a multi-language, multi-framework challenge. The codebase is very active, so frequent updates might affect benchmark consistency over time.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "elastic/beats",
+    "url": "https://github.com/elastic/beats",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Go data pipeline application with multiple lightweight shippers built on a shared core.",
+    "what_it_tests": "Pipeline abstractions, input-processor-output composition, and separation of common framework code from beat-specific implementations.",
+    "risks_or_caveats": "Multi-binary scope is broad, and generated protocol code can distort architectural signals.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "expressjs/express",
+    "url": "https://github.com/expressjs/express",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A rare case where a minimal codebase carries enormous architectural weight. The middleware chain pattern is simple to describe but subtle to fully reason about. Tests whether an agent can distinguish between simplicity by design versus simplicity from incompleteness.",
+    "what_it_tests": "Recognition of deliberate minimalism, understanding of plugin/extension patterns, and ability to trace how a small core creates emergent complexity through composition.",
+    "risks_or_caveats": "Very famous, so training contamination is high. An agent might recite descriptions of Express rather than analyze it. Best used with targeted questions about specific commits or non-obvious edge cases.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "freeCodeCamp/freeCodeCamp",
+    "url": "https://github.com/freeCodeCamp/freeCodeCamp",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Large, full-stack JavaScript monorepo with complex tooling.",
+    "what_it_tests": "Ability to navigate monoliths and understand educational app architecture.",
+    "risks_or_caveats": "Heavily commented; may skew complexity analysis.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/deepseek-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "gogs/gogs",
+    "url": "https://github.com/gogs/gogs",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A mid-sized Go application rather than a library. It is a self-hosted Git service with authentication, database interaction, web UI, and non-trivial server-side logic.",
+    "what_it_tests": "Analysis of a complete Go web application, including routing, handlers, templates, ORM use, layering, and application control flow.",
+    "risks_or_caveats": "The project has a long history, so some parts may reflect older Go idioms. It is not a distributed system.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "gohugoio/hugo",
+    "url": "https://github.com/gohugoio/hugo",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A fast and popular static site generator written in Go. It's a mature project demonstrating performance-oriented design, complex file system operations, template parsing, and a robust command-line interface, all within a single codebase.",
+    "what_it_tests": "Go idiomatic patterns (goroutines, channels), file system interaction and manipulation, template engine analysis, CLI argument parsing, performance optimization strategies, and understanding a self-contained, high-performance application.",
+    "risks_or_caveats": "Primarily focused on static site generation, so architectural patterns might not directly translate to typical web services. Less network interaction than other candidates, focusing more on local file processing and CLI design.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "grafana/loki",
+    "url": "https://github.com/grafana/loki",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Mid-sized Go application implementing scalable log aggregation with ingester, querier, compactor, and ruler roles.",
+    "what_it_tests": "Component boundaries, read and write path separation, storage abstractions, and multi-role binaries from one Go codebase.",
+    "risks_or_caveats": "Shares architecture with related observability systems, and some components remain unevenly documented.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "gravitational/teleport",
+    "url": "https://github.com/gravitational/teleport",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A large Go security infrastructure project. Extremely complex, with gRPC, certificate authority logic, SSH proxying, and Kubernetes integration. Represents the kind of serious infrastructure codebase that genuinely requires architectural expertise to navigate.",
+    "what_it_tests": "Deep architectural reasoning in a security-critical distributed system, ability to understand service boundaries and trust boundaries, and navigation of a large Go codebase with many cross-cutting concerns.",
+    "risks_or_caveats": "May be too complex for meaningful evaluation without very targeted questions. Risk that agents produce plausible-sounding but incorrect architectural descriptions.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "hashicorp/vault",
+    "url": "https://github.com/hashicorp/vault",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Go security secrets management system with a plugin architecture, multiple storage backends, and a well-defined but complex request routing system. The plugin system is architecturally interesting and non-trivial.",
+    "what_it_tests": "Understanding of plugin/backend abstraction patterns in Go, reasoning about security boundaries as architectural concerns, and ability to map how a request flows through a layered security system.",
+    "risks_or_caveats": "Training contamination risk is moderate to high given Vault's prominence. Some architectural descriptions may be parroted from blog posts.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "home-assistant/core",
+    "url": "https://github.com/home-assistant/core",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A large Python application with an event-driven core and a massive modular integration system, adding a different architecture style than typical web apps.",
+    "what_it_tests": "Analysis of plugin-heavy Python architecture, event buses, state management, automation logic, and integration boundaries.",
+    "risks_or_caveats": "Extremely large. The broader ecosystem may distract from the core architecture if evaluation is not scoped.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "htop-dev/htop",
+    "url": "https://github.com/htop-dev/htop",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A small but architecturally clear C utility with OS interaction, event loops, and text UI rendering.",
+    "what_it_tests": "OS-facing C code, ncurses-style UI architecture, event-driven programming, and architecture extraction from a compact codebase.",
+    "risks_or_caveats": "Its small size limits breadth, and the C plus terminal-UI domain may be niche for some models.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "jesseduffield/lazygit",
+    "url": "https://github.com/jesseduffield/lazygit",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "An elegant terminal UI (TUI) client for Git, written in Go. It's a well-structured, mid-sized application that demonstrates strong Go idioms, interactive UI patterns in a terminal, and robust interaction with external tools (Git CLI).",
+    "what_it_tests": "Go application structure, TUI library usage, interaction with external executables/CLI tools, state management in an interactive application, and clean separation of concerns in a practical utility. Good for understanding performance-driven CLI tools.",
+    "risks_or_caveats": "Being a TUI application, it lacks a traditional web or desktop GUI, so analysis won't cover those aspects. Its relatively clean structure might not fully challenge an agent's ability to deal with 'messy' or poorly documented code.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "karlstav/cava",
+    "url": "https://github.com/karlstav/cava",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A small native C application whose processing pipeline is more layered than its size suggests.",
+    "what_it_tests": "Pipeline-style architecture detection, hardware abstraction boundaries, and whether small repos get oversimplified.",
+    "risks_or_caveats": "Some boundaries are clearer in runtime behavior than in file layout.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "keepassxc/keepassxc",
+    "url": "https://github.com/keepassxc/keepassxc",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A stable, actively maintained, mid-sized desktop application written in C++ and Qt, with clear desktop architecture and security-critical components.",
+    "what_it_tests": "C++ and Qt architecture, UI and backend separation, security-focused design, plugin understanding, and persistence handling in a desktop app.",
+    "risks_or_caveats": "C++ GUI code can be challenging for some agents, and it requires reasoning across both system-level and interface layers.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "kubernetes/kubernetes",
+    "url": "https://github.com/kubernetes/kubernetes",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Massive, distributed systems Go project with microservices patterns.",
+    "what_it_tests": "Ability to reason about complex, modular, cloud-native systems.",
+    "risks_or_caveats": "Extreme complexity and scale may overwhelm.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/deepseek-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "mamedev/mame",
+    "url": "https://github.com/mamedev/mame",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A massive, decades-old C++ project for emulating arcade machines and game consoles. It's famous for its size, complexity, legacy code, and intricate build system, making it an excellent 'difficult' test case for large, evolving C++ systems.",
+    "what_it_tests": "Legacy C++ code comprehension (pointers, manual memory management), complex build system understanding (Makefiles), hardware emulation logic, driver-based architecture, identifying highly intertwined components, and dealing with a large, evolving codebase.",
+    "risks_or_caveats": "Extremely large and complex, with a significant amount of C-style C++. The build process can be very time-consuming and challenging to set up. Domain-specific (emulation) knowledge might be required for deep analysis.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "microsoft/vscode",
+    "url": "https://github.com/microsoft/vscode",
+    "suggested_by": [
+      "deepseek-reasoner",
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A highly successful code editor, built with Electron, TypeScript/JavaScript, and C++. It's a prime example of a polyglot application with a sophisticated plugin architecture, desktop integration, and performance optimizations.\n\n---\n\nMajor desktop app with extensive TypeScript and modular architecture.",
+    "what_it_tests": "Polyglot analysis (TypeScript, JavaScript, C++), Electron application architecture, complex plugin/extension model (Language Server Protocol, VS Code API), desktop integration, and performance-critical component identification.\n\n---\n\nAnalysis of layered, extensible architecture and large codebase patterns.",
+    "risks_or_caveats": "Extremely large and complex. The Electron nature means a significant portion is browser-like, but it also has native modules. Analyzing the full breadth of its plugin ecosystem might be out of scope for a single benchmark due to its extensibility.\n\n---\n\nVery large; requires significant processing power.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json",
+      "shared/skills/improve/references/repo-candidates/deepseek-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "neovim/neovim",
+    "url": "https://github.com/neovim/neovim",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A hybrid C and Lua application with rich extensibility, long-lived complexity, and a real plugin-heavy architecture.",
+    "what_it_tests": "Multi-language architecture, plugin boundaries, editor core versus extension logic, and dynamic extension-aware analysis.",
+    "risks_or_caveats": "Macros in C and dynamic Lua behavior can make holistic static analysis difficult.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "netdata/netdata",
+    "url": "https://github.com/netdata/netdata",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Messy but stable non-framework monitoring agent with C and Go subsystems, plugins, streaming, and built-in web serving.",
+    "what_it_tests": "Implicit layering, collector-to-API data flow, heterogeneous architecture, and lower-level reasoning across organically grown subsystems.",
+    "risks_or_caveats": "Inconsistent patterns and dual implementation zones make evaluation harder but also more discriminative.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "nicehash/NiceHashQuickMiner",
+    "url": "https://github.com/nicehash/NiceHashQuickMiner",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A messy but real Windows application combining services, local UI, IPC, hardware monitoring, and updater logic.",
+    "what_it_tests": "Hybrid service-plus-UI architecture, IPC boundaries, hardware abstractions, and component labeling without standard conventions.",
+    "risks_or_caveats": "Domain and Windows service constraints add evaluation complexity.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "nickel-lang/nickel",
+    "url": "https://github.com/nickel-lang/nickel",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A configuration language written in Rust. Small enough to be tractable but the architecture reflects deep language implementation concepts like lazy evaluation and gradual typing. Not famous. Forces genuine reasoning.",
+    "what_it_tests": "Ability to understand a language implementation architecture, recognize evaluation strategy patterns, and reason about a non-web, non-app domain that is underrepresented in training data.",
+    "risks_or_caveats": "Niche domain knowledge of programming language theory may be needed to evaluate whether an agent's architectural description is actually correct.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "nicotine-plus/nicotine-plus",
+    "url": "https://github.com/nicotine-plus/nicotine-plus",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A maintained Python desktop P2P client with GUI, networking, and plugins in one mid-sized organically grown codebase.",
+    "what_it_tests": "Desktop layering, GUI versus protocol logic, plugin boundaries, and tracing data flow through loosely coupled subsystems.",
+    "risks_or_caveats": "Legacy naming and inconsistent style can mislead superficial analysis.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "nicowillis/instagram-clone",
+    "url": "https://github.com/nicowillis/instagram-clone",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A mid-tier hobbyist full-stack clone with real architectural decisions that feel organic rather than textbook. It has enough complexity to be non-trivial but isn't so polished that the architecture is obvious.",
+    "what_it_tests": "Ability to identify architectural patterns in a project that wasn't designed with architecture in mind, spot missing abstractions, and reason about what a developer was implicitly trying to do versus what they actually built.",
+    "risks_or_caveats": "May be archived or deleted. Hobbyist repos are unstable benchmark targets. Should be forked and pinned to a specific commit for reproducibility.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "pbatard/rufus",
+    "url": "https://github.com/pbatard/rufus",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A widely used Windows utility with deliberate monolithic areas, platform APIs, and embedded subsystems.",
+    "what_it_tests": "Windows-native architecture, intentional coupling versus accidental coupling, and subsystem detection in non-framework code.",
+    "risks_or_caveats": "Heavy Win32 usage may be outside the comfort zone of web-centric models.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "prometheus/prometheus",
+    "url": "https://github.com/prometheus/prometheus",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A leading open-source monitoring system and time-series database written in Go. It's a robust, distributed system that showcases complex data ingestion, storage, querying, and alert management, highly relevant in modern infrastructure.",
+    "what_it_tests": "Understanding distributed system components, custom database implementation (time-series), data modeling for observability, query language parsing (PromQL), service discovery mechanisms, and high-availability patterns in Go.",
+    "risks_or_caveats": "The complexity of a custom time-series database and distributed nature might be overwhelming for an agent primarily focused on CRUD applications. The domain of monitoring is quite specific and requires context.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "rails/rails",
+    "url": "https://github.com/rails/rails",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Mature MVC web framework with convention-over-configuration design.",
+    "what_it_tests": "Understanding framework architecture and established code conventions.",
+    "risks_or_caveats": "Highly opinionated structure may limit generalizability.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/deepseek-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "restic/restic",
+    "url": "https://github.com/restic/restic",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Mid-sized Go backup application with clean but architecturally meaningful storage, encryption, and backend abstractions.",
+    "what_it_tests": "Interface-driven backends, content-addressable storage, cryptographic constraints, and whether agents confuse clarity with triviality.",
+    "risks_or_caveats": "Smaller and well-documented, so it is better as a calibration repo than a maximum-difficulty case.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "sqlite/sqlite",
+    "url": "https://github.com/sqlite/sqlite",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A robust and architecturally unusual C database engine whose amalgamated build structure is adversarial but fair for architecture inference.",
+    "what_it_tests": "Deep C analysis, database-engine structure, unconventional file layout, and whether an agent can infer architecture beyond superficial directories.",
+    "risks_or_caveats": "Predominantly C and layout-unconventional. Agents that rely on file structure shortcuts may fail badly.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass3-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "square/retrofit",
+    "url": "https://github.com/square/retrofit",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A very popular, well-engineered type-safe HTTP client for Java and Android. It demonstrates excellent API design, annotation processing, and a clear separation of concerns, making it ideal for evaluating library architecture and sophisticated Java features.",
+    "what_it_tests": "Understanding of reflection/annotation processing, dynamic proxies, API design patterns for libraries, dependency resolution, and efficient network communication abstractions in Java. Good for identifying core vs. extension modules.",
+    "risks_or_caveats": "It's a library, not a full application, so it won't test full application lifecycle or database interactions. Its elegance and clean design might make it 'too easy' for agents that specifically struggle with messy or poorly structured code.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "storybookjs/storybook",
+    "url": "https://github.com/storybookjs/storybook",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A large, complex monorepo written in TypeScript, featuring multiple packages, a plugin architecture, and extensive use of modern frontend frameworks (React, Vue, Angular support). It's a critical developer tool with significant architectural depth.",
+    "what_it_tests": "Monorepo analysis, TypeScript type inference, complex frontend component interaction, plugin system identification (addons), build toolchain comprehension (Webpack, Babel), cross-package dependency management in a large, dynamic project.",
+    "risks_or_caveats": "The sheer size and monorepo structure can be daunting. Its primary domain is UI development tools, which might require specific domain knowledge for deeper insights. Rapid development means frequent changes to the codebase.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "streamlit/streamlit",
+    "url": "https://github.com/streamlit/streamlit",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A popular Python library for creating interactive data applications. It combines Python backend logic with a React frontend, requiring understanding of a mixed-language codebase and how the two communicate. It has a significant codebase and active development.",
+    "what_it_tests": "Cross-language analysis (Python backend, JavaScript/React frontend), inter-process communication patterns, understanding of UI-generating APIs from a backend language, identifying plugin/extension points, data flow from backend to frontend.",
+    "risks_or_caveats": "The JavaScript frontend is bundled and might be harder to analyze for deep architectural insights without source map support or extensive static analysis of compiled JS. The core also interacts with Rust for performance, adding another layer of complexity.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "temporalio/temporal",
+    "url": "https://github.com/temporalio/temporal",
+    "suggested_by": [
+      "claude-sonnet-4-6",
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A strong example of an event-driven, worker-heavy workflow orchestration system in Go, with clear but non-obvious service boundaries.\n\n---\n\nGo workflow orchestration engine with worker-heavy, event-sourced execution and clear but non-obvious service boundaries.",
+    "what_it_tests": "Understanding of distributed workflow orchestration, event-driven state, worker pools, service roles, and Go concurrency in a large system.\n\n---\n\nEvent-sourced state machines, task queue dispatching, workflow determinism, and separation of orchestration from execution.",
+    "risks_or_caveats": "Extremely complex and large. Analysis may need to be scoped to specific services or flows.\n\n---\n\nLegacy artifacts from Cadence remain, and the proto-heavy surface can add abstraction noise.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass2-2026-04-09.json",
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "thingsboard/thingsboard",
+    "url": "https://github.com/thingsboard/thingsboard",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Messy, stable Java IoT platform with complex event processing.",
+    "what_it_tests": "Large modular monolith with Kafka, gRPC, and queue-based messaging.",
+    "risks_or_caveats": "Very large codebase. Complex setup with multiple services.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/deepseek-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "tiangolo/fastapi",
+    "url": "https://github.com/tiangolo/fastapi",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "Represents a modern, well-structured Python web API framework/application. It heavily utilizes Python type hints, Pydantic, and async/await, providing a clear and clean codebase, yet demonstrates complex framework design. It's a strong example of modern Python development practices.",
+    "what_it_tests": "Ability to parse and understand modern Python features (type hints, decorators, async), Pydantic models for data validation, API definition using OpenAPI/Swagger, dependency injection patterns. Good for identifying internal component architecture of a framework.",
+    "risks_or_caveats": "As a framework, its primary purpose is library rather than end-user application. Analysis might focus more on framework patterns than typical application logic. Its elegance might make it 'too easy' for agents struggling with messy code.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/gemini-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "tinygrad/tinygrad",
+    "url": "https://github.com/tinygrad/tinygrad",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A deliberately small ML framework written as a counterpoint to PyTorch. Architecturally maximalist in its minimalism. The design philosophy is embedded in the code structure in a way that is subtle and argumentative. Rewards agents that can read authorial intent.",
+    "what_it_tests": "Ability to read architectural philosophy from code structure, understand lazy evaluation graphs in a non-obvious implementation, and reason about what a codebase is arguing against as much as what it implements.",
+    "risks_or_caveats": "George Hotz's idiosyncratic style may confuse agents. The deliberate unconventionality means standard pattern recognition could produce wrong answers. Good discriminative case precisely because of this.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "tremor-rs/tremor",
+    "url": "https://github.com/tremor-rs/tremor",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Mid-sized, event-driven data processing system in Rust.",
+    "what_it_tests": "Pipeline and stream processing architecture with custom language.",
+    "risks_or_caveats": "Rust not requested, but unique event-driven model.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/deepseek-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "urfave/cli",
+    "url": "https://github.com/urfave/cli",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Small Go codebase with visible architectural evolution, backward-compatibility scars, and meaningful command-parsing design tradeoffs.",
+    "what_it_tests": "Recognition of evolutionary debt versus intentional design, and careful reasoning on a small but non-trivial codebase.",
+    "risks_or_caveats": "Scope is small, so it works better as a calibration repo than as a hard benchmark.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass2-2026-04-09.json"
+    ]
+  },
+  {
+    "repo": "zulip/zulip",
+    "url": "https://github.com/zulip/zulip",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A mature, well-documented Django application with a real-world scale. Has a complex threading model for messages and a hybrid Python/TypeScript codebase. The documentation is unusually good, which tests whether an agent over-relies on docs versus code.",
+    "what_it_tests": "Ability to reconcile documentation with actual implementation, reasoning about Django's ORM patterns at scale, and understanding of a mixed-language codebase with a defined boundary between backend and frontend.",
+    "risks_or_caveats": "Good documentation could allow agents to cheat by summarizing docs. Benchmark tasks should require reasoning about code not covered by docs.",
+    "source_files": [
+      "shared/skills/improve/references/repo-candidates/claude-pass1-2026-04-09.json"
+    ]
+  }
+]

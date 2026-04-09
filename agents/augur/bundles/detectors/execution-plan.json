@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "steps": [
+    {
+      "name": "framework-detection",
+      "bundle": "bundles/detectors/frameworks/all.json",
+      "purpose": "Detect frameworks first to establish stack context"
+    },
+    {
+      "name": "fact-extraction",
+      "bundle": "bundles/detectors/facts/all.json",
+      "purpose": "Extract normalized facts before semantic concept inference"
+    },
+    {
+      "name": "concept-detection",
+      "bundle": "bundles/detectors/concepts/all.json",
+      "purpose": "Interpret facts using prioritized candidates, semantic catalogs, and diagnostic questions"
+    }
+  ]
+}

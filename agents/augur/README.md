@@ -29,9 +29,14 @@ Architecture review and pattern authority — reviews design consistency, identi
 - [bundles/runtime/](bundles/runtime/) — Final runtime analyze bundles with distinct cacheable prefixes for holistic and selective execution
 - [bundles/detectors/](bundles/detectors/) — Generated detector execution bundles
 
+### Facts-first synthesis
+- [schemas/facts-schema.md](schemas/facts-schema.md) — normalized extraction contract
+- [scripts/synthesize_atlas_from_facts.py](scripts/synthesize_atlas_from_facts.py) — deterministic CLI that turns `facts/` into atlas scaffolding
+
 ## Rules
 
 - Framework-first: if a framework primitive exists, use it
+- Facts-first: normalize evidence before concept inference and atlas synthesis
 - Convention over configuration: follow established patterns
 - Proportional effort: don't rewrite working code for marginal improvement
 - Concrete: always include specific file paths and what should change

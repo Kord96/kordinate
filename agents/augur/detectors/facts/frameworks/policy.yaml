@@ -1,0 +1,49 @@
+domain: frameworks
+emits:
+  - framework
+frameworks:
+  include:
+    - python
+    - javascript
+    - typescript
+    - go
+    - rust
+    - java
+    - kotlin
+    - csharp
+    - ruby
+    - php
+    - swift
+    - elixir
+    - zig
+  exclude: []
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 4
+  semgrep:
+    enabled: true
+    detector_strength: 3
+  signatures:
+    enabled: true
+    detector_strength: 5
+  manifest:
+    enabled: true
+    detector_strength: 5
+policy:
+  emit_threshold: 3
+  fallback_order:
+    - manifest
+    - ast_grep
+    - signatures
+    - semgrep
+  negative_rule_result_means: neutral
+  requires_framework_context: false
+normalization:
+  fact_kind: framework
+  required_fields:
+    - language
+    - framework
+  optional_fields:
+    - signals
+    - negative_signals

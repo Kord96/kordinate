@@ -1,0 +1,81 @@
+{
+  "facts": [
+    {
+      "name": "auth-surface",
+      "files": {
+        "policy.yaml": "detectors/facts/auth-surface/policy.yaml",
+        "signatures.yaml": "detectors/facts/auth-surface/signatures.yaml"
+      }
+    },
+    {
+      "name": "config",
+      "files": {
+        "policy.yaml": "detectors/facts/config/policy.yaml",
+        "signatures.yaml": "detectors/facts/config/signatures.yaml"
+      }
+    },
+    {
+      "name": "events",
+      "files": {
+        "policy.yaml": "detectors/facts/events/policy.yaml",
+        "signatures.yaml": "detectors/facts/events/signatures.yaml"
+      }
+    },
+    {
+      "name": "external-clients",
+      "files": {
+        "policy.yaml": "detectors/facts/external-clients/policy.yaml",
+        "signatures.yaml": "detectors/facts/external-clients/signatures.yaml"
+      }
+    },
+    {
+      "name": "frameworks",
+      "files": {
+        "policy.yaml": "detectors/facts/frameworks/policy.yaml",
+        "signatures.yaml": "detectors/facts/frameworks/signatures.yaml"
+      }
+    },
+    {
+      "name": "hot-files",
+      "files": {
+        "policy.yaml": "detectors/facts/hot-files/policy.yaml",
+        "signatures.yaml": "detectors/facts/hot-files/signatures.yaml"
+      }
+    },
+    {
+      "name": "import-graph",
+      "files": {
+        "policy.yaml": "detectors/facts/import-graph/policy.yaml",
+        "signatures.yaml": "detectors/facts/import-graph/signatures.yaml"
+      }
+    },
+    {
+      "name": "jobs",
+      "files": {
+        "policy.yaml": "detectors/facts/jobs/policy.yaml",
+        "signatures.yaml": "detectors/facts/jobs/signatures.yaml"
+      }
+    },
+    {
+      "name": "middleware",
+      "files": {
+        "policy.yaml": "detectors/facts/middleware/policy.yaml",
+        "signatures.yaml": "detectors/facts/middleware/signatures.yaml"
+      }
+    },
+    {
+      "name": "models",
+      "files": {
+        "policy.yaml": "detectors/facts/models/policy.yaml",
+        "signatures.yaml": "detectors/facts/models/signatures.yaml"
+      }
+    },
+    {
+      "name": "routes",
+      "files": {
+        "policy.yaml": "detectors/facts/routes/policy.yaml",
+        "signatures.yaml": "detectors/facts/routes/signatures.yaml"
+      }
+    }
+  ]
+}

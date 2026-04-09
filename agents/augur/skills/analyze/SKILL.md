@@ -1,15 +1,16 @@
 ---
 name: analyze
 description: >
-  Full project analysis: atlas.json (structural inventory with detected concepts, dependencies,
-  API surface, and debt) + stories (scoped narrative compositions about architectural concerns).
-  One coherent pass. Use when asked to understand architecture, audit a codebase, onboard to a
-  project, or before cross-cutting changes. Use --detect-only for just the atlas.
+  Full project analysis: facts/ (normalized extracted observations), atlas.json (structural
+  inventory with detected concepts, dependencies, API surface, and debt) + stories (scoped
+  narrative compositions about architectural concerns). One coherent pass. Use when asked to
+  understand architecture, audit a codebase, onboard to a project, or before cross-cutting
+  changes. Use --detect-only for just facts + atlas.
 argument-hint: "<project> [--reverse] [--detect-only]"
 context: inherit
 ---
 
-Produce `atlas.json` and stories — a complete architectural understanding of a project in one continuous pass. Phase 1 runs all detection methodologies. Phase 2 composes findings into stories. Both phases share context so detection informs composition directly.
+Produce `facts/`, `atlas.json`, and stories — a complete architectural understanding of a project in one continuous pass. Phase 1 runs deterministic extraction and concept inference. Phase 2 composes findings into stories. Both phases share context so extraction informs composition directly.
 
 Supports three analysis modes: **full** (first run or major changes), **incremental** (update existing atlas based on what changed), and **skip** (nothing changed). The mode is determined automatically.
 
@@ -17,7 +18,7 @@ Supports three analysis modes: **full** (first run or major changes), **incremen
 
 `$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition); `[--full]` to force full analysis (ignore previous results). Directory must exist at the path provided in `[Memory] Project code:`, or at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, `/kord/repos/<project>/`, or as an absolute path.
 
-**Memory paths:** The runner injects `[Memory]` context with each job. Use the `Project:` path for reading/writing project memory (atlas, stories). If no project memory path is provided, fall back to `$AGENT_PROJECT_DIR/memory/projects/<project>/`. Output is written via the `/memory-update` endpoint for insights, but atlas.json and stories are written directly to the project memory path (they are structured output, not curated memory).
+**Memory paths:** The runner injects `[Memory]` context with each job. Use the `Project:` path for reading/writing project memory (facts, atlas, stories). If no project memory path is provided, fall back to `$AGENT_PROJECT_DIR/memory/projects/<project>/`. Output is written via the `/memory-update` endpoint for insights, but `facts/`, atlas.json, and stories are written directly to the project memory path (they are structured output, not curated memory).
 
 ---
 
@@ -27,7 +28,7 @@ Before reading any code, decide whether to run a full analysis or an incremental
 
 ### 0.1 — Locate and check previous analysis
 
-Resolve the project directory (`$ROOT`) and the project memory directory (`$MEM` — from the runner's `[Memory] Project:` path, or `$AGENT_PROJECT_DIR/memory/projects/<project>/`). Check for existing output at `$MEM/atlas.json`.
+Resolve the project directory (`$ROOT`) and the project memory directory (`$MEM` — from the runner's `[Memory] Project:` path, or `$AGENT_PROJECT_DIR/memory/projects/<project>/`). Check for existing output at `$MEM/atlas.json` and `$MEM/facts/index.json`.
 
 If `--full` was passed, or no previous atlas exists: **mode = FULL**. Skip to Phase 1.
 
@@ -89,17 +90,19 @@ Delete previous output. Read the entire codebase and build a holistic understand
 
 ### INCREMENTAL mode
 
-Read the existing atlas. Then read **only** the changed files and the files belonging to affected components. The existing atlas provides context for unchanged components — don't re-analyze them.
+Read the existing atlas and facts. Then read **only** the changed files and the files belonging to affected components. The existing atlas provides context for unchanged components, and existing facts provide reusable normalized evidence — don't re-analyze them.
 
 **What to re-run for affected components:**
-- Re-scan changed files with AST rules and grep (not the whole codebase)
-- Re-evaluate concept detection only for concepts found in affected components
+- Re-run fact extractors for affected domains and changed files only
+- Re-scan changed files with AST rules and signatures where facts need refresh
+- Re-evaluate concept detection only for concepts found in affected components or derived from changed facts
 - Re-check depends_on edges for affected components (imports may have changed)
 - Re-trace flows that pass through affected components
 - Re-assess debt for affected components only
 - Keep unchanged components, flows, state, and failure modes as-is
 
 **What to always re-check even in incremental:**
+- Facts whose source files moved or were deleted
 - `grounded_in` references on affected components (files may have moved)
 - External dependency resilience if dependency code changed
 - API surface if route handler files changed
@@ -110,7 +113,11 @@ Read the existing atlas. Then read **only** the changed files and the files belo
 
 Resolve the project directory (`$ROOT`). If not found, report and exit. If empty, produce minimal atlas.json.
 
-Detect the stack (languages, frameworks via `memory/catalog/frameworks/index.md`, runtime). In **INCREMENTAL** mode, only glob changed files + affected component files per [concerns/source-gathering.md](concerns/source-gathering.md). In **FULL** mode, glob everything. Load the semantic index layer from `memory/indexes/` and use the detector execution plan from `bundles/detectors/execution-plan.json` as the deterministic detection entrypoint.
+Detect the stack (languages, frameworks via `memory/catalog/frameworks/index.md`, runtime). In **INCREMENTAL** mode, only glob changed files + affected component files per [concerns/source-gathering.md](concerns/source-gathering.md). In **FULL** mode, glob everything. Load the semantic index layer from `memory/indexes/` and use the detector execution plan from `bundles/detectors/execution-plan.json` as the deterministic detection entrypoint:
+
+```text
+framework detection -> fact extraction -> concept inference -> atlas synthesis
+```
 
 ### Step 2 — Read and analyze
 
@@ -118,7 +125,8 @@ Read the source code. As you build your understanding, cover all concerns below.
 
 **Completeness checklist:**
 
-- **Patterns and concepts** — Framework-first deterministic detection, then concept detection: framework bundles → prioritized concept bundles → signatures → diagnostic questions. Assess confidence and identify gaps. Use semantic catalogs in `memory/catalog/` for interpretation, and prefer bundled detector execution from `bundles/detectors/` plus `skills/analyze/scripts/run_concept_detection.py` so `/analyze` follows one consistent evidence pipeline. When starting this: read [concerns/detection.md](concerns/detection.md).
+- **Facts** — Framework-first deterministic extraction, then fact normalization: framework bundles → fact extractor bundles → per-domain normalized outputs. Facts are the stable interface of the lower layer. Write them to `$MEM/facts/` following `schemas/facts-schema.md`.
+- **Patterns and concepts** — Framework-first semantic inference over facts: prioritized concept bundles → signatures/policies → diagnostic questions. Assess confidence and identify gaps. Use semantic catalogs in `memory/catalog/` for interpretation, and prefer bundled detector execution from `bundles/detectors/` so `/analyze` follows one consistent evidence pipeline. Questions belong after facts and before concept confirmation. When starting this: read [concerns/detection.md](concerns/detection.md).
 - **Dependencies** — Internal modules, imports, external services, infra manifests, inter-service config. Flag circular deps and hub modules. If `--reverse`, scan siblings. When starting this: read [concerns/dependency-analysis.md](concerns/dependency-analysis.md).
 - **API surface** — Framework detection, route discovery, 7 REST hygiene concerns, gateway/hexagonal compliance. Non-REST styles. Frameworks are stack context, not concepts; use them to choose framework-native expectations and then map architectural concepts separately. When starting this: read [concerns/api-review.md](concerns/api-review.md) and `memory/catalog/frameworks/index.md`.
 - **Components** — 5-10 top-level, nested via children. Annotate with patterns, deps, endpoints. Assign to 3-5 groups. When starting this: read [concerns/source-gathering.md](concerns/source-gathering.md).
@@ -129,7 +137,30 @@ Read the source code. As you build your understanding, cover all concerns below.
 - **Debt** — Anti-patterns from detected concepts, violations, score/grade (A-F, hard floor rule), 3-7 prioritized recommendations. When scoring: read [concerns/debt.md](concerns/debt.md).
 - **Stories** — When composing stories: read [../../schemas/story-schema.md](../../schemas/story-schema.md) and [../../schemas/writing-guide.md](../../schemas/writing-guide.md).
 
-### Step 3 — Write atlas.json
+### Step 3 — Write facts
+
+Write normalized fact artifacts to `$MEM/facts/` following [../../schemas/facts-schema.md](../../schemas/facts-schema.md) v1 format.
+
+Required first-pass domains:
+- `frameworks`
+- `routes`
+- `models`
+- `external-clients`
+- `import-graph`
+
+Preferred domains when evidence exists:
+- `middleware`
+- `config`
+- `jobs`
+- `events`
+
+Each fact must include:
+- detector provenance
+- framework context
+- source files
+- confidence
+
+### Step 4 — Write atlas.json
 
 Assemble into [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the mode determined in Step 0. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Write to `$MEM/atlas.json`.
 
@@ -180,6 +211,7 @@ With validated output, run quality checks:
 **Debt**: Score N — Grade X. <interpretation>
 **External** (N): <names with criticality>
 **Failures** (N): <names with severity>
+**Facts**: N total across <domain list>
 **Stories**: N root, N child
 **Journeys** (N): <titles> (if any)
 **Groundedness**: <min>-<max> across stories
@@ -188,6 +220,7 @@ With validated output, run quality checks:
 **Top recommendations**: 1. ... 2. ... 3. ...
 
 Written to:
+  facts: <path> (domain files)
   atlas: <path>
   stories: <path> (N files)
   journeys: <path> (N files, if any)

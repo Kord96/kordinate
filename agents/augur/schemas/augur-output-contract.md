@@ -2,12 +2,15 @@
 
 What augur produces and what downstream consumers (scribe, improve loop) can depend on.
 
-This document is the stable interface. Internal methodology may change; these outputs won't break without a version bump. For full schema details, see [schema.md](schema.md) (atlas) and [story-schema.md](story-schema.md) (stories + journeys).
+This document is the stable interface. Internal methodology may change; these outputs won't break without a version bump. For full schema details, see [facts-schema.md](facts-schema.md), [atlas-schema.md](atlas-schema.md), and [story-schema.md](story-schema.md).
 
 ## Output Layout
 
 ```
 $MEM/
+  facts/
+    index.json        # normalized extraction manifest
+    <domain>.json     # concrete extracted observations (routes, models, deps, ...)
   atlas.json            # structural inventory — complete, scoreable
   stories/
     <id>.yaml           # 8-15 stories, each a scoped architectural concern
@@ -15,15 +18,50 @@ $MEM/
     <id>.yaml           # at least one — teaching-order path through stories
 ```
 
-`--detect-only` produces only `atlas.json` (no stories or journeys).
+`--detect-only` produces `facts/` and `atlas.json` (no stories or journeys).
+
+---
+
+## facts/
+
+Normalized extraction output. JSON, version `"1"`. See [facts-schema.md](facts-schema.md).
+
+Facts are the stable contract between deterministic extraction and semantic concept inference.
+
+### Constraints consumers can depend on
+
+| Constraint | Value | Hard? |
+|-----------|-------|-------|
+| `facts/index.json` exists after `/analyze` | Yes | Yes |
+| Fact IDs are stable and unique within a run | Yes | Yes |
+| Every fact has provenance | detector id/class/source files | Yes |
+| Domain files may be omitted when empty | Yes | Yes |
+| Facts are concrete observations, not concepts | Yes | Yes |
+
+### Stable domains in v1
+
+- `frameworks`
+- `routes`
+- `models`
+- `external-clients`
+- `import-graph`
+
+### Optional domains in v1
+
+- `middleware`
+- `config`
+- `hot-files`
+- `jobs`
+- `events`
+- `auth-surface`
 
 ---
 
 ## atlas.json
 
-Full structural inventory. JSON, version `"3"`. See [schema.md](schema.md) for the complete field-by-field schema.
+Full structural inventory. JSON, version `"4"`. See [atlas-schema.md](atlas-schema.md) for the complete field-by-field schema.
 
-**Top-level sections:** `version`, `generated`, `project`, `purpose`, `stack`, `groups`, `actors`, `components`, `data_flows`, `state`, `events`, `external_dependencies`, `failure_modes`, `concepts`, `module_graph`, `api_surface`, `debt`, `metadata`.
+**Top-level sections:** `version`, `generated`, `project`, `purpose`, `domain_model`, `stack`, `groups`, `actors`, `components`, `flows`, `state`, `events`, `external_dependencies`, `failure_modes`, `concepts`, `module_graph`, `api_surface`, `debt`, `metadata`.
 
 ### Constraints scribe can depend on
 
@@ -42,7 +80,7 @@ Full structural inventory. JSON, version `"3"`. See [schema.md](schema.md) for t
 | Change | Old | New |
 |--------|-----|-----|
 | Format | YAML | JSON |
-| Version | `"2"` | `"3"` |
+| Version | `"2"` | `"4"` |
 | Grouping | `capabilities` | `groups` (structural-only) |
 | Component group | via capabilities | `group` field on each component |
 | Story link | N/A | `metadata.story_ids` |
@@ -104,15 +142,16 @@ Each story carries:
 
 ## What Scribe Can Depend On
 
-1. **atlas.json always exists** after `/analyze`
-2. **stories/ directory exists** (may be empty if `--detect-only`)
-3. **journeys/ directory exists** with at least `getting-started.yaml` (empty if `--detect-only`)
-4. **All IDs are kebab-case and unique** within their section
-5. **All cross-references resolve** — node IDs in stories exist in atlas, story IDs in journeys exist in stories/
-6. **3-5 groups** — hard constraint
-7. **Bold refs in summaries match atlas node IDs**
-8. **Observation evidence includes file paths** relative to project root
-9. **Journeys are ordered** — render stories in the sequence given
+1. **facts/index.json always exists** after `/analyze`
+2. **atlas.json always exists** after `/analyze`
+3. **stories/ directory exists** (may be empty if `--detect-only`)
+4. **journeys/ directory exists** with at least `getting-started.yaml` (empty if `--detect-only`)
+5. **All IDs are kebab-case and unique** within their section
+6. **All cross-references resolve** — node IDs in stories exist in atlas, story IDs in journeys exist in stories/
+7. **3-5 groups** — hard constraint
+8. **Bold refs in summaries match atlas node IDs**
+9. **Observation evidence includes file paths** relative to project root
+10. **Journeys are ordered** — render stories in the sequence given
 
 ## What May Change (Not Stable)
 
@@ -121,5 +160,6 @@ Each story carries:
 - Structure/flow type strings (freeform, new types may appear)
 - Observation fields (may add new ones)
 - Detection methodology internals
+- Exact fact domain count beyond the stable v1 set
 - Evaluation score thresholds
 - Additional atlas metadata fields

@@ -1,0 +1,226 @@
+version: 1
+
+profiles:
+  generic:
+    description: Generic daemon-backed agent with no specialist seed requirements.
+    defaults:
+      flavor: generic
+      image_customization: none
+      runtime_kind: openclaude-harness
+      provider: anthropic
+      model: sonnet
+      backend: anthropic
+      secret_env: ANTHROPIC_API_KEY
+      secret_name: anthropic-api
+      secret_key: api-key
+    required_choices: []
+
+  augur:
+    description: Augur-derived analysis agent that requires analyze bundle selection.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: openclaude-harness
+      provider: anthropic
+      model: sonnet
+      backend: anthropic
+      secret_env: ANTHROPIC_API_KEY
+      secret_name: anthropic-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  augur-claude:
+    description: Augur specialist pinned to Claude Sonnet via the native Claude SDK runtime.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: claude-sdk
+      provider: anthropic
+      model: claude-sonnet-4-6
+      backend: anthropic
+      secret_env: ANTHROPIC_API_KEY
+      secret_name: anthropic-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  augur-gemini:
+    description: Augur specialist pinned to Gemini over the OpenAI-compatible Gemini endpoint.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: openclaude-harness
+      provider: gemini
+      model: gemini-3.1-pro-preview
+      backend: gemini
+      backend_base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      secret_env: BACKEND_API_KEY
+      secret_name: gemini-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  augur-deepseek:
+    description: Augur specialist pinned to DeepSeek Reasoner.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: openclaude-harness
+      provider: deepseek
+      model: deepseek-reasoner
+      backend: deepseek
+      backend_base_url: https://api.deepseek.com
+      secret_env: BACKEND_API_KEY
+      secret_name: deepseek-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  augur-glm5:
+    description: Augur specialist pinned to GLM-5 through Fireworks.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: openclaude-harness
+      provider: fireworks
+      model: accounts/fireworks/models/glm-5
+      backend: fireworks
+      backend_base_url: https://api.fireworks.ai/inference/v1
+      secret_env: BACKEND_API_KEY
+      secret_name: fireworks-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  augur-gpt54:
+    description: Augur specialist pinned to GPT-5.4 on the OpenAI API.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: openclaude-harness
+      provider: openai
+      model: gpt-5.4
+      backend: openai
+      backend_base_url: https://api.openai.com/v1
+      secret_env: BACKEND_API_KEY
+      secret_name: codex-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  charon:
+    description: Charon specialist deployment using the built-in Charon flavor seed.
+    defaults:
+      flavor: charon
+      image_customization: agent-charon
+      runtime_kind: openclaude-harness
+      provider: anthropic
+      model: sonnet
+      backend: anthropic
+      secret_env: ANTHROPIC_API_KEY
+      secret_name: anthropic-api
+      secret_key: api-key
+    required_choices: []
+
+  alfred:
+    description: Alfred specialist deployment using the cheap DeepSeek-backed Alfred flavor seed.
+    defaults:
+      flavor: alfred
+      image_customization: none
+      runtime_kind: openclaude-harness
+      provider: deepseek
+      model: deepseek-chat
+      backend: deepseek
+      secret_env: DEEPSEEK_API_KEY
+      secret_name: deepseek-api
+      secret_key: api-key
+    required_choices: []
+
+  sauron:
+    description: Sauron specialist deployment using the built-in Sauron flavor seed.
+    defaults:
+      flavor: sauron
+      image_customization: none
+      runtime_kind: openclaude-harness
+      provider: anthropic
+      model: sonnet
+      backend: anthropic
+      secret_env: ANTHROPIC_API_KEY
+      secret_name: anthropic-api
+      secret_key: api-key
+    required_choices: []
+
+  warden:
+    description: Warden specialist deployment using the built-in Warden flavor seed.
+    defaults:
+      flavor: warden
+      image_customization: none
+      runtime_kind: openclaude-harness
+      provider: anthropic
+      model: haiku
+      backend: anthropic
+      secret_env: ANTHROPIC_API_KEY
+      secret_name: anthropic-api
+      secret_key: api-key
+    required_choices: []

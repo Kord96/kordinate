@@ -44,7 +44,10 @@ For each agent (augur, charon, sauron, alfred, warden):
 ## Kubernetes Resources
 
 ### Secrets
-- `anthropic-api` Secret exists in the target namespace with key `api-key`
+- Provider-specific Secrets exist in the target namespace with key `api-key`
+- Current defaults:
+  - `anthropic-api` for `augur`, `charon`, `warden`, `sauron`
+  - `deepseek-api` for `alfred`
 
 ### PVCs
 - `kord` PVC exists, is bound, and has sufficient free space
@@ -69,13 +72,7 @@ For each agent (augur, charon, sauron, alfred, warden):
 - Standby pods are running per scaling config (augur: 1, charon: 1, warden: 1, sauron: 0, alfred: 0)
 - Running pods pass readiness probe (`/health` on :9090)
 - Each pod mounts both `kord` (rw) and `data` (ro) PVCs
-- Claude process is alive inside running pods
-
-### Scribe Pods
-- One scribe deployment per agent (5 total)
-- Each has replicas=1, strategy=Recreate
-- Pods are running and consuming from `memory.updates.<agent>` topics
-- ANTHROPIC_API_KEY env var is set (from Secret)
+- `klaude-daemon` process is alive inside running pods
 
 ## End-to-End Flow
 
@@ -85,13 +82,6 @@ For each agent (augur, charon, sauron, alfred, warden):
 - Response contains `status` and `output`
 - If reflection is requested, response may include `reflection.project` and/or `reflection.general`
 - The reply topic receives the result message with matching `correlation_id` when provided
-
-### Memory pipeline
-- Agent reflection produces a curl to `:9090/memory-update`
-- The `/memory-update` endpoint returns 200 ("queued")
-- Message appears on `memory.updates.<agent>` Kafka topic
-- Scribe consumes the message and writes to `memory/global/` or `memory/projects/<project>/`
-- On next job, daemon detects the hash change and reports it to Claude
 
 ### Read-only enforcement
 - Agent pods cannot write to `/data/repos/` (read-only mount)

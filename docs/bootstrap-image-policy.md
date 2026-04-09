@@ -52,5 +52,12 @@ The first rollout after introducing layered images must ensure the following ima
 - `agent-base:latest`
 - `agent-charon:latest`
 - `agent-augur:latest`
+- `agent-alfred:latest`
+- `agent-sauron:latest`
+- `agent-warden:latest`
 
-The remaining agent-specific images should also be published as bootstrap artifacts even if some workloads still run directly from `agent-base` at first.
+When Docker is available locally, validate these with:
+
+```bash
+lib/scripts/build-agent-images.sh <registry-host> --verify-local
+```

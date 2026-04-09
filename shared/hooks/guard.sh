@@ -8,8 +8,7 @@ WORKSTATION_HOME="${WORKSTATION_HOME:-$HOME}"
 KORD_SOURCE_ROOT="${KORD_SOURCE_ROOT:-$HOME/repos/kordinate}"
 KORD_LOCAL_STATE="${KORD_LOCAL_STATE:-$HOME/.local/share/kordinate}"
 KORD_LOCKS_DIR="${KORD_LOCKS_DIR:-$KORD_LOCAL_STATE/locks}"
-KORD_PROFILE_STATE_DIR="${KORD_PROFILE_STATE_DIR:-$KORD_LOCAL_STATE/profile}"
-OWNERSHIP_FILE="${REPO_ROOT:-$HOME/.claude/runtime-ownership.yaml}"
+OWNERSHIP_FILE="${REPO_ROOT:-$HOME/.claude/ownership-policy.yaml}"
 
 allow() { echo '{}'; exit 0; }
 
@@ -29,19 +28,14 @@ check_auth() {
 
 lookup_runtime_owner() {
   local relative_path="$1"
-  local acl_file="$KORD_PROFILE_STATE_DIR/config-acl.yaml"
-  ACL_FILE="$acl_file" OWNERSHIP_FILE="$OWNERSHIP_FILE" RELATIVE_PATH="$relative_path" python3 - <<'PY'
+  OWNERSHIP_FILE="$OWNERSHIP_FILE" RELATIVE_PATH="$relative_path" python3 - <<'PY'
 import os
 from pathlib import Path
 import yaml
 
 relative_path = os.environ['RELATIVE_PATH'].strip('/')
 paths = []
-acl_file = Path(os.environ['ACL_FILE'])
 ownership_file = Path(os.environ['OWNERSHIP_FILE'])
-if acl_file.exists():
-    cfg = yaml.safe_load(acl_file.read_text()) or {}
-    paths.extend(cfg.get('paths') or [])
 if ownership_file.exists():
     cfg = yaml.safe_load(ownership_file.read_text()) or {}
     paths.extend(cfg.get('protected_paths') or [])
@@ -66,15 +60,14 @@ PY
 lookup_config_owner() {
   local file_path="$1"
   local old_str="$2"
-  local acl_file="$KORD_PROFILE_STATE_DIR/config-acl.yaml"
-  [ -f "$acl_file" ] || return 0
-  ACL_FILE="$acl_file" CONFIG_FILE="$file_path" OLD_STR="$old_str" python3 - <<'PY'
+  [ -f "$OWNERSHIP_FILE" ] || return 0
+  OWNERSHIP_FILE="$OWNERSHIP_FILE" CONFIG_FILE="$file_path" OLD_STR="$old_str" python3 - <<'PY'
 import os
 from pathlib import Path
 import yaml
 
-acl = yaml.safe_load(Path(os.environ['ACL_FILE']).read_text()) or {}
-config_entries = acl.get('config') or []
+cfg = yaml.safe_load(Path(os.environ['OWNERSHIP_FILE']).read_text()) or {}
+config_entries = cfg.get('config') or []
 config_file = os.environ['CONFIG_FILE']
 old_str = os.environ.get('OLD_STR', '')
 target = None

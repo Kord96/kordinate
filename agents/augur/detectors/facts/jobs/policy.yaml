@@ -1,0 +1,49 @@
+domain: jobs
+emits:
+  - job
+frameworks:
+  include:
+    - python
+    - javascript
+    - typescript
+    - go
+    - rust
+    - java
+    - kotlin
+    - csharp
+    - ruby
+    - php
+    - elixir
+  exclude: []
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 4
+  semgrep:
+    enabled: true
+    detector_strength: 3
+  signatures:
+    enabled: true
+    detector_strength: 5
+  manifest:
+    enabled: true
+    detector_strength: 3
+policy:
+  emit_threshold: 3
+  fallback_order:
+    - ast_grep
+    - semgrep
+    - signatures
+    - manifest
+  negative_rule_result_means: neutral
+  requires_framework_context: true
+normalization:
+  fact_kind: job
+  required_fields:
+    - kind
+    - callsite
+  optional_fields:
+    - schedule
+    - queue
+    - handler
+    - concurrency

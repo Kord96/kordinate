@@ -1,0 +1,52 @@
+[
+  {
+    "repo": "freeCodeCamp/freeCodeCamp",
+    "url": "https://github.com/freeCodeCamp/freeCodeCamp",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Large, full-stack JavaScript monorepo with complex tooling.",
+    "what_it_tests": "Ability to navigate monoliths and understand educational app architecture.",
+    "risks_or_caveats": "Heavily commented; may skew complexity analysis."
+  },
+  {
+    "repo": "microsoft/vscode",
+    "url": "https://github.com/microsoft/vscode",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Major desktop app with extensive TypeScript and modular architecture.",
+    "what_it_tests": "Analysis of layered, extensible architecture and large codebase patterns.",
+    "risks_or_caveats": "Very large; requires significant processing power."
+  },
+  {
+    "repo": "rails/rails",
+    "url": "https://github.com/rails/rails",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Mature MVC web framework with convention-over-configuration design.",
+    "what_it_tests": "Understanding framework architecture and established code conventions.",
+    "risks_or_caveats": "Highly opinionated structure may limit generalizability."
+  },
+  {
+    "repo": "kubernetes/kubernetes",
+    "url": "https://github.com/kubernetes/kubernetes",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Massive, distributed systems Go project with microservices patterns.",
+    "what_it_tests": "Ability to reason about complex, modular, cloud-native systems.",
+    "risks_or_caveats": "Extreme complexity and scale may overwhelm."
+  },
+  {
+    "repo": "bitcoin/bitcoin",
+    "url": "https://github.com/bitcoin/bitcoin",
+    "suggested_by": [
+      "deepseek-reasoner"
+    ],
+    "reason_for_inclusion": "Legacy C++ system with critical performance and security constraints.",
+    "what_it_tests": "Analysis of low-level, security-conscious, and performance-critical code.",
+    "risks_or_caveats": "Specialized domain knowledge required for full assessment."
+  }
+]

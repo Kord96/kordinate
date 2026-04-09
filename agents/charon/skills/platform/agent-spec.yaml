@@ -1,0 +1,428 @@
+version: 2
+
+# Source-of-truth agent platform spec.
+#
+# `name` is the deployed agent identity.
+# `flavor` selects the seeded specialist overlay:
+# - `augur`, `charon`, `alfred`, `sauron`, `warden`
+# - `generic` for plain runtime/backend behavior with no seeded overlay
+#
+# `runtime.command` is the in-container executable. This should resolve to the
+# shared daemon package baked into the image.
+# `runtime.daemon` describes the shared daemon runtime/backend selection.
+
+agents:
+  - name: augur
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: anthropic
+        model: sonnet
+        backend:
+          name: anthropic
+        secret:
+          env: ANTHROPIC_API_KEY
+          name: anthropic-api
+          key: api-key
+      kafka:
+        request_topic: agent.augur
+        reply_required: true
+        request_schema:
+          required: [prompt, reply_to]
+          optional: [timeout_ms, reflect]
+        response_schema:
+          required: [status, output]
+          optional: [reflection, errors]
+      state:
+        project_dir: /runtime/augur
+        state_dir: /kord/augur
+    deploy:
+      replicas:
+        min: 0
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: augur-claude
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: claude-sdk
+        provider: anthropic
+        model: claude-sonnet-4-6
+        backend:
+          name: anthropic
+        secret:
+          env: ANTHROPIC_API_KEY
+          name: anthropic-api
+          key: api-key
+      kafka:
+        request_topic: augur-claude
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        project_dir: /runtime/augur-claude
+        state_dir: /kord/augur-claude
+    deploy:
+      replicas:
+        min: 0
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: augur-gemini
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: gemini
+        model: gemini-3.1-pro-preview
+        backend:
+          name: gemini
+          base_url: https://generativelanguage.googleapis.com/v1beta/openai
+        secret:
+          env: BACKEND_API_KEY
+          name: gemini-api
+          key: api-key
+      kafka:
+        request_topic: augur-gemini
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        project_dir: /runtime/augur-gemini
+        state_dir: /kord/augur-gemini
+    deploy:
+      replicas:
+        min: 0
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: augur-deepseek
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: deepseek
+        model: deepseek-reasoner
+        backend:
+          name: deepseek
+          base_url: https://api.deepseek.com
+        secret:
+          env: BACKEND_API_KEY
+          name: deepseek-api
+          key: api-key
+      kafka:
+        request_topic: augur-deepseek
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        project_dir: /runtime/augur-deepseek
+        state_dir: /kord/augur-deepseek
+    deploy:
+      replicas:
+        min: 0
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: augur-glm5
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: fireworks
+        model: accounts/fireworks/models/glm-5
+        backend:
+          name: fireworks
+          base_url: https://api.fireworks.ai/inference/v1
+        secret:
+          env: BACKEND_API_KEY
+          name: fireworks-api
+          key: api-key
+      kafka:
+        request_topic: augur-glm5
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        project_dir: /runtime/augur-glm5
+        state_dir: /kord/augur-glm5
+    deploy:
+      replicas:
+        min: 0
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: augur-gpt54
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: openai
+        model: gpt-5.4
+        backend:
+          name: openai
+          base_url: https://api.openai.com/v1
+        secret:
+          env: BACKEND_API_KEY
+          name: codex-api
+          key: api-key
+      kafka:
+        request_topic: augur-gpt54
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        project_dir: /runtime/augur-gpt54
+        state_dir: /kord/augur-gpt54
+    deploy:
+      replicas:
+        min: 0
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: charon
+    flavor: charon
+    image:
+      base: agent-base
+      customization: agent-charon
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: anthropic
+        model: sonnet
+        backend:
+          name: anthropic
+        secret:
+          env: ANTHROPIC_API_KEY
+          name: anthropic-api
+          key: api-key
+      kafka:
+        request_topic: agent.charon
+        reply_required: true
+        request_schema:
+          required: [prompt, reply_to]
+          optional: [timeout_ms, reflect]
+        response_schema:
+          required: [status, output]
+          optional: [reflection, errors]
+      state:
+        project_dir: /runtime/charon
+        state_dir: /kord/charon
+    deploy:
+      replicas:
+        min: 0
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: warden
+    flavor: warden
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: anthropic
+        model: haiku
+        backend:
+          name: anthropic
+        secret:
+          env: ANTHROPIC_API_KEY
+          name: anthropic-api
+          key: api-key
+      kafka:
+        request_topic: agent.warden
+        reply_required: true
+        request_schema:
+          required: [prompt, reply_to]
+          optional: [timeout_ms, reflect]
+        response_schema:
+          required: [status, output]
+          optional: [reflection, errors]
+      state:
+        project_dir: /runtime/warden
+        state_dir: /kord/warden
+    deploy:
+      replicas:
+        min: 0
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: sauron
+    flavor: sauron
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: anthropic
+        model: sonnet
+        backend:
+          name: anthropic
+        secret:
+          env: ANTHROPIC_API_KEY
+          name: anthropic-api
+          key: api-key
+      kafka:
+        request_topic: agent.sauron
+        reply_required: true
+        request_schema:
+          required: [prompt, reply_to]
+          optional: [timeout_ms, reflect]
+        response_schema:
+          required: [status, output]
+          optional: [reflection, errors]
+      state:
+        project_dir: /runtime/sauron
+        state_dir: /kord/sauron
+    deploy:
+      replicas:
+        min: 0
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: alfred
+    flavor: alfred
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: deepseek
+        model: deepseek-chat
+        backend:
+          name: deepseek
+          base_url: https://api.deepseek.com
+        secret:
+          env: DEEPSEEK_API_KEY
+          name: deepseek-api
+          key: api-key
+      kafka:
+        request_topic: agent.alfred
+        reply_required: true
+        request_schema:
+          required: [prompt, reply_to]
+          optional: [timeout_ms, reflect]
+        response_schema:
+          required: [status, output]
+          optional: [reflection, errors]
+      state:
+        project_dir: /runtime/alfred
+        state_dir: /kord/alfred
+    deploy:
+      replicas:
+        min: 0
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi

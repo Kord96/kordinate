@@ -1,0 +1,102 @@
+[
+  {
+    "repo": "nicowillis/instagram-clone",
+    "url": "https://github.com/nicowillis/instagram-clone",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A mid-tier hobbyist full-stack clone with real architectural decisions that feel organic rather than textbook. It has enough complexity to be non-trivial but isn't so polished that the architecture is obvious.",
+    "what_it_tests": "Ability to identify architectural patterns in a project that wasn't designed with architecture in mind, spot missing abstractions, and reason about what a developer was implicitly trying to do versus what they actually built.",
+    "risks_or_caveats": "May be archived or deleted. Hobbyist repos are unstable benchmark targets. Should be forked and pinned to a specific commit for reproducibility."
+  },
+  {
+    "repo": "expressjs/express",
+    "url": "https://github.com/expressjs/express",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A rare case where a minimal codebase carries enormous architectural weight. The middleware chain pattern is simple to describe but subtle to fully reason about. Tests whether an agent can distinguish between simplicity by design versus simplicity from incompleteness.",
+    "what_it_tests": "Recognition of deliberate minimalism, understanding of plugin/extension patterns, and ability to trace how a small core creates emergent complexity through composition.",
+    "risks_or_caveats": "Very famous, so training contamination is high. An agent might recite descriptions of Express rather than analyze it. Best used with targeted questions about specific commits or non-obvious edge cases."
+  },
+  {
+    "repo": "PostgREST/postgrest",
+    "url": "https://github.com/PostgREST/postgrest",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Haskell codebase that turns a PostgreSQL schema directly into a REST API. The architecture is deeply non-conventional and the language will challenge agents trained primarily on Python/JS. The architectural concept is brilliant and unusual.",
+    "what_it_tests": "Cross-language architectural reasoning, ability to understand systems where the data layer IS the schema definition layer, and comfort with unfamiliar paradigms.",
+    "risks_or_caveats": "Haskell syntax may be a near-total blocker for some agents. Could be more useful as a test of graceful degradation when facing unfamiliar syntax than as a pure architecture test."
+  },
+  {
+    "repo": "calcom/cal.com",
+    "url": "https://github.com/calcom/cal.com",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A large, actively maintained Next.js monorepo with real enterprise-grade complexity. Has turborepo setup, multiple apps, shared packages, and reflects the current messy reality of modern full-stack TypeScript projects.",
+    "what_it_tests": "Monorepo comprehension, ability to map dependency graphs across packages, understanding of how frontend and backend concerns are split in a modern full-stack TypeScript codebase.",
+    "risks_or_caveats": "Changes rapidly, making benchmark stability difficult. The sheer size may exceed context windows. Best used with scoped subtree questions."
+  },
+  {
+    "repo": "zulip/zulip",
+    "url": "https://github.com/zulip/zulip",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A mature, well-documented Django application with a real-world scale. Has a complex threading model for messages and a hybrid Python/TypeScript codebase. The documentation is unusually good, which tests whether an agent over-relies on docs versus code.",
+    "what_it_tests": "Ability to reconcile documentation with actual implementation, reasoning about Django's ORM patterns at scale, and understanding of a mixed-language codebase with a defined boundary between backend and frontend.",
+    "risks_or_caveats": "Good documentation could allow agents to cheat by summarizing docs. Benchmark tasks should require reasoning about code not covered by docs."
+  },
+  {
+    "repo": "gravitational/teleport",
+    "url": "https://github.com/gravitational/teleport",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A large Go security infrastructure project. Extremely complex, with gRPC, certificate authority logic, SSH proxying, and Kubernetes integration. Represents the kind of serious infrastructure codebase that genuinely requires architectural expertise to navigate.",
+    "what_it_tests": "Deep architectural reasoning in a security-critical distributed system, ability to understand service boundaries and trust boundaries, and navigation of a large Go codebase with many cross-cutting concerns.",
+    "risks_or_caveats": "May be too complex for meaningful evaluation without very targeted questions. Risk that agents produce plausible-sounding but incorrect architectural descriptions."
+  },
+  {
+    "repo": "nickel-lang/nickel",
+    "url": "https://github.com/nickel-lang/nickel",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A configuration language written in Rust. Small enough to be tractable but the architecture reflects deep language implementation concepts like lazy evaluation and gradual typing. Not famous. Forces genuine reasoning.",
+    "what_it_tests": "Ability to understand a language implementation architecture, recognize evaluation strategy patterns, and reason about a non-web, non-app domain that is underrepresented in training data.",
+    "risks_or_caveats": "Niche domain knowledge of programming language theory may be needed to evaluate whether an agent's architectural description is actually correct."
+  },
+  {
+    "repo": "hashicorp/vault",
+    "url": "https://github.com/hashicorp/vault",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Go security secrets management system with a plugin architecture, multiple storage backends, and a well-defined but complex request routing system. The plugin system is architecturally interesting and non-trivial.",
+    "what_it_tests": "Understanding of plugin/backend abstraction patterns in Go, reasoning about security boundaries as architectural concerns, and ability to map how a request flows through a layered security system.",
+    "risks_or_caveats": "Training contamination risk is moderate to high given Vault's prominence. Some architectural descriptions may be parroted from blog posts."
+  },
+  {
+    "repo": "apache/airflow",
+    "url": "https://github.com/apache/airflow",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Python project that has grown organically over many years and carries significant architectural debt alongside intentional design. The DAG scheduling model is a specific architectural idea that is implemented in ways that are sometimes inconsistent with the original concept.",
+    "what_it_tests": "Ability to detect architectural drift, recognize where historical decisions constrain current design, and distinguish intentional patterns from accumulated technical debt in a large codebase.",
+    "risks_or_caveats": "Very large and famous. The debt and inconsistency that make it interesting also make it hard to write ground-truth evaluation criteria. Human expert annotation would be needed to validate agent responses."
+  },
+  {
+    "repo": "tinygrad/tinygrad",
+    "url": "https://github.com/tinygrad/tinygrad",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A deliberately small ML framework written as a counterpoint to PyTorch. Architecturally maximalist in its minimalism. The design philosophy is embedded in the code structure in a way that is subtle and argumentative. Rewards agents that can read authorial intent.",
+    "what_it_tests": "Ability to read architectural philosophy from code structure, understand lazy evaluation graphs in a non-obvious implementation, and reason about what a codebase is arguing against as much as what it implements.",
+    "risks_or_caveats": "George Hotz's idiosyncratic style may confuse agents. The deliberate unconventionality means standard pattern recognition could produce wrong answers. Good discriminative case precisely because of this."
+  }
+]

@@ -1,0 +1,48 @@
+domain: middleware
+emits:
+  - middleware
+  - auth-surface
+frameworks:
+  include:
+    - fastapi
+    - flask
+    - django
+    - express
+    - koa
+    - fastify
+    - nestjs
+    - spring
+    - rails
+    - laravel
+    - aspnet
+  exclude: []
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 4
+  semgrep:
+    enabled: true
+    detector_strength: 4
+  signatures:
+    enabled: true
+    detector_strength: 5
+  manifest:
+    enabled: false
+    detector_strength: 1
+policy:
+  emit_threshold: 3
+  fallback_order:
+    - ast_grep
+    - semgrep
+    - signatures
+  negative_rule_result_means: neutral
+  requires_framework_context: true
+normalization:
+  fact_kind: middleware
+  required_fields:
+    - name
+    - callsite
+  optional_fields:
+    - auth
+    - validation
+    - ordering

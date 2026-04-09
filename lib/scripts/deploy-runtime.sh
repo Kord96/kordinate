@@ -1,5 +1,5 @@
 #!/bin/bash
-# deploy-runtime.sh [agent-name|all]
+# deploy-runtime.sh [source-agent|all] [destination-agent]
 #
 # Kordinate-side runtime seeding only. Klaude owns the harness/runtime behavior.
 # This script prepares runtime files and metadata that the Klaude daemon reads.
@@ -10,7 +10,8 @@
 #   repo/agents/<name>/skills/     → <runtime>/<name>/skills/ (symlinks to repo)
 #   repo/shared/memory/            → /kord/shared/memory/ (copy, no-clobber)
 #
-# If "all" is passed, deploys for all agents. Otherwise just the named agent.
+# If "all" is passed, deploys for all agents. Otherwise deploys from the source
+# agent directory, optionally into a different destination agent name.
 # Does NOT create the PVC layout — bootstrap owns that.
 # Does NOT implement Kafka request/reply semantics — Klaude does.
 
@@ -83,16 +84,17 @@ normalize_api_key_env() {
 }
 
 deploy_agent() {
-  local AGENT="$1"
-  local SRC="$REPO/agents/$AGENT"
-  local DST="$RUNTIME/$AGENT"
+  local SOURCE_AGENT="$1"
+  local DEST_AGENT="$2"
+  local SRC="$REPO/agents/$SOURCE_AGENT"
+  local DST="$RUNTIME/$DEST_AGENT"
 
   if [ ! -d "$SRC" ]; then
     log "WARN: no source dir at $SRC"
     return
   fi
 
-  log "deploying $AGENT (src=$SRC dst=$DST)..."
+  log "deploying source=$SOURCE_AGENT dest=$DEST_AGENT (src=$SRC dst=$DST)..."
 
   # Ensure destination directory exists
   mkdir -p "$DST"
@@ -409,21 +411,26 @@ TEAM
 }
 
 # Main
-TARGET="${1:-all}"
+SOURCE_TARGET="${1:-all}"
+DEST_TARGET="${2:-}"
 
 log "repo: $REPO"
 log "runtime: $RUNTIME"
 
 deploy_team
 
-if [ "$TARGET" = "all" ]; then
+if [ "$SOURCE_TARGET" = "all" ]; then
   for agent_dir in "$REPO/agents"/*/; do
     [ -d "$agent_dir" ] || continue
     agent=$(basename "$agent_dir")
-    deploy_agent "$agent"
+    deploy_agent "$agent" "$agent"
   done
 else
-  deploy_agent "$TARGET"
+  if [ -n "$DEST_TARGET" ]; then
+    deploy_agent "$SOURCE_TARGET" "$DEST_TARGET"
+  else
+    deploy_agent "$SOURCE_TARGET" "$SOURCE_TARGET"
+  fi
 fi
 
 log "deployment complete"

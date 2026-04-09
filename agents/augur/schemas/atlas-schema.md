@@ -210,9 +210,12 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
         "confidence": "high | medium | low",
         "components": ["<component-id>"],
         "evidence": {
+          "fact_ids": ["<fact-id>"],
           "files": ["<path>"],
-          "method": "grep | ast-grep | semgrep | questions | manual",
-          "note": "<one sentence>"
+          "method": "grep | ast-grep | semgrep | question | manual | inferred-from-facts",
+          "detector_class": "ast | semgrep | signature | regex | manifest | question | inference",
+          "note": "<one sentence>",
+          "questions_asked": ["<question id>"]
         }
       }
     ],
@@ -223,9 +226,12 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
         "confidence": "high | medium | low",
         "components": ["<component-id>"],
         "evidence": {
+          "fact_ids": ["<fact-id>"],
           "files": ["<path>"],
-          "method": "grep | ast-grep | semgrep | questions | manual",
-          "note": "<one sentence>"
+          "method": "grep | ast-grep | semgrep | question | manual | inferred-from-facts",
+          "detector_class": "ast | semgrep | signature | regex | manifest | question | inference",
+          "note": "<one sentence>",
+          "questions_asked": ["<question id>"]
         }
       }
     ],
@@ -239,7 +245,9 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
     "scan_metadata": {
       "catalog_size": {"patterns": "<N>", "anti_patterns": "<N>"},
       "tools_used": ["grep", "ast-grep", "semgrep"],
-      "categories_scanned": ["<category>"]
+      "categories_scanned": ["<category>"],
+      "facts_index": "facts/index.json",
+      "fact_domains_used": ["<domain>"]
     }
   },
 

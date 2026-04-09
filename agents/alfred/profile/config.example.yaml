@@ -1,0 +1,9 @@
+# Example cluster config fields relevant to image registry resolution.
+# Use this as a shape reference for agents/alfred/profile/config.yaml.
+
+clusters:
+  kord:
+    name: kord
+    services:
+      registry:
+        url: registry.kord

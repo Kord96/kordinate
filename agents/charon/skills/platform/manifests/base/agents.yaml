@@ -1,5 +1,5 @@
 # Generated from agents/charon/skills/platform/agent-spec.yaml
-# Klaude owns the runtime semantics; Kordinate owns platform orchestration.
+# Agent flavor, runtime kind, and backend selection are declared in the spec.
 
 ---
 apiVersion: apps/v1
@@ -37,15 +37,27 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              exec openclaude-daemon
+              exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: augur }
-            - { name: AGENT_PROJECT_DIR, value: /runtime/augur }
-            - { name: AGENT_STATE_DIR, value: /kord/augur }
+            - { name: AGENT_NAME, value: "augur" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "anthropic" }
+            - { name: DAEMON_MODEL, value: "sonnet" }
+            - { name: DAEMON_BACKEND, value: "anthropic" }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -67,6 +79,20 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur
+  labels: { app: kord-agent, agent: augur }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
 
 ---
 apiVersion: apps/v1
@@ -104,15 +130,27 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              exec openclaude-daemon
+              exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: charon }
-            - { name: AGENT_PROJECT_DIR, value: /runtime/charon }
-            - { name: AGENT_STATE_DIR, value: /kord/charon }
+            - { name: AGENT_NAME, value: "charon" }
+            - { name: AGENT_PROFILE, value: "charon" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/charon" }
+            - { name: AGENT_STATE_DIR, value: "/kord/charon" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-charon:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "anthropic" }
+            - { name: DAEMON_MODEL, value: "sonnet" }
+            - { name: DAEMON_BACKEND, value: "anthropic" }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -134,6 +172,20 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-charon
+  labels: { app: kord-agent, agent: charon }
+spec:
+  selector:
+    app: kord-agent
+    agent: charon
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
 
 ---
 apiVersion: apps/v1
@@ -171,15 +223,27 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              exec openclaude-daemon
+              exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: warden }
-            - { name: AGENT_PROJECT_DIR, value: /runtime/warden }
-            - { name: AGENT_STATE_DIR, value: /kord/warden }
+            - { name: AGENT_NAME, value: "warden" }
+            - { name: AGENT_PROFILE, value: "warden" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/warden" }
+            - { name: AGENT_STATE_DIR, value: "/kord/warden" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-warden:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "anthropic" }
+            - { name: DAEMON_MODEL, value: "haiku" }
+            - { name: DAEMON_BACKEND, value: "anthropic" }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -201,6 +265,20 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-warden
+  labels: { app: kord-agent, agent: warden }
+spec:
+  selector:
+    app: kord-agent
+    agent: warden
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
 
 ---
 apiVersion: apps/v1
@@ -238,15 +316,27 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              exec openclaude-daemon
+              exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: sauron }
-            - { name: AGENT_PROJECT_DIR, value: /runtime/sauron }
-            - { name: AGENT_STATE_DIR, value: /kord/sauron }
+            - { name: AGENT_NAME, value: "sauron" }
+            - { name: AGENT_PROFILE, value: "sauron" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/sauron" }
+            - { name: AGENT_STATE_DIR, value: "/kord/sauron" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "anthropic" }
+            - { name: DAEMON_MODEL, value: "sonnet" }
+            - { name: DAEMON_BACKEND, value: "anthropic" }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -268,6 +358,20 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-sauron
+  labels: { app: kord-agent, agent: sauron }
+spec:
+  selector:
+    app: kord-agent
+    agent: sauron
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
 
 ---
 apiVersion: apps/v1
@@ -305,15 +409,28 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              exec openclaude-daemon
+              exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: alfred }
-            - { name: AGENT_PROJECT_DIR, value: /runtime/alfred }
-            - { name: AGENT_STATE_DIR, value: /kord/alfred }
+            - { name: AGENT_NAME, value: "alfred" }
+            - { name: AGENT_PROFILE, value: "alfred" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/alfred" }
+            - { name: AGENT_STATE_DIR, value: "/kord/alfred" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: HOME, value: /home/claude }
-            - { name: KORDINATE_HOME, value: /app }
-            - { name: PROJECTS_ROOT, value: /kord/shared/repos }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-alfred:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "deepseek" }
+            - { name: DAEMON_MODEL, value: "deepseek-chat" }
+            - { name: DAEMON_BACKEND, value: "deepseek" }
+            - { name: BACKEND_BASE_URL, value: "https://api.deepseek.com" }
+            - name: DEEPSEEK_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: deepseek-api
+                  key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
             limits: { memory: 4Gi }
@@ -335,3 +452,17 @@ spec:
           persistentVolumeClaim: { claimName: agent-runtime }
         - name: agent-runtime
           emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-alfred
+  labels: { app: kord-agent, agent: alfred }
+spec:
+  selector:
+    app: kord-agent
+    agent: alfred
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090

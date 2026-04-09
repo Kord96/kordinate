@@ -5,7 +5,7 @@ A framework for kording specialized agents into a team.
 ```
 kordinate/
 ├── core/           # framework — root agent, hooks, commands, lib
-├── shared/         # shared memory, hooks, skills, scripts
+├── shared/         # shared memory, hooks, klaude-daemon, runtime projections, skills, scripts
 ├── installer/      # setup-shell.sh, kordinate-cli
 ├── bin/            # repo-global utilities (session/tmux helpers now live with the workstation image)
 └── docs/           # documentation site

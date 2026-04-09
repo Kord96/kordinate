@@ -1,0 +1,14 @@
+domain: auth-surface
+positive:
+  strong:
+    - authentication guards and dependencies
+    - authorization middleware and interceptors
+    - API key or token validation boundaries
+  medium:
+    - session and identity lookup points
+  weak:
+    - request context checks near route handlers
+negative:
+  - code paths with no boundary enforcement
+notes:
+  - Auth surface facts help detect where trust is established before business logic runs.

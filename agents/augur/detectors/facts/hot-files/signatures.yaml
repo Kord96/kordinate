@@ -1,0 +1,14 @@
+domain: hot-files
+positive:
+  strong:
+    - files with high import fan-in
+    - entrypoints with many references
+    - central wiring modules
+  medium:
+    - heavily edited shared modules
+  weak:
+    - utility files imported broadly
+negative:
+  - isolated leaf modules
+notes:
+  - Hot-file facts are derived from dependency centrality and should remain explainable.

@@ -1,0 +1,82 @@
+[
+  {
+    "repo": "apache/kafka",
+    "url": "https://github.com/apache/kafka",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Canonical event-driven distributed log system in Java, with layered broker, controller, consumer group, and replication architecture.",
+    "what_it_tests": "Tracing data flow through producer, broker, and consumer paths, plus runtime configuration and distributed consensus boundaries.",
+    "risks_or_caveats": "Very large, mixed Scala and Java, and currently carries dual Zookeeper and KRaft architectural paths."
+  },
+  {
+    "repo": "grafana/loki",
+    "url": "https://github.com/grafana/loki",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Mid-sized Go application implementing scalable log aggregation with ingester, querier, compactor, and ruler roles.",
+    "what_it_tests": "Component boundaries, read and write path separation, storage abstractions, and multi-role binaries from one Go codebase.",
+    "risks_or_caveats": "Shares architecture with related observability systems, and some components remain unevenly documented."
+  },
+  {
+    "repo": "temporalio/temporal",
+    "url": "https://github.com/temporalio/temporal",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Go workflow orchestration engine with worker-heavy, event-sourced execution and clear but non-obvious service boundaries.",
+    "what_it_tests": "Event-sourced state machines, task queue dispatching, workflow determinism, and separation of orchestration from execution.",
+    "risks_or_caveats": "Legacy artifacts from Cadence remain, and the proto-heavy surface can add abstraction noise."
+  },
+  {
+    "repo": "elastic/beats",
+    "url": "https://github.com/elastic/beats",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Go data pipeline application with multiple lightweight shippers built on a shared core.",
+    "what_it_tests": "Pipeline abstractions, input-processor-output composition, and separation of common framework code from beat-specific implementations.",
+    "risks_or_caveats": "Multi-binary scope is broad, and generated protocol code can distort architectural signals."
+  },
+  {
+    "repo": "netdata/netdata",
+    "url": "https://github.com/netdata/netdata",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Messy but stable non-framework monitoring agent with C and Go subsystems, plugins, streaming, and built-in web serving.",
+    "what_it_tests": "Implicit layering, collector-to-API data flow, heterogeneous architecture, and lower-level reasoning across organically grown subsystems.",
+    "risks_or_caveats": "Inconsistent patterns and dual implementation zones make evaluation harder but also more discriminative."
+  },
+  {
+    "repo": "restic/restic",
+    "url": "https://github.com/restic/restic",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Mid-sized Go backup application with clean but architecturally meaningful storage, encryption, and backend abstractions.",
+    "what_it_tests": "Interface-driven backends, content-addressable storage, cryptographic constraints, and whether agents confuse clarity with triviality.",
+    "risks_or_caveats": "Smaller and well-documented, so it is better as a calibration repo than a maximum-difficulty case."
+  },
+  {
+    "repo": "apache/flink",
+    "url": "https://github.com/apache/flink",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Java stateful stream processing engine with first-class runtime components and fault-tolerant execution architecture.",
+    "what_it_tests": "Execution graph construction, operator chaining, state backends, and checkpoint-based fault tolerance in distributed dataflow systems.",
+    "risks_or_caveats": "Extremely large, with broad API surface that can distract from the core engine."
+  },
+  {
+    "repo": "urfave/cli",
+    "url": "https://github.com/urfave/cli",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "Small Go codebase with visible architectural evolution, backward-compatibility scars, and meaningful command-parsing design tradeoffs.",
+    "what_it_tests": "Recognition of evolutionary debt versus intentional design, and careful reasoning on a small but non-trivial codebase.",
+    "risks_or_caveats": "Scope is small, so it works better as a calibration repo than as a hard benchmark."
+  }
+]

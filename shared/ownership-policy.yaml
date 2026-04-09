@@ -1,10 +1,21 @@
-schema: runtime-ownership/v1
+schema: ownership-policy/v1
 
 # Current pod-agent runtime ownership manifest.
 # This file is for the main guard path and intentionally replaces the former
 # KORD-based ownership lookup for curated runtime files.
 
+config:
+  - file: agents/alfred/profile/config.yaml
+    mode: top_level_key
+    ownership:
+      clusters: alfred
+      network: alfred
+      cloudflare: charon
+
 protected_paths:
+  - path: .claude/ownership-policy.yaml
+    owner: team
+    reason: Guard ownership manifest on workstation
   - path: settings.json
     owner: team
     reason: Hook and environment configuration
@@ -32,9 +43,6 @@ protected_paths:
   - path: .local/share/kordinate/profile/
     owner: shared
     reason: Runtime profile projection cache
-  - path: shared/runtime/profile/config-acl.yaml
-    owner: shared
-    reason: Runtime ACL projection
   - path: shared/runtime/profile/overlays/
     owner: shared
     reason: Runtime overlay projection
@@ -44,9 +52,9 @@ protected_paths:
   - path: shared/runtime/profile/model-profiles.yaml
     owner: shared
     reason: Runtime model profile projection
-  - path: agents/alfred/profile/config-acl.yaml
-    owner: alfred
-    reason: Alfred-owned ACL source
+  - path: shared/klaude-daemon/
+    owner: shared
+    reason: Shared Klaude daemon runtime implementation
   - path: agents/alfred/profile/backend-aliases.yaml
     owner: alfred
     reason: Alfred-owned backend alias source

@@ -1,0 +1,16 @@
+domain: models
+positive:
+  strong:
+    - ORM model classes and schemas
+    - table or collection declarations
+    - migration files
+    - entity and record definitions
+  medium:
+    - serializer models tied to persisted state
+    - repository-backed entities
+  weak:
+    - structs or classes with persisted fields
+negative:
+  - purely in-memory DTOs without persistence role
+notes:
+  - Model facts should identify the storage technology and the domain entity shape before higher-level concepts are inferred.

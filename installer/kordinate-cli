@@ -358,11 +358,11 @@ cmd_init() {
      "$KORD_SRC/agents/charon/skills/bootstrap/images/workstation/bin/tmux-new-window" \
      "$TMP_RUNTIME/local-bin/"
   cp "$KORD_SRC/shared/hooks/guard.sh" "$KORD_SRC/shared/hooks/subagent-invocation-gate.sh" "$TMP_RUNTIME/claude-hooks/"
-  cp "$KORD_SRC/shared/runtime-ownership.yaml" "$TMP_RUNTIME/claude-hooks/runtime-ownership.yaml"
+  cp "$KORD_SRC/shared/ownership-policy.yaml" "$TMP_RUNTIME/claude-hooks/ownership-policy.yaml"
   cp -a "$KORD_SRC/shared/runtime/profile/." "$TMP_RUNTIME/local-share/kordinate/profile/"
   tar czf /tmp/kordinate-runtime-seed.tar.gz -C "$TMP_RUNTIME" .
   kc cp /tmp/kordinate-runtime-seed.tar.gz "master/$POD:/tmp/kordinate-runtime-seed.tar.gz" -c workstation
-  ws_exec 'mkdir -p "$HOME/.local/bin" "$HOME/.claude/hooks" "$HOME/.local/share/kordinate/profile" "$HOME/.claude/runtime/profile" && tar xzf /tmp/kordinate-runtime-seed.tar.gz -C /tmp && cp -a /tmp/local-bin/. "$HOME/.local/bin/" && cp -a /tmp/claude-hooks/guard.sh "$HOME/.claude/hooks/guard.sh" && cp -a /tmp/claude-hooks/subagent-invocation-gate.sh "$HOME/.claude/hooks/subagent-invocation-gate.sh" && cp -a /tmp/claude-hooks/runtime-ownership.yaml "$HOME/.claude/runtime-ownership.yaml" && cp -a /tmp/local-share/kordinate/profile/config-acl.yaml "$HOME/.local/share/kordinate/profile/config-acl.yaml" && cp -an /tmp/local-share/kordinate/profile/. "$HOME/.claude/runtime/profile/" 2>/dev/null || true && rm -rf /tmp/local-bin /tmp/claude-hooks /tmp/local-share /tmp/kordinate-runtime-seed.tar.gz'
+  ws_exec 'mkdir -p "$HOME/.local/bin" "$HOME/.claude/hooks" "$HOME/.local/share/kordinate/profile" "$HOME/.claude/runtime/profile" && tar xzf /tmp/kordinate-runtime-seed.tar.gz -C /tmp && cp -a /tmp/local-bin/. "$HOME/.local/bin/" && cp -a /tmp/claude-hooks/guard.sh "$HOME/.claude/hooks/guard.sh" && cp -a /tmp/claude-hooks/subagent-invocation-gate.sh "$HOME/.claude/hooks/subagent-invocation-gate.sh" && cp -a /tmp/claude-hooks/ownership-policy.yaml "$HOME/.claude/ownership-policy.yaml" && cp -an /tmp/local-share/kordinate/profile/. "$HOME/.claude/runtime/profile/" 2>/dev/null || true && rm -rf /tmp/local-bin /tmp/claude-hooks /tmp/local-share /tmp/kordinate-runtime-seed.tar.gz'
   rm -rf "$TMP_RUNTIME" /tmp/kordinate-runtime-seed.tar.gz
   log "Workstation helpers and hooks copied"
 

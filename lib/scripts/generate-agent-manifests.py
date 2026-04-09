@@ -2,28 +2,114 @@
 from __future__ import annotations
 
 import argparse
+import json
+import shlex
+import textwrap
 from pathlib import Path
+
 import yaml
 
 
-def q(v: str) -> str:
-    return '"' + v.replace('"', '\\"') + '"'
+SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron", "warden"}
 
 
-def emit_agent(agent: dict) -> str:
-    name = agent['name']
-    customization = agent['image']['customization']
-    image = 'REGISTRY/agent-base:latest' if customization in (None, 'none') else f'REGISTRY/{customization}:latest'
-    minr = agent['deploy']['replicas']['min']
-    maxr = agent['deploy']['replicas']['max']
-    cooldown = agent['deploy']['replicas']['cooldown']
-    req_topic = agent['runtime']['kafka']['request_topic']
-    project_dir = agent['runtime']['state']['project_dir']
-    state_dir = agent['runtime']['state']['state_dir']
-    req_cpu = agent['deploy']['resources']['requests']['cpu']
-    req_mem = agent['deploy']['resources']['requests']['memory']
-    lim_mem = agent['deploy']['resources']['limits']['memory']
-    return f'''---
+def image_ref(agent: dict) -> str:
+    customization = agent["image"]["customization"]
+    if customization in (None, "none"):
+        return "REGISTRY/agent-base:latest"
+    return f"REGISTRY/{customization}:latest"
+
+
+def emit_env_lines(agent: dict) -> list[str]:
+    name = agent["name"]
+    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    project_dir = agent["runtime"]["state"]["project_dir"]
+    state_dir = agent["runtime"]["state"]["state_dir"]
+    daemon = agent.get("runtime", {}).get("daemon", {})
+    backend = daemon.get("backend", {}) if isinstance(daemon.get("backend"), dict) else {}
+
+    env = [
+        ("AGENT_NAME", name),
+        ("AGENT_PROFILE", flavor),
+        ("AGENT_PROJECT_DIR", project_dir),
+        ("AGENT_STATE_DIR", state_dir),
+        ("KAFKA_BROKERS", "kafka-kafka-bootstrap.dev.svc.cluster.local:9092"),
+        ("HOME", "/home/claude"),
+        ("KORDINATE_HOME", "/app"),
+        ("PROJECTS_ROOT", "/kord/shared/repos"),
+        ("DISCOVERY_SERVER_URL", "http://klaude-discovery:9091"),
+        ("DAEMON_HEALTH_URL", f"http://agent-{name}:9090/health"),
+    ]
+
+    if daemon.get("kind"):
+        env.append(("DAEMON_RUNTIME", daemon["kind"]))
+    if daemon.get("provider"):
+        env.append(("DAEMON_PROVIDER", daemon["provider"]))
+    if daemon.get("model"):
+        env.append(("DAEMON_MODEL", str(daemon["model"])))
+    if backend.get("name"):
+        env.append(("DAEMON_BACKEND", backend["name"]))
+    if backend.get("base_url"):
+        env.append(("BACKEND_BASE_URL", backend["base_url"]))
+    if daemon.get("working_directory"):
+        env.append(("CODEX_WORKING_DIRECTORY", daemon["working_directory"]))
+    if daemon.get("skip_git_repo_check") is not None:
+        env.append(("CODEX_SKIP_GIT_REPO_CHECK", "true" if daemon["skip_git_repo_check"] else "false"))
+
+    env_lines = [f"            - {{ name: {key}, value: {json.dumps(value)} }}" for key, value in env]
+
+    secret = daemon.get("secret", {}) if isinstance(daemon.get("secret"), dict) else {}
+    if secret.get("env") and secret.get("name") and secret.get("key"):
+        env_lines.extend([
+            f"            - name: {secret['env']}",
+            "              valueFrom:",
+            "                secretKeyRef:",
+            f"                  name: {secret['name']}",
+            f"                  key: {secret['key']}",
+        ])
+
+    return env_lines
+
+
+def build_init_script(agent: dict) -> str:
+    name = agent["name"]
+    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    lines = [f"bash /app/scripts/setup-agent-dir.sh {shlex.quote(name)}"]
+    if flavor in SPECIAL_FLAVORS:
+        if flavor == name:
+            lines.append(f"KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh {shlex.quote(name)}")
+        else:
+            lines.append(
+                "KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh "
+                f"{shlex.quote(flavor)} {shlex.quote(name)}"
+            )
+    return "\n".join(lines)
+
+
+def build_exec_script(agent: dict) -> str:
+    command = agent.get("runtime", {}).get("command") or ["klaude-daemon"]
+    return "exec " + " ".join(shlex.quote(part) for part in command)
+
+
+def yaml_block(text: str, spaces: int = 14) -> str:
+    return textwrap.indent(text, " " * spaces)
+
+
+def emit_agent(agent: dict) -> tuple[str, str, str]:
+    name = agent["name"]
+    image = image_ref(agent)
+    minr = agent["deploy"]["replicas"]["min"]
+    maxr = agent["deploy"]["replicas"]["max"]
+    cooldown = agent["deploy"]["replicas"]["cooldown"]
+    req_topic = agent["runtime"]["kafka"]["request_topic"]
+    req_cpu = agent["deploy"]["resources"]["requests"]["cpu"]
+    req_mem = agent["deploy"]["resources"]["requests"]["memory"]
+    lim_mem = agent["deploy"]["resources"]["limits"]["memory"]
+    env_lines = "\n".join(emit_env_lines(agent))
+    init_script = yaml_block(build_init_script(agent))
+    exec_script = yaml_block(build_exec_script(agent))
+
+    deployment = f"""---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -47,8 +133,7 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh {name}
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh {name}
+{init_script}
           volumeMounts:
             - {{ name: runtime, mountPath: /kord }}
             - {{ name: agent-runtime, mountPath: /runtime }}
@@ -59,15 +144,9 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              exec openclaude-daemon
+{exec_script}
           env:
-            - {{ name: AGENT_NAME, value: {name} }}
-            - {{ name: AGENT_PROJECT_DIR, value: {project_dir} }}
-            - {{ name: AGENT_STATE_DIR, value: {state_dir} }}
-            - {{ name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }}
-            - {{ name: HOME, value: /home/claude }}
-            - {{ name: KORDINATE_HOME, value: /app }}
-            - {{ name: PROJECTS_ROOT, value: /kord/shared/repos }}
+{env_lines}
           resources:
             requests: {{ cpu: {req_cpu}, memory: {req_mem} }}
             limits: {{ memory: {lim_mem} }}
@@ -89,7 +168,25 @@ spec:
           persistentVolumeClaim: {{ claimName: agent-runtime }}
         - name: agent-runtime
           emptyDir: {{}}
-''', f'''---
+"""
+
+    service = f"""---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-{name}
+  labels: {{ app: kord-agent, agent: {name} }}
+spec:
+  selector:
+    app: kord-agent
+    agent: {name}
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+"""
+
+    scaled_object = f"""---
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -118,7 +215,9 @@ spec:
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
-''', f'''---
+"""
+
+    topic = f"""---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
@@ -130,31 +229,33 @@ spec:
   replicas: 1
   config:
     retention.ms: "604800000"
-'''
+"""
+
+    return deployment + service, scaled_object, topic
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('spec')
-    parser.add_argument('--agents-out', required=True)
-    parser.add_argument('--keda-out', required=True)
-    parser.add_argument('--kafka-out', required=True)
+    parser.add_argument("spec")
+    parser.add_argument("--agents-out", required=True)
+    parser.add_argument("--keda-out", required=True)
+    parser.add_argument("--kafka-out", required=True)
     args = parser.parse_args()
 
     spec = yaml.safe_load(Path(args.spec).read_text())
-    agents = spec['agents']
+    agents = spec["agents"]
 
     agents_parts = [
-        '# Generated from agents/charon/skills/platform/agent-spec.yaml\n'
-        '# Klaude owns the runtime semantics; Kordinate owns platform orchestration.\n'
+        "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
+        "# Agent flavor, runtime kind, and backend selection are declared in the spec.\n"
     ]
     keda_parts = [
-        '# Generated from agents/charon/skills/platform/agent-spec.yaml\n'
-        '# One request topic and one ScaledObject per agent.\n'
+        "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
+        "# One request topic and one ScaledObject per agent.\n"
     ]
     kafka_parts = [
-        '# Generated from agents/charon/skills/platform/agent-spec.yaml\n'
-        '# Request topics only; Klaude publishes responses to caller-specified reply_to topics.\n'
+        "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
+        "# Request topics only; Klaude publishes responses to caller-specified reply_to topics.\n"
     ]
 
     for agent in agents:
@@ -163,7 +264,7 @@ def main() -> int:
         keda_parts.append(so)
         kafka_parts.append(topic)
 
-    kafka_parts.append('''---
+    kafka_parts.append("""---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
@@ -175,13 +276,13 @@ spec:
   replicas: 1
   config:
     retention.ms: "2592000000"
-''')
-    kafka_parts.append('''---
+""")
+    kafka_parts.append("""---
 # Memory update topics (one per agent, partitions=1 for ordering)
-''')
+""")
     for agent in agents:
-        name = agent['name']
-        kafka_parts.append(f'''apiVersion: kafka.strimzi.io/v1beta2
+        name = agent["name"]
+        kafka_parts.append(f"""apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   name: memory.updates.{name}
@@ -193,13 +294,13 @@ spec:
   config:
     retention.ms: "86400000"
 ---
-''')
+""")
 
-    Path(args.agents_out).write_text('\n'.join(agents_parts))
-    Path(args.keda_out).write_text('\n'.join(keda_parts))
-    Path(args.kafka_out).write_text('\n'.join(kafka_parts))
+    Path(args.agents_out).write_text("\n".join(agents_parts))
+    Path(args.keda_out).write_text("\n".join(keda_parts))
+    Path(args.kafka_out).write_text("\n".join(kafka_parts))
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     raise SystemExit(main())

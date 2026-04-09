@@ -1,0 +1,82 @@
+[
+  {
+    "repo": "apache/fineract",
+    "url": "https://github.com/apache/fineract",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "Fills the gap for a large, complex Java application rather than a library or framework. It is a mature core banking solution with deep domain logic and multiple modules.",
+    "what_it_tests": "Understanding of enterprise Java application patterns, business domain modeling, module dependencies, and complex CRUD and state transitions.",
+    "risks_or_caveats": "Its size and finance-specific domain can be overwhelming. It may lean toward traditional enterprise Java patterns more than modern services."
+  },
+  {
+    "repo": "gogs/gogs",
+    "url": "https://github.com/gogs/gogs",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A mid-sized Go application rather than a library. It is a self-hosted Git service with authentication, database interaction, web UI, and non-trivial server-side logic.",
+    "what_it_tests": "Analysis of a complete Go web application, including routing, handlers, templates, ORM use, layering, and application control flow.",
+    "risks_or_caveats": "The project has a long history, so some parts may reflect older Go idioms. It is not a distributed system."
+  },
+  {
+    "repo": "temporalio/temporal",
+    "url": "https://github.com/temporalio/temporal",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A strong example of an event-driven, worker-heavy workflow orchestration system in Go, with clear but non-obvious service boundaries.",
+    "what_it_tests": "Understanding of distributed workflow orchestration, event-driven state, worker pools, service roles, and Go concurrency in a large system.",
+    "risks_or_caveats": "Extremely complex and large. Analysis may need to be scoped to specific services or flows."
+  },
+  {
+    "repo": "dbeaver/dbeaver",
+    "url": "https://github.com/dbeaver/dbeaver",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "Targets the messy but stable non-framework gap. DBeaver is a mature Java desktop application with long-lived complexity and broad functionality.",
+    "what_it_tests": "Analysis of a large desktop Java app, plugin architecture, architectural debt, pragmatic workarounds, and database-specific abstractions.",
+    "risks_or_caveats": "Its desktop nature and Eclipse RCP/SWT stack may be less relevant for web-focused evaluation."
+  },
+  {
+    "repo": "GoogleCloudPlatform/microservices-demo",
+    "url": "https://github.com/GoogleCloudPlatform/microservices-demo",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A smaller repository that is still highly architecturally discriminative, with clear polyglot microservice boundaries and observable request flow.",
+    "what_it_tests": "Microservice boundary identification, inter-service communication, polyglot architecture, and request tracing through a distributed demo.",
+    "risks_or_caveats": "As a demo, it may be cleaner and more didactic than real production systems."
+  },
+  {
+    "repo": "airbytehq/airbyte",
+    "url": "https://github.com/airbytehq/airbyte",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A strong data-pipeline candidate. Airbyte is a complex ELT platform with connectors, scheduling, sync engines, and polyglot subsystems.",
+    "what_it_tests": "Analysis of data flow, pipeline orchestration, connector architectures, job management, and multi-language system boundaries.",
+    "risks_or_caveats": "Large and actively evolving. External data-source integrations add complexity beyond the core platform."
+  },
+  {
+    "repo": "Netflix/conductor",
+    "url": "https://github.com/Netflix/conductor",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A Java application that reinforces event-driven and worker-heavy architecture, with workflow orchestration and asynchronous task execution.",
+    "what_it_tests": "Analysis of Java microservices, asynchronous task workers, workflow definitions, state persistence, and orchestration logic.",
+    "risks_or_caveats": "Some overlap with Temporal as a workflow platform. Complexity may still require scoped evaluation."
+  },
+  {
+    "repo": "home-assistant/core",
+    "url": "https://github.com/home-assistant/core",
+    "suggested_by": [
+      "gemini-2.5-flash"
+    ],
+    "reason_for_inclusion": "A large Python application with an event-driven core and a massive modular integration system, adding a different architecture style than typical web apps.",
+    "what_it_tests": "Analysis of plugin-heavy Python architecture, event buses, state management, automation logic, and integration boundaries.",
+    "risks_or_caveats": "Extremely large. The broader ecosystem may distract from the core architecture if evaluation is not scoped."
+  }
+]

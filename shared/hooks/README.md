@@ -10,7 +10,7 @@ Hooks that enforce domain boundaries. Configured in `settings.json`.
 
 | Trigger | Condition | Auth | Deny message |
 |---------|-----------|------|-------------|
-| Write/Edit to `*/.kord/*` | protected in `shared/runtime-ownership.yaml` | owner auth | authenticate as the owning agent |
+| Write/Edit to owned runtime/repo paths | protected in `shared/ownership-policy.yaml` | owner auth | authenticate as the owning agent |
 | Write/Edit to `*/dashboards/*.json` | any | `/tmp/.sauron-auth` | Use `/authenticate` as sauron |
 | Bash `git push` to main | branch has diverged | — | Use `/integrate` to reconcile |
 | Bash `git push` to test/prod | any | `/tmp/.charon-auth` | Use `/infra roll` |

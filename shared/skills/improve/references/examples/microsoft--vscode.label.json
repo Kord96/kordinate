@@ -1,0 +1,105 @@
+{
+  "repo": "microsoft/vscode",
+  "pinned_sha": "<pin-me>",
+  "critical_components": [
+    {
+      "name": "workbench",
+      "aliases": ["ui shell", "desktop shell"],
+      "kind": "ui-core",
+      "required": true
+    },
+    {
+      "name": "extension host",
+      "aliases": ["plugin host", "extensions runtime"],
+      "kind": "runtime-core",
+      "required": true
+    },
+    {
+      "name": "language features / editor core",
+      "aliases": ["editor services", "language services"],
+      "kind": "core-services",
+      "required": true
+    }
+  ],
+  "expected_concepts": [
+    {
+      "name": "plugin",
+      "required": true,
+      "confidence": "high"
+    },
+    {
+      "name": "event-driven",
+      "required": true,
+      "confidence": "medium"
+    },
+    {
+      "name": "multi-process boundary",
+      "required": true,
+      "confidence": "medium"
+    }
+  ],
+  "expected_anti_patterns": [
+    {
+      "name": "architecture-drift",
+      "required": false,
+      "confidence": "low"
+    }
+  ],
+  "expected_route_families": [],
+  "expected_external_dependencies": [
+    {
+      "name": "filesystem",
+      "required": true
+    },
+    {
+      "name": "extension marketplace / remote extension source",
+      "required": false
+    },
+    {
+      "name": "language servers or external runtimes",
+      "required": false
+    }
+  ],
+  "expected_state_stores": [
+    {
+      "name": "workspace settings / user settings",
+      "required": false
+    },
+    {
+      "name": "extension state",
+      "required": false
+    }
+  ],
+  "expected_failure_modes": [
+    {
+      "name": "extension activation or load failure",
+      "required": true
+    },
+    {
+      "name": "language server or worker process failure",
+      "required": true
+    },
+    {
+      "name": "filesystem access or workspace state corruption",
+      "required": false
+    }
+  ],
+  "grounding_checks": [
+    {
+      "claim": "The repo has a distinct extension host or plugin runtime boundary.",
+      "evidence_hint": "Look for extension host process or extension service registration code."
+    },
+    {
+      "claim": "The architecture separates UI shell concerns from editor or language service concerns.",
+      "evidence_hint": "Look for workbench or shell modules versus editor service modules."
+    },
+    {
+      "claim": "Important failures include extension activation and worker or language runtime failures.",
+      "evidence_hint": "Look for extension lifecycle code and subprocess or worker management paths."
+    }
+  ],
+  "notes_on_ambiguity": [
+    "Some analyzers may split the repo into more than three top-level components and still be acceptable.",
+    "The exact naming of extension-related components may vary widely."
+  ]
+}

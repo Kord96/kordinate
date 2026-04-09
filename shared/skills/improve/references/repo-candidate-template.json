@@ -1,0 +1,20 @@
+{
+  "repo": "owner/name",
+  "url": "https://github.com/owner/name",
+  "pinned_sha": null,
+  "suggested_by": ["augur"],
+  "bucket": "production",
+  "language": "python",
+  "secondary_languages": [],
+  "size_bucket": "medium",
+  "topology_tags": ["api-service"],
+  "framework_tags": ["fastapi"],
+  "reason_for_inclusion": "Canonical API service with dependency injection, routing, and middleware evidence.",
+  "expected_signals": ["dependency-injection", "router", "middleware"],
+  "expected_failure_modes": ["false component splitting", "overcounted routes"],
+  "difficulty": "medium",
+  "noise_risks": ["docs-heavy"],
+  "licensing_notes": "",
+  "selection_status": "candidate",
+  "selection_notes": ""
+}

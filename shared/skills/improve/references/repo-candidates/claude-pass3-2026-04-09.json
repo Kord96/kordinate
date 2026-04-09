@@ -1,0 +1,62 @@
+[
+  {
+    "repo": "nicotine-plus/nicotine-plus",
+    "url": "https://github.com/nicotine-plus/nicotine-plus",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A maintained Python desktop P2P client with GUI, networking, and plugins in one mid-sized organically grown codebase.",
+    "what_it_tests": "Desktop layering, GUI versus protocol logic, plugin boundaries, and tracing data flow through loosely coupled subsystems.",
+    "risks_or_caveats": "Legacy naming and inconsistent style can mislead superficial analysis."
+  },
+  {
+    "repo": "karlstav/cava",
+    "url": "https://github.com/karlstav/cava",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A small native C application whose processing pipeline is more layered than its size suggests.",
+    "what_it_tests": "Pipeline-style architecture detection, hardware abstraction boundaries, and whether small repos get oversimplified.",
+    "risks_or_caveats": "Some boundaries are clearer in runtime behavior than in file layout."
+  },
+  {
+    "repo": "pbatard/rufus",
+    "url": "https://github.com/pbatard/rufus",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A widely used Windows utility with deliberate monolithic areas, platform APIs, and embedded subsystems.",
+    "what_it_tests": "Windows-native architecture, intentional coupling versus accidental coupling, and subsystem detection in non-framework code.",
+    "risks_or_caveats": "Heavy Win32 usage may be outside the comfort zone of web-centric models."
+  },
+  {
+    "repo": "HandBrake/HandBrake",
+    "url": "https://github.com/HandBrake/HandBrake",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A cross-platform transcoder with a shared core and multiple frontends, making UI-core separation explicit and important.",
+    "what_it_tests": "Library versus application boundary detection, multi-frontend architecture, and cross-language integration patterns.",
+    "risks_or_caveats": "Native GUI diversity and codec-domain complexity increase labeling cost."
+  },
+  {
+    "repo": "Wox-launcher/Wox",
+    "url": "https://github.com/Wox-launcher/Wox",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A Windows launcher with a plugin-host architecture hidden behind a deceptively flat repository layout.",
+    "what_it_tests": "Detection of plugin hosts, dependency inversion, and architecture inference beyond shallow directory reading.",
+    "risks_or_caveats": "Intermittent development means some bundled plugin code may be stale."
+  },
+  {
+    "repo": "nicehash/NiceHashQuickMiner",
+    "url": "https://github.com/nicehash/NiceHashQuickMiner",
+    "suggested_by": [
+      "claude-sonnet-4-6"
+    ],
+    "reason_for_inclusion": "A messy but real Windows application combining services, local UI, IPC, hardware monitoring, and updater logic.",
+    "what_it_tests": "Hybrid service-plus-UI architecture, IPC boundaries, hardware abstractions, and component labeling without standard conventions.",
+    "risks_or_caveats": "Domain and Windows service constraints add evaluation complexity."
+  }
+]

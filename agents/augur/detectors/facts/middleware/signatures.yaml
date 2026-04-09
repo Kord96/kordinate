@@ -1,0 +1,14 @@
+domain: middleware
+positive:
+  strong:
+    - middleware registration pipelines
+    - guard or interceptor declarations
+    - request/response boundary hooks
+  medium:
+    - auth and validation wrappers around handlers
+  weak:
+    - global hooks or filters applied before route handlers
+negative:
+  - internal helpers that never touch request boundaries
+notes:
+  - Middleware facts help Augur separate boundary policy from business logic.

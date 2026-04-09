@@ -1,0 +1,27 @@
+{
+  "name": "@kordinate/klaude-daemon",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "klaude-daemon": "./bin/klaude-daemon",
+    "klaude-discovery-server": "./bin/klaude-discovery-server"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run build && node --test dist/**/*.test.js",
+    "start": "node dist/index.js",
+    "start:discovery": "node dist/discovery-server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.92",
+    "@anthropic-ai/sdk": "^0.82.0",
+    "@openai/codex-sdk": "^0.118.0",
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -40,45 +40,58 @@ These are non-negotiable. Do not attempt these operations locally.
 
 ## How to Delegate
 
-Publish a job to the target agent inbox topic `agent.<name>`.
+Publish a request to the target agent inbox topic `<name>`.
 
 Request contract:
 
 ```json
 {
+  "type": "request",
+  "sender": "agent.master-workstation.replies",
+  "correlation_id": "job-123",
   "prompt": "Deploy the api-gateway service to staging. Use the latest image tag from CI.",
+  "working_dir": "/kord/shared/repos/api-gateway",
   "timeout_ms": 1800000,
-  "reflect": true,
-  "reply_to": "agent.master-workstation"
+  "reflect": true
 }
 ```
 
 Notes:
-- `reply_to` is required
+- `sender` is the reply topic
+- `correlation_id` should be caller-generated
+- `working_dir` is optional and tells the agent where to focus first
 - `timeout_ms` and `reflect` are optional
-- callers may include additional metadata such as `correlation_id` if they need tracking
+- callers may include `reflection_prompt` and `agent_params` when needed
 
 The response arrives on the reply topic as a result message:
 
 ```json
 {
+  "type": "response",
+  "sender": "charon",
+  "correlation_id": "job-123",
   "status": "success",
   "output": "The agent's response text",
   "reflection": {
     "project": "optional project-specific reflection",
     "general": "optional general reflection"
   },
-  "errors": []
+  "errors": [],
+  "metadata": {
+    "timing": {
+      "total_ms": 0
+    }
+  }
 }
 ```
 
 ### Examples
 
-Deploy a service: publish a job to `agent.charon` with `prompt: "Deploy the api-gateway service to staging..."` and `project: "api-gateway"`.
+Deploy a service: publish a request to `charon` with `prompt: "Deploy the api-gateway service to staging..."` and `working_dir: "/kord/shared/repos/api-gateway"`.
 
-Set up monitoring: publish a job to `agent.sauron` with `prompt: "Create Grafana dashboards for the payments service..."`.
+Set up monitoring: publish a request to `sauron` with `prompt: "Create Grafana dashboards for the payments service..."`.
 
-Architecture review: publish a job to `agent.augur` with the repo path in `repo` and the review request in `prompt`.
+Architecture review: publish a request to `augur` with the repo path in `working_dir` and the review request in `prompt`.
 
 ## Artifact Passing Convention
 

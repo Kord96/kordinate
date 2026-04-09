@@ -1,0 +1,49 @@
+domain: events
+emits:
+  - event
+frameworks:
+  include:
+    - python
+    - javascript
+    - typescript
+    - go
+    - rust
+    - java
+    - kotlin
+    - csharp
+    - ruby
+    - php
+    - elixir
+  exclude: []
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 4
+  semgrep:
+    enabled: true
+    detector_strength: 3
+  signatures:
+    enabled: true
+    detector_strength: 5
+  manifest:
+    enabled: true
+    detector_strength: 3
+policy:
+  emit_threshold: 3
+  fallback_order:
+    - ast_grep
+    - semgrep
+    - signatures
+    - manifest
+  negative_rule_result_means: neutral
+  requires_framework_context: true
+normalization:
+  fact_kind: event
+  required_fields:
+    - name
+    - producer
+  optional_fields:
+    - consumers
+    - topic
+    - delivery
+    - data

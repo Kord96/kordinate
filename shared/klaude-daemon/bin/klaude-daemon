@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+import { existsSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const distPath = join(__dirname, '..', 'dist', 'index.js')
+
+if (!existsSync(distPath)) {
+  console.error('klaude-daemon: dist/index.js not found. Build the package first with `npm run build`.')
+  process.exit(1)
+}
+
+await import(pathToFileURL(distPath).href)

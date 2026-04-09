@@ -1,0 +1,47 @@
+domain: import-graph
+emits:
+  - import-edge
+  - hot-file
+frameworks:
+  include:
+    - python
+    - javascript
+    - typescript
+    - go
+    - rust
+    - java
+    - kotlin
+    - csharp
+    - ruby
+    - php
+  exclude: []
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 5
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  manifest:
+    enabled: true
+    detector_strength: 3
+policy:
+  emit_threshold: 2
+  fallback_order:
+    - ast_grep
+    - signatures
+    - manifest
+  negative_rule_result_means: neutral
+  requires_framework_context: false
+normalization:
+  fact_kind: import-edge
+  required_fields:
+    - from
+    - to
+  optional_fields:
+    - import_type
+    - fan_in
+    - fan_out

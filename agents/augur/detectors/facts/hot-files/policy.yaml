@@ -1,0 +1,44 @@
+domain: hot-files
+emits:
+  - hot-file
+frameworks:
+  include:
+    - python
+    - javascript
+    - typescript
+    - go
+    - rust
+    - java
+    - kotlin
+    - csharp
+    - ruby
+    - php
+  exclude: []
+detectors:
+  ast_grep:
+    enabled: false
+    detector_strength: 1
+  semgrep:
+    enabled: false
+    detector_strength: 1
+  signatures:
+    enabled: true
+    detector_strength: 4
+  manifest:
+    enabled: true
+    detector_strength: 4
+policy:
+  emit_threshold: 2
+  fallback_order:
+    - manifest
+    - signatures
+  negative_rule_result_means: neutral
+  requires_framework_context: false
+normalization:
+  fact_kind: hot-file
+  required_fields:
+    - path
+  optional_fields:
+    - fan_in
+    - fan_out
+    - reason

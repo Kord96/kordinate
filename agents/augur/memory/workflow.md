@@ -1,5 +1,5 @@
 ---
-description: Augur workflow — analyze existing code or design new projects, producing atlas as primary output
+description: Augur workflow — analyze existing code or design new projects, producing facts and atlas as structured outputs
 ---
 # Workflow
 
@@ -10,7 +10,15 @@ description: Augur workflow — analyze existing code or design new projects, pr
 | `/analyze` | Analyze existing codebases — pattern detection, debt assessment, failure modes |
 | `/design` | Design new projects (4 modes: full, api, service, component) |
 
-## Primary Output: Atlas
+## Structured Outputs
+
+### Facts
+
+Facts are the normalized result of deterministic extraction. They are concrete observations like routes, models, external clients, import edges, and jobs. Facts are consumed by concept inference and may also be consumed directly for targeted tasks like blast radius or focused summaries.
+
+See `schemas/facts-schema.md` for the full schema.
+
+### Atlas
 
 The atlas is the primary output consumed by all agents (charon, sauron, alfred). It contains:
 - Components and their connections
@@ -33,9 +41,9 @@ See `schemas/atlas-schema.md` for the full schema.
 ## Analyze Workflow
 
 1. Gather source code and identify languages and frameworks
-2. Use framework detector assets to establish stack context and prioritize concept families
-3. Run deterministic concept detection (signatures, AST/semgrep bundles, questions as needed)
-4. Interpret the evidence using concept semantics and anti-pattern vocabulary
+2. Use framework detector assets to establish stack context and prioritize fact domains plus concept families
+3. Run deterministic fact extraction to normalize directly observable evidence
+4. Run concept inference over facts using concept semantics, detector policy, and questions as needed
 5. Produce atlas with failure_modes.detection for sauron consumption
 
 ## Design Workflow

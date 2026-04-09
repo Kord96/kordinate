@@ -2,7 +2,7 @@
 
 Level 3 resource for the analyze skill. Referenced from step 9 (write atlas). Defines the structural inventory output format.
 
-Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_contexts` to domain model, deepens `state` with schema evolution and concurrency, adds `observability`, `security`, and `developer_experience` sections, expands `module_graph` with CI/CD and IaC.
+Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_contexts` to domain model, deepens `state` with schema evolution and concurrency, adds `observability`, `security`, and `developer_experience` sections, expands `module_graph` with CI/CD and IaC, and now expects concept evidence to reference normalized fact IDs when available.
 
 ## Schema
 
@@ -206,9 +206,12 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
         "confidence": "high | medium | low",
         "components": ["<component-id>"],
         "evidence": {
+          "fact_ids": ["<fact-id>"],
           "files": ["<path>"],
-          "method": "grep | ast-grep | semgrep | questions | manual",
-          "note": "<one sentence>"
+          "method": "grep | ast-grep | semgrep | question | manual | inferred-from-facts",
+          "detector_class": "ast | semgrep | signature | regex | manifest | question | inference",
+          "note": "<one sentence>",
+          "questions_asked": ["<question id>"]
         }
       }
     ],
@@ -219,9 +222,12 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
         "confidence": "high | medium | low",
         "components": ["<component-id>"],
         "evidence": {
+          "fact_ids": ["<fact-id>"],
           "files": ["<path>"],
-          "method": "grep | ast-grep | semgrep | questions | manual",
-          "note": "<one sentence>"
+          "method": "grep | ast-grep | semgrep | question | manual | inferred-from-facts",
+          "detector_class": "ast | semgrep | signature | regex | manifest | question | inference",
+          "note": "<one sentence>",
+          "questions_asked": ["<question id>"]
         }
       }
     ],
@@ -235,7 +241,9 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
     "scan_metadata": {
       "catalog_size": {"patterns": "<N>", "anti_patterns": "<N>"},
       "tools_used": ["grep", "ast-grep", "semgrep"],
-      "categories_scanned": ["<category>"]
+      "categories_scanned": ["<category>"],
+      "facts_index": "facts/index.json",
+      "fact_domains_used": ["<domain>"]
     }
   },
 
