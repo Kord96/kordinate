@@ -102,7 +102,11 @@ def extract_csharp_registrations(text: str) -> list[dict[str, Any]]:
     registrations: list[dict[str, Any]] = []
     patterns = [
         ("service-registration", r"\.(AddSingleton|AddScoped|AddTransient)\s*<\s*([\w.]+)", "service"),
-        ("middleware-registration", r"\.(Use[A-Z][A-Za-z0-9_]*)\s*\(", "middleware"),
+        (
+            "middleware-registration",
+            r"\.(Use(?:Routing|Endpoints|Authentication|Authorization|Middleware))\s*\(",
+            "middleware",
+        ),
     ]
     for registration_type, pattern, runtime_role in patterns:
         for match in re.finditer(pattern, text):
@@ -181,6 +185,11 @@ def extract_csharp_boundaries(text: str) -> list[dict[str, Any]]:
         implementation, parents = match.groups()
         for parent in [part.strip() for part in parents.split(",")]:
             if not parent or parent in {"Controller", "ControllerBase"}:
+                continue
+            if not (
+                parent.startswith("I")
+                or parent.endswith(("Repository", "Store", "Provider", "Gateway", "Port", "Service"))
+            ):
                 continue
             boundaries.append(
                 {

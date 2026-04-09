@@ -8,10 +8,11 @@ export function isRequestMessage(value: unknown): value is RequestMessage {
     && typeof msg.correlation_id === 'string'
     && typeof msg.prompt === 'string'
     && (msg.working_dir === undefined || typeof msg.working_dir === 'string')
+    && (msg.session_id === undefined || typeof msg.session_id === 'string')
 }
 
 export function sessionKeyFor(message: RequestMessage): string {
-  return message.sender
+  return message.session_id ?? message.sender
 }
 
 export function getOrCreateSession(sessions: Map<string, SessionState>, message: RequestMessage): SessionState {

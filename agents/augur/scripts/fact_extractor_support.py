@@ -42,7 +42,16 @@ from facts import (
     extract_go_registrations,
     extract_go_routes_structured,
     extract_handlers,
+    extract_java_kotlin_boundaries,
+    extract_java_kotlin_dispatch_bindings,
+    extract_java_kotlin_handlers,
+    extract_java_kotlin_models_structured,
+    extract_java_kotlin_registrations,
+    extract_java_kotlin_routes_structured,
     extract_jobs,
+    extract_plugin_boundaries,
+    extract_plugin_dispatch_bindings,
+    extract_plugin_registrations,
     extract_registrations,
     line_number_for_offset,
 )
@@ -90,6 +99,7 @@ SOURCE_EXTENSIONS = {
 
 EXCLUDE_DIRS = {
     ".git",
+    ".agents",
     ".worktrees",
     "node_modules",
     "vendor",
@@ -1479,6 +1489,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
             }
         )
 
+    append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
     return facts
 
 
@@ -1816,6 +1827,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
             }
         )
 
+    append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
     return facts
 
 
@@ -1965,6 +1977,7 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
         facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
         facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
     return facts
 
 
@@ -2117,6 +2130,142 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
     return facts
 
 
+def parse_java_kotlin_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
+    facts: list[dict[str, Any]] = []
+    rel = str(path.relative_to(root))
+    relationships = base_relationships(rel)
+
+    for idx, route in enumerate(extract_java_kotlin_routes_structured(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("route", rel, route["method"], route["path"], route["decorator"], str(idx)),
+                "kind": "route",
+                "domain": "routes",
+                "summary": f"{route['method']} {route['path']} via {route['decorator']}",
+                "confidence": "high",
+                "framework_context": [],
+                "source_files": [f"{rel}:{route['line']}"],
+                "detector": {"id": "java-kotlin-route-detector", "class": "structured", "strength": 5, "rule": route["decorator"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": {"style": "rest", "method": route["method"], "path": route["path"], "handler": route["handler"], "router": "java-kotlin-structured", "auth": "", "validation": ""},
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, model in enumerate(extract_java_kotlin_models_structured(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("model", rel, model["name"], str(idx)),
+                "kind": "model",
+                "domain": "models",
+                "summary": f"Detected {model['source']} model {model['name']}",
+                "confidence": "high" if model["fields"] else "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{model['line']}"],
+                "detector": {"id": "java-kotlin-model-detector", "class": "structured", "strength": 5, "rule": model["source"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": {"technology": model["source"], "entity": model["name"], "fields": model["fields"], "relations": [], "migration_path": "", "store_purpose": "source-of-truth"},
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    structured_groups = [
+        ("registration", "registrations", "java-kotlin-registration-detector", extract_java_kotlin_registrations(text), "registration_type", lambda item: f"Detected {item['registration_type']}"),
+        ("handler", "handlers", "java-kotlin-handler-detector", extract_java_kotlin_handlers(text), "handler_type", lambda item: f"Detected {item['handler_type']} {item['name']}"),
+        ("dispatch", "dispatch-bindings", "java-kotlin-dispatch-detector", extract_java_kotlin_dispatch_bindings(text), "binding_type", lambda item: f"Detected {item['binding_type']}"),
+        ("boundary", "boundaries", "java-kotlin-boundary-detector", extract_java_kotlin_boundaries(text), "boundary_type", lambda item: f"Detected {item['boundary_type']} boundary"),
+    ]
+    for prefix, domain, detector_id, items, rule_key, summary in structured_groups:
+        for idx, item in enumerate(items, start=1):
+            facts.append(
+                {
+                    "id": stable_id(prefix, rel, str(item.get(rule_key, "")), str(item.get("line", idx)), str(idx)),
+                    "kind": "dispatch-binding" if domain == "dispatch-bindings" else prefix,
+                    "domain": domain,
+                    "summary": summary(item),
+                    "confidence": "medium" if domain in {"handlers", "boundaries"} else "high",
+                    "framework_context": [],
+                    "source_files": [f"{rel}:{int(item.get('line', 1))}"],
+                    "detector": {"id": detector_id, "class": "structured", "strength": 4, "rule": item.get(rule_key, ""), "bundle": "bundles/detectors/facts/all.json"},
+                    "raw_evidence": item,
+                    "negative_evidence": [],
+                    "contradictions": [],
+                    "relationships": relationships,
+                }
+            )
+
+    for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
+    return facts
+
+
+def append_plugin_facts(
+    facts: list[dict[str, Any]],
+    rel: str,
+    relationships: dict[str, Any],
+    text: str,
+    suffix: str,
+) -> None:
+    for idx, item in enumerate(extract_plugin_registrations(text, suffix), start=1):
+        facts.append(
+            {
+                "id": stable_id("registration", rel, item["registration_type"], item["symbol"], "plugin", str(idx)),
+                "kind": "registration",
+                "domain": "registrations",
+                "summary": f"Detected {item['registration_type']}",
+                "confidence": "high",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "plugin-registration-detector", "class": "signature", "strength": 4, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+    for idx, item in enumerate(extract_plugin_dispatch_bindings(text, suffix), start=1):
+        facts.append(
+            {
+                "id": stable_id("dispatch", rel, item["binding_type"], item["channel"], "plugin", str(idx)),
+                "kind": "dispatch-binding",
+                "domain": "dispatch-bindings",
+                "summary": f"Detected {item['binding_type']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "plugin-dispatch-detector", "class": "signature", "strength": 4, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+    for idx, item in enumerate(extract_plugin_boundaries(text, suffix), start=1):
+        facts.append(
+            {
+                "id": stable_id("boundary", rel, item["boundary_type"], item["interface"], "plugin", str(idx)),
+                "kind": "boundary",
+                "domain": "boundaries",
+                "summary": f"Detected {item['boundary_type']} boundary",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "plugin-boundary-detector", "class": "signature", "strength": 4, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+
 def parse_generic_source_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
     facts: list[dict[str, Any]] = []
     rel = str(path.relative_to(root))
@@ -2153,6 +2302,7 @@ def parse_generic_source_file(path: Path, root: Path, text: str) -> list[dict[st
         facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
         facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
     return facts
 
 
@@ -2469,7 +2619,25 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                     {"id": "csharp-event-detector", "domain": "events", "class": "regex", "framework_context": [], "status": "success"},
                 ]
             )
-        elif suffix in {".java", ".kt", ".kts", ".cpp", ".cc", ".cxx", ".h", ".hpp"}:
+        elif suffix in {".java", ".kt", ".kts"}:
+            facts.extend(parse_java_kotlin_file(path, root, text))
+            detectors_run.extend(
+                [
+                    {"id": "java-kotlin-route-detector", "domain": "routes", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-model-detector", "domain": "models", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-registration-detector", "domain": "registrations", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-handler-detector", "domain": "handlers", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-dispatch-detector", "domain": "dispatch-bindings", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-boundary-detector", "domain": "boundaries", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-config-detector", "domain": "config", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-job-detector", "domain": "jobs", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "java-kotlin-event-detector", "domain": "events", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "plugin-registration-detector", "domain": "registrations", "class": "signature", "framework_context": [], "status": "success"},
+                    {"id": "plugin-dispatch-detector", "domain": "dispatch-bindings", "class": "signature", "framework_context": [], "status": "success"},
+                    {"id": "plugin-boundary-detector", "domain": "boundaries", "class": "signature", "framework_context": [], "status": "success"},
+                ]
+            )
+        elif suffix in {".cpp", ".cc", ".cxx", ".h", ".hpp"}:
             facts.extend(parse_generic_source_file(path, root, text))
             detectors_run.extend(
                 [

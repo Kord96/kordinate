@@ -8,7 +8,7 @@ metadata:
   name: agent-generic-opus
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -38,7 +38,7 @@ metadata:
   name: agent-augur-opus
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -68,7 +68,7 @@ metadata:
   name: agent-augur-gemini-pro
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -95,10 +95,10 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-augur-deepseek-v32-reasoner
+  name: agent-augur-deepseek-reasoner
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -110,13 +110,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-augur-deepseek-v32-reasoner
+    name: agent-augur-deepseek-reasoner
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: augur-deepseek-v32-reasoner
-        topic: augur-deepseek-v32-reasoner
+        consumerGroup: augur-deepseek-reasoner
+        topic: augur-deepseek-reasoner
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -128,7 +128,7 @@ metadata:
   name: agent-augur-glm5
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -158,7 +158,7 @@ metadata:
   name: agent-augur-gpt54
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -188,7 +188,7 @@ metadata:
   name: agent-charon-sonnet
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -218,7 +218,7 @@ metadata:
   name: agent-warden-haiku
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -248,7 +248,7 @@ metadata:
   name: agent-sauron-sonnet
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
@@ -278,7 +278,7 @@ metadata:
   name: agent-alfred-deepseek-chat
 spec:
   pollingInterval: 30
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:

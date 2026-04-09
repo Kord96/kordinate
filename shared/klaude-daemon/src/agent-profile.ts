@@ -1,4 +1,5 @@
 import type { AgentProfile, RequestMessage } from './types.js'
+import { loadIdentityMetadata } from './identity.js'
 
 const DEFAULT_REFLECTION_PROMPT = [
   'Based on the completed task, return strict JSON only with exactly these keys:',
@@ -9,8 +10,10 @@ const DEFAULT_REFLECTION_PROMPT = [
 ].join('\n')
 
 export function loadAgentProfile(agentName: string): AgentProfile {
+  const identity = loadIdentityMetadata(agentName)
   if (agentName === 'augur') {
     return {
+      ...identity,
       promptPrefix: 'You are Augur. Favor design-level reasoning and architecture trade-offs.',
       defaultReflectionPrompt: [
         'Return strict JSON with exactly {"project":"...","general":"..."}.',
@@ -22,6 +25,7 @@ export function loadAgentProfile(agentName: string): AgentProfile {
   }
 
   return {
+    ...identity,
     defaultReflectionPrompt: DEFAULT_REFLECTION_PROMPT,
     supportedAgentParams: [],
   }

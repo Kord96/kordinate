@@ -9,10 +9,24 @@
       }
     },
     {
+      "name": "boundaries",
+      "files": {
+        "policy.yaml": "detectors/facts/boundaries/policy.yaml",
+        "signatures.yaml": "detectors/facts/boundaries/signatures.yaml"
+      }
+    },
+    {
       "name": "config",
       "files": {
         "policy.yaml": "detectors/facts/config/policy.yaml",
         "signatures.yaml": "detectors/facts/config/signatures.yaml"
+      }
+    },
+    {
+      "name": "dispatch-bindings",
+      "files": {
+        "policy.yaml": "detectors/facts/dispatch-bindings/policy.yaml",
+        "signatures.yaml": "detectors/facts/dispatch-bindings/signatures.yaml"
       }
     },
     {
@@ -35,6 +49,13 @@
       "files": {
         "policy.yaml": "detectors/facts/frameworks/policy.yaml",
         "signatures.yaml": "detectors/facts/frameworks/signatures.yaml"
+      }
+    },
+    {
+      "name": "handlers",
+      "files": {
+        "policy.yaml": "detectors/facts/handlers/policy.yaml",
+        "signatures.yaml": "detectors/facts/handlers/signatures.yaml"
       }
     },
     {
@@ -72,6 +93,13 @@
         "policy.yaml": "detectors/facts/models/policy.yaml",
         "signatures.yaml": "detectors/facts/models/signatures.yaml",
         "ast-grep.yaml": "detectors/facts/models/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "registrations",
+      "files": {
+        "policy.yaml": "detectors/facts/registrations/policy.yaml",
+        "signatures.yaml": "detectors/facts/registrations/signatures.yaml"
       }
     },
     {

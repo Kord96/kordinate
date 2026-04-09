@@ -76,7 +76,7 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  augur-deepseek-v32-reasoner:
+  augur-deepseek-reasoner:
     description: Augur specialist pinned to DeepSeek Reasoner.
     defaults:
       flavor: augur

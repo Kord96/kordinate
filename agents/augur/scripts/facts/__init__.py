@@ -17,6 +17,19 @@ from .go_structured import (
     extract_go_registrations,
     extract_go_routes_structured,
 )
+from .java_kotlin_structured import (
+    extract_java_kotlin_boundaries,
+    extract_java_kotlin_dispatch_bindings,
+    extract_java_kotlin_handlers,
+    extract_java_kotlin_models_structured,
+    extract_java_kotlin_registrations,
+    extract_java_kotlin_routes_structured,
+)
+from .plugin_systems import (
+    extract_plugin_boundaries,
+    extract_plugin_dispatch_bindings,
+    extract_plugin_registrations,
+)
 from .runtime_signals import (
     extract_auth_surfaces,
     extract_config_sources,
@@ -48,8 +61,17 @@ __all__ = [
     "extract_go_handlers",
     "extract_go_registrations",
     "extract_go_routes_structured",
+    "extract_java_kotlin_boundaries",
+    "extract_java_kotlin_dispatch_bindings",
+    "extract_java_kotlin_handlers",
+    "extract_java_kotlin_models_structured",
+    "extract_java_kotlin_registrations",
+    "extract_java_kotlin_routes_structured",
     "extract_handlers",
     "extract_jobs",
+    "extract_plugin_boundaries",
+    "extract_plugin_dispatch_bindings",
+    "extract_plugin_registrations",
     "extract_registrations",
     "line_number_for_offset",
 ]

@@ -27,6 +27,10 @@ COPY . /app
 RUN cd /app/shared/klaude-daemon \
   && npm ci \
   && npm run build \
+  && npm install -g . \
+  && cd /app/shared/kord-api \
+  && npm ci \
+  && npm run build \
   && npm install -g . @anthropic-ai/claude-code
 
 RUN ln -s /app/lib/scripts /app/scripts \

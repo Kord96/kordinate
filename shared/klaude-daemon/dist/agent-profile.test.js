@@ -4,6 +4,7 @@ import { buildPromptFromProfile, loadAgentProfile, resolveReflectionPrompt } fro
 test('augur profile exposes supported bundle param', () => {
     const profile = loadAgentProfile('augur');
     assert.deepEqual(profile.supportedAgentParams, ['bundle_mode']);
+    assert.ok(Array.isArray(profile.capabilities));
 });
 test('buildPromptFromProfile prepends prompt prefix when present', () => {
     const profile = loadAgentProfile('augur');

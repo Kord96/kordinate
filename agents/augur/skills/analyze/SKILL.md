@@ -18,7 +18,7 @@ Supports three analysis modes: **full** (first run or major changes), **incremen
 
 `$ARGUMENTS` — Required: `<project>`. Optional: `[--reverse]` to scan sibling projects for inbound dependency references; `[--detect-only]` to produce only atlas.json (skip story composition); `[--full]` to force full analysis (ignore previous results). Directory must exist at the path provided in `[Memory] Project code:`, or at `~/<project>/`, `~/repos/<project>/`, `~/test-repos/<project>/`, `/kord/repos/<project>/`, or as an absolute path.
 
-**Memory paths:** The runner injects `[Memory]` context with each job. Use the `Project:` path for reading/writing project memory (facts, atlas, stories). If no project memory path is provided, fall back to `$AGENT_PROJECT_DIR/memory/projects/<project>/`. Output is written via the `/memory-update` endpoint for insights, but `facts/`, atlas.json, and stories are written directly to the project memory path (they are structured output, not curated memory).
+**Memory paths:** The runner injects `[Memory]` context with each job. Use the `Project:` path for reading/writing project memory (facts, atlas, stories). If no project memory path is provided, fall back to `$AGENT_HOME_DIR/memory/projects/<project>/`. Output is written via the `/memory-update` endpoint for insights, but `facts/`, atlas.json, and stories are written directly to the project memory path (they are structured output, not curated memory).
 
 ---
 
@@ -28,7 +28,7 @@ Before reading any code, decide whether to run a full analysis or an incremental
 
 ### 0.1 — Locate and check previous analysis
 
-Resolve the project directory (`$ROOT`) and the project memory directory (`$MEM` — from the runner's `[Memory] Project:` path, or `$AGENT_PROJECT_DIR/memory/projects/<project>/`). Check for existing output at `$MEM/atlas.json` and `$MEM/facts/index.json`.
+Resolve the project directory (`$ROOT`) and the project memory directory (`$MEM` — from the runner's `[Memory] Project:` path, or `$AGENT_HOME_DIR/memory/projects/<project>/`). Check for existing output at `$MEM/atlas.json` and `$MEM/facts/index.json`.
 
 If `--full` was passed, or no previous atlas exists: **mode = FULL**. Skip to Phase 1.
 

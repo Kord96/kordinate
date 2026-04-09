@@ -155,7 +155,7 @@ async function main() {
     await consumer.subscribe({ topic: AGENT_NAME, fromBeginning: false });
     const discoveryRecord = buildDiscoveryRecord({
         agent: AGENT_NAME,
-        profile: AGENT_PROFILE,
+        specialization: AGENT_PROFILE,
         agentProfile,
         config: daemonConfig,
         healthUrl,

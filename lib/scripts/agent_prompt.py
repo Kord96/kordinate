@@ -13,12 +13,14 @@ import urllib.request
 from typing import Any
 
 
-DEFAULT_DISCOVERY_URL = "http://klaude-discovery.kord.svc.cluster.local:9091"
+DEFAULT_DISCOVERY_URL = os.environ.get("KORD_API_URL", "http://kord-api.kord.svc.cluster.local:9091")
 DEFAULT_KAFKA_NAMESPACE = "dev"
 DEFAULT_KAFKA_POD = "kafka-combined-0"
 DEFAULT_DISCOVERY_NAMESPACE = "kord"
-DEFAULT_DISCOVERY_TARGET = "deploy/klaude-discovery"
+DEFAULT_DISCOVERY_TARGET = "deploy/kord-api"
 DEFAULT_KAFKA_BOOTSTRAP = "kafka-kafka-bootstrap.dev.svc.cluster.local:9092"
+DEFAULT_GATEWAY_URL = os.environ.get("KORD_API_URL", os.environ.get("KORD_GATEWAY_URL", ""))
+DEFAULT_API_KEY = os.environ.get("KORD_API_KEY", "")
 KAFKA_BIN = "/opt/kafka/bin"
 KUBECTL_CMD = shlex.split(os.environ.get("KUBECTL_CMD", "kubectl"))
 
@@ -26,6 +28,27 @@ KUBECTL_CMD = shlex.split(os.environ.get("KUBECTL_CMD", "kubectl"))
 def fetch_json(url: str) -> Any:
     with urllib.request.urlopen(url) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def fetch_json_with_headers(url: str, headers: dict[str, str]) -> Any:
+    request = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(request) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def post_json(url: str, payload: dict[str, Any], headers: dict[str, str]) -> Any:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"content-type": "application/json", **headers},
+        method="POST",
+    )
+    with urllib.request.urlopen(request) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def fetch_request_status(gateway_url: str, request_id: str, headers: dict[str, str]) -> Any:
+    return fetch_json_with_headers(f"{gateway_url.rstrip('/')}/requests/{request_id}", headers)
 
 
 def fetch_discovery_via_kubectl(namespace: str, target: str, path: str) -> Any:
@@ -42,6 +65,14 @@ def fetch_discovery_via_kubectl(namespace: str, target: str, path: str) -> Any:
 
 def discovery_payload(args: argparse.Namespace) -> Any:
     path = f"/agents/{args.agent}" if getattr(args, "agent", None) else "/agents"
+    if getattr(args, "verbose", False):
+        sep = "&" if "?" in path else "?"
+        path = f"{path}{sep}verbose=1"
+    if getattr(args, "gateway_url", ""):
+        headers = {}
+        if getattr(args, "api_key", ""):
+            headers["x-api-key"] = args.api_key
+        return fetch_json_with_headers(f"{args.gateway_url.rstrip('/')}{path}", headers)
     if args.discovery_url:
         try:
             return fetch_json(f"{args.discovery_url.rstrip('/')}{path}")
@@ -174,6 +205,35 @@ def discover(args: argparse.Namespace) -> int:
 
 
 def prompt(args: argparse.Namespace) -> int:
+    if getattr(args, "gateway_url", ""):
+        payload = {
+            "prompt": args.prompt,
+        }
+        if args.working_dir:
+            payload["working_dir"] = args.working_dir
+        if args.timeout_ms is not None:
+            payload["timeout_ms"] = args.timeout_ms
+        if args.reflect:
+            payload["reflect"] = True
+        if args.reflection_prompt:
+            payload["reflection_prompt"] = args.reflection_prompt
+        if args.session_id:
+            payload["session_id"] = args.session_id
+        if getattr(args, "async_mode", False):
+            payload["async"] = True
+        start = time.time()
+        headers = {}
+        if getattr(args, "api_key", ""):
+            headers["x-api-key"] = args.api_key
+        response = post_json(f"{args.gateway_url.rstrip('/')}/agents/{args.agent}/prompt", payload, headers)
+        wall_ms = int((time.time() - start) * 1000)
+        if isinstance(response, dict):
+            response.setdefault("metadata", {})
+            response["metadata"].setdefault("caller_timing", {})
+            response["metadata"]["caller_timing"]["wall_ms"] = wall_ms
+        print(json.dumps(response, indent=2))
+        return 0
+
     request_topic = args.agent
     if args.discovery_url:
         try:
@@ -200,6 +260,8 @@ def prompt(args: argparse.Namespace) -> int:
         request["reflect"] = True
     if args.reflection_prompt:
         request["reflection_prompt"] = args.reflection_prompt
+    if args.session_id:
+        request["session_id"] = args.session_id
 
     start = time.time()
     kubectl_exec_retry(
@@ -253,7 +315,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     discover_parser = sub.add_parser("discover", help="return the discovery response")
     discover_parser.add_argument("--discovery-url", default=DEFAULT_DISCOVERY_URL)
+    discover_parser.add_argument("--gateway-url", default=DEFAULT_GATEWAY_URL)
+    discover_parser.add_argument("--api-key", default=DEFAULT_API_KEY)
     discover_parser.add_argument("--agent")
+    discover_parser.add_argument("--verbose", action="store_true")
     discover_parser.add_argument("--discovery-namespace", default=DEFAULT_DISCOVERY_NAMESPACE)
     discover_parser.add_argument("--discovery-target", default=DEFAULT_DISCOVERY_TARGET)
     discover_parser.set_defaults(func=discover)
@@ -269,7 +334,10 @@ def build_parser() -> argparse.ArgumentParser:
     prompt_parser.add_argument("--session-id", help="Stable session lane; reuses the same reply topic for sticky routing")
     prompt_parser.add_argument("--correlation-id")
     prompt_parser.add_argument("--wait-ms", type=int, default=120000)
+    prompt_parser.add_argument("--async", dest="async_mode", action="store_true")
     prompt_parser.add_argument("--discovery-url", default=DEFAULT_DISCOVERY_URL)
+    prompt_parser.add_argument("--gateway-url", default=DEFAULT_GATEWAY_URL)
+    prompt_parser.add_argument("--api-key", default=DEFAULT_API_KEY)
     prompt_parser.add_argument("--discovery-namespace", default=DEFAULT_DISCOVERY_NAMESPACE)
     prompt_parser.add_argument("--discovery-target", default=DEFAULT_DISCOVERY_TARGET)
     prompt_parser.add_argument("--kafka-namespace", default=DEFAULT_KAFKA_NAMESPACE)
@@ -277,7 +345,32 @@ def build_parser() -> argparse.ArgumentParser:
     prompt_parser.add_argument("--kafka-bootstrap-server", default=DEFAULT_KAFKA_BOOTSTRAP)
     prompt_parser.set_defaults(func=prompt)
 
+    watch_parser = sub.add_parser("watch", help="poll one async request until completion")
+    watch_parser.add_argument("request_id")
+    watch_parser.add_argument("--gateway-url", default=DEFAULT_GATEWAY_URL)
+    watch_parser.add_argument("--api-key", default=DEFAULT_API_KEY)
+    watch_parser.add_argument("--wait-ms", type=int, default=120000)
+    watch_parser.add_argument("--poll-interval-ms", type=int, default=2000)
+    watch_parser.set_defaults(func=watch)
+
     return parser
+
+
+def watch(args: argparse.Namespace) -> int:
+    if not args.gateway_url:
+        raise SystemExit("--gateway-url required for watch")
+    headers = {}
+    if getattr(args, "api_key", ""):
+        headers["x-api-key"] = args.api_key
+    deadline = time.time() + (args.wait_ms / 1000.0)
+    while time.time() < deadline:
+        payload = fetch_request_status(args.gateway_url, args.request_id, headers)
+        if isinstance(payload, dict) and payload.get("status") in {"completed", "error"}:
+            print(json.dumps(payload, indent=2))
+            return 0 if payload.get("status") == "completed" else 1
+        time.sleep(args.poll_interval_ms / 1000.0)
+    print(json.dumps({"error": "request not completed before timeout", "request_id": args.request_id}, indent=2))
+    return 1
 
 
 def main() -> int:

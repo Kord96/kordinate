@@ -40,7 +40,7 @@ Invoked: `/design orders` with requirements in the prompt.
 
 ### Step 1 — Read context
 
-1. **Infra atlas** — `$AGENT_PROJECT_DIR/memory/global/infra-atlas.json`
+1. **Infra atlas** — `$AGENT_HOME_DIR/memory/global/infra-atlas.json`
    - Available services in dev, new_workload_contract
    - If missing, respond: "Need infra atlas. Ask charon to run /survey first."
 
@@ -131,7 +131,7 @@ For each pattern in the comma-separated list:
 
 ### Step 2 — Read infra atlas
 
-Read `$AGENT_PROJECT_DIR/memory/global/infra-atlas.json` for:
+Read `$AGENT_HOME_DIR/memory/global/infra-atlas.json` for:
 - Service endpoints (for external_dependencies in atlas)
 - new_workload_contract (for compliance)
 

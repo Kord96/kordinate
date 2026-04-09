@@ -4,15 +4,13 @@
   "private": true,
   "type": "module",
   "bin": {
-    "klaude-daemon": "./bin/klaude-daemon",
-    "klaude-discovery-server": "./bin/klaude-discovery-server"
+    "klaude-daemon": "./bin/klaude-daemon"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "npm run build && node --test dist/**/*.test.js",
-    "start": "node dist/index.js",
-    "start:discovery": "node dist/discovery-server.js"
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.92",

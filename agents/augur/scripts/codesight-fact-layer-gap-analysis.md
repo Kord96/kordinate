@@ -591,3 +591,120 @@ Augur should become:
 - plus atlas synthesis and evaluation
 
 That is the right long-term combination.
+
+## Direct Comparison Results
+
+After the initial study, I ran direct side-by-side comparisons on representative repos and then patched Augur's deterministic layer accordingly.
+
+### Temporal
+
+Codesight:
+
+- `13` routes
+- `44` models
+- `7` gRPC routes
+
+Augur before Go structured extraction:
+
+- `0` routes
+- `214` models
+- `0` registrations
+- `0` handlers
+- `0` dispatch-bindings
+
+Augur after Go structured extraction:
+
+- `5` routes
+- `247` models
+- `496` registrations
+- `599` handlers
+- `75` dispatch-bindings
+- `108` boundaries
+
+Interpretation:
+
+- Codesight was materially ahead on Go route and service/workflow-style structural extraction.
+- Augur closed a meaningful part of that gap once `.go` files stopped flowing through the generic extractor.
+- Augur is now richer than Codesight on workflow/registration-style facts, but still needs better filtering so route and RPC signals are not drowned by volume from jobs/config.
+
+### Wox
+
+Codesight:
+
+- `4` websocket routes
+- `0` models
+- strong library/export inventory
+
+Augur before Go structured extraction:
+
+- `0` routes
+- `0` models
+- `128` handlers
+- `295` boundaries
+
+Augur after Go structured extraction and generic noise tightening:
+
+- `2` routes
+- `46` models
+- `103` handlers
+- `93` boundaries
+
+Interpretation:
+
+- The direct gain here was mostly noise reduction plus some real Go signal recovery.
+- Augur still needs a better plugin/extensibility fact family for repos like Wox; neither the old generic layer nor the current Go path is enough on its own.
+
+### Fineract
+
+Codesight:
+
+- `0` routes
+- `0` models
+- mostly middleware/import/config style signals
+
+Augur after generic structural family tightening:
+
+- `0` routes
+- `2` models
+- `4` registrations
+- `1104` handlers
+- `104` dispatch-bindings
+- `1247` boundaries
+
+Interpretation:
+
+- Codesight is not obviously stronger on this Java monolith today.
+- Augur is extracting more structure, but the remaining `handler` and `boundary` volume is still too high.
+- The next major extraction target after this patch set should be Java/Kotlin-specific structure, not more generic regex growth.
+
+### ShareX
+
+Codesight:
+
+- detected `aspnet`
+- `0` routes
+- `0` models
+- large library/export inventory
+
+Augur after C# structured extraction:
+
+- `0` routes
+- `0` models
+- `5` handlers
+- `463` boundaries
+
+Interpretation:
+
+- The new C# path works and is not regressing obvious ASP.NET cases, but ShareX is a desktop-heavy codebase and not a strong route/schema validation target.
+- C# still needs better filtering of common framework interface implementations.
+
+## What These Results Mean
+
+The useful conclusion is not "match Codesight output field for field."
+
+The useful conclusion is:
+
+- Go needed language-aware routing immediately, and that was correct.
+- C# needed a dedicated path, but route/model-heavy validation should use a more ASP.NET-web-oriented repo than ShareX.
+- Java/Kotlin are now the biggest remaining structured-extraction gap.
+- generic `handlers` and `boundaries` should be treated as fallback families, not the primary source of architecture truth.

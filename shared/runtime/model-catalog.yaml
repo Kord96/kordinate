@@ -1,0 +1,33 @@
+version: 1
+
+models:
+  opus:
+    backend_provider: anthropic
+    runtime: claude-agent-sdk
+  sonnet:
+    backend_provider: anthropic
+    runtime: claude-agent-sdk
+  haiku:
+    backend_provider: anthropic
+    runtime: claude-agent-sdk
+  gpt-5.4:
+    backend_provider: openai
+    runtime: codex-sdk
+  gpt-5.3-codex:
+    backend_provider: openai
+    runtime: codex-sdk
+  gpt-5.2-codex:
+    backend_provider: openai
+    runtime: codex-sdk
+  deepseek-chat:
+    backend_provider: deepseek
+    runtime: openclaude-harness
+  deepseek-reasoner:
+    backend_provider: deepseek
+    runtime: openclaude-harness
+  gemini-3.1-pro-preview:
+    backend_provider: gemini
+    runtime: openclaude-harness
+  accounts/fireworks/models/glm-5:
+    backend_provider: fireworks
+    runtime: openclaude-harness

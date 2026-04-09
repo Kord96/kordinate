@@ -13,6 +13,7 @@ export interface RuntimeRequest {
   reflect?: boolean
   reflection_prompt?: string
   agent_params?: Record<string, unknown>
+  session_id?: string
 }
 
 export interface RuntimeResult {
@@ -51,6 +52,9 @@ export interface SessionState {
 }
 
 export interface AgentProfile {
+  name?: string
+  description?: string
+  capabilities?: string[]
   promptPrefix?: string
   defaultReflectionPrompt?: string
   supportedAgentParams?: string[]
@@ -63,26 +67,19 @@ export interface ProviderSessionAdapter {
 }
 
 export interface AgentDiscoveryRecord {
-  agent: string
-  profile: string
-  provider: string
-  runtime: string
-  model: string
-  request_topic: string
-  reply_mode: 'sender-topic'
-  working_dir_supported: boolean
-  request_schema: {
-    required: string[]
-    optional: string[]
-  }
-  request_example: RequestMessage
+  name: string
+  capabilities: string[]
+  backend_provider: string
+  backend_model: string
+  supported_agent_params: string[]
+  active: boolean
+  specialization?: string
+  runtime?: string
   health_url?: string
-  working_directory?: string
-  supported_agent_params?: string[]
-  registered_at: string
-  last_seen_at: string
-  active?: boolean
-  discovery_source?: 'catalog' | 'runtime' | 'catalog+runtime'
+  last_seen_at?: string
+  request_topic?: string
+  default_working_dir?: string
+  registered_at?: string
 }
 
 export interface ResponseTimingMetadata {
