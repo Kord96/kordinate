@@ -311,6 +311,81 @@ def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "Inferred from cron or background job facts.",
         ))
 
+    registration_facts = grouped.get("registration", [])
+    boundary_facts = grouped.get("boundary", [])
+    dispatch_facts = grouped.get("dispatch-binding", [])
+
+    di_facts = [
+        fact
+        for fact in registration_facts + boundary_facts
+        if (
+            fact.get("raw_evidence", {}).get("registration_type") in {"service-registration", "bean-registration"}
+            or fact.get("raw_evidence", {}).get("boundary_type") in {"interface", "implementation"}
+        )
+    ]
+    if len(di_facts) >= 3:
+        patterns.append(build_pattern(
+            "dependency-injection",
+            "creational",
+            confidence_from_count(len(di_facts)),
+            di_facts[:20],
+            "Inferred from service or bean registrations combined with interface boundaries.",
+        ))
+
+    repository_facts = [
+        fact
+        for fact in boundary_facts + grouped.get("model", [])
+        if (
+            fact.get("raw_evidence", {}).get("boundary_type") == "repository-boundary"
+            or str(fact.get("raw_evidence", {}).get("interface", "")).endswith(("Repository", "Store", "Gateway", "Port"))
+            or fact.get("raw_evidence", {}).get("technology") in {"jpa", "gorm", "entity-framework", "sqlalchemy"}
+        )
+    ]
+    if len(repository_facts) >= 2:
+        patterns.append(build_pattern(
+            "repository",
+            "storage",
+            confidence_from_count(len(repository_facts)),
+            repository_facts[:20],
+            "Inferred from repository-like boundaries and persistence models.",
+        ))
+
+    plugin_facts = [
+        fact
+        for fact in registration_facts + dispatch_facts + boundary_facts
+        if (
+            str(fact.get("raw_evidence", {}).get("registration_type", "")).startswith("plugin-")
+            or str(fact.get("raw_evidence", {}).get("binding_type", "")).startswith("plugin-")
+            or str(fact.get("raw_evidence", {}).get("boundary_type", "")).startswith("plugin-")
+        )
+    ]
+    if len(plugin_facts) >= 3:
+        patterns.append(build_pattern(
+            "plugin",
+            "extensibility",
+            confidence_from_count(len(plugin_facts)),
+            plugin_facts[:25],
+            "Inferred from plugin host, plugin registration, or plugin protocol facts.",
+        ))
+
+    workflow_facts = [
+        fact
+        for fact in registration_facts + dispatch_facts + grouped.get("handler", [])
+        if (
+            fact.get("raw_evidence", {}).get("registration_type") in {"workflow-registration", "activity-registration"}
+            or fact.get("raw_evidence", {}).get("handler_type") == "workflow-handler"
+            or fact.get("raw_evidence", {}).get("binding_type") in {"queue-binding", "topic-subscription", "topic-publish"}
+        )
+    ]
+    if len(workflow_facts) >= 3:
+        patterns.append(build_pattern(
+            "workflow-engine",
+            "lifecycle",
+            confidence_from_count(len(workflow_facts)),
+            workflow_facts[:20],
+            "Inferred from workflow registration, workflow handlers, and queue or topic bindings.",
+        ))
+
     auth_facts = grouped.get("auth-surface", [])
     auth_map = {
         "oauth-oidc": ("oauth-oidc", "security"),

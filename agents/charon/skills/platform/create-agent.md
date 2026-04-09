@@ -8,14 +8,14 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
 
 ## Command Shape
 
-`/platform create-agent <name> [--profile generic|generic-opus|augur-opus|augur-gemini-pro|augur-deepseek-v32-reasoner|augur-glm5|augur-gpt54|charon-sonnet|alfred-deepseek-chat|sauron-sonnet|warden-haiku] [profile-specific flags]`
+`/platform create-agent <name> [--profile generic|generic-opus|augur-opus|augur-gemini-pro|augur-deepseek-reasoner|augur-glm5|augur-gpt54|charon-sonnet|alfred-deepseek-chat|sauron-sonnet|warden-haiku] [profile-specific flags]`
 
 ## Steps
 
 1. Validate the requested agent name:
    - kebab-case
    - not already present in `agent-spec.yaml`
-   - request topic will be `agent.<name>`
+   - request topic will be `<name>`
 
 2. Resolve the creation profile from `agent-creation-profiles.yaml`.
    - `generic` creates a plain daemon-backed agent
@@ -41,7 +41,8 @@ python3 $KORDINATE_HOME/lib/scripts/create-agent-spec-entry.py <name> \
   [--backend <backend>] \
   [--secret-env <env-var>] \
   [--secret-name <secret-name>] \
-  [--secret-key <secret-key>]
+  [--secret-key <secret-key>] \
+  [--default-working-dir </path>]
 ```
 
 4. Regenerate manifests from the updated spec:
@@ -57,7 +58,7 @@ python3 $KORDINATE_HOME/lib/scripts/generate-agent-manifests.py \
 5. Verify the generated manifests now contain:
    - `Deployment/agent-<name>`
    - `ScaledObject/agent-<name>`
-   - `KafkaTopic/agent.<name>`
+   - `KafkaTopic/<name>`
    - `exec klaude-daemon` as the runtime command
    - provider API key env wired from the expected Secret
 

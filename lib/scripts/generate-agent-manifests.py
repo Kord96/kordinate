@@ -21,39 +21,66 @@ def infer_supported_agent_params(agent: dict) -> list[str]:
     return []
 
 
+def parse_identity(agent: dict) -> dict:
+    flavor = agent.get("flavor") or (agent["name"] if agent["name"] in SPECIAL_FLAVORS else "generic")
+    identity_path = Path(f"/kord/workstation/home/project/kordinate/agents/{flavor}/IDENTITY.md")
+    if not identity_path.exists():
+        return {
+            "name": agent["name"],
+            "description": "",
+            "capabilities": [],
+        }
+
+    text = identity_path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    frontmatter: dict[str, str] = {}
+    if lines and lines[0].strip() == "---":
+        for line in lines[1:]:
+            if line.strip() == "---":
+                break
+            if ":" in line and not line.lstrip().startswith("- "):
+                key, value = line.split(":", 1)
+                frontmatter[key.strip()] = value.strip()
+
+    capabilities: list[str] = []
+    in_capabilities = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "## Capabilities":
+            in_capabilities = True
+            continue
+        if in_capabilities and stripped.startswith("## "):
+            break
+        if in_capabilities and stripped.startswith("- "):
+            capabilities.append(stripped[2:].strip())
+
+    return {
+        "name": frontmatter.get("name", agent["name"]),
+        "description": frontmatter.get("description", ""),
+        "capabilities": capabilities,
+    }
+
+
 def build_discovery_record(agent: dict, generated_at: str) -> dict:
     name = agent["name"]
     flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    identity = parse_identity(agent)
     daemon = agent.get("runtime", {}).get("daemon", {})
-    working_directory = daemon.get("working_directory") or f"/kord/shared/repos/{name}"
+    default_working_dir = daemon.get("default_working_dir")
     return {
-        "agent": name,
-        "profile": flavor,
-        "provider": daemon.get("provider", "unknown"),
-        "runtime": daemon.get("kind", "openclaude-harness"),
-        "model": str(daemon.get("model", "unknown")),
-        "request_topic": agent["runtime"]["kafka"]["request_topic"],
-        "reply_mode": "sender-topic",
-        "working_dir_supported": True,
-        "request_schema": {
-            "required": ["type", "sender", "correlation_id", "prompt"],
-            "optional": ["working_dir", "timeout_ms", "reflect", "reflection_prompt", "agent_params"],
-        },
-        "request_example": {
-            "type": "request",
-            "sender": f"{name}-reply-topic",
-            "correlation_id": f"{name}-request-1",
-            "prompt": f"Do the requested work as {name}.",
-            "working_dir": working_directory,
-            "timeout_ms": 120000,
-        },
-        "health_url": f"http://agent-{name}:9090/health",
-        "working_directory": working_directory,
+        "name": name,
+        "capabilities": identity["capabilities"],
+        "backend_provider": daemon.get("provider", "unknown"),
+        "backend_model": str(daemon.get("model", "unknown")),
         "supported_agent_params": infer_supported_agent_params(agent),
+        "active": False,
+        "specialization": flavor,
+        "runtime": daemon.get("kind", "openclaude-harness"),
+        "health_url": f"http://agent-{name}:9090/health",
+        "default_working_dir": default_working_dir,
         "registered_at": generated_at,
         "last_seen_at": generated_at,
-        "active": False,
-        "discovery_source": "catalog",
+        "request_topic": agent["runtime"]["kafka"]["request_topic"],
     }
 
 
@@ -67,7 +94,7 @@ def image_ref(agent: dict) -> str:
 def emit_env_lines(agent: dict) -> list[str]:
     name = agent["name"]
     flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
-    project_dir = agent["runtime"]["state"]["project_dir"]
+    agent_home_dir = agent["runtime"]["state"]["agent_home_dir"]
     state_dir = agent["runtime"]["state"]["state_dir"]
     daemon = agent.get("runtime", {}).get("daemon", {})
     backend = daemon.get("backend", {}) if isinstance(daemon.get("backend"), dict) else {}
@@ -76,13 +103,13 @@ def emit_env_lines(agent: dict) -> list[str]:
     env = [
         ("AGENT_NAME", name),
         ("AGENT_PROFILE", flavor),
-        ("AGENT_PROJECT_DIR", project_dir),
+        ("AGENT_HOME_DIR", agent_home_dir),
         ("AGENT_STATE_DIR", state_dir),
         ("KAFKA_BROKERS", "kafka-kafka-bootstrap.dev.svc.cluster.local:9092"),
         ("HOME", "/home/claude"),
         ("KORDINATE_HOME", "/app"),
         ("PROJECTS_ROOT", "/kord/shared/repos"),
-        ("DISCOVERY_SERVER_URL", "http://klaude-discovery:9091"),
+        ("DISCOVERY_SERVER_URL", "http://kord-api:9091"),
         ("DAEMON_HEALTH_URL", f"http://agent-{name}:9090/health"),
     ]
 
@@ -96,8 +123,8 @@ def emit_env_lines(agent: dict) -> list[str]:
         env.append(("DAEMON_BACKEND", backend["name"]))
     if backend.get("base_url"):
         env.append(("BACKEND_BASE_URL", backend["base_url"]))
-    if daemon.get("working_directory"):
-        env.append(("CODEX_WORKING_DIRECTORY", daemon["working_directory"]))
+    if daemon.get("default_working_dir"):
+        env.append(("CODEX_WORKING_DIRECTORY", daemon["default_working_dir"]))
     if daemon.get("skip_git_repo_check") is not None:
         env.append(("CODEX_SKIP_GIT_REPO_CHECK", "true" if daemon["skip_git_repo_check"] else "false"))
     if creation.get("memory_bundle"):

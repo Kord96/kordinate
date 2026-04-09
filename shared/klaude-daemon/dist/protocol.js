@@ -6,10 +6,11 @@ export function isRequestMessage(value) {
         && typeof msg.sender === 'string'
         && typeof msg.correlation_id === 'string'
         && typeof msg.prompt === 'string'
-        && (msg.working_dir === undefined || typeof msg.working_dir === 'string');
+        && (msg.working_dir === undefined || typeof msg.working_dir === 'string')
+        && (msg.session_id === undefined || typeof msg.session_id === 'string');
 }
 export function sessionKeyFor(message) {
-    return message.sender;
+    return message.session_id ?? message.sender;
 }
 export function getOrCreateSession(sessions, message) {
     const key = sessionKeyFor(message);

@@ -39,11 +39,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/generic-opus
+        agent_home_dir: /runtime/generic-opus
         state_dir: /kord/generic-opus
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -80,11 +80,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-opus
+        agent_home_dir: /runtime/augur-opus
         state_dir: /kord/augur-opus
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -122,11 +122,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-gemini-pro
+        agent_home_dir: /runtime/augur-gemini-pro
         state_dir: /kord/augur-gemini-pro
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -136,7 +136,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: augur-deepseek-v32-reasoner
+  - name: augur-deepseek-reasoner
     flavor: augur
     image:
       base: agent-base
@@ -155,7 +155,7 @@ agents:
           name: deepseek-api
           key: api-key
       kafka:
-        request_topic: augur-deepseek-v32-reasoner
+        request_topic: augur-deepseek-reasoner
         reply_required: true
         request_schema:
           required: [type, sender, correlation_id, prompt]
@@ -164,11 +164,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-deepseek-v32-reasoner
-        state_dir: /kord/augur-deepseek-v32-reasoner
+        agent_home_dir: /runtime/augur-deepseek-reasoner
+        state_dir: /kord/augur-deepseek-reasoner
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -206,11 +206,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-glm5
+        agent_home_dir: /runtime/augur-glm5
         state_dir: /kord/augur-glm5
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -249,11 +249,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-gpt54
+        agent_home_dir: /runtime/augur-gpt54
         state_dir: /kord/augur-gpt54
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -290,11 +290,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/charon-sonnet
+        agent_home_dir: /runtime/charon-sonnet
         state_dir: /kord/charon-sonnet
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -331,11 +331,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/warden-haiku
+        agent_home_dir: /runtime/warden-haiku
         state_dir: /kord/warden-haiku
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -372,11 +372,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/sauron-sonnet
+        agent_home_dir: /runtime/sauron-sonnet
         state_dir: /kord/sauron-sonnet
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:
@@ -414,11 +414,11 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/alfred-deepseek-chat
+        agent_home_dir: /runtime/alfred-deepseek-chat
         state_dir: /kord/alfred-deepseek-chat
     deploy:
       replicas:
-        min: 0
+        min: 1
         max: 3
         cooldown: 300
       resources:

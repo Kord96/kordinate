@@ -19,11 +19,17 @@ def infer_runtime_kind(model: str, provider: str) -> str:
     return "openclaude-harness"
 
 
+def load_model_catalog(path: str) -> dict:
+    payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    return payload.get("models", {}) if isinstance(payload, dict) else {}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Append a daemon-backed agent entry to Charon platform agent-spec.yaml")
     parser.add_argument("name", help="Deployed agent name")
     parser.add_argument("--spec", default="agents/charon/skills/platform/agent-spec.yaml", help="Path to agent-spec.yaml")
     parser.add_argument("--profiles", default="agents/charon/skills/platform/agent-creation-profiles.yaml", help="Path to agent creation profiles")
+    parser.add_argument("--model-catalog", default="shared/runtime/model-catalog.yaml", help="Path to shared model catalog")
     parser.add_argument("--profile", default="generic", help="Creation profile name")
     parser.add_argument("--flavor", default="", help="Agent flavor to seed")
     parser.add_argument("--provider", default="", help="Daemon provider")
@@ -37,7 +43,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--secret-key", default="", help="Kubernetes Secret data key to mount into the agent pod")
     parser.add_argument("--memory-bundle", default="", help="Specialist memory bundle name when required by the creation profile")
     parser.add_argument("--runtime-bundle", default="", help="Specialist runtime bundle name when required by the creation profile")
-    parser.add_argument("--working-directory", default="", help="Optional daemon working directory")
+    parser.add_argument("--default-working-dir", default="", help="Optional default working directory for tasks")
+    parser.add_argument("--working-directory", default="", help="Deprecated alias for --default-working-dir")
     parser.add_argument("--skip-git-repo-check", action="store_true", help="Set CODEX_SKIP_GIT_REPO_CHECK=true")
     parser.add_argument("--min-replicas", type=int, default=0)
     parser.add_argument("--max-replicas", type=int, default=3)
@@ -53,7 +60,7 @@ def load_profiles(path: str) -> dict:
     return payload.get("profiles", {})
 
 
-def resolve_profile(args: argparse.Namespace, profiles: dict) -> dict:
+def resolve_profile(args: argparse.Namespace, profiles: dict, model_catalog: dict) -> dict:
     if args.profile not in profiles:
         raise SystemExit(f"unknown creation profile '{args.profile}'")
     profile = profiles[args.profile]
@@ -75,7 +82,8 @@ def resolve_profile(args: argparse.Namespace, profiles: dict) -> dict:
         "required_choices": profile.get("required_choices", []),
         "choices": profile.get("choices", {}),
     }
-    resolved["runtime_kind"] = args.runtime_kind or defaults.get("runtime_kind") or infer_runtime_kind(resolved["model"], resolved["provider"])
+    catalog_entry = model_catalog.get(resolved["model"], {}) if isinstance(model_catalog.get(resolved["model"]), dict) else {}
+    resolved["runtime_kind"] = args.runtime_kind or defaults.get("runtime_kind") or catalog_entry.get("runtime") or infer_runtime_kind(resolved["model"], resolved["provider"])
     for field in resolved["required_choices"]:
         if not resolved.get(field):
             raise SystemExit(f"profile '{args.profile}' requires --{field.replace('_', '-')}")
@@ -88,7 +96,8 @@ def resolve_profile(args: argparse.Namespace, profiles: dict) -> dict:
 def build_agent(args: argparse.Namespace) -> dict:
     name = args.name
     profiles = load_profiles(args.profiles)
-    profile = resolve_profile(args, profiles)
+    model_catalog = load_model_catalog(args.model_catalog)
+    profile = resolve_profile(args, profiles, model_catalog)
     flavor = profile["flavor"]
     backend = profile["backend"]
     agent = {
@@ -107,19 +116,19 @@ def build_agent(args: argparse.Namespace) -> dict:
                 "backend": {"name": backend},
             },
             "kafka": {
-                "request_topic": f"agent.{name}",
+                "request_topic": name,
                 "reply_required": True,
                 "request_schema": {
-                    "required": ["prompt", "reply_to"],
-                    "optional": ["timeout_ms", "reflect"],
+                    "required": ["type", "sender", "correlation_id", "prompt"],
+                    "optional": ["working_dir", "timeout_ms", "reflect", "reflection_prompt", "agent_params"],
                 },
                 "response_schema": {
-                    "required": ["status", "output"],
-                    "optional": ["reflection", "errors"],
+                    "required": ["type", "sender", "correlation_id", "status", "output"],
+                    "optional": ["reflection", "errors", "metadata"],
                 },
             },
             "state": {
-                "project_dir": f"/runtime/{name}",
+                "agent_home_dir": f"/runtime/{name}",
                 "state_dir": f"/kord/{name}",
             },
         },
@@ -155,8 +164,9 @@ def build_agent(args: argparse.Namespace) -> dict:
         }
     if profile["backend_base_url"]:
         agent["runtime"]["daemon"]["backend"]["base_url"] = profile["backend_base_url"]
-    if args.working_directory:
-        agent["runtime"]["daemon"]["working_directory"] = args.working_directory
+    default_working_dir = args.default_working_dir or args.working_directory
+    if default_working_dir:
+        agent["runtime"]["daemon"]["default_working_dir"] = default_working_dir
     if profile["skip_git_repo_check"]:
         agent["runtime"]["daemon"]["skip_git_repo_check"] = True
     if flavor in SPECIAL_FLAVORS and flavor != name and profile["image_customization"] == "none":

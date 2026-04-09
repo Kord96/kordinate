@@ -40,13 +40,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-opus" }
             - { name: AGENT_PROFILE, value: "generic" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/generic-opus" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/generic-opus" }
             - { name: AGENT_STATE_DIR, value: "/kord/generic-opus" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-opus:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
@@ -133,13 +133,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-opus" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-opus" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/augur-opus" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-opus" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-opus:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
@@ -226,13 +226,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-gemini-pro" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-gemini-pro" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/augur-gemini-pro" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-gemini-pro" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
             - { name: DAEMON_PROVIDER, value: "gemini" }
@@ -284,14 +284,14 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-augur-deepseek-v32-reasoner
-  labels: { app: kord-agent, agent: augur-deepseek-v32-reasoner }
+  name: agent-augur-deepseek-reasoner
+  labels: { app: kord-agent, agent: augur-deepseek-reasoner }
 spec:
   selector:
-    matchLabels: { app: kord-agent, agent: augur-deepseek-v32-reasoner }
+    matchLabels: { app: kord-agent, agent: augur-deepseek-reasoner }
   template:
     metadata:
-      labels: { app: kord-agent, agent: augur-deepseek-v32-reasoner }
+      labels: { app: kord-agent, agent: augur-deepseek-reasoner }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -304,8 +304,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh augur-deepseek-v32-reasoner
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-deepseek-v32-reasoner
+              bash /app/scripts/setup-agent-dir.sh augur-deepseek-reasoner
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-deepseek-reasoner
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -318,16 +318,16 @@ spec:
             - |
               exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: "augur-deepseek-v32-reasoner" }
+            - { name: AGENT_NAME, value: "augur-deepseek-reasoner" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-deepseek-v32-reasoner" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur-deepseek-v32-reasoner" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/augur-deepseek-reasoner" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur-deepseek-reasoner" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-deepseek-v32-reasoner:9090/health" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-deepseek-reasoner:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
             - { name: DAEMON_PROVIDER, value: "deepseek" }
             - { name: DAEMON_MODEL, value: "deepseek-reasoner" }
@@ -363,12 +363,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-augur-deepseek-v32-reasoner
-  labels: { app: kord-agent, agent: augur-deepseek-v32-reasoner }
+  name: agent-augur-deepseek-reasoner
+  labels: { app: kord-agent, agent: augur-deepseek-reasoner }
 spec:
   selector:
     app: kord-agent
-    agent: augur-deepseek-v32-reasoner
+    agent: augur-deepseek-reasoner
   ports:
     - name: health
       port: 9090
@@ -414,13 +414,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-glm5" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-glm5" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/augur-glm5" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-glm5" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-glm5:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
             - { name: DAEMON_PROVIDER, value: "fireworks" }
@@ -508,13 +508,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-gpt54" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-gpt54" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/augur-gpt54" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-gpt54" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gpt54:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
             - { name: DAEMON_PROVIDER, value: "openai" }
@@ -603,13 +603,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "charon-sonnet" }
             - { name: AGENT_PROFILE, value: "charon" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/charon-sonnet" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/charon-sonnet" }
             - { name: AGENT_STATE_DIR, value: "/kord/charon-sonnet" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-charon-sonnet:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
@@ -696,13 +696,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "warden-haiku" }
             - { name: AGENT_PROFILE, value: "warden" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/warden-haiku" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/warden-haiku" }
             - { name: AGENT_STATE_DIR, value: "/kord/warden-haiku" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-warden-haiku:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
@@ -789,13 +789,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "sauron-sonnet" }
             - { name: AGENT_PROFILE, value: "sauron" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/sauron-sonnet" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/sauron-sonnet" }
             - { name: AGENT_STATE_DIR, value: "/kord/sauron-sonnet" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron-sonnet:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
@@ -882,13 +882,13 @@ spec:
           env:
             - { name: AGENT_NAME, value: "alfred-deepseek-chat" }
             - { name: AGENT_PROFILE, value: "alfred" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/alfred-deepseek-chat" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/alfred-deepseek-chat" }
             - { name: AGENT_STATE_DIR, value: "/kord/alfred-deepseek-chat" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-alfred-deepseek-chat:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
             - { name: DAEMON_PROVIDER, value: "deepseek" }

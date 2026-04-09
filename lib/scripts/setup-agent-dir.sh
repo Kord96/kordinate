@@ -1,12 +1,11 @@
 #!/bin/bash
 # setup-agent-dir.sh <agent-name>
 #
-# Init container script — validates that the PVC layout exists for this agent.
-# Klaude owns the runtime process; Kordinate only validates the platform-owned PVC layout.
-# The PVC init job owns directory creation; agent startup should not reshape it.
+# Init container script — ensures the minimal PVC layout exists for this agent.
+# Klaude owns the runtime process; Kordinate prepares the baseline runtime dirs.
 # The deploy-runtime.sh script handles seeding from repo → runtime.
 #
-# Verifies:
+# Ensures:
 #   /kord/<name>/
 #     memory/
 #     tmp/
@@ -19,8 +18,6 @@ DST="/kord/$AGENT"
 
 log() { echo "[setup-agent-dir] $*"; }
 
-[ -d "$DST/memory" ] || { log "missing $DST/memory"; exit 1; }
-[ -d "$DST/tmp" ] || { log "missing $DST/tmp"; exit 1; }
-[ -d "/kord/shared/memory" ] || { log "missing /kord/shared/memory"; exit 1; }
+mkdir -p "$DST/memory" "$DST/tmp" "/kord/shared/memory"
 
 log "directory structure ready: $DST"

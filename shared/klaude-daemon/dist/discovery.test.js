@@ -20,17 +20,17 @@ test('buildDiscoveryRecord exposes prompting contract and agent metadata', () =>
     };
     const record = buildDiscoveryRecord({
         agent: 'alfred',
-        profile: 'alfred',
+        specialization: 'alfred',
         agentProfile: loadAgentProfile('alfred'),
         config,
         healthUrl: config.healthUrl,
     });
-    assert.equal(record.agent, 'alfred');
+    assert.equal(record.name, 'alfred');
+    assert.equal(record.backend_provider, 'deepseek');
+    assert.equal(record.backend_model, 'deepseek-chat');
+    assert.ok(Array.isArray(record.capabilities));
+    assert.equal(record.specialization, 'alfred');
     assert.equal(record.request_topic, 'alfred');
-    assert.equal(record.reply_mode, 'sender-topic');
-    assert.equal(record.working_dir_supported, true);
-    assert.deepEqual(record.request_schema.required, ['type', 'sender', 'correlation_id', 'prompt']);
-    assert.match(record.request_example.prompt, /alfred/);
-    assert.equal(record.request_example.working_dir, '/kord/shared/repos/kordinate');
     assert.equal(record.health_url, 'http://agent-alfred:9090/health');
+    assert.equal(record.default_working_dir, '/kord/shared/repos/kordinate');
 });

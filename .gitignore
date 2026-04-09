@@ -64,6 +64,8 @@ agent-state/
 !/agents/augur/scripts/facts/structural.py
 !/agents/augur/scripts/facts/go_structured.py
 !/agents/augur/scripts/facts/csharp_structured.py
+!/agents/augur/scripts/facts/java_kotlin_structured.py
+!/agents/augur/scripts/facts/plugin_systems.py
 !/agents/augur/memory/
 /agents/augur/memory/*
 !/agents/augur/memory/tools.md

@@ -12,7 +12,6 @@ function sanitizeRecord(record) {
     return {
         ...record,
         active: record.active ?? false,
-        discovery_source: record.discovery_source ?? 'catalog',
     };
 }
 async function loadState() {
@@ -21,8 +20,8 @@ async function loadState() {
         const parsed = JSON.parse(raw);
         const now = Date.now();
         for (const record of parsed) {
-            if (now - Date.parse(record.last_seen_at) <= ttlMs) {
-                registry.set(record.agent, record);
+            if (record.last_seen_at && now - Date.parse(record.last_seen_at) <= ttlMs) {
+                registry.set(record.name, record);
             }
         }
     }
@@ -35,7 +34,7 @@ async function loadCatalog() {
         const raw = await readFile(catalogPath, 'utf8');
         const parsed = JSON.parse(raw);
         for (const record of parsed) {
-            catalog.set(record.agent, sanitizeRecord(record));
+            catalog.set(record.name, sanitizeRecord(record));
         }
     }
     catch {
@@ -50,17 +49,16 @@ async function persistState() {
 function activeRecords() {
     const now = Date.now();
     const merged = new Map(catalog);
-    for (const [agent, record] of registry.entries()) {
-        if (now - Date.parse(record.last_seen_at) > ttlMs) {
-            registry.delete(agent);
+    for (const [name, record] of registry.entries()) {
+        if (record.last_seen_at && now - Date.parse(record.last_seen_at) > ttlMs) {
+            registry.delete(name);
             continue;
         }
-        const base = merged.get(agent);
-        merged.set(agent, {
+        const base = merged.get(name);
+        merged.set(name, {
             ...(base ?? {}),
             ...record,
             active: true,
-            discovery_source: base ? 'catalog+runtime' : 'runtime',
         });
     }
     const records = [...merged.values()].map(record => {
@@ -68,13 +66,22 @@ function activeRecords() {
             return {
                 ...record,
                 active: false,
-                discovery_source: record.discovery_source ?? 'catalog',
             };
         }
         return record;
     });
-    records.sort((a, b) => a.agent.localeCompare(b.agent));
+    records.sort((a, b) => a.name.localeCompare(b.name));
     return records;
+}
+function compactRecord(record) {
+    return {
+        name: record.name,
+        capabilities: record.capabilities,
+        backend_provider: record.backend_provider,
+        backend_model: record.backend_model,
+        supported_agent_params: record.supported_agent_params,
+        active: record.active,
+    };
 }
 function json(res, statusCode, payload) {
     res.statusCode = statusCode;
@@ -94,12 +101,11 @@ function isAgentDiscoveryRecord(value) {
     if (!value || typeof value !== 'object')
         return false;
     const record = value;
-    return typeof record.agent === 'string'
-        && typeof record.profile === 'string'
-        && typeof record.provider === 'string'
-        && typeof record.runtime === 'string'
-        && typeof record.model === 'string'
-        && typeof record.request_topic === 'string';
+    return typeof record.name === 'string'
+        && Array.isArray(record.capabilities)
+        && typeof record.backend_provider === 'string'
+        && typeof record.backend_model === 'string'
+        && Array.isArray(record.supported_agent_params);
 }
 const server = createServer(async (req, res) => {
     try {
@@ -109,20 +115,22 @@ const server = createServer(async (req, res) => {
             return;
         }
         if (req.method === 'GET' && url.pathname === '/agents') {
-            const agents = activeRecords();
+            const verbose = url.searchParams.get('verbose') === '1';
+            const agents = activeRecords().map(record => verbose ? record : compactRecord(record));
             await persistState();
             json(res, 200, { agents });
             return;
         }
         if (req.method === 'GET' && url.pathname.startsWith('/agents/')) {
             const name = decodeURIComponent(url.pathname.slice('/agents/'.length));
-            const record = activeRecords().find(item => item.agent === name);
+            const verbose = url.searchParams.get('verbose') === '1';
+            const record = activeRecords().find(item => item.name === name);
             if (!record) {
                 json(res, 404, { error: `agent '${name}' not found` });
                 return;
             }
             await persistState();
-            json(res, 200, record);
+            json(res, 200, verbose ? record : compactRecord(record));
             return;
         }
         if (req.method === 'POST' && url.pathname === '/register') {
@@ -132,15 +140,14 @@ const server = createServer(async (req, res) => {
                 return;
             }
             const now = new Date().toISOString();
-            const previous = registry.get(body.agent);
+            const previous = registry.get(body.name);
             const record = {
                 ...body,
                 registered_at: previous?.registered_at ?? now,
                 last_seen_at: now,
                 active: true,
-                discovery_source: catalog.has(body.agent) ? 'catalog+runtime' : 'runtime',
             };
-            registry.set(record.agent, record);
+            registry.set(record.name, record);
             await persistState();
             json(res, 200, record);
             return;
