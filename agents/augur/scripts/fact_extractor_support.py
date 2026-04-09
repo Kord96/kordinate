@@ -10,10 +10,12 @@ The extractor is intentionally pragmatic:
 from __future__ import annotations
 
 import ast
+import functools
 import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -23,6 +25,9 @@ from typing import Any, Iterable
 
 
 MAX_FILE_BYTES = 100 * 1024
+ROOT = Path(__file__).resolve().parents[1]
+FACT_DETECTORS = ROOT / "detectors" / "facts"
+AST_GREP_BIN = shutil.which("ast-grep")
 
 SOURCE_EXTENSIONS = {
     ".py",
@@ -350,6 +355,55 @@ def read_text(path: Path) -> str | None:
         return path.read_text(encoding="utf-8", errors="ignore")
     except OSError:
         return None
+
+
+@functools.lru_cache(maxsize=4096)
+def _ast_fact_matches(domain: str, file_path: str) -> list[dict[str, Any]]:
+    if not AST_GREP_BIN:
+        return []
+    rule_file = FACT_DETECTORS / domain / "ast-grep.yaml"
+    if not rule_file.exists():
+        return []
+    try:
+        result = subprocess.run(
+            [AST_GREP_BIN, "scan", "-r", str(rule_file), file_path, "--json"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+    try:
+        loaded = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+    return loaded if isinstance(loaded, list) else []
+
+
+def extract_ast_fact_matches(domain: str, path: Path) -> list[dict[str, Any]]:
+    return _ast_fact_matches(domain, str(path.resolve()))
+
+
+def _meta_single(match: dict[str, Any], key: str) -> str:
+    meta = match.get("metaVariables", {}).get("single", {})
+    value = meta.get(key, {})
+    text = value.get("text")
+    return text if isinstance(text, str) else ""
+
+
+def _match_line(match: dict[str, Any]) -> int:
+    start = (match.get("range") or {}).get("start") or {}
+    line = start.get("line")
+    return int(line) + 1 if isinstance(line, int) else 1
+
+
+def _strip_quotes(value: str) -> str:
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"', "`"}:
+        return value[1:-1]
+    return value
 
 
 def is_source_file(path: Path) -> bool:
@@ -801,6 +855,36 @@ def extract_js_routes(text: str) -> list[dict[str, Any]]:
     return routes
 
 
+def extract_ast_routes(path: Path) -> list[dict[str, Any]]:
+    routes: list[dict[str, Any]] = []
+    for match in extract_ast_fact_matches("routes", path):
+        rule_id = match.get("ruleId", "")
+        method = "ANY"
+        if "get" in rule_id:
+            method = "GET"
+        elif "post" in rule_id:
+            method = "POST"
+        elif "put" in rule_id:
+            method = "PUT"
+        elif "delete" in rule_id:
+            method = "DELETE"
+        elif "patch" in rule_id:
+            method = "PATCH"
+        path_value = _strip_quotes(_meta_single(match, "PATH"))
+        handler = _meta_single(match, "HANDLER") or _meta_single(match, "VIEW") or "handler"
+        routes.append(
+            {
+                "method": method,
+                "path": path_value,
+                "handler": handler,
+                "decorator": rule_id,
+                "line": _match_line(match),
+                "source": "ast",
+            }
+        )
+    return routes
+
+
 def extract_models(text: str, path: Path) -> list[dict[str, Any]]:
     models: list[dict[str, Any]] = []
 
@@ -842,6 +926,39 @@ def extract_models(text: str, path: Path) -> list[dict[str, Any]]:
             self.generic_visit(node)
 
     ModelVisitor().visit(tree)
+    return models
+
+
+def extract_ast_models(path: Path) -> list[dict[str, Any]]:
+    models: list[dict[str, Any]] = []
+    for match in extract_ast_fact_matches("models", path):
+        rule_id = match.get("ruleId", "")
+        name = _meta_single(match, "MODEL")
+        if not name:
+            continue
+        if "prisma" in rule_id:
+            source = "prisma"
+        elif "django" in rule_id:
+            source = "django"
+        elif "sequelize" in rule_id:
+            source = "sequelize"
+        elif "mongoose" in rule_id:
+            source = "mongoose"
+        elif "sqlmodel" in rule_id:
+            source = "sqlmodel"
+        elif "pydantic" in rule_id:
+            source = "pydantic"
+        else:
+            source = "python"
+        models.append(
+            {
+                "name": name,
+                "source": source,
+                "fields": [],
+                "line": _match_line(match),
+                "rule_id": rule_id,
+            }
+        )
     return models
 
 
@@ -902,6 +1019,84 @@ def extract_js_clients(text: str) -> list[dict[str, Any]]:
     if url_match:
         clients.append({"kind": "http-api", "technology": "url", "source": "literal", "target": url_match.group(0)})
     return clients
+
+
+def extract_ast_clients(path: Path) -> list[dict[str, Any]]:
+    clients: list[dict[str, Any]] = []
+    for match in extract_ast_fact_matches("external-clients", path):
+        rule_id = match.get("ruleId", "")
+        target = _strip_quotes(_meta_single(match, "URL") or _meta_single(match, "SERVICE"))
+        if "requests" in rule_id:
+            kind, technology = "http-api", "requests"
+        elif "httpx" in rule_id:
+            kind, technology = "http-api", "httpx"
+        elif "aiohttp" in rule_id:
+            kind, technology = "http-api", "aiohttp"
+        elif "boto3" in rule_id:
+            kind, technology = "object-store", "boto3"
+        elif "axios" in rule_id:
+            kind, technology = "http-api", "axios"
+        elif "fetch" in rule_id:
+            kind, technology = "http-api", "fetch"
+        elif "redis" in rule_id:
+            kind, technology = "cache", "redis"
+        else:
+            kind, technology = "external", rule_id
+        clients.append(
+            {
+                "kind": kind,
+                "technology": technology,
+                "source": "ast",
+                "target": target,
+                "line": _match_line(match),
+                "rule_id": rule_id,
+            }
+        )
+    return clients
+
+
+def extract_ast_middleware(path: Path) -> list[dict[str, Any]]:
+    middleware: list[dict[str, Any]] = []
+    for match in extract_ast_fact_matches("middleware", path):
+        rule_id = match.get("ruleId", "")
+        name = _meta_single(match, "MIDDLEWARE") or _meta_single(match, "HANDLER") or _meta_single(match, "ARGS")
+        middleware.append(
+            {
+                "name": name or rule_id,
+                "callsite": path.name,
+                "auth": "guard" if "guard" in rule_id else "",
+                "validation": "validation" if "validation" in rule_id else "",
+                "ordering": "",
+                "line": _match_line(match),
+                "rule_id": rule_id,
+            }
+        )
+    return middleware
+
+
+def extract_ast_auth_surfaces(path: Path) -> list[dict[str, Any]]:
+    surfaces: list[dict[str, Any]] = []
+    for match in extract_ast_fact_matches("auth-surface", path):
+        rule_id = match.get("ruleId", "")
+        if "jwt" in rule_id:
+            technology = "jwt"
+        elif "bearer" in rule_id:
+            technology = "token-auth"
+        elif "next" in rule_id:
+            technology = "route-guard"
+        elif "guard" in rule_id:
+            technology = "route-guard"
+        else:
+            technology = "oauth-oidc"
+        surfaces.append(
+            {
+                "technology": technology,
+                "auth": technology,
+                "line": _match_line(match),
+                "rule_id": rule_id,
+            }
+        )
+    return surfaces
 
 
 def extract_auth_surfaces(text: str, suffix: str) -> list[dict[str, Any]]:
@@ -1018,11 +1213,12 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
             }
         )
 
-    routes = extract_python_routes(text)
+    routes = extract_ast_routes(path) or extract_python_routes(text)
     for idx, route in enumerate(routes, start=1):
         path_value = route["path"] or ""
         method = route["method"]
         handler = route["handler"]
+        line_no = int(route.get("line", idx))
         fact_id = stable_id("route", rel, str(idx), method, path_value, handler)
         facts.append(
             {
@@ -1032,12 +1228,12 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "summary": f"{method} {path_value or '(unresolved path)'} handled by {handler}",
                 "confidence": "high" if path_value else "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:{idx}"],
+                "source_files": [f"{rel}:{line_no}"],
                 "detector": {
                     "id": "python-route-detector",
                     "class": "ast",
                     "strength": 5,
-                    "rule": f"route-{method.lower()}",
+                    "rule": route.get("decorator", f"route-{method.lower()}"),
                     "bundle": "bundles/detectors/facts/all.json",
                 },
                 "raw_evidence": {
@@ -1055,9 +1251,10 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
             }
         )
 
-    models = extract_models(text, path)
+    models = extract_ast_models(path) or extract_models(text, path)
     for idx, model in enumerate(models, start=1):
         fact_id = stable_id("model", rel, model["name"], str(idx))
+        line_no = int(model.get("line", idx))
         facts.append(
             {
                 "id": fact_id,
@@ -1066,12 +1263,12 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "summary": f"Detected {model['source']} model {model['name']}",
                 "confidence": "high" if model["fields"] else "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:{idx}"],
+                "source_files": [f"{rel}:{line_no}"],
                 "detector": {
                     "id": f"python-{model['source']}-model-detector",
                     "class": "ast",
                     "strength": 5,
-                    "rule": model["source"],
+                    "rule": model.get("rule_id", model["source"]),
                     "bundle": "bundles/detectors/facts/all.json",
                 },
                 "raw_evidence": {
@@ -1088,22 +1285,23 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
             }
         )
 
-    for idx, client in enumerate(client_matches, start=1):
+    for idx, client in enumerate(extract_ast_clients(path) or client_matches, start=1):
         fact_id = stable_id("client", rel, client["kind"], client["technology"], str(idx))
+        line_no = int(client.get("line", 1))
         facts.append(
             {
                 "id": fact_id,
                 "kind": "external-client",
                 "domain": "external-clients",
                 "summary": f"Detected {client['kind']} client via {client['technology']}",
-                "confidence": "high" if client["source"] == "import" else "medium",
+                "confidence": "high" if client["source"] in {"import", "ast"} else "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:1"],
+                "source_files": [f"{rel}:{line_no}"],
                 "detector": {
                     "id": "python-client-detector",
-                    "class": "signature" if client["source"] == "import" else "regex",
-                    "strength": 4,
-                    "rule": client["technology"],
+                    "class": "ast" if client["source"] == "ast" else ("signature" if client["source"] == "import" else "regex"),
+                    "strength": 5 if client["source"] == "ast" else 4,
+                    "rule": client.get("rule_id", client["technology"]),
                     "bundle": "bundles/detectors/facts/all.json",
                 },
                 "raw_evidence": {
@@ -1121,7 +1319,37 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
             }
         )
 
-    for idx, surface in enumerate(extract_auth_surfaces(text, path.suffix.lower()), start=1):
+    for idx, mw in enumerate(extract_ast_middleware(path), start=1):
+        facts.append(
+            {
+                "id": stable_id("middleware", rel, mw["name"], str(idx)),
+                "kind": "middleware",
+                "domain": "middleware",
+                "summary": f"Detected middleware {mw['name']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{int(mw.get('line', 1))}"],
+                "detector": {
+                    "id": "python-middleware-detector",
+                    "class": "ast",
+                    "strength": 4,
+                    "rule": mw.get("rule_id", mw["name"]),
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "name": mw["name"],
+                    "callsite": rel,
+                    "auth": mw.get("auth", ""),
+                    "validation": mw.get("validation", ""),
+                    "ordering": mw.get("ordering", ""),
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, surface in enumerate(extract_ast_auth_surfaces(path) or extract_auth_surfaces(text, path.suffix.lower()), start=1):
         facts.append(
             {
                 "id": stable_id("auth", rel, surface["technology"], str(idx)),
@@ -1130,12 +1358,12 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "summary": f"Detected auth surface {surface['technology']}",
                 "confidence": "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:1"],
+                "source_files": [f"{rel}:{int(surface.get('line', 1))}"],
                 "detector": {
                     "id": "python-auth-detector",
-                    "class": "regex",
-                    "strength": 3,
-                    "rule": surface["technology"],
+                    "class": "ast" if "rule_id" in surface else "regex",
+                    "strength": 5 if "rule_id" in surface else 3,
+                    "rule": surface.get("rule_id", surface["technology"]),
                     "bundle": "bundles/detectors/facts/all.json",
                 },
                 "raw_evidence": surface,
@@ -1254,9 +1482,10 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
             }
         )
 
-    routes = extract_js_routes(text)
+    routes = extract_ast_routes(path) or extract_js_routes(text)
     for idx, route in enumerate(routes, start=1):
         fact_id = stable_id("route", rel, str(idx), route["method"], route["path"], route["handler"])
+        line_no = int(route.get("line", idx))
         facts.append(
             {
                 "id": fact_id,
@@ -1265,11 +1494,11 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "summary": f"{route['method']} {route['path'] or '(file route)'} handled by {route['handler']}",
                 "confidence": "high" if route["path"] else "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:{idx}"],
+                "source_files": [f"{rel}:{line_no}"],
                 "detector": {
                     "id": "js-route-detector",
-                    "class": "regex",
-                    "strength": 4,
+                    "class": "ast" if route.get("source") == "ast" else "regex",
+                    "strength": 5 if route.get("source") == "ast" else 4,
                     "rule": route["decorator"],
                     "bundle": "bundles/detectors/facts/all.json",
                 },
@@ -1288,9 +1517,10 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
             }
         )
 
-    models = extract_models(text, path)
+    models = extract_ast_models(path) or extract_models(text, path)
     for idx, model in enumerate(models, start=1):
         fact_id = stable_id("model", rel, model["name"], str(idx))
+        line_no = int(model.get("line", idx))
         facts.append(
             {
                 "id": fact_id,
@@ -1299,12 +1529,12 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "summary": f"Detected {model['source']} model {model['name']}",
                 "confidence": "high" if model["fields"] else "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:{idx}"],
+                "source_files": [f"{rel}:{line_no}"],
                 "detector": {
                     "id": f"js-{model['source']}-model-detector",
-                    "class": "regex",
-                    "strength": 4,
-                    "rule": model["source"],
+                    "class": "ast" if "rule_id" in model else "regex",
+                    "strength": 5 if "rule_id" in model else 4,
+                    "rule": model.get("rule_id", model["source"]),
                     "bundle": "bundles/detectors/facts/all.json",
                 },
                 "raw_evidence": {
@@ -1321,7 +1551,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
             }
         )
 
-    for idx, client in enumerate(extract_js_clients(text), start=1):
+    for idx, client in enumerate(extract_ast_clients(path) or extract_js_clients(text), start=1):
         fact_id = stable_id("client", rel, client["kind"], client["technology"], str(idx))
         facts.append(
             {
@@ -1329,14 +1559,14 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "kind": "external-client",
                 "domain": "external-clients",
                 "summary": f"Detected {client['kind']} client via {client['technology']}",
-                "confidence": "medium",
+                "confidence": "high" if client.get("source") == "ast" else "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:1"],
+                "source_files": [f"{rel}:{int(client.get('line', 1))}"],
                 "detector": {
                     "id": "js-client-detector",
-                    "class": "regex",
-                    "strength": 4,
-                    "rule": client["technology"],
+                    "class": "ast" if client.get("source") == "ast" else "regex",
+                    "strength": 5 if client.get("source") == "ast" else 4,
+                    "rule": client.get("rule_id", client["technology"]),
                     "bundle": "bundles/detectors/facts/all.json",
                 },
                 "raw_evidence": {
@@ -1354,7 +1584,37 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
             }
         )
 
-    for idx, surface in enumerate(extract_auth_surfaces(text, path.suffix.lower()), start=1):
+    for idx, mw in enumerate(extract_ast_middleware(path), start=1):
+        facts.append(
+            {
+                "id": stable_id("middleware", rel, mw["name"], str(idx)),
+                "kind": "middleware",
+                "domain": "middleware",
+                "summary": f"Detected middleware {mw['name']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{int(mw.get('line', 1))}"],
+                "detector": {
+                    "id": "js-middleware-detector",
+                    "class": "ast",
+                    "strength": 4,
+                    "rule": mw.get("rule_id", mw["name"]),
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "name": mw["name"],
+                    "callsite": rel,
+                    "auth": mw.get("auth", ""),
+                    "validation": mw.get("validation", ""),
+                    "ordering": mw.get("ordering", ""),
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, surface in enumerate(extract_ast_auth_surfaces(path) or extract_auth_surfaces(text, path.suffix.lower()), start=1):
         facts.append(
             {
                 "id": stable_id("auth", rel, surface["technology"], str(idx)),
@@ -1363,12 +1623,12 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "summary": f"Detected auth surface {surface['technology']}",
                 "confidence": "medium",
                 "framework_context": [],
-                "source_files": [f"{rel}:1"],
+                "source_files": [f"{rel}:{int(surface.get('line', 1))}"],
                 "detector": {
                     "id": "js-auth-detector",
-                    "class": "regex",
-                    "strength": 3,
-                    "rule": surface["technology"],
+                    "class": "ast" if "rule_id" in surface else "regex",
+                    "strength": 5 if "rule_id" in surface else 3,
+                    "rule": surface.get("rule_id", surface["technology"]),
                     "bundle": "bundles/detectors/facts/all.json",
                 },
                 "raw_evidence": surface,
@@ -1609,6 +1869,13 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                         "status": "success",
                     },
                     {
+                        "id": "python-middleware-detector",
+                        "domain": "middleware",
+                        "class": "ast",
+                        "framework_context": [],
+                        "status": "success",
+                    },
+                    {
                         "id": "python-auth-detector",
                         "domain": "auth-surface",
                         "class": "regex",
@@ -1660,6 +1927,13 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                         "id": "js-import-graph",
                         "domain": "import-graph",
                         "class": "regex",
+                        "framework_context": [],
+                        "status": "success",
+                    },
+                    {
+                        "id": "js-middleware-detector",
+                        "domain": "middleware",
+                        "class": "ast",
                         "framework_context": [],
                         "status": "success",
                     },

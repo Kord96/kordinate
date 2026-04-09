@@ -1,0 +1,39 @@
+id: rbac-requires-role-py
+language: Python
+rule:
+  pattern: |
+    @requires_role($ROLE)
+    def $FUNC($$$ARGS):
+        $$$BODY
+---
+id: rbac-has-permission-py
+language: Python
+rule:
+  pattern: '$USER.has_permission($PERM)'
+---
+id: rbac-has-role-py
+language: Python
+rule:
+  pattern: '$USER.has_role($ROLE)'
+---
+id: rbac-authorize-decorator-ts
+language: TypeScript
+rule:
+  pattern: |
+    @Roles($$$ROLES)
+    $METHOD($$$ARGS) {
+        $$$BODY
+    }
+---
+id: rbac-has-permission-ts
+language: TypeScript
+rule:
+  pattern: '$USER.hasPermission($PERM)'
+---
+id: rbac-guard-can-activate-ts
+language: TypeScript
+rule:
+  pattern: |
+    canActivate($$$ARGS) {
+        $$$BODY
+    }

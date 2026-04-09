@@ -13,12 +13,14 @@ from __future__ import annotations
 import glob
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
+AGENT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(AGENT_ROOT / "scripts"))
 from concept_decision import evidence_verdict  # noqa: E402
 from detector_loader import load_detector_support  # noqa: E402
 
@@ -53,12 +55,25 @@ def infer_match_confidence(detector_strength: int, match_count: int, noise: str)
 
 
 def build_evidence_record(concept: str, detector_strength: int, matches: list[dict], rule_file: str) -> dict:
+    support = load_detector_support(Path(rule_file).parent)
+    policy = support.get("policy", {}).get("policy", {})
+    auto_confirm = policy.get("auto_confirm", {})
     match_count = len(matches)
     specificity = infer_specificity(match_count)
     noise = infer_noise(match_count)
     match_confidence = infer_match_confidence(detector_strength, match_count, noise)
     matched = match_count > 0
-    verdict = evidence_verdict(detector_strength, match_confidence, specificity, matched)
+    verdict = evidence_verdict(
+        detector_strength,
+        match_confidence,
+        specificity,
+        matched,
+        auto_confirm_allowed=bool(auto_confirm.get("allowed", True)),
+        auto_confirm_min_detector_strength=int(auto_confirm.get("min_detector_strength", 4)),
+        auto_confirm_min_match_confidence=int(auto_confirm.get("min_match_confidence", 4)),
+        broad_match_requires_questions=bool(policy.get("broad_match_requires_questions", False)),
+        unresolved_state=str(policy.get("unresolved_state", "candidate")),
+    )
 
     locations = []
     for match in matches[:10]:
@@ -118,20 +133,40 @@ def build_evidence_record(concept: str, detector_strength: int, matches: list[di
     }
 
 
+def resolve_concepts_dir(kordinate_home: str | None) -> Path:
+    local_dir = AGENT_ROOT / "detectors" / "concepts"
+    if local_dir.exists():
+        return local_dir
+
+    if kordinate_home:
+        home_dir = Path(kordinate_home) / "agents" / "augur" / "detectors" / "concepts"
+        if home_dir.exists():
+            return home_dir
+
+    return local_dir
+
+
+def resolve_ast_grep_binary() -> str:
+    candidate = shutil.which("ast-grep")
+    if candidate:
+        return candidate
+    raise FileNotFoundError("`ast-grep` is not available in PATH.")
+
+
 def main():
     if len(sys.argv) < 2:
         print(f"Usage: {sys.argv[0]} <project-root> [--kordinate-home <path>]", file=sys.stderr)
         sys.exit(2)
 
     project_root = sys.argv[1]
-    kordinate_home = os.environ.get("KORDINATE_HOME", os.path.expanduser("~/.kord"))
+    kordinate_home = os.environ.get("KORDINATE_HOME") or os.path.expanduser("~/.kord")
 
     if "--kordinate-home" in sys.argv:
         idx = sys.argv.index("--kordinate-home")
         if idx + 1 < len(sys.argv):
             kordinate_home = sys.argv[idx + 1]
 
-    concepts_dir = Path(kordinate_home) / "agents" / "augur" / "detectors" / "concepts"
+    concepts_dir = resolve_concepts_dir(kordinate_home)
 
     if not concepts_dir.exists():
         print(f"Detector directory not found: {concepts_dir}", file=sys.stderr)
@@ -140,6 +175,13 @@ def main():
     rule_files = sorted(glob.glob(str(concepts_dir / "*/ast-grep.yaml")))
 
     if not rule_files:
+        print("[]")
+        return
+
+    try:
+        ast_grep_bin = resolve_ast_grep_binary()
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
         print("[]")
         return
 
@@ -158,7 +200,7 @@ def main():
         matches = []
         try:
             result = subprocess.run(
-                ["ast-grep", "scan", "-r", rule_file, project_root, "--json"],
+                [ast_grep_bin, "scan", "-r", rule_file, project_root, "--json"],
                 capture_output=True,
                 text=True,
                 timeout=30,

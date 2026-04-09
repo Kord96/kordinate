@@ -1,0 +1,41 @@
+concept: health-check
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 5
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 4
+    ask_when:
+      - broad_match
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 4
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 5
+  entries:
+    - id: health-check-dedicated-endpoint
+      prompt: Is there a dedicated health, liveness, or readiness endpoint or probe?
+      weight: 3
+      signals:
+        - /health
+        - /ready
+        - livenessProbe
+    - id: health-check-correct-scope
+      prompt: Are liveness and readiness concerns kept distinct enough to avoid cascading restarts?
+      weight: 2
+      signals:
+        - readiness
+        - liveness

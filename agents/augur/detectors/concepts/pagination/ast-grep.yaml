@@ -1,0 +1,31 @@
+id: pagination-limit-offset-py
+language: Python
+rule:
+  pattern: .limit($LIMIT).offset($OFFSET)
+---
+id: pagination-paginate-call-py
+language: Python
+rule:
+  pattern: '$OBJ.paginate(page=$PAGE, per_page=$PER_PAGE)'
+---
+id: pagination-cursor-after-py
+language: Python
+rule:
+  pattern: |
+    def get_page(self, cursor=$CURSOR, limit=$LIMIT):
+        $$$BODY
+---
+id: pagination-limit-offset-ts
+language: TypeScript
+rule:
+  pattern: '.limit($LIMIT).offset($OFFSET)'
+---
+id: pagination-take-skip-ts
+language: TypeScript
+rule:
+  pattern: '{ take: $TAKE, skip: $SKIP }'
+---
+id: pagination-cursor-ts
+language: TypeScript
+rule:
+  pattern: '{ cursor: $CURSOR, take: $TAKE }'

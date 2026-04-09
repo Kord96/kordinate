@@ -1,0 +1,32 @@
+id: service-manager-signal-handler-py
+language: Python
+rule:
+  pattern: signal.signal(signal.SIGTERM, $HANDLER)
+---
+id: service-manager-graceful-shutdown-py
+language: Python
+rule:
+  pattern: |
+    async def shutdown($$$ARGS):
+        $$$BODY
+---
+id: service-manager-add-signal-handler-py
+language: Python
+rule:
+  pattern: $LOOP.add_signal_handler(signal.SIGTERM, $$$ARGS)
+---
+id: service-manager-process-on-sigterm-ts
+language: TypeScript
+rule:
+  pattern: |
+    process.on('SIGTERM', ($$$ARGS) => {
+        $$$BODY
+    })
+---
+id: service-manager-process-on-sigint-ts
+language: TypeScript
+rule:
+  pattern: |
+    process.on('SIGINT', ($$$ARGS) => {
+        $$$BODY
+    })

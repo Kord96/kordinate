@@ -1,0 +1,43 @@
+id: rule-engine-evaluate-py
+language: Python
+rule:
+  pattern: |
+    def evaluate(self, $$$ARGS):
+        $$$BODY
+---
+id: rule-engine-rule-class-py
+language: Python
+rule:
+  pattern: |
+    class $NAME(Rule):
+        $$$BODY
+---
+id: rule-engine-execute-rules-py
+language: Python
+rule:
+  pattern: |
+    def execute_rules(self, $$$ARGS):
+        $$$BODY
+---
+id: rule-engine-evaluate-ts
+language: TypeScript
+rule:
+  pattern: |
+    evaluate($$$ARGS) {
+        $$$BODY
+    }
+---
+id: rule-engine-engine-run-ts
+language: TypeScript
+rule:
+  pattern: |
+    engine.run($$$ARGS)
+---
+id: rule-engine-rule-class-java
+language: Java
+rule:
+  pattern: |
+    @Rule
+    class $NAME {
+        $$$BODY
+    }

@@ -1,0 +1,30 @@
+id: write-behind-flush-method-py
+language: Python
+rule:
+  pattern: |
+    def flush(self):
+        $$$BODY
+---
+id: write-behind-dirty-flag-py
+language: Python
+rule:
+  pattern: $ENTRY.dirty = True
+---
+id: write-behind-write-buffer-py
+language: Python
+rule:
+  pattern: |
+    self._write_buffer.append($ENTRY)
+---
+id: write-behind-flush-method-ts
+language: TypeScript
+rule:
+  pattern: |
+    async flush() {
+        $$$BODY
+    }
+---
+id: write-behind-write-buffer-ts
+language: TypeScript
+rule:
+  pattern: 'this.writeBuffer.push($ENTRY)'

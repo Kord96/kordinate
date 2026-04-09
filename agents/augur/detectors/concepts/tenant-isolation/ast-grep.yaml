@@ -1,0 +1,29 @@
+id: tenant-isolation-filter-py
+language: Python
+rule:
+  pattern: .filter(tenant_id=$TENANT)
+---
+id: tenant-isolation-rls-py
+language: Python
+rule:
+  pattern: "SET app.current_tenant = $TENANT"
+---
+id: tenant-isolation-context-py
+language: Python
+rule:
+  pattern: '$TENANT = $REQUEST.tenant_id'
+---
+id: tenant-isolation-where-ts
+language: TypeScript
+rule:
+  pattern: '{ where: { tenantId: $TENANT, $$$REST } }'
+---
+id: tenant-isolation-header-ts
+language: TypeScript
+rule:
+  pattern: 'const $TENANT = $REQ.headers["x-tenant-id"]'
+---
+id: tenant-isolation-middleware-ts
+language: TypeScript
+rule:
+  pattern: '$REQ.tenantId = $TENANT'

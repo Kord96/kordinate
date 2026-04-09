@@ -1,0 +1,42 @@
+id: router-browserRouter-ts
+language: TypeScript
+rule:
+  pattern: '<BrowserRouter>$$$CHILDREN</BrowserRouter>'
+---
+id: router-route-element-ts
+language: TypeScript
+rule:
+  pattern: '<Route path={$PATH} element={$ELEMENT} />'
+---
+id: router-useNavigate-ts
+language: TypeScript
+rule:
+  pattern: 'useNavigate()'
+---
+id: router-useParams-ts
+language: TypeScript
+rule:
+  pattern: 'useParams()'
+---
+id: router-createRouter-ts
+language: TypeScript
+rule:
+  pattern: 'createBrowserRouter($$$ARGS)'
+---
+id: router-vue-createRouter-ts
+language: TypeScript
+rule:
+  pattern: 'createRouter($$$ARGS)'
+---
+id: router-django-urlpatterns-py
+language: Python
+rule:
+  pattern: 'path($ROUTE, $VIEW, $$$REST)'
+---
+id: router-fastapi-route-py
+language: Python
+rule:
+  pattern: |
+    @$APP.get($PATH)
+    async def $HANDLER($$$PARAMS):
+        $$$BODY

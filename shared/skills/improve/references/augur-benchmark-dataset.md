@@ -7,7 +7,7 @@ This benchmark is meant to evaluate:
 - absolute quality of Augur `/analyze`
 - relative quality versus other models or agents
 - regression resistance over time
-- grounding, precision, and schema compliance under realistic repository conditions
+- grounding, precision, false-positive resistance, and schema compliance under realistic repository conditions
 
 ## Goals
 
@@ -15,6 +15,7 @@ The dataset should answer these questions:
 
 - Does `/analyze` correctly identify architecture, concepts, dependencies, API surface, state, and failure modes?
 - Does it stay grounded in the code rather than inferring architecture from naming alone?
+- Does it avoid inventing concepts, components, or flows that are not actually present?
 - Does it preserve output quality across languages, repo sizes, and topology styles?
 - Does it outperform or match competing models on realistic architectural analysis tasks?
 - Which repos actually separate stronger architectural analysis from shallow pattern matching?
@@ -107,6 +108,12 @@ Do not attempt to fully gold-label the entire atlas on day one. Start with the h
   - high-value failures for external and stateful components
 - `grounding_checks`
   - claims verified against cited files
+- `explicitly_absent_concepts`
+  - concepts that should be treated as false positives if emitted
+- `explicitly_absent_components`
+  - components that should not be invented by the analysis
+- `architectural_constraints`
+  - important invariants such as layering, single-writer ownership, or boundary rules
 - `schema_validity`
   - whether output satisfies the expected contract
 - `story_coverage`
@@ -139,12 +146,15 @@ If a hard gate fails, cap the repo score.
 Score the quality of the analysis itself:
 
 - `concepts` — precision / recall / F1
+- `concept_false_positive_rate` — precision against explicitly absent concepts
 - `components` — boundary and topology accuracy
+- `component_false_positive_rate` — invented or over-split component rate
 - `grounding` — fraction of tested claims supported by cited files
 - `api_surface` — route family and endpoint accuracy
 - `externals_and_state` — major services and stores found
 - `failure_modes` — meaningful failure coverage
 - `incremental_mode` — correct full / incremental / skip decision
+- `cross_version_consistency` — stability over nearby commits when topology is unchanged
 - `stories` — grounding and useful coverage
 
 Suggested weighting:
@@ -156,6 +166,7 @@ Suggested weighting:
 - `10%` externals + state
 - `10%` failure modes
 - `5%` incremental correctness
+- `5%` cross-version consistency
 - `5%` stories
 
 ### 3. Comparative scores
@@ -169,6 +180,8 @@ These are for model-vs-model analysis:
 - cost-normalized quality
 - latency-normalized quality
 - run-to-run variance
+- false-positive rate by bucket
+- human-review agreement on surprising cases
 
 ## Repeated Runs
 
@@ -181,6 +194,8 @@ Recommended repeated-run plan:
 - all remaining repos `x1`
 
 This helps distinguish model quality from sampling luck or response instability.
+
+For a subset of repos, repeated runs should include neighboring commits rather than identical snapshots. This is necessary to evaluate incremental mode and cross-version consistency realistically.
 
 ## Core vs Extended Suites
 
@@ -196,6 +211,8 @@ Maintain two suites.
 - `3 separation`
 
 Use this suite on every important skill or detector change.
+
+The core suite should include at least one confounding repo whose filenames and directory layout strongly suggest concepts that are not actually implemented. This keeps detector work honest on false positives.
 
 ### Extended suite
 
@@ -213,6 +230,7 @@ A repo should enter the candidate pool only if it tests something specific.
 - enough complexity to require real analysis
 - signals are spread across code, config, models, routes, or infra
 - likely to expose strengths or weaknesses in grounding or precision
+- likely to expose strengths or weaknesses in false-positive control
 - not too trivial
 - not too large to evaluate realistically
 
@@ -264,6 +282,16 @@ This is the minimum useful matrix for understanding:
 - whether they interact
 - whether gains are worth the additional runtime and token cost
 
+The matrix should also be interpreted cautiously if bundle contents are highly overlapping. If selective and holistic bundles mostly preload duplicated memory payload, the benchmark should treat bundle redesign as part of the improvement work.
+
+Holistic bundle breadth is intentional for large-context models. The benchmark should not assume that a large preload is wasteful by default.
+
+Instead, evaluate bundle policy like this:
+
+- `holistic` is the preferred operating mode for models that can comfortably absorb the full semantic catalog
+- `selective` is the preferred operating mode for models where context pressure is real
+- cross-bundle runs are still useful, but they should be interpreted as sensitivity checks rather than the default production path
+
 ### Execution strategy
 
 Use the full `2x2` matrix on the core suite.
@@ -286,6 +314,14 @@ Performance should be measured at both whole-run and stage levels.
 - total tokens
 - estimated cost
 - timeout / failure rate
+- reflection record path
+
+Bundle-aware runs should also record whether the configuration is:
+
+- `intended`
+- `exploratory`
+
+This prevents unfair comparisons where a constrained model is penalized for using a preload strategy it was never meant to carry.
 
 ### Stage-level timing
 
@@ -329,6 +365,8 @@ This makes it possible to answer:
 - whether it only helps on certain repo classes
 - whether it improves useful dimensions or only expensive ones
 - which stage is paying for the gain
+
+It should also expose whether current bundle definitions are too similar to justify the extra runtime or token cost.
 
 ## Candidate Database
 
@@ -388,6 +426,8 @@ This is useful at candidate-generation time. It is not sufficient for final sele
 - redundant repos
 - repos they personally recognize best
 - repos that are popular rather than discriminative
+
+Model-sourced suggestions should be audited by humans before admission into the pilot or final benchmark. Label confidence matters more than candidate volume.
 
 ## Repo Suggestion Protocol
 
@@ -473,6 +513,39 @@ Use this workflow to build the candidate database.
    - operational cost
 7. Build an overfull candidate database.
 8. Select the final `72` to satisfy bucket, language, size, and topology targets.
+
+## Detector-Oriented Curation
+
+The dataset should support detector improvement, not only model ranking.
+
+During curation, annotate repos that are particularly useful for:
+
+- route detection
+- model or state-store detection
+- auth boundary detection
+- external client detection
+- job or event detection
+- import-graph and hot-file extraction
+- concept false-positive traps
+- architecture-inference traps caused by naming alone
+
+This makes it easier to choose the smallest rerun subset after a detector change.
+
+## Human Review and Audit
+
+Human review is required at two points:
+
+1. when admitting pilot repos and creating labels
+2. when interpreting surprising benchmark failures or wins
+
+At least one reviewer should verify that:
+
+- the labels are checkable
+- the repo is not dominated by generated or misleading noise
+- the claimed benchmark purpose is real
+- false-positive traps are documented when present
+
+The benchmark should prefer fewer well-reviewed repos over many weakly labeled repos.
 
 ## Manual Review Questions
 

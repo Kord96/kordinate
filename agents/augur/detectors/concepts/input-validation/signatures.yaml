@@ -1,0 +1,14 @@
+concept: input-validation
+positive:
+  strong:
+    - request schema validation before handler logic
+    - declarative validation library usage on API inputs
+  medium:
+    - validation middleware or annotations on selected endpoints
+  weak:
+    - inline assertions scattered in handlers
+negative:
+  - validation only in business logic
+  - client-side-only validation
+notes:
+  - Parameterized SQL alone is not enough to claim full input-validation.

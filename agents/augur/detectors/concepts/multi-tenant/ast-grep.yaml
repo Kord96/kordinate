@@ -1,0 +1,36 @@
+id: multi-tenant-middleware-py
+language: Python
+rule:
+  pattern: |
+    def get_tenant(self, $$$ARGS):
+        $$$BODY
+---
+id: multi-tenant-context-py
+language: Python
+rule:
+  pattern: |
+    class TenantContext:
+        $$$BODY
+---
+id: multi-tenant-scope-py
+language: Python
+rule:
+  pattern: |
+    def with_tenant(self, $$$ARGS):
+        $$$BODY
+---
+id: multi-tenant-middleware-ts
+language: TypeScript
+rule:
+  pattern: |
+    async function tenantMiddleware($$$ARGS) {
+        $$$BODY
+    }
+---
+id: multi-tenant-resolver-java
+language: Java
+rule:
+  pattern: |
+    class $NAME implements TenantIdentifierResolver {
+        $$$BODY
+    }

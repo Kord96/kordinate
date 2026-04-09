@@ -5,7 +5,59 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: agent.augur
+  name: augur-opus
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: augur-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: augur-reasoner
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: augur-glm5
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: augur-gpt54
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -85,7 +137,59 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.augur
+  name: memory.updates.augur-opus
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.augur-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.augur-reasoner
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.augur-glm5
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.augur-gpt54
   labels:
     strimzi.io/cluster: kafka
 spec:

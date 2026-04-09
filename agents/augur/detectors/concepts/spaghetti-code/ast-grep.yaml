@@ -1,0 +1,26 @@
+# Score 2: Spaghetti code is primarily a metric/complexity anti-pattern (nesting depth,
+# function length, parameter count) that ast-grep cannot reliably detect.
+#
+# ast-grep can match nested structures but cannot count nesting levels or enforce
+# thresholds. Matching "if inside if inside if inside if inside if" is possible but
+# fragile -- real spaghetti code mixes if/for/try/with nesting in unpredictable
+# combinations that would require hundreds of pattern variants.
+#
+# The heuristic below matches one very specific symptom: a function with deeply nested
+# if-statements (4 levels). This is extremely low-confidence because:
+#   - It only catches one specific nesting combination
+#   - 4-deep nesting is sometimes legitimate (parsers, state machines)
+#   - The real problem is tangled control flow, not any single nesting pattern
+#
+# Better tools: pylint (too-many-nested-blocks), cyclomatic complexity checkers, radon.
+
+# Low-confidence heuristic: 4-level nested if-statements in Python
+id: spaghetti-code-python-nested-if
+language: Python
+rule:
+  pattern: |
+    if $C1:
+      if $C2:
+        if $C3:
+          if $C4:
+            $$$BODY

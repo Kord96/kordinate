@@ -8,7 +8,7 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
 
 ## Command Shape
 
-`/platform create-agent <name> [--profile generic|augur|charon|alfred|sauron|warden] [profile-specific flags]`
+`/platform create-agent <name> [--profile generic|augur-opus|augur-pro|augur-reasoner|augur-glm5|augur-gpt54|charon|alfred|sauron|warden] [profile-specific flags]`
 
 ## Steps
 
@@ -20,8 +20,12 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
 2. Resolve the creation profile from `agent-creation-profiles.yaml`.
    - `generic` creates a plain daemon-backed agent
    - specialist profiles may require extra choices
-   - example: `augur` requires both `--memory-bundle` and `--runtime-bundle`
+   - example: every Augur model profile requires both `--memory-bundle` and `--runtime-bundle`
    - profile defaults also determine the pod secret wiring unless explicitly overridden
+   - runtime selection is inferred from the chosen model unless `--runtime-kind` is explicitly set:
+     - GPT family -> `codex-sdk`
+     - Claude family -> `claude-sdk`
+     - everything else -> `openclaude-harness`
 
 3. Append the new spec entry using:
 
@@ -67,6 +71,6 @@ python3 $KORDINATE_HOME/lib/scripts/generate-agent-manifests.py \
 - It does not scaffold a new agent directory under `agents/<name>/`.
 - For a generic consultation agent, keep `flavor: generic`.
 - For a deployed copy of a specialist flavor under a different name, use `--profile <specialist>` and keep the deployed `name` distinct.
-- For `augur`, choose both:
+- For any `augur-*` model profile, choose both:
   - `--memory-bundle analyze-holistic-v1|analyze-selective-v1`
   - `--runtime-bundle analyze-holistic-v1|analyze-selective-v1`

@@ -1,0 +1,38 @@
+id: rwlock-acquire-read-py
+language: Python
+rule:
+  pattern: |
+    def acquire_read($SELF, $$$ARGS):
+        $$$BODY
+---
+id: rwlock-acquire-write-py
+language: Python
+rule:
+  pattern: |
+    def acquire_write($SELF, $$$ARGS):
+        $$$BODY
+---
+id: rwlock-release-read-py
+language: Python
+rule:
+  pattern: |
+    def release_read($SELF, $$$ARGS):
+        $$$BODY
+---
+id: rwlock-rlock-ts
+language: TypeScript
+rule:
+  pattern: '$LOCK.readLock($$$ARGS)'
+---
+id: rwlock-wlock-ts
+language: TypeScript
+rule:
+  pattern: '$LOCK.writeLock($$$ARGS)'
+---
+id: rwlock-class-ts
+language: TypeScript
+rule:
+  pattern: |
+    class ReadWriteLock $$$DECL {
+        $$$BODY
+    }

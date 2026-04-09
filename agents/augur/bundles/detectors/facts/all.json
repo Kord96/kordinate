@@ -4,7 +4,8 @@
       "name": "auth-surface",
       "files": {
         "policy.yaml": "detectors/facts/auth-surface/policy.yaml",
-        "signatures.yaml": "detectors/facts/auth-surface/signatures.yaml"
+        "signatures.yaml": "detectors/facts/auth-surface/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/auth-surface/ast-grep.yaml"
       }
     },
     {
@@ -25,7 +26,8 @@
       "name": "external-clients",
       "files": {
         "policy.yaml": "detectors/facts/external-clients/policy.yaml",
-        "signatures.yaml": "detectors/facts/external-clients/signatures.yaml"
+        "signatures.yaml": "detectors/facts/external-clients/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/external-clients/ast-grep.yaml"
       }
     },
     {
@@ -60,21 +62,24 @@
       "name": "middleware",
       "files": {
         "policy.yaml": "detectors/facts/middleware/policy.yaml",
-        "signatures.yaml": "detectors/facts/middleware/signatures.yaml"
+        "signatures.yaml": "detectors/facts/middleware/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/middleware/ast-grep.yaml"
       }
     },
     {
       "name": "models",
       "files": {
         "policy.yaml": "detectors/facts/models/policy.yaml",
-        "signatures.yaml": "detectors/facts/models/signatures.yaml"
+        "signatures.yaml": "detectors/facts/models/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/models/ast-grep.yaml"
       }
     },
     {
       "name": "routes",
       "files": {
         "policy.yaml": "detectors/facts/routes/policy.yaml",
-        "signatures.yaml": "detectors/facts/routes/signatures.yaml"
+        "signatures.yaml": "detectors/facts/routes/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/routes/ast-grep.yaml"
       }
     }
   ]

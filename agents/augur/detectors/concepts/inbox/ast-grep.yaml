@@ -1,0 +1,26 @@
+id: inbox-check-message-id-py
+language: Python
+rule:
+  pattern: |
+    $EXISTS = $SESSION.query($INBOX).filter_by(message_id=$MSG_ID).first()
+---
+id: inbox-insert-record-py
+language: Python
+rule:
+  pattern: |
+    $SESSION.add($INBOX(message_id=$MSG_ID, $$$FIELDS))
+---
+id: inbox-on-conflict-py
+language: Python
+rule:
+  pattern: 'INSERT INTO inbox ($$$COLS) VALUES ($$$VALS) ON CONFLICT ($$$KEY) DO NOTHING'
+---
+id: inbox-check-message-id-ts
+language: TypeScript
+rule:
+  pattern: 'await $REPO.findOne({ where: { messageId: $MSG_ID } })'
+---
+id: inbox-insert-record-ts
+language: TypeScript
+rule:
+  pattern: 'await $REPO.save({ messageId: $MSG_ID, $$$FIELDS })'

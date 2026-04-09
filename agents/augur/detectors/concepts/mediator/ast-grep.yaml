@@ -1,0 +1,35 @@
+id: mediator-class-naming-py
+language: Python
+rule:
+  pattern: |
+    class $NAME($$$BASES):
+        $$$BODY
+  constraints:
+    NAME:
+      regex: '.*(Mediator|EventBus|Dispatcher|Hub|Broker)$'
+---
+id: mediator-class-naming-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $NAME {
+        $$$BODY
+    }
+  constraints:
+    NAME:
+      regex: '.*(Mediator|EventBus|Dispatcher|Hub|Broker)$'
+---
+id: mediator-send-py
+language: Python
+rule:
+  pattern: $MEDIATOR.send($$$ARGS)
+---
+id: mediator-dispatch-py
+language: Python
+rule:
+  pattern: $MEDIATOR.dispatch($$$ARGS)
+---
+id: mediator-publish-py
+language: Python
+rule:
+  pattern: $MEDIATOR.publish($$$ARGS)

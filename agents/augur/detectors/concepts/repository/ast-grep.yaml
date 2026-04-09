@@ -1,0 +1,13 @@
+id: repository-class
+language: Python
+rule:
+  pattern: |
+    class $NAMERepository:
+        $$$BODY
+---
+id: repository-find
+language: Python
+rule:
+  pattern: |
+    def find_by_$FIELD(self, $$$ARGS):
+        $$$BODY

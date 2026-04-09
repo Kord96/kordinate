@@ -5,11 +5,11 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-augur
+  name: agent-augur-opus
 spec:
   pollingInterval: 30
   minReplicaCount: 0
-  maxReplicaCount: 3
+  maxReplicaCount: 1
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -20,13 +20,133 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-augur
+    name: agent-augur-opus
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent.augur
-        topic: agent.augur
+        consumerGroup: augur-opus
+        topic: augur-opus
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-augur-pro
+spec:
+  pollingInterval: 30
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-augur-pro
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: augur-pro
+        topic: augur-pro
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-augur-reasoner
+spec:
+  pollingInterval: 30
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-augur-reasoner
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: augur-reasoner
+        topic: augur-reasoner
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-augur-glm5
+spec:
+  pollingInterval: 30
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-augur-glm5
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: augur-glm5
+        topic: augur-glm5
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-augur-gpt54
+spec:
+  pollingInterval: 30
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-augur-gpt54
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: augur-gpt54
+        topic: augur-gpt54
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest

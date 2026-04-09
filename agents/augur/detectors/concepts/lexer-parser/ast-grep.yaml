@@ -1,0 +1,59 @@
+id: lexer-next-token-py
+language: Python
+rule:
+  pattern: |
+    def next_token($SELF, $$$ARGS):
+        $$$BODY
+---
+id: parser-peek-py
+language: Python
+rule:
+  pattern: |
+    def peek($SELF, $$$ARGS):
+        $$$BODY
+---
+id: parser-expect-py
+language: Python
+rule:
+  pattern: |
+    def expect($SELF, $$$ARGS):
+        $$$BODY
+---
+id: parser-advance-py
+language: Python
+rule:
+  pattern: |
+    def advance($SELF, $$$ARGS):
+        $$$BODY
+---
+id: lexer-next-token-ts
+language: TypeScript
+rule:
+  pattern: |
+    nextToken($$$ARGS) {
+        $$$BODY
+    }
+---
+id: parser-peek-ts
+language: TypeScript
+rule:
+  pattern: |
+    peek($$$ARGS) {
+        $$$BODY
+    }
+---
+id: parser-expect-ts
+language: TypeScript
+rule:
+  pattern: |
+    expect($$$ARGS) {
+        $$$BODY
+    }
+---
+id: parser-advance-ts
+language: TypeScript
+rule:
+  pattern: |
+    advance($$$ARGS) {
+        $$$BODY
+    }

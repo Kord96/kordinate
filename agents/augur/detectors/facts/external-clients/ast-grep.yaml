@@ -1,0 +1,47 @@
+id: external-client-requests-py
+language: Python
+rule:
+  any:
+    - pattern: requests.get($URL, $$$ARGS)
+    - pattern: requests.post($URL, $$$ARGS)
+    - pattern: requests.put($URL, $$$ARGS)
+    - pattern: requests.delete($URL, $$$ARGS)
+---
+id: external-client-httpx-py
+language: Python
+rule:
+  any:
+    - pattern: httpx.get($URL, $$$ARGS)
+    - pattern: httpx.post($URL, $$$ARGS)
+    - pattern: httpx.Client($$$ARGS)
+    - pattern: httpx.AsyncClient($$$ARGS)
+---
+id: external-client-aiohttp-py
+language: Python
+rule:
+  pattern: aiohttp.ClientSession($$$ARGS)
+---
+id: external-client-boto3-py
+language: Python
+rule:
+  pattern: boto3.client($SERVICE, $$$ARGS)
+---
+id: external-client-fetch-ts
+language: TypeScript
+rule:
+  pattern: fetch($URL, $$$ARGS)
+---
+id: external-client-axios-ts
+language: TypeScript
+rule:
+  any:
+    - pattern: axios.get($URL, $$$ARGS)
+    - pattern: axios.post($URL, $$$ARGS)
+    - pattern: axios.create($$$ARGS)
+---
+id: external-client-redis-ts
+language: TypeScript
+rule:
+  any:
+    - pattern: createClient($$$ARGS)
+    - pattern: new Redis($$$ARGS)

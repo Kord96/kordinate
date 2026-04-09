@@ -1,0 +1,14 @@
+concept: circuit-breaker
+positive:
+  strong:
+    - explicit circuit breaker library or mesh outlier detection
+    - state transition and threshold configuration
+  medium:
+    - failure counting plus temporary open behavior
+  weak:
+    - manual error counting with no recovery state
+negative:
+  - retry-only logic mistaken for circuit breaker
+  - no state transitions or fallback
+notes:
+  - Distinguish this from retry; a circuit breaker needs stateful cutoff behavior.

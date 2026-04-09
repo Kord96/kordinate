@@ -9,6 +9,7 @@ Measure whether Augur `/analyze` produces:
 - grounded architecture understanding
 - useful component and flow decomposition
 - accurate concept detection
+- low false-positive concept and component detection
 - plausible failure-mode coverage
 - schema-valid output
 - better results than comparison models on the same repos
@@ -36,6 +37,7 @@ Each evaluation unit should store:
 - output paths
 - validation results
 - scoring results
+- reflection record path when enabled
 
 ## What Gets Evaluated
 
@@ -57,8 +59,10 @@ For each successful run, score:
 
 - `concepts`
   - precision / recall / F1 against labeled concepts and anti-patterns
+  - false positive rate against explicitly absent concepts where labels are confident
 - `components`
   - top-level component quality and boundary accuracy
+  - false positive rate for invented or over-split components
 - `api_surface`
   - route family and major endpoint accuracy
 - `externals_and_state`
@@ -71,6 +75,8 @@ For each successful run, score:
   - whether critical components and flows are covered without ungrounded claims
 - `incremental_mode`
   - full / incremental / skip correctness when evaluated on changed snapshots
+- `cross_version_consistency`
+  - whether neighboring commits preserve stable architecture when topology has not materially changed
 
 ## Bundle-Aware Evaluation
 
@@ -90,6 +96,25 @@ This allows the benchmark to separate:
 - skill-bundle effects
 - interaction effects between memory and skill breadth
 
+Bundle evaluation should also test whether the compared bundles are meaningfully distinct.
+
+For each bundle family, capture:
+
+- bundle token footprint
+- overlap in included memory sections
+- overlap in included detector assets
+- whether measured quality differences exceed run-to-run variance
+
+Holistic bundle size is not inherently a problem. It is an intentional strategy for large-context models that may benefit from preloading broad semantic context before analysis.
+
+What matters is:
+
+- whether large-context models actually improve with holistic preload
+- whether smaller-context models degrade or waste budget when given holistic preload
+- whether selective preload remains lean enough to preserve capacity for constrained models
+
+The benchmark should treat bundle choice as model-dependent policy, not just an abstract configuration toggle.
+
 ## Performance Logging
 
 Performance should be logged per run and per stage.
@@ -103,6 +128,7 @@ Performance should be logged per run and per stage.
 - `estimated_cost`
 - `success`
 - `failure_reason` when applicable
+- `reflection_id` when reflection is enabled
 
 ### Required stage timings
 
@@ -154,6 +180,8 @@ For each configuration family, report:
 - mean tokens
 - quality variance
 - stage-time breakdown
+- false-positive rate
+- stability across repeated runs
 
 This prevents a slower bundle from looking better without exposing the operational cost.
 
@@ -172,6 +200,9 @@ For each repo, maintain a compact label file with:
 - `expected_failure_modes`
 - `grounding_check_queries`
 - `notes_on_ambiguity`
+- `explicitly_absent_concepts`
+- `explicitly_absent_components`
+- `architectural_constraints`
 
 Ambiguous items should be flagged and excluded from hard numeric scoring.
 
@@ -196,6 +227,16 @@ Recommended procedure:
 
 Strict grounding rate should be the reported metric.
 
+When a claim fails grounding, preserve provenance in the scorecard:
+
+- claim text
+- atlas or story location
+- cited files
+- reviewer verdict
+- short failure reason
+
+This makes grounding failures actionable for detector and prompt improvement work.
+
 ## Scoring Weights
 
 Recommended overall weighting:
@@ -207,6 +248,7 @@ Recommended overall weighting:
 - `10%` externals + state
 - `10%` failure modes
 - `5%` incremental correctness
+- `5%` cross-version consistency
 - `5%` stories
 
 If schema validation fails, cap the total repo score at `0.40`.
@@ -233,6 +275,14 @@ Comparison metrics:
 - quality per second
 - quality per token
 - bundle interaction effects
+- false-positive rate by repo class
+
+For cross-model comparison, bundle selection should follow the intended operating mode:
+
+- large-context models may be evaluated with holistic memory
+- constrained models should usually be evaluated with selective memory
+
+If a model is evaluated off its intended bundle policy, mark that run as exploratory rather than normative.
 
 ## Run Schedule
 
@@ -273,6 +323,15 @@ Recommended method:
 
 This should be measured separately from content quality.
 
+Also include short commit sequences for a subset of repos:
+
+1. base commit
+2. docs-only or peripheral change
+3. scoped feature change
+4. broader dependency or topology change
+
+This allows evaluation of both mode selection and atlas stability over realistic history rather than isolated snapshots.
+
 ## Human Review Workflow
 
 Use a lightweight reviewer worksheet per repo:
@@ -283,8 +342,11 @@ Use a lightweight reviewer worksheet per repo:
 - Did the stories say anything impressive but false?
 - Did the model miss an obvious dependency or failure mode?
 - Would this output actually help a human onboard to the repo?
+- Did it invent a component, pattern, or failure mode that is not actually present?
 
 This reviewer pass should not replace numeric scoring. It should explain surprising scores and resolve edge cases.
+
+For pilot runs and high-impact failures, require at least one human review pass before changing detector rules or bundle defaults. This reduces overfitting to model-generated labels.
 
 ## Suggested File Layout
 
@@ -378,5 +440,42 @@ To start quickly:
 6. score concepts, components, externals, failure modes, and stories
 7. inspect stage timings and bundle tradeoffs
 8. manually review the surprising cases
+
+## Reflection Use
+
+Reflections are auxiliary learning artifacts, not the score.
+
+For each run:
+
+- store the raw reflection record under Augur-owned reflection storage
+- link it from the run manifest
+- preserve provenance to repo, SHA, model, and bundle configuration
+
+For each benchmark batch:
+
+- cluster reflections by recurring detector gaps, false-positive traps, and architecture signals
+- summarize repeated lessons into a reflection summary artifact
+- feed the summary into `/improve` analysis and detector planning
+
+Only repeated, durable lessons should be promoted into longer-lived memory.
+
+## Detector Improvement Loop
+
+Evaluation should feed directly into detector work.
+
+After each benchmark batch:
+
+1. review the worst false positives and misses
+2. trace each failure back to facts, signatures, AST rules, or concept inference heuristics
+3. classify the fix as one of:
+   - better grep signature
+   - new AST rule
+   - stronger negative signal
+   - better concept confirmation question
+   - bundle narrowing or expansion
+4. patch the detector layer
+5. rerun the smallest relevant core subset before wider rollout
+
+Detector changes should be tied to specific scored failures, not vague impressions.
 
 This is enough to get a credible first benchmark before scaling to the full dataset.

@@ -1,0 +1,13 @@
+id: accept-visitor
+language: Python
+rule:
+  pattern: |
+    def accept(self, $VISITOR):
+        $$$BODY
+---
+id: visit-method
+language: Python
+rule:
+  pattern: |
+    def visit_$NAME(self, $NODE):
+        $$$BODY

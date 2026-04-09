@@ -5,14 +5,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-augur
-  labels: { app: kord-agent, agent: augur }
+  name: agent-augur-opus
+  labels: { app: kord-agent, agent: augur-opus }
 spec:
   selector:
-    matchLabels: { app: kord-agent, agent: augur }
+    matchLabels: { app: kord-agent, agent: augur-opus }
   template:
     metadata:
-      labels: { app: kord-agent, agent: augur }
+      labels: { app: kord-agent, agent: augur-opus }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -25,8 +25,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh augur
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur
+              bash /app/scripts/setup-agent-dir.sh augur-opus
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-opus
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -39,19 +39,19 @@ spec:
             - |
               exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: "augur" }
+            - { name: AGENT_NAME, value: "augur-opus" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-opus" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur-opus" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/claude" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-opus:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "claude-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
-            - { name: DAEMON_MODEL, value: "sonnet" }
+            - { name: DAEMON_MODEL, value: "opus" }
             - { name: DAEMON_BACKEND, value: "anthropic" }
             - name: ANTHROPIC_API_KEY
               valueFrom:
@@ -83,12 +83,389 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-augur
-  labels: { app: kord-agent, agent: augur }
+  name: agent-augur-opus
+  labels: { app: kord-agent, agent: augur-opus }
 spec:
   selector:
     app: kord-agent
-    agent: augur
+    agent: augur-opus
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-augur-pro
+  labels: { app: kord-agent, agent: augur-pro }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-pro }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-pro }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-pro
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-pro
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-pro" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur-pro" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-3.1-pro-preview" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur-pro
+  labels: { app: kord-agent, agent: augur-pro }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur-pro
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-augur-reasoner
+  labels: { app: kord-agent, agent: augur-reasoner }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-reasoner }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-reasoner }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-reasoner
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-reasoner
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-reasoner" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-reasoner" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur-reasoner" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-reasoner:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "deepseek" }
+            - { name: DAEMON_MODEL, value: "deepseek-reasoner" }
+            - { name: DAEMON_BACKEND, value: "deepseek" }
+            - { name: BACKEND_BASE_URL, value: "https://api.deepseek.com/v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: deepseek-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur-reasoner
+  labels: { app: kord-agent, agent: augur-reasoner }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur-reasoner
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-augur-glm5
+  labels: { app: kord-agent, agent: augur-glm5 }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-glm5 }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-glm5 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-glm5
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-glm5
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-glm5" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-glm5" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur-glm5" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-glm5:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "fireworks" }
+            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/glm-5" }
+            - { name: DAEMON_BACKEND, value: "fireworks" }
+            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fireworks-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur-glm5
+  labels: { app: kord-agent, agent: augur-glm5 }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur-glm5
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-augur-gpt54
+  labels: { app: kord-agent, agent: augur-gpt54 }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-gpt54 }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-gpt54 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-gpt54
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-gpt54
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-gpt54" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_PROJECT_DIR, value: "/runtime/augur-gpt54" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur-gpt54" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: HOME, value: "/home/claude" }
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gpt54:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.4" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codex-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+            - { name: agent-runtime, mountPath: /runtime }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+        - name: agent-runtime
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur-gpt54
+  labels: { app: kord-agent, agent: augur-gpt54 }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur-gpt54
   ports:
     - name: health
       port: 9090
@@ -142,7 +519,7 @@ spec:
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-charon:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_RUNTIME, value: "claude-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
             - { name: DAEMON_MODEL, value: "sonnet" }
             - { name: DAEMON_BACKEND, value: "anthropic" }
@@ -235,7 +612,7 @@ spec:
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-warden:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_RUNTIME, value: "claude-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
             - { name: DAEMON_MODEL, value: "haiku" }
             - { name: DAEMON_BACKEND, value: "anthropic" }
@@ -328,7 +705,7 @@ spec:
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://klaude-discovery:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_RUNTIME, value: "claude-sdk" }
             - { name: DAEMON_PROVIDER, value: "anthropic" }
             - { name: DAEMON_MODEL, value: "sonnet" }
             - { name: DAEMON_BACKEND, value: "anthropic" }
@@ -425,7 +802,7 @@ spec:
             - { name: DAEMON_PROVIDER, value: "deepseek" }
             - { name: DAEMON_MODEL, value: "deepseek-chat" }
             - { name: DAEMON_BACKEND, value: "deepseek" }
-            - { name: BACKEND_BASE_URL, value: "https://api.deepseek.com" }
+            - { name: BACKEND_BASE_URL, value: "https://api.deepseek.com/v1" }
             - name: DEEPSEEK_API_KEY
               valueFrom:
                 secretKeyRef:

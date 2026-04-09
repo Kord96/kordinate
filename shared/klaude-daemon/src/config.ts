@@ -29,6 +29,24 @@ function resolveDefaultRuntime(provider?: string): RuntimeKind {
   return 'codex-sdk'
 }
 
+export function resolveRuntimeForModel(model?: string, provider?: string): RuntimeKind {
+  const normalizedModel = (model ?? '').trim().toLowerCase()
+  if (
+    normalizedModel.includes('claude')
+    || normalizedModel.includes('sonnet')
+    || normalizedModel.includes('haiku')
+    || normalizedModel.includes('opus')
+  ) {
+    return 'claude-sdk'
+  }
+  if (normalizedModel.includes('gpt')) {
+    return 'codex-sdk'
+  }
+  return provider === undefined && normalizedModel === ''
+    ? 'codex-sdk'
+    : 'openclaude-harness'
+}
+
 function buildClaudeExecutionProfile(provider: ProviderName): ExecutionProfile {
   return {
     provider,
@@ -94,7 +112,9 @@ function buildCodexExecutionProfile(provider: ProviderName): ExecutionProfile {
 export function loadDaemonConfig(): DaemonConfig {
   const stateDir = process.env.DAEMON_STATE_DIR ?? '.daemon-state'
   const provider = process.env.DAEMON_PROVIDER ?? 'openai'
-  const runtime = (process.env.DAEMON_RUNTIME as RuntimeKind | undefined) ?? resolveDefaultRuntime(provider)
+  const model = process.env.DAEMON_MODEL
+  const runtime = (process.env.DAEMON_RUNTIME as RuntimeKind | undefined)
+    ?? (model ? resolveRuntimeForModel(model, provider) : resolveDefaultRuntime(provider))
 
   const executionProfile = runtime === 'claude-sdk'
     ? buildClaudeExecutionProfile(provider)

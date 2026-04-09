@@ -1,0 +1,60 @@
+# Score 3: Magic numbers are about unexplained literals, which is partly semantic.
+# We can match the structural smell: numeric literals in conditionals and
+# function calls (sleep, timeout, retry) that should be named constants.
+
+id: magic-numbers-sleep-py
+language: Python
+rule:
+  pattern: time.sleep($DURATION)
+  constraints:
+    DURATION:
+      regex: '^\d+\.?\d*$'
+---
+id: magic-numbers-comparison-py
+language: Python
+rule:
+  pattern: |
+    if $VAR > $NUM:
+        $$$BODY
+  constraints:
+    NUM:
+      regex: '^\d+$'
+    NUM:
+      not:
+        regex: '^[012]$'
+---
+id: magic-numbers-array-index-py
+language: Python
+rule:
+  pattern: $ARR[$INDEX]
+  constraints:
+    INDEX:
+      regex: '^[3-9]$|^\d{2,}$'
+---
+id: magic-numbers-settimeout-ts
+language: TypeScript
+rule:
+  pattern: setTimeout($FN, $DELAY)
+  constraints:
+    DELAY:
+      regex: '^\d{4,}$'
+---
+id: magic-numbers-setinterval-ts
+language: TypeScript
+rule:
+  pattern: setInterval($FN, $DELAY)
+  constraints:
+    DELAY:
+      regex: '^\d{4,}$'
+---
+id: magic-numbers-retry-literal-py
+language: Python
+rule:
+  pattern: range($COUNT)
+  inside:
+    pattern: |
+      for $VAR in range($COUNT):
+          $$$BODY
+  constraints:
+    COUNT:
+      regex: '^[3-9]$|^\d{2,}$'

@@ -1,0 +1,100 @@
+id: routes-fastapi-decorator-py
+language: Python
+rule:
+  any:
+    - pattern: |
+        @$APP.get($PATH)
+        def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.post($PATH)
+        def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.put($PATH)
+        def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.delete($PATH)
+        def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.patch($PATH)
+        def $HANDLER($$$PARAMS):
+            $$$BODY
+---
+id: routes-fastapi-async-decorator-py
+language: Python
+rule:
+  any:
+    - pattern: |
+        @$APP.get($PATH)
+        async def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.post($PATH)
+        async def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.put($PATH)
+        async def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.delete($PATH)
+        async def $HANDLER($$$PARAMS):
+            $$$BODY
+    - pattern: |
+        @$APP.patch($PATH)
+        async def $HANDLER($$$PARAMS):
+            $$$BODY
+---
+id: routes-flask-route-py
+language: Python
+rule:
+  pattern: |
+    @$APP.route($PATH, $$$REST)
+    def $HANDLER($$$PARAMS):
+        $$$BODY
+---
+id: routes-django-path-py
+language: Python
+rule:
+  any:
+    - pattern: path($PATH, $VIEW, $$$REST)
+    - pattern: re_path($PATH, $VIEW, $$$REST)
+---
+id: routes-express-method-ts
+language: TypeScript
+rule:
+  any:
+    - pattern: $ROUTER.get($PATH, $$$HANDLERS)
+    - pattern: $ROUTER.post($PATH, $$$HANDLERS)
+    - pattern: $ROUTER.put($PATH, $$$HANDLERS)
+    - pattern: $ROUTER.delete($PATH, $$$HANDLERS)
+    - pattern: $ROUTER.patch($PATH, $$$HANDLERS)
+    - pattern: $ROUTER.use($PATH, $$$HANDLERS)
+---
+id: routes-next-handler-ts
+language: TypeScript
+rule:
+  any:
+    - pattern: |
+        export async function GET($$$PARAMS) {
+          $$$BODY
+        }
+    - pattern: |
+        export async function POST($$$PARAMS) {
+          $$$BODY
+        }
+    - pattern: |
+        export async function PUT($$$PARAMS) {
+          $$$BODY
+        }
+    - pattern: |
+        export async function DELETE($$$PARAMS) {
+          $$$BODY
+        }
+    - pattern: |
+        export async function PATCH($$$PARAMS) {
+          $$$BODY
+        }

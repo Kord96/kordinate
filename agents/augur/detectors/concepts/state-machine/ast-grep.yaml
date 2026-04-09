@@ -1,0 +1,11 @@
+id: state-enum
+language: Python
+rule:
+  pattern: |
+    class $NAME(Enum):
+        $$$BODY
+---
+id: transition-dict
+language: Python
+rule:
+  pattern: 'transitions = {$$$ITEMS}'

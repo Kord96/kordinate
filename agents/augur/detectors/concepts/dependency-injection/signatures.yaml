@@ -1,0 +1,14 @@
+concept: dependency-injection
+positive:
+  strong:
+    - framework DI decorators or dependency providers
+    - constructor-injected collaborators with centralized wiring
+  medium:
+    - manual constructor injection without formal container
+  weak:
+    - generic helper receiving collaborators as args
+negative:
+  - service locator calls scattered in business logic
+  - classes constructing concrete dependencies inline
+notes:
+  - Strong matches should still check for service-locator anti-patterns.

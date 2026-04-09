@@ -1,0 +1,19 @@
+# Score 2: Ice Cream Cone is a test suite composition anti-pattern -- the ratio of e2e
+# tests to unit tests is inverted. This is a project-level metric, not a code structure.
+#
+# Detection requires comparing:
+#   - Count of files in test/e2e vs test/unit directories
+#   - Relative proportion of Selenium/Playwright/Cypress tests vs pytest/jest unit tests
+#   - CI runtime distribution across test types
+#
+# None of these are observable from the AST of any individual file. A Playwright test
+# file is not itself an anti-pattern -- the problem is the ratio of such files to unit
+# test files across the entire project.
+#
+# ast-grep operates on individual files and cannot perform cross-file counting or
+# directory-level analysis.
+#
+# This anti-pattern is best detected by:
+#   - CI pipeline analysis (test stage timing)
+#   - File counting scripts comparing test directories
+#   - Test framework usage audits

@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shlex
 import subprocess
 import sys
 import time
@@ -14,6 +16,7 @@ DEFAULT_DISCOVERY_URL = "http://klaude-discovery.kord.svc.cluster.local:9091"
 DEFAULT_KAFKA_NAMESPACE = "dev"
 DEFAULT_KAFKA_POD = "kafka-combined-0"
 KAFKA_BIN = "/opt/kafka/bin"
+KUBECTL_CMD = shlex.split(os.environ.get("KUBECTL_CMD", "kubectl"))
 
 
 def fetch_json(url: str) -> Any:
@@ -24,7 +27,7 @@ def fetch_json(url: str) -> Any:
 def kubectl_exec(namespace: str, pod: str, command: str, stdin_text: str | None = None) -> str:
     proc = subprocess.run(
         [
-            "kubectl",
+            *KUBECTL_CMD,
             "-n",
             namespace,
             "exec",
@@ -35,7 +38,7 @@ def kubectl_exec(namespace: str, pod: str, command: str, stdin_text: str | None 
             "-lc",
             command,
         ] if stdin_text is not None else [
-            "kubectl",
+            *KUBECTL_CMD,
             "-n",
             namespace,
             "exec",

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { loadDaemonConfig } from './config.js'
+import { loadDaemonConfig, resolveRuntimeForModel } from './config.js'
 
 test('loadDaemonConfig defaults to openai via codex sdk', () => {
   const previous = { ...process.env }
@@ -131,6 +131,38 @@ test('loadDaemonConfig supports deepseek through codex sdk', () => {
     apiKey: 'deepseek-key',
     baseUrl: 'https://api.deepseek.com/v1',
     skipGitRepoCheck: false,
+    workingDirectory: undefined,
+  })
+
+  process.env = previous
+})
+
+test('resolveRuntimeForModel maps model families to the expected runtimes', () => {
+  assert.equal(resolveRuntimeForModel('gpt-5.4', 'openai'), 'codex-sdk')
+  assert.equal(resolveRuntimeForModel('gpt-5.3-codex', 'openai'), 'codex-sdk')
+  assert.equal(resolveRuntimeForModel('claude-sonnet-4-6', 'anthropic'), 'claude-sdk')
+  assert.equal(resolveRuntimeForModel('sonnet', 'anthropic'), 'claude-sdk')
+  assert.equal(resolveRuntimeForModel('haiku', 'anthropic'), 'claude-sdk')
+  assert.equal(resolveRuntimeForModel('deepseek-reasoner', 'deepseek'), 'openclaude-harness')
+  assert.equal(resolveRuntimeForModel('gemini-3.1-pro-preview', 'gemini'), 'openclaude-harness')
+  assert.equal(resolveRuntimeForModel('accounts/fireworks/models/glm-5', 'fireworks'), 'openclaude-harness')
+})
+
+test('loadDaemonConfig defaults non-claude non-gpt models to openclaude harness', () => {
+  const previous = { ...process.env }
+  process.env.DAEMON_PROVIDER = 'deepseek'
+  process.env.DAEMON_MODEL = 'deepseek-reasoner'
+  delete process.env.DAEMON_RUNTIME
+  process.env.BACKEND_API_KEY = 'deepseek-key'
+
+  const config = loadDaemonConfig()
+
+  assert.deepEqual(config.executionProfile, {
+    provider: 'deepseek',
+    runtime: 'openclaude-harness',
+    model: 'deepseek-reasoner',
+    apiKey: 'deepseek-key',
+    baseUrl: 'https://api.deepseek.com/v1',
     workingDirectory: undefined,
   })
 

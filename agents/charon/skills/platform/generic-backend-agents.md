@@ -11,7 +11,10 @@ Use them when you want:
 
 - `flavor: generic`
 - `runtime.command: ["klaude-daemon"]`
-- `runtime.daemon.kind: openclaude-harness`
+- `runtime.daemon.kind`: inferred from the model family
+  - GPT family -> `codex-sdk`
+  - Claude family -> `claude-sdk`
+  - everything else -> `openclaude-harness`
 - `image.customization: none`
 
 ## Creation Path

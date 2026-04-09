@@ -14,8 +14,52 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from concept_decision import build_concept_verdict
+
 
 ROOT = Path(__file__).resolve().parents[1]
+SEMANTIC_REVIEW_CONCEPTS = {
+    "active-record",
+    "aggregate",
+    "cqrs",
+    "data-mapper",
+    "ddd",
+    "dependency-injection",
+    "event-sourcing",
+    "hexagonal",
+    "layered",
+    "microservices",
+    "modular-monolith",
+    "outbox",
+    "plugin",
+    "repository",
+    "saga",
+    "saga-orchestrator",
+    "service-mesh",
+    "unit-of-work",
+    "workflow-engine",
+}
+AUTO_CONFIRM_FACT_CONCEPTS = {
+    "api-key-auth",
+    "circuit-breaker",
+    "event-driven",
+    "graphql",
+    "grpc",
+    "health-check",
+    "input-validation",
+    "oauth-oidc",
+    "rbac",
+    "rest",
+    "retry",
+    "realtime",
+    "route-guard",
+    "router",
+    "scheduler",
+    "session-auth",
+    "structured-logging",
+    "timeout",
+    "token-auth",
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -27,22 +71,24 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def iter_fact_files(facts_dir: Path) -> list[Path]:
-    index_file = facts_dir / "index.json"
+def iter_fact_files(facts_path: Path) -> list[Path]:
+    if facts_path.is_file():
+        return [facts_path]
+    index_file = facts_path / "index.json"
     if index_file.exists():
         index = load_json(index_file)
         files = []
         for domain in index.get("index", {}).get("domains", []):
             rel = domain.get("file")
             if rel:
-                files.append((facts_dir.parent / rel).resolve())
+                files.append((facts_path.parent / rel).resolve())
         return [path for path in files if path.exists()]
-    return sorted(p for p in facts_dir.glob("*.json") if p.name != "index.json")
+    return sorted(p for p in facts_path.glob("*.json") if p.name != "index.json")
 
 
-def load_facts(facts_dir: Path) -> list[dict[str, Any]]:
+def load_facts(facts_path: Path) -> list[dict[str, Any]]:
     facts: list[dict[str, Any]] = []
-    for path in iter_fact_files(facts_dir):
+    for path in iter_fact_files(facts_path):
         payload = load_json(path)
         if isinstance(payload, dict) and "facts" in payload:
             facts.extend(payload["facts"])
@@ -78,6 +124,81 @@ def make_evidence(concept_id: str, facts: list[dict[str, Any]], note: str, detec
     }
 
 
+def concept_decision_mode(concept_id: str) -> str:
+    if concept_id in SEMANTIC_REVIEW_CONCEPTS:
+        return "semantic-review"
+    return "fact-inference"
+
+
+def concept_detector_verdict(concept_id: str, confidence: str) -> str:
+    if concept_id in SEMANTIC_REVIEW_CONCEPTS:
+        return "candidate"
+    if concept_id in AUTO_CONFIRM_FACT_CONCEPTS and confidence in {"medium", "high"}:
+        return "confirmed"
+    return "candidate"
+
+
+def contradiction_summary(concept_id: str, facts: list[dict[str, Any]]) -> list[str]:
+    contradictions: list[str] = []
+    if concept_id in {"timeout", "retry"}:
+        missing = [fact for fact in facts if not fact.get("raw_evidence", {}).get(concept_id)]
+        if missing:
+            contradictions.append(f"{len(missing)} supporting facts are missing `{concept_id}` configuration.")
+    if concept_id == "circuit-breaker":
+        missing = [fact for fact in facts if not fact.get("raw_evidence", {}).get("circuit_breaker")]
+        if missing:
+            contradictions.append(f"{len(missing)} supporting facts are missing circuit-breaker configuration.")
+    if concept_id == "route-guard":
+        unprotected = [fact for fact in facts if fact.get("raw_evidence", {}).get("auth") in ("", "no", False, None)]
+        if unprotected:
+            contradictions.append(f"{len(unprotected)} route facts appear unguarded.")
+    return contradictions
+
+
+def build_pattern(
+    concept_id: str,
+    category: str,
+    confidence: str,
+    facts: list[dict[str, Any]],
+    note: str,
+) -> dict[str, Any]:
+    components = sorted({component for fact in facts for component in fact_components(fact)})
+    evidence = make_evidence(concept_id, facts, note)
+    grounded_in = evidence["files"]
+    fact_evidence = evidence["fact_ids"]
+    contradictions = contradiction_summary(concept_id, facts)
+    decision_mode = concept_decision_mode(concept_id)
+    detector_verdict = concept_detector_verdict(concept_id, confidence)
+    semantic_review_required = decision_mode == "semantic-review"
+    review_required_reason = (
+        "Architecture-level concept requires repo-wide semantic confirmation."
+        if semantic_review_required
+        else ""
+    )
+    explanation = note
+    return {
+        "id": concept_id,
+        "category": category,
+        "confidence": confidence,
+        "components": components,
+        "evidence": evidence,
+        "verdict": build_concept_verdict(
+            concept=concept_id,
+            category=category,
+            confidence=confidence,
+            detector_verdict=detector_verdict,
+            decision_mode=decision_mode,
+            grounded_in=grounded_in,
+            detector_evidence=[evidence["method"]],
+            fact_evidence=fact_evidence,
+            contradictions=contradictions,
+            semantic_review_required=semantic_review_required,
+            review_required_reason=review_required_reason,
+            explanation=explanation,
+        ),
+    }
+
+
 def group_by_kind(facts: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for fact in facts:
@@ -106,13 +227,13 @@ def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if style not in style_to_pattern:
             continue
         concept_id, category = style_to_pattern[style]
-        patterns.append({
-            "id": concept_id,
-            "category": category,
-            "confidence": confidence_from_count(len(style_facts)),
-            "components": sorted({component for fact in style_facts for component in fact_components(fact)}),
-            "evidence": make_evidence(concept_id, style_facts, f"Inferred from {len(style_facts)} {style} route facts."),
-        })
+        patterns.append(build_pattern(
+            concept_id,
+            category,
+            confidence_from_count(len(style_facts)),
+            style_facts,
+            f"Inferred from {len(style_facts)} {style} route facts.",
+        ))
 
     framework_facts = grouped.get("framework", [])
     framework_map = {
@@ -125,13 +246,13 @@ def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if framework not in framework_map:
             continue
         concept_id, category = framework_map[framework]
-        patterns.append({
-            "id": concept_id,
-            "category": category,
-            "confidence": "medium",
-            "components": fact_components(fact),
-            "evidence": make_evidence(concept_id, [fact], f"Inferred from framework context `{framework}`."),
-        })
+        patterns.append(build_pattern(
+            concept_id,
+            category,
+            "medium",
+            [fact],
+            f"Inferred from framework context `{framework}`.",
+        ))
 
     model_facts = grouped.get("model", [])
     model_by_tech: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -151,13 +272,13 @@ def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if tech not in tech_patterns:
             continue
         concept_id, category = tech_patterns[tech]
-        patterns.append({
-            "id": concept_id,
-            "category": category,
-            "confidence": confidence_from_count(len(tech_facts)),
-            "components": sorted({component for fact in tech_facts for component in fact_components(fact)}),
-            "evidence": make_evidence(concept_id, tech_facts, f"Inferred from model technology `{tech}`."),
-        })
+        patterns.append(build_pattern(
+            concept_id,
+            category,
+            confidence_from_count(len(tech_facts)),
+            tech_facts,
+            f"Inferred from model technology `{tech}`.",
+        ))
 
     external_client_facts = grouped.get("external-client", [])
     timeout_facts = [fact for fact in external_client_facts if fact.get("raw_evidence", {}).get("timeout")]
@@ -172,23 +293,23 @@ def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for concept_id, category, concept_facts, note in resilience_map:
         if not concept_facts:
             continue
-        patterns.append({
-            "id": concept_id,
-            "category": category,
-            "confidence": confidence_from_count(len(concept_facts)),
-            "components": sorted({component for fact in concept_facts for component in fact_components(fact)}),
-            "evidence": make_evidence(concept_id, concept_facts, note),
-        })
+        patterns.append(build_pattern(
+            concept_id,
+            category,
+            confidence_from_count(len(concept_facts)),
+            concept_facts,
+            note,
+        ))
 
     job_facts = grouped.get("job", [])
     if job_facts:
-        patterns.append({
-            "id": "scheduler",
-            "category": "lifecycle",
-            "confidence": confidence_from_count(len(job_facts)),
-            "components": sorted({component for fact in job_facts for component in fact_components(fact)}),
-            "evidence": make_evidence("scheduler", job_facts, "Inferred from cron or background job facts."),
-        })
+        patterns.append(build_pattern(
+            "scheduler",
+            "lifecycle",
+            confidence_from_count(len(job_facts)),
+            job_facts,
+            "Inferred from cron or background job facts.",
+        ))
 
     auth_facts = grouped.get("auth-surface", [])
     auth_map = {
@@ -204,23 +325,23 @@ def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if tech not in auth_map:
             continue
         concept_id, category = auth_map[tech]
-        patterns.append({
-            "id": concept_id,
-            "category": category,
-            "confidence": "medium",
-            "components": fact_components(fact),
-            "evidence": make_evidence(concept_id, [fact], f"Inferred from auth surface `{tech}`."),
-        })
+        patterns.append(build_pattern(
+            concept_id,
+            category,
+            "medium",
+            [fact],
+            f"Inferred from auth surface `{tech}`.",
+        ))
 
     event_facts = grouped.get("event", [])
     if event_facts:
-        patterns.append({
-            "id": "event-driven",
-            "category": "messaging",
-            "confidence": confidence_from_count(len(event_facts)),
-            "components": sorted({component for fact in event_facts for component in fact_components(fact)}),
-            "evidence": make_evidence("event-driven", event_facts, "Inferred from detected event facts."),
-        })
+        patterns.append(build_pattern(
+            "event-driven",
+            "messaging",
+            confidence_from_count(len(event_facts)),
+            event_facts,
+            "Inferred from detected event facts.",
+        ))
 
     deduped: dict[tuple[str, tuple[str, ...]], dict[str, Any]] = {}
     for pattern in patterns:
@@ -280,17 +401,17 @@ def infer_gaps(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return gaps
 
 
-def build_output(facts_dir: Path, facts: list[dict[str, Any]]) -> dict[str, Any]:
+def build_output(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any]:
     domains = sorted({fact.get("domain") for fact in facts if fact.get("domain")})
     return {
         "version": "1",
-        "generated_from": str(facts_dir),
+        "generated_from": str(facts_path),
         "concepts": {
             "detected_patterns": infer_patterns(facts),
             "detected_anti_patterns": infer_anti_patterns(facts),
             "gaps": infer_gaps(facts),
             "scan_metadata": {
-                "facts_index": str(facts_dir / "index.json"),
+                "facts_index": str((facts_path / "index.json") if facts_path.is_dir() else facts_path),
                 "fact_domains_used": domains,
                 "tools_used": sorted({fact.get("detector", {}).get("class") for fact in facts if fact.get("detector", {}).get("class")}),
             },
@@ -300,7 +421,7 @@ def build_output(facts_dir: Path, facts: list[dict[str, Any]]) -> dict[str, Any]
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Infer Augur concepts from facts.")
-    parser.add_argument("facts_dir", type=Path, help="Path to facts directory.")
+    parser.add_argument("facts_dir", type=Path, help="Path to facts directory or a single facts payload JSON file.")
     parser.add_argument("--output", type=Path, required=True, help="Output JSON path.")
     return parser.parse_args()
 

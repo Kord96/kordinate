@@ -1,0 +1,19 @@
+# Score 2: REST is an architectural style defined by URL design, HTTP method semantics,
+# and status code usage -- conventions that live in routing configuration and response
+# handling, not in AST-matchable code structure.
+#
+# The structural elements are:
+#   - Resource-based URLs (/users, /users/123) -- these are string literals, not AST nodes
+#   - HTTP method mapping -- framework-specific decorators (@app.get, @router.post)
+#   - Status codes -- integer literals with no structural context
+#   - OpenAPI specs -- YAML/JSON files, not code
+#
+# While framework-specific decorators ARE matchable by ast-grep, matching @app.get()
+# tells you "this project uses Flask/FastAPI" not "this project follows REST." The
+# RESTfulness is in whether URLs are resource-oriented, methods match semantics, and
+# status codes are used correctly -- all semantic judgments.
+#
+# REST compliance is best assessed by:
+#   - OpenAPI/Swagger specification review
+#   - API linters (Spectral, vacuum) that check REST conventions
+#   - Manual review of URL design and method usage

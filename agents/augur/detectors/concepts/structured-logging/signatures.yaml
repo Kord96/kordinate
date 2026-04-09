@@ -1,0 +1,14 @@
+concept: structured-logging
+positive:
+  strong:
+    - structured logging library with JSON or key-value log calls
+    - context-bound logger usage across request lifecycle
+  medium:
+    - structured logger configured but mixed call styles
+  weak:
+    - JSON-like strings without clear structured logger usage
+negative:
+  - printf-style logging only
+  - string interpolation inside nominally structured log calls
+notes:
+  - Correlation context raises confidence materially.

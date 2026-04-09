@@ -1,0 +1,49 @@
+id: bloom-filter-bit-array-py
+language: Python
+rule:
+  pattern: self.bit_array = $INIT
+---
+id: bloom-filter-add-method-py
+language: Python
+rule:
+  pattern: |
+    def add(self, $ITEM):
+        $$$BODY
+  inside:
+    has:
+      pattern: self.bit_array
+---
+id: bloom-filter-might-contain-py
+language: Python
+rule:
+  pattern: |
+    def might_contain(self, $ITEM):
+        $$$BODY
+---
+id: bloom-filter-contains-py
+language: Python
+rule:
+  pattern: |
+    def __contains__(self, $ITEM):
+        $$$BODY
+  inside:
+    has:
+      pattern: self.bit_array
+---
+id: bloom-filter-class-ts
+language: TypeScript
+rule:
+  pattern: |
+    class $NAME {
+        $$$BODY
+    }
+  has:
+    pattern: |
+      mightContain($ITEM) {
+          $$$BODY
+      }
+---
+id: bloom-filter-multi-hash-ts
+language: TypeScript
+rule:
+  pattern: this.hashFunctions.forEach($$$ARGS)

@@ -12,48 +12,7 @@ version: 2
 # `runtime.daemon` describes the shared daemon runtime/backend selection.
 
 agents:
-  - name: augur
-    flavor: augur
-    image:
-      base: agent-base
-      customization: agent-augur
-    runtime:
-      command: ["klaude-daemon"]
-      daemon:
-        kind: openclaude-harness
-        provider: anthropic
-        model: sonnet
-        backend:
-          name: anthropic
-        secret:
-          env: ANTHROPIC_API_KEY
-          name: anthropic-api
-          key: api-key
-      kafka:
-        request_topic: agent.augur
-        reply_required: true
-        request_schema:
-          required: [prompt, reply_to]
-          optional: [timeout_ms, reflect]
-        response_schema:
-          required: [status, output]
-          optional: [reflection, errors]
-      state:
-        project_dir: /runtime/augur
-        state_dir: /kord/augur
-    deploy:
-      replicas:
-        min: 0
-        max: 3
-        cooldown: 300
-      resources:
-        requests:
-          cpu: 100m
-          memory: 512Mi
-        limits:
-          memory: 4Gi
-
-  - name: augur-claude
+  - name: augur-opus
     flavor: augur
     image:
       base: agent-base
@@ -63,7 +22,7 @@ agents:
       daemon:
         kind: claude-sdk
         provider: anthropic
-        model: claude-sonnet-4-6
+        model: opus
         backend:
           name: anthropic
         secret:
@@ -71,7 +30,7 @@ agents:
           name: anthropic-api
           key: api-key
       kafka:
-        request_topic: augur-claude
+        request_topic: augur-opus
         reply_required: true
         request_schema:
           required: [type, sender, correlation_id, prompt]
@@ -80,8 +39,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-claude
-        state_dir: /kord/augur-claude
+        project_dir: /runtime/augur-opus
+        state_dir: /kord/augur-opus
     deploy:
       replicas:
         min: 0
@@ -94,7 +53,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: augur-gemini
+  - name: augur-pro
     flavor: augur
     image:
       base: agent-base
@@ -113,7 +72,7 @@ agents:
           name: gemini-api
           key: api-key
       kafka:
-        request_topic: augur-gemini
+        request_topic: augur-pro
         reply_required: true
         request_schema:
           required: [type, sender, correlation_id, prompt]
@@ -122,8 +81,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-gemini
-        state_dir: /kord/augur-gemini
+        project_dir: /runtime/augur-pro
+        state_dir: /kord/augur-pro
     deploy:
       replicas:
         min: 0
@@ -136,7 +95,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: augur-deepseek
+  - name: augur-reasoner
     flavor: augur
     image:
       base: agent-base
@@ -149,13 +108,13 @@ agents:
         model: deepseek-reasoner
         backend:
           name: deepseek
-          base_url: https://api.deepseek.com
+          base_url: https://api.deepseek.com/v1
         secret:
           env: BACKEND_API_KEY
           name: deepseek-api
           key: api-key
       kafka:
-        request_topic: augur-deepseek
+        request_topic: augur-reasoner
         reply_required: true
         request_schema:
           required: [type, sender, correlation_id, prompt]
@@ -164,8 +123,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-deepseek
-        state_dir: /kord/augur-deepseek
+        project_dir: /runtime/augur-reasoner
+        state_dir: /kord/augur-reasoner
     deploy:
       replicas:
         min: 0
@@ -228,12 +187,13 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: openclaude-harness
+        kind: codex-sdk
         provider: openai
         model: gpt-5.4
         backend:
           name: openai
           base_url: https://api.openai.com/v1
+        skip_git_repo_check: true
         secret:
           env: BACKEND_API_KEY
           name: codex-api
@@ -270,7 +230,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: openclaude-harness
+        kind: claude-sdk
         provider: anthropic
         model: sonnet
         backend:
@@ -311,7 +271,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: openclaude-harness
+        kind: claude-sdk
         provider: anthropic
         model: haiku
         backend:
@@ -352,7 +312,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: openclaude-harness
+        kind: claude-sdk
         provider: anthropic
         model: sonnet
         backend:
@@ -398,7 +358,7 @@ agents:
         model: deepseek-chat
         backend:
           name: deepseek
-          base_url: https://api.deepseek.com
+          base_url: https://api.deepseek.com/v1
         secret:
           env: DEEPSEEK_API_KEY
           name: deepseek-api

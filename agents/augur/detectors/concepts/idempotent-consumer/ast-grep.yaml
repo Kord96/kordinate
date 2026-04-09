@@ -1,0 +1,34 @@
+id: idempotent-consumer-check-processed-py
+language: Python
+rule:
+  pattern: |
+    if $MESSAGE_ID in $PROCESSED_IDS:
+        $$$BODY
+---
+id: idempotent-consumer-on-conflict-py
+language: Python
+rule:
+  pattern: 'INSERT INTO $TABLE ($$$COLS) VALUES ($$$VALS) ON CONFLICT DO NOTHING'
+---
+id: idempotent-consumer-idempotency-key-py
+language: Python
+rule:
+  pattern: $KEY = $REQUEST.headers.get("Idempotency-Key")
+---
+id: idempotent-consumer-check-processed-ts
+language: TypeScript
+rule:
+  pattern: |
+    if (await $STORE.has($MESSAGE_ID)) {
+        $$$BODY
+    }
+---
+id: idempotent-consumer-idempotency-key-ts
+language: TypeScript
+rule:
+  pattern: 'const $KEY = $REQ.headers["idempotency-key"]'
+---
+id: idempotent-consumer-upsert-ts
+language: TypeScript
+rule:
+  pattern: '$OBJ.upsert($$$ARGS)'

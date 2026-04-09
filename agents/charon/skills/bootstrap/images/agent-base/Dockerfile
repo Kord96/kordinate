@@ -27,7 +27,7 @@ COPY . /app
 RUN cd /app/shared/klaude-daemon \
   && npm ci \
   && npm run build \
-  && npm install -g .
+  && npm install -g . @anthropic-ai/claude-code
 
 RUN ln -s /app/lib/scripts /app/scripts \
   && chmod +x /app/lib/scripts/setup-agent-dir.sh /app/lib/scripts/deploy-runtime.sh /app/shared/klaude-daemon/bin/klaude-daemon
