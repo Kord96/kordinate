@@ -5,12 +5,56 @@ import argparse
 import json
 import shlex
 import textwrap
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 
 
 SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron", "warden"}
+
+
+def infer_supported_agent_params(agent: dict) -> list[str]:
+    flavor = agent.get("flavor") or (agent["name"] if agent["name"] in SPECIAL_FLAVORS else "generic")
+    if flavor == "augur":
+        return ["bundle_mode"]
+    return []
+
+
+def build_discovery_record(agent: dict, generated_at: str) -> dict:
+    name = agent["name"]
+    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    daemon = agent.get("runtime", {}).get("daemon", {})
+    working_directory = daemon.get("working_directory") or f"/kord/shared/repos/{name}"
+    return {
+        "agent": name,
+        "profile": flavor,
+        "provider": daemon.get("provider", "unknown"),
+        "runtime": daemon.get("kind", "openclaude-harness"),
+        "model": str(daemon.get("model", "unknown")),
+        "request_topic": agent["runtime"]["kafka"]["request_topic"],
+        "reply_mode": "sender-topic",
+        "working_dir_supported": True,
+        "request_schema": {
+            "required": ["type", "sender", "correlation_id", "prompt"],
+            "optional": ["working_dir", "timeout_ms", "reflect", "reflection_prompt", "agent_params"],
+        },
+        "request_example": {
+            "type": "request",
+            "sender": f"{name}-reply-topic",
+            "correlation_id": f"{name}-request-1",
+            "prompt": f"Do the requested work as {name}.",
+            "working_dir": working_directory,
+            "timeout_ms": 120000,
+        },
+        "health_url": f"http://agent-{name}:9090/health",
+        "working_directory": working_directory,
+        "supported_agent_params": infer_supported_agent_params(agent),
+        "registered_at": generated_at,
+        "last_seen_at": generated_at,
+        "active": False,
+        "discovery_source": "catalog",
+    }
 
 
 def image_ref(agent: dict) -> str:
@@ -27,6 +71,7 @@ def emit_env_lines(agent: dict) -> list[str]:
     state_dir = agent["runtime"]["state"]["state_dir"]
     daemon = agent.get("runtime", {}).get("daemon", {})
     backend = daemon.get("backend", {}) if isinstance(daemon.get("backend"), dict) else {}
+    creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
 
     env = [
         ("AGENT_NAME", name),
@@ -55,6 +100,10 @@ def emit_env_lines(agent: dict) -> list[str]:
         env.append(("CODEX_WORKING_DIRECTORY", daemon["working_directory"]))
     if daemon.get("skip_git_repo_check") is not None:
         env.append(("CODEX_SKIP_GIT_REPO_CHECK", "true" if daemon["skip_git_repo_check"] else "false"))
+    if creation.get("memory_bundle"):
+        env.append(("AGENT_MEMORY_BUNDLE", creation["memory_bundle"]))
+    if creation.get("runtime_bundle"):
+        env.append(("AGENT_RUNTIME_BUNDLE", creation["runtime_bundle"]))
 
     env_lines = [f"            - {{ name: {key}, value: {json.dumps(value)} }}" for key, value in env]
 
@@ -74,13 +123,22 @@ def emit_env_lines(agent: dict) -> list[str]:
 def build_init_script(agent: dict) -> str:
     name = agent["name"]
     flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
+    env_prefix = []
+    if creation.get("memory_bundle"):
+        env_prefix.append(f"AGENT_MEMORY_BUNDLE={shlex.quote(str(creation['memory_bundle']))}")
+    if creation.get("runtime_bundle"):
+        env_prefix.append(f"AGENT_RUNTIME_BUNDLE={shlex.quote(str(creation['runtime_bundle']))}")
+    env_prefix.append("KORDINATE_HOME=/app")
+    env_prefix.append("KORD_RUNTIME=/runtime")
+    prefix = " ".join(env_prefix)
     lines = [f"bash /app/scripts/setup-agent-dir.sh {shlex.quote(name)}"]
     if flavor in SPECIAL_FLAVORS:
         if flavor == name:
-            lines.append(f"KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh {shlex.quote(name)}")
+            lines.append(f"{prefix} bash /app/scripts/deploy-runtime.sh {shlex.quote(name)}")
         else:
             lines.append(
-                "KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh "
+                f"{prefix} bash /app/scripts/deploy-runtime.sh "
                 f"{shlex.quote(flavor)} {shlex.quote(name)}"
             )
     return "\n".join(lines)
@@ -240,6 +298,7 @@ def main() -> int:
     parser.add_argument("--agents-out", required=True)
     parser.add_argument("--keda-out", required=True)
     parser.add_argument("--kafka-out", required=True)
+    parser.add_argument("--discovery-catalog-out", required=True)
     args = parser.parse_args()
 
     spec = yaml.safe_load(Path(args.spec).read_text())
@@ -263,6 +322,9 @@ def main() -> int:
         agents_parts.append(dep)
         keda_parts.append(so)
         kafka_parts.append(topic)
+
+    generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    discovery_catalog = [build_discovery_record(agent, generated_at) for agent in agents]
 
     kafka_parts.append("""---
 apiVersion: kafka.strimzi.io/v1beta2
@@ -299,6 +361,7 @@ spec:
     Path(args.agents_out).write_text("\n".join(agents_parts))
     Path(args.keda_out).write_text("\n".join(keda_parts))
     Path(args.kafka_out).write_text("\n".join(kafka_parts))
+    Path(args.discovery_catalog_out).write_text(json.dumps(discovery_catalog, indent=2) + "\n")
     return 0
 
 

@@ -88,6 +88,8 @@ deploy_agent() {
   local DEST_AGENT="$2"
   local SRC="$REPO/agents/$SOURCE_AGENT"
   local DST="$RUNTIME/$DEST_AGENT"
+  local MEMORY_BUNDLE_SELECTION="${AGENT_MEMORY_BUNDLE:-}"
+  local RUNTIME_BUNDLE_SELECTION="${AGENT_RUNTIME_BUNDLE:-}"
 
   if [ ! -d "$SRC" ]; then
     log "WARN: no source dir at $SRC"
@@ -167,7 +169,7 @@ deploy_agent() {
         ;;
       deepseek)
         PROFILE="openai"
-        BASE_URL="${BASE_URL:-https://api.deepseek.com}"
+        BASE_URL="${BASE_URL:-https://api.deepseek.com/v1}"
         BACKEND_NAME="${BACKEND_NAME:-deepseek}"
         ;;
       fireworks)
@@ -330,9 +332,61 @@ EOF
     log "  $AGENT_BUNDLE_NAME generated"
   fi
 
+  local MEMORY_BUNDLE_SRC=""
+  local MEMORY_BUNDLE_DST=""
+  if [ -n "$MEMORY_BUNDLE_SELECTION" ]; then
+    MEMORY_BUNDLE_SRC="$SRC/bundles/memory/$MEMORY_BUNDLE_SELECTION.md"
+    MEMORY_BUNDLE_DST="$DST/memory-bundle.md"
+    if [ -f "$MEMORY_BUNDLE_SRC" ]; then
+      cp "$MEMORY_BUNDLE_SRC" "$MEMORY_BUNDLE_DST"
+      log "  memory bundle installed ($MEMORY_BUNDLE_SELECTION)"
+    else
+      log "  WARN: memory bundle not found at $MEMORY_BUNDLE_SRC"
+    fi
+  fi
+
+  local RUNTIME_BUNDLE_SRC=""
+  local RUNTIME_BUNDLE_DST=""
+  if [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
+    RUNTIME_BUNDLE_SRC="$SRC/bundles/runtime/$RUNTIME_BUNDLE_SELECTION.md"
+    RUNTIME_BUNDLE_DST="$DST/runtime-bundle.md"
+    if [ -f "$RUNTIME_BUNDLE_SRC" ]; then
+      cp "$RUNTIME_BUNDLE_SRC" "$RUNTIME_BUNDLE_DST"
+      log "  runtime bundle installed ($RUNTIME_BUNDLE_SELECTION)"
+    else
+      log "  WARN: runtime bundle not found at $RUNTIME_BUNDLE_SRC"
+    fi
+  fi
+
+  local BUNDLE_SELECTION_DST="$DST/bundle-selection.md"
+  if [ -n "$MEMORY_BUNDLE_SELECTION" ] || [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
+    {
+      echo "# Bundle Selection"
+      echo
+      if [ -n "$MEMORY_BUNDLE_SELECTION" ]; then
+        echo "- memory_bundle: $MEMORY_BUNDLE_SELECTION"
+      fi
+      if [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
+        echo "- runtime_bundle: $RUNTIME_BUNDLE_SELECTION"
+      fi
+      echo
+      echo "These selections are part of the seeded runtime for this agent instance."
+    } > "$BUNDLE_SELECTION_DST"
+    log "  bundle-selection.md generated"
+  fi
+
   # Generate CLAUDE.md — static shim only
   {
     echo "@identity.md"
+    if [ -f "$BUNDLE_SELECTION_DST" ]; then
+      echo "@bundle-selection.md"
+    fi
+    if [ -f "$MEMORY_BUNDLE_DST" ]; then
+      echo "@memory-bundle.md"
+    fi
+    if [ -f "$RUNTIME_BUNDLE_DST" ]; then
+      echo "@runtime-bundle.md"
+    fi
     if [ -f "$AGENT_BUNDLE_DST" ]; then
       echo "@$AGENT_BUNDLE_NAME"
     fi

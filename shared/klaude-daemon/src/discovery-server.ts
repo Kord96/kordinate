@@ -6,9 +6,19 @@ import type { AgentDiscoveryRecord } from './types.js'
 const port = Number.parseInt(process.env.DISCOVERY_PORT ?? '9091', 10)
 const host = process.env.DISCOVERY_HOST ?? '0.0.0.0'
 const statePath = process.env.DISCOVERY_STATE_PATH ?? '.daemon-state/discovery-agents.json'
+const catalogPath = process.env.DISCOVERY_CATALOG_PATH ?? '/app/agents/charon/skills/platform/manifests/base/discovery-catalog.json'
 const ttlMs = Number.parseInt(process.env.DISCOVERY_TTL_MS ?? '120000', 10)
 
 const registry = new Map<string, AgentDiscoveryRecord>()
+const catalog = new Map<string, AgentDiscoveryRecord>()
+
+function sanitizeRecord(record: AgentDiscoveryRecord): AgentDiscoveryRecord {
+  return {
+    ...record,
+    active: record.active ?? false,
+    discovery_source: record.discovery_source ?? 'catalog',
+  }
+}
 
 async function loadState(): Promise<void> {
   try {
@@ -25,6 +35,18 @@ async function loadState(): Promise<void> {
   }
 }
 
+async function loadCatalog(): Promise<void> {
+  try {
+    const raw = await readFile(catalogPath, 'utf8')
+    const parsed = JSON.parse(raw) as AgentDiscoveryRecord[]
+    for (const record of parsed) {
+      catalog.set(record.agent, sanitizeRecord(record))
+    }
+  } catch {
+    // ignore missing catalog
+  }
+}
+
 async function persistState(): Promise<void> {
   await mkdir(dirname(statePath), { recursive: true })
   const payload = JSON.stringify([...registry.values()], null, 2) + '\n'
@@ -33,16 +55,32 @@ async function persistState(): Promise<void> {
 
 function activeRecords(): AgentDiscoveryRecord[] {
   const now = Date.now()
-  const active: AgentDiscoveryRecord[] = []
+  const merged = new Map<string, AgentDiscoveryRecord>(catalog)
   for (const [agent, record] of registry.entries()) {
     if (now - Date.parse(record.last_seen_at) > ttlMs) {
       registry.delete(agent)
       continue
     }
-    active.push(record)
+    const base = merged.get(agent)
+    merged.set(agent, {
+      ...(base ?? {}),
+      ...record,
+      active: true,
+      discovery_source: base ? 'catalog+runtime' : 'runtime',
+    })
   }
-  active.sort((a, b) => a.agent.localeCompare(b.agent))
-  return active
+  const records = [...merged.values()].map(record => {
+    if (!record.active) {
+      return {
+        ...record,
+        active: false,
+        discovery_source: record.discovery_source ?? 'catalog',
+      }
+    }
+    return record
+  })
+  records.sort((a, b) => a.agent.localeCompare(b.agent))
+  return records
 }
 
 function json(res: import('node:http').ServerResponse, statusCode: number, payload: unknown): void {
@@ -112,6 +150,8 @@ const server = createServer(async (req, res) => {
         ...body,
         registered_at: previous?.registered_at ?? now,
         last_seen_at: now,
+        active: true,
+        discovery_source: catalog.has(body.agent) ? 'catalog+runtime' : 'runtime',
       }
       registry.set(record.agent, record)
       await persistState()
@@ -125,6 +165,7 @@ const server = createServer(async (req, res) => {
   }
 })
 
+await loadCatalog()
 await loadState()
 
 server.listen(port, host, () => {
@@ -133,6 +174,7 @@ server.listen(port, host, () => {
     timestamp: new Date().toISOString(),
     host,
     port,
+    catalog_path: catalogPath,
     state_path: statePath,
     ttl_ms: ttlMs,
   })}\n`)

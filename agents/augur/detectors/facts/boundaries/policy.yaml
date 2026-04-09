@@ -1,0 +1,4 @@
+domain: boundaries
+enabled: true
+class: signature
+description: Detect interface, repository, store, and abstraction boundaries between contracts and implementations.

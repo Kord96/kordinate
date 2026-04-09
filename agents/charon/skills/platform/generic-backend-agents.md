@@ -13,7 +13,7 @@ Use them when you want:
 - `runtime.command: ["klaude-daemon"]`
 - `runtime.daemon.kind`: inferred from the model family
   - GPT family -> `codex-sdk`
-  - Claude family -> `claude-sdk`
+  - Claude family -> `claude-agent-sdk`
   - everything else -> `openclaude-harness`
 - `image.customization: none`
 

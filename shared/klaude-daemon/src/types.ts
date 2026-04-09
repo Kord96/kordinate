@@ -81,6 +81,8 @@ export interface AgentDiscoveryRecord {
   supported_agent_params?: string[]
   registered_at: string
   last_seen_at: string
+  active?: boolean
+  discovery_source?: 'catalog' | 'runtime' | 'catalog+runtime'
 }
 
 export interface ResponseTimingMetadata {

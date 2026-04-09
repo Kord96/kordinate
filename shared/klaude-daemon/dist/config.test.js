@@ -34,7 +34,7 @@ test('loadDaemonConfig defaults to openai via codex sdk', () => {
 test('loadDaemonConfig supports claude execution profile', () => {
     const previous = { ...process.env };
     process.env.DAEMON_PROVIDER = 'anthropic';
-    process.env.DAEMON_RUNTIME = 'claude-sdk';
+    process.env.DAEMON_RUNTIME = 'claude-agent-sdk';
     process.env.DAEMON_MODEL = 'claude-sonnet-4-6';
     delete process.env.BACKEND_API_KEY;
     process.env.ANTHROPIC_API_KEY = 'anthropic-key';
@@ -42,7 +42,7 @@ test('loadDaemonConfig supports claude execution profile', () => {
     const config = loadDaemonConfig();
     assert.deepEqual(config.executionProfile, {
         provider: 'anthropic',
-        runtime: 'claude-sdk',
+        runtime: 'claude-agent-sdk',
         model: 'claude-sonnet-4-6',
         apiKey: 'anthropic-key',
         baseUrl: 'https://api.anthropic.com',
@@ -120,9 +120,9 @@ test('loadDaemonConfig supports deepseek through codex sdk', () => {
 test('resolveRuntimeForModel maps model families to the expected runtimes', () => {
     assert.equal(resolveRuntimeForModel('gpt-5.4', 'openai'), 'codex-sdk');
     assert.equal(resolveRuntimeForModel('gpt-5.3-codex', 'openai'), 'codex-sdk');
-    assert.equal(resolveRuntimeForModel('claude-sonnet-4-6', 'anthropic'), 'claude-sdk');
-    assert.equal(resolveRuntimeForModel('sonnet', 'anthropic'), 'claude-sdk');
-    assert.equal(resolveRuntimeForModel('haiku', 'anthropic'), 'claude-sdk');
+    assert.equal(resolveRuntimeForModel('claude-sonnet-4-6', 'anthropic'), 'claude-agent-sdk');
+    assert.equal(resolveRuntimeForModel('sonnet', 'anthropic'), 'claude-agent-sdk');
+    assert.equal(resolveRuntimeForModel('haiku', 'anthropic'), 'claude-agent-sdk');
     assert.equal(resolveRuntimeForModel('deepseek-reasoner', 'deepseek'), 'openclaude-harness');
     assert.equal(resolveRuntimeForModel('gemini-3.1-pro-preview', 'gemini'), 'openclaude-harness');
     assert.equal(resolveRuntimeForModel('accounts/fireworks/models/glm-5', 'fireworks'), 'openclaude-harness');

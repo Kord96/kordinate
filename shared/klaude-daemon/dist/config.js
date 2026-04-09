@@ -1,6 +1,6 @@
 function resolveDefaultRuntime(provider) {
     if (provider === 'anthropic' || provider === 'claude') {
-        return 'claude-sdk';
+        return 'claude-agent-sdk';
     }
     return 'codex-sdk';
 }
@@ -10,7 +10,7 @@ export function resolveRuntimeForModel(model, provider) {
         || normalizedModel.includes('sonnet')
         || normalizedModel.includes('haiku')
         || normalizedModel.includes('opus')) {
-        return 'claude-sdk';
+        return 'claude-agent-sdk';
     }
     if (normalizedModel.includes('gpt')) {
         return 'codex-sdk';
@@ -22,7 +22,7 @@ export function resolveRuntimeForModel(model, provider) {
 function buildClaudeExecutionProfile(provider) {
     return {
         provider,
-        runtime: 'claude-sdk',
+        runtime: 'claude-agent-sdk',
         model: process.env.DAEMON_MODEL ?? 'claude-sonnet-4-5',
         apiKey: process.env.BACKEND_API_KEY ?? process.env.ANTHROPIC_API_KEY,
         baseUrl: process.env.BACKEND_BASE_URL,
@@ -80,7 +80,7 @@ export function loadDaemonConfig() {
     const model = process.env.DAEMON_MODEL;
     const runtime = process.env.DAEMON_RUNTIME
         ?? (model ? resolveRuntimeForModel(model, provider) : resolveDefaultRuntime(provider));
-    const executionProfile = runtime === 'claude-sdk'
+    const executionProfile = runtime === 'claude-agent-sdk'
         ? buildClaudeExecutionProfile(provider)
         : runtime === 'openclaude-harness'
             ? buildOpenClaudeExecutionProfile(provider)

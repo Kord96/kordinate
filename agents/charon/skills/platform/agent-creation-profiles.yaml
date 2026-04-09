@@ -14,6 +14,19 @@ profiles:
       secret_key: api-key
     required_choices: []
 
+  generic-opus:
+    description: Generic daemon-backed Claude Opus agent with no specialist seed requirements.
+    defaults:
+      flavor: generic
+      image_customization: none
+      provider: anthropic
+      model: opus
+      backend: anthropic
+      secret_env: ANTHROPIC_API_KEY
+      secret_name: anthropic-api
+      secret_key: api-key
+    required_choices: []
+
   augur-opus:
     description: Augur specialist pinned to Claude Opus via the native Claude SDK runtime.
     defaults:
@@ -38,7 +51,7 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  augur-pro:
+  augur-gemini-pro:
     description: Augur specialist pinned to Gemini Pro over the OpenAI-compatible Gemini endpoint.
     defaults:
       flavor: augur
@@ -63,7 +76,7 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  augur-reasoner:
+  augur-deepseek-v32-reasoner:
     description: Augur specialist pinned to DeepSeek Reasoner.
     defaults:
       flavor: augur
@@ -139,8 +152,8 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  charon:
-    description: Charon specialist deployment using the built-in Charon flavor seed.
+  charon-sonnet:
+    description: Charon specialist deployment using the built-in Charon flavor seed on Claude Sonnet.
     defaults:
       flavor: charon
       image_customization: agent-charon
@@ -152,8 +165,8 @@ profiles:
       secret_key: api-key
     required_choices: []
 
-  alfred:
-    description: Alfred specialist deployment using the cheap DeepSeek-backed Alfred flavor seed.
+  alfred-deepseek-chat:
+    description: Alfred specialist deployment using the DeepSeek Chat-backed Alfred flavor seed.
     defaults:
       flavor: alfred
       image_customization: none
@@ -166,8 +179,8 @@ profiles:
       secret_key: api-key
     required_choices: []
 
-  sauron:
-    description: Sauron specialist deployment using the built-in Sauron flavor seed.
+  sauron-sonnet:
+    description: Sauron specialist deployment using the built-in Sauron flavor seed on Claude Sonnet.
     defaults:
       flavor: sauron
       image_customization: none
@@ -179,8 +192,8 @@ profiles:
       secret_key: api-key
     required_choices: []
 
-  warden:
-    description: Warden specialist deployment using the built-in Warden flavor seed.
+  warden-haiku:
+    description: Warden specialist deployment using the built-in Warden flavor seed on Claude Haiku.
     defaults:
       flavor: warden
       image_customization: none

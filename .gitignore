@@ -41,6 +41,8 @@ agent-state/
 /agents/augur/*
 !/agents/augur/scripts/
 /agents/augur/scripts/*
+!/agents/augur/scripts/facts/
+/agents/augur/scripts/facts/*
 !/agents/augur/scripts/concept_meta_migration.py
 !/agents/augur/scripts/extract_facts.py
 !/agents/augur/scripts/fact_extractor_support.py
@@ -53,8 +55,15 @@ agent-state/
 !/agents/augur/scripts/detector-audit-prompt.md
 !/agents/augur/scripts/detector-audit-notes.md
 !/agents/augur/scripts/concept-decision-design.md
+!/agents/augur/scripts/codesight-fact-layer-gap-analysis.md
 !/agents/augur/scripts/prepare_semantic_review.py
 !/agents/augur/scripts/run_pilot_slice.py
+!/agents/augur/scripts/facts/__init__.py
+!/agents/augur/scripts/facts/common.py
+!/agents/augur/scripts/facts/runtime_signals.py
+!/agents/augur/scripts/facts/structural.py
+!/agents/augur/scripts/facts/go_structured.py
+!/agents/augur/scripts/facts/csharp_structured.py
 !/agents/augur/memory/
 /agents/augur/memory/*
 !/agents/augur/memory/tools.md

@@ -1,0 +1,11 @@
+domain: boundaries
+signals:
+  - interface
+  - implements
+  - Repository
+  - Store
+  - Provider
+  - Adapter
+  - Service
+  - Bind
+  - Factory

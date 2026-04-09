@@ -209,7 +209,7 @@ async function maybeReflectWithOpenClaude(taskOutput, options, reflectionPrompt)
         return { errors: [message] };
     }
 }
-export class ClaudeSdkAdapter {
+export class ClaudeAgentSdkAdapter {
     model;
     apiKey;
     constructor(model, apiKey) {
@@ -389,8 +389,8 @@ export class OpenClaudeHarnessAdapter {
     }
 }
 export function createProviderAdapter(executionProfile) {
-    if (executionProfile.runtime === 'claude-sdk') {
-        return new ClaudeSdkAdapter(executionProfile.model, executionProfile.apiKey);
+    if (executionProfile.runtime === 'claude-agent-sdk') {
+        return new ClaudeAgentSdkAdapter(executionProfile.model, executionProfile.apiKey);
     }
     if (executionProfile.runtime === 'openclaude-harness') {
         return new OpenClaudeHarnessAdapter(executionProfile.model, {

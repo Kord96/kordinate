@@ -7,7 +7,7 @@ Raw reflection records are append-only evidence. They are independent of `/impro
 ## Recommended Path
 
 ```text
-agents/augur/memory/workspace/reflections/runs/<reflection-id>.json
+/kord/augur/memory/projects/<repo>/reflections/runs/<reflection-id>.json
 ```
 
 ## Schema

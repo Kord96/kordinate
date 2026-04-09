@@ -1,0 +1,11 @@
+domain: registrations
+signals:
+  - registerPlugin
+  - RegisterWorkflow
+  - RegisterActivity
+  - AddSingleton
+  - AddScoped
+  - AddTransient
+  - ServiceCollection
+  - registerService
+  - plugin manifest

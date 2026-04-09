@@ -1,0 +1,4 @@
+domain: handlers
+enabled: true
+class: signature
+description: Detect handler entrypoints such as command handlers, request handlers, gRPC handlers, and workflow/activity handlers.

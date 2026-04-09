@@ -15,6 +15,7 @@ Two modes:
 
 1. Resolve the target agent from discovery when available. If discovery is unavailable, fall back to the known request topic equal to the agent name.
 2. Create a unique reply topic for the caller.
+   - for sticky multi-turn sessions, reuse the same reply topic or use `--session-id` in the helper
 3. Publish one Kafka request message to the agent request topic.
 4. Wait on the reply topic for a matching `correlation_id`.
 5. Return the `output`, `status`, any `errors`, and timing metadata.
@@ -23,12 +24,17 @@ Two modes:
 
 Use [agent_prompt.py](/kord/workstation/home/project/kordinate/lib/scripts/agent_prompt.py) when available.
 
+It supports both:
+- direct discovery HTTP when the discovery service is reachable
+- `kubectl exec` fallback into `deploy/klaude-discovery` when discovery is cluster-only
+
 Examples:
 
 ```bash
 python lib/scripts/agent_prompt.py discover
 python lib/scripts/agent_prompt.py discover --agent alfred
 python lib/scripts/agent_prompt.py prompt alfred "Use your /kord alfred get skill with arguments: key kordinate/deepseek/api-key" --working-dir /kord/shared/repos/kordinate
+python lib/scripts/agent_prompt.py prompt augur-opus "Analyze the auth layer" --working-dir /kord/shared/repos/kordinate --session-id auth-review
 ```
 
 ## Request Contract
@@ -60,6 +66,7 @@ Optional fields:
 
 Rules:
 - `sender` is the reply topic. Do not use `reply_to`.
+- reusing the same `sender` value across related requests keeps them on the same Kafka partition when the publisher uses sender-keyed routing
 - `working_dir` is a hint for where the agent should focus first.
 - `correlation_id` must be caller-generated and unique per request.
 - `agent_params` is for agent-specific structured flags only.

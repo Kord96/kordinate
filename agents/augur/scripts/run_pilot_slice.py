@@ -13,6 +13,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_DIR = Path(__file__).resolve().parent
 REFLECTION_PROMPT_PATH = ROOT / "skills" / "analyze" / "reflection-prompt.md"
+RUNTIME_ROOT = Path("/kord/augur")
 
 
 def utc_now() -> str:
@@ -21,6 +22,10 @@ def utc_now() -> str:
 
 def slug_repo(repo_root: Path) -> str:
     return repo_root.name.replace("/", "--")
+
+
+def project_memory_dir(repo_root: Path) -> Path:
+    return RUNTIME_ROOT / "memory" / "projects" / slug_repo(repo_root)
 
 
 def git_sha(repo_root: Path) -> str:
@@ -48,7 +53,7 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the deterministic Augur pilot slice and emit a run manifest.")
     parser.add_argument("repo_root", type=Path, help="Repository root to analyze.")
-    parser.add_argument("--output-dir", type=Path, required=True, help="Directory for pilot artifacts.")
+    parser.add_argument("--output-dir", type=Path, help="Directory for pilot artifacts. Defaults to /kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/")
     parser.add_argument("--model", default="augur", help="Model label to record in the run manifest.")
     parser.add_argument("--provider", default="augur", help="Provider label to record in the run manifest.")
     parser.add_argument("--memory-bundle", default="selective")
@@ -61,14 +66,15 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
-    output_dir = args.output_dir.resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = utc_now()
     pinned_sha = git_sha(repo_root)
     sha_short = (pinned_sha[:7] or "no-sha")
     repo_slug = slug_repo(repo_root)
     run_id = f"{timestamp.replace(':', '-')}__{repo_slug}__{sha_short}__{args.model}__{args.memory_bundle}__{args.skill_bundle}__run-{args.run_number}"
+    project_mem = project_memory_dir(repo_root)
+    output_dir = (args.output_dir.resolve() if args.output_dir else project_mem / "benchmark" / "runs" / run_id)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     facts_path = output_dir / "facts.json"
     concepts_path = output_dir / "concepts.json"
@@ -90,7 +96,7 @@ def main() -> int:
     # setup
     setup_start = time.perf_counter()
     reflection_id = run_id
-    reflection_path = ROOT / "memory" / "workspace" / "reflections" / "runs" / f"{reflection_id}.json"
+    reflection_path = project_mem / "reflections" / "runs" / f"{reflection_id}.json"
     runtime_ms["setup"] = int((time.perf_counter() - setup_start) * 1000)
 
     rc, _out, err, elapsed = run_cmd(

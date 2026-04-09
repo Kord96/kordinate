@@ -12,6 +12,47 @@ version: 2
 # `runtime.daemon` describes the shared daemon runtime/backend selection.
 
 agents:
+  - name: generic-opus
+    flavor: generic
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: claude-agent-sdk
+        provider: anthropic
+        model: opus
+        backend:
+          name: anthropic
+        secret:
+          env: ANTHROPIC_API_KEY
+          name: anthropic-api
+          key: api-key
+      kafka:
+        request_topic: generic-opus
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        project_dir: /runtime/generic-opus
+        state_dir: /kord/generic-opus
+    deploy:
+      replicas:
+        min: 0
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
   - name: augur-opus
     flavor: augur
     image:
@@ -20,7 +61,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: claude-sdk
+        kind: claude-agent-sdk
         provider: anthropic
         model: opus
         backend:
@@ -44,7 +85,7 @@ agents:
     deploy:
       replicas:
         min: 0
-        max: 1
+        max: 3
         cooldown: 300
       resources:
         requests:
@@ -53,7 +94,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: augur-pro
+  - name: augur-gemini-pro
     flavor: augur
     image:
       base: agent-base
@@ -72,7 +113,7 @@ agents:
           name: gemini-api
           key: api-key
       kafka:
-        request_topic: augur-pro
+        request_topic: augur-gemini-pro
         reply_required: true
         request_schema:
           required: [type, sender, correlation_id, prompt]
@@ -81,12 +122,12 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-pro
-        state_dir: /kord/augur-pro
+        project_dir: /runtime/augur-gemini-pro
+        state_dir: /kord/augur-gemini-pro
     deploy:
       replicas:
         min: 0
-        max: 1
+        max: 3
         cooldown: 300
       resources:
         requests:
@@ -95,7 +136,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: augur-reasoner
+  - name: augur-deepseek-v32-reasoner
     flavor: augur
     image:
       base: agent-base
@@ -114,7 +155,7 @@ agents:
           name: deepseek-api
           key: api-key
       kafka:
-        request_topic: augur-reasoner
+        request_topic: augur-deepseek-v32-reasoner
         reply_required: true
         request_schema:
           required: [type, sender, correlation_id, prompt]
@@ -123,12 +164,12 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/augur-reasoner
-        state_dir: /kord/augur-reasoner
+        project_dir: /runtime/augur-deepseek-v32-reasoner
+        state_dir: /kord/augur-deepseek-v32-reasoner
     deploy:
       replicas:
         min: 0
-        max: 1
+        max: 3
         cooldown: 300
       resources:
         requests:
@@ -170,7 +211,7 @@ agents:
     deploy:
       replicas:
         min: 0
-        max: 1
+        max: 3
         cooldown: 300
       resources:
         requests:
@@ -213,7 +254,7 @@ agents:
     deploy:
       replicas:
         min: 0
-        max: 1
+        max: 3
         cooldown: 300
       resources:
         requests:
@@ -222,7 +263,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: charon
+  - name: charon-sonnet
     flavor: charon
     image:
       base: agent-base
@@ -230,7 +271,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: claude-sdk
+        kind: claude-agent-sdk
         provider: anthropic
         model: sonnet
         backend:
@@ -240,17 +281,17 @@ agents:
           name: anthropic-api
           key: api-key
       kafka:
-        request_topic: agent.charon
+        request_topic: charon-sonnet
         reply_required: true
         request_schema:
-          required: [prompt, reply_to]
-          optional: [timeout_ms, reflect]
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
         response_schema:
-          required: [status, output]
-          optional: [reflection, errors]
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/charon
-        state_dir: /kord/charon
+        project_dir: /runtime/charon-sonnet
+        state_dir: /kord/charon-sonnet
     deploy:
       replicas:
         min: 0
@@ -263,7 +304,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: warden
+  - name: warden-haiku
     flavor: warden
     image:
       base: agent-base
@@ -271,7 +312,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: claude-sdk
+        kind: claude-agent-sdk
         provider: anthropic
         model: haiku
         backend:
@@ -281,17 +322,17 @@ agents:
           name: anthropic-api
           key: api-key
       kafka:
-        request_topic: agent.warden
+        request_topic: warden-haiku
         reply_required: true
         request_schema:
-          required: [prompt, reply_to]
-          optional: [timeout_ms, reflect]
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
         response_schema:
-          required: [status, output]
-          optional: [reflection, errors]
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/warden
-        state_dir: /kord/warden
+        project_dir: /runtime/warden-haiku
+        state_dir: /kord/warden-haiku
     deploy:
       replicas:
         min: 0
@@ -304,7 +345,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: sauron
+  - name: sauron-sonnet
     flavor: sauron
     image:
       base: agent-base
@@ -312,7 +353,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: claude-sdk
+        kind: claude-agent-sdk
         provider: anthropic
         model: sonnet
         backend:
@@ -322,17 +363,17 @@ agents:
           name: anthropic-api
           key: api-key
       kafka:
-        request_topic: agent.sauron
+        request_topic: sauron-sonnet
         reply_required: true
         request_schema:
-          required: [prompt, reply_to]
-          optional: [timeout_ms, reflect]
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
         response_schema:
-          required: [status, output]
-          optional: [reflection, errors]
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/sauron
-        state_dir: /kord/sauron
+        project_dir: /runtime/sauron-sonnet
+        state_dir: /kord/sauron-sonnet
     deploy:
       replicas:
         min: 0
@@ -345,7 +386,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: alfred
+  - name: alfred-deepseek-chat
     flavor: alfred
     image:
       base: agent-base
@@ -364,17 +405,17 @@ agents:
           name: deepseek-api
           key: api-key
       kafka:
-        request_topic: agent.alfred
+        request_topic: alfred-deepseek-chat
         reply_required: true
         request_schema:
-          required: [prompt, reply_to]
-          optional: [timeout_ms, reflect]
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
         response_schema:
-          required: [status, output]
-          optional: [reflection, errors]
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
       state:
-        project_dir: /runtime/alfred
-        state_dir: /kord/alfred
+        project_dir: /runtime/alfred-deepseek-chat
+        state_dir: /kord/alfred-deepseek-chat
     deploy:
       replicas:
         min: 0

@@ -1,5 +1,5 @@
 export type ProviderName = string
-export type RuntimeKind = 'codex-sdk' | 'claude-sdk' | 'openclaude-harness'
+export type RuntimeKind = 'codex-sdk' | 'claude-agent-sdk' | 'openclaude-harness'
 
 export interface ExecutionProfile {
   provider: ProviderName
@@ -24,7 +24,7 @@ export interface DaemonConfig {
 
 function resolveDefaultRuntime(provider?: string): RuntimeKind {
   if (provider === 'anthropic' || provider === 'claude') {
-    return 'claude-sdk'
+    return 'claude-agent-sdk'
   }
   return 'codex-sdk'
 }
@@ -37,7 +37,7 @@ export function resolveRuntimeForModel(model?: string, provider?: string): Runti
     || normalizedModel.includes('haiku')
     || normalizedModel.includes('opus')
   ) {
-    return 'claude-sdk'
+    return 'claude-agent-sdk'
   }
   if (normalizedModel.includes('gpt')) {
     return 'codex-sdk'
@@ -50,7 +50,7 @@ export function resolveRuntimeForModel(model?: string, provider?: string): Runti
 function buildClaudeExecutionProfile(provider: ProviderName): ExecutionProfile {
   return {
     provider,
-    runtime: 'claude-sdk',
+    runtime: 'claude-agent-sdk',
     model: process.env.DAEMON_MODEL ?? 'claude-sonnet-4-5',
     apiKey: process.env.BACKEND_API_KEY ?? process.env.ANTHROPIC_API_KEY,
     baseUrl: process.env.BACKEND_BASE_URL,
@@ -116,7 +116,7 @@ export function loadDaemonConfig(): DaemonConfig {
   const runtime = (process.env.DAEMON_RUNTIME as RuntimeKind | undefined)
     ?? (model ? resolveRuntimeForModel(model, provider) : resolveDefaultRuntime(provider))
 
-  const executionProfile = runtime === 'claude-sdk'
+  const executionProfile = runtime === 'claude-agent-sdk'
     ? buildClaudeExecutionProfile(provider)
     : runtime === 'openclaude-harness'
       ? buildOpenClaudeExecutionProfile(provider)

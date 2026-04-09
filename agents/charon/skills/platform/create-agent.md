@@ -8,7 +8,7 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
 
 ## Command Shape
 
-`/platform create-agent <name> [--profile generic|augur-opus|augur-pro|augur-reasoner|augur-glm5|augur-gpt54|charon|alfred|sauron|warden] [profile-specific flags]`
+`/platform create-agent <name> [--profile generic|generic-opus|augur-opus|augur-gemini-pro|augur-deepseek-v32-reasoner|augur-glm5|augur-gpt54|charon-sonnet|alfred-deepseek-chat|sauron-sonnet|warden-haiku] [profile-specific flags]`
 
 ## Steps
 
@@ -24,7 +24,7 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
    - profile defaults also determine the pod secret wiring unless explicitly overridden
    - runtime selection is inferred from the chosen model unless `--runtime-kind` is explicitly set:
      - GPT family -> `codex-sdk`
-     - Claude family -> `claude-sdk`
+     - Claude family -> `claude-agent-sdk`
      - everything else -> `openclaude-harness`
 
 3. Append the new spec entry using:

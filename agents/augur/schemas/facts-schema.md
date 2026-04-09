@@ -22,6 +22,10 @@ $MEM/
     routes.json
     models.json
     middleware.json
+    registrations.json
+    handlers.json
+    dispatch-bindings.json
+    boundaries.json
     external-clients.json
     config.json
     import-graph.json
@@ -62,7 +66,7 @@ $MEM/
   "facts": [
     {
       "id": "<stable fact id>",
-      "kind": "framework | route | graphql-operation | grpc-service | websocket-channel | model | state-store | middleware | external-client | config-source | import-edge | hot-file | job | event | auth-surface",
+      "kind": "framework | route | graphql-operation | grpc-service | websocket-channel | model | state-store | middleware | registration | handler | dispatch-binding | boundary | external-client | config-source | import-edge | hot-file | job | event | auth-surface",
       "domain": "<domain file name>",
       "summary": "<one sentence describing the observation>",
       "confidence": "high | medium | low",
@@ -148,6 +152,32 @@ Expected `raw_evidence` keys:
 - `retry`
 - `circuit_breaker`
 - `fallback`
+
+### Registrations / Handlers / Dispatch / Boundaries
+
+Capture structural runtime wiring that often reveals architecture before higher-level concepts can be inferred.
+
+Expected `raw_evidence` keys:
+- Registrations:
+  - `registration_type`
+  - `symbol`
+  - `target`
+  - `runtime_role`
+- Handlers:
+  - `handler_type`
+  - `name`
+  - `target`
+  - `transport`
+- Dispatch bindings:
+  - `binding_type`
+  - `channel`
+  - `producer_or_consumer`
+  - `target`
+- Boundaries:
+  - `boundary_type`
+  - `interface`
+  - `implementation`
+  - `storage_role`
 
 ### Import Graph / Hot Files
 

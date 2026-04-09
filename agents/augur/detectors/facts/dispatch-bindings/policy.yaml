@@ -1,0 +1,4 @@
+domain: dispatch-bindings
+enabled: true
+class: signature
+description: Detect queue, topic, bus, and dispatch bindings between producers, consumers, and handlers.

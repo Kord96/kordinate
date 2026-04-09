@@ -1,0 +1,11 @@
+domain: handlers
+signals:
+  - HandleFunc
+  - Controller
+  - Handler
+  - Activity
+  - Workflow
+  - Consumer
+  - Subscribe
+  - OnMessage
+  - @RequestMapping

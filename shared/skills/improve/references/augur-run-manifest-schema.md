@@ -15,7 +15,7 @@ The run manifest is the canonical operational record for one execution:
 ## Recommended Path
 
 ```text
-benchmark/manifests/<timestamp>/<model>/<memory-bundle>__<skill-bundle>/<owner>--<repo>.json
+/kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/run-manifest.json
 ```
 
 ## Schema
@@ -53,10 +53,10 @@ benchmark/manifests/<timestamp>/<model>/<memory-bundle>__<skill-bundle>/<owner>-
   },
   "estimated_cost": 0.0,
   "outputs": {
-    "atlas_path": "benchmark/runs/.../atlas.json",
-    "facts_dir": "benchmark/runs/.../facts/",
-    "stories_dir": "benchmark/runs/.../stories/",
-    "transcript_path": "benchmark/runs/.../transcript.md"
+    "atlas_path": "/kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/atlas.json",
+    "facts_dir": "/kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/facts/",
+    "stories_dir": "/kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/stories/",
+    "transcript_path": "/kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/transcript.md"
   },
   "validation": {
     "output_files_exist": true,
@@ -78,7 +78,7 @@ benchmark/manifests/<timestamp>/<model>/<memory-bundle>__<skill-bundle>/<owner>-
   "grading_path": "benchmark/scorecards/.../grading.json",
   "comparison_path": "benchmark/scorecards/.../comparison.json",
   "reflection_id": "2026-04-09T12-00-00Z__microsoft--vscode__abc1234__augur__selective__holistic__run-1",
-  "reflection_path": "agents/augur/memory/workspace/reflections/runs/2026-04-09T12-00-00Z__microsoft--vscode__abc1234__augur__selective__holistic__run-1.json",
+  "reflection_path": "/kord/augur/memory/projects/<repo>/reflections/runs/2026-04-09T12-00-00Z__microsoft--vscode__abc1234__augur__selective__holistic__run-1.json",
   "notes": []
 }
 ```

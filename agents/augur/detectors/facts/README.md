@@ -34,6 +34,10 @@ Initial domains:
 - `models`
 - `middleware`
 - `external-clients`
+- `registrations`
+- `handlers`
+- `dispatch-bindings`
+- `boundaries`
 - `config`
 - `import-graph`
 - `hot-files`

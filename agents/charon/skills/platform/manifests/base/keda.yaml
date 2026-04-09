@@ -5,11 +5,41 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
+  name: agent-generic-opus
+spec:
+  pollingInterval: 30
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-generic-opus
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: generic-opus
+        topic: generic-opus
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
   name: agent-augur-opus
 spec:
   pollingInterval: 30
   minReplicaCount: 0
-  maxReplicaCount: 1
+  maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -35,11 +65,11 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-augur-pro
+  name: agent-augur-gemini-pro
 spec:
   pollingInterval: 30
   minReplicaCount: 0
-  maxReplicaCount: 1
+  maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -50,13 +80,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-augur-pro
+    name: agent-augur-gemini-pro
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: augur-pro
-        topic: augur-pro
+        consumerGroup: augur-gemini-pro
+        topic: augur-gemini-pro
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -65,11 +95,11 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-augur-reasoner
+  name: agent-augur-deepseek-v32-reasoner
 spec:
   pollingInterval: 30
   minReplicaCount: 0
-  maxReplicaCount: 1
+  maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -80,13 +110,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-augur-reasoner
+    name: agent-augur-deepseek-v32-reasoner
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: augur-reasoner
-        topic: augur-reasoner
+        consumerGroup: augur-deepseek-v32-reasoner
+        topic: augur-deepseek-v32-reasoner
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -99,7 +129,7 @@ metadata:
 spec:
   pollingInterval: 30
   minReplicaCount: 0
-  maxReplicaCount: 1
+  maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -129,7 +159,7 @@ metadata:
 spec:
   pollingInterval: 30
   minReplicaCount: 0
-  maxReplicaCount: 1
+  maxReplicaCount: 3
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -155,7 +185,7 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-charon
+  name: agent-charon-sonnet
 spec:
   pollingInterval: 30
   minReplicaCount: 0
@@ -170,13 +200,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-charon
+    name: agent-charon-sonnet
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent.charon
-        topic: agent.charon
+        consumerGroup: charon-sonnet
+        topic: charon-sonnet
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -185,7 +215,7 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-warden
+  name: agent-warden-haiku
 spec:
   pollingInterval: 30
   minReplicaCount: 0
@@ -200,13 +230,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-warden
+    name: agent-warden-haiku
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent.warden
-        topic: agent.warden
+        consumerGroup: warden-haiku
+        topic: warden-haiku
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -215,7 +245,7 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-sauron
+  name: agent-sauron-sonnet
 spec:
   pollingInterval: 30
   minReplicaCount: 0
@@ -230,13 +260,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-sauron
+    name: agent-sauron-sonnet
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent.sauron
-        topic: agent.sauron
+        consumerGroup: sauron-sonnet
+        topic: sauron-sonnet
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
@@ -245,7 +275,7 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-alfred
+  name: agent-alfred-deepseek-chat
 spec:
   pollingInterval: 30
   minReplicaCount: 0
@@ -260,13 +290,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-alfred
+    name: agent-alfred-deepseek-chat
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: agent.alfred
-        topic: agent.alfred
+        consumerGroup: alfred-deepseek-chat
+        topic: alfred-deepseek-chat
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest

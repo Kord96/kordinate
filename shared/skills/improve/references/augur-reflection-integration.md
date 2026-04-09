@@ -61,13 +61,13 @@ Reflections should be stored under Augur-owned paths whether or not `/improve` i
 Recommended root:
 
 ```text
-agents/augur/memory/workspace/reflections/
+/kord/augur/memory/projects/<repo>/reflections/
 ```
 
 Recommended subdirectories:
 
 ```text
-agents/augur/memory/workspace/reflections/
+/kord/augur/memory/projects/<repo>/reflections/
   runs/
   summaries/
   promoted/
@@ -85,7 +85,7 @@ Use:
 Per-run location:
 
 ```text
-agents/augur/memory/workspace/reflections/runs/<reflection-id>.json
+/kord/augur/memory/projects/<repo>/reflections/runs/<reflection-id>.json
 ```
 
 This should be written directly from the runtime response rather than relying only on Kafka topic retention.
@@ -197,7 +197,7 @@ Build a reflection summary across runs:
 Recommended output:
 
 ```text
-agents/augur/memory/workspace/reflections/summaries/<summary-id>.json
+/kord/augur/memory/projects/<repo>/reflections/summaries/<summary-id>.json
 ```
 
 ### During analysis
@@ -284,7 +284,7 @@ Examples not worth promoting:
 Add these locations under Augur-owned workspace memory:
 
 ```text
-agents/augur/memory/workspace/reflections/
+/kord/augur/memory/projects/<repo>/reflections/
   runs/
   summaries/
   promoted/

@@ -228,7 +228,7 @@ async function maybeReflectWithOpenClaude(taskOutput: string, options: { model: 
   }
 }
 
-export class ClaudeSdkAdapter implements ProviderSessionAdapter {
+export class ClaudeAgentSdkAdapter implements ProviderSessionAdapter {
   private readonly model: string
   private readonly apiKey?: string
 
@@ -439,8 +439,8 @@ export class OpenClaudeHarnessAdapter implements ProviderSessionAdapter {
 }
 
 export function createProviderAdapter(executionProfile: ExecutionProfile): ProviderSessionAdapter {
-  if (executionProfile.runtime === 'claude-sdk') {
-    return new ClaudeSdkAdapter(executionProfile.model, executionProfile.apiKey)
+  if (executionProfile.runtime === 'claude-agent-sdk') {
+    return new ClaudeAgentSdkAdapter(executionProfile.model, executionProfile.apiKey)
   }
   if (executionProfile.runtime === 'openclaude-harness') {
     return new OpenClaudeHarnessAdapter(executionProfile.model, {

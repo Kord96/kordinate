@@ -1,0 +1,11 @@
+domain: dispatch-bindings
+signals:
+  - Publish
+  - Subscribe
+  - Dispatch
+  - ExecuteAsync
+  - topic
+  - queue
+  - consumer
+  - producer
+  - commandBus

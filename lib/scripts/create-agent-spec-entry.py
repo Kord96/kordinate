@@ -13,7 +13,7 @@ SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron", "warden"}
 def infer_runtime_kind(model: str, provider: str) -> str:
     normalized_model = (model or "").strip().lower()
     if any(token in normalized_model for token in ("claude", "sonnet", "haiku", "opus")):
-        return "claude-sdk"
+        return "claude-agent-sdk"
     if "gpt" in normalized_model:
         return "codex-sdk"
     return "openclaude-harness"

@@ -58,6 +58,7 @@ Request contract:
 
 Notes:
 - `sender` is the reply topic
+- reuse the same `sender` value for related requests when you want sticky routing to the same replica
 - `correlation_id` should be caller-generated
 - `working_dir` is optional and tells the agent where to focus first
 - `timeout_ms` and `reflect` are optional

@@ -23,6 +23,30 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
+from facts import (
+    extract_auth_surfaces,
+    extract_boundaries,
+    extract_csharp_boundaries,
+    extract_csharp_dispatch_bindings,
+    extract_csharp_handlers,
+    extract_csharp_registrations,
+    extract_csharp_routes_structured,
+    extract_config_sources,
+    extract_dispatch_bindings,
+    extract_entity_framework_models,
+    extract_events,
+    extract_go_boundaries,
+    extract_go_dispatch_bindings,
+    extract_go_gorm_models,
+    extract_go_handlers,
+    extract_go_registrations,
+    extract_go_routes_structured,
+    extract_handlers,
+    extract_jobs,
+    extract_registrations,
+    line_number_for_offset,
+)
+
 
 MAX_FILE_BYTES = 100 * 1024
 ROOT = Path(__file__).resolve().parents[1]
@@ -1099,68 +1123,6 @@ def extract_ast_auth_surfaces(path: Path) -> list[dict[str, Any]]:
     return surfaces
 
 
-def extract_auth_surfaces(text: str, suffix: str) -> list[dict[str, Any]]:
-    surfaces: list[dict[str, Any]] = []
-    patterns = [
-        ("oauth-oidc", r"\boauth\b|\boidc\b|\bopenid\b"),
-        ("jwt", r"\bjwt\b|\bbearer\b"),
-        ("session-auth", r"\bsession\b|\bcookie\b"),
-        ("api-key-auth", r"x-api-key|api[_-]?key"),
-        ("rbac", r"\brbac\b|\brole\b|\bpermission\b"),
-        ("route-guard", r"\bguard\b|\bauthorize\b|\brequireAuth\b|@UseGuards\b"),
-    ]
-    lowered = text.lower()
-    for kind, pattern in patterns:
-        if re.search(pattern, lowered, re.I):
-            surfaces.append({"technology": kind, "auth": kind})
-    return surfaces
-
-
-def extract_config_sources(text: str, suffix: str) -> list[dict[str, Any]]:
-    configs: list[dict[str, Any]] = []
-    patterns = [
-        ("env", r"process\.env|os\.environ|getenv\(|environ\["),
-        ("dotenv", r"\bdotenv\b|load_dotenv"),
-        ("yaml", r"\.ya?ml\b|safe_load\(|yaml\."),
-        ("json", r"\.json\b|json\.load"),
-        ("service-url", r"https?://[^\s\"'`>]+|[A-Z0-9_]+_URL\b"),
-        ("secret", r"\bsecret\b|\btoken\b|\bpassword\b|\bapi[_-]?key\b"),
-    ]
-    lowered = text.lower()
-    for source_type, pattern in patterns:
-        if re.search(pattern, text if "URL" in pattern else lowered, re.I):
-            configs.append({"source_type": source_type})
-    return configs
-
-
-def extract_jobs(text: str, suffix: str) -> list[dict[str, Any]]:
-    jobs: list[dict[str, Any]] = []
-    patterns = [
-        ("scheduler", r"\bcron\b|\bcrontab\b|\bschedule\b|\bapscheduler\b"),
-        ("worker", r"\bworker\b|\bconsumer\b|\bcelery\b|\bbullmq\b|\bqueue\.process\b"),
-        ("background-task", r"create_task\(|setInterval\(|BackgroundTasks\b"),
-    ]
-    lowered = text.lower()
-    for job_type, pattern in patterns:
-        if re.search(pattern, lowered, re.I):
-            jobs.append({"job_type": job_type})
-    return jobs
-
-
-def extract_events(text: str, suffix: str) -> list[dict[str, Any]]:
-    events: list[dict[str, Any]] = []
-    patterns = [
-        ("publish", r"\bpublish\(|\bemit\(|producer\.send|kafka\.producer"),
-        ("consume", r"\bconsume\(|\bon\(['\"]message|consumer\.run|kafka\.consumer"),
-        ("webhook", r"\bwebhook\b"),
-    ]
-    lowered = text.lower()
-    for event_type, pattern in patterns:
-        if re.search(pattern, lowered, re.I):
-            events.append({"event_type": event_type})
-    return events
-
-
 def extract_python_imports_from_file(path: Path, text: str) -> list[str]:
     imports = extract_python_imports(text)
     if path.name in {"__init__.py", "manage.py", "main.py", "app.py"}:
@@ -1445,6 +1407,78 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
             }
         )
 
+    for idx, item in enumerate(extract_registrations(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("registration", rel, item["registration_type"], str(idx)),
+                "kind": "registration",
+                "domain": "registrations",
+                "summary": f"Detected {item['registration_type']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "python-registration-detector", "class": "signature", "strength": 3, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_handlers(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("handler", rel, item["handler_type"], item["name"], str(idx)),
+                "kind": "handler",
+                "domain": "handlers",
+                "summary": f"Detected {item['handler_type']} {item['name']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "python-handler-detector", "class": "signature", "strength": 3, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_dispatch_bindings(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("dispatch", rel, item["binding_type"], item["channel"], str(idx)),
+                "kind": "dispatch-binding",
+                "domain": "dispatch-bindings",
+                "summary": f"Detected {item['binding_type']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "python-dispatch-detector", "class": "signature", "strength": 3, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_boundaries(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("boundary", rel, item["boundary_type"], item["interface"], item["implementation"], str(idx)),
+                "kind": "boundary",
+                "domain": "boundaries",
+                "summary": f"Detected {item['boundary_type']} boundary",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "python-boundary-detector", "class": "signature", "strength": 3, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
     return facts
 
 
@@ -1710,6 +1744,415 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
             }
         )
 
+    for idx, item in enumerate(extract_registrations(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("registration", rel, item["registration_type"], str(idx)),
+                "kind": "registration",
+                "domain": "registrations",
+                "summary": f"Detected {item['registration_type']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "js-registration-detector", "class": "signature", "strength": 3, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_handlers(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("handler", rel, item["handler_type"], item["name"], str(idx)),
+                "kind": "handler",
+                "domain": "handlers",
+                "summary": f"Detected {item['handler_type']} {item['name']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "js-handler-detector", "class": "signature", "strength": 3, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_dispatch_bindings(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("dispatch", rel, item["binding_type"], item["channel"], str(idx)),
+                "kind": "dispatch-binding",
+                "domain": "dispatch-bindings",
+                "summary": f"Detected {item['binding_type']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "js-dispatch-detector", "class": "signature", "strength": 3, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_boundaries(text, path.suffix.lower()), start=1):
+        facts.append(
+            {
+                "id": stable_id("boundary", rel, item["boundary_type"], item["interface"], item["implementation"], str(idx)),
+                "kind": "boundary",
+                "domain": "boundaries",
+                "summary": f"Detected {item['boundary_type']} boundary",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "js-boundary-detector", "class": "signature", "strength": 3, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    return facts
+
+
+def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
+    facts: list[dict[str, Any]] = []
+    rel = str(path.relative_to(root))
+    relationships = base_relationships(rel)
+
+    for idx, route in enumerate(extract_go_routes_structured(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("route", rel, route["method"], route["path"], route["handler"], str(idx)),
+                "kind": "route",
+                "domain": "routes",
+                "summary": f"{route['method']} {route['path']} handled by {route['handler']}",
+                "confidence": "high",
+                "framework_context": [],
+                "source_files": [f"{rel}:{route['line']}"],
+                "detector": {
+                    "id": "go-route-detector",
+                    "class": "structured",
+                    "strength": 5,
+                    "rule": route["decorator"],
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "style": "rest",
+                    "method": route["method"],
+                    "path": route["path"],
+                    "handler": route["handler"],
+                    "router": "go-structured",
+                    "auth": "",
+                    "validation": "",
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, model in enumerate(extract_go_gorm_models(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("model", rel, model["name"], str(idx)),
+                "kind": "model",
+                "domain": "models",
+                "summary": f"Detected GORM model {model['name']}",
+                "confidence": "high" if model["fields"] else "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{model['line']}"],
+                "detector": {
+                    "id": "go-gorm-model-detector",
+                    "class": "structured",
+                    "strength": 5,
+                    "rule": "gorm-struct",
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "technology": "gorm",
+                    "entity": model["name"],
+                    "fields": model["fields"],
+                    "relations": [],
+                    "migration_path": "",
+                    "store_purpose": "source-of-truth",
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_go_registrations(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("registration", rel, item["registration_type"], item["symbol"], str(idx)),
+                "kind": "registration",
+                "domain": "registrations",
+                "summary": f"Detected {item['registration_type']}",
+                "confidence": "high",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "go-registration-detector", "class": "structured", "strength": 4, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_go_handlers(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("handler", rel, item["handler_type"], item["name"], str(idx)),
+                "kind": "handler",
+                "domain": "handlers",
+                "summary": f"Detected {item['handler_type']} {item['name']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "go-handler-detector", "class": "structured", "strength": 4, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_go_dispatch_bindings(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("dispatch", rel, item["binding_type"], item["channel"], str(idx)),
+                "kind": "dispatch-binding",
+                "domain": "dispatch-bindings",
+                "summary": f"Detected {item['binding_type']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "go-dispatch-detector", "class": "structured", "strength": 4, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_go_boundaries(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("boundary", rel, item["boundary_type"], item["interface"], item["implementation"], str(idx)),
+                "kind": "boundary",
+                "domain": "boundaries",
+                "summary": f"Detected {item['boundary_type']} boundary",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "go-boundary-detector", "class": "structured", "strength": 4, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    return facts
+
+
+def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
+    facts: list[dict[str, Any]] = []
+    rel = str(path.relative_to(root))
+    relationships = base_relationships(rel)
+
+    for idx, route in enumerate(extract_csharp_routes_structured(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("route", rel, route["method"], route["path"], route["decorator"], str(idx)),
+                "kind": "route",
+                "domain": "routes",
+                "summary": f"{route['method']} {route['path']} via {route['decorator']}",
+                "confidence": "high",
+                "framework_context": [],
+                "source_files": [f"{rel}:{route['line']}"],
+                "detector": {
+                    "id": "csharp-route-detector",
+                    "class": "structured",
+                    "strength": 5,
+                    "rule": route["decorator"],
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "style": "rest",
+                    "method": route["method"],
+                    "path": route["path"],
+                    "handler": route["handler"],
+                    "router": "aspnet-structured",
+                    "auth": "",
+                    "validation": "",
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, model in enumerate(extract_entity_framework_models(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("model", rel, model["name"], str(idx)),
+                "kind": "model",
+                "domain": "models",
+                "summary": f"Detected Entity Framework model {model['name']}",
+                "confidence": "high" if model["fields"] else "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{model['line']}"],
+                "detector": {
+                    "id": "csharp-ef-model-detector",
+                    "class": "structured",
+                    "strength": 5,
+                    "rule": "entity-framework",
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "technology": "entity-framework",
+                    "entity": model["name"],
+                    "fields": model["fields"],
+                    "relations": [],
+                    "migration_path": "",
+                    "store_purpose": "source-of-truth",
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_csharp_registrations(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("registration", rel, item["registration_type"], item["symbol"], str(idx)),
+                "kind": "registration",
+                "domain": "registrations",
+                "summary": f"Detected {item['registration_type']}",
+                "confidence": "high",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "csharp-registration-detector", "class": "structured", "strength": 4, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_csharp_handlers(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("handler", rel, item["handler_type"], item["name"], str(idx)),
+                "kind": "handler",
+                "domain": "handlers",
+                "summary": f"Detected {item['handler_type']} {item['name']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "csharp-handler-detector", "class": "structured", "strength": 4, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_csharp_dispatch_bindings(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("dispatch", rel, item["binding_type"], item["channel"], str(idx)),
+                "kind": "dispatch-binding",
+                "domain": "dispatch-bindings",
+                "summary": f"Detected {item['binding_type']}",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "csharp-dispatch-detector", "class": "structured", "strength": 4, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, item in enumerate(extract_csharp_boundaries(text), start=1):
+        facts.append(
+            {
+                "id": stable_id("boundary", rel, item["boundary_type"], item["interface"], item["implementation"], str(idx)),
+                "kind": "boundary",
+                "domain": "boundaries",
+                "summary": f"Detected {item['boundary_type']} boundary",
+                "confidence": "medium",
+                "framework_context": [],
+                "source_files": [f"{rel}:{item['line']}"],
+                "detector": {"id": "csharp-boundary-detector", "class": "structured", "strength": 4, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "raw_evidence": item,
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": relationships,
+            }
+        )
+
+    for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    return facts
+
+
+def parse_generic_source_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
+    facts: list[dict[str, Any]] = []
+    rel = str(path.relative_to(root))
+    relationships = base_relationships(rel)
+
+    generic_specs = [
+        ("registration", "registrations", "generic-registration-detector", extract_registrations(text, path.suffix.lower()), "registration_type", lambda item: f"Detected {item['registration_type']}"),
+        ("handler", "handlers", "generic-handler-detector", extract_handlers(text, path.suffix.lower()), "handler_type", lambda item: f"Detected {item['handler_type']} {item['name']}"),
+        ("dispatch", "dispatch-bindings", "generic-dispatch-detector", extract_dispatch_bindings(text, path.suffix.lower()), "binding_type", lambda item: f"Detected {item['binding_type']}"),
+        ("boundary", "boundaries", "generic-boundary-detector", extract_boundaries(text, path.suffix.lower()), "boundary_type", lambda item: f"Detected {item['boundary_type']} boundary"),
+    ]
+    for prefix, domain, detector_id, items, rule_key, summary in generic_specs:
+        for idx, item in enumerate(items, start=1):
+            facts.append(
+                {
+                    "id": stable_id(prefix, rel, str(item.get(rule_key, "")), str(item.get("line", idx)), str(idx)),
+                    "kind": "dispatch-binding" if domain == "dispatch-bindings" else prefix,
+                    "domain": domain,
+                    "summary": summary(item),
+                    "confidence": "medium",
+                    "framework_context": [],
+                    "source_files": [f"{rel}:{int(item.get('line', 1))}"],
+                    "detector": {"id": detector_id, "class": "signature", "strength": 3, "rule": item.get(rule_key, ""), "bundle": "bundles/detectors/facts/all.json"},
+                    "raw_evidence": item,
+                    "negative_evidence": [],
+                    "contradictions": [],
+                    "relationships": relationships,
+                }
+            )
+
+    for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+    for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     return facts
 
 
@@ -1995,6 +2438,49 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                     "framework_context": [],
                     "status": "success",
                 }
+            )
+        elif suffix == ".go":
+            facts.extend(parse_go_file(path, root, text))
+            detectors_run.extend(
+                [
+                    {"id": "go-route-detector", "domain": "routes", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "go-gorm-model-detector", "domain": "models", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "go-registration-detector", "domain": "registrations", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "go-handler-detector", "domain": "handlers", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "go-dispatch-detector", "domain": "dispatch-bindings", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "go-boundary-detector", "domain": "boundaries", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "go-config-detector", "domain": "config", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "go-job-detector", "domain": "jobs", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "go-event-detector", "domain": "events", "class": "regex", "framework_context": [], "status": "success"},
+                ]
+            )
+        elif suffix == ".cs":
+            facts.extend(parse_csharp_file(path, root, text))
+            detectors_run.extend(
+                [
+                    {"id": "csharp-route-detector", "domain": "routes", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "csharp-ef-model-detector", "domain": "models", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "csharp-registration-detector", "domain": "registrations", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "csharp-handler-detector", "domain": "handlers", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "csharp-dispatch-detector", "domain": "dispatch-bindings", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "csharp-boundary-detector", "domain": "boundaries", "class": "structured", "framework_context": [], "status": "success"},
+                    {"id": "csharp-config-detector", "domain": "config", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "csharp-job-detector", "domain": "jobs", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "csharp-event-detector", "domain": "events", "class": "regex", "framework_context": [], "status": "success"},
+                ]
+            )
+        elif suffix in {".java", ".kt", ".kts", ".cpp", ".cc", ".cxx", ".h", ".hpp"}:
+            facts.extend(parse_generic_source_file(path, root, text))
+            detectors_run.extend(
+                [
+                    {"id": "generic-registration-detector", "domain": "registrations", "class": "signature", "framework_context": [], "status": "success"},
+                    {"id": "generic-handler-detector", "domain": "handlers", "class": "signature", "framework_context": [], "status": "success"},
+                    {"id": "generic-dispatch-detector", "domain": "dispatch-bindings", "class": "signature", "framework_context": [], "status": "success"},
+                    {"id": "generic-boundary-detector", "domain": "boundaries", "class": "signature", "framework_context": [], "status": "success"},
+                    {"id": "generic-config-detector", "domain": "config", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "generic-job-detector", "domain": "jobs", "class": "regex", "framework_context": [], "status": "success"},
+                    {"id": "generic-event-detector", "domain": "events", "class": "regex", "framework_context": [], "status": "success"},
+                ]
             )
 
     hot_scores = file_hotness_scores(facts)

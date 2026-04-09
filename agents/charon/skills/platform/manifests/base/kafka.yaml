@@ -5,6 +5,19 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
+  name: generic-opus
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
   name: augur-opus
   labels:
     strimzi.io/cluster: kafka
@@ -18,7 +31,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: augur-pro
+  name: augur-gemini-pro
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -31,7 +44,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: augur-reasoner
+  name: augur-deepseek-v32-reasoner
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -70,7 +83,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: agent.charon
+  name: charon-sonnet
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -83,7 +96,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: agent.warden
+  name: warden-haiku
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -96,7 +109,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: agent.sauron
+  name: sauron-sonnet
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -109,7 +122,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: agent.alfred
+  name: alfred-deepseek-chat
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -137,6 +150,19 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
+  name: memory.updates.generic-opus
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
   name: memory.updates.augur-opus
   labels:
     strimzi.io/cluster: kafka
@@ -150,7 +176,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.augur-pro
+  name: memory.updates.augur-gemini-pro
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -163,7 +189,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.augur-reasoner
+  name: memory.updates.augur-deepseek-v32-reasoner
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -202,7 +228,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.charon
+  name: memory.updates.charon-sonnet
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -215,7 +241,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.warden
+  name: memory.updates.warden-haiku
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -228,7 +254,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.sauron
+  name: memory.updates.sauron-sonnet
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -241,7 +267,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.alfred
+  name: memory.updates.alfred-deepseek-chat
   labels:
     strimzi.io/cluster: kafka
 spec:
