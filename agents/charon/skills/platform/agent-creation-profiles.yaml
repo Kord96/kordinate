@@ -194,9 +194,9 @@ profiles:
       secret_env: BACKEND_API_KEY
       secret_name: fireworks-api
       secret_key: api-key
-      memory_bundle: operate-direct-v1
-      skill_bundle: get-store-core-v1
-      runtime_bundle: direct-action-v1
+      memory_bundle: retrieve-fast-v1
+      skill_bundle: retrieve-core-v1
+      runtime_bundle: retrieve-fast-v1
     required_choices: []
 
   sauron-sonnet:

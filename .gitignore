@@ -182,14 +182,17 @@ agent-state/
 /agents/alfred/bundles/memory/*
 !/agents/alfred/bundles/memory/operate-direct-v1.md
 !/agents/alfred/bundles/memory/platform-admin-v1.md
+!/agents/alfred/bundles/memory/retrieve-fast-v1.md
 !/agents/alfred/bundles/memory/secrets-heavy-v1.md
 !/agents/alfred/bundles/skill/
 /agents/alfred/bundles/skill/*
 !/agents/alfred/bundles/skill/get-store-core-v1.md
+!/agents/alfred/bundles/skill/retrieve-core-v1.md
 !/agents/alfred/bundles/skill/validation-core-v1.md
 !/agents/alfred/bundles/runtime/
 /agents/alfred/bundles/runtime/*
 !/agents/alfred/bundles/runtime/direct-action-v1.md
+!/agents/alfred/bundles/runtime/retrieve-fast-v1.md
 !/agents/alfred/memory/
 /agents/alfred/memory/*
 !/agents/alfred/memory/MEMORY.md
