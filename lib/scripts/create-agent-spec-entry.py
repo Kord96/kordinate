@@ -42,6 +42,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--secret-name", default="", help="Kubernetes Secret name to mount into the agent pod")
     parser.add_argument("--secret-key", default="", help="Kubernetes Secret data key to mount into the agent pod")
     parser.add_argument("--memory-bundle", default="", help="Specialist memory bundle name when required by the creation profile")
+    parser.add_argument("--skill-bundle", default="", help="Specialist skill bundle name when required by the creation profile")
     parser.add_argument("--runtime-bundle", default="", help="Specialist runtime bundle name when required by the creation profile")
     parser.add_argument("--default-working-dir", default="", help="Optional default working directory for tasks")
     parser.add_argument("--working-directory", default="", help="Deprecated alias for --default-working-dir")
@@ -76,8 +77,9 @@ def resolve_profile(args: argparse.Namespace, profiles: dict, model_catalog: dic
         "secret_env": args.secret_env or defaults.get("secret_env", ""),
         "secret_name": args.secret_name or defaults.get("secret_name", ""),
         "secret_key": args.secret_key or defaults.get("secret_key", "api-key"),
-        "memory_bundle": args.memory_bundle,
-        "runtime_bundle": args.runtime_bundle,
+        "memory_bundle": args.memory_bundle or defaults.get("memory_bundle", ""),
+        "skill_bundle": args.skill_bundle or defaults.get("skill_bundle", ""),
+        "runtime_bundle": args.runtime_bundle or defaults.get("runtime_bundle", ""),
         "skip_git_repo_check": args.skip_git_repo_check or defaults.get("skip_git_repo_check", False),
         "required_choices": profile.get("required_choices", []),
         "choices": profile.get("choices", {}),
@@ -154,6 +156,8 @@ def build_agent(args: argparse.Namespace) -> dict:
     }
     if profile["memory_bundle"]:
         agent["creation"]["memory_bundle"] = profile["memory_bundle"]
+    if profile["skill_bundle"]:
+        agent["creation"]["skill_bundle"] = profile["skill_bundle"]
     if profile["runtime_bundle"]:
         agent["creation"]["runtime_bundle"] = profile["runtime_bundle"]
     if profile["secret_env"] and profile["secret_name"]:

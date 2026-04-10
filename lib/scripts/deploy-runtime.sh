@@ -23,6 +23,49 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[deploy-runtime] $*"; }
 
+resolve_bundle_file() {
+  local dir="$1"
+  local selection="${2:-}"
+  local candidate=""
+  local ext=""
+
+  [ -d "$dir" ] || return 1
+
+  if [ -n "$selection" ]; then
+    if [ -f "$dir/$selection" ]; then
+      echo "$dir/$selection"
+      return 0
+    fi
+    for ext in md json yaml yml; do
+      if [ -f "$dir/$selection.$ext" ]; then
+        echo "$dir/$selection.$ext"
+        return 0
+      fi
+    done
+    return 1
+  fi
+
+  for candidate in \
+    "$dir/default-v1.md" \
+    "$dir/default-v1.json" \
+    "$dir/default-v1.yaml" \
+    "$dir/default-v1.yml" \
+    "$dir/core-v1.md" \
+    "$dir/core-v1.json" \
+    "$dir/core-v1.yaml" \
+    "$dir/core-v1.yml"
+  do
+    if [ -f "$candidate" ]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  candidate="$(find "$dir" -maxdepth 1 -type f \( -name '*.md' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' \) | sort | head -n 1)"
+  [ -n "$candidate" ] || return 1
+  echo "$candidate"
+}
+
 normalize_backend_name() {
   local profile="$1"
   local model="$2"
@@ -90,6 +133,7 @@ deploy_agent() {
   local DST="$RUNTIME/$DEST_AGENT"
   local MEMORY_BUNDLE_SELECTION="${AGENT_MEMORY_BUNDLE:-}"
   local RUNTIME_BUNDLE_SELECTION="${AGENT_RUNTIME_BUNDLE:-}"
+  local SKILL_BUNDLE_SELECTION="${AGENT_SKILL_BUNDLE:-}"
 
   if [ ! -d "$SRC" ]; then
     log "WARN: no source dir at $SRC"
@@ -334,39 +378,42 @@ EOF
 
   local MEMORY_BUNDLE_SRC=""
   local MEMORY_BUNDLE_DST=""
-  if [ -n "$MEMORY_BUNDLE_SELECTION" ]; then
-    MEMORY_BUNDLE_SRC="$SRC/bundles/memory/$MEMORY_BUNDLE_SELECTION.md"
+  MEMORY_BUNDLE_SRC="$(resolve_bundle_file "$SRC/bundles/memory" "$MEMORY_BUNDLE_SELECTION" || true)"
+  if [ -n "$MEMORY_BUNDLE_SRC" ]; then
     MEMORY_BUNDLE_DST="$DST/memory-bundle.md"
-    if [ -f "$MEMORY_BUNDLE_SRC" ]; then
-      cp "$MEMORY_BUNDLE_SRC" "$MEMORY_BUNDLE_DST"
-      log "  memory bundle installed ($MEMORY_BUNDLE_SELECTION)"
-    else
-      log "  WARN: memory bundle not found at $MEMORY_BUNDLE_SRC"
-    fi
+    cp "$MEMORY_BUNDLE_SRC" "$MEMORY_BUNDLE_DST"
+    log "  memory bundle installed ($(basename "$MEMORY_BUNDLE_SRC"))"
+  elif [ -n "$MEMORY_BUNDLE_SELECTION" ]; then
+    log "  WARN: memory bundle not found for selection '$MEMORY_BUNDLE_SELECTION'"
   fi
 
   local RUNTIME_BUNDLE_SRC=""
   local RUNTIME_BUNDLE_DST=""
-  if [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
-    RUNTIME_BUNDLE_SRC="$SRC/bundles/runtime/$RUNTIME_BUNDLE_SELECTION.json"
-    RUNTIME_BUNDLE_DST="$DST/runtime-bundle.json"
-    if [ -f "$RUNTIME_BUNDLE_SRC" ]; then
-      cp "$RUNTIME_BUNDLE_SRC" "$RUNTIME_BUNDLE_DST"
-      log "  runtime bundle installed ($RUNTIME_BUNDLE_SELECTION)"
-    else
-      log "  WARN: runtime bundle not found at $RUNTIME_BUNDLE_SRC"
-    fi
+  local RUNTIME_BUNDLE_REF=""
+  RUNTIME_BUNDLE_SRC="$(resolve_bundle_file "$SRC/bundles/runtime" "$RUNTIME_BUNDLE_SELECTION" || true)"
+  if [ -n "$RUNTIME_BUNDLE_SRC" ]; then
+    local runtime_ext="${RUNTIME_BUNDLE_SRC##*.}"
+    RUNTIME_BUNDLE_DST="$DST/runtime-bundle.$runtime_ext"
+    RUNTIME_BUNDLE_REF="$(basename "$RUNTIME_BUNDLE_DST")"
+    cp "$RUNTIME_BUNDLE_SRC" "$RUNTIME_BUNDLE_DST"
+    log "  runtime bundle installed ($(basename "$RUNTIME_BUNDLE_SRC"))"
+  elif [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
+    log "  WARN: runtime bundle not found for selection '$RUNTIME_BUNDLE_SELECTION'"
   fi
 
-  local SKILL_BUNDLE_SRC="$SRC/bundles/skill/analyze-core-v1.md"
-  local SKILL_BUNDLE_DST="$DST/skill-bundle.md"
-  if [ -f "$SKILL_BUNDLE_SRC" ]; then
+  local SKILL_BUNDLE_SRC=""
+  local SKILL_BUNDLE_DST=""
+  SKILL_BUNDLE_SRC="$(resolve_bundle_file "$SRC/bundles/skill" "$SKILL_BUNDLE_SELECTION" || true)"
+  if [ -n "$SKILL_BUNDLE_SRC" ]; then
+    SKILL_BUNDLE_DST="$DST/skill-bundle.md"
     cp "$SKILL_BUNDLE_SRC" "$SKILL_BUNDLE_DST"
-    log "  skill bundle installed"
+    log "  skill bundle installed ($(basename "$SKILL_BUNDLE_SRC"))"
+  elif [ -n "$SKILL_BUNDLE_SELECTION" ]; then
+    log "  WARN: skill bundle not found for selection '$SKILL_BUNDLE_SELECTION'"
   fi
 
   local BUNDLE_SELECTION_DST="$DST/bundle-selection.md"
-  if [ -n "$MEMORY_BUNDLE_SELECTION" ] || [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
+  if [ -n "$MEMORY_BUNDLE_SELECTION" ] || [ -n "$RUNTIME_BUNDLE_SELECTION" ] || [ -n "$SKILL_BUNDLE_SELECTION" ]; then
     {
       echo "# Bundle Selection"
       echo
@@ -375,6 +422,9 @@ EOF
       fi
       if [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
         echo "- runtime_bundle: $RUNTIME_BUNDLE_SELECTION"
+      fi
+      if [ -n "$SKILL_BUNDLE_SELECTION" ]; then
+        echo "- skill_bundle: $SKILL_BUNDLE_SELECTION"
       fi
       echo
       echo "These selections are part of the seeded runtime for this agent instance."
@@ -394,8 +444,8 @@ EOF
     if [ -f "$SKILL_BUNDLE_DST" ]; then
       echo "@skill-bundle.md"
     fi
-    if [ -f "$RUNTIME_BUNDLE_DST" ]; then
-      echo "@runtime-bundle.json"
+    if [ -n "$RUNTIME_BUNDLE_REF" ]; then
+      echo "@$RUNTIME_BUNDLE_REF"
     fi
     if [ -f "$AGENT_BUNDLE_DST" ]; then
       echo "@$AGENT_BUNDLE_NAME"

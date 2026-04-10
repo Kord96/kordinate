@@ -129,6 +129,8 @@ def emit_env_lines(agent: dict) -> list[str]:
         env.append(("CODEX_SKIP_GIT_REPO_CHECK", "true" if daemon["skip_git_repo_check"] else "false"))
     if creation.get("memory_bundle"):
         env.append(("AGENT_MEMORY_BUNDLE", creation["memory_bundle"]))
+    if creation.get("skill_bundle"):
+        env.append(("AGENT_SKILL_BUNDLE", creation["skill_bundle"]))
     if creation.get("runtime_bundle"):
         env.append(("AGENT_RUNTIME_BUNDLE", creation["runtime_bundle"]))
 
@@ -154,6 +156,8 @@ def build_init_script(agent: dict) -> str:
     env_prefix = []
     if creation.get("memory_bundle"):
         env_prefix.append(f"AGENT_MEMORY_BUNDLE={shlex.quote(str(creation['memory_bundle']))}")
+    if creation.get("skill_bundle"):
+        env_prefix.append(f"AGENT_SKILL_BUNDLE={shlex.quote(str(creation['skill_bundle']))}")
     if creation.get("runtime_bundle"):
         env_prefix.append(f"AGENT_RUNTIME_BUNDLE={shlex.quote(str(creation['runtime_bundle']))}")
     env_prefix.append("KORDINATE_HOME=/app")

@@ -22,12 +22,44 @@ interface RuntimeBundleManifest {
   composition_order?: string[]
 }
 
+interface SeededBundleLayer {
+  label: string
+  file: string
+}
+
 function readCached(path: string): string | undefined {
   if (bundleTextCache.has(path)) return bundleTextCache.get(path)
   if (!existsSync(path)) return undefined
   const text = readFileSync(path, 'utf8')
   bundleTextCache.set(path, text)
   return text
+}
+
+function seededAgentHome(agentName: string): string[] {
+  const envHome = process.env.AGENT_HOME_DIR
+  return [
+    envHome ?? '',
+    join('/runtime', agentName),
+  ].filter(Boolean)
+}
+
+function loadSeededBundlePrefix(agentName: string): string {
+  const layers: SeededBundleLayer[] = [
+    { label: 'Skill Bundle', file: 'skill-bundle.md' },
+    { label: 'Memory Bundle', file: 'memory-bundle.md' },
+    { label: 'Runtime Bundle', file: 'runtime-bundle.md' },
+  ]
+
+  for (const root of seededAgentHome(agentName)) {
+    if (!existsSync(root)) continue
+    const parts = layers.flatMap(layer => {
+      const text = readCached(join(root, layer.file))?.trim()
+      return text ? [`## ${layer.label}\n\n${text}`] : []
+    })
+    if (parts.length > 0) return `${parts.join('\n\n')}\n\n`
+  }
+
+  return ''
 }
 
 function augurRootCandidates(): string[] {
@@ -114,12 +146,14 @@ export function buildPromptFromProfile(profile: AgentProfile, message: RequestMe
   const workingDirSuffix = message.working_dir
     ? `\n\nWorking directory hint: focus your work in \`${message.working_dir}\`. Start there unless the task clearly requires files outside it.`
     : ''
-  const augurBundlePrefix = profile.supportedAgentParams?.includes('bundle_mode') ? loadAugurBundlePrefix(message) : ''
+  const bundlePrefix = profile.supportedAgentParams?.includes('bundle_mode')
+    ? loadAugurBundlePrefix(message)
+    : loadSeededBundlePrefix(profile.name ?? 'generic')
 
   if (!profile.promptPrefix) {
-    return `${augurBundlePrefix}${message.prompt}${workingDirSuffix}`
+    return `${bundlePrefix}${message.prompt}${workingDirSuffix}`
   }
-  return `${profile.promptPrefix}\n\n${augurBundlePrefix}${message.prompt}${workingDirSuffix}`
+  return `${profile.promptPrefix}\n\n${bundlePrefix}${message.prompt}${workingDirSuffix}`
 }
 
 export function resolveReflectionPrompt(profile: AgentProfile, message: RequestMessage): string {

@@ -416,6 +416,11 @@ agents:
       state:
         agent_home_dir: /runtime/alfred-deepseek-chat
         state_dir: /kord/alfred-deepseek-chat
+    creation:
+      profile: alfred-deepseek-chat
+      memory_bundle: operate-direct-v1
+      skill_bundle: get-store-core-v1
+      runtime_bundle: direct-action-v1
     deploy:
       replicas:
         min: 1
@@ -458,6 +463,11 @@ agents:
       state:
         agent_home_dir: /runtime/alfred-gpt-oss-20b
         state_dir: /kord/alfred-gpt-oss-20b
+    creation:
+      profile: alfred-gpt-oss-20b
+      memory_bundle: operate-direct-v1
+      skill_bundle: get-store-core-v1
+      runtime_bundle: direct-action-v1
     deploy:
       replicas:
         min: 1

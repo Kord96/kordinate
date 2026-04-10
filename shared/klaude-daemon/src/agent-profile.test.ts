@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 import test from 'node:test'
 import { buildPromptFromProfile, loadAgentProfile, resolveReflectionPrompt } from './agent-profile.js'
 
@@ -75,4 +78,35 @@ test('buildPromptFromProfile appends working directory hint when provided', () =
   assert.match(prompt, /Inspect the repo/)
   assert.match(prompt, /Working directory hint:/)
   assert.match(prompt, /\/kord\/shared\/repos\/kordinate/)
+})
+
+test('buildPromptFromProfile composes seeded bundle layers for non-augur agents', () => {
+  const runtimeDir = mkdtempSync(join(tmpdir(), 'agent-profile-'))
+  const previousAgentHome = process.env.AGENT_HOME_DIR
+  process.env.AGENT_HOME_DIR = runtimeDir
+
+  try {
+    writeFileSync(join(runtimeDir, 'memory-bundle.md'), '# Memory\n\nUse direct action.', 'utf8')
+    writeFileSync(join(runtimeDir, 'skill-bundle.md'), '# Skill\n\nFollow the workflow.', 'utf8')
+    writeFileSync(join(runtimeDir, 'runtime-bundle.md'), '# Runtime\n\nBe terse.', 'utf8')
+
+    const prompt = buildPromptFromProfile(loadAgentProfile('reviewer'), {
+      type: 'request',
+      sender: 'agent-a',
+      correlation_id: 'corr-1',
+      prompt: 'Do the task',
+    })
+
+    assert.match(prompt, /## Skill Bundle/)
+    assert.match(prompt, /## Memory Bundle/)
+    assert.match(prompt, /## Runtime Bundle/)
+    assert.match(prompt, /Do the task/)
+  } finally {
+    if (previousAgentHome === undefined) {
+      delete process.env.AGENT_HOME_DIR
+    } else {
+      process.env.AGENT_HOME_DIR = previousAgentHome
+    }
+    rmSync(runtimeDir, { recursive: true, force: true })
+  }
 })

@@ -1,0 +1,101 @@
+schema: agent-index/v1
+agent: alfred
+description: Static content manifest for Alfred's identity, stable operating context, and direct-action bundles
+usage:
+  preload: included in generated AGENT.md and intended to be cache-friendly static context
+  ondemand: read only when the task needs detailed procedures or source documents
+  runtime: mutable or generated at runtime; never compiled into the static bundle
+
+entries:
+  - path: IDENTITY.md
+    kind: file
+    purpose: Stable role, capabilities, and hard rules for Alfred
+    preload: preload
+    include: true
+    mutable: false
+    source_of_truth: repo
+  - path: memory/MEMORY.md
+    kind: file
+    purpose: Entry point to Alfred's stable memory layers
+    preload: preload
+    include: true
+    mutable: false
+    source_of_truth: repo
+  - path: memory/workflow.md
+    kind: file
+    purpose: Alfred's direct-action workflow and validation doctrine
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/contracts.md
+    kind: file
+    purpose: Source-of-truth boundaries between Alfred-owned data and runtime projections
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/indexes
+    kind: dir
+    purpose: Stable path and key indexes for Alfred-managed resources
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+    children:
+      - path: memory/indexes/paths.md
+        kind: file
+        purpose: Authoritative paths for config, profiles, overlays, and projections
+        preload: ondemand
+        include: false
+        mutable: false
+        source_of_truth: repo
+      - path: memory/indexes/key-paths.md
+        kind: file
+        purpose: Common pass-store key paths managed by Alfred
+        preload: ondemand
+        include: false
+        mutable: false
+        source_of_truth: repo
+  - path: bundles/memory
+    kind: dir
+    purpose: Stable Alfred operating doctrine bundles
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: bundles/skill
+    kind: dir
+    purpose: Reusable Alfred procedural bundles
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: bundles/runtime
+    kind: dir
+    purpose: Small runtime-behavior overlays for Alfred deployments
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: skills
+    kind: dir
+    purpose: Full Alfred skill docs kept on-demand
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: profile
+    kind: dir
+    purpose: Alfred-owned source tree for profiles and backend aliases
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/scratchpad.md
+    kind: runtime
+    purpose: Mutable runtime notes and observations
+    preload: runtime
+    include: false
+    mutable: true
+    source_of_truth: runtime
