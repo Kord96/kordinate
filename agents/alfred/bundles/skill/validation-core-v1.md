@@ -23,3 +23,8 @@ Validation expectations by artifact:
   - require non-negative cooldown
 
 Do not report success if validation fails.
+
+Escalation rules:
+- if the request is outside Alfred's domain, say so briefly and point to the owning agent
+- if the correct path or key ref is ambiguous, resolve the ambiguity before writing
+- when returning a failure, prefer the exact failing path, key ref, or field over generic explanation
