@@ -61,6 +61,71 @@ function errorResult(message: string): RuntimeResult {
   }
 }
 
+function appendDiagnosticPart(parts: string[], label: string, value: unknown): void {
+  if (typeof value !== 'string') return
+  const trimmed = value.trim()
+  if (!trimmed) return
+  parts.push(`${label}: ${trimmed}`)
+}
+
+export function formatProviderError(error: unknown): string[] {
+  if (!(error instanceof Error)) {
+    return [String(error)]
+  }
+
+  const parts: string[] = []
+  const seen = new Set<string>()
+  const pushUnique = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed || seen.has(trimmed)) return
+    seen.add(trimmed)
+    parts.push(trimmed)
+  }
+
+  pushUnique(error.message)
+
+  const maybeWithProps = error as Error & {
+    stderr?: string
+    stdout?: string
+    code?: string | number
+    exitCode?: number
+    signal?: string
+    cause?: unknown
+  }
+
+  appendDiagnosticPart(parts, 'stderr', maybeWithProps.stderr)
+  appendDiagnosticPart(parts, 'stdout', maybeWithProps.stdout)
+
+  if (typeof maybeWithProps.code === 'string' || typeof maybeWithProps.code === 'number') {
+    pushUnique(`code: ${String(maybeWithProps.code)}`)
+  }
+  if (typeof maybeWithProps.exitCode === 'number') {
+    pushUnique(`exit_code: ${String(maybeWithProps.exitCode)}`)
+  }
+  if (typeof maybeWithProps.signal === 'string' && maybeWithProps.signal.trim()) {
+    pushUnique(`signal: ${maybeWithProps.signal.trim()}`)
+  }
+
+  if (maybeWithProps.cause instanceof Error) {
+    for (const detail of formatProviderError(maybeWithProps.cause)) {
+      if (detail !== error.message) pushUnique(`cause: ${detail}`)
+    }
+  } else if (typeof maybeWithProps.cause === 'string' && maybeWithProps.cause.trim()) {
+    pushUnique(`cause: ${maybeWithProps.cause.trim()}`)
+  }
+
+  return parts.length > 0 ? parts : ['unknown provider error']
+}
+
+function errorResultFromError(error: unknown): RuntimeResult {
+  const details = formatProviderError(error)
+  return {
+    status: 'error',
+    output: details[0] ?? 'unknown provider error',
+    errors: details,
+  }
+}
+
 function successResult(output: string): RuntimeResult {
   return {
     status: 'success',
@@ -206,7 +271,12 @@ async function runOpenClaudePrint(prompt: string, options: { model: string; sess
     child.on('error', reject)
     child.on('close', code => {
       if (code !== 0) {
-        reject(new Error(stderr.trim() || `openclaude exited with code ${code}`))
+        const error = Object.assign(new Error(stderr.trim() || `openclaude exited with code ${code}`), {
+          stderr,
+          stdout,
+          exitCode: code ?? undefined,
+        })
+        reject(error)
         return
       }
       resolve(stdout.trim())
@@ -292,8 +362,7 @@ export class ClaudeAgentSdkAdapter implements ProviderSessionAdapter {
         result: finalizeRuntimeResult(baseResult, reflectionResult),
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      return { session: nextSessionState(session, sessionId), result: errorResult(message) }
+      return { session: nextSessionState(session, sessionId), result: errorResultFromError(error) }
     }
   }
 
@@ -370,8 +439,7 @@ export class CodexSdkAdapter implements ProviderSessionAdapter {
         result: finalizeRuntimeResult(baseResult, reflectionResult),
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      return { session, result: errorResult(message) }
+      return { session, result: errorResultFromError(error) }
     }
   }
 
@@ -428,8 +496,7 @@ export class OpenClaudeHarnessAdapter implements ProviderSessionAdapter {
         result: finalizeRuntimeResult(baseResult, reflectionResult),
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      return { session: nextSession, result: errorResult(message) }
+      return { session: nextSession, result: errorResultFromError(error) }
     }
   }
 

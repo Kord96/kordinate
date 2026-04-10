@@ -54,6 +54,59 @@ function errorResult(message) {
         errors: [message],
     };
 }
+function appendDiagnosticPart(parts, label, value) {
+    if (typeof value !== 'string')
+        return;
+    const trimmed = value.trim();
+    if (!trimmed)
+        return;
+    parts.push(`${label}: ${trimmed}`);
+}
+export function formatProviderError(error) {
+    if (!(error instanceof Error)) {
+        return [String(error)];
+    }
+    const parts = [];
+    const seen = new Set();
+    const pushUnique = (text) => {
+        const trimmed = text.trim();
+        if (!trimmed || seen.has(trimmed))
+            return;
+        seen.add(trimmed);
+        parts.push(trimmed);
+    };
+    pushUnique(error.message);
+    const maybeWithProps = error;
+    appendDiagnosticPart(parts, 'stderr', maybeWithProps.stderr);
+    appendDiagnosticPart(parts, 'stdout', maybeWithProps.stdout);
+    if (typeof maybeWithProps.code === 'string' || typeof maybeWithProps.code === 'number') {
+        pushUnique(`code: ${String(maybeWithProps.code)}`);
+    }
+    if (typeof maybeWithProps.exitCode === 'number') {
+        pushUnique(`exit_code: ${String(maybeWithProps.exitCode)}`);
+    }
+    if (typeof maybeWithProps.signal === 'string' && maybeWithProps.signal.trim()) {
+        pushUnique(`signal: ${maybeWithProps.signal.trim()}`);
+    }
+    if (maybeWithProps.cause instanceof Error) {
+        for (const detail of formatProviderError(maybeWithProps.cause)) {
+            if (detail !== error.message)
+                pushUnique(`cause: ${detail}`);
+        }
+    }
+    else if (typeof maybeWithProps.cause === 'string' && maybeWithProps.cause.trim()) {
+        pushUnique(`cause: ${maybeWithProps.cause.trim()}`);
+    }
+    return parts.length > 0 ? parts : ['unknown provider error'];
+}
+function errorResultFromError(error) {
+    const details = formatProviderError(error);
+    return {
+        status: 'error',
+        output: details[0] ?? 'unknown provider error',
+        errors: details,
+    };
+}
 function successResult(output) {
     return {
         status: 'success',
@@ -188,7 +241,12 @@ async function runOpenClaudePrint(prompt, options) {
         child.on('error', reject);
         child.on('close', code => {
             if (code !== 0) {
-                reject(new Error(stderr.trim() || `openclaude exited with code ${code}`));
+                const error = Object.assign(new Error(stderr.trim() || `openclaude exited with code ${code}`), {
+                    stderr,
+                    stdout,
+                    exitCode: code ?? undefined,
+                });
+                reject(error);
                 return;
             }
             resolve(stdout.trim());
@@ -267,8 +325,7 @@ export class ClaudeAgentSdkAdapter {
             };
         }
         catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            return { session: nextSessionState(session, sessionId), result: errorResult(message) };
+            return { session: nextSessionState(session, sessionId), result: errorResultFromError(error) };
         }
     }
     async interruptActiveExecution(_session) {
@@ -330,8 +387,7 @@ export class CodexSdkAdapter {
             };
         }
         catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            return { session, result: errorResult(message) };
+            return { session, result: errorResultFromError(error) };
         }
     }
     async interruptActiveExecution(_session) {
@@ -380,8 +436,7 @@ export class OpenClaudeHarnessAdapter {
             };
         }
         catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            return { session: nextSession, result: errorResult(message) };
+            return { session: nextSession, result: errorResultFromError(error) };
         }
     }
     async interruptActiveExecution(_session) {
