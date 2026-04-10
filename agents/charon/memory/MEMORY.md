@@ -1,3 +1,6 @@
+- [bundles/memory/platform-core-v1.md](../bundles/memory/platform-core-v1.md) — Always-on platform topology, ownership boundaries, and operator defaults
+- [bundles/memory/operations-core-v1.md](../bundles/memory/operations-core-v1.md) — Rollout, rollback, migration, and incident doctrine
+- [bundles/memory/observability-platform-v1.md](../bundles/memory/observability-platform-v1.md) — Monitoring-stack deployment boundaries and platform guidance
 - [infra.md](infra.md) — Infrastructure reference
 - [migration.md](migration.md) — Full migration lifecycle for deployments
 - [monitoring-topology.md](monitoring-topology.md) — Monitoring infrastructure config and topology

@@ -1,0 +1,92 @@
+schema: agent-index/v1
+agent: charon
+description: Static content manifest for Charon's platform-operations preload and on-demand operational references
+usage:
+  preload: included in generated AGENT.md and intended to be cache-friendly static context
+  ondemand: read only when the task needs deeper deployment, bootstrap, or troubleshooting procedures
+  runtime: mutable or generated at runtime; never compiled into the static bundle
+entries:
+  - path: IDENTITY.md
+    kind: file
+    purpose: Stable role, capabilities, and hard rules for Charon
+    preload: preload
+    include: true
+    mutable: false
+    source_of_truth: repo
+  - path: memory/MEMORY.md
+    kind: file
+    purpose: Entry point to Charon's stable memory layers
+    preload: preload
+    include: true
+    mutable: false
+    source_of_truth: repo
+  - path: memory/infra.md
+    kind: file
+    purpose: Platform topology, ownership boundaries, and deployment environment facts
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/tools.md
+    kind: file
+    purpose: Build and deployment tooling reference
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/migration.md
+    kind: file
+    purpose: Deployment and schema-migration lifecycle rules
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/monitoring-topology.md
+    kind: file
+    purpose: Monitoring architecture and Charon-Sauron ownership boundaries
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/troubleshooting.md
+    kind: file
+    purpose: Common deployment and rollout failure patterns
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: bundles/memory
+    kind: dir
+    purpose: Stable Charon operational doctrine bundles
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: bundles/skill
+    kind: dir
+    purpose: Reusable Charon procedural bundles
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: bundles/runtime
+    kind: dir
+    purpose: Runtime-behavior overlays for Charon deployments
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: skills
+    kind: dir
+    purpose: Full Charon skill docs kept on-demand
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: memory/scratchpad.md
+    kind: runtime
+    purpose: Mutable runtime notes and observations
+    preload: runtime
+    include: false
+    mutable: true
+    source_of_truth: runtime

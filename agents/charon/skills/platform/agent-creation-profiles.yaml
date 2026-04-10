@@ -165,6 +165,9 @@ profiles:
       secret_env: BACKEND_API_KEY
       secret_name: codex-api
       secret_key: api-key
+      memory_bundle: platform-core-v1
+      skill_bundle: platform-ops-v1
+      runtime_bundle: ops-default-v1
     required_choices: []
 
   alfred-deepseek-chat:

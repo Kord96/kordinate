@@ -294,6 +294,11 @@ agents:
       state:
         agent_home_dir: /runtime/charon-gpt53-codex
         state_dir: /kord/charon-gpt53-codex
+    creation:
+      profile: charon-gpt53-codex
+      memory_bundle: platform-core-v1
+      skill_bundle: platform-ops-v1
+      runtime_bundle: ops-default-v1
     deploy:
       replicas:
         min: 1

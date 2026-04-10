@@ -624,7 +624,7 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh charon-gpt53-codex
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh charon charon-gpt53-codex
+              AGENT_MEMORY_BUNDLE=platform-core-v1 AGENT_SKILL_BUNDLE=platform-ops-v1 AGENT_RUNTIME_BUNDLE=ops-default-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh charon charon-gpt53-codex
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -657,6 +657,9 @@ spec:
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
             - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "platform-core-v1" }
+            - { name: AGENT_SKILL_BUNDLE, value: "platform-ops-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "ops-default-v1" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
