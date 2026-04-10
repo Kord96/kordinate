@@ -27,6 +27,7 @@ const kafka = new Kafka({
 const producer = kafka.producer()
 const consumer = kafka.consumer({ groupId: 'kord-api' })
 const pending = new Map<string, {
+  agent: string
   resolve: (value: ResponseMessage) => void
   reject: (error: Error) => void
   timer: NodeJS.Timeout
@@ -101,13 +102,18 @@ function isPromptBody(value: unknown): value is {
     && (body.async === undefined || typeof body.async === 'boolean')
 }
 
-function deferReply(correlationId: string, timeoutMs: number): Promise<ResponseMessage> {
+function deferReply(correlationId: string, agent: string, timeoutMs: number): Promise<ResponseMessage> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       pending.delete(correlationId)
+      log('prompt_timeout', {
+        agent,
+        correlation_id: correlationId,
+        timeout_ms: timeoutMs,
+      })
       reject(new Error(`timed out waiting for ${correlationId}`))
     }, timeoutMs)
-    pending.set(correlationId, { resolve, reject, timer })
+    pending.set(correlationId, { agent, resolve, reject, timer })
   })
 }
 
@@ -134,7 +140,13 @@ async function sendPrompt(agent: string, body: {
     agent_params: body.agent_params,
     session_id: body.session_id,
   }
-  const reply = deferReply(correlationId, timeoutMs)
+  const reply = deferReply(correlationId, agent, timeoutMs)
+  log('prompt_publish_start', {
+    agent,
+    correlation_id: correlationId,
+    timeout_ms: timeoutMs,
+    session_id: body.session_id ?? null,
+  })
   await producer.send({
     topic: agent,
     messages: [{
@@ -142,12 +154,23 @@ async function sendPrompt(agent: string, body: {
       value: JSON.stringify(request satisfies AgentMessage),
     }],
   })
+  log('prompt_publish_complete', {
+    agent,
+    correlation_id: correlationId,
+    topic: agent,
+  })
   return { correlationId, reply }
 }
 
 function completeRequest(requestId: string, response: ResponseMessage): void {
   const existing = requests.get(requestId)
   if (!existing) return
+  log('request_complete', {
+    request_id: requestId,
+    agent: existing.agent,
+    correlation_id: response.correlation_id,
+    status: response.status,
+  })
   requests.set(requestId, {
     ...existing,
     status: response.status === 'error' ? 'error' : 'completed',
@@ -230,6 +253,14 @@ const server = createServer(async (req, res) => {
       }
       const startedAt = Date.now()
       const requestId = `${record.name}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+      log('prompt_request_received', {
+        request_id: requestId,
+        agent: record.name,
+        async: body.async === true,
+        timeout_ms: body.timeout_ms ?? defaultTimeoutMs,
+        has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
+        session_id: body.session_id ?? null,
+      })
       requests.set(requestId, {
         request_id: requestId,
         agent: record.name,
@@ -241,6 +272,11 @@ const server = createServer(async (req, res) => {
         void reply.then(
           response => completeRequest(requestId, response),
           error => {
+            log('request_async_failed', {
+              request_id: requestId,
+              agent: record.name,
+              error: error instanceof Error ? error.message : String(error),
+            })
             const existing = requests.get(requestId)
             if (!existing) return
             requests.set(requestId, {
@@ -261,6 +297,13 @@ const server = createServer(async (req, res) => {
       }
       const syncReply = await reply
       const completedAt = Date.now()
+      log('request_sync_reply_received', {
+        request_id: requestId,
+        agent: record.name,
+        correlation_id: syncReply.correlation_id,
+        status: syncReply.status,
+        total_ms: completedAt - startedAt,
+      })
       const metadata = {
         ...(syncReply.metadata ?? {}),
         gateway_timing: {
@@ -293,14 +336,29 @@ async function main(): Promise<void> {
       try {
         parsed = JSON.parse(raw)
       } catch {
+        log('reply_parse_failed', { raw_length: raw.length })
         return
       }
       if (!parsed || typeof parsed !== 'object' || (parsed as ResponseMessage).type !== 'response') {
+        log('reply_ignored', { raw_length: raw.length })
         return
       }
       const response = parsed as ResponseMessage
       const waiter = pending.get(response.correlation_id)
-      if (!waiter) return
+      if (!waiter) {
+        log('reply_without_waiter', {
+          sender: response.sender,
+          correlation_id: response.correlation_id,
+          status: response.status,
+        })
+        return
+      }
+      log('reply_consumed', {
+        agent: waiter.agent,
+        sender: response.sender,
+        correlation_id: response.correlation_id,
+        status: response.status,
+      })
       clearTimeout(waiter.timer)
       pending.delete(response.correlation_id)
       waiter.resolve(response)

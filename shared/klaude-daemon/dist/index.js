@@ -44,9 +44,21 @@ async function persistSessions() {
 }
 async function publishResponse(message, response) {
     const payload = buildResponseMessage(AGENT_NAME, message, response);
+    log('response_publish_start', {
+        agent: AGENT_NAME,
+        reply_topic: message.sender,
+        correlation_id: message.correlation_id,
+        status: response.status,
+    });
     await producer.send({
         topic: message.sender,
         messages: [{ key: message.correlation_id, value: JSON.stringify(payload) }],
+    });
+    log('response_publish_complete', {
+        agent: AGENT_NAME,
+        reply_topic: message.sender,
+        correlation_id: message.correlation_id,
+        status: response.status,
     });
 }
 async function publishReflection(message, reflection) {
@@ -58,6 +70,12 @@ async function publishReflection(message, reflection) {
 }
 function nowIso() {
     return new Date().toISOString();
+}
+function redactExecutionProfile(profile) {
+    return {
+        ...profile,
+        apiKey: profile.apiKey ? '[redacted]' : undefined,
+    };
 }
 function buildTimingMetadata(input) {
     return {
@@ -110,6 +128,10 @@ async function handleRequest(message) {
     if (result.reflection) {
         await publishReflection(message, result.reflection);
     }
+    return {
+        status: result.status,
+        errors: result.errors,
+    };
 }
 async function publishDiscoveryRecord(record) {
     if (!daemonConfig.discoveryServerUrl)
@@ -144,7 +166,7 @@ async function main() {
         agent: AGENT_NAME,
         agent_profile_name: AGENT_PROFILE,
         agent_profile: agentProfile,
-        execution_profile: daemonConfig.executionProfile,
+        execution_profile: redactExecutionProfile(daemonConfig.executionProfile),
         brokers: daemonConfig.kafkaBrokers,
         reflections_topic: daemonConfig.reflectionsTopic,
         discovery_server_url: daemonConfig.discoveryServerUrl ?? null,
@@ -177,11 +199,13 @@ async function main() {
                 return;
             }
             try {
-                await handleRequest(parsed);
+                const summary = await handleRequest(parsed);
                 log('request_handled', {
                     topic,
                     sender: parsed.sender,
                     correlation_id: parsed.correlation_id,
+                    status: summary.status,
+                    errors: summary.errors,
                 });
             }
             catch (error) {

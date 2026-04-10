@@ -53,9 +53,21 @@ async function persistSessions(): Promise<void> {
 async function publishResponse(message: RequestMessage, response: Omit<ResponseMessage, 'type' | 'sender' | 'correlation_id'>): Promise<void> {
   const payload = buildResponseMessage(AGENT_NAME, message, response)
 
+  log('response_publish_start', {
+    agent: AGENT_NAME,
+    reply_topic: message.sender,
+    correlation_id: message.correlation_id,
+    status: response.status,
+  })
   await producer.send({
     topic: message.sender,
     messages: [{ key: message.correlation_id, value: JSON.stringify(payload satisfies AgentMessage) }],
+  })
+  log('response_publish_complete', {
+    agent: AGENT_NAME,
+    reply_topic: message.sender,
+    correlation_id: message.correlation_id,
+    status: response.status,
   })
 }
 
@@ -70,6 +82,13 @@ async function publishReflection(message: RequestMessage, reflection: NonNullabl
 
 function nowIso(): string {
   return new Date().toISOString()
+}
+
+function redactExecutionProfile(profile: typeof daemonConfig.executionProfile) {
+  return {
+    ...profile,
+    apiKey: profile.apiKey ? '[redacted]' : undefined,
+  }
 }
 
 function buildTimingMetadata(input: {
@@ -92,7 +111,7 @@ function buildTimingMetadata(input: {
   }
 }
 
-async function handleRequest(message: RequestMessage): Promise<void> {
+async function handleRequest(message: RequestMessage): Promise<{ status: ResponseMessage['status']; errors?: ResponseMessage['errors'] }> {
   const receivedAt = Date.now()
   const startedAt = Date.now()
   const session = sessionForMessage(message)
@@ -136,6 +155,11 @@ async function handleRequest(message: RequestMessage): Promise<void> {
   if (result.reflection) {
     await publishReflection(message, result.reflection)
   }
+
+  return {
+    status: result.status,
+    errors: result.errors,
+  }
 }
 
 async function publishDiscoveryRecord(record: AgentDiscoveryRecord): Promise<void> {
@@ -172,7 +196,7 @@ async function main(): Promise<void> {
     agent: AGENT_NAME,
     agent_profile_name: AGENT_PROFILE,
     agent_profile: agentProfile,
-    execution_profile: daemonConfig.executionProfile,
+    execution_profile: redactExecutionProfile(daemonConfig.executionProfile),
     brokers: daemonConfig.kafkaBrokers,
     reflections_topic: daemonConfig.reflectionsTopic,
     discovery_server_url: daemonConfig.discoveryServerUrl ?? null,
@@ -209,11 +233,13 @@ async function main(): Promise<void> {
       }
 
       try {
-        await handleRequest(parsed)
+        const summary = await handleRequest(parsed)
         log('request_handled', {
           topic,
           sender: parsed.sender,
           correlation_id: parsed.correlation_id,
+          status: summary.status,
+          errors: summary.errors,
         })
       } catch (error) {
         const messageText = (error as Error).message
