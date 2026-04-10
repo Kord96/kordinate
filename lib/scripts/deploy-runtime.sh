@@ -348,14 +348,21 @@ EOF
   local RUNTIME_BUNDLE_SRC=""
   local RUNTIME_BUNDLE_DST=""
   if [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
-    RUNTIME_BUNDLE_SRC="$SRC/bundles/runtime/$RUNTIME_BUNDLE_SELECTION.md"
-    RUNTIME_BUNDLE_DST="$DST/runtime-bundle.md"
+    RUNTIME_BUNDLE_SRC="$SRC/bundles/runtime/$RUNTIME_BUNDLE_SELECTION.json"
+    RUNTIME_BUNDLE_DST="$DST/runtime-bundle.json"
     if [ -f "$RUNTIME_BUNDLE_SRC" ]; then
       cp "$RUNTIME_BUNDLE_SRC" "$RUNTIME_BUNDLE_DST"
       log "  runtime bundle installed ($RUNTIME_BUNDLE_SELECTION)"
     else
       log "  WARN: runtime bundle not found at $RUNTIME_BUNDLE_SRC"
     fi
+  fi
+
+  local SKILL_BUNDLE_SRC="$SRC/bundles/skill/analyze-core-v1.md"
+  local SKILL_BUNDLE_DST="$DST/skill-bundle.md"
+  if [ -f "$SKILL_BUNDLE_SRC" ]; then
+    cp "$SKILL_BUNDLE_SRC" "$SKILL_BUNDLE_DST"
+    log "  skill bundle installed"
   fi
 
   local BUNDLE_SELECTION_DST="$DST/bundle-selection.md"
@@ -384,8 +391,11 @@ EOF
     if [ -f "$MEMORY_BUNDLE_DST" ]; then
       echo "@memory-bundle.md"
     fi
+    if [ -f "$SKILL_BUNDLE_DST" ]; then
+      echo "@skill-bundle.md"
+    fi
     if [ -f "$RUNTIME_BUNDLE_DST" ]; then
-      echo "@runtime-bundle.md"
+      echo "@runtime-bundle.json"
     fi
     if [ -f "$AGENT_BUNDLE_DST" ]; then
       echo "@$AGENT_BUNDLE_NAME"
@@ -411,6 +421,9 @@ EOF
     fi
   } > "$DST/SKILLS.md"
   log "  SKILLS.md generated"
+
+  chown -R 1000:1000 "$DST"
+  chmod -R u+rwX,g+rwX "$DST"
 
   log "  done"
 }
@@ -462,6 +475,9 @@ Replies are published by Klaude to `reply_to` and use:
 TEAM
     log "team/memory/global/team.md generated"
   fi
+
+  chown -R 1000:1000 "$DST"
+  chmod -R u+rwX,g+rwX "$DST"
 }
 
 # Main

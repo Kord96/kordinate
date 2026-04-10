@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+"""Build stable skill-operation bundles for Augur analyze mode."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SKILL = ROOT / "skills" / "analyze" / "SKILL.md"
+BUNDLES = ROOT / "bundles" / "skill"
+
+
+def read(path: Path) -> str:
+    return path.read_text(encoding="utf-8").rstrip()
+
+
+def extract_core_sections() -> str:
+    text = read(SKILL)
+    start = text.find("Produce `facts/`, `atlas.json`, and stories")
+    end = text.find("## Step 9 — Report")
+    if start == -1 or end == -1:
+        raise RuntimeError("Failed to locate stable analyze skill sections.")
+    return text[start:end].rstrip()
+
+
+def build_common() -> str:
+    return "\n".join([
+        "# Augur Analyze Skill Bundle — Core v1",
+        "",
+        "This is the stable operational bundle for Augur `/analyze`.",
+        "It defines execution order, mode handling, fact/concept/atlas expectations, and output obligations.",
+        "It should change less often than repo context and less often than semantic preload bundles.",
+        "",
+        "## Cache Role",
+        "",
+        "- Use this as the stable skill-prefix layer.",
+        "- Pair it with a separate memory preload bundle.",
+        "- Append repo-specific evidence and run-specific instructions last.",
+        "",
+        "## Analyze Contract",
+        "",
+        extract_core_sections(),
+        "",
+    ]).rstrip() + "\n"
+
+
+def main() -> int:
+    BUNDLES.mkdir(parents=True, exist_ok=True)
+    (BUNDLES / "analyze-core-v1.md").write_text(build_common(), encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

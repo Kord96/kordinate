@@ -56,6 +56,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, help="Directory for pilot artifacts. Defaults to /kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/")
     parser.add_argument("--model", default="augur", help="Model label to record in the run manifest.")
     parser.add_argument("--provider", default="augur", help="Provider label to record in the run manifest.")
+    parser.add_argument("--runtime-kind", default="augur")
     parser.add_argument("--memory-bundle", default="selective")
     parser.add_argument("--skill-bundle", default="selective")
     parser.add_argument("--run-number", type=int, default=1)
@@ -160,6 +161,8 @@ def main() -> int:
         "repo_url": "",
         "pinned_sha": pinned_sha,
         "model": args.model,
+        "provider": args.provider,
+        "runtime_kind": args.runtime_kind,
         "memory_bundle": args.memory_bundle,
         "skill_bundle": args.skill_bundle,
         "run_number": args.run_number,
@@ -181,6 +184,7 @@ def main() -> int:
         "pinned_sha": pinned_sha,
         "model": args.model,
         "provider": args.provider,
+        "runtime_kind": args.runtime_kind,
         "memory_bundle": args.memory_bundle,
         "skill_bundle": args.skill_bundle,
         "run_number": args.run_number,

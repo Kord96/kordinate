@@ -19,5 +19,7 @@ DST="/kord/$AGENT"
 log() { echo "[setup-agent-dir] $*"; }
 
 mkdir -p "$DST/memory" "$DST/tmp" "/kord/shared/memory"
+chown -R 1000:1000 "$DST" "/kord/shared/memory"
+chmod -R u+rwX,g+rwX "$DST" "/kord/shared/memory"
 
 log "directory structure ready: $DST"

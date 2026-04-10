@@ -75,7 +75,8 @@ function buildCodexExecutionProfile(provider) {
     };
 }
 export function loadDaemonConfig() {
-    const stateDir = process.env.DAEMON_STATE_DIR ?? '.daemon-state';
+    const stateDir = process.env.DAEMON_STATE_DIR
+        ?? (process.env.AGENT_HOME_DIR ? `${process.env.AGENT_HOME_DIR}/.daemon-state` : '.daemon-state');
     const provider = process.env.DAEMON_PROVIDER ?? 'openai';
     const model = process.env.DAEMON_MODEL;
     const runtime = process.env.DAEMON_RUNTIME
@@ -88,6 +89,7 @@ export function loadDaemonConfig() {
     return {
         executionProfile,
         kafkaBrokers: (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(','),
+        kafkaConsumerGroupId: process.env.KAFKA_CONSUMER_GROUP,
         kafkaSessionTimeoutMs: Number.parseInt(process.env.KAFKA_SESSION_TIMEOUT_MS ?? '600000', 10),
         kafkaHeartbeatIntervalMs: Number.parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL_MS ?? '3000', 10),
         reflectionsTopic: process.env.REFLECTIONS_TOPIC ?? 'reflections',

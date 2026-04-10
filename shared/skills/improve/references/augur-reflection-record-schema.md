@@ -20,6 +20,8 @@ Raw reflection records are append-only evidence. They are independent of `/impro
   "repo_url": "https://github.com/microsoft/vscode",
   "pinned_sha": "abc1234",
   "model": "augur",
+  "provider": "openai",
+  "runtime_kind": "codex-sdk",
   "memory_bundle": "selective",
   "skill_bundle": "holistic",
   "run_number": 1,
@@ -40,6 +42,8 @@ Raw reflection records are append-only evidence. They are independent of `/impro
 - `repo`
 - `pinned_sha`
 - `model`
+- `provider`
+- `runtime_kind`
 - `memory_bundle`
 - `skill_bundle`
 - `run_number`
@@ -52,3 +56,4 @@ Raw reflection records are append-only evidence. They are independent of `/impro
 - `reflection.project` and `reflection.general` must remain strings for daemon compatibility.
 - If a field has no strong lesson, store an empty string rather than omitting it.
 - Reflection records should be created whether or not `/improve` is running, as long as reflection was enabled for the run.
+- Reflection records should carry enough model/runtime metadata to support later cross-model comparison without depending on discovery joins.

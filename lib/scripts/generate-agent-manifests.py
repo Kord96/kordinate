@@ -106,7 +106,7 @@ def emit_env_lines(agent: dict) -> list[str]:
         ("AGENT_HOME_DIR", agent_home_dir),
         ("AGENT_STATE_DIR", state_dir),
         ("KAFKA_BROKERS", "kafka-kafka-bootstrap.dev.svc.cluster.local:9092"),
-        ("HOME", "/home/claude"),
+        ("HOME", "/home/node"),
         ("KORDINATE_HOME", "/app"),
         ("PROJECTS_ROOT", "/kord/shared/repos"),
         ("DISCOVERY_SERVER_URL", "http://kord-api:9091"),
@@ -226,6 +226,10 @@ spec:
         - name: agent
           image: {image}
           imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -253,6 +257,8 @@ spec:
           persistentVolumeClaim: {{ claimName: agent-runtime }}
         - name: agent-runtime
           emptyDir: {{}}
+      securityContext:
+        fsGroup: 1000
 """
 
     service = f"""---

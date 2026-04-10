@@ -300,3 +300,33 @@ spec:
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-alfred-gpt-oss-20b
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-alfred-gpt-oss-20b
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: alfred-gpt-oss-20b
+        topic: alfred-gpt-oss-20b
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest

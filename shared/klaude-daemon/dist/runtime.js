@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { mkdir, readFile } from 'node:fs/promises';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import { Codex } from '@openai/codex-sdk';
+import { log } from './log.js';
 const OPENCLAUDE_NPM_PACKAGE = process.env.OPENCLAUDE_NPM_PACKAGE ?? '@gitlawb/openclaude';
 const OPENCLAUDE_BIN = process.env.OPENCLAUDE_BIN ?? 'openclaude';
 function parseReflectionPayload(text) {
@@ -79,6 +82,8 @@ export function formatProviderError(error) {
     const maybeWithProps = error;
     appendDiagnosticPart(parts, 'stderr', maybeWithProps.stderr);
     appendDiagnosticPart(parts, 'stdout', maybeWithProps.stdout);
+    appendDiagnosticPart(parts, 'debug_log_path', maybeWithProps.debugLogPath);
+    appendDiagnosticPart(parts, 'debug_log_tail', maybeWithProps.debugLogTail);
     if (typeof maybeWithProps.code === 'string' || typeof maybeWithProps.code === 'number') {
         pushUnique(`code: ${String(maybeWithProps.code)}`);
     }
@@ -207,8 +212,11 @@ function ensureOpenClaudeCommand() {
         return config.command;
     throw new Error(`installed ${config.packageName}, but '${config.command}' is still not executable`);
 }
-function shouldSkipPermissionsFlag() {
-    return typeof process.getuid !== 'function' || process.getuid() !== 0;
+function resolveOpenClaudeHome(workingDirectory) {
+    return workingDirectory
+        ?? process.env.AGENT_HOME_DIR
+        ?? process.env.HOME
+        ?? process.cwd();
 }
 async function runOpenClaudePrint(prompt, options) {
     const env = {};
@@ -216,35 +224,121 @@ async function runOpenClaudePrint(prompt, options) {
         if (value !== undefined)
             env[key] = value;
     }
+    const runtimeHome = resolveOpenClaudeHome(options.workingDirectory);
+    const timeoutMs = Number.isFinite(options.timeoutMs)
+        ? Math.max(1, options.timeoutMs)
+        : undefined;
+    const debugDir = path.join(runtimeHome, '.daemon-logs');
+    await mkdir(debugDir, { recursive: true });
+    const debugLogPath = path.join(debugDir, `openclaude-${options.sessionId}-${Date.now()}.log`);
     if (options.baseUrl)
         env.OPENAI_BASE_URL = options.baseUrl;
     if (options.apiKey)
         env.OPENAI_API_KEY = options.apiKey;
     env.OPENAI_MODEL = options.model;
     env.CLAUDE_CODE_USE_OPENAI = '1';
-    const args = ['--print'];
-    if (shouldSkipPermissionsFlag()) {
-        args.push('--dangerously-skip-permissions');
-    }
+    env.HOME = runtimeHome;
+    const args = ['--print', '--bare', '--debug', '--debug-file', debugLogPath, '--dangerously-skip-permissions'];
     args.push('--no-session-persistence', '--session-id', options.sessionId, '--model', options.model, prompt);
     const command = ensureOpenClaudeCommand();
     return await new Promise((resolve, reject) => {
         const child = spawn(command, args, {
-            cwd: options.workingDirectory ?? process.cwd(),
+            cwd: runtimeHome,
             env,
             stdio: ['ignore', 'pipe', 'pipe'],
         });
         let stdout = '';
         let stderr = '';
+        let settled = false;
+        let timedOut = false;
+        const timeoutHandle = timeoutMs
+            ? setTimeout(() => {
+                timedOut = true;
+                log('harness_timeout', {
+                    runtime: 'openclaude-harness',
+                    model: options.model,
+                    session_id: options.sessionId,
+                    pid: child.pid ?? null,
+                    timeout_ms: timeoutMs,
+                    debug_log_path: debugLogPath,
+                });
+                child.kill('SIGKILL');
+            }, timeoutMs)
+            : undefined;
+        log('harness_spawn', {
+            runtime: 'openclaude-harness',
+            model: options.model,
+            session_id: options.sessionId,
+            pid: child.pid ?? null,
+            cwd: runtimeHome,
+            debug_log_path: debugLogPath,
+            timeout_ms: timeoutMs ?? null,
+        });
         child.stdout.on('data', chunk => { stdout += chunk.toString(); });
         child.stderr.on('data', chunk => { stderr += chunk.toString(); });
-        child.on('error', reject);
-        child.on('close', code => {
+        child.on('error', async (error) => {
+            if (settled)
+                return;
+            settled = true;
+            if (timeoutHandle)
+                clearTimeout(timeoutHandle);
+            let debugLogTail = '';
+            try {
+                debugLogTail = (await readFile(debugLogPath, 'utf8')).slice(-4000);
+            }
+            catch {
+                // ignore
+            }
+            log('harness_exit', {
+                runtime: 'openclaude-harness',
+                model: options.model,
+                session_id: options.sessionId,
+                pid: child.pid ?? null,
+                exit_code: null,
+                timed_out: timedOut,
+                debug_log_path: debugLogPath,
+                error: error.message,
+            });
+            reject(Object.assign(error, {
+                stderr,
+                stdout,
+                debugLogPath,
+                debugLogTail,
+            }));
+        });
+        child.on('close', async (code, signal) => {
+            if (settled)
+                return;
+            settled = true;
+            if (timeoutHandle)
+                clearTimeout(timeoutHandle);
+            let debugLogTail = '';
+            try {
+                debugLogTail = (await readFile(debugLogPath, 'utf8')).slice(-4000);
+            }
+            catch {
+                // ignore
+            }
+            log('harness_exit', {
+                runtime: 'openclaude-harness',
+                model: options.model,
+                session_id: options.sessionId,
+                pid: child.pid ?? null,
+                exit_code: code ?? null,
+                signal: signal ?? null,
+                timed_out: timedOut,
+                debug_log_path: debugLogPath,
+            });
             if (code !== 0) {
-                const error = Object.assign(new Error(stderr.trim() || `openclaude exited with code ${code}`), {
+                const error = Object.assign(new Error(timedOut
+                    ? `openclaude timed out after ${timeoutMs}ms`
+                    : (stderr.trim() || `openclaude exited with code ${code}`)), {
                     stderr,
                     stdout,
                     exitCode: code ?? undefined,
+                    signal: signal ?? undefined,
+                    debugLogPath,
+                    debugLogTail,
                 });
                 reject(error);
                 return;
@@ -418,6 +512,7 @@ export class OpenClaudeHarnessAdapter {
                 baseUrl: this.baseUrl,
                 apiKey: this.apiKey,
                 workingDirectory: this.workingDirectory,
+                timeoutMs: request.timeout_ms,
             });
             const baseResult = successResult(output);
             if (!shouldReflect(request)) {

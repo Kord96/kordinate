@@ -35,11 +35,17 @@ export function buildResponseMessage(agentName, message, response) {
         ...response,
     };
 }
-export function buildReflectionEvent(agentName, message, reflection) {
+export function buildReflectionEvent(input) {
     return {
-        agent: agentName,
-        task_id: message.correlation_id,
-        correlation_id: message.correlation_id,
-        reflection,
+        agent: input.agentName,
+        agent_profile: input.agentProfile,
+        backend_provider: input.backendProvider,
+        backend_runtime: input.backendRuntime,
+        backend_model: input.backendModel,
+        task_id: input.message.correlation_id,
+        correlation_id: input.message.correlation_id,
+        working_dir: input.message.working_dir,
+        captured_at: new Date().toISOString(),
+        reflection: input.reflection,
     };
 }

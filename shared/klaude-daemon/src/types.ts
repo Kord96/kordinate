@@ -40,8 +40,14 @@ export type AgentMessage = RequestMessage | ResponseMessage
 
 export interface ReflectionEvent {
   agent: string
+  agent_profile?: string
+  backend_provider?: string
+  backend_runtime?: string
+  backend_model?: string
   task_id?: string
   correlation_id: string
+  working_dir?: string
+  captured_at?: string
   reflection: ReflectionPayload
 }
 

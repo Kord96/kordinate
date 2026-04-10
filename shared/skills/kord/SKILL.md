@@ -83,6 +83,6 @@ If a model alias is used, prefer the matching `generic-*` agent when one exists 
 ## Internal Note
 
 The implementation currently lives behind the internal wrapper script:
-- [kord](/kord/workstation/home/project/kordinate/lib/scripts/kord)
+- [kord](/kord/workstation/home/project/kordinate/shared/skills/kord/scripts/kord)
 
 That script is implementation detail, not the intended user-facing contract.

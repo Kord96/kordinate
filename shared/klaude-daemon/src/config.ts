@@ -14,6 +14,7 @@ export interface ExecutionProfile {
 export interface DaemonConfig {
   executionProfile: ExecutionProfile
   kafkaBrokers: string[]
+  kafkaConsumerGroupId?: string
   kafkaSessionTimeoutMs: number
   kafkaHeartbeatIntervalMs: number
   reflectionsTopic: string
@@ -112,7 +113,8 @@ function buildCodexExecutionProfile(provider: ProviderName): ExecutionProfile {
 }
 
 export function loadDaemonConfig(): DaemonConfig {
-  const stateDir = process.env.DAEMON_STATE_DIR ?? '.daemon-state'
+  const stateDir = process.env.DAEMON_STATE_DIR
+    ?? (process.env.AGENT_HOME_DIR ? `${process.env.AGENT_HOME_DIR}/.daemon-state` : '.daemon-state')
   const provider = process.env.DAEMON_PROVIDER ?? 'openai'
   const model = process.env.DAEMON_MODEL
   const runtime = (process.env.DAEMON_RUNTIME as RuntimeKind | undefined)
@@ -127,6 +129,7 @@ export function loadDaemonConfig(): DaemonConfig {
   return {
     executionProfile,
     kafkaBrokers: (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(','),
+    kafkaConsumerGroupId: process.env.KAFKA_CONSUMER_GROUP,
     kafkaSessionTimeoutMs: Number.parseInt(process.env.KAFKA_SESSION_TIMEOUT_MS ?? '600000', 10),
     kafkaHeartbeatIntervalMs: Number.parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL_MS ?? '3000', 10),
     reflectionsTopic: process.env.REFLECTIONS_TOPIC ?? 'reflections',

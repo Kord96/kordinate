@@ -31,3 +31,6 @@ models:
   accounts/fireworks/models/glm-5:
     backend_provider: fireworks
     runtime: openclaude-harness
+  fireworks/gpt-oss-20b:
+    backend_provider: fireworks
+    runtime: openclaude-harness

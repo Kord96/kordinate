@@ -98,18 +98,30 @@ test('buildReflectionEvent uses receiving agent and correlation id', () => {
     prompt: 'hello',
   }
 
-  const event = buildReflectionEvent('agent-b', request, {
-    project: 'project lesson',
-    general: 'general lesson',
-  })
-
-  assert.deepEqual(event, {
-    agent: 'agent-b',
-    task_id: 'corr-1',
-    correlation_id: 'corr-1',
+  const event = buildReflectionEvent({
+    agentName: 'agent-b',
+    agentProfile: 'specialist',
+    backendProvider: 'anthropic',
+    backendRuntime: 'claude-agent-sdk',
+    backendModel: 'opus',
+    message: request,
     reflection: {
       project: 'project lesson',
       general: 'general lesson',
     },
+  })
+
+  assert.equal(event.agent, 'agent-b')
+  assert.equal(event.agent_profile, 'specialist')
+  assert.equal(event.backend_provider, 'anthropic')
+  assert.equal(event.backend_runtime, 'claude-agent-sdk')
+  assert.equal(event.backend_model, 'opus')
+  assert.equal(event.task_id, 'corr-1')
+  assert.equal(event.correlation_id, 'corr-1')
+  assert.equal(event.working_dir, undefined)
+  assert.equal(typeof event.captured_at, 'string')
+  assert.deepEqual(event.reflection, {
+    project: 'project lesson',
+    general: 'general lesson',
   })
 })

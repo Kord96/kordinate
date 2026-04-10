@@ -21,6 +21,7 @@ Use reflections as a structured post-run feedback channel that helps:
 - surface transferable detector improvements
 - preserve raw evidence from analyze runs
 - feed `/improve` analysis with evidence
+- compare model strengths, weaknesses, overlap, and complementarity over time
 
 Reflections should support evaluation and detector improvement. They should not replace hard scoring.
 
@@ -82,6 +83,24 @@ Use:
 - `promoted/`
   - distilled durable lessons intentionally kept
 
+In addition to repo-local raw storage, build a normalized global index:
+
+```text
+/kord/augur/memory/global/reflections/
+  records/
+  manifest.json
+  summaries/
+```
+
+Use:
+
+- `records/`
+  - normalized global copies of raw reflection records, optimized for filtering and comparison
+- `manifest.json`
+  - lightweight counts by model and repo
+- `summaries/`
+  - global cross-project reflection summaries
+
 Per-run location:
 
 ```text
@@ -116,6 +135,8 @@ Recommended stored record:
   "repo": "owner/name",
   "pinned_sha": "abc123",
   "model": "augur",
+  "provider": "openai",
+  "runtime_kind": "codex-sdk",
   "memory_bundle": "selective",
   "skill_bundle": "holistic",
   "run_number": 1,
@@ -176,6 +197,8 @@ If changing daemon types is too expensive immediately, encode these sections in 
 
 `/improve` dataset benchmark mode should consume reflections explicitly.
 
+`/improve reflection --from-runs` should also treat stored reflections as a comparative dataset rather than just isolated run notes.
+
 ### During a run
 
 After each run:
@@ -186,18 +209,27 @@ After each run:
 
 ### During aggregation
 
-Build a reflection summary across runs:
+Build or refresh the normalized global index first, then build reflection summaries across runs:
 
 - recurring detector ideas
 - recurring false-positive traps
 - recurring repo-pattern lessons
 - repeated repo-specific failures
 - contradictions between reflection and numeric score
+- consensus suggestions across models
+- unique suggestions by model
+- complementarity and overlap between model pairs
 
 Recommended output:
 
 ```text
 /kord/augur/memory/projects/<repo>/reflections/summaries/<summary-id>.json
+```
+
+and for cross-project work:
+
+```text
+/kord/augur/memory/global/reflections/summaries/<summary-id>.json
 ```
 
 ### During analysis
@@ -215,6 +247,8 @@ and produce:
 - candidate detector changes
 - candidate prompt or bundle changes
 - repos that need better labels or different evaluation criteria
+- model-specific strengths and blind spots
+- whether models are redundant or complementary on the current dataset
 
 ## Reflection Aggregation Rules
 

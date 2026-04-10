@@ -5,6 +5,7 @@ argument-hint: "key <path> <value> | config <yaml-path> <value> | overlay <clust
 ---
 
 Store personal information managed by alfred. Agents call this via `/kord alfred store` to save credentials, update config, or write overlays.
+When a caller asks Alfred to store or update something in Alfred's domain, Alfred should perform the write directly and report the result. Do not answer with a suggested command unless the caller explicitly asks for command syntax.
 
 ## Arguments
 
@@ -38,6 +39,7 @@ Store personal information managed by alfred. Agents call this via `/kord alfred
 4. **Publish projection** — run `$KORDINATE_HOME/shared/scripts/publish-profile.sh` after any successful config/profile/overlay write so `shared/runtime/profile/` stays in sync.
 
 5. **Report** — confirm what was stored and validation result.
+   If the caller asked for the change to be performed, perform it. Do not stop at describing the `store` command shape.
 
 ### Response style
 
@@ -50,6 +52,7 @@ Do not narrate your steps.
 Do not include prose summaries if bullets are enough.
 Never echo secret values.
 If nothing changed, return one bullet: `no change`.
+Do not return command templates unless the caller explicitly asks for them.
 
 ## Notes
 

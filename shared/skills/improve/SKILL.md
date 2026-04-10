@@ -1,15 +1,45 @@
 ---
 name: improve
-description: Improve skills, agents, or the whole team — run evals, benchmark, iterate, and optimize. Use for skill quality testing, A/B benchmarks, iterative improvement loops, or description optimization.
-argument-hint: "skill <name> | agent <name> | all | optimize <skill> | audit [--fix] | benchmark <skill>"
+description: Improve skills, agents, or the whole team — run structural audits, reflection-driven semantic review, benchmarks, and iterative loops. Use for skill quality testing, A/B benchmarks, iterative improvement loops, or description optimization.
+argument-hint: "structural <target> | reflection <target> | loop <target> | skill <name> | agent <name> | all | optimize <skill> | audit [--fix] | benchmark <skill>"
 ---
 
 Improve skills, agents, or the whole team. Combines static quality analysis, eval-driven testing, benchmarking, and iterative improvement loops.
+
+## Improvement Modes
+
+`/improve` should be understood as one orchestration mode (`loop`), two reusable analysis modes (`structural`, `reflection`), and legacy subcommands that compose them:
+
+| Mode | Purpose | Typical Output |
+|------|---------|----------------|
+| `structural` | Deterministic checks, inventory, coverage, schema, cacheability, missing assets | findings report, coverage gaps, fix list |
+| `reflection` | Semantic audit, concept quality review, detector/meaning mismatch review, reflection aggregation | semantic findings, promotion recommendations, concept/question improvements |
+| `loop` | End-to-end improvement cycle that orchestrates structural + reflection + eval/benchmark + edits + reruns | changed files, benchmark deltas, iteration summary |
+
+These modes are intentionally distinct:
+
+- `structural` is cheap, deterministic, and should not depend on subjective judgment.
+- `reflection` is the semantic review layer. It may run with or without stored run reflections.
+- `loop` is the orchestration layer. It runs or reuses `structural` and `reflection`, decides what to change, and decides what to rerun.
+
+In other words, `structural` and `reflection` can be used directly, but `loop` is the owner of the full improvement cycle.
+
+Legacy subcommands like `audit`, `skill`, `agent`, `all`, `benchmark`, and `optimize` remain valid. Conceptually:
+
+- `audit` is mostly `structural`
+- `benchmark` is structural measurement plus optional reflection-informed analysis
+- `skill`, `agent`, and `all` are `loop`
+- `reflection` can also be used directly when the main question is semantic quality rather than benchmark execution
+
+Think of `structural` and `reflection` as analyzers, and `loop` as the mode that composes them into an actual improvement run.
 
 ## Subcommands
 
 | Subcommand | Command | Purpose |
 |------------|---------|---------|
+| `structural` | `/improve structural <target>` | Run deterministic checks, inventory, coverage, schema, and retrieval audits |
+| `reflection` | `/improve reflection <target>` | Run semantic audit, concept review, and reflection-informed analysis |
+| `loop` | `/improve loop <target>` | Orchestrate structural + reflection + benchmark/eval + edits + reruns |
 | `skill` | `/improve skill <name>` | Eval + iterate on one skill |
 | `agent` | `/improve agent <name>` | Improve-loop on all of an agent's skills |
 | `all` | `/improve all` | Improve-loop across all agents |
@@ -20,6 +50,84 @@ Improve skills, agents, or the whole team. Combines static quality analysis, eva
 Common flags: `--skill <name>`, `--agent <name>`, `--fix` (audit mode only).
 
 If a required argument is missing (e.g. `skill` without a skill name), prompt the user for it rather than guessing. If the target skill path does not exist or has no SKILL.md, report the error clearly and exit.
+
+---
+
+## Subcommand: structural
+
+Run deterministic checks and inventory against the target without doing semantic judgment or iterative edits.
+
+### Procedure
+
+1. **Resolve target** — skill, agent, dataset, detector tree, memory tree, or other scoped artifact set.
+2. **Inventory assets** — collect the files, generated bundles, indexes, schemas, and relevant runtime artifacts.
+3. **Run deterministic checks** — examples:
+   - missing files or references
+   - schema/contract validity
+   - coverage gaps
+   - cache/retrieval completeness
+   - stale or duplicated generated assets
+4. **Group findings** by severity and layer.
+5. **Report** — produce a compact structural report with recommended fixes by layer.
+
+### Rules
+
+- Prefer scripts and direct validation over model judgment.
+- Do not use stored reflections as the primary evidence source here.
+- Structural mode may suggest fixes, but should not infer semantic meaning.
+- Structural mode is read-only when used directly.
+
+---
+
+## Subcommand: reflection
+
+Run semantic audit against the target. This mode is about meaning, interpretation, and transferable lessons, not deterministic coverage alone.
+
+### Procedure
+
+1. **Resolve target** — skill, agent, concept family, detector family, memory catalog, or benchmark slice.
+2. **Load semantic sources** — concept docs, detector policies, prompts, semantic indexes, and optionally stored run reflections.
+3. **Choose evidence source**:
+   - `static` reflection: audit semantic assets directly
+   - `from-runs` reflection: aggregate stored reflections and use them as semantic evidence
+4. **Review semantic quality** — examples:
+   - concept clarity and distinctness
+   - detector/meaning mismatch
+   - question quality
+   - promotion decisions
+   - reflection usefulness and transferability
+   - per-model and cross-model reflection overlap
+   - model-specific strengths, blind spots, and complementarity
+5. **Report** — produce semantic findings plus recommendations for memory, policy, prompt, detector, or benchmark changes.
+
+### Rules
+
+- Reflection mode is allowed to use model judgment.
+- Reflections are supporting evidence, not the whole audit.
+- Keep semantic findings separate from mechanical coverage checks.
+- Reflection mode is read-only when used directly.
+
+---
+
+## Subcommand: loop
+
+Run the full improvement cycle. `loop` is the orchestrator: it composes structural audit, reflection audit, evaluation, benchmark evidence, edits, and reruns.
+
+### Procedure
+
+1. **Run structural mode** first, or load a recent structural result, to identify deterministic gaps.
+2. **Run reflection mode** second, or load a recent reflection result, to identify semantic or conceptual weaknesses.
+3. **Decide the smallest useful changes** by layer.
+4. **Apply edits** to the target skill, detector, memory asset, or prompt.
+5. **Rerun evals/benchmarks** as appropriate.
+6. **Aggregate and report** what improved, what regressed, and what should be persisted as memory or methodology.
+
+### Rules
+
+- Loop mode owns file changes and reruns.
+- Structural and reflection findings should stay attributable inside the loop output.
+- Do not skip structural checks just because semantic review found something interesting.
+- Explicit fixer commands that mutate files, such as `audit --fix`, should be treated as narrow macros over loop behavior rather than as standalone analyzer writes.
 
 ---
 
@@ -236,6 +344,11 @@ Use `disable-model-invocation: true` for destructive/deployment skills. Use `all
 - [agents/analyzer.md](agents/analyzer.md) — Post-hoc analysis and benchmark analysis agent
 - [agents/improve-loop.md](agents/improve-loop.md) — Per-agent improve prompt for `all` mode
 - [references/schemas.md](references/schemas.md) — JSON schemas for evals, grading, benchmark, comparison, analysis
+- [references/methodology/skill-improvement-checklist.md](references/methodology/skill-improvement-checklist.md) — Generic questions to ask before changing a skill, detector, prompt, or benchmark
+- [references/methodology/eval-design.md](references/methodology/eval-design.md) — Generic eval and benchmark design guidance
+- [references/methodology/detection-improvement.md](references/methodology/detection-improvement.md) — Generic method for improving deterministic extraction and detector pipelines
+- [references/methodology/performance-analysis.md](references/methodology/performance-analysis.md) — Generic performance and bottleneck analysis guidance
+- [references/reflection-analysis-schema.md](references/reflection-analysis-schema.md) — Shared schema for per-model and cross-model reflection aggregation
 - `eval-viewer/` — `generate_review.py` + `viewer.html` for interactive result review
 - `assets/eval_review.html` — Template for trigger eval query review
 

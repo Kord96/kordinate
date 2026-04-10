@@ -179,6 +179,20 @@ profiles:
       secret_key: api-key
     required_choices: []
 
+  alfred-gpt-oss-20b:
+    description: Alfred specialist deployment using the Fireworks-hosted GPT-OSS 20B backend.
+    defaults:
+      flavor: alfred
+      image_customization: none
+      provider: fireworks
+      model: fireworks/gpt-oss-20b
+      backend: fireworks
+      backend_base_url: https://api.fireworks.ai/inference/v1
+      secret_env: BACKEND_API_KEY
+      secret_name: fireworks-api
+      secret_key: api-key
+    required_choices: []
+
   sauron-sonnet:
     description: Sauron specialist deployment using the built-in Sauron flavor seed on Claude Sonnet.
     defaults:

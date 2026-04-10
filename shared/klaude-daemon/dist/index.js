@@ -19,8 +19,9 @@ const kafka = new Kafka({
     clientId: `klaude-daemon-${AGENT_NAME}`,
     brokers: daemonConfig.kafkaBrokers,
 });
+const consumerGroupId = daemonConfig.kafkaConsumerGroupId ?? `klaude-daemon.${AGENT_NAME}`;
 const consumer = kafka.consumer({
-    groupId: `klaude-daemon.${AGENT_NAME}`,
+    groupId: consumerGroupId,
     sessionTimeout: daemonConfig.kafkaSessionTimeoutMs,
     heartbeatInterval: daemonConfig.kafkaHeartbeatIntervalMs,
 });
@@ -66,7 +67,15 @@ async function publishResponse(message, response) {
     });
 }
 async function publishReflection(message, reflection) {
-    const payload = buildReflectionEvent(AGENT_NAME, message, reflection);
+    const payload = buildReflectionEvent({
+        agentName: AGENT_NAME,
+        agentProfile: AGENT_PROFILE,
+        backendProvider: daemonConfig.executionProfile.provider,
+        backendRuntime: daemonConfig.executionProfile.runtime,
+        backendModel: daemonConfig.executionProfile.model,
+        message,
+        reflection,
+    });
     await producer.send({
         topic: daemonConfig.reflectionsTopic,
         messages: [{ key: message.correlation_id, value: JSON.stringify(payload) }],
@@ -172,6 +181,7 @@ async function main() {
         agent_profile: agentProfile,
         execution_profile: redactExecutionProfile(daemonConfig.executionProfile),
         brokers: daemonConfig.kafkaBrokers,
+        kafka_consumer_group_id: consumerGroupId,
         kafka_session_timeout_ms: daemonConfig.kafkaSessionTimeoutMs,
         kafka_heartbeat_interval_ms: daemonConfig.kafkaHeartbeatIntervalMs,
         reflections_topic: daemonConfig.reflectionsTopic,

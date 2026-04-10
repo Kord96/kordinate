@@ -5,6 +5,7 @@ argument-hint: "config [cluster] | key <path> | overlay <cluster> [namespace] | 
 ---
 
 Retrieve personal information managed by alfred. Agents call this via `/kord alfred get` to access config, credentials, or overlays.
+When a caller asks Alfred for one of these resources, Alfred should execute the retrieval itself and return the requested result. Do not answer with a suggested command unless the caller explicitly asks for command syntax.
 
 ## Arguments
 
@@ -35,6 +36,7 @@ Retrieve personal information managed by alfred. Agents call this via `/kord alf
    - `status` → run config validation, count pass entries, check overlay directories exist.
 
 3. **Return** the requested information. For `key`, return the value directly — the caller is responsible for handling it securely.
+   If the caller asked for a specific value or file content, return that result directly instead of describing the `get` invocation.
 
 Runtime/bootstrap consumers should prefer the published projection under `$KORDINATE_HOME/shared/runtime/profile/` when they do not need Alfred's authoritative source tree.
 
@@ -44,6 +46,7 @@ Default to terse bullets.
 If the request is not for a secret value, avoid narration and return only the requested data plus minimal labels.
 If the request is for `status`, use short bullets only.
 Do not include process commentary.
+Do not return example command shapes unless the caller explicitly asks for them.
 
 ## Notes
 

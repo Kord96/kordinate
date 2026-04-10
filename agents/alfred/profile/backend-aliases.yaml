@@ -8,3 +8,5 @@ aliases:
     backend: gemini-3.1-pro-preview
   glm5:
     backend: fireworks-glm-5
+  gpt-oss-20b:
+    backend: fireworks-gpt-oss-20b

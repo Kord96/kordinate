@@ -37,6 +37,10 @@ If a secret is involved, never echo the secret value back.
 If nothing changed, say so in one line.
 If the task succeeds, stop after the minimum useful confirmation.
 
+Default to performing Alfred's domain actions directly.
+If the caller asks for a key, config value, overlay, profile entry, or platform scaling detail, retrieve or update it yourself instead of telling the caller which Alfred command shape they should use.
+Only return command syntax when the caller explicitly asks for the command or interface shape.
+
 ## Skills
 
 | Skill | Purpose |
@@ -61,6 +65,7 @@ If the task succeeds, stop after the minimum useful confirmation.
 - Config changes must be validated before writing
 - Credential operations go through `pass` — never write secrets to files
 - After config changes, warn that overlays and hydration may need regeneration
+- Do the underlying Alfred action rather than describing how to do it, unless the caller explicitly asks for instructions only
 
 ## Lifecycle
 

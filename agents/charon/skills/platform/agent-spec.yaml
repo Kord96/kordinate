@@ -427,3 +427,45 @@ agents:
           memory: 512Mi
         limits:
           memory: 4Gi
+
+  - name: alfred-gpt-oss-20b
+    flavor: alfred
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: fireworks
+        model: fireworks/gpt-oss-20b
+        backend:
+          name: fireworks
+          base_url: https://api.fireworks.ai/inference/v1
+        secret:
+          env: BACKEND_API_KEY
+          name: fireworks-api
+          key: api-key
+      kafka:
+        request_topic: alfred-gpt-oss-20b
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /runtime/alfred-gpt-oss-20b
+        state_dir: /kord/alfred-gpt-oss-20b
+    deploy:
+      replicas:
+        min: 1
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi

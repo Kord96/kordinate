@@ -31,7 +31,7 @@ RUN cd /app/shared/klaude-daemon \
   && cd /app/shared/kord-api \
   && npm ci \
   && npm run build \
-  && npm install -g . @anthropic-ai/claude-code
+  && npm install -g . @anthropic-ai/claude-code @gitlawb/openclaude
 
 RUN ln -s /app/lib/scripts /app/scripts \
   && chmod +x /app/lib/scripts/setup-agent-dir.sh /app/lib/scripts/deploy-runtime.sh /app/shared/klaude-daemon/bin/klaude-daemon

@@ -21,6 +21,21 @@ test('buildPromptFromProfile prepends prompt prefix when present', () => {
   assert.match(prompt, /Review this design/)
 })
 
+test('buildPromptFromProfile composes augur bundle layers for bundle_mode', () => {
+  const profile = loadAgentProfile('augur')
+  const prompt = buildPromptFromProfile(profile, {
+    type: 'request',
+    sender: 'agent-a',
+    correlation_id: 'corr-1',
+    prompt: 'Analyze the repo',
+    agent_params: { bundle_mode: 'selective' },
+  })
+
+  assert.match(prompt, /Augur Analyze Skill Bundle — Core v1/)
+  assert.match(prompt, /Augur Analyze Bundle — Selective v1/)
+  assert.match(prompt, /framework detection -> fact extraction -> concept inference -> atlas synthesis/)
+})
+
 test('custom reflection prompt overrides profile default', () => {
   const profile = loadAgentProfile('augur')
   const prompt = resolveReflectionPrompt(profile, {

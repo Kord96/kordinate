@@ -41,6 +41,13 @@ profiles:
     credential_ref: kordinate/fireworks/api-key
     notes: Fireworks-hosted GLM-5 candidate for model comparison.
 
+  fireworks-gpt-oss-20b:
+    profile: openai
+    model: fireworks/gpt-oss-20b
+    base_url: https://api.fireworks.ai/inference/v1
+    credential_ref: kordinate/fireworks/api-key
+    notes: Fireworks-hosted GPT-OSS 20B candidate for lightweight operational agents like Alfred.
+
   fireworks-deepseek-v3p2:
     profile: openai
     model: accounts/fireworks/models/deepseek-v3p2
