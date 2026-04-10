@@ -13,6 +13,8 @@ test('buildDiscoveryRecord exposes prompting contract and agent metadata', () =>
       workingDirectory: '/kord/shared/repos/kordinate',
     },
     kafkaBrokers: ['kafka:9092'],
+    kafkaSessionTimeoutMs: 600000,
+    kafkaHeartbeatIntervalMs: 3000,
     reflectionsTopic: 'reflections',
     discoveryServerUrl: 'http://discovery:9091',
     discoveryPublishIntervalMs: 30000,

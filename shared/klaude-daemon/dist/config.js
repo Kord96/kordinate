@@ -88,6 +88,8 @@ export function loadDaemonConfig() {
     return {
         executionProfile,
         kafkaBrokers: (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(','),
+        kafkaSessionTimeoutMs: Number.parseInt(process.env.KAFKA_SESSION_TIMEOUT_MS ?? '600000', 10),
+        kafkaHeartbeatIntervalMs: Number.parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL_MS ?? '3000', 10),
         reflectionsTopic: process.env.REFLECTIONS_TOPIC ?? 'reflections',
         discoveryServerUrl: process.env.DISCOVERY_SERVER_URL,
         discoveryPublishIntervalMs: Number.parseInt(process.env.DISCOVERY_PUBLISH_INTERVAL_MS ?? '30000', 10),

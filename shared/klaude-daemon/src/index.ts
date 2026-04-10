@@ -23,7 +23,11 @@ const kafka = new Kafka({
   brokers: daemonConfig.kafkaBrokers,
 })
 
-const consumer = kafka.consumer({ groupId: `klaude-daemon.${AGENT_NAME}` })
+const consumer = kafka.consumer({
+  groupId: `klaude-daemon.${AGENT_NAME}`,
+  sessionTimeout: daemonConfig.kafkaSessionTimeoutMs,
+  heartbeatInterval: daemonConfig.kafkaHeartbeatIntervalMs,
+})
 const producer = kafka.producer()
 const runtime = createProviderAdapter(daemonConfig.executionProfile)
 const sessionStore = new SessionStore(daemonConfig.sessionMapPath)
@@ -198,6 +202,8 @@ async function main(): Promise<void> {
     agent_profile: agentProfile,
     execution_profile: redactExecutionProfile(daemonConfig.executionProfile),
     brokers: daemonConfig.kafkaBrokers,
+    kafka_session_timeout_ms: daemonConfig.kafkaSessionTimeoutMs,
+    kafka_heartbeat_interval_ms: daemonConfig.kafkaHeartbeatIntervalMs,
     reflections_topic: daemonConfig.reflectionsTopic,
     discovery_server_url: daemonConfig.discoveryServerUrl ?? null,
     session_map_path: daemonConfig.sessionMapPath,
