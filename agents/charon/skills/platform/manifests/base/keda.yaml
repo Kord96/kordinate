@@ -185,7 +185,7 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-charon-sonnet
+  name: agent-charon-gpt53-codex
 spec:
   pollingInterval: 30
   minReplicaCount: 1
@@ -200,13 +200,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-charon-sonnet
+    name: agent-charon-gpt53-codex
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: charon-sonnet
-        topic: charon-sonnet
+        consumerGroup: charon-gpt53-codex
+        topic: charon-gpt53-codex
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest

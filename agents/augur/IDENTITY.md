@@ -1,11 +1,6 @@
 ---
 name: augur
 description: Architecture review and pattern authority — reviews design consistency and identifies patterns
-profile: openai
-model: deepseek-reasoner
-base_url: https://api.deepseek.com
-backend_name: deepseek
-api_key_env: DEEPSEEK_API_KEY
 color: purple
 memory: user
 tools:

@@ -8,7 +8,7 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
 
 ## Command Shape
 
-`/platform create-agent <name> [--profile generic|generic-opus|augur-opus|augur-gemini-pro|augur-deepseek-reasoner|augur-glm5|augur-gpt54|charon-sonnet|alfred-deepseek-chat|sauron-sonnet|warden-haiku] [profile-specific flags]`
+`/platform create-agent <name> [--profile generic|generic-opus|augur-opus|augur-gemini-pro|augur-deepseek-reasoner|augur-glm5|augur-gpt54|charon-gpt53-codex|alfred-deepseek-chat|sauron-sonnet|warden-haiku] [profile-specific flags]`
 
 ## Steps
 

@@ -1,8 +1,6 @@
 ---
 name: warden
 description: Security scanning and credential hygiene — ensures nothing sensitive is hardcoded or exposed
-profile: anthropic
-model: claude-haiku-4-5-20251001
 color: orange
 memory: user
 tools:

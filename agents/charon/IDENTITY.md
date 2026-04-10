@@ -1,10 +1,6 @@
 ---
 name: charon
-description: Infrastructure operations — deployments, cluster management, kubectl authority
-profile: openai
-model: gpt-5.2-codex
-base_url: https://api.openai.com/v1
-backend_name: codex
+description: Platform operator for deployments, rollouts, migrations, scaling, and Kubernetes incident response
 color: blue
 memory: user
 tools:

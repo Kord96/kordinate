@@ -83,7 +83,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: charon-sonnet
+  name: charon-gpt53-codex
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -241,7 +241,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.charon-sonnet
+  name: memory.updates.charon-gpt53-codex
   labels:
     strimzi.io/cluster: kafka
 spec:

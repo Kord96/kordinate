@@ -263,7 +263,7 @@ agents:
         limits:
           memory: 4Gi
 
-  - name: charon-sonnet
+  - name: charon-gpt53-codex
     flavor: charon
     image:
       base: agent-base
@@ -271,17 +271,19 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: claude-agent-sdk
-        provider: anthropic
-        model: sonnet
+        kind: codex-sdk
+        provider: openai
+        model: gpt-5.3-codex
         backend:
-          name: anthropic
+          name: openai
+          base_url: https://api.openai.com/v1
+        skip_git_repo_check: true
         secret:
-          env: ANTHROPIC_API_KEY
-          name: anthropic-api
+          env: BACKEND_API_KEY
+          name: codex-api
           key: api-key
       kafka:
-        request_topic: charon-sonnet
+        request_topic: charon-gpt53-codex
         reply_required: true
         request_schema:
           required: [type, sender, correlation_id, prompt]
@@ -290,8 +292,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/charon-sonnet
-        state_dir: /kord/charon-sonnet
+        agent_home_dir: /runtime/charon-gpt53-codex
+        state_dir: /kord/charon-gpt53-codex
     deploy:
       replicas:
         min: 1

@@ -1,8 +1,6 @@
 ---
 name: sauron
 description: Monitoring and observability — scans for signals, diagnoses issues, designs monitoring systems
-profile: anthropic
-model: claude-sonnet-4-6
 color: red
 memory: user
 tools:

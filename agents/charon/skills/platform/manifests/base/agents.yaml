@@ -603,14 +603,14 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-charon-sonnet
-  labels: { app: kord-agent, agent: charon-sonnet }
+  name: agent-charon-gpt53-codex
+  labels: { app: kord-agent, agent: charon-gpt53-codex }
 spec:
   selector:
-    matchLabels: { app: kord-agent, agent: charon-sonnet }
+    matchLabels: { app: kord-agent, agent: charon-gpt53-codex }
   template:
     metadata:
-      labels: { app: kord-agent, agent: charon-sonnet }
+      labels: { app: kord-agent, agent: charon-gpt53-codex }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -623,8 +623,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh charon-sonnet
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh charon charon-sonnet
+              bash /app/scripts/setup-agent-dir.sh charon-gpt53-codex
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh charon charon-gpt53-codex
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -641,24 +641,26 @@ spec:
             - |
               exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: "charon-sonnet" }
+            - { name: AGENT_NAME, value: "charon-gpt53-codex" }
             - { name: AGENT_PROFILE, value: "charon" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/charon-sonnet" }
-            - { name: AGENT_STATE_DIR, value: "/kord/charon-sonnet" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/charon-gpt53-codex" }
+            - { name: AGENT_STATE_DIR, value: "/kord/charon-gpt53-codex" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-charon-sonnet:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
-            - { name: DAEMON_PROVIDER, value: "anthropic" }
-            - { name: DAEMON_MODEL, value: "sonnet" }
-            - { name: DAEMON_BACKEND, value: "anthropic" }
-            - name: ANTHROPIC_API_KEY
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-charon-gpt53-codex:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.3-codex" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: anthropic-api
+                  name: codex-api
                   key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
@@ -687,12 +689,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-charon-sonnet
-  labels: { app: kord-agent, agent: charon-sonnet }
+  name: agent-charon-gpt53-codex
+  labels: { app: kord-agent, agent: charon-gpt53-codex }
 spec:
   selector:
     app: kord-agent
-    agent: charon-sonnet
+    agent: charon-gpt53-codex
   ports:
     - name: health
       port: 9090
@@ -921,7 +923,7 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh alfred-deepseek-chat
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-deepseek-chat
+              AGENT_MEMORY_BUNDLE=operate-direct-v1 AGENT_SKILL_BUNDLE=get-store-core-v1 AGENT_RUNTIME_BUNDLE=direct-action-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-deepseek-chat
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -953,6 +955,9 @@ spec:
             - { name: DAEMON_MODEL, value: "deepseek-chat" }
             - { name: DAEMON_BACKEND, value: "deepseek" }
             - { name: BACKEND_BASE_URL, value: "https://api.deepseek.com/v1" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "operate-direct-v1" }
+            - { name: AGENT_SKILL_BUNDLE, value: "get-store-core-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "direct-action-v1" }
             - name: DEEPSEEK_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -1021,7 +1026,7 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh alfred-gpt-oss-20b
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-gpt-oss-20b
+              AGENT_MEMORY_BUNDLE=retrieve-fast-v1 AGENT_SKILL_BUNDLE=retrieve-core-v1 AGENT_RUNTIME_BUNDLE=retrieve-fast-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-gpt-oss-20b
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -1053,6 +1058,9 @@ spec:
             - { name: DAEMON_MODEL, value: "fireworks/gpt-oss-20b" }
             - { name: DAEMON_BACKEND, value: "fireworks" }
             - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "retrieve-fast-v1" }
+            - { name: AGENT_SKILL_BUNDLE, value: "retrieve-core-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "retrieve-fast-v1" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:

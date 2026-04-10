@@ -22,10 +22,10 @@ backends:
     model: deepseek-reasoner
     base_url: https://api.deepseek.com
     api_key_env: DEEPSEEK_API_KEY
-  gpt-5.2-codex:
+  gpt-5.3-codex:
     profile: openai
     provider: openai
-    model: gpt-5.2-codex
+    model: gpt-5.3-codex
     base_url: https://api.openai.com/v1
     api_key_env: CODEX_API_KEY
     extra_env:
@@ -73,4 +73,4 @@ selection_sets:
   codex-ops:
     selection: first
     backends:
-      - gpt-5.2-codex
+      - gpt-5.3-codex

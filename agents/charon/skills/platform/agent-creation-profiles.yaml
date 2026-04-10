@@ -152,16 +152,18 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  charon-sonnet:
-    description: Charon specialist deployment using the built-in Charon flavor seed on Claude Sonnet.
+  charon-gpt53-codex:
+    description: Charon specialist deployment using the built-in Charon flavor seed on GPT-5.3 Codex for platform operations and deployment debugging.
     defaults:
       flavor: charon
       image_customization: agent-charon
-      provider: anthropic
-      model: sonnet
-      backend: anthropic
-      secret_env: ANTHROPIC_API_KEY
-      secret_name: anthropic-api
+      provider: openai
+      model: gpt-5.3-codex
+      backend: openai
+      backend_base_url: https://api.openai.com/v1
+      skip_git_repo_check: true
+      secret_env: BACKEND_API_KEY
+      secret_name: codex-api
       secret_key: api-key
     required_choices: []
 
