@@ -17,6 +17,7 @@ DEFAULT_CACHE_TTL_SECONDS = 300
 DEFAULT_STATE_DIR = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex"))) / "state"
 DEFAULT_CACHE_PATH = DEFAULT_STATE_DIR / "kord-agent-discovery.json"
 DEFAULT_REQUESTS_DIR = DEFAULT_STATE_DIR / "kord-requests"
+DEFAULT_AUTH_PATH = agent_prompt.DEFAULT_AUTH_PATH
 
 
 def load_cached_discovery(cache_path: Path, ttl_seconds: int) -> dict[str, Any] | None:
@@ -46,8 +47,6 @@ def fetch_discovery(args: argparse.Namespace, refresh: bool) -> dict[str, Any]:
         discovery_url=args.discovery_url,
         gateway_url=args.gateway_url,
         api_key=args.api_key,
-        discovery_namespace=args.discovery_namespace,
-        discovery_target=args.discovery_target,
         agent=None,
         verbose=getattr(args, "verbose", False),
     )
@@ -105,6 +104,23 @@ def show_agents(args: argparse.Namespace) -> int:
     payload = fetch_discovery(args, refresh=args.refresh)
     print(json.dumps(payload, indent=2))
     return 0
+
+
+def auth_login(args: argparse.Namespace) -> int:
+    login_args = argparse.Namespace(
+        gateway_url=args.gateway_url,
+        api_key=args.api_key,
+        auth_path=args.auth_path,
+    )
+    return agent_prompt.auth_login_command(login_args)
+
+
+def auth_status(args: argparse.Namespace) -> int:
+    return agent_prompt.auth_status_command(argparse.Namespace(auth_path=args.auth_path))
+
+
+def auth_clear(args: argparse.Namespace) -> int:
+    return agent_prompt.auth_clear_command(argparse.Namespace(auth_path=args.auth_path))
 
 
 def prompt_via_kord(args: argparse.Namespace) -> int:
@@ -182,19 +198,11 @@ def prompt_via_kord(args: argparse.Namespace) -> int:
         timeout_ms=args.timeout_ms,
         reflect=args.reflect,
         reflection_prompt=args.reflection_prompt,
-        reply_topic=None,
         session_id=args.session_id,
-        correlation_id=None,
-        wait_ms=args.wait_ms,
         discovery_url=args.discovery_url,
         gateway_url=args.gateway_url,
         api_key=args.api_key,
         async_mode=False,
-        discovery_namespace=args.discovery_namespace,
-        discovery_target=args.discovery_target,
-        kafka_namespace=args.kafka_namespace,
-        kafka_pod=args.kafka_pod,
-        kafka_bootstrap_server=args.kafka_bootstrap_server,
     )
     return agent_prompt.prompt(prompt_args)
 
@@ -204,20 +212,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--refresh", action="store_true", help="ignore cached discovery and refresh now")
     parser.add_argument("--cache-path", default=str(DEFAULT_CACHE_PATH))
     parser.add_argument("--requests-dir", default=str(DEFAULT_REQUESTS_DIR))
+    parser.add_argument("--auth-path", default=str(DEFAULT_AUTH_PATH))
     parser.add_argument("--cache-ttl-seconds", type=int, default=DEFAULT_CACHE_TTL_SECONDS)
     parser.add_argument("--discovery-url", default=agent_prompt.DEFAULT_DISCOVERY_URL)
     parser.add_argument("--gateway-url", default=agent_prompt.DEFAULT_GATEWAY_URL)
     parser.add_argument("--api-key", default=agent_prompt.DEFAULT_API_KEY)
-    parser.add_argument("--discovery-namespace", default=agent_prompt.DEFAULT_DISCOVERY_NAMESPACE)
-    parser.add_argument("--discovery-target", default=agent_prompt.DEFAULT_DISCOVERY_TARGET)
-    parser.add_argument("--kafka-namespace", default=agent_prompt.DEFAULT_KAFKA_NAMESPACE)
-    parser.add_argument("--kafka-pod", default=agent_prompt.DEFAULT_KAFKA_POD)
-    parser.add_argument("--kafka-bootstrap-server", default=agent_prompt.DEFAULT_KAFKA_BOOTSTRAP)
     parser.add_argument("--working-dir")
     parser.add_argument("--timeout-ms", type=int)
     parser.add_argument("--wait-ms", type=int, default=120000)
     parser.add_argument("--async", dest="async_mode", action="store_true")
-    parser.add_argument("--session-id")
+    parser.add_argument("--session-id", help="Stable session lane for related requests")
     parser.add_argument("--reflect", action="store_true")
     parser.add_argument("--reflection-prompt")
     parser.add_argument("--verbose", action="store_true", help="show verbose discovery details")
@@ -235,6 +239,18 @@ def main() -> int:
         return list_agents(args)
     if args.target in {"discover", "show"}:
         return show_agents(args)
+    if args.target == "auth":
+        if args.verb == "login":
+            if not args.rest:
+                parser.error("use 'kord auth login <api-key>' or pass --api-key")
+            if not args.api_key:
+                args.api_key = args.rest[0]
+            return auth_login(args)
+        if args.verb == "status":
+            return auth_status(args)
+        if args.verb == "clear":
+            return auth_clear(args)
+        parser.error("use 'kord auth login <api-key>', 'kord auth status', or 'kord auth clear'")
     if args.verb != "on":
         parser.error("use 'kord <agent> on <prompt...>' or 'kord agents'")
 

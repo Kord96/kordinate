@@ -1,72 +1,88 @@
 ---
 name: kord
-description: Discover and prompt daemon-backed agent pods with cached discovery and shorthand syntax like `kord opus on ...`.
+description: Discover and prompt daemon-backed agents through the central kord API.
 ---
 
 # Kord
 
-Use this skill for all normal agent discovery and prompting.
+Use this skill whenever you need to:
+- discover which daemon-backed agents exist
+- choose the right agent for a task
+- prompt one or more agents
+- submit long-running agent work asynchronously and check back later
 
-`kord` does three things:
-- keeps a cached discovery snapshot
-- refreshes discovery when stale or on demand
-- resolves agent aliases and prompts the right daemon-backed pod
+## What This Skill Does
 
-## Usage
+`kord` is the single public surface for agent discovery and prompting.
 
-List known agents:
+It hides:
+- stored API authentication
+- discovery refresh and caching
+- alias resolution
+- request tracking for async work
 
-```bash
-KUBECTL_CMD="sudo k3s kubectl" /kord/workstation/home/project/kordinate/lib/scripts/kord agents
-```
+It should be used instead of exposing:
+- raw Kafka topics
+- Kubernetes commands
+- direct transport details
+- ad hoc prompt envelopes
 
-Show full discovery:
+## Default Behavior
 
-```bash
-KUBECTL_CMD="sudo k3s kubectl" /kord/workstation/home/project/kordinate/lib/scripts/kord discover
-KUBECTL_CMD="sudo k3s kubectl" /kord/workstation/home/project/kordinate/lib/scripts/kord --verbose discover
-```
+When using this skill:
+- load stored auth automatically
+- refresh discovery if the cached view is stale
+- prefer exact agent names, but allow simple aliases when unambiguous
+- use the compact discovery view by default
+- use async mode only when the task is likely to take long enough that blocking is undesirable
 
-Prompt an agent:
+## How To Use It
 
-```bash
-KUBECTL_CMD="sudo k3s kubectl" /kord/workstation/home/project/kordinate/lib/scripts/kord augur-gpt54 on "Analyze the auth layer"
-KUBECTL_CMD="sudo k3s kubectl" /kord/workstation/home/project/kordinate/lib/scripts/kord opus on "Review this design"
-```
+For discovery:
+- ask `kord` to list available agents
+- ask `kord` for verbose discovery only when transport or runtime debugging is needed
 
-Submit a request asynchronously and let `kord` start a background watcher:
+For prompting:
+- ask `kord` to send a task to a named agent
+- include a working directory when the task should focus on a particular repo or subtree
 
-```bash
-KORD_API_URL="http://kord-api.kord.svc.cluster.local:9091" \
-KORD_API_KEY="replace-me" \
-/kord/workstation/home/project/kordinate/lib/scripts/kord --async augur-opus on "Analyze the auth layer"
-```
+For long-running work:
+- ask `kord` to submit the request asynchronously
+- `kord` should return the request id and track the result through its local request state
 
-That returns:
-- `request_id`
-- `status_path`
-- `log_path`
+## Discovery Shape
 
-Use the unified authenticated API instead of direct Kafka/Kubernetes transport:
+Default discovery should emphasize caller-facing routing information:
+- `name`
+- `capabilities`
+- `backend_provider`
+- `backend_model`
+- `supported_agent_params`
+- `active`
 
-```bash
-KORD_API_URL="http://kord-api.kord.svc.cluster.local:9091" \
-KORD_API_KEY="replace-me" \
-/kord/workstation/home/project/kordinate/lib/scripts/kord agents
+Verbose discovery may include:
+- `specialization`
+- `runtime`
+- `health_url`
+- `last_seen_at`
+- `request_topic`
+- `default_working_dir`
 
-KORD_API_URL="http://kord-api.kord.svc.cluster.local:9091" \
-KORD_API_KEY="replace-me" \
-/kord/workstation/home/project/kordinate/lib/scripts/kord augur-opus on "Analyze the auth layer"
-```
+## Prompting Guidance
 
-Notes:
-- bare model aliases prefer `generic-*` when present, so `opus` resolves to `generic-opus`
-- exact names always win over aliases
-- if discovery is older than 5 minutes, `kord` refreshes it automatically
-- if `KORD_API_URL` is set, `kord` uses the authenticated HTTP API instead of the internal Kafka helper path
-- `--async` submits through `kord-api`, returns immediately, and launches a background watcher that writes the final response JSON into `$CODEX_HOME/state/kord-requests/<request_id>.json`
-- default discovery is compact: `name`, `capabilities`, `backend_provider`, `backend_model`, `supported_agent_params`, `active`
-- use `--verbose` to include runtime and transport details such as `specialization`, `runtime`, `health_url`, `last_seen_at`, `request_topic`, and `default_working_dir`
+Use the discovered capabilities to choose the agent. Prefer:
+- specialist agents for specialist tasks
+- generic agents only when no specialist is a better fit
 
-`agent_prompt.py` remains as internal transport plumbing.
-`kord` is the only public skill surface for agent discovery and prompting.
+If a model alias is used, prefer the matching `generic-*` agent when one exists and there is no more specific exact match.
+
+## Authentication
+
+`kord` should authenticate once and reuse stored auth automatically. The user should not have to keep passing API keys during normal skill usage.
+
+## Internal Note
+
+The implementation currently lives behind the internal wrapper script:
+- [kord](/kord/workstation/home/project/kordinate/lib/scripts/kord)
+
+That script is implementation detail, not the intended user-facing contract.
