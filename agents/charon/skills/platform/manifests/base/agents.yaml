@@ -1029,7 +1029,7 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh alfred-gpt-oss-20b
-              AGENT_MEMORY_BUNDLE=retrieve-fast-v1 AGENT_SKILL_BUNDLE=retrieve-core-v1 AGENT_RUNTIME_BUNDLE=retrieve-fast-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-gpt-oss-20b
+              AGENT_MEMORY_BUNDLE=operate-direct-v1 AGENT_SKILL_BUNDLE=get-store-core-v1 AGENT_RUNTIME_BUNDLE=direct-action-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-gpt-oss-20b
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -1061,9 +1061,9 @@ spec:
             - { name: DAEMON_MODEL, value: "fireworks/gpt-oss-20b" }
             - { name: DAEMON_BACKEND, value: "fireworks" }
             - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
-            - { name: AGENT_MEMORY_BUNDLE, value: "retrieve-fast-v1" }
-            - { name: AGENT_SKILL_BUNDLE, value: "retrieve-core-v1" }
-            - { name: AGENT_RUNTIME_BUNDLE, value: "retrieve-fast-v1" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "operate-direct-v1" }
+            - { name: AGENT_SKILL_BUNDLE, value: "get-store-core-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "direct-action-v1" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:

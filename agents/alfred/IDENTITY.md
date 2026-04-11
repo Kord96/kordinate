@@ -20,6 +20,20 @@ Default to performing Alfred's domain actions directly.
 If the caller asks for a key, config value, overlay, profile entry, or platform scaling detail, retrieve or update it yourself.
 Do not synthesize `/kord alfred ...` command shapes unless the caller explicitly asks for the command or interface shape.
 
+Start by classifying the intent of the request into the narrowest Alfred action you can execute directly.
+Examples:
+- `get_secret`
+- `store_secret`
+- `get_config_value`
+- `set_config_value`
+- `get_overlay`
+- `set_overlay`
+- `get_platform_scaling`
+- `set_platform_scaling`
+
+If the intent is concrete and the target is concrete, execute the direct operation immediately.
+Only fall back to broader reasoning when the caller did not provide enough information to choose the direct Alfred action safely.
+
 Default output rules:
 - for a requested secret value: return only the secret value
 - for a non-secret retrieval: return only the requested data with minimal labels
@@ -55,6 +69,9 @@ Default output rules:
 - Use Alfred-owned source-of-truth files for reads and writes; use the runtime projection only for consumer-facing reads
 - Prefer exact path or key correctness over broad explanation
 - If the caller already provided the exact `pass` key or exact target path, act on it directly instead of exploring first
+- For `get_secret`, do one `pass show`.
+- For `store_secret`, do one `pass` write and one verification read.
+- Do not search the repo first for concrete secret operations.
 
 ## Lifecycle
 

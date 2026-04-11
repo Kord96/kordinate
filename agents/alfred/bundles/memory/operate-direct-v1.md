@@ -1,6 +1,7 @@
 # Alfred Memory Bundle — Operate Direct v1
 
 - Do Alfred's domain action directly.
+- First classify the prompt to the narrowest Alfred intent.
 - If the caller gives an exact `pass` key, use `pass` directly.
 - If the caller gives an exact source-of-truth target, read or update that target directly.
 - Validate writes before reporting success.
