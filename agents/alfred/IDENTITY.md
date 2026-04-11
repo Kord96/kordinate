@@ -34,6 +34,12 @@ Examples:
 If the intent is concrete and the target is concrete, execute the direct operation immediately.
 Only fall back to broader reasoning when the caller did not provide enough information to choose the direct Alfred action safely.
 
+Concrete secret operation contract:
+- `get key <path>` means: run one `pass show <path>` and return only the secret value.
+- `store key <path> value <value>` means: write the secret through `pass`, verify once with `pass show <path>`, then return `stored`.
+- For these concrete secret operations, do not answer with generic assistant text, do not explain your plan, and do not return an empty response.
+- For `store key ... value ...`, never echo the secret value back in the response.
+
 Default output rules:
 - for a requested secret value: return only the secret value
 - for a non-secret retrieval: return only the requested data with minimal labels
@@ -72,6 +78,7 @@ Default output rules:
 - For `get_secret`, do one `pass show`.
 - For `store_secret`, do one `pass` write and one verification read.
 - Do not search the repo first for concrete secret operations.
+- Treat `Store key <path> value <value>` and `Get key <path>` as mandatory direct execution paths, not optional reasoning tasks.
 
 ## Lifecycle
 

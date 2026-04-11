@@ -181,6 +181,11 @@ export function formatProviderError(error: unknown): string[] {
   return parts.length > 0 ? parts : ['unknown provider error']
 }
 
+export const __testOnly = {
+  classifyAlfredDirectIntent,
+  enforceAlfredDirectIntentContract,
+}
+
 function errorResultFromError(error: unknown): RuntimeResult {
   const details = formatProviderError(error)
   return {
@@ -194,6 +199,66 @@ function successResult(output: string): RuntimeResult {
   return {
     status: 'success',
     output,
+  }
+}
+
+type AlfredDirectIntent =
+  | { kind: 'get_secret'; keyPath: string }
+  | { kind: 'store_secret'; keyPath: string; value: string }
+
+function isAlfredRuntimeContext(): boolean {
+  const profile = (process.env.AGENT_PROFILE_NAME ?? '').trim().toLowerCase()
+  const name = (process.env.AGENT_NAME ?? '').trim().toLowerCase()
+  return profile === 'alfred' || name.startsWith('alfred')
+}
+
+function classifyAlfredDirectIntent(prompt: string): AlfredDirectIntent | undefined {
+  const trimmed = prompt.trim()
+  const getMatch = /^get key ([^\s]+)\s*$/i.exec(trimmed)
+  if (getMatch) {
+    return { kind: 'get_secret', keyPath: getMatch[1] }
+  }
+  const storeMatch = /^store key ([^\s]+)\s+value\s+([\s\S]+)$/i.exec(trimmed)
+  if (storeMatch) {
+    return { kind: 'store_secret', keyPath: storeMatch[1], value: storeMatch[2].trim() }
+  }
+  return undefined
+}
+
+function invalidAlfredDirectResult(intent: AlfredDirectIntent, output: string): string | undefined {
+  const trimmed = output.trim()
+  if (!trimmed) {
+    return `${intent.kind} completed without returning a concrete result`
+  }
+  const normalized = trimmed.toLowerCase()
+  if (normalized === 'what can i help you with today?') {
+    return `${intent.kind} returned generic assistant text instead of executing the operation`
+  }
+  if (intent.kind === 'get_secret' && ['stored', 'validated', 'no change'].includes(normalized)) {
+    return 'get_secret returned a write-style confirmation instead of the requested value'
+  }
+  if (intent.kind === 'store_secret' && trimmed === intent.value) {
+    return 'store_secret echoed the secret value instead of returning a confirmation'
+  }
+  return undefined
+}
+
+function enforceAlfredDirectIntentContract(request: RuntimeRequest, result: RuntimeResult): RuntimeResult {
+  if (!isAlfredRuntimeContext() || result.status !== 'success') return result
+  const intent = classifyAlfredDirectIntent(request.prompt)
+  if (!intent) return result
+  const violation = invalidAlfredDirectResult(intent, result.output)
+  if (!violation) return result
+  log('alfred_contract_violation', {
+    intent: intent.kind,
+    key_path: intent.keyPath,
+    violation,
+    output: summarizeText(result.output, 400) || null,
+  })
+  return {
+    status: 'error',
+    output: violation,
+    errors: [violation],
   }
 }
 
@@ -876,7 +941,7 @@ export class ClaudeAgentSdkAdapter implements ProviderSessionAdapter {
         }
       }
 
-      const baseResult = successResult(text.trim())
+      const baseResult = enforceAlfredDirectIntentContract(request, successResult(text.trim()))
       const nextSession = nextSessionState(session, nextSessionId)
       if (!shouldReflect(request)) {
         return { session: nextSession, result: baseResult }
@@ -949,7 +1014,7 @@ export class CodexSdkAdapter implements ProviderSessionAdapter {
       )
       const output = runResult.output
       const nextSession = nextSessionState(session, runResult.providerSessionId ?? thread.id ?? session.providerSessionId)
-      const baseResult = successResult(output)
+      const baseResult = enforceAlfredDirectIntentContract(request, successResult(output))
 
       if (!shouldReflect(request)) {
         return { session: nextSession, result: baseResult }
@@ -1011,7 +1076,7 @@ export class OpenClaudeHarnessAdapter implements ProviderSessionAdapter {
         timeoutMs: request.timeout_ms,
       })
 
-      const baseResult = successResult(output)
+      const baseResult = enforceAlfredDirectIntentContract(request, successResult(output))
       if (!shouldReflect(request)) {
         return { session: nextSession, result: baseResult }
       }
