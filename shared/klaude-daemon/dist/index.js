@@ -110,6 +110,7 @@ async function handleRequest(message) {
     const readySession = await runtime.startOrResumeWarmSession(session);
     const { session: nextSession, result } = await runtime.executePrompt(readySession, {
         prompt: buildPromptFromProfile(agentProfile, message),
+        raw_prompt: message.prompt,
         working_dir: message.working_dir,
         timeout_ms: message.timeout_ms,
         reflect: message.reflect,

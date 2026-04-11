@@ -448,7 +448,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: openclaude-harness
+        kind: simple-harness
         provider: fireworks
         model: fireworks/gpt-oss-20b
         backend:

@@ -961,6 +961,8 @@ spec:
             - { name: AGENT_MEMORY_BUNDLE, value: "operate-direct-v1" }
             - { name: AGENT_SKILL_BUNDLE, value: "get-store-core-v1" }
             - { name: AGENT_RUNTIME_BUNDLE, value: "direct-action-v1" }
+            - { name: PASSWORD_STORE_DIR, value: "/kord/alfred/pass" }
+            - { name: GNUPGHOME, value: "/kord/alfred/gnupg" }
             - name: DEEPSEEK_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -1056,7 +1058,7 @@ spec:
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-alfred-gpt-oss-20b:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_RUNTIME, value: "simple-harness" }
             - { name: DAEMON_PROVIDER, value: "fireworks" }
             - { name: DAEMON_MODEL, value: "fireworks/gpt-oss-20b" }
             - { name: DAEMON_BACKEND, value: "fireworks" }
@@ -1064,6 +1066,8 @@ spec:
             - { name: AGENT_MEMORY_BUNDLE, value: "operate-direct-v1" }
             - { name: AGENT_SKILL_BUNDLE, value: "get-store-core-v1" }
             - { name: AGENT_RUNTIME_BUNDLE, value: "direct-action-v1" }
+            - { name: PASSWORD_STORE_DIR, value: "/kord/alfred/pass" }
+            - { name: GNUPGHOME, value: "/kord/alfred/gnupg" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:

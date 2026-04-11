@@ -8,6 +8,7 @@ export interface ReflectionPayload {
 
 export interface RuntimeRequest {
   prompt: string
+  raw_prompt?: string
   working_dir?: string
   timeout_ms?: number
   reflect?: boolean

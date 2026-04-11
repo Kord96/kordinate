@@ -116,6 +116,29 @@ test('loadDaemonConfig supports codex execution profile overrides', () => {
   process.env = previous
 })
 
+test('loadDaemonConfig maps legacy alfred-direct runtime to simple-harness', () => {
+  const previous = { ...process.env }
+  process.env.DAEMON_PROVIDER = 'fireworks'
+  process.env.DAEMON_RUNTIME = 'alfred-direct'
+  process.env.DAEMON_MODEL = 'accounts/fireworks/models/gpt-oss-20b'
+  process.env.BACKEND_API_KEY = 'fireworks-key'
+  process.env.BACKEND_BASE_URL = 'https://api.fireworks.ai/inference/v1'
+  process.env.CODEX_WORKING_DIRECTORY = '/runtime/alfred-gpt-oss-20b'
+
+  const config = loadDaemonConfig()
+
+  assert.deepEqual(config.executionProfile, {
+    provider: 'fireworks',
+    runtime: 'simple-harness',
+    model: 'accounts/fireworks/models/gpt-oss-20b',
+    apiKey: 'fireworks-key',
+    baseUrl: 'https://api.fireworks.ai/inference/v1',
+    workingDirectory: '/runtime/alfred-gpt-oss-20b',
+  })
+
+  process.env = previous
+})
+
 test('loadDaemonConfig supports deepseek through codex sdk', () => {
   const previous = { ...process.env }
   process.env.DAEMON_PROVIDER = 'deepseek'

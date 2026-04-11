@@ -6,6 +6,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import { Codex } from '@openai/codex-sdk';
 import { log } from './log.js';
+import { SimpleHarnessAdapter, classifyAlfredDirectIntent, enforceAlfredDirectIntentContract } from './simple-harness.js';
 const OPENCLAUDE_NPM_PACKAGE = process.env.OPENCLAUDE_NPM_PACKAGE ?? '@gitlawb/openclaude';
 const OPENCLAUDE_BIN = process.env.OPENCLAUDE_BIN ?? 'openclaude';
 function parseReflectionPayload(text) {
@@ -123,61 +124,6 @@ function successResult(output) {
     return {
         status: 'success',
         output,
-    };
-}
-function isAlfredRuntimeContext() {
-    const profile = (process.env.AGENT_PROFILE_NAME ?? '').trim().toLowerCase();
-    const name = (process.env.AGENT_NAME ?? '').trim().toLowerCase();
-    return profile === 'alfred' || name.startsWith('alfred');
-}
-function classifyAlfredDirectIntent(prompt) {
-    const trimmed = prompt.trim();
-    const getMatch = /^get key ([^\s]+)\s*$/i.exec(trimmed);
-    if (getMatch) {
-        return { kind: 'get_secret', keyPath: getMatch[1] };
-    }
-    const storeMatch = /^store key ([^\s]+)\s+value\s+([\s\S]+)$/i.exec(trimmed);
-    if (storeMatch) {
-        return { kind: 'store_secret', keyPath: storeMatch[1], value: storeMatch[2].trim() };
-    }
-    return undefined;
-}
-function invalidAlfredDirectResult(intent, output) {
-    const trimmed = output.trim();
-    if (!trimmed) {
-        return `${intent.kind} completed without returning a concrete result`;
-    }
-    const normalized = trimmed.toLowerCase();
-    if (normalized === 'what can i help you with today?') {
-        return `${intent.kind} returned generic assistant text instead of executing the operation`;
-    }
-    if (intent.kind === 'get_secret' && ['stored', 'validated', 'no change'].includes(normalized)) {
-        return 'get_secret returned a write-style confirmation instead of the requested value';
-    }
-    if (intent.kind === 'store_secret' && trimmed === intent.value) {
-        return 'store_secret echoed the secret value instead of returning a confirmation';
-    }
-    return undefined;
-}
-function enforceAlfredDirectIntentContract(request, result) {
-    if (!isAlfredRuntimeContext() || result.status !== 'success')
-        return result;
-    const intent = classifyAlfredDirectIntent(request.prompt);
-    if (!intent)
-        return result;
-    const violation = invalidAlfredDirectResult(intent, result.output);
-    if (!violation)
-        return result;
-    log('alfred_contract_violation', {
-        intent: intent.kind,
-        key_path: intent.keyPath,
-        violation,
-        output: summarizeText(result.output, 400) || null,
-    });
-    return {
-        status: 'error',
-        output: violation,
-        errors: [violation],
     };
 }
 function summarizeText(text, maxLength = 400) {
@@ -936,6 +882,13 @@ export function createProviderAdapter(executionProfile) {
     }
     if (executionProfile.runtime === 'openclaude-harness') {
         return new OpenClaudeHarnessAdapter(executionProfile.model, {
+            baseUrl: executionProfile.baseUrl,
+            apiKey: executionProfile.apiKey,
+            workingDirectory: executionProfile.workingDirectory,
+        });
+    }
+    if (executionProfile.runtime === 'simple-harness') {
+        return new SimpleHarnessAdapter(executionProfile.model, {
             baseUrl: executionProfile.baseUrl,
             apiKey: executionProfile.apiKey,
             workingDirectory: executionProfile.workingDirectory,

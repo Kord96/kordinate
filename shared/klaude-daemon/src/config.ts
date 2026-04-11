@@ -1,5 +1,5 @@
 export type ProviderName = string
-export type RuntimeKind = 'codex-sdk' | 'claude-agent-sdk' | 'openclaude-harness'
+export type RuntimeKind = 'codex-sdk' | 'claude-agent-sdk' | 'openclaude-harness' | 'simple-harness'
 
 export interface ExecutionProfile {
   provider: ProviderName
@@ -112,18 +112,48 @@ function buildCodexExecutionProfile(provider: ProviderName): ExecutionProfile {
   }
 }
 
+function buildSimpleHarnessExecutionProfile(provider: ProviderName): ExecutionProfile {
+  const genericApiKey = process.env.BACKEND_API_KEY
+  const genericBaseUrl = process.env.BACKEND_BASE_URL
+
+  if (provider === 'deepseek') {
+    return {
+      provider,
+      runtime: 'simple-harness',
+      model: process.env.DAEMON_MODEL ?? 'deepseek-chat',
+      apiKey: genericApiKey ?? process.env.DEEPSEEK_API_KEY,
+      baseUrl: genericBaseUrl ?? 'https://api.deepseek.com/v1',
+      workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+    }
+  }
+
+  return {
+    provider,
+    runtime: 'simple-harness',
+    model: process.env.DAEMON_MODEL ?? 'gpt-5.4',
+    apiKey: genericApiKey ?? process.env.OPENAI_API_KEY,
+    baseUrl: genericBaseUrl,
+    workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+  }
+}
+
 export function loadDaemonConfig(): DaemonConfig {
   const stateDir = process.env.DAEMON_STATE_DIR
     ?? (process.env.AGENT_HOME_DIR ? `${process.env.AGENT_HOME_DIR}/.daemon-state` : '.daemon-state')
   const provider = process.env.DAEMON_PROVIDER ?? 'openai'
   const model = process.env.DAEMON_MODEL
-  const runtime = (process.env.DAEMON_RUNTIME as RuntimeKind | undefined)
+  const configuredRuntime = process.env.DAEMON_RUNTIME === 'alfred-direct'
+    ? 'simple-harness'
+    : process.env.DAEMON_RUNTIME
+  const runtime = (configuredRuntime as RuntimeKind | undefined)
     ?? (model ? resolveRuntimeForModel(model, provider) : resolveDefaultRuntime(provider))
 
   const executionProfile = runtime === 'claude-agent-sdk'
     ? buildClaudeExecutionProfile(provider)
     : runtime === 'openclaude-harness'
       ? buildOpenClaudeExecutionProfile(provider)
+      : runtime === 'simple-harness'
+        ? buildSimpleHarnessExecutionProfile(provider)
       : buildCodexExecutionProfile(provider)
 
   return {

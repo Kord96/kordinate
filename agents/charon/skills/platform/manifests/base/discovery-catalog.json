@@ -14,8 +14,8 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-generic-opus:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "generic-opus"
   },
   {
@@ -35,8 +35,8 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-augur-opus:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "augur-opus"
   },
   {
@@ -56,8 +56,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-gemini-pro:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "augur-gemini-pro"
   },
   {
@@ -77,8 +77,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-deepseek-reasoner:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "augur-deepseek-reasoner"
   },
   {
@@ -98,8 +98,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-glm5:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "augur-glm5"
   },
   {
@@ -119,8 +119,8 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-augur-gpt54:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "augur-gpt54"
   },
   {
@@ -141,8 +141,8 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-charon-gpt53-codex:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "charon-gpt53-codex"
   },
   {
@@ -160,8 +160,8 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-warden-haiku:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "warden-haiku"
   },
   {
@@ -181,8 +181,8 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-sauron-sonnet:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "sauron-sonnet"
   },
   {
@@ -201,8 +201,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-alfred-deepseek-chat:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "alfred-deepseek-chat"
   },
   {
@@ -218,11 +218,11 @@
     "supported_agent_params": [],
     "active": false,
     "specialization": "alfred",
-    "runtime": "openclaude-harness",
+    "runtime": "simple-harness",
     "health_url": "http://agent-alfred-gpt-oss-20b:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T02:40:01Z",
-    "last_seen_at": "2026-04-11T02:40:01Z",
+    "registered_at": "2026-04-11T03:35:54Z",
+    "last_seen_at": "2026-04-11T03:35:54Z",
     "request_topic": "alfred-gpt-oss-20b"
   }
 ]
