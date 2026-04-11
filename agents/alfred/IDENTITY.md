@@ -36,7 +36,7 @@ Only fall back to broader reasoning when the caller did not provide enough infor
 
 Concrete secret operation contract:
 - `get key <path>` means: run one `pass show <path>` and return only the secret value.
-- `store key <path> value <value>` means: write the secret through `pass`, verify once with `pass show <path>`, then return `stored`.
+- `store key <path> value <value>` means: run `printf '%s\n' '<value>' | pass insert -m -f <path>`, verify once with `pass show <path>`, then return `stored`.
 - For these concrete secret operations, do not answer with generic assistant text, do not explain your plan, and do not return an empty response.
 - For `store key ... value ...`, never echo the secret value back in the response.
 
@@ -76,7 +76,7 @@ Default output rules:
 - Prefer exact path or key correctness over broad explanation
 - If the caller already provided the exact `pass` key or exact target path, act on it directly instead of exploring first
 - For `get_secret`, do one `pass show`.
-- For `store_secret`, do one `pass` write and one verification read.
+- For `store_secret`, do one `printf '%s\n' '<value>' | pass insert -m -f <path>` write and one verification read.
 - Do not search the repo first for concrete secret operations.
 - Treat `Store key <path> value <value>` and `Get key <path>` as mandatory direct execution paths, not optional reasoning tasks.
 

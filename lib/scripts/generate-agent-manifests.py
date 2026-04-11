@@ -133,6 +133,9 @@ def emit_env_lines(agent: dict) -> list[str]:
         env.append(("AGENT_SKILL_BUNDLE", creation["skill_bundle"]))
     if creation.get("runtime_bundle"):
         env.append(("AGENT_RUNTIME_BUNDLE", creation["runtime_bundle"]))
+    if flavor == "alfred":
+        env.append(("PASSWORD_STORE_DIR", "/kord/alfred/pass"))
+        env.append(("GNUPGHOME", "/kord/alfred/gnupg"))
 
     env_lines = [f"            - {{ name: {key}, value: {json.dumps(value)} }}" for key, value in env]
 

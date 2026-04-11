@@ -5,7 +5,7 @@ Level 3 resource for get and store skills. Maps each domain to its storage locat
 | Domain | Path | Format | Notes |
 |--------|------|--------|-------|
 | config | `$KORDINATE_HOME/agents/alfred/profile/config.yaml` | YAML | Alfred-owned source of truth. Validate: required fields (name, nodes, namespaces), valid IPs, valid ports |
-| keys | `pass store` at `kordinate/` prefix | GPG-encrypted | Access via `pass show <path>`, insert via `pass insert -f <path>`. Never write plaintext. |
+| keys | shared `pass store` at `kordinate/` prefix | GPG-encrypted | Access via `pass show <path>`, insert via `printf '%s\n' '<value>' | pass insert -m -f <path>`. Never write plaintext. |
 | profiles | `$KORDINATE_HOME/agents/alfred/profile/model-profiles.yaml` | YAML | Alfred-owned source of truth for reusable LLM/backend profile definitions |
 | overlays | `$KORDINATE_HOME/agents/alfred/profile/overlays/<cluster>/<namespace>/` | Kustomize dirs | Alfred-owned source of truth for generated overlays. |
 | platform | `$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/` | Kustomize dirs | Alfred-owned source of truth for per-environment agent runtime scaling and resources. |

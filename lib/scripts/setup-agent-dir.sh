@@ -10,6 +10,10 @@
 #     memory/
 #     tmp/
 #   /kord/shared/memory/
+#   /kord/alfred/
+#     pass/
+#     gnupg/
+#     tmp/
 
 set -euo pipefail
 
@@ -18,8 +22,9 @@ DST="/kord/$AGENT"
 
 log() { echo "[setup-agent-dir] $*"; }
 
-mkdir -p "$DST/memory" "$DST/tmp" "/kord/shared/memory"
-chown -R 1000:1000 "$DST" "/kord/shared/memory"
-chmod -R u+rwX,g+rwX "$DST" "/kord/shared/memory"
+mkdir -p "$DST/memory" "$DST/tmp" "/kord/shared/memory" "/kord/alfred/pass" "/kord/alfred/gnupg" "/kord/alfred/tmp"
+chown -R 1000:1000 "$DST" "/kord/shared/memory" "/kord/alfred"
+chmod -R u+rwX,g+rwX "$DST" "/kord/shared/memory" "/kord/alfred/tmp"
+chmod 700 "/kord/alfred/pass" "/kord/alfred/gnupg" 2>/dev/null || true
 
 log "directory structure ready: $DST"

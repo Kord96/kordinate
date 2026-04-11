@@ -19,6 +19,7 @@ set -euo pipefail
 
 REPO="${KORDINATE_HOME:-/app}"
 RUNTIME="${KORD_RUNTIME:-/runtime}"
+KORD_ROOT="${KORD_ROOT:-/kord}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[deploy-runtime] $*"; }
@@ -131,6 +132,7 @@ deploy_agent() {
   local DEST_AGENT="$2"
   local SRC="$REPO/agents/$SOURCE_AGENT"
   local DST="$RUNTIME/$DEST_AGENT"
+  local SHARED_ALFRED_ROOT="$KORD_ROOT/alfred"
   local MEMORY_BUNDLE_SELECTION="${AGENT_MEMORY_BUNDLE:-}"
   local RUNTIME_BUNDLE_SELECTION="${AGENT_RUNTIME_BUNDLE:-}"
   local SKILL_BUNDLE_SELECTION="${AGENT_SKILL_BUNDLE:-}"
@@ -174,6 +176,31 @@ deploy_agent() {
   if [ -f "$SRC/IDENTITY.md" ]; then
     sed '/^---$/,/^---$/d' "$SRC/IDENTITY.md" > "$DST/identity.md"
     log "  identity.md created"
+  fi
+
+  if [ "$SOURCE_AGENT" = "alfred" ]; then
+    mkdir -p "$SHARED_ALFRED_ROOT/pass" "$SHARED_ALFRED_ROOT/gnupg" "$SHARED_ALFRED_ROOT/tmp"
+    chmod 700 "$SHARED_ALFRED_ROOT/pass" "$SHARED_ALFRED_ROOT/gnupg" 2>/dev/null || true
+    chmod -R u+rwX,g+rwX "$SHARED_ALFRED_ROOT/tmp"
+
+    ln -sfn "$SHARED_ALFRED_ROOT/pass" "$DST/.password-store"
+    ln -sfn "$SHARED_ALFRED_ROOT/gnupg" "$DST/.gnupg"
+
+    local GPG_KEY_ID=""
+    GPG_KEY_ID="$(GNUPGHOME="$SHARED_ALFRED_ROOT/gnupg" gpg --batch --list-secret-keys --with-colons 2>/dev/null | awk -F: '/^sec:/ {print $5; exit}')"
+    if [ -z "$GPG_KEY_ID" ]; then
+      GNUPGHOME="$SHARED_ALFRED_ROOT/gnupg" gpg --batch --pinentry-mode loopback --passphrase '' \
+        --quick-gen-key "Alfred Kord Cluster <alfred@kord.local>" default default never >/dev/null
+      GPG_KEY_ID="$(GNUPGHOME="$SHARED_ALFRED_ROOT/gnupg" gpg --batch --list-secret-keys --with-colons 2>/dev/null | awk -F: '/^sec:/ {print $5; exit}')"
+    fi
+
+    if [ -n "$GPG_KEY_ID" ] && [ ! -f "$SHARED_ALFRED_ROOT/pass/.gpg-id" ]; then
+      PASSWORD_STORE_DIR="$SHARED_ALFRED_ROOT/pass" GNUPGHOME="$SHARED_ALFRED_ROOT/gnupg" pass init "$GPG_KEY_ID" >/dev/null
+    fi
+
+    chown -R 1000:1000 "$SHARED_ALFRED_ROOT"
+    chmod 700 "$SHARED_ALFRED_ROOT/pass" "$SHARED_ALFRED_ROOT/gnupg" 2>/dev/null || true
+    log "  Alfred shared pass/GPG runtime prepared"
   fi
 
   # Extract profile + backend configuration
