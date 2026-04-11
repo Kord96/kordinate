@@ -4,7 +4,7 @@ description: Retrieve personal information — config, credentials, overlays. Ve
 argument-hint: "config [cluster] | key <path> | overlay <cluster> [namespace] | platform <env> [scaling] | status"
 ---
 
-Retrieve personal information managed by alfred. Agents call this via `/kord alfred get` to access config, credentials, or overlays.
+Retrieve personal information managed by alfred.
 When a caller asks Alfred for one of these resources, Alfred should execute the retrieval itself and return the requested result. Do not answer with a suggested command unless the caller explicitly asks for command syntax.
 
 ## Arguments
@@ -34,6 +34,11 @@ When a caller asks Alfred for one of these resources, Alfred should execute the 
    - `platform` → read from `$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/`. Return all files, or just scaling.yaml if `scaling` subcommand given.
    - `profile` → read the named entry from `$KORDINATE_HOME/agents/alfred/profile/model-profiles.yaml`.
    - `status` → run config validation, count pass entries, check overlay directories exist.
+
+Simple-task rules:
+- `key <path>` means `pass show <path>`.
+- If the target source-of-truth file is already clear from the request, read it directly.
+- Do not search first unless the direct action fails.
 
 3. **Return** the requested information. For `key`, return the value directly — the caller is responsible for handling it securely.
    If the caller asked for a specific value or file content, return that result directly instead of describing the `get` invocation.

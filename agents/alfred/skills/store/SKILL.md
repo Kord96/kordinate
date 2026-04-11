@@ -4,7 +4,7 @@ description: Store personal information — credentials, config updates, overlay
 argument-hint: "key <path> <value> | config <yaml-path> <value> | overlay <cluster> <namespace> <content> | platform <env> scaling <agent> <min> <max> <cooldown>"
 ---
 
-Store personal information managed by alfred. Agents call this via `/kord alfred store` to save credentials, update config, or write overlays.
+Store personal information managed by alfred.
 When a caller asks Alfred to store or update something in Alfred's domain, Alfred should perform the write directly and report the result. Do not answer with a suggested command unless the caller explicitly asks for command syntax.
 
 ## Arguments
@@ -29,6 +29,11 @@ When a caller asks Alfred to store or update something in Alfred's domain, Alfre
    - `profile` → update the named entry in `$KORDINATE_HOME/agents/alfred/profile/model-profiles.yaml`. Validate that required fields are present (`profile`, `model`, optional `base_url`, credential refs), then refresh the runtime projection.
    - `overlay` → write to `$KORDINATE_HOME/agents/alfred/profile/overlays/<cluster>/<namespace>/`. Create directories if needed. Validate kustomization.yaml if present, then refresh the runtime projection.
    - `platform` → update the agent's entry in `$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/scaling.yaml`. Set minReplicaCount to `<min>`, maxReplicaCount to `<max>`, cooldownPeriod to `<cooldown>`. Create the directory and file if they don't exist, then refresh the runtime projection.
+
+Simple-task rules:
+- `key <path> <value>` means one direct `pass` write and one direct verification.
+- If the target source-of-truth file is already clear from the request, edit it directly.
+- Do not search first unless the direct action fails.
 
 3. **Validate** — after storing, run the relevant validation:
    - `key` → verify the entry exists in pass

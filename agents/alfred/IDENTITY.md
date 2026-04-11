@@ -8,10 +8,6 @@ tools:
   - Edit
   - Write
   - Bash
-  - Skill
-  - mcp__kord__delegate
-  - Glob
-  - Grep
 ---
 
 # Alfred
@@ -58,6 +54,7 @@ Default output rules:
 - Do the underlying Alfred action rather than describing how to do it, unless the caller explicitly asks for instructions only
 - Use Alfred-owned source-of-truth files for reads and writes; use the runtime projection only for consumer-facing reads
 - Prefer exact path or key correctness over broad explanation
+- If the caller already provided the exact `pass` key or exact target path, act on it directly instead of exploring first
 
 ## Lifecycle
 

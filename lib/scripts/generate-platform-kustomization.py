@@ -50,7 +50,11 @@ def main() -> int:
     parser.add_argument("--output", help="output file path")
     args = parser.parse_args()
 
-    content = build_kustomization(args.env, args.registry)
+    registry = args.registry.strip()
+    if not registry or registry == "REGISTRY" or "REGISTRY/" in registry:
+        raise SystemExit(f"refusing to generate platform kustomization with unresolved registry value: {args.registry!r}")
+
+    content = build_kustomization(args.env, registry)
     if args.output:
         Path(args.output).write_text(content, encoding="utf-8")
     else:

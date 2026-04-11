@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import { request as httpsRequest } from 'node:https';
 import { createServer } from 'node:http';
 import { Kafka } from 'kafkajs';
 import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-registry.js';
@@ -10,6 +12,11 @@ const ttlMs = Number.parseInt(process.env.DISCOVERY_TTL_MS ?? '120000', 10);
 const kafkaBrokers = (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(',');
 const replyTopic = process.env.KORD_API_REPLY_TOPIC ?? 'kord-api-replies';
 const defaultTimeoutMs = Number.parseInt(process.env.KORD_API_DEFAULT_TIMEOUT_MS ?? '120000', 10);
+const kubernetesHost = process.env.KUBERNETES_SERVICE_HOST ?? 'kubernetes.default.svc';
+const kubernetesPort = Number.parseInt(process.env.KUBERNETES_SERVICE_PORT_HTTPS ?? '443', 10);
+const kubernetesNamespacePath = process.env.KUBERNETES_NAMESPACE_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/namespace';
+const kubernetesTokenPath = process.env.KUBERNETES_TOKEN_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/token';
+const kubernetesCaPath = process.env.KUBERNETES_CA_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
 const allowedApiKeys = new Set([
     ...(process.env.KORD_API_KEYS ?? '').split(','),
     process.env.KORD_API_KEY ?? '',
@@ -24,6 +31,9 @@ const consumer = kafka.consumer({ groupId: 'kord-api' });
 const pending = new Map();
 const requests = new Map();
 let ready = false;
+let kubernetesNamespacePromise;
+let kubernetesTokenPromise;
+let kubernetesCaPromise;
 function json(res, statusCode, payload) {
     res.statusCode = statusCode;
     res.setHeader('content-type', 'application/json');
@@ -59,6 +69,165 @@ async function parseBody(req) {
     if (chunks.length === 0)
         return undefined;
     return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+}
+async function getKubernetesNamespace() {
+    kubernetesNamespacePromise ??= readFile(kubernetesNamespacePath, 'utf8').then(value => value.trim());
+    return kubernetesNamespacePromise;
+}
+async function getKubernetesToken() {
+    kubernetesTokenPromise ??= readFile(kubernetesTokenPath, 'utf8').then(value => value.trim());
+    return kubernetesTokenPromise;
+}
+async function getKubernetesCa() {
+    kubernetesCaPromise ??= readFile(kubernetesCaPath);
+    return kubernetesCaPromise;
+}
+async function kubernetesGet(path) {
+    const [token, ca] = await Promise.all([getKubernetesToken(), getKubernetesCa()]);
+    return new Promise((resolve, reject) => {
+        const req = httpsRequest({
+            host: kubernetesHost,
+            port: kubernetesPort,
+            path,
+            method: 'GET',
+            ca,
+            headers: {
+                authorization: `Bearer ${token}`,
+                accept: 'application/json',
+            },
+        }, res => {
+            const chunks = [];
+            res.on('data', chunk => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+            res.on('end', () => {
+                resolve({
+                    statusCode: res.statusCode ?? 500,
+                    body: Buffer.concat(chunks).toString('utf8'),
+                });
+            });
+        });
+        req.on('error', reject);
+        req.end();
+    });
+}
+async function kubernetesGetJson(path) {
+    const response = await kubernetesGet(path);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw new Error(`kubernetes api request failed: ${response.statusCode} ${response.body}`);
+    }
+    return JSON.parse(response.body);
+}
+function coercePositiveInt(value, fallback) {
+    if (!value)
+        return fallback;
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+function getLogTargetLabelSelector(agent) {
+    return agent === 'kord-api'
+        ? 'app=kord-api'
+        : `app=kord-agent,agent=${agent}`;
+}
+async function getLatestPodNameForAgent(agent) {
+    const namespace = await getKubernetesNamespace();
+    const selector = encodeURIComponent(getLogTargetLabelSelector(agent));
+    const payload = await kubernetesGetJson(`/api/v1/namespaces/${encodeURIComponent(namespace)}/pods?labelSelector=${selector}`);
+    if (!payload || typeof payload !== 'object' || !Array.isArray(payload.items)) {
+        throw new Error(`invalid kubernetes pod list for agent '${agent}'`);
+    }
+    const items = payload.items;
+    const runningPods = items.filter(item => {
+        const phase = item.status?.phase;
+        return phase === 'Running';
+    });
+    const pods = runningPods.length > 0 ? runningPods : items;
+    if (pods.length === 0) {
+        throw new Error(`no pods found for agent '${agent}'`);
+    }
+    pods.sort((left, right) => {
+        const leftTime = Date.parse(left.metadata?.creationTimestamp ?? '');
+        const rightTime = Date.parse(right.metadata?.creationTimestamp ?? '');
+        return rightTime - leftTime;
+    });
+    const podName = pods[0].metadata?.name;
+    if (!podName) {
+        throw new Error(`pod metadata missing name for agent '${agent}'`);
+    }
+    return podName;
+}
+async function getAgentLogs(agent, options) {
+    const namespace = await getKubernetesNamespace();
+    const podName = await getLatestPodNameForAgent(agent);
+    const query = new URLSearchParams();
+    query.set('tailLines', String(options.tail_lines));
+    query.set('sinceSeconds', String(options.since_seconds));
+    if (options.container)
+        query.set('container', options.container);
+    const response = await kubernetesGet(`/api/v1/namespaces/${encodeURIComponent(namespace)}/pods/${encodeURIComponent(podName)}/log?${query.toString()}`);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw new Error(`kubernetes pod log request failed: ${response.statusCode} ${response.body}`);
+    }
+    return {
+        agent,
+        pod: podName,
+        container: options.container ?? null,
+        since_seconds: options.since_seconds,
+        tail_lines: options.tail_lines,
+        logs: response.body,
+    };
+}
+function filterLogLines(text, filters) {
+    if (filters.length === 0)
+        return text;
+    const lines = text.split('\n');
+    return lines.filter(line => filters.some(filter => filter && line.includes(filter))).join('\n');
+}
+async function getE2eLogs(name, options) {
+    const record = registry.resolveTarget(name, {
+        variant: options.variant,
+        backend_model: options.backend_model,
+    });
+    if (!record) {
+        throw new Error(`agent '${name}' could not be resolved`);
+    }
+    const filters = [
+        options.request_id,
+        options.correlation_id,
+    ].filter((value) => typeof value === 'string' && value.length > 0);
+    const [agentLogs, apiLogs] = await Promise.all([
+        getAgentLogs(record.name, {
+            tail_lines: options.tail_lines,
+            since_seconds: options.since_seconds,
+        }),
+        getAgentLogs('kord-api', {
+            tail_lines: options.tail_lines,
+            since_seconds: options.since_seconds,
+        }),
+    ]);
+    let requestRecord;
+    if (options.request_id) {
+        const record = requests.get(options.request_id);
+        if (record) {
+            requestRecord = record;
+        }
+    }
+    return {
+        requested_agent: name,
+        requested_variant: options.variant ?? null,
+        requested_backend_model: options.backend_model ?? null,
+        resolved_agent: record.name,
+        request_id: options.request_id ?? null,
+        correlation_id: options.correlation_id ?? null,
+        request: requestRecord ?? null,
+        kord_api: {
+            pod: apiLogs.pod,
+            logs: filterLogLines(String(apiLogs.logs ?? ''), filters),
+        },
+        agent: {
+            name: record.name,
+            pod: agentLogs.pod,
+            logs: filterLogLines(String(agentLogs.logs ?? ''), filters),
+        },
+    };
 }
 function isPromptBody(value) {
     if (!value || typeof value !== 'object')
@@ -192,6 +361,57 @@ const server = createServer(async (req, res) => {
                 ? registry.list().map(record => verbose ? record : registry.compact(record))
                 : registry.listLogical().map(record => verbose ? record : registry.compactLogical(record));
             json(res, 200, { agents });
+            return;
+        }
+        if (req.method === 'GET' && url.pathname.startsWith('/agents/') && url.pathname.endsWith('/logs')) {
+            const suffix = url.pathname.slice('/agents/'.length);
+            const name = decodeURIComponent(suffix.slice(0, -'/logs'.length));
+            const variant = url.searchParams.get('variant') ?? undefined;
+            const backendModel = url.searchParams.get('backend_model') ?? undefined;
+            const record = registry.resolveTarget(name, {
+                variant,
+                backend_model: backendModel,
+            });
+            if (!record) {
+                json(res, 404, {
+                    error: `agent '${name}' could not be resolved`,
+                    requested_variant: variant ?? null,
+                    requested_backend_model: backendModel ?? null,
+                });
+                return;
+            }
+            const tailLines = coercePositiveInt(url.searchParams.get('tail_lines'), 200);
+            const sinceSeconds = coercePositiveInt(url.searchParams.get('since_seconds'), 900);
+            const container = url.searchParams.get('container') ?? undefined;
+            const payload = await getAgentLogs(record.name, {
+                tail_lines: tailLines,
+                since_seconds: sinceSeconds,
+                container,
+            });
+            json(res, 200, {
+                requested_agent: name,
+                requested_variant: variant ?? null,
+                requested_backend_model: backendModel ?? null,
+                resolved_agent: record.name,
+                ...payload,
+            });
+            return;
+        }
+        if (req.method === 'GET' && url.pathname === '/logs/e2e') {
+            const agent = url.searchParams.get('agent');
+            if (!agent) {
+                json(res, 400, { error: 'agent is required' });
+                return;
+            }
+            const payload = await getE2eLogs(agent, {
+                variant: url.searchParams.get('variant') ?? undefined,
+                backend_model: url.searchParams.get('backend_model') ?? undefined,
+                request_id: url.searchParams.get('request_id') ?? undefined,
+                correlation_id: url.searchParams.get('correlation_id') ?? undefined,
+                tail_lines: coercePositiveInt(url.searchParams.get('tail_lines'), 200),
+                since_seconds: coercePositiveInt(url.searchParams.get('since_seconds'), 900),
+            });
+            json(res, 200, payload);
             return;
         }
         if (req.method === 'GET' && url.pathname.startsWith('/agents/')) {

@@ -160,6 +160,39 @@ server.registerTool(
 )
 
 server.registerTool(
+  'get_e2e_logs',
+  {
+    title: 'Get E2E Logs',
+    description: 'Fetch recent end-to-end request logs for an agent through kord, optionally filtered to one request.',
+    inputSchema: {
+      agent: z.string().min(1),
+      variant: z.string().optional(),
+      backend_model: z.string().optional(),
+      request_id: z.string().optional(),
+      correlation_id: z.string().optional(),
+      since_seconds: z.number().int().positive().optional().default(900),
+      tail_lines: z.number().int().positive().optional().default(200),
+    },
+  },
+  async ({ agent, variant, backend_model, request_id, correlation_id, since_seconds = 900, tail_lines = 200 }) => {
+    try {
+      const payload = await getJson(withQuery('/logs/e2e', {
+        agent,
+        variant,
+        backend_model,
+        request_id,
+        correlation_id,
+        since_seconds: String(since_seconds),
+        tail_lines: String(tail_lines),
+      }))
+      return textResult(payload)
+    } catch (error) {
+      return textResult({ error: error instanceof Error ? error.message : String(error) }, true)
+    }
+  },
+)
+
+server.registerTool(
   'get_request',
   {
     title: 'Get Request',

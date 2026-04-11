@@ -279,7 +279,7 @@ metadata:
 spec:
   pollingInterval: 30
   minReplicaCount: 1
-  maxReplicaCount: 3
+  maxReplicaCount: 1
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -309,7 +309,7 @@ metadata:
 spec:
   pollingInterval: 30
   minReplicaCount: 1
-  maxReplicaCount: 3
+  maxReplicaCount: 1
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
