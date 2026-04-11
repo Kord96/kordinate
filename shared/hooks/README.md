@@ -45,11 +45,11 @@ Activated via `register runtime --dev`.
 
 ## Validation Lock
 
-Two hooks enforce output quality for any skill that uses warden's `validate-output` pattern.
+Two hooks enforce output quality for any workflow that uses the shared `validate-output` pattern.
 
 ### validate-lock-hook.sh (PreToolUse on Write/Edit)
 
-Blocks writes to any project memory directory (`memory/projects/*/`) that contains a `.validate-lock` file. The agent sees an error message telling it to fix validation errors — it never knows about the lock mechanism itself.
+Blocks writes to any validated output root that contains a `.validate-lock` file. The current hook implementation focuses on project memory directories (`memory/projects/*/`). The agent sees an error message telling it to fix validation errors — it never needs to know about the lock mechanism itself.
 
 ### validate-post-hook.sh (PostToolUse on Bash)
 

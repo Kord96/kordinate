@@ -55,6 +55,9 @@ protected_paths:
   - path: shared/klaude-daemon/
     owner: shared
     reason: Shared Klaude daemon runtime implementation
+  - path: shared/skills/validate-output/
+    owner: shared
+    reason: Shared validation protocol and invocation contract
   - path: agents/alfred/profile/backend-aliases.yaml
     owner: alfred
     reason: Alfred-owned backend alias source
@@ -91,3 +94,6 @@ protected_paths:
   - path: agents/augur/memory/workflow.md
     owner: augur
     reason: Augur workflow reference
+  - path: agents/augur/skills/analyze/scripts/validate_output.py
+    owner: augur
+    reason: Augur-owned output validator

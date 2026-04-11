@@ -1,9 +1,0 @@
-# Validator registry — maps output directories to validation scripts.
-# Warden looks up the validator for a given directory using pattern matching.
-# New agents register their validators here during install.
-
-validators:
-  - pattern: "memory/projects/*/"
-    script: "agents/warden/skills/validate-output/scripts/augur_validate_output.py"
-    agent: augur
-    description: "Validates atlas.json v3 schema, story YAML format, journey references, directory structure"

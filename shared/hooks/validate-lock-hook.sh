@@ -2,8 +2,8 @@
 # validate-lock-hook — PreToolUse hook on Write/Edit
 #
 # Blocks writes to any directory containing a .validate-lock file.
-# This is the generalized enforcement mechanism — any skill that uses
-# warden's validate-output gets write-blocking for free.
+# This is the generalized enforcement mechanism — any workflow that uses
+# shared validate-output gets write-blocking for free.
 #
 # Lock lifecycle:
 #   - Created by validate-post-hook.sh when a validator script fails
