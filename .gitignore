@@ -170,6 +170,12 @@ agent-state/
 !/agents/charon/skills/platform/create-agent.md
 !/agents/charon/skills/platform/generic-backend-agents.md
 !/agents/charon/skills/platform/layered-image-rollout.md
+!/agents/charon/skills/platform/manifests/
+/agents/charon/skills/platform/manifests/*
+!/agents/charon/skills/platform/manifests/base/
+/agents/charon/skills/platform/manifests/base/*
+!/agents/charon/skills/platform/manifests/base/agents.yaml
+!/agents/charon/skills/platform/manifests/base/discovery-catalog.json
 !/agents/charon/INDEX.yaml
 !/agents/charon/bundles/
 /agents/charon/bundles/*

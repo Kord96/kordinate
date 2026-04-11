@@ -522,6 +522,12 @@ function nextSessionState(session: SessionState, providerSessionId?: string): Se
   }
 }
 
+function isMissingClaudeSessionError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const message = error.message.toLowerCase()
+  return message.includes('no conversation found with session id')
+}
+
 async function maybeReflectWithClaudeAgentSdk(model: string, session: SessionState, taskOutput: string, reflectionPrompt?: string): Promise<{ session: SessionState; reflection?: ReflectionPayload; errors?: string[] }> {
   const sessionId = session.providerSessionId ?? randomUUID()
   try {
@@ -818,10 +824,12 @@ async function maybeReflectWithOpenClaude(taskOutput: string, options: { model: 
 export class ClaudeAgentSdkAdapter implements ProviderSessionAdapter {
   private readonly model: string
   private readonly apiKey?: string
+  private readonly workingDirectory?: string
 
-  constructor(model: string, apiKey?: string) {
+  constructor(model: string, options: { apiKey?: string; workingDirectory?: string }) {
     this.model = model
-    this.apiKey = apiKey
+    this.apiKey = options.apiKey
+    this.workingDirectory = options.workingDirectory
   }
 
   async startOrResumeWarmSession(session: SessionState): Promise<SessionState> {
@@ -840,50 +848,67 @@ export class ClaudeAgentSdkAdapter implements ProviderSessionAdapter {
     }
 
     try {
-      let text = ''
-      let nextSessionId = sessionId
-      const { messages } = await runClaudeStructuredQuery(
-        () => query({
-          prompt: request.prompt,
-          options: {
-            cwd: process.cwd(),
-            resume: session.providerSessionId,
+      const executeOnce = async (resumeSessionId?: string): Promise<{ text: string; nextSessionId: string }> => {
+        let text = ''
+        let nextSessionId = sessionId
+        const { messages } = await runClaudeStructuredQuery(
+          () => query({
+            prompt: request.prompt,
+            options: {
+              cwd: request.working_dir ?? this.workingDirectory ?? process.cwd(),
+              resume: resumeSessionId,
+              model: this.model,
+              permissionMode: 'bypassPermissions',
+              env,
+            },
+          }) as unknown as AsyncIterable<Record<string, unknown>>,
+          {
             model: this.model,
-            permissionMode: 'bypassPermissions',
-            env,
-          },
-        }) as unknown as AsyncIterable<Record<string, unknown>>,
-        {
-          model: this.model,
-          sessionId,
-          workingDirectory: process.cwd(),
-        }
-      )
+            sessionId,
+            workingDirectory: request.working_dir ?? this.workingDirectory,
+          }
+        )
 
-      for (const message of messages) {
-        const messageRecord = message as {
-          type?: string
-          message?: { content?: Array<{ type?: string; text?: string }> }
-          session_id?: string
-          subtype?: string
-          result?: string
-        }
-        const content = messageRecord.message?.content
-        if (messageRecord.type === 'assistant' && Array.isArray(content)) {
-          for (const block of content) {
-            if (block.type === 'text') text += block.text
+        for (const message of messages) {
+          const messageRecord = message as {
+            type?: string
+            message?: { content?: Array<{ type?: string; text?: string }> }
+            session_id?: string
+            subtype?: string
+            result?: string
+          }
+          const content = messageRecord.message?.content
+          if (messageRecord.type === 'assistant' && Array.isArray(content)) {
+            for (const block of content) {
+              if (block.type === 'text') text += block.text
+            }
+          }
+          if (typeof messageRecord.session_id === 'string') {
+            nextSessionId = messageRecord.session_id
+          }
+          if (messageRecord.type === 'result' && messageRecord.subtype === 'success' && typeof messageRecord.result === 'string') {
+            text = text || messageRecord.result
           }
         }
-        if (typeof messageRecord.session_id === 'string') {
-          nextSessionId = messageRecord.session_id
-        }
-        if (messageRecord.type === 'result' && messageRecord.subtype === 'success' && typeof messageRecord.result === 'string') {
-          text = text || messageRecord.result
-        }
+
+        return { text, nextSessionId }
       }
 
-      const baseResult = enforceAlfredDirectIntentContract(request, successResult(text.trim()))
-      const nextSession = nextSessionState(session, nextSessionId)
+      let run: { text: string; nextSessionId: string }
+      try {
+        run = await executeOnce(session.providerSessionId)
+      } catch (error) {
+        if (!session.providerSessionId || !isMissingClaudeSessionError(error)) throw error
+        log('claude_session_resume_failed', {
+          model: this.model,
+          stale_session_id: session.providerSessionId,
+          reason: error instanceof Error ? error.message : String(error),
+        })
+        run = await executeOnce(undefined)
+      }
+
+      const baseResult = enforceAlfredDirectIntentContract(request, successResult(run.text.trim()))
+      const nextSession = nextSessionState(session, run.nextSessionId)
       if (!shouldReflect(request)) {
         return { session: nextSession, result: baseResult }
       }
@@ -1046,7 +1071,10 @@ export class OpenClaudeHarnessAdapter implements ProviderSessionAdapter {
 
 export function createProviderAdapter(executionProfile: ExecutionProfile): ProviderSessionAdapter {
   if (executionProfile.runtime === 'claude-agent-sdk') {
-    return new ClaudeAgentSdkAdapter(executionProfile.model, executionProfile.apiKey)
+    return new ClaudeAgentSdkAdapter(executionProfile.model, {
+      apiKey: executionProfile.apiKey,
+      workingDirectory: executionProfile.workingDirectory,
+    })
   }
   if (executionProfile.runtime === 'openclaude-harness') {
     return new OpenClaudeHarnessAdapter(executionProfile.model, {

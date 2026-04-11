@@ -7,7 +7,7 @@ test('loadDaemonConfig defaults to openai via codex sdk', () => {
   for (const key of [
     'DAEMON_PROVIDER', 'DAEMON_RUNTIME', 'DAEMON_MODEL',
     'BACKEND_API_KEY', 'BACKEND_BASE_URL',
-    'CODEX_SKIP_GIT_REPO_CHECK', 'CODEX_WORKING_DIRECTORY',
+    'CODEX_SKIP_GIT_REPO_CHECK', 'CODEX_WORKING_DIRECTORY', 'DAEMON_WORKING_DIRECTORY',
     'KAFKA_BROKERS', 'REFLECTIONS_TOPIC', 'DISCOVERY_SERVER_URL',
     'DISCOVERY_PUBLISH_INTERVAL_MS', 'DAEMON_HEALTH_URL',
     'DAEMON_STATE_DIR', 'DAEMON_SESSION_MAP_PATH',
@@ -28,6 +28,8 @@ test('loadDaemonConfig defaults to openai via codex sdk', () => {
   assert.equal(config.reflectionsTopic, 'reflections')
   assert.equal(config.discoveryServerUrl, undefined)
   assert.equal(config.discoveryPublishIntervalMs, 30000)
+  assert.equal(config.kafkaSessionTimeoutMs, 30000)
+  assert.equal(config.kafkaHeartbeatIntervalMs, 3000)
   assert.equal(config.healthUrl, undefined)
   assert.equal(config.stateDir, '.daemon-state')
   assert.equal(config.sessionMapPath, '.daemon-state/sessions.json')
@@ -37,6 +39,9 @@ test('loadDaemonConfig defaults to openai via codex sdk', () => {
 
 test('loadDaemonConfig supports claude execution profile', () => {
   const previous = { ...process.env }
+  delete process.env.DAEMON_WORKING_DIRECTORY
+  delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'anthropic'
   process.env.DAEMON_RUNTIME = 'claude-agent-sdk'
   process.env.DAEMON_MODEL = 'claude-sonnet-4-6'
@@ -52,6 +57,7 @@ test('loadDaemonConfig supports claude execution profile', () => {
     model: 'claude-sonnet-4-6',
     apiKey: 'anthropic-key',
     baseUrl: 'https://api.anthropic.com',
+    workingDirectory: undefined,
   })
 
   process.env = previous
@@ -59,10 +65,14 @@ test('loadDaemonConfig supports claude execution profile', () => {
 
 test('loadDaemonConfig supports openclaude harness openai api key fallback', () => {
   const previous = { ...process.env }
+  delete process.env.DAEMON_WORKING_DIRECTORY
+  delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'openai'
   process.env.DAEMON_RUNTIME = 'openclaude-harness'
   process.env.DAEMON_MODEL = 'gpt-5.4'
   delete process.env.BACKEND_API_KEY
+  delete process.env.BACKEND_BASE_URL
   process.env.OPENAI_API_KEY = 'openai-key'
 
   const config = loadDaemonConfig()
@@ -87,7 +97,7 @@ test('loadDaemonConfig supports codex execution profile overrides', () => {
   process.env.BACKEND_API_KEY = 'codex-key'
   process.env.BACKEND_BASE_URL = 'https://proxy.example.com/v1'
   process.env.CODEX_SKIP_GIT_REPO_CHECK = 'true'
-  process.env.CODEX_WORKING_DIRECTORY = '/tmp/workdir'
+  process.env.DAEMON_WORKING_DIRECTORY = '/tmp/workdir'
   process.env.KAFKA_BROKERS = 'kafka-a:9092,kafka-b:9092'
   process.env.DISCOVERY_SERVER_URL = 'http://discovery.internal'
   process.env.DISCOVERY_PUBLISH_INTERVAL_MS = '45000'
@@ -123,7 +133,7 @@ test('loadDaemonConfig maps legacy alfred-direct runtime to simple-harness', () 
   process.env.DAEMON_MODEL = 'accounts/fireworks/models/gpt-oss-20b'
   process.env.BACKEND_API_KEY = 'fireworks-key'
   process.env.BACKEND_BASE_URL = 'https://api.fireworks.ai/inference/v1'
-  process.env.CODEX_WORKING_DIRECTORY = '/runtime/alfred-gpt-oss-20b'
+  process.env.DAEMON_WORKING_DIRECTORY = '/runtime/alfred-gpt-oss-20b'
 
   const config = loadDaemonConfig()
 
@@ -139,8 +149,32 @@ test('loadDaemonConfig maps legacy alfred-direct runtime to simple-harness', () 
   process.env = previous
 })
 
+test('loadDaemonConfig falls back to AGENT_HOME_DIR for state and working directory', () => {
+  const previous = { ...process.env }
+  for (const key of ['DAEMON_PROVIDER', 'DAEMON_RUNTIME', 'DAEMON_MODEL', 'BACKEND_API_KEY', 'BACKEND_BASE_URL', 'DAEMON_WORKING_DIRECTORY', 'CODEX_WORKING_DIRECTORY', 'DAEMON_STATE_DIR', 'DAEMON_SESSION_MAP_PATH']) {
+    delete process.env[key]
+  }
+  process.env.DAEMON_PROVIDER = 'anthropic'
+  process.env.DAEMON_RUNTIME = 'claude-agent-sdk'
+  process.env.ANTHROPIC_API_KEY = 'anthropic-key'
+  process.env.AGENT_HOME_DIR = '/runtime/augur-opus'
+
+  const config = loadDaemonConfig()
+
+  assert.equal(config.executionProfile.workingDirectory, '/runtime/augur-opus')
+  assert.equal(config.stateDir, '/runtime/augur-opus/.daemon-state')
+  assert.equal(config.sessionMapPath, '/runtime/augur-opus/.daemon-state/sessions.json')
+
+  process.env = previous
+})
+
 test('loadDaemonConfig supports deepseek through codex sdk', () => {
   const previous = { ...process.env }
+  delete process.env.DAEMON_MODEL
+  delete process.env.BACKEND_BASE_URL
+  delete process.env.DAEMON_WORKING_DIRECTORY
+  delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'deepseek'
   process.env.DAEMON_RUNTIME = 'codex-sdk'
   process.env.BACKEND_API_KEY = 'deepseek-key'
@@ -173,6 +207,10 @@ test('resolveRuntimeForModel maps model families to the expected runtimes', () =
 
 test('loadDaemonConfig defaults non-claude non-gpt models to openclaude harness', () => {
   const previous = { ...process.env }
+  delete process.env.BACKEND_BASE_URL
+  delete process.env.DAEMON_WORKING_DIRECTORY
+  delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'deepseek'
   process.env.DAEMON_MODEL = 'deepseek-reasoner'
   delete process.env.DAEMON_RUNTIME

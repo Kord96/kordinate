@@ -409,6 +409,12 @@ function nextSessionState(session, providerSessionId) {
         providerSessionId: providerSessionId ?? session.providerSessionId,
     };
 }
+function isMissingClaudeSessionError(error) {
+    if (!(error instanceof Error))
+        return false;
+    const message = error.message.toLowerCase();
+    return message.includes('no conversation found with session id');
+}
 async function maybeReflectWithClaudeAgentSdk(model, session, taskOutput, reflectionPrompt) {
     const sessionId = session.providerSessionId ?? randomUUID();
     try {
@@ -693,9 +699,11 @@ async function maybeReflectWithOpenClaude(taskOutput, options, reflectionPrompt)
 export class ClaudeAgentSdkAdapter {
     model;
     apiKey;
-    constructor(model, apiKey) {
+    workingDirectory;
+    constructor(model, options) {
         this.model = model;
-        this.apiKey = apiKey;
+        this.apiKey = options.apiKey;
+        this.workingDirectory = options.workingDirectory;
     }
     async startOrResumeWarmSession(session) {
         return nextSessionState(session, session.providerSessionId ?? randomUUID());
@@ -710,40 +718,57 @@ export class ClaudeAgentSdkAdapter {
             ANTHROPIC_API_KEY: this.apiKey,
         };
         try {
-            let text = '';
-            let nextSessionId = sessionId;
-            const { messages } = await runClaudeStructuredQuery(() => query({
-                prompt: request.prompt,
-                options: {
-                    cwd: process.cwd(),
-                    resume: session.providerSessionId,
+            const executeOnce = async (resumeSessionId) => {
+                let text = '';
+                let nextSessionId = sessionId;
+                const { messages } = await runClaudeStructuredQuery(() => query({
+                    prompt: request.prompt,
+                    options: {
+                        cwd: request.working_dir ?? this.workingDirectory ?? process.cwd(),
+                        resume: resumeSessionId,
+                        model: this.model,
+                        permissionMode: 'bypassPermissions',
+                        env,
+                    },
+                }), {
                     model: this.model,
-                    permissionMode: 'bypassPermissions',
-                    env,
-                },
-            }), {
-                model: this.model,
-                sessionId,
-                workingDirectory: process.cwd(),
-            });
-            for (const message of messages) {
-                const messageRecord = message;
-                const content = messageRecord.message?.content;
-                if (messageRecord.type === 'assistant' && Array.isArray(content)) {
-                    for (const block of content) {
-                        if (block.type === 'text')
-                            text += block.text;
+                    sessionId,
+                    workingDirectory: request.working_dir ?? this.workingDirectory,
+                });
+                for (const message of messages) {
+                    const messageRecord = message;
+                    const content = messageRecord.message?.content;
+                    if (messageRecord.type === 'assistant' && Array.isArray(content)) {
+                        for (const block of content) {
+                            if (block.type === 'text')
+                                text += block.text;
+                        }
+                    }
+                    if (typeof messageRecord.session_id === 'string') {
+                        nextSessionId = messageRecord.session_id;
+                    }
+                    if (messageRecord.type === 'result' && messageRecord.subtype === 'success' && typeof messageRecord.result === 'string') {
+                        text = text || messageRecord.result;
                     }
                 }
-                if (typeof messageRecord.session_id === 'string') {
-                    nextSessionId = messageRecord.session_id;
-                }
-                if (messageRecord.type === 'result' && messageRecord.subtype === 'success' && typeof messageRecord.result === 'string') {
-                    text = text || messageRecord.result;
-                }
+                return { text, nextSessionId };
+            };
+            let run;
+            try {
+                run = await executeOnce(session.providerSessionId);
             }
-            const baseResult = enforceAlfredDirectIntentContract(request, successResult(text.trim()));
-            const nextSession = nextSessionState(session, nextSessionId);
+            catch (error) {
+                if (!session.providerSessionId || !isMissingClaudeSessionError(error))
+                    throw error;
+                log('claude_session_resume_failed', {
+                    model: this.model,
+                    stale_session_id: session.providerSessionId,
+                    reason: error instanceof Error ? error.message : String(error),
+                });
+                run = await executeOnce(undefined);
+            }
+            const baseResult = enforceAlfredDirectIntentContract(request, successResult(run.text.trim()));
+            const nextSession = nextSessionState(session, run.nextSessionId);
             if (!shouldReflect(request)) {
                 return { session: nextSession, result: baseResult };
             }
@@ -878,7 +903,10 @@ export class OpenClaudeHarnessAdapter {
 }
 export function createProviderAdapter(executionProfile) {
     if (executionProfile.runtime === 'claude-agent-sdk') {
-        return new ClaudeAgentSdkAdapter(executionProfile.model, executionProfile.apiKey);
+        return new ClaudeAgentSdkAdapter(executionProfile.model, {
+            apiKey: executionProfile.apiKey,
+            workingDirectory: executionProfile.workingDirectory,
+        });
     }
     if (executionProfile.runtime === 'openclaude-harness') {
         return new OpenClaudeHarnessAdapter(executionProfile.model, {

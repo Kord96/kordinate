@@ -46,7 +46,12 @@ spec:
             - { name: AGENT_PROFILE, value: "generic" }
             - { name: AGENT_HOME_DIR, value: "/runtime/generic-opus" }
             - { name: AGENT_STATE_DIR, value: "/kord/generic-opus" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/generic-opus" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/generic-opus/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/generic-opus/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -145,7 +150,12 @@ spec:
             - { name: AGENT_PROFILE, value: "augur" }
             - { name: AGENT_HOME_DIR, value: "/runtime/augur-opus" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-opus" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-opus" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-opus/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-opus/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -244,7 +254,12 @@ spec:
             - { name: AGENT_PROFILE, value: "augur" }
             - { name: AGENT_HOME_DIR, value: "/runtime/augur-gemini-pro" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-gemini-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-gemini-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-gemini-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-gemini-pro/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -344,7 +359,12 @@ spec:
             - { name: AGENT_PROFILE, value: "augur" }
             - { name: AGENT_HOME_DIR, value: "/runtime/augur-deepseek-reasoner" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-deepseek-reasoner" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-deepseek-reasoner" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-deepseek-reasoner/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-deepseek-reasoner/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -444,7 +464,12 @@ spec:
             - { name: AGENT_PROFILE, value: "augur" }
             - { name: AGENT_HOME_DIR, value: "/runtime/augur-glm5" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-glm5" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-glm5" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-glm5/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-glm5/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -544,7 +569,12 @@ spec:
             - { name: AGENT_PROFILE, value: "augur" }
             - { name: AGENT_HOME_DIR, value: "/runtime/augur-gpt54" }
             - { name: AGENT_STATE_DIR, value: "/kord/augur-gpt54" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-gpt54" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-gpt54/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-gpt54/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -645,7 +675,12 @@ spec:
             - { name: AGENT_PROFILE, value: "charon" }
             - { name: AGENT_HOME_DIR, value: "/runtime/charon-gpt53-codex" }
             - { name: AGENT_STATE_DIR, value: "/kord/charon-gpt53-codex" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/charon-gpt53-codex" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/charon-gpt53-codex/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/charon-gpt53-codex/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -749,7 +784,12 @@ spec:
             - { name: AGENT_PROFILE, value: "warden" }
             - { name: AGENT_HOME_DIR, value: "/runtime/warden-haiku" }
             - { name: AGENT_STATE_DIR, value: "/kord/warden-haiku" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/warden-haiku" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/warden-haiku/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/warden-haiku/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -848,7 +888,12 @@ spec:
             - { name: AGENT_PROFILE, value: "sauron" }
             - { name: AGENT_HOME_DIR, value: "/runtime/sauron-sonnet" }
             - { name: AGENT_STATE_DIR, value: "/kord/sauron-sonnet" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/sauron-sonnet" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/sauron-sonnet/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/sauron-sonnet/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -947,7 +992,12 @@ spec:
             - { name: AGENT_PROFILE, value: "alfred" }
             - { name: AGENT_HOME_DIR, value: "/runtime/alfred-deepseek-chat" }
             - { name: AGENT_STATE_DIR, value: "/kord/alfred-deepseek-chat" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/alfred-deepseek-chat" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/alfred-deepseek-chat/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/alfred-deepseek-chat/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
@@ -1052,7 +1102,12 @@ spec:
             - { name: AGENT_PROFILE, value: "alfred" }
             - { name: AGENT_HOME_DIR, value: "/runtime/alfred-gpt-oss-20b" }
             - { name: AGENT_STATE_DIR, value: "/kord/alfred-gpt-oss-20b" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/alfred-gpt-oss-20b" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/alfred-gpt-oss-20b/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/alfred-gpt-oss-20b/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
             - { name: HOME, value: "/home/node" }
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }

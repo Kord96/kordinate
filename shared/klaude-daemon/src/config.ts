@@ -25,6 +25,12 @@ export interface DaemonConfig {
   sessionMapPath: string
 }
 
+function resolveDaemonWorkingDirectory(): string | undefined {
+  return process.env.DAEMON_WORKING_DIRECTORY
+    ?? process.env.CODEX_WORKING_DIRECTORY
+    ?? process.env.AGENT_HOME_DIR
+}
+
 function resolveDefaultRuntime(provider?: string): RuntimeKind {
   if (provider === 'anthropic' || provider === 'claude') {
     return 'claude-agent-sdk'
@@ -57,6 +63,7 @@ function buildClaudeExecutionProfile(provider: ProviderName): ExecutionProfile {
     model: process.env.DAEMON_MODEL ?? 'claude-sonnet-4-5',
     apiKey: process.env.BACKEND_API_KEY ?? process.env.ANTHROPIC_API_KEY,
     baseUrl: process.env.BACKEND_BASE_URL,
+    workingDirectory: resolveDaemonWorkingDirectory(),
   }
 }
 
@@ -71,7 +78,7 @@ function buildOpenClaudeExecutionProfile(provider: ProviderName): ExecutionProfi
       model: process.env.DAEMON_MODEL ?? 'deepseek-chat',
       apiKey: genericApiKey ?? process.env.DEEPSEEK_API_KEY,
       baseUrl: genericBaseUrl ?? 'https://api.deepseek.com/v1',
-      workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+      workingDirectory: resolveDaemonWorkingDirectory(),
     }
   }
 
@@ -81,7 +88,7 @@ function buildOpenClaudeExecutionProfile(provider: ProviderName): ExecutionProfi
     model: process.env.DAEMON_MODEL ?? 'gpt-5.4',
     apiKey: genericApiKey ?? process.env.OPENAI_API_KEY,
     baseUrl: genericBaseUrl,
-    workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+    workingDirectory: resolveDaemonWorkingDirectory(),
   }
 }
 
@@ -97,7 +104,7 @@ function buildCodexExecutionProfile(provider: ProviderName): ExecutionProfile {
       apiKey: genericApiKey ?? process.env.DEEPSEEK_API_KEY,
       baseUrl: genericBaseUrl ?? 'https://api.deepseek.com/v1',
       skipGitRepoCheck: process.env.CODEX_SKIP_GIT_REPO_CHECK === '1' || process.env.CODEX_SKIP_GIT_REPO_CHECK === 'true',
-      workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+      workingDirectory: resolveDaemonWorkingDirectory(),
     }
   }
 
@@ -108,7 +115,7 @@ function buildCodexExecutionProfile(provider: ProviderName): ExecutionProfile {
     apiKey: genericApiKey ?? process.env.OPENAI_API_KEY,
     baseUrl: genericBaseUrl,
     skipGitRepoCheck: process.env.CODEX_SKIP_GIT_REPO_CHECK === '1' || process.env.CODEX_SKIP_GIT_REPO_CHECK === 'true',
-    workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+    workingDirectory: resolveDaemonWorkingDirectory(),
   }
 }
 
@@ -123,7 +130,7 @@ function buildSimpleHarnessExecutionProfile(provider: ProviderName): ExecutionPr
       model: process.env.DAEMON_MODEL ?? 'deepseek-chat',
       apiKey: genericApiKey ?? process.env.DEEPSEEK_API_KEY,
       baseUrl: genericBaseUrl ?? 'https://api.deepseek.com/v1',
-      workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+      workingDirectory: resolveDaemonWorkingDirectory(),
     }
   }
 
@@ -133,7 +140,7 @@ function buildSimpleHarnessExecutionProfile(provider: ProviderName): ExecutionPr
     model: process.env.DAEMON_MODEL ?? 'gpt-5.4',
     apiKey: genericApiKey ?? process.env.OPENAI_API_KEY,
     baseUrl: genericBaseUrl,
-    workingDirectory: process.env.CODEX_WORKING_DIRECTORY,
+    workingDirectory: resolveDaemonWorkingDirectory(),
   }
 }
 
@@ -160,7 +167,7 @@ export function loadDaemonConfig(): DaemonConfig {
     executionProfile,
     kafkaBrokers: (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(','),
     kafkaConsumerGroupId: process.env.KAFKA_CONSUMER_GROUP,
-    kafkaSessionTimeoutMs: Number.parseInt(process.env.KAFKA_SESSION_TIMEOUT_MS ?? '600000', 10),
+    kafkaSessionTimeoutMs: Number.parseInt(process.env.KAFKA_SESSION_TIMEOUT_MS ?? '30000', 10),
     kafkaHeartbeatIntervalMs: Number.parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL_MS ?? '3000', 10),
     reflectionsTopic: process.env.REFLECTIONS_TOPIC ?? 'reflections',
     discoveryServerUrl: process.env.DISCOVERY_SERVER_URL,

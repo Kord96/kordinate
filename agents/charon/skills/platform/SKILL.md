@@ -35,7 +35,11 @@ Default environment is `dev` if not specified.
 
 1. Parse env from `$ARGUMENTS`.
 
-2. **Preflight** — verify the overlay exists at `$KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/`. If alfred is available, run alfred `/preflight` for additional validation against the source profile tree. If preflight fails, report and exit.
+2. **Preflight** — verify the overlay exists at `$KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/`. Validate provider secrets before rollout:
+
+   `python3 $KORDINATE_HOME/lib/scripts/validate-provider-secrets.py --probe-provider`
+
+   If alfred is available, run alfred `/preflight` for additional validation against the source profile tree. If preflight fails, report and exit.
 
 3. **Apply** — execute `kubectl apply -k $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/ -n <env>`.
 
@@ -99,7 +103,11 @@ Default environment is `dev` if not specified.
    - `agents/charon/skills/platform/manifests/base/keda.yaml`
    - `agents/charon/skills/platform/manifests/base/kafka.yaml`
 
-5. **Verify** — confirm the new deployment, ScaledObject, and Kafka topic entries exist in the generated manifests, and that the deployment runs `klaude-daemon` with the expected provider secret wiring.
+5. **Verify** — confirm the new deployment, ScaledObject, and Kafka topic entries exist in the generated manifests, that the deployment runs `klaude-daemon` with the expected provider secret wiring, and that:
+
+   `python3 $KORDINATE_HOME/lib/scripts/validate-provider-secrets.py --agent <name> --probe-provider`
+
+   succeeds before deploy/apply.
 
 6. **Report** — summarize the added agent and instruct the operator to run `/platform deploy <env>` to apply it.
 
