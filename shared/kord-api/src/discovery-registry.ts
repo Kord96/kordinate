@@ -1,13 +1,17 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
-import type { AgentDiscoveryRecord } from './types.js'
+import type { AgentDiscoveryRecord, AgentVariantSummary, LogicalAgentRecord } from './types.js'
 
 export interface DiscoveryRegistry {
   load: () => Promise<void>
   list: () => AgentDiscoveryRecord[]
+  listLogical: () => LogicalAgentRecord[]
   get: (name: string) => AgentDiscoveryRecord | undefined
+  getLogical: (name: string) => LogicalAgentRecord | undefined
   register: (record: AgentDiscoveryRecord) => Promise<AgentDiscoveryRecord>
   compact: (record: AgentDiscoveryRecord) => AgentDiscoveryRecord
+  compactLogical: (record: LogicalAgentRecord) => LogicalAgentRecord
+  resolveTarget: (name: string, options?: { variant?: string; backend_model?: string }) => AgentDiscoveryRecord | undefined
 }
 
 export function createDiscoveryRegistry(input?: {
@@ -61,6 +65,35 @@ export function createDiscoveryRegistry(input?: {
     await writeFile(statePath, payload, 'utf8')
   }
 
+  function logicalNameFor(record: AgentDiscoveryRecord): string {
+    return record.specialization?.trim() || record.name
+  }
+
+  function preferredVariantRank(record: AgentDiscoveryRecord): number {
+    const logicalName = logicalNameFor(record)
+    const preferredByLogical: Record<string, string[]> = {
+      alfred: ['alfred-gpt-oss-20b', 'alfred-deepseek-chat'],
+      augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-pro', 'augur-deepseek-reasoner', 'augur-glm5'],
+      charon: ['charon-gpt53-codex'],
+      generic: ['generic-opus'],
+      sauron: ['sauron-sonnet'],
+      warden: ['warden-haiku'],
+    }
+    const preferred = preferredByLogical[logicalName] ?? []
+    const exactIndex = preferred.indexOf(record.name)
+    if (exactIndex >= 0) return exactIndex
+    const modelIndex = preferred.findIndex(name => name.endsWith(`-${record.backend_model.replaceAll('.', '').replaceAll('/', '-')}`))
+    if (modelIndex >= 0) return modelIndex + preferred.length
+    return preferred.length + 100
+  }
+
+  function compareVariants(a: AgentDiscoveryRecord, b: AgentDiscoveryRecord): number {
+    if (a.active !== b.active) return a.active ? -1 : 1
+    const rankDiff = preferredVariantRank(a) - preferredVariantRank(b)
+    if (rankDiff !== 0) return rankDiff
+    return a.name.localeCompare(b.name)
+  }
+
   function list(): AgentDiscoveryRecord[] {
     const now = Date.now()
     const merged = new Map<string, AgentDiscoveryRecord>(catalog)
@@ -81,6 +114,46 @@ export function createDiscoveryRegistry(input?: {
     return records
   }
 
+  function toVariantSummary(record: AgentDiscoveryRecord): AgentVariantSummary {
+    return {
+      name: record.name,
+      backend_provider: record.backend_provider,
+      backend_model: record.backend_model,
+      active: record.active,
+      runtime: record.runtime,
+    }
+  }
+
+  function listLogical(): LogicalAgentRecord[] {
+    const grouped = new Map<string, AgentDiscoveryRecord[]>()
+    for (const record of list()) {
+      const logicalName = logicalNameFor(record)
+      const existing = grouped.get(logicalName) ?? []
+      existing.push(record)
+      grouped.set(logicalName, existing)
+    }
+
+    const logicalAgents: LogicalAgentRecord[] = []
+    for (const [name, variants] of grouped.entries()) {
+      variants.sort(compareVariants)
+      const defaultVariant = variants[0]
+      const capabilities = [...new Set(variants.flatMap(record => record.capabilities))]
+      const supportedAgentParams = [...new Set(variants.flatMap(record => record.supported_agent_params))]
+      logicalAgents.push({
+        name,
+        capabilities,
+        backend_provider: defaultVariant?.backend_provider,
+        backend_model: defaultVariant?.backend_model,
+        supported_agent_params: supportedAgentParams,
+        active: variants.some(record => record.active),
+        default_variant: defaultVariant?.name,
+        variants: variants.map(toVariantSummary),
+      })
+    }
+    logicalAgents.sort((a, b) => a.name.localeCompare(b.name))
+    return logicalAgents
+  }
+
   function compact(record: AgentDiscoveryRecord): AgentDiscoveryRecord {
     return {
       name: record.name,
@@ -92,8 +165,59 @@ export function createDiscoveryRegistry(input?: {
     }
   }
 
+  function compactLogical(record: LogicalAgentRecord): LogicalAgentRecord {
+    return {
+      name: record.name,
+      capabilities: record.capabilities,
+      backend_provider: record.backend_provider,
+      backend_model: record.backend_model,
+      supported_agent_params: record.supported_agent_params,
+      active: record.active,
+      default_variant: record.default_variant,
+      variants: record.variants,
+    }
+  }
+
   function get(name: string): AgentDiscoveryRecord | undefined {
     return list().find(item => item.name === name)
+  }
+
+  function getLogical(name: string): LogicalAgentRecord | undefined {
+    return listLogical().find(item => item.name === name)
+  }
+
+  function resolveTarget(name: string, options?: { variant?: string; backend_model?: string }): AgentDiscoveryRecord | undefined {
+    const exact = get(name)
+    const requestedVariant = options?.variant?.trim()
+    const requestedModel = options?.backend_model?.trim()
+
+    if (requestedVariant) {
+      const variant = get(requestedVariant)
+      if (!variant) return undefined
+      if (exact) {
+        return exact.name === variant.name ? variant : undefined
+      }
+      return logicalNameFor(variant) === name ? variant : undefined
+    }
+
+    if (exact && !requestedModel) {
+      return exact
+    }
+
+    const logical = getLogical(name)
+    if (!logical) {
+      return requestedModel && exact?.backend_model === requestedModel ? exact : exact
+    }
+
+    const variants = list()
+      .filter(record => logicalNameFor(record) === logical.name)
+      .sort(compareVariants)
+
+    if (requestedModel) {
+      return variants.find(record => record.backend_model === requestedModel)
+    }
+
+    return variants[0]
   }
 
   async function register(record: AgentDiscoveryRecord): Promise<AgentDiscoveryRecord> {
@@ -116,9 +240,13 @@ export function createDiscoveryRegistry(input?: {
       await loadState()
     },
     list,
+    listLogical,
     get,
+    getLogical,
     register,
     compact,
+    compactLogical,
+    resolveTarget,
   }
 }
 

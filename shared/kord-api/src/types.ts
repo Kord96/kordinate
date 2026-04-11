@@ -61,3 +61,22 @@ export interface AgentDiscoveryRecord {
   default_working_dir?: string
   registered_at?: string
 }
+
+export interface AgentVariantSummary {
+  name: string
+  backend_provider: string
+  backend_model: string
+  active: boolean
+  runtime?: string
+}
+
+export interface LogicalAgentRecord {
+  name: string
+  capabilities: string[]
+  backend_provider?: string
+  backend_model?: string
+  supported_agent_params: string[]
+  active: boolean
+  default_variant?: string
+  variants: AgentVariantSummary[]
+}

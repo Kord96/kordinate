@@ -44,6 +44,36 @@ export function createDiscoveryRegistry(input) {
         const payload = JSON.stringify([...registry.values()], null, 2) + '\n';
         await writeFile(statePath, payload, 'utf8');
     }
+    function logicalNameFor(record) {
+        return record.specialization?.trim() || record.name;
+    }
+    function preferredVariantRank(record) {
+        const logicalName = logicalNameFor(record);
+        const preferredByLogical = {
+            alfred: ['alfred-gpt-oss-20b', 'alfred-deepseek-chat'],
+            augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-pro', 'augur-deepseek-reasoner', 'augur-glm5'],
+            charon: ['charon-gpt53-codex'],
+            generic: ['generic-opus'],
+            sauron: ['sauron-sonnet'],
+            warden: ['warden-haiku'],
+        };
+        const preferred = preferredByLogical[logicalName] ?? [];
+        const exactIndex = preferred.indexOf(record.name);
+        if (exactIndex >= 0)
+            return exactIndex;
+        const modelIndex = preferred.findIndex(name => name.endsWith(`-${record.backend_model.replaceAll('.', '').replaceAll('/', '-')}`));
+        if (modelIndex >= 0)
+            return modelIndex + preferred.length;
+        return preferred.length + 100;
+    }
+    function compareVariants(a, b) {
+        if (a.active !== b.active)
+            return a.active ? -1 : 1;
+        const rankDiff = preferredVariantRank(a) - preferredVariantRank(b);
+        if (rankDiff !== 0)
+            return rankDiff;
+        return a.name.localeCompare(b.name);
+    }
     function list() {
         const now = Date.now();
         const merged = new Map(catalog);
@@ -63,6 +93,43 @@ export function createDiscoveryRegistry(input) {
         records.sort((a, b) => a.name.localeCompare(b.name));
         return records;
     }
+    function toVariantSummary(record) {
+        return {
+            name: record.name,
+            backend_provider: record.backend_provider,
+            backend_model: record.backend_model,
+            active: record.active,
+            runtime: record.runtime,
+        };
+    }
+    function listLogical() {
+        const grouped = new Map();
+        for (const record of list()) {
+            const logicalName = logicalNameFor(record);
+            const existing = grouped.get(logicalName) ?? [];
+            existing.push(record);
+            grouped.set(logicalName, existing);
+        }
+        const logicalAgents = [];
+        for (const [name, variants] of grouped.entries()) {
+            variants.sort(compareVariants);
+            const defaultVariant = variants[0];
+            const capabilities = [...new Set(variants.flatMap(record => record.capabilities))];
+            const supportedAgentParams = [...new Set(variants.flatMap(record => record.supported_agent_params))];
+            logicalAgents.push({
+                name,
+                capabilities,
+                backend_provider: defaultVariant?.backend_provider,
+                backend_model: defaultVariant?.backend_model,
+                supported_agent_params: supportedAgentParams,
+                active: variants.some(record => record.active),
+                default_variant: defaultVariant?.name,
+                variants: variants.map(toVariantSummary),
+            });
+        }
+        logicalAgents.sort((a, b) => a.name.localeCompare(b.name));
+        return logicalAgents;
+    }
     function compact(record) {
         return {
             name: record.name,
@@ -73,8 +140,51 @@ export function createDiscoveryRegistry(input) {
             active: record.active,
         };
     }
+    function compactLogical(record) {
+        return {
+            name: record.name,
+            capabilities: record.capabilities,
+            backend_provider: record.backend_provider,
+            backend_model: record.backend_model,
+            supported_agent_params: record.supported_agent_params,
+            active: record.active,
+            default_variant: record.default_variant,
+            variants: record.variants,
+        };
+    }
     function get(name) {
         return list().find(item => item.name === name);
+    }
+    function getLogical(name) {
+        return listLogical().find(item => item.name === name);
+    }
+    function resolveTarget(name, options) {
+        const exact = get(name);
+        const requestedVariant = options?.variant?.trim();
+        const requestedModel = options?.backend_model?.trim();
+        if (requestedVariant) {
+            const variant = get(requestedVariant);
+            if (!variant)
+                return undefined;
+            if (exact) {
+                return exact.name === variant.name ? variant : undefined;
+            }
+            return logicalNameFor(variant) === name ? variant : undefined;
+        }
+        if (exact && !requestedModel) {
+            return exact;
+        }
+        const logical = getLogical(name);
+        if (!logical) {
+            return requestedModel && exact?.backend_model === requestedModel ? exact : exact;
+        }
+        const variants = list()
+            .filter(record => logicalNameFor(record) === logical.name)
+            .sort(compareVariants);
+        if (requestedModel) {
+            return variants.find(record => record.backend_model === requestedModel);
+        }
+        return variants[0];
     }
     async function register(record) {
         const now = new Date().toISOString();
@@ -95,9 +205,13 @@ export function createDiscoveryRegistry(input) {
             await loadState();
         },
         list,
+        listLogical,
         get,
+        getLogical,
         register,
         compact,
+        compactLogical,
+        resolveTarget,
     };
 }
 export function isAgentDiscoveryRecord(value) {

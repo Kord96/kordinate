@@ -89,6 +89,8 @@ function isPromptBody(value: unknown): value is {
   agent_params?: Record<string, unknown>
   session_id?: string
   async?: boolean
+  variant?: string
+  backend_model?: string
 } {
   if (!value || typeof value !== 'object') return false
   const body = value as Record<string, unknown>
@@ -100,6 +102,8 @@ function isPromptBody(value: unknown): value is {
     && (body.agent_params === undefined || typeof body.agent_params === 'object')
     && (body.session_id === undefined || typeof body.session_id === 'string')
     && (body.async === undefined || typeof body.async === 'boolean')
+    && (body.variant === undefined || typeof body.variant === 'string')
+    && (body.backend_model === undefined || typeof body.backend_model === 'string')
 }
 
 function deferReply(correlationId: string, agent: string, timeoutMs: number): Promise<ResponseMessage> {
@@ -206,7 +210,11 @@ const server = createServer(async (req, res) => {
 
     if (req.method === 'GET' && url.pathname === '/agents') {
       const verbose = url.searchParams.get('verbose') === '1'
-      const agents = registry.list().map(record => verbose ? record : registry.compact(record))
+      const view = url.searchParams.get('view')
+      const variants = view === 'variants' || url.searchParams.get('variants') === '1'
+      const agents = variants
+        ? registry.list().map(record => verbose ? record : registry.compact(record))
+        : registry.listLogical().map(record => verbose ? record : registry.compactLogical(record))
       json(res, 200, { agents })
       return
     }
@@ -214,12 +222,27 @@ const server = createServer(async (req, res) => {
     if (req.method === 'GET' && url.pathname.startsWith('/agents/')) {
       const name = decodeURIComponent(url.pathname.slice('/agents/'.length))
       const verbose = url.searchParams.get('verbose') === '1'
-      const record = registry.get(name)
-      if (!record) {
+      const view = url.searchParams.get('view')
+      const variants = view === 'variants' || url.searchParams.get('variants') === '1'
+      const variantRecord = registry.get(name)
+      const logicalRecord = registry.getLogical(name)
+      if (variants) {
+        if (!variantRecord) {
+          json(res, 404, { error: `agent variant '${name}' not found` })
+          return
+        }
+        json(res, 200, verbose ? variantRecord : registry.compact(variantRecord))
+        return
+      }
+      if (!logicalRecord && !variantRecord) {
         json(res, 404, { error: `agent '${name}' not found` })
         return
       }
-      json(res, 200, verbose ? record : registry.compact(record))
+      if (logicalRecord) {
+        json(res, 200, verbose ? logicalRecord : registry.compactLogical(logicalRecord))
+        return
+      }
+      json(res, 200, verbose ? variantRecord : registry.compact(variantRecord!))
       return
     }
 
@@ -241,14 +264,21 @@ const server = createServer(async (req, res) => {
         return
       }
       const name = decodeURIComponent(suffix.slice(0, -'/prompt'.length))
-      const record = registry.get(name)
-      if (!record) {
-        json(res, 404, { error: `agent '${name}' not found` })
-        return
-      }
       const body = await parseBody(req)
       if (!isPromptBody(body)) {
         json(res, 400, { error: 'invalid prompt body' })
+        return
+      }
+      const record = registry.resolveTarget(name, {
+        variant: body.variant,
+        backend_model: body.backend_model,
+      })
+      if (!record) {
+        json(res, 404, {
+          error: `agent '${name}' could not be resolved`,
+          requested_variant: body.variant ?? null,
+          requested_backend_model: body.backend_model ?? null,
+        })
         return
       }
       const startedAt = Date.now()
@@ -256,6 +286,9 @@ const server = createServer(async (req, res) => {
       log('prompt_request_received', {
         request_id: requestId,
         agent: record.name,
+        requested_agent: name,
+        requested_variant: body.variant ?? null,
+        requested_backend_model: body.backend_model ?? null,
         async: body.async === true,
         timeout_ms: body.timeout_ms ?? defaultTimeoutMs,
         has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
@@ -291,6 +324,7 @@ const server = createServer(async (req, res) => {
           request_id: requestId,
           status: 'pending',
           agent: record.name,
+          resolved_agent: record.name,
           status_url: `/requests/${requestId}`,
         })
         return
