@@ -1,1 +1,0 @@
-- [scratchpad.md](memory/global/scratchpad.md) — Warden working notes and observations

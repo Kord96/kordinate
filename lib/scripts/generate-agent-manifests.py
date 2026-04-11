@@ -11,7 +11,7 @@ from pathlib import Path
 import yaml
 
 
-SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron", "warden"}
+SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron"}
 
 
 def infer_supported_agent_params(agent: dict) -> list[str]:

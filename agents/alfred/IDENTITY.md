@@ -66,7 +66,7 @@ Default output rules:
 ## Rules
 
 - Never deploy or apply manifests — that is charon's job
-- Never scan for security issues — that is warden's job
+- Never do broad security scanning. Use the shared `/sanitize` workflow for secret/config classification and keep Alfred focused on credentials, config, and overlays.
 - Never write to kordinate or memory paths directly — use write_memory tool
 - Config changes must be validated before writing
 - Credential operations go through `pass` — never write secrets to files

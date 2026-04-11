@@ -4,7 +4,7 @@ Generic backend agents are daemon-backed platform entries that do not seed one o
 
 Use them when you want:
 - a consultation or utility agent with plain runtime/backend behavior
-- a deployed agent name that is not one of `augur`, `charon`, `alfred`, `sauron`, or `warden`
+- a deployed agent name that is not one of `augur`, `charon`, `alfred`, or `sauron`
 - a Kafka-addressable daemon runtime without creating a bespoke specialist image first
 
 ## Recommended Defaults

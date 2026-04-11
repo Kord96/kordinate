@@ -30,4 +30,3 @@ build_and_push "agent-charon" "$REPO_ROOT/agents/charon/skills/bootstrap/images/
 build_and_push "agent-augur" "$REPO_ROOT/agents/charon/skills/bootstrap/images/augur/Dockerfile"
 build_and_push "agent-alfred" "$REPO_ROOT/agents/charon/skills/bootstrap/images/alfred/Dockerfile"
 build_and_push "agent-sauron" "$REPO_ROOT/agents/charon/skills/bootstrap/images/sauron/Dockerfile"
-build_and_push "agent-warden" "$REPO_ROOT/agents/charon/skills/bootstrap/images/warden/Dockerfile"

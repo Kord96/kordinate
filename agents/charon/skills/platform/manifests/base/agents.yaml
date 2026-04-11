@@ -212,14 +212,14 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-augur-gemini-pro
-  labels: { app: kord-agent, agent: augur-gemini-pro }
+  name: agent-augur-gemini-31-pro
+  labels: { app: kord-agent, agent: augur-gemini-31-pro }
 spec:
   selector:
-    matchLabels: { app: kord-agent, agent: augur-gemini-pro }
+    matchLabels: { app: kord-agent, agent: augur-gemini-31-pro }
   template:
     metadata:
-      labels: { app: kord-agent, agent: augur-gemini-pro }
+      labels: { app: kord-agent, agent: augur-gemini-31-pro }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -232,8 +232,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh augur-gemini-pro
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-gemini-pro
+              bash /app/scripts/setup-agent-dir.sh augur-gemini-31-pro
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-gemini-31-pro
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -250,13 +250,13 @@ spec:
             - |
               exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: "augur-gemini-pro" }
+            - { name: AGENT_NAME, value: "augur-gemini-31-pro" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/augur-gemini-pro" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur-gemini-pro" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-gemini-pro" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-gemini-pro/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-gemini-pro/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/augur-gemini-31-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/augur-gemini-31-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-gemini-31-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-gemini-31-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-gemini-31-pro/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
@@ -264,7 +264,7 @@ spec:
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-pro:9090/health" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-31-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
             - { name: DAEMON_PROVIDER, value: "gemini" }
             - { name: DAEMON_MODEL, value: "gemini-3.1-pro-preview" }
@@ -302,12 +302,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-augur-gemini-pro
-  labels: { app: kord-agent, agent: augur-gemini-pro }
+  name: agent-augur-gemini-31-pro
+  labels: { app: kord-agent, agent: augur-gemini-31-pro }
 spec:
   selector:
     app: kord-agent
-    agent: augur-gemini-pro
+    agent: augur-gemini-31-pro
   ports:
     - name: health
       port: 9090
@@ -742,14 +742,14 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-warden-haiku
-  labels: { app: kord-agent, agent: warden-haiku }
+  name: agent-sauron-gpt53-codex
+  labels: { app: kord-agent, agent: sauron-gpt53-codex }
 spec:
   selector:
-    matchLabels: { app: kord-agent, agent: warden-haiku }
+    matchLabels: { app: kord-agent, agent: sauron-gpt53-codex }
   template:
     metadata:
-      labels: { app: kord-agent, agent: warden-haiku }
+      labels: { app: kord-agent, agent: sauron-gpt53-codex }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -762,8 +762,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh warden-haiku
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh warden warden-haiku
+              bash /app/scripts/setup-agent-dir.sh sauron-gpt53-codex
+              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh sauron sauron-gpt53-codex
           volumeMounts:
             - { name: runtime, mountPath: /kord }
             - { name: agent-runtime, mountPath: /runtime }
@@ -780,117 +780,13 @@ spec:
             - |
               exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: "warden-haiku" }
-            - { name: AGENT_PROFILE, value: "warden" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/warden-haiku" }
-            - { name: AGENT_STATE_DIR, value: "/kord/warden-haiku" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/warden-haiku" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/warden-haiku/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/warden-haiku/.daemon-state/sessions.json" }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
-            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
-            - { name: HOME, value: "/home/node" }
-            - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-warden-haiku:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
-            - { name: DAEMON_PROVIDER, value: "anthropic" }
-            - { name: DAEMON_MODEL, value: "haiku" }
-            - { name: DAEMON_BACKEND, value: "anthropic" }
-            - name: ANTHROPIC_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: anthropic-api
-                  key: api-key
-          resources:
-            requests: { cpu: 100m, memory: 512Mi }
-            limits: { memory: 4Gi }
-          ports:
-            - { containerPort: 9090, name: status }
-          readinessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          livenessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 30
-            periodSeconds: 30
-          volumeMounts:
-            - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
-      volumes:
-        - name: runtime
-          persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
-      securityContext:
-        fsGroup: 1000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: agent-warden-haiku
-  labels: { app: kord-agent, agent: warden-haiku }
-spec:
-  selector:
-    app: kord-agent
-    agent: warden-haiku
-  ports:
-    - name: health
-      port: 9090
-      targetPort: 9090
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: agent-sauron-sonnet
-  labels: { app: kord-agent, agent: sauron-sonnet }
-spec:
-  selector:
-    matchLabels: { app: kord-agent, agent: sauron-sonnet }
-  template:
-    metadata:
-      labels: { app: kord-agent, agent: sauron-sonnet }
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9090"
-    spec:
-      serviceAccountName: kord
-      initContainers:
-        - name: setup
-          image: REGISTRY/agent-base:latest
-          imagePullPolicy: Always
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-              bash /app/scripts/setup-agent-dir.sh sauron-sonnet
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh sauron sauron-sonnet
-          volumeMounts:
-            - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
-      containers:
-        - name: agent
-          image: REGISTRY/agent-base:latest
-          imagePullPolicy: Always
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-              exec klaude-daemon
-          env:
-            - { name: AGENT_NAME, value: "sauron-sonnet" }
+            - { name: AGENT_NAME, value: "sauron-gpt53-codex" }
             - { name: AGENT_PROFILE, value: "sauron" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/sauron-sonnet" }
-            - { name: AGENT_STATE_DIR, value: "/kord/sauron-sonnet" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/sauron-sonnet" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/sauron-sonnet/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/sauron-sonnet/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/runtime/sauron-gpt53-codex" }
+            - { name: AGENT_STATE_DIR, value: "/kord/sauron-gpt53-codex" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/sauron-gpt53-codex" }
+            - { name: DAEMON_STATE_DIR, value: "/runtime/sauron-gpt53-codex/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/sauron-gpt53-codex/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
@@ -898,15 +794,17 @@ spec:
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron-sonnet:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
-            - { name: DAEMON_PROVIDER, value: "anthropic" }
-            - { name: DAEMON_MODEL, value: "sonnet" }
-            - { name: DAEMON_BACKEND, value: "anthropic" }
-            - name: ANTHROPIC_API_KEY
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron-gpt53-codex:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.3-codex" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: anthropic-api
+                  name: codex-api
                   key: api-key
           resources:
             requests: { cpu: 100m, memory: 512Mi }
@@ -935,12 +833,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-sauron-sonnet
-  labels: { app: kord-agent, agent: sauron-sonnet }
+  name: agent-sauron-gpt53-codex
+  labels: { app: kord-agent, agent: sauron-gpt53-codex }
 spec:
   selector:
     app: kord-agent
-    agent: sauron-sonnet
+    agent: sauron-gpt53-codex
   ports:
     - name: health
       port: 9090

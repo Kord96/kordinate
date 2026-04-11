@@ -1,6 +1,6 @@
 # Agents
 
-Five specialized agents, each with a distinct role and exclusive authority over its domain.
+Four specialized agents, each with a distinct role and exclusive authority over its domain.
 
 | Agent | Role |
 |-------|------|
@@ -8,7 +8,6 @@ Five specialized agents, each with a distinct role and exclusive authority over 
 | [augur](augur/) | Architecture review, pattern authority, and design analysis |
 | [sauron](sauron/) | Monitoring, observability, and diagnostics |
 | [alfred](alfred/) | Profile/config, credentials, overlays, and environment setup |
-| [warden](warden/) | Security scanning, secret detection, and credential hygiene |
 
 ## Agent Structure
 

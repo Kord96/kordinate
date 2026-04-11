@@ -1,0 +1,26 @@
+- name: private-key
+  regex: '(-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----)'
+  severity: critical
+  message: Private key material must not be committed.
+
+- name: api-key
+  regex: '((sk-|AIza|ghp_|github_pat_|xox[baprs]-)[A-Za-z0-9_\\-]{12,})'
+  severity: critical
+  message: Possible API token or secret detected.
+
+- name: password-assignment
+  regex: '(?i)(password|passwd|token|secret|api[_-]?key)\\s*[:=]\\s*[^\\s]+'
+  severity: warning
+  message: Inline credential-like assignment detected.
+
+- exclude:
+    - "*.lock"
+    - "package-lock.json"
+    - "pnpm-lock.yaml"
+    - "yarn.lock"
+    - "*.svg"
+    - "*.png"
+    - "*.jpg"
+    - "*.jpeg"
+    - "*.gif"
+    - "*.ico"

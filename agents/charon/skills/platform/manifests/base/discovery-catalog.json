@@ -14,8 +14,8 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-generic-opus:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "generic-opus"
   },
   {
@@ -35,12 +35,12 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-augur-opus:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "augur-opus"
   },
   {
-    "name": "augur-gemini-pro",
+    "name": "augur-gemini-31-pro",
     "capabilities": [
       "Can produce atlas.json + stories from a project via `/analyze` \u2014 covers concept detection, dependency mapping, API review, debt assessment, component identification, and story composition in one coherent pass",
       "Can run detection-only mode for quick structural inventory via `/analyze --detect-only`",
@@ -54,11 +54,11 @@
     "active": false,
     "specialization": "augur",
     "runtime": "openclaude-harness",
-    "health_url": "http://agent-augur-gemini-pro:9090/health",
+    "health_url": "http://agent-augur-gemini-31-pro:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
-    "request_topic": "augur-gemini-pro"
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
+    "request_topic": "augur-gemini-31-pro"
   },
   {
     "name": "augur-deepseek-reasoner",
@@ -77,8 +77,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-deepseek-reasoner:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "augur-deepseek-reasoner"
   },
   {
@@ -98,8 +98,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-glm5:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "augur-glm5"
   },
   {
@@ -119,8 +119,8 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-augur-gpt54:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "augur-gpt54"
   },
   {
@@ -141,31 +141,12 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-charon-gpt53-codex:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "charon-gpt53-codex"
   },
   {
-    "name": "warden-haiku",
-    "capabilities": [
-      "Can scan repos for hardcoded secrets and PII via /scan-breaches",
-      "Can audit cluster secrets against pass store via /audit-secrets",
-      "Can classify and route sensitive content via /sanitize"
-    ],
-    "backend_provider": "anthropic",
-    "backend_model": "haiku",
-    "supported_agent_params": [],
-    "active": false,
-    "specialization": "warden",
-    "runtime": "claude-agent-sdk",
-    "health_url": "http://agent-warden-haiku:9090/health",
-    "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
-    "request_topic": "warden-haiku"
-  },
-  {
-    "name": "sauron-sonnet",
+    "name": "sauron-gpt53-codex",
     "capabilities": [
       "Can scan a project for observability signals and map them to architecture via `/monitor`",
       "Can diagnose live production issues by tracing symptoms through the observability catalog via `/monitor --diagnose`",
@@ -173,17 +154,17 @@
       "Can validate that a running service emits all metrics specified in augur's monitoring-spec",
       "Can read and write Grafana dashboards, deploy alert rules as ConfigMaps"
     ],
-    "backend_provider": "anthropic",
-    "backend_model": "sonnet",
+    "backend_provider": "openai",
+    "backend_model": "gpt-5.3-codex",
     "supported_agent_params": [],
     "active": false,
     "specialization": "sauron",
-    "runtime": "claude-agent-sdk",
-    "health_url": "http://agent-sauron-sonnet:9090/health",
+    "runtime": "codex-sdk",
+    "health_url": "http://agent-sauron-gpt53-codex:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
-    "request_topic": "sauron-sonnet"
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
+    "request_topic": "sauron-gpt53-codex"
   },
   {
     "name": "alfred-deepseek-chat",
@@ -201,8 +182,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-alfred-deepseek-chat:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "alfred-deepseek-chat"
   },
   {
@@ -221,8 +202,8 @@
     "runtime": "simple-harness",
     "health_url": "http://agent-alfred-gpt-oss-20b:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-11T04:06:21Z",
-    "last_seen_at": "2026-04-11T04:06:21Z",
+    "registered_at": "2026-04-11T04:21:56Z",
+    "last_seen_at": "2026-04-11T04:21:56Z",
     "request_topic": "alfred-gpt-oss-20b"
   }
 ]

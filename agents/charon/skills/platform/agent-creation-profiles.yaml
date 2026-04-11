@@ -51,8 +51,8 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  augur-gemini-pro:
-    description: Augur specialist pinned to Gemini Pro over the OpenAI-compatible Gemini endpoint.
+  augur-gemini-31-pro:
+    description: Augur specialist pinned to Gemini 3.1 Pro over the OpenAI-compatible Gemini endpoint.
     defaults:
       flavor: augur
       image_customization: agent-augur
@@ -204,28 +204,17 @@ profiles:
       runtime_bundle: direct-action-v1
     required_choices: []
 
-  sauron-sonnet:
-    description: Sauron specialist deployment using the built-in Sauron flavor seed on Claude Sonnet.
+  sauron-gpt53-codex:
+    description: Sauron specialist deployment using the built-in Sauron flavor seed on GPT-5.3 Codex.
     defaults:
       flavor: sauron
       image_customization: none
-      provider: anthropic
-      model: sonnet
-      backend: anthropic
-      secret_env: ANTHROPIC_API_KEY
-      secret_name: anthropic-api
-      secret_key: api-key
-    required_choices: []
-
-  warden-haiku:
-    description: Warden specialist deployment using the built-in Warden flavor seed on Claude Haiku.
-    defaults:
-      flavor: warden
-      image_customization: none
-      provider: anthropic
-      model: haiku
-      backend: anthropic
-      secret_env: ANTHROPIC_API_KEY
-      secret_name: anthropic-api
+      provider: openai
+      model: gpt-5.3-codex
+      backend: openai
+      backend_base_url: https://api.openai.com/v1
+      skip_git_repo_check: true
+      secret_env: BACKEND_API_KEY
+      secret_name: codex-api
       secret_key: api-key
     required_choices: []

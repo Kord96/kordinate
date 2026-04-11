@@ -32,13 +32,13 @@ protected_paths:
     owner: shared
     reason: Gemini protocol
   - path: agents/alfred/profile/locks/
-    owner: warden
+    owner: alfred
     reason: Alfred-owned auth lock source
   - path: shared/runtime/profile/locks/
     owner: shared
     reason: Runtime lock projection
   - path: .local/share/kordinate/locks/
-    owner: warden
+    owner: shared
     reason: Runtime lock cache
   - path: .local/share/kordinate/profile/
     owner: shared
@@ -58,6 +58,9 @@ protected_paths:
   - path: shared/skills/validate-output/
     owner: shared
     reason: Shared validation protocol and invocation contract
+  - path: shared/skills/sanitize/
+    owner: shared
+    reason: Shared sanitize protocol and secret/config classification workflow
   - path: agents/alfred/profile/backend-aliases.yaml
     owner: alfred
     reason: Alfred-owned backend alias source

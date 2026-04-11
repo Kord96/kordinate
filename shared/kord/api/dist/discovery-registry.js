@@ -6,6 +6,13 @@ export function createDiscoveryRegistry(input) {
     const ttlMs = input?.ttlMs ?? 120000;
     const registry = new Map();
     const catalog = new Map();
+    const legacyNameMap = {
+        'augur-gemini-pro': 'augur-gemini-31-pro',
+        'sauron-sonnet': 'sauron-gpt53-codex',
+    };
+    function canonicalizeName(name) {
+        return legacyNameMap[name] ?? name;
+    }
     function sanitizeRecord(record) {
         return {
             ...record,
@@ -51,11 +58,10 @@ export function createDiscoveryRegistry(input) {
         const logicalName = logicalNameFor(record);
         const preferredByLogical = {
             alfred: ['alfred-gpt-oss-20b', 'alfred-deepseek-chat'],
-            augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-pro', 'augur-deepseek-reasoner', 'augur-glm5'],
+            augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-31-pro', 'augur-deepseek-reasoner', 'augur-glm5'],
             charon: ['charon-gpt53-codex'],
             generic: ['generic-opus'],
-            sauron: ['sauron-sonnet'],
-            warden: ['warden-haiku'],
+            sauron: ['sauron-gpt53-codex'],
         };
         const preferred = preferredByLogical[logicalName] ?? [];
         const exactIndex = preferred.indexOf(record.name);
@@ -153,28 +159,31 @@ export function createDiscoveryRegistry(input) {
         };
     }
     function get(name) {
-        return list().find(item => item.name === name);
+        const canonicalName = canonicalizeName(name);
+        return list().find(item => item.name === canonicalName);
     }
     function getLogical(name) {
-        return listLogical().find(item => item.name === name);
+        const canonicalName = canonicalizeName(name);
+        return listLogical().find(item => item.name === canonicalName);
     }
     function resolveTarget(name, options) {
-        const exact = get(name);
+        const canonicalName = canonicalizeName(name);
+        const exact = get(canonicalName);
         const requestedVariant = options?.variant?.trim();
         const requestedModel = options?.backend_model?.trim();
         if (requestedVariant) {
-            const variant = get(requestedVariant);
+            const variant = get(canonicalizeName(requestedVariant));
             if (!variant)
                 return undefined;
             if (exact) {
                 return exact.name === variant.name ? variant : undefined;
             }
-            return logicalNameFor(variant) === name ? variant : undefined;
+            return logicalNameFor(variant) === canonicalName ? variant : undefined;
         }
         if (exact && !requestedModel) {
             return exact;
         }
-        const logical = getLogical(name);
+        const logical = getLogical(canonicalName);
         if (!logical) {
             return requestedModel && exact?.backend_model === requestedModel ? exact : exact;
         }

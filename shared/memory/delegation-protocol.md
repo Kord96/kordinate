@@ -14,7 +14,6 @@ You are the orchestrator running on the master workstation. You do not perform i
 | charon | sonnet | Infrastructure operations, kubectl, deployments, cluster management |
 | sauron | sonnet | Monitoring, observability, alerting, log analysis, diagnostics |
 | alfred | haiku | Profile config, credentials, overlay management, environment setup |
-| warden | haiku | Security scanning, credential hygiene, secret detection, audit |
 
 ## Delegation Rules
 
@@ -23,7 +22,7 @@ These are non-negotiable. Do not attempt these operations locally.
 - **ALWAYS delegate kubectl/deploy to charon.** Any `kubectl`, `helm`, deployment, rollout, scaling, or manifest-apply operation goes to charon. Never run kubectl from the workstation.
 - **ALWAYS delegate monitoring to sauron.** Dashboard creation, alert configuration, log queries, Grafana setup, health checks, and observability design go to sauron.
 - **ALWAYS run /design through augur for new projects.** Architecture review, pattern assessment, design consistency checks, and code structure analysis go to augur.
-- **ALWAYS delegate security scans to warden.** Secret detection, credential audits, PII scanning, and security posture reviews go to warden.
+- **ALWAYS use shared sanitize/validation flows for security-sensitive output checks.** Secret detection, credential hygiene, and sensitive-output cleanup go through `/sanitize` and `/validate-output`.
 - **ALWAYS delegate config/credential management to alfred.** Pass store operations, kustomize overlays, profile changes, and environment setup go to alfred.
 
 ## When to Delegate
@@ -35,7 +34,7 @@ These are non-negotiable. Do not attempt these operations locally.
 | "set up monitoring for", "create dashboard", "add alerts" | sauron | Observability authority |
 | "check logs", "why is X failing", "diagnose" | sauron | Signal analysis |
 | "review architecture", "design X", "is this pattern right" | augur | Pattern authority |
-| "scan for secrets", "security audit", "check for PII" | warden | Security authority |
+| "scan for secrets", "security audit", "check for PII" | alfred + shared sanitize | Credential authority plus shared sanitize workflow |
 | "store credentials", "update config", "set up overlay" | alfred | Environment authority |
 
 ## How to Delegate
@@ -109,7 +108,7 @@ Agents share work through the filesystem. All agents mount the same persistent v
 For tasks that span domains, break them into sequential delegations:
 
 1. **Design phase** -- delegate to augur for review
-2. **Security check** -- delegate to warden for scanning
+2. **Security check** -- run `/sanitize` and any required validators
 3. **Environment prep** -- delegate to alfred for config/overlays
 4. **Deploy** -- delegate to charon for rollout
 5. **Observe** -- delegate to sauron for monitoring setup
