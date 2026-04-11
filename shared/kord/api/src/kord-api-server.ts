@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { request as httpsRequest } from 'node:https'
 import { createServer } from 'node:http'
-import { Kafka } from 'kafkajs'
+import { Kafka, Partitioners } from 'kafkajs'
 import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-registry.js'
 import { log } from './log.js'
 import type { AgentMessage, RequestMessage, ResponseMessage } from './types.js'
@@ -33,7 +33,7 @@ const kafka = new Kafka({
   clientId: 'kord-api',
   brokers: kafkaBrokers,
 })
-const producer = kafka.producer()
+const producer = kafka.producer({ createPartitioner: Partitioners.LegacyPartitioner })
 const consumer = kafka.consumer({ groupId: 'kord-api' })
 const pending = new Map<string, {
   agent: string
