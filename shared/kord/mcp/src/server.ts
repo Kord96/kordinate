@@ -163,7 +163,7 @@ server.registerTool(
   'get_e2e_logs',
   {
     title: 'Get E2E Logs',
-    description: 'Fetch recent end-to-end request logs for an agent through kord, optionally filtered to one request.',
+    description: 'Fetch recent end-to-end request logs for an agent through kord, optionally filtered to one request and optionally including the seeded bundles.',
     inputSchema: {
       agent: z.string().min(1),
       variant: z.string().optional(),
@@ -172,9 +172,10 @@ server.registerTool(
       correlation_id: z.string().optional(),
       since_seconds: z.number().int().positive().optional().default(900),
       tail_lines: z.number().int().positive().optional().default(200),
+      include_bundles: z.boolean().optional().default(false),
     },
   },
-  async ({ agent, variant, backend_model, request_id, correlation_id, since_seconds = 900, tail_lines = 200 }) => {
+  async ({ agent, variant, backend_model, request_id, correlation_id, since_seconds = 900, tail_lines = 200, include_bundles = false }) => {
     try {
       const payload = await getJson(withQuery('/logs/e2e', {
         agent,
@@ -184,6 +185,7 @@ server.registerTool(
         correlation_id,
         since_seconds: String(since_seconds),
         tail_lines: String(tail_lines),
+        include_bundles,
       }))
       return textResult(payload)
     } catch (error) {

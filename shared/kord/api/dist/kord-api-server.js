@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { request as httpsRequest } from 'node:https';
 import { createServer } from 'node:http';
 import { Kafka } from 'kafkajs';
@@ -17,6 +18,7 @@ const kubernetesPort = Number.parseInt(process.env.KUBERNETES_SERVICE_PORT_HTTPS
 const kubernetesNamespacePath = process.env.KUBERNETES_NAMESPACE_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/namespace';
 const kubernetesTokenPath = process.env.KUBERNETES_TOKEN_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/token';
 const kubernetesCaPath = process.env.KUBERNETES_CA_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
+const agentSpecPath = process.env.AGENT_SPEC_PATH ?? '/app/agents/charon/skills/platform/agent-spec.yaml';
 const allowedApiKeys = new Set([
     ...(process.env.KORD_API_KEYS ?? '').split(','),
     process.env.KORD_API_KEY ?? '',
@@ -181,6 +183,119 @@ function filterLogLines(text, filters) {
     const lines = text.split('\n');
     return lines.filter(line => filters.some(filter => filter && line.includes(filter))).join('\n');
 }
+let parsedAgentBundlesPromise;
+async function parseAgentBundleSelections() {
+    parsedAgentBundlesPromise ??= readFile(agentSpecPath, 'utf8').then(text => {
+        const selections = new Map();
+        const lines = text.split('\n');
+        let currentName;
+        let currentFlavor;
+        let memoryBundle;
+        let skillBundle;
+        let runtimeBundle;
+        let inCreation = false;
+        function commitCurrent() {
+            if (!currentName || !currentFlavor)
+                return;
+            selections.set(currentName, {
+                flavor: currentFlavor,
+                memory_bundle: memoryBundle,
+                skill_bundle: skillBundle,
+                runtime_bundle: runtimeBundle,
+            });
+        }
+        for (const line of lines) {
+            const nameMatch = line.match(/^  - name:\s+(.+)\s*$/);
+            if (nameMatch) {
+                commitCurrent();
+                currentName = nameMatch[1].trim();
+                currentFlavor = undefined;
+                memoryBundle = undefined;
+                skillBundle = undefined;
+                runtimeBundle = undefined;
+                inCreation = false;
+                continue;
+            }
+            if (!currentName)
+                continue;
+            const flavorMatch = line.match(/^    flavor:\s+(.+)\s*$/);
+            if (flavorMatch) {
+                currentFlavor = flavorMatch[1].trim();
+                continue;
+            }
+            if (/^    creation:\s*$/.test(line)) {
+                inCreation = true;
+                continue;
+            }
+            if (/^    [a-z]/.test(line) && !/^    creation:\s*$/.test(line)) {
+                inCreation = false;
+            }
+            if (!inCreation)
+                continue;
+            const memoryMatch = line.match(/^      memory_bundle:\s+(.+)\s*$/);
+            if (memoryMatch) {
+                memoryBundle = memoryMatch[1].trim();
+                continue;
+            }
+            const skillMatch = line.match(/^      skill_bundle:\s+(.+)\s*$/);
+            if (skillMatch) {
+                skillBundle = skillMatch[1].trim();
+                continue;
+            }
+            const runtimeMatch = line.match(/^      runtime_bundle:\s+(.+)\s*$/);
+            if (runtimeMatch) {
+                runtimeBundle = runtimeMatch[1].trim();
+            }
+        }
+        commitCurrent();
+        return selections;
+    });
+    return parsedAgentBundlesPromise;
+}
+async function readBundleFile(baseDir, category, bundleName) {
+    if (!bundleName) {
+        return { name: null, path: null, content: null };
+    }
+    const candidates = category === 'runtime'
+        ? ['md', 'json']
+        : ['md'];
+    for (const ext of candidates) {
+        const relativePath = join('agents', baseDir, 'bundles', category, `${bundleName}.${ext}`);
+        try {
+            const content = await readFile(join('/app', relativePath), 'utf8');
+            return {
+                name: bundleName,
+                path: `/app/${relativePath}`,
+                content,
+            };
+        }
+        catch {
+            continue;
+        }
+    }
+    return {
+        name: bundleName,
+        path: null,
+        content: null,
+    };
+}
+async function getAgentBundles(agentName) {
+    const selections = await parseAgentBundleSelections();
+    const selection = selections.get(agentName);
+    if (!selection)
+        return null;
+    const [memory, skill, runtime] = await Promise.all([
+        readBundleFile(selection.flavor, 'memory', selection.memory_bundle),
+        readBundleFile(selection.flavor, 'skill', selection.skill_bundle),
+        readBundleFile(selection.flavor, 'runtime', selection.runtime_bundle),
+    ]);
+    return {
+        flavor: selection.flavor,
+        memory_bundle: memory,
+        skill_bundle: skill,
+        runtime_bundle: runtime,
+    };
+}
 async function getE2eLogs(name, options) {
     const record = registry.resolveTarget(name, {
         variant: options.variant,
@@ -210,6 +325,7 @@ async function getE2eLogs(name, options) {
             requestRecord = record;
         }
     }
+    const bundles = options.include_bundles ? await getAgentBundles(record.name) : undefined;
     return {
         requested_agent: name,
         requested_variant: options.variant ?? null,
@@ -227,6 +343,7 @@ async function getE2eLogs(name, options) {
             pod: agentLogs.pod,
             logs: filterLogLines(String(agentLogs.logs ?? ''), filters),
         },
+        ...(options.include_bundles ? { bundles: bundles ?? null } : {}),
     };
 }
 function isPromptBody(value) {
@@ -410,6 +527,7 @@ const server = createServer(async (req, res) => {
                 correlation_id: url.searchParams.get('correlation_id') ?? undefined,
                 tail_lines: coercePositiveInt(url.searchParams.get('tail_lines'), 200),
                 since_seconds: coercePositiveInt(url.searchParams.get('since_seconds'), 900),
+                include_bundles: url.searchParams.get('include_bundles') === '1',
             });
             json(res, 200, payload);
             return;
