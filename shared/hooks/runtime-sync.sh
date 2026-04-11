@@ -64,10 +64,10 @@ for skill_dir in "$KORD_PKG"/shared/skills/*/; do
 done
 
 # --- Sync kord MCP server → workstation runtime ---
-if [ -f "$KORD_PKG/shared/kord-mcp/dist/server.js" ]; then
-  mkdir -p "$RUNTIME_ROOT/shared/kord-mcp/dist" "$RUNTIME_ROOT/shared/kord-mcp/bin"
-  cp "$KORD_PKG/shared/kord-mcp/dist/server.js" "$RUNTIME_ROOT/shared/kord-mcp/dist/server.js" 2>/dev/null
-  cp "$KORD_PKG/shared/kord-mcp/bin/kord-mcp" "$RUNTIME_ROOT/shared/kord-mcp/bin/kord-mcp" 2>/dev/null
+if [ -f "$KORD_PKG/shared/kord/mcp/dist/server.js" ]; then
+  mkdir -p "$RUNTIME_ROOT/shared/kord/mcp/dist" "$RUNTIME_ROOT/shared/kord/mcp/bin"
+  cp "$KORD_PKG/shared/kord/mcp/dist/server.js" "$RUNTIME_ROOT/shared/kord/mcp/dist/server.js" 2>/dev/null
+  cp "$KORD_PKG/shared/kord/mcp/bin/kord-mcp" "$RUNTIME_ROOT/shared/kord/mcp/bin/kord-mcp" 2>/dev/null
 fi
 
 

@@ -28,7 +28,7 @@ RUN cd /app/shared/klaude-daemon \
   && npm ci \
   && npm run build \
   && npm install -g . \
-  && cd /app/shared/kord-api \
+  && cd /app/shared/kord/api \
   && npm ci \
   && npm run build \
   && npm install -g . @anthropic-ai/claude-code @gitlawb/openclaude
