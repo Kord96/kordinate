@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { spawn, spawnSync } from 'node:child_process'
+import { createWriteStream } from 'node:fs'
 import path from 'node:path'
 import { mkdir, readFile } from 'node:fs/promises'
 import Anthropic from '@anthropic-ai/sdk'
@@ -11,6 +12,32 @@ import type { ProviderSessionAdapter, ReflectionPayload, RuntimeRequest, Runtime
 
 const OPENCLAUDE_NPM_PACKAGE = process.env.OPENCLAUDE_NPM_PACKAGE ?? '@gitlawb/openclaude'
 const OPENCLAUDE_BIN = process.env.OPENCLAUDE_BIN ?? 'openclaude'
+
+type OpenClaudeContentBlock = {
+  type?: string
+  name?: string
+  text?: string
+  input?: Record<string, unknown> | string
+}
+
+type OpenClaudeStructuredMessage = {
+  type?: string
+  subtype?: string
+  result?: string
+  message?: {
+    content?: OpenClaudeContentBlock[]
+  }
+  tool_name?: string
+  tool_use_id?: string
+  elapsed_time_seconds?: number
+}
+
+type OpenClaudeStructuredParseState = {
+  buffer: string
+  resultText: string
+  rawLines: string[]
+  writeLine: (line: string) => void
+}
 
 function parseReflectionPayload(text: string): ReflectionPayload | undefined {
   try {
@@ -92,6 +119,8 @@ export function formatProviderError(error: unknown): string[] {
     stdout?: string
     debugLogPath?: string
     debugLogTail?: string
+    structuredLogPath?: string
+    structuredLogTail?: string
     code?: string | number
     exitCode?: number
     signal?: string
@@ -102,6 +131,8 @@ export function formatProviderError(error: unknown): string[] {
   appendDiagnosticPart(parts, 'stdout', maybeWithProps.stdout)
   appendDiagnosticPart(parts, 'debug_log_path', maybeWithProps.debugLogPath)
   appendDiagnosticPart(parts, 'debug_log_tail', maybeWithProps.debugLogTail)
+  appendDiagnosticPart(parts, 'structured_log_path', maybeWithProps.structuredLogPath)
+  appendDiagnosticPart(parts, 'structured_log_tail', maybeWithProps.structuredLogTail)
 
   if (typeof maybeWithProps.code === 'string' || typeof maybeWithProps.code === 'number') {
     pushUnique(`code: ${String(maybeWithProps.code)}`)
@@ -138,6 +169,106 @@ function successResult(output: string): RuntimeResult {
     status: 'success',
     output,
   }
+}
+
+function summarizeText(text: string, maxLength = 400): string {
+  const normalized = text.replace(/\s+/g, ' ').trim()
+  if (normalized.length <= maxLength) return normalized
+  return `${normalized.slice(0, maxLength - 3)}...`
+}
+
+function summarizeUnknown(value: unknown, maxLength = 1200): string | undefined {
+  if (typeof value === 'string') return summarizeText(value, maxLength)
+  if (value === null || value === undefined) return undefined
+  try {
+    return summarizeText(JSON.stringify(value), maxLength)
+  } catch {
+    return summarizeText(String(value), maxLength)
+  }
+}
+
+function extractBashCommand(input: unknown): string | undefined {
+  if (!input || typeof input !== 'object') return undefined
+  const candidate = input as Record<string, unknown>
+  for (const key of ['command', 'cmd', 'script']) {
+    if (typeof candidate[key] === 'string' && candidate[key].trim()) {
+      return candidate[key].trim()
+    }
+  }
+  return undefined
+}
+
+function processOpenClaudeStructuredMessage(
+  message: OpenClaudeStructuredMessage,
+  options: { model: string; sessionId: string }
+): void {
+  if (message.type === 'assistant' && Array.isArray(message.message?.content)) {
+    for (const block of message.message.content) {
+      if (block.type === 'tool_use') {
+        const toolInputSummary = summarizeUnknown(block.input)
+        const bashCommand = extractBashCommand(block.input)
+        log('harness_tool_use', {
+          runtime: 'openclaude-harness',
+          model: options.model,
+          session_id: options.sessionId,
+          tool_name: block.name ?? 'unknown',
+          tool_input: toolInputSummary ?? null,
+          bash_command: bashCommand ?? null,
+        })
+      }
+    }
+    return
+  }
+
+  if (message.type === 'tool_progress') {
+    log('harness_tool_progress', {
+      runtime: 'openclaude-harness',
+      model: options.model,
+      session_id: options.sessionId,
+      tool_name: message.tool_name ?? 'unknown',
+      tool_use_id: message.tool_use_id ?? null,
+      elapsed_time_seconds: message.elapsed_time_seconds ?? null,
+    })
+  }
+}
+
+function consumeOpenClaudeStructuredChunk(
+  state: OpenClaudeStructuredParseState,
+  chunkText: string,
+  options: { model: string; sessionId: string }
+): void {
+  state.buffer += chunkText
+  while (true) {
+    const newlineIndex = state.buffer.indexOf('\n')
+    if (newlineIndex === -1) break
+    const line = state.buffer.slice(0, newlineIndex).trim()
+    state.buffer = state.buffer.slice(newlineIndex + 1)
+    if (!line) continue
+
+    state.rawLines.push(line)
+    if (state.rawLines.length > 200) state.rawLines.shift()
+    state.writeLine(line)
+
+    let parsed: OpenClaudeStructuredMessage | undefined
+    try {
+      parsed = JSON.parse(line) as OpenClaudeStructuredMessage
+    } catch {
+      continue
+    }
+
+    processOpenClaudeStructuredMessage(parsed, options)
+    if (parsed.type === 'result' && typeof parsed.result === 'string') {
+      state.resultText = parsed.result
+    }
+  }
+}
+
+function finalizeOpenClaudeStructuredStream(
+  state: OpenClaudeStructuredParseState,
+  options: { model: string; sessionId: string }
+): void {
+  if (!state.buffer.trim()) return
+  consumeOpenClaudeStructuredChunk(state, '\n', options)
 }
 
 function shouldReflect(request: RuntimeRequest): boolean {
@@ -264,13 +395,22 @@ async function runOpenClaudePrint(prompt: string, options: {
   const debugDir = path.join(runtimeHome, '.daemon-logs')
   await mkdir(debugDir, { recursive: true })
   const debugLogPath = path.join(debugDir, `openclaude-${options.sessionId}-${Date.now()}.log`)
+  const structuredLogPath = path.join(debugDir, `openclaude-${options.sessionId}-${Date.now()}-stream.jsonl`)
   if (options.baseUrl) env.OPENAI_BASE_URL = options.baseUrl
   if (options.apiKey) env.OPENAI_API_KEY = options.apiKey
   env.OPENAI_MODEL = options.model
   env.CLAUDE_CODE_USE_OPENAI = '1'
   env.HOME = runtimeHome
 
-  const args = ['--print', '--bare', '--debug', '--debug-file', debugLogPath, '--dangerously-skip-permissions']
+  const args = [
+    '--print',
+    '--bare',
+    '--verbose',
+    '--output-format', 'stream-json',
+    '--debug',
+    '--debug-file', debugLogPath,
+    '--dangerously-skip-permissions',
+  ]
   args.push(
     '--no-session-persistence',
     '--session-id', options.sessionId,
@@ -288,6 +428,13 @@ async function runOpenClaudePrint(prompt: string, options: {
 
     let stdout = ''
     let stderr = ''
+    const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' })
+    const structuredState: OpenClaudeStructuredParseState = {
+      buffer: '',
+      resultText: '',
+      rawLines: [],
+      writeLine: line => { structuredLogStream.write(`${line}\n`) },
+    }
     let settled = false
     let timedOut = false
     const timeoutHandle = timeoutMs
@@ -300,6 +447,7 @@ async function runOpenClaudePrint(prompt: string, options: {
             pid: child.pid ?? null,
             timeout_ms: timeoutMs,
             debug_log_path: debugLogPath,
+            structured_log_path: structuredLogPath,
           })
           child.kill('SIGKILL')
         }, timeoutMs)
@@ -312,18 +460,31 @@ async function runOpenClaudePrint(prompt: string, options: {
       pid: child.pid ?? null,
       cwd: runtimeHome,
       debug_log_path: debugLogPath,
+      structured_log_path: structuredLogPath,
       timeout_ms: timeoutMs ?? null,
     })
 
-    child.stdout.on('data', chunk => { stdout += chunk.toString() })
+    child.stdout.on('data', chunk => {
+      const chunkText = chunk.toString()
+      stdout += chunkText
+      consumeOpenClaudeStructuredChunk(structuredState, chunkText, options)
+    })
     child.stderr.on('data', chunk => { stderr += chunk.toString() })
     child.on('error', async error => {
       if (settled) return
       settled = true
       if (timeoutHandle) clearTimeout(timeoutHandle)
+      finalizeOpenClaudeStructuredStream(structuredState, options)
+      await new Promise<void>(resolve => structuredLogStream.end(resolve))
       let debugLogTail = ''
+      let structuredLogTail = ''
       try {
         debugLogTail = (await readFile(debugLogPath, 'utf8')).slice(-4000)
+      } catch {
+        // ignore
+      }
+      try {
+        structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000)
       } catch {
         // ignore
       }
@@ -335,22 +496,33 @@ async function runOpenClaudePrint(prompt: string, options: {
         exit_code: null,
         timed_out: timedOut,
         debug_log_path: debugLogPath,
+        structured_log_path: structuredLogPath,
         error: error.message,
       })
       reject(Object.assign(error, {
         stderr,
-        stdout,
+        stdout: structuredState.resultText || stdout,
         debugLogPath,
         debugLogTail,
+        structuredLogPath,
+        structuredLogTail,
       }))
     })
     child.on('close', async (code, signal) => {
       if (settled) return
       settled = true
       if (timeoutHandle) clearTimeout(timeoutHandle)
+      finalizeOpenClaudeStructuredStream(structuredState, options)
+      await new Promise<void>(resolve => structuredLogStream.end(resolve))
       let debugLogTail = ''
+      let structuredLogTail = ''
       try {
         debugLogTail = (await readFile(debugLogPath, 'utf8')).slice(-4000)
+      } catch {
+        // ignore
+      }
+      try {
+        structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000)
       } catch {
         // ignore
       }
@@ -363,6 +535,7 @@ async function runOpenClaudePrint(prompt: string, options: {
         signal: signal ?? null,
         timed_out: timedOut,
         debug_log_path: debugLogPath,
+        structured_log_path: structuredLogPath,
       })
       if (code !== 0) {
         const error = Object.assign(new Error(
@@ -371,16 +544,19 @@ async function runOpenClaudePrint(prompt: string, options: {
             : (stderr.trim() || `openclaude exited with code ${code}`)
         ), {
           stderr,
-          stdout,
+          stdout: structuredState.resultText || stdout,
           exitCode: code ?? undefined,
           signal: signal ?? undefined,
           debugLogPath,
           debugLogTail,
+          structuredLogPath,
+          structuredLogTail,
         })
         reject(error)
         return
       }
-      resolve(stdout.trim())
+      const resultText = structuredState.resultText || stdout.trim()
+      resolve(resultText)
     })
   })
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
+import { createWriteStream } from 'node:fs';
 import path from 'node:path';
 import { mkdir, readFile } from 'node:fs/promises';
 import { query } from '@anthropic-ai/claude-agent-sdk';
@@ -84,6 +85,8 @@ export function formatProviderError(error) {
     appendDiagnosticPart(parts, 'stdout', maybeWithProps.stdout);
     appendDiagnosticPart(parts, 'debug_log_path', maybeWithProps.debugLogPath);
     appendDiagnosticPart(parts, 'debug_log_tail', maybeWithProps.debugLogTail);
+    appendDiagnosticPart(parts, 'structured_log_path', maybeWithProps.structuredLogPath);
+    appendDiagnosticPart(parts, 'structured_log_tail', maybeWithProps.structuredLogTail);
     if (typeof maybeWithProps.code === 'string' || typeof maybeWithProps.code === 'number') {
         pushUnique(`code: ${String(maybeWithProps.code)}`);
     }
@@ -117,6 +120,96 @@ function successResult(output) {
         status: 'success',
         output,
     };
+}
+function summarizeText(text, maxLength = 400) {
+    const normalized = text.replace(/\s+/g, ' ').trim();
+    if (normalized.length <= maxLength)
+        return normalized;
+    return `${normalized.slice(0, maxLength - 3)}...`;
+}
+function summarizeUnknown(value, maxLength = 1200) {
+    if (typeof value === 'string')
+        return summarizeText(value, maxLength);
+    if (value === null || value === undefined)
+        return undefined;
+    try {
+        return summarizeText(JSON.stringify(value), maxLength);
+    }
+    catch {
+        return summarizeText(String(value), maxLength);
+    }
+}
+function extractBashCommand(input) {
+    if (!input || typeof input !== 'object')
+        return undefined;
+    const candidate = input;
+    for (const key of ['command', 'cmd', 'script']) {
+        if (typeof candidate[key] === 'string' && candidate[key].trim()) {
+            return candidate[key].trim();
+        }
+    }
+    return undefined;
+}
+function processOpenClaudeStructuredMessage(message, options) {
+    if (message.type === 'assistant' && Array.isArray(message.message?.content)) {
+        for (const block of message.message.content) {
+            if (block.type === 'tool_use') {
+                const toolInputSummary = summarizeUnknown(block.input);
+                const bashCommand = extractBashCommand(block.input);
+                log('harness_tool_use', {
+                    runtime: 'openclaude-harness',
+                    model: options.model,
+                    session_id: options.sessionId,
+                    tool_name: block.name ?? 'unknown',
+                    tool_input: toolInputSummary ?? null,
+                    bash_command: bashCommand ?? null,
+                });
+            }
+        }
+        return;
+    }
+    if (message.type === 'tool_progress') {
+        log('harness_tool_progress', {
+            runtime: 'openclaude-harness',
+            model: options.model,
+            session_id: options.sessionId,
+            tool_name: message.tool_name ?? 'unknown',
+            tool_use_id: message.tool_use_id ?? null,
+            elapsed_time_seconds: message.elapsed_time_seconds ?? null,
+        });
+    }
+}
+function consumeOpenClaudeStructuredChunk(state, chunkText, options) {
+    state.buffer += chunkText;
+    while (true) {
+        const newlineIndex = state.buffer.indexOf('\n');
+        if (newlineIndex === -1)
+            break;
+        const line = state.buffer.slice(0, newlineIndex).trim();
+        state.buffer = state.buffer.slice(newlineIndex + 1);
+        if (!line)
+            continue;
+        state.rawLines.push(line);
+        if (state.rawLines.length > 200)
+            state.rawLines.shift();
+        state.writeLine(line);
+        let parsed;
+        try {
+            parsed = JSON.parse(line);
+        }
+        catch {
+            continue;
+        }
+        processOpenClaudeStructuredMessage(parsed, options);
+        if (parsed.type === 'result' && typeof parsed.result === 'string') {
+            state.resultText = parsed.result;
+        }
+    }
+}
+function finalizeOpenClaudeStructuredStream(state, options) {
+    if (!state.buffer.trim())
+        return;
+    consumeOpenClaudeStructuredChunk(state, '\n', options);
 }
 function shouldReflect(request) {
     return request.reflect === true;
@@ -231,6 +324,7 @@ async function runOpenClaudePrint(prompt, options) {
     const debugDir = path.join(runtimeHome, '.daemon-logs');
     await mkdir(debugDir, { recursive: true });
     const debugLogPath = path.join(debugDir, `openclaude-${options.sessionId}-${Date.now()}.log`);
+    const structuredLogPath = path.join(debugDir, `openclaude-${options.sessionId}-${Date.now()}-stream.jsonl`);
     if (options.baseUrl)
         env.OPENAI_BASE_URL = options.baseUrl;
     if (options.apiKey)
@@ -238,7 +332,15 @@ async function runOpenClaudePrint(prompt, options) {
     env.OPENAI_MODEL = options.model;
     env.CLAUDE_CODE_USE_OPENAI = '1';
     env.HOME = runtimeHome;
-    const args = ['--print', '--bare', '--debug', '--debug-file', debugLogPath, '--dangerously-skip-permissions'];
+    const args = [
+        '--print',
+        '--bare',
+        '--verbose',
+        '--output-format', 'stream-json',
+        '--debug',
+        '--debug-file', debugLogPath,
+        '--dangerously-skip-permissions',
+    ];
     args.push('--no-session-persistence', '--session-id', options.sessionId, '--model', options.model, prompt);
     const command = ensureOpenClaudeCommand();
     return await new Promise((resolve, reject) => {
@@ -249,6 +351,13 @@ async function runOpenClaudePrint(prompt, options) {
         });
         let stdout = '';
         let stderr = '';
+        const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' });
+        const structuredState = {
+            buffer: '',
+            resultText: '',
+            rawLines: [],
+            writeLine: line => { structuredLogStream.write(`${line}\n`); },
+        };
         let settled = false;
         let timedOut = false;
         const timeoutHandle = timeoutMs
@@ -261,6 +370,7 @@ async function runOpenClaudePrint(prompt, options) {
                     pid: child.pid ?? null,
                     timeout_ms: timeoutMs,
                     debug_log_path: debugLogPath,
+                    structured_log_path: structuredLogPath,
                 });
                 child.kill('SIGKILL');
             }, timeoutMs)
@@ -272,9 +382,14 @@ async function runOpenClaudePrint(prompt, options) {
             pid: child.pid ?? null,
             cwd: runtimeHome,
             debug_log_path: debugLogPath,
+            structured_log_path: structuredLogPath,
             timeout_ms: timeoutMs ?? null,
         });
-        child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+        child.stdout.on('data', chunk => {
+            const chunkText = chunk.toString();
+            stdout += chunkText;
+            consumeOpenClaudeStructuredChunk(structuredState, chunkText, options);
+        });
         child.stderr.on('data', chunk => { stderr += chunk.toString(); });
         child.on('error', async (error) => {
             if (settled)
@@ -282,9 +397,18 @@ async function runOpenClaudePrint(prompt, options) {
             settled = true;
             if (timeoutHandle)
                 clearTimeout(timeoutHandle);
+            finalizeOpenClaudeStructuredStream(structuredState, options);
+            await new Promise(resolve => structuredLogStream.end(resolve));
             let debugLogTail = '';
+            let structuredLogTail = '';
             try {
                 debugLogTail = (await readFile(debugLogPath, 'utf8')).slice(-4000);
+            }
+            catch {
+                // ignore
+            }
+            try {
+                structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000);
             }
             catch {
                 // ignore
@@ -297,13 +421,16 @@ async function runOpenClaudePrint(prompt, options) {
                 exit_code: null,
                 timed_out: timedOut,
                 debug_log_path: debugLogPath,
+                structured_log_path: structuredLogPath,
                 error: error.message,
             });
             reject(Object.assign(error, {
                 stderr,
-                stdout,
+                stdout: structuredState.resultText || stdout,
                 debugLogPath,
                 debugLogTail,
+                structuredLogPath,
+                structuredLogTail,
             }));
         });
         child.on('close', async (code, signal) => {
@@ -312,9 +439,18 @@ async function runOpenClaudePrint(prompt, options) {
             settled = true;
             if (timeoutHandle)
                 clearTimeout(timeoutHandle);
+            finalizeOpenClaudeStructuredStream(structuredState, options);
+            await new Promise(resolve => structuredLogStream.end(resolve));
             let debugLogTail = '';
+            let structuredLogTail = '';
             try {
                 debugLogTail = (await readFile(debugLogPath, 'utf8')).slice(-4000);
+            }
+            catch {
+                // ignore
+            }
+            try {
+                structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000);
             }
             catch {
                 // ignore
@@ -328,22 +464,26 @@ async function runOpenClaudePrint(prompt, options) {
                 signal: signal ?? null,
                 timed_out: timedOut,
                 debug_log_path: debugLogPath,
+                structured_log_path: structuredLogPath,
             });
             if (code !== 0) {
                 const error = Object.assign(new Error(timedOut
                     ? `openclaude timed out after ${timeoutMs}ms`
                     : (stderr.trim() || `openclaude exited with code ${code}`)), {
                     stderr,
-                    stdout,
+                    stdout: structuredState.resultText || stdout,
                     exitCode: code ?? undefined,
                     signal: signal ?? undefined,
                     debugLogPath,
                     debugLogTail,
+                    structuredLogPath,
+                    structuredLogTail,
                 });
                 reject(error);
                 return;
             }
-            resolve(stdout.trim());
+            const resultText = structuredState.resultText || stdout.trim();
+            resolve(resultText);
         });
     });
 }

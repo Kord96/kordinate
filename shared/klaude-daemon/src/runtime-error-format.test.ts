@@ -31,3 +31,16 @@ test('formatProviderError includes nested cause details', () => {
     'cause: stderr: invalid api key',
   ])
 })
+
+test('formatProviderError includes structured log diagnostics', () => {
+  const error = Object.assign(new Error('openclaude timed out after 20000ms'), {
+    structuredLogPath: '/tmp/openclaude-stream.jsonl',
+    structuredLogTail: '{"type":"assistant"}',
+  })
+
+  assert.deepEqual(formatProviderError(error), [
+    'openclaude timed out after 20000ms',
+    'structured_log_path: /tmp/openclaude-stream.jsonl',
+    'structured_log_tail: {"type":"assistant"}',
+  ])
+})
