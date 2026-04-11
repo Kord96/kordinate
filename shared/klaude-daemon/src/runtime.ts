@@ -39,6 +39,32 @@ type OpenClaudeStructuredParseState = {
   writeLine: (line: string) => void
 }
 
+type CodexThreadEvent = {
+  type?: string
+  item?: {
+    type?: string
+    id?: string
+    text?: string
+    command?: string
+    aggregated_output?: string
+    server?: string
+    tool?: string
+    arguments?: unknown
+    status?: string
+    changes?: Array<{ path?: string; kind?: string }>
+    error?: { message?: string }
+  }
+  usage?: {
+    input_tokens?: number
+    cached_input_tokens?: number
+    output_tokens?: number
+  }
+  error?: {
+    message?: string
+  }
+  message?: string
+}
+
 function parseReflectionPayload(text: string): ReflectionPayload | undefined {
   try {
     const parsed = JSON.parse(text) as { project?: unknown; general?: unknown }
@@ -269,6 +295,214 @@ function finalizeOpenClaudeStructuredStream(
 ): void {
   if (!state.buffer.trim()) return
   consumeOpenClaudeStructuredChunk(state, '\n', options)
+}
+
+function processCodexStructuredEvent(
+  event: CodexThreadEvent,
+  options: { model: string; sessionId: string }
+): void {
+  const base = {
+    runtime: 'codex-sdk',
+    model: options.model,
+    session_id: options.sessionId,
+  } as const
+
+  if ((event.type === 'item.started' || event.type === 'item.updated' || event.type === 'item.completed') && event.item) {
+    const item = event.item
+    log('codex_item_event', {
+      ...base,
+      event_type: event.type,
+      item_type: item.type ?? 'unknown',
+      item_id: item.id ?? null,
+      status: item.status ?? null,
+      command: typeof item.command === 'string' ? item.command : null,
+      text: typeof item.text === 'string' ? summarizeText(item.text, 400) : null,
+      tool_server: typeof item.server === 'string' ? item.server : null,
+      tool_name: typeof item.tool === 'string' ? item.tool : null,
+      tool_arguments: summarizeUnknown(item.arguments) ?? null,
+      aggregated_output: typeof item.aggregated_output === 'string' ? summarizeText(item.aggregated_output, 1200) : null,
+      error_message: typeof item.error?.message === 'string' ? item.error.message : null,
+      file_changes: Array.isArray(item.changes) ? summarizeUnknown(item.changes, 1200) ?? null : null,
+    })
+    return
+  }
+
+  if (event.type === 'turn.completed') {
+    log('codex_turn_completed', {
+      ...base,
+      usage: summarizeUnknown(event.usage) ?? null,
+    })
+    return
+  }
+
+  if (event.type === 'turn.failed' || event.type === 'error') {
+    log('codex_turn_error', {
+      ...base,
+      error: summarizeUnknown(event.error ?? event.message) ?? null,
+    })
+  }
+}
+
+async function runCodexStructuredTurn(
+  threadFactory: () => { id: string | null; runStreamed(input: string): Promise<{ events: AsyncGenerator<CodexThreadEvent> }> },
+  prompt: string,
+  options: { model: string; sessionId: string; workingDirectory?: string }
+): Promise<{ output: string; providerSessionId?: string; structuredLogPath: string; structuredLogTail: string }> {
+  const runtimeHome = resolveOpenClaudeHome(options.workingDirectory)
+  const debugDir = path.join(runtimeHome, '.daemon-logs')
+  await mkdir(debugDir, { recursive: true })
+  const structuredLogPath = path.join(debugDir, `codex-${options.sessionId}-${Date.now()}-stream.jsonl`)
+  const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' })
+  const thread = threadFactory()
+  let finalResponse = ''
+
+  log('codex_stream_start', {
+    runtime: 'codex-sdk',
+    model: options.model,
+    session_id: options.sessionId,
+    structured_log_path: structuredLogPath,
+  })
+
+  try {
+    const { events } = await thread.runStreamed(prompt)
+    for await (const event of events) {
+      structuredLogStream.write(`${JSON.stringify(event)}\n`)
+      processCodexStructuredEvent(event, options)
+      if (
+        (event.type === 'item.completed' || event.type === 'item.updated')
+        && event.item?.type === 'agent_message'
+        && typeof event.item.text === 'string'
+      ) {
+        finalResponse = event.item.text
+      }
+    }
+  } catch (error) {
+    await new Promise<void>(resolve => structuredLogStream.end(resolve))
+    let structuredLogTail = ''
+    try {
+      structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000)
+    } catch {
+      // ignore
+    }
+    log('codex_stream_error', {
+      runtime: 'codex-sdk',
+      model: options.model,
+      session_id: options.sessionId,
+      structured_log_path: structuredLogPath,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    throw Object.assign(error instanceof Error ? error : new Error(String(error)), {
+      structuredLogPath,
+      structuredLogTail,
+    })
+  } finally {
+    if (!structuredLogStream.closed) {
+      await new Promise<void>(resolve => structuredLogStream.end(resolve))
+    }
+  }
+
+  let structuredLogTail = ''
+  try {
+    structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000)
+  } catch {
+    // ignore
+  }
+
+  log('codex_stream_complete', {
+    runtime: 'codex-sdk',
+    model: options.model,
+    session_id: options.sessionId,
+    structured_log_path: structuredLogPath,
+  })
+
+  return {
+    output: finalResponse.trim(),
+    providerSessionId: thread.id ?? undefined,
+    structuredLogPath,
+    structuredLogTail,
+  }
+}
+
+function processClaudeStructuredMessage(
+  message: Record<string, unknown>,
+  options: { model: string; sessionId: string }
+): void {
+  const type = typeof message.type === 'string' ? message.type : 'unknown'
+  log('claude_message', {
+    runtime: 'claude-agent-sdk',
+    model: options.model,
+    session_id: options.sessionId,
+    message_type: type,
+    subtype: typeof message.subtype === 'string' ? message.subtype : null,
+    parent_tool_use_id: typeof message.parent_tool_use_id === 'string' ? message.parent_tool_use_id : null,
+    content: summarizeUnknown(message, 1200) ?? null,
+  })
+}
+
+async function runClaudeStructuredQuery(
+  streamFactory: () => AsyncIterable<Record<string, unknown>>,
+  options: { model: string; sessionId: string; workingDirectory?: string }
+): Promise<{ messages: Record<string, unknown>[]; structuredLogPath: string; structuredLogTail: string }> {
+  const runtimeHome = resolveOpenClaudeHome(options.workingDirectory)
+  const debugDir = path.join(runtimeHome, '.daemon-logs')
+  await mkdir(debugDir, { recursive: true })
+  const structuredLogPath = path.join(debugDir, `claude-${options.sessionId}-${Date.now()}-stream.jsonl`)
+  const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' })
+  const messages: Record<string, unknown>[] = []
+
+  log('claude_stream_start', {
+    runtime: 'claude-agent-sdk',
+    model: options.model,
+    session_id: options.sessionId,
+    structured_log_path: structuredLogPath,
+  })
+
+  try {
+    for await (const message of streamFactory()) {
+      messages.push(message)
+      structuredLogStream.write(`${JSON.stringify(message)}\n`)
+      processClaudeStructuredMessage(message, options)
+    }
+  } catch (error) {
+    await new Promise<void>(resolve => structuredLogStream.end(resolve))
+    let structuredLogTail = ''
+    try {
+      structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000)
+    } catch {
+      // ignore
+    }
+    log('claude_stream_error', {
+      runtime: 'claude-agent-sdk',
+      model: options.model,
+      session_id: options.sessionId,
+      structured_log_path: structuredLogPath,
+      error: error instanceof Error ? error.message : String(error),
+    })
+    throw Object.assign(error instanceof Error ? error : new Error(String(error)), {
+      structuredLogPath,
+      structuredLogTail,
+    })
+  } finally {
+    if (!structuredLogStream.closed) {
+      await new Promise<void>(resolve => structuredLogStream.end(resolve))
+    }
+  }
+
+  let structuredLogTail = ''
+  try {
+    structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000)
+  } catch {
+    // ignore
+  }
+
+  log('claude_stream_complete', {
+    runtime: 'claude-agent-sdk',
+    model: options.model,
+    session_id: options.sessionId,
+    structured_log_path: structuredLogPath,
+  })
+
+  return { messages, structuredLogPath, structuredLogTail }
 }
 
 function shouldReflect(request: RuntimeRequest): boolean {
@@ -602,28 +836,43 @@ export class ClaudeAgentSdkAdapter implements ProviderSessionAdapter {
     try {
       let text = ''
       let nextSessionId = sessionId
-      const q = query({
-        prompt: request.prompt,
-        options: {
-          cwd: process.cwd(),
-          resume: session.providerSessionId,
+      const { messages } = await runClaudeStructuredQuery(
+        () => query({
+          prompt: request.prompt,
+          options: {
+            cwd: process.cwd(),
+            resume: session.providerSessionId,
+            model: this.model,
+            permissionMode: 'bypassPermissions',
+            env,
+          },
+        }) as unknown as AsyncIterable<Record<string, unknown>>,
+        {
           model: this.model,
-          permissionMode: 'bypassPermissions',
-          env,
-        },
-      })
+          sessionId,
+          workingDirectory: process.cwd(),
+        }
+      )
 
-      for await (const message of q) {
-        if (message.type === 'assistant' && Array.isArray(message.message?.content)) {
-          for (const block of message.message.content) {
+      for (const message of messages) {
+        const messageRecord = message as {
+          type?: string
+          message?: { content?: Array<{ type?: string; text?: string }> }
+          session_id?: string
+          subtype?: string
+          result?: string
+        }
+        const content = messageRecord.message?.content
+        if (messageRecord.type === 'assistant' && Array.isArray(content)) {
+          for (const block of content) {
             if (block.type === 'text') text += block.text
           }
         }
-        if ('session_id' in message && typeof message.session_id === 'string') {
-          nextSessionId = message.session_id
+        if (typeof messageRecord.session_id === 'string') {
+          nextSessionId = messageRecord.session_id
         }
-        if (message.type === 'result' && message.subtype === 'success' && typeof message.result === 'string') {
-          text = text || message.result
+        if (messageRecord.type === 'result' && messageRecord.subtype === 'success' && typeof messageRecord.result === 'string') {
+          text = text || messageRecord.result
         }
       }
 
@@ -688,12 +937,18 @@ export class CodexSdkAdapter implements ProviderSessionAdapter {
         ? this.codex.resumeThread(session.providerSessionId, threadOptions)
         : this.codex.startThread(threadOptions)
 
-      const runResult = await thread.run(request.prompt)
-      const output = typeof runResult === 'string'
-        ? runResult
-        : runResult.finalResponse?.trim() || JSON.stringify(runResult)
-
-      const nextSession = nextSessionState(session, thread.id ?? session.providerSessionId)
+      const sessionId = session.providerSessionId ?? randomUUID()
+      const runResult = await runCodexStructuredTurn(
+        () => thread,
+        request.prompt,
+        {
+          model: this.model,
+          sessionId,
+          workingDirectory: this.workingDirectory,
+        }
+      )
+      const output = runResult.output
+      const nextSession = nextSessionState(session, runResult.providerSessionId ?? thread.id ?? session.providerSessionId)
       const baseResult = successResult(output)
 
       if (!shouldReflect(request)) {
