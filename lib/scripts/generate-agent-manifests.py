@@ -312,6 +312,8 @@ spec:
         offsetResetPolicy: earliest
 """
 
+    topic_partitions = 1 if int(maxr) <= 1 else 3
+
     topic = f"""---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -320,7 +322,7 @@ metadata:
   labels:
     strimzi.io/cluster: kafka
 spec:
-  partitions: 3
+  partitions: {topic_partitions}
   replicas: 1
   config:
     retention.ms: "604800000"
