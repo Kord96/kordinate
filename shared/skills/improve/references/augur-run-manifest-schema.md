@@ -9,6 +9,7 @@ The run manifest is the canonical operational record for one execution:
 - whether the run succeeded
 - where outputs were written
 - how long each stage took
+- how much API cache was used
 - what scores and validations were produced
 - which reflection record belongs to the run
 
@@ -51,7 +52,28 @@ The run manifest is the canonical operational record for one execution:
     "output": 6300,
     "total": 48300
   },
+  "cache": {
+    "read_tokens": 31000,
+    "write_tokens": 4200,
+    "total_tokens": 35200,
+    "hit_ratio": 0.7381,
+    "uncached_prefix_bytes": 6400
+  },
   "estimated_cost": 0.0,
+  "performance": {
+    "runtime_ms_total": 37100,
+    "tokens_total": 48300,
+    "estimated_cost": 0.0,
+    "cache_hit_ratio": 0.7381,
+    "quality_per_second": 0.0218,
+    "quality_per_1k_tokens": 0.0168,
+    "quality_per_dollar": null,
+    "cache_efficiency": {
+      "cache_total_tokens": 35200,
+      "cache_read_ratio": 0.7381,
+      "uncached_prefix_bytes": 6400
+    }
+  },
   "outputs": {
     "atlas_path": "/kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/atlas.json",
     "facts_dir": "/kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/facts/",
@@ -95,6 +117,8 @@ The run manifest is the canonical operational record for one execution:
 - `run_number`
 - `success`
 - `runtime_ms.total`
+- `tokens.total`
+- `cache.hit_ratio`
 - `outputs`
 - `validation`
 - `reflection_id`
@@ -105,6 +129,8 @@ The run manifest is the canonical operational record for one execution:
 - `run_id` should be globally unique.
 - `runtime_ms.total` should equal the full wall-clock runtime for the run.
 - Stage timings should use `0` if a stage was skipped.
+- `cache.hit_ratio` should be `0` when cache metrics are unavailable rather than omitted.
+- `uncached_prefix_bytes` should be used when provider APIs do not expose exact cache-hit counters.
 - `failure_reason` should be null on success.
 - `scores` may be omitted only if the run failed before scoring.
 - `reflection_path` should point to a raw reflection record, not a summary.

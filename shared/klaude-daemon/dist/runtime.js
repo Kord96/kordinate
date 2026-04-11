@@ -126,6 +126,17 @@ function successResult(output) {
         output,
     };
 }
+function withMetadata(result, metadata) {
+    if (!metadata)
+        return result;
+    return {
+        ...result,
+        metadata: {
+            ...(result.metadata ?? {}),
+            ...metadata,
+        },
+    };
+}
 function summarizeText(text, maxLength = 400) {
     const normalized = text.replace(/\s+/g, ' ').trim();
     if (normalized.length <= maxLength)
@@ -263,6 +274,7 @@ async function runCodexStructuredTurn(threadFactory, prompt, options) {
     const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' });
     const thread = threadFactory();
     let finalResponse = '';
+    let usage;
     log('codex_stream_start', {
         runtime: 'codex-sdk',
         model: options.model,
@@ -278,6 +290,13 @@ async function runCodexStructuredTurn(threadFactory, prompt, options) {
                 && event.item?.type === 'agent_message'
                 && typeof event.item.text === 'string') {
                 finalResponse = event.item.text;
+            }
+            if (event.type === 'turn.completed' && event.usage) {
+                usage = {
+                    input_tokens: Number(event.usage.input_tokens ?? 0),
+                    cached_input_tokens: Number(event.usage.cached_input_tokens ?? 0),
+                    output_tokens: Number(event.usage.output_tokens ?? 0),
+                };
             }
         }
     }
@@ -325,6 +344,7 @@ async function runCodexStructuredTurn(threadFactory, prompt, options) {
         providerSessionId: thread.id ?? undefined,
         structuredLogPath,
         structuredLogTail,
+        usage,
     };
 }
 function processClaudeStructuredMessage(message, options) {
@@ -828,7 +848,14 @@ export class CodexSdkAdapter {
             });
             const output = runResult.output;
             const nextSession = nextSessionState(session, runResult.providerSessionId ?? thread.id ?? session.providerSessionId);
-            const baseResult = enforceAlfredDirectIntentContract(request, successResult(output));
+            const usageMetadata = runResult.usage
+                ? {
+                    input_tokens: runResult.usage.input_tokens,
+                    cached_input_tokens: runResult.usage.cached_input_tokens,
+                    output_tokens: runResult.usage.output_tokens,
+                }
+                : undefined;
+            const baseResult = enforceAlfredDirectIntentContract(request, withMetadata(successResult(output), usageMetadata ? { usage: usageMetadata } : undefined));
             if (!shouldReflect(request)) {
                 return { session: nextSession, result: baseResult };
             }

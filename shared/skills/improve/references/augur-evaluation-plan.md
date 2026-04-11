@@ -33,6 +33,7 @@ Each evaluation unit should store:
 - run number
 - wall-clock duration
 - token usage if available
+- cache usage if available
 - stage timings
 - output paths
 - validation results
@@ -126,6 +127,10 @@ Performance should be logged per run and per stage.
 - `tokens_out`
 - `tokens_total`
 - `estimated_cost`
+- `cache_read_tokens`
+- `cache_write_tokens`
+- `cache_hit_ratio`
+- `uncached_prefix_bytes` when exact provider cache counters are unavailable
 - `success`
 - `failure_reason` when applicable
 - `reflection_id` when reflection is enabled
@@ -170,20 +175,84 @@ For each run, report:
 - `runtime_ms_total`
 - `tokens_total`
 - `estimated_cost`
+- `cache_hit_ratio`
 - `quality_per_minute`
 - `quality_per_1k_tokens`
+- `quality_per_dollar`
+- `quality_per_cached_1k_tokens`
 
 For each configuration family, report:
 
 - mean quality
 - mean runtime
 - mean tokens
+- mean cache hit ratio
+- mean uncached prefix size
 - quality variance
 - stage-time breakdown
 - false-positive rate
 - stability across repeated runs
 
 This prevents a slower bundle from looking better without exposing the operational cost.
+
+## Generic Vs Augur
+
+The benchmark should compare:
+
+- `generic` agent mode
+- `augur` agent mode
+
+for the same:
+
+- repo
+- pinned SHA
+- backend model
+- date window
+
+This comparison answers a different question from backend-vs-backend:
+
+- `generic vs augur`
+  - does Augur add measurable value beyond a naked agent?
+- `augur backend A vs augur backend B`
+  - which model benefits most from Augur scaffolding?
+
+For `generic vs augur`, report:
+
+- `augmentation_delta_quality`
+- `augmentation_delta_runtime_ms`
+- `augmentation_delta_tokens`
+- `augmentation_delta_estimated_cost`
+- `augmentation_delta_cache_hit_ratio`
+
+This should be a first-class benchmark dimension, not an ad hoc comparison.
+
+## Benchmark Over Time
+
+Benchmarking should support snapshot and trend views.
+
+For each benchmark snapshot, aggregate by:
+
+- date
+- benchmark version
+- repo set
+- agent mode (`generic` vs `augur`)
+- backend model
+- bundle configuration
+
+For longitudinal tracking, compare:
+
+- quality trends
+- runtime trends
+- token and cost trends
+- cache utilization trends
+- augmentation deltas over time
+
+The goal is to answer:
+
+- Is Augur getting better?
+- Is it getting more expensive?
+- Are layered prompts improving cache utilization?
+- Is the quality gain worth the speed and token penalty?
 
 ## Label Strategy
 

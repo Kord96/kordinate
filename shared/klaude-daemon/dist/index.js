@@ -128,6 +128,7 @@ async function handleRequest(message) {
         reflection: result.reflection,
         errors: result.errors,
         metadata: {
+            ...(result.metadata ?? {}),
             timing: buildTimingMetadata({
                 receivedAt,
                 startedAt,

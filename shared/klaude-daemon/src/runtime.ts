@@ -9,7 +9,7 @@ import { Codex } from '@openai/codex-sdk'
 import type { ExecutionProfile } from './config.js'
 import { log } from './log.js'
 import { SimpleHarnessAdapter, classifyAlfredDirectIntent, enforceAlfredDirectIntentContract } from './simple-harness.js'
-import type { ProviderSessionAdapter, ReflectionPayload, RuntimeRequest, RuntimeResult, SessionState } from './types.js'
+import type { ProviderSessionAdapter, ReflectionPayload, RuntimeRequest, RuntimeResult, SessionState, ResponseUsageMetadata } from './types.js'
 
 const OPENCLAUDE_NPM_PACKAGE = process.env.OPENCLAUDE_NPM_PACKAGE ?? '@gitlawb/openclaude'
 const OPENCLAUDE_BIN = process.env.OPENCLAUDE_BIN ?? 'openclaude'
@@ -64,6 +64,12 @@ type CodexThreadEvent = {
     message?: string
   }
   message?: string
+}
+
+type CodexUsageSnapshot = {
+  input_tokens: number
+  cached_input_tokens: number
+  output_tokens: number
 }
 
 function parseReflectionPayload(text: string): ReflectionPayload | undefined {
@@ -200,6 +206,17 @@ function successResult(output: string): RuntimeResult {
   return {
     status: 'success',
     output,
+  }
+}
+
+function withMetadata(result: RuntimeResult, metadata?: Partial<NonNullable<RuntimeResult['metadata']>>): RuntimeResult {
+  if (!metadata) return result
+  return {
+    ...result,
+    metadata: {
+      ...((result.metadata ?? {}) as Record<string, unknown>),
+      ...metadata,
+    } as RuntimeResult['metadata'],
   }
 }
 
@@ -353,7 +370,7 @@ async function runCodexStructuredTurn(
   threadFactory: () => { id: string | null; runStreamed(input: string): Promise<{ events: AsyncGenerator<CodexThreadEvent> }> },
   prompt: string,
   options: { model: string; sessionId: string; workingDirectory?: string }
-): Promise<{ output: string; providerSessionId?: string; structuredLogPath: string; structuredLogTail: string }> {
+): Promise<{ output: string; providerSessionId?: string; structuredLogPath: string; structuredLogTail: string; usage?: ResponseUsageMetadata }> {
   const runtimeHome = resolveOpenClaudeHome(options.workingDirectory)
   const debugDir = path.join(runtimeHome, '.daemon-logs')
   await mkdir(debugDir, { recursive: true })
@@ -361,6 +378,7 @@ async function runCodexStructuredTurn(
   const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' })
   const thread = threadFactory()
   let finalResponse = ''
+  let usage: CodexUsageSnapshot | undefined
 
   log('codex_stream_start', {
     runtime: 'codex-sdk',
@@ -380,6 +398,13 @@ async function runCodexStructuredTurn(
         && typeof event.item.text === 'string'
       ) {
         finalResponse = event.item.text
+      }
+      if (event.type === 'turn.completed' && event.usage) {
+        usage = {
+          input_tokens: Number(event.usage.input_tokens ?? 0),
+          cached_input_tokens: Number(event.usage.cached_input_tokens ?? 0),
+          output_tokens: Number(event.usage.output_tokens ?? 0),
+        }
       }
     }
   } catch (error) {
@@ -426,6 +451,7 @@ async function runCodexStructuredTurn(
     providerSessionId: thread.id ?? undefined,
     structuredLogPath,
     structuredLogTail,
+    usage,
   }
 }
 
@@ -980,7 +1006,14 @@ export class CodexSdkAdapter implements ProviderSessionAdapter {
       )
       const output = runResult.output
       const nextSession = nextSessionState(session, runResult.providerSessionId ?? thread.id ?? session.providerSessionId)
-      const baseResult = enforceAlfredDirectIntentContract(request, successResult(output))
+      const usageMetadata: ResponseUsageMetadata | undefined = runResult.usage
+        ? {
+            input_tokens: runResult.usage.input_tokens,
+            cached_input_tokens: runResult.usage.cached_input_tokens,
+            output_tokens: runResult.usage.output_tokens,
+          }
+        : undefined
+      const baseResult = enforceAlfredDirectIntentContract(request, withMetadata(successResult(output), usageMetadata ? { usage: usageMetadata } : undefined))
 
       if (!shouldReflect(request)) {
         return { session: nextSession, result: baseResult }

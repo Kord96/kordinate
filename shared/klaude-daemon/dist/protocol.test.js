@@ -45,6 +45,11 @@ test('buildResponseMessage targets original correlation and daemon sender', () =
         output: 'done',
         errors: [],
         metadata: {
+            usage: {
+                input_tokens: 1000,
+                cached_input_tokens: 700,
+                output_tokens: 250,
+            },
             timing: {
                 received_at: '2026-04-09T00:00:00.000Z',
                 started_at: '2026-04-09T00:00:00.100Z',
@@ -65,6 +70,11 @@ test('buildResponseMessage targets original correlation and daemon sender', () =
         output: 'done',
         errors: [],
         metadata: {
+            usage: {
+                input_tokens: 1000,
+                cached_input_tokens: 700,
+                output_tokens: 250,
+            },
             timing: {
                 received_at: '2026-04-09T00:00:00.000Z',
                 started_at: '2026-04-09T00:00:00.100Z',

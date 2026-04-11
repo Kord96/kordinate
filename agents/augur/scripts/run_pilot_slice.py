@@ -50,6 +50,58 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
+def load_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def apply_response_metadata(manifest: dict[str, Any], response_payload: dict[str, Any]) -> None:
+    metadata = response_payload.get("metadata")
+    if not isinstance(metadata, dict):
+        return
+
+    usage = metadata.get("usage")
+    if isinstance(usage, dict):
+        input_tokens = int(usage.get("input_tokens") or 0)
+        cached_input_tokens = int(usage.get("cached_input_tokens") or 0)
+        output_tokens = int(usage.get("output_tokens") or 0)
+        cache_write_tokens = int(usage.get("cache_write_tokens") or 0)
+        estimated_cost = float(usage.get("estimated_cost") or manifest.get("estimated_cost") or 0.0)
+
+        tokens_total = input_tokens + output_tokens
+        cache_total = cached_input_tokens + cache_write_tokens
+        hit_ratio = (cached_input_tokens / input_tokens) if input_tokens > 0 else 0.0
+
+        manifest["tokens"] = {
+            "input": input_tokens,
+            "output": output_tokens,
+            "total": tokens_total,
+        }
+        manifest["cache"] = {
+            "read_tokens": cached_input_tokens,
+            "write_tokens": cache_write_tokens,
+            "total_tokens": cache_total,
+            "hit_ratio": round(hit_ratio, 4),
+            "uncached_prefix_bytes": manifest.get("cache", {}).get("uncached_prefix_bytes", 0),
+        }
+        manifest["estimated_cost"] = estimated_cost
+
+        performance = manifest.setdefault("performance", {})
+        performance["tokens_total"] = tokens_total
+        performance["estimated_cost"] = estimated_cost
+        performance["cache_hit_ratio"] = round(hit_ratio, 4)
+        performance.setdefault("cache_efficiency", {})
+        performance["cache_efficiency"]["cache_total_tokens"] = cache_total
+        performance["cache_efficiency"]["cache_read_ratio"] = round(hit_ratio, 4)
+        performance["cache_efficiency"].setdefault("uncached_prefix_bytes", manifest["cache"]["uncached_prefix_bytes"])
+
+    gateway_timing = metadata.get("gateway_timing")
+    if isinstance(gateway_timing, dict):
+        total_ms = int(gateway_timing.get("total_ms") or 0)
+        if total_ms > 0:
+            manifest.setdefault("performance", {})
+            manifest["performance"]["gateway_runtime_ms_total"] = total_ms
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the deterministic Augur pilot slice and emit a run manifest.")
     parser.add_argument("repo_root", type=Path, help="Repository root to analyze.")
@@ -61,6 +113,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skill-bundle", default="selective")
     parser.add_argument("--run-number", type=int, default=1)
     parser.add_argument("--analysis-mode", default="full", choices=["full", "incremental", "design"])
+    parser.add_argument("--tokens-in", type=int, default=0)
+    parser.add_argument("--tokens-out", type=int, default=0)
+    parser.add_argument("--cache-read-tokens", type=int, default=0)
+    parser.add_argument("--cache-write-tokens", type=int, default=0)
+    parser.add_argument("--uncached-prefix-bytes", type=int, default=0)
+    parser.add_argument("--estimated-cost", type=float, default=0.0)
+    parser.add_argument("--response-json", type=Path, help="Optional live agent response JSON to ingest usage/cache metadata from.")
     return parser.parse_args()
 
 
@@ -154,6 +213,27 @@ def main() -> int:
         "analyzed_sha_matches": True,
     }
 
+    tokens_in = args.tokens_in
+    tokens_out = args.tokens_out
+    tokens_total = tokens_in + tokens_out
+    cache_total = args.cache_read_tokens + args.cache_write_tokens
+    cache_hit_ratio = (args.cache_read_tokens / tokens_in) if tokens_in > 0 else 0.0
+
+    performance = {
+        "runtime_ms_total": runtime_ms["total"],
+        "tokens_total": tokens_total,
+        "estimated_cost": args.estimated_cost,
+        "cache_hit_ratio": round(cache_hit_ratio, 4),
+        "quality_per_second": None,
+        "quality_per_1k_tokens": None,
+        "quality_per_dollar": None,
+        "cache_efficiency": {
+            "cache_total_tokens": cache_total,
+            "cache_read_ratio": round(cache_hit_ratio, 4),
+            "uncached_prefix_bytes": args.uncached_prefix_bytes,
+        },
+    }
+
     reflection_record = {
         "reflection_id": reflection_id,
         "captured_at": utc_now(),
@@ -194,11 +274,19 @@ def main() -> int:
         "correlation_id": "",
         "runtime_ms": runtime_ms,
         "tokens": {
-            "input": 0,
-            "output": 0,
-            "total": 0,
+            "input": tokens_in,
+            "output": tokens_out,
+            "total": tokens_total,
         },
-        "estimated_cost": 0.0,
+        "cache": {
+            "read_tokens": args.cache_read_tokens,
+            "write_tokens": args.cache_write_tokens,
+            "total_tokens": cache_total,
+            "hit_ratio": round(cache_hit_ratio, 4),
+            "uncached_prefix_bytes": args.uncached_prefix_bytes,
+        },
+        "estimated_cost": args.estimated_cost,
+        "performance": performance,
         "outputs": {
             "atlas_path": "",
             "facts_dir": str(facts_path),
@@ -215,6 +303,8 @@ def main() -> int:
             "Atlas synthesis, stories, and scoring are not yet included in this runner.",
         ],
     }
+    if args.response_json:
+        apply_response_metadata(manifest, load_json(args.response_json.resolve()))
     write_json(manifest_path, manifest)
     print(json.dumps(manifest, indent=2))
     return 0 if success else 1

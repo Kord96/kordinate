@@ -153,6 +153,7 @@ async function handleRequest(message: RequestMessage): Promise<{ status: Respons
     reflection: result.reflection,
     errors: result.errors,
     metadata: {
+      ...(result.metadata ?? {}),
       timing: buildTimingMetadata({
         receivedAt,
         startedAt,

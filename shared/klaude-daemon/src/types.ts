@@ -100,6 +100,15 @@ export interface ResponseTimingMetadata {
   publish_response_ms: number
 }
 
+export interface ResponseUsageMetadata {
+  input_tokens?: number
+  cached_input_tokens?: number
+  output_tokens?: number
+  cache_write_tokens?: number
+  estimated_cost?: number
+}
+
 export interface ResponseMetadata {
   timing: ResponseTimingMetadata
+  usage?: ResponseUsageMetadata
 }
