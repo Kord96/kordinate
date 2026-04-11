@@ -63,10 +63,11 @@ for skill_dir in "$KORD_PKG"/shared/skills/*/; do
   cp "$skill_dir"/*.md "$CLAUDE_DIR/skills/$skill/" 2>/dev/null
 done
 
-# --- Sync server code → workstation runtime lib/ ---
-if [ -f "$KORD_PKG/lib/mcp-agent-server/server.js" ]; then
-  mkdir -p "$RUNTIME_ROOT/lib/mcp-agent-server"
-  cp "$KORD_PKG/lib/mcp-agent-server/server.js" "$RUNTIME_ROOT/lib/mcp-agent-server/server.js" 2>/dev/null
+# --- Sync kord MCP server → workstation runtime ---
+if [ -f "$KORD_PKG/shared/kord-mcp/dist/server.js" ]; then
+  mkdir -p "$RUNTIME_ROOT/shared/kord-mcp/dist" "$RUNTIME_ROOT/shared/kord-mcp/bin"
+  cp "$KORD_PKG/shared/kord-mcp/dist/server.js" "$RUNTIME_ROOT/shared/kord-mcp/dist/server.js" 2>/dev/null
+  cp "$KORD_PKG/shared/kord-mcp/bin/kord-mcp" "$RUNTIME_ROOT/shared/kord-mcp/bin/kord-mcp" 2>/dev/null
 fi
 
 

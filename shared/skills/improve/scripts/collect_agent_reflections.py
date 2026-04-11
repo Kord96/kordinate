@@ -4,23 +4,37 @@ from __future__ import annotations
 import argparse
 import collections
 import json
-import subprocess
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+import urllib.request
 
 
 PROJECTS_ROOT = Path("/kord/augur/memory/projects")
-KORD = Path("/kord/workstation/home/project/kordinate/lib/scripts/kord")
+DEFAULT_BASE_URL = os.environ.get("KORD_API_URL", os.environ.get("KORD_GATEWAY_URL", "http://kord-api.kord.svc.cluster.local:9091"))
+DEFAULT_API_KEY = os.environ.get("KORD_API_KEY", "")
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def run_cmd(args: list[str]) -> tuple[int, str, str]:
-    result = subprocess.run(args, check=False, capture_output=True, text=True)
-    return result.returncode, result.stdout, result.stderr
+def fetch_json(url: str, headers: dict[str, str]) -> Any:
+    request = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(request) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def post_json(url: str, payload: dict[str, Any], headers: dict[str, str]) -> Any:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"content-type": "application/json", **headers},
+        method="POST",
+    )
+    with urllib.request.urlopen(request) as response:
+        return json.loads(response.read().decode("utf-8"))
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -32,19 +46,20 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def discover_agents() -> dict[str, dict[str, str]]:
-    rc, out, err = run_cmd([str(KORD), "agents"])
-    if rc != 0:
-        raise SystemExit(err.strip() or "failed to list kord agents")
+def discover_agents(gateway_url: str, api_key: str) -> dict[str, dict[str, str]]:
+    headers = {"x-api-key": api_key} if api_key else {}
+    payload = fetch_json(f"{gateway_url.rstrip('/')}/agents?view=variants", headers)
+    agents = payload.get("agents", []) if isinstance(payload, dict) else []
     records: dict[str, dict[str, str]] = {}
-    for line in out.splitlines():
-        parts = line.split("\t")
-        if len(parts) < 3:
+    for item in agents:
+        if not isinstance(item, dict):
             continue
-        name, provider, model = parts[:3]
-        runtime_kind = "codex-sdk" if provider == "openai" else "openclaude-harness"
-        if provider == "anthropic":
-            runtime_kind = "claude-agent-sdk"
+        name = item.get("name")
+        provider = item.get("backend_provider")
+        model = item.get("backend_model")
+        runtime_kind = item.get("runtime")
+        if not all(isinstance(value, str) for value in (name, provider, model, runtime_kind)):
+            continue
         records[name] = {"provider": provider, "model": model, "runtime_kind": runtime_kind}
     return records
 
@@ -93,7 +108,7 @@ def extract_reflection_payload(text: str) -> dict[str, str]:
     raise ValueError("unexpected response payload")
 
 
-def collect_for(agent: str, run_dir: Path, prompt: str, discovered: dict[str, dict[str, str]], wait_ms: int) -> Path:
+def collect_for(agent: str, run_dir: Path, prompt: str, discovered: dict[str, dict[str, str]], gateway_url: str, api_key: str, wait_ms: int) -> Path:
     manifest = load_json(run_dir / "run-manifest.json")
     repo = manifest["repo"]
     pinned_sha = manifest["pinned_sha"]
@@ -103,10 +118,13 @@ def collect_for(agent: str, run_dir: Path, prompt: str, discovered: dict[str, di
     reflection_id = f"{timestamp}__{repo}__{sha_short}__{model_info['model']}__{manifest['memory_bundle']}__{manifest['skill_bundle']}__run-1"
     reflection_path = PROJECTS_ROOT / repo / "reflections" / "runs" / f"{reflection_id}.json"
 
-    rc, out, err = run_cmd([str(KORD), "--wait-ms", str(wait_ms), agent, "on", prompt])
-    if rc != 0:
-        raise RuntimeError(err.strip() or out.strip() or f"kord call failed for {agent}")
-    reflection = extract_reflection_payload(out)
+    headers = {"x-api-key": api_key} if api_key else {}
+    response = post_json(
+        f"{gateway_url.rstrip('/')}/agents/{agent}/prompt",
+        {"prompt": prompt, "timeout_ms": wait_ms},
+        headers,
+    )
+    reflection = extract_reflection_payload(json.dumps(response))
     record = {
         "reflection_id": reflection_id,
         "captured_at": utc_now(),
@@ -138,12 +156,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repos", nargs="+", required=True, help="Project slugs under /kord/augur/memory/projects.")
     parser.add_argument("--agents", nargs="+", required=True, help="kord agent names to query.")
     parser.add_argument("--wait-ms", type=int, default=180000)
+    parser.add_argument("--gateway-url", default=DEFAULT_BASE_URL)
+    parser.add_argument("--api-key", default=DEFAULT_API_KEY)
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    discovered = discover_agents()
+    discovered = discover_agents(args.gateway_url, args.api_key)
     written: list[str] = []
     failures: list[dict[str, str]] = []
     for repo in args.repos:
@@ -153,7 +173,7 @@ def main() -> int:
             if agent not in discovered:
                 raise SystemExit(f"unknown agent: {agent}")
             try:
-                path = collect_for(agent, run_dir, prompt, discovered, args.wait_ms)
+                path = collect_for(agent, run_dir, prompt, discovered, args.gateway_url, args.api_key, args.wait_ms)
                 written.append(str(path))
             except Exception as error:
                 failures.append({"repo": repo, "agent": agent, "error": str(error)})

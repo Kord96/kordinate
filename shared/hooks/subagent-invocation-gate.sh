@@ -38,7 +38,7 @@ if [ -d "$KORD_SOURCE_ROOT/agents/$AGENT" ] && [ "$AGENT" != "main" ]; then
   fi
 
   cat <<EOF
-{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Use kord MCP tools (e.g., mcp__kord__delegate, mcp__kord__write_memory) to interact with agents. Kord will authorize local spawning when appropriate."}}
+{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"Use kord MCP tools (e.g., mcp__kord__list_agents, mcp__kord__get_agent, mcp__kord__delegate) to interact with agents. Kord will authorize local spawning when appropriate."}}
 EOF
   exit 0
 fi
