@@ -40,6 +40,9 @@ const requests = new Map<string, {
   completed_at?: string
   response?: ResponseMessage
   error?: string
+  debug?: {
+    events: Array<Record<string, unknown>>
+  }
 }>()
 let ready = false
 
@@ -91,6 +94,7 @@ function isPromptBody(value: unknown): value is {
   async?: boolean
   variant?: string
   backend_model?: string
+  verbose?: boolean
 } {
   if (!value || typeof value !== 'object') return false
   const body = value as Record<string, unknown>
@@ -104,6 +108,20 @@ function isPromptBody(value: unknown): value is {
     && (body.async === undefined || typeof body.async === 'boolean')
     && (body.variant === undefined || typeof body.variant === 'string')
     && (body.backend_model === undefined || typeof body.backend_model === 'string')
+    && (body.verbose === undefined || typeof body.verbose === 'boolean')
+}
+
+function pushRequestEvent(requestId: string, event: string, details: Record<string, unknown> = {}): void {
+  const existing = requests.get(requestId)
+  if (!existing) return
+  const events = existing.debug?.events ?? []
+  events.push({
+    event,
+    timestamp: new Date().toISOString(),
+    ...details,
+  })
+  existing.debug = { events: events.slice(-20) }
+  requests.set(requestId, existing)
 }
 
 function deferReply(correlationId: string, agent: string, timeoutMs: number): Promise<ResponseMessage> {
@@ -113,6 +131,9 @@ function deferReply(correlationId: string, agent: string, timeoutMs: number): Pr
       log('prompt_timeout', {
         agent,
         correlation_id: correlationId,
+        timeout_ms: timeoutMs,
+      })
+      pushRequestEvent(correlationId, 'prompt_timeout', {
         timeout_ms: timeoutMs,
       })
       reject(new Error(`timed out waiting for ${correlationId}`))
@@ -182,6 +203,10 @@ function completeRequest(requestId: string, response: ResponseMessage): void {
     response,
     error: response.status === 'error' ? response.output : undefined,
   })
+  pushRequestEvent(requestId, 'request_complete', {
+    correlation_id: response.correlation_id,
+    status: response.status,
+  })
 }
 
 const server = createServer(async (req, res) => {
@@ -248,9 +273,15 @@ const server = createServer(async (req, res) => {
 
     if (req.method === 'GET' && url.pathname.startsWith('/requests/')) {
       const requestId = decodeURIComponent(url.pathname.slice('/requests/'.length))
+      const verbose = url.searchParams.get('verbose') === '1'
       const requestRecord = requests.get(requestId)
       if (!requestRecord) {
         json(res, 404, { error: `request '${requestId}' not found` })
+        return
+      }
+      if (!verbose) {
+        const { debug: _debug, ...rest } = requestRecord
+        json(res, 200, rest)
         return
       }
       json(res, 200, requestRecord)
@@ -299,8 +330,22 @@ const server = createServer(async (req, res) => {
         agent: record.name,
         status: 'pending',
         created_at: new Date(startedAt).toISOString(),
+        debug: { events: [] },
+      })
+      pushRequestEvent(requestId, 'request_received', {
+        requested_agent: name,
+        resolved_agent: record.name,
+        requested_variant: body.variant ?? null,
+        requested_backend_model: body.backend_model ?? null,
+        async: body.async === true,
+        timeout_ms: body.timeout_ms ?? defaultTimeoutMs,
+        has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
+        session_id: body.session_id ?? null,
       })
       const { reply } = await sendPrompt(record.name, body, requestId)
+      pushRequestEvent(requestId, 'prompt_published', {
+        topic: record.name,
+      })
       if (body.async) {
         void reply.then(
           response => completeRequest(requestId, response),
@@ -318,37 +363,77 @@ const server = createServer(async (req, res) => {
               completed_at: new Date().toISOString(),
               error: error instanceof Error ? error.message : String(error),
             })
+            pushRequestEvent(requestId, 'request_error', {
+              error: error instanceof Error ? error.message : String(error),
+            })
           },
         )
-        json(res, 202, {
+        const payload: Record<string, unknown> = {
           request_id: requestId,
           status: 'pending',
           agent: record.name,
           resolved_agent: record.name,
           status_url: `/requests/${requestId}`,
-        })
+        }
+        if (body.verbose) payload.debug = requests.get(requestId)?.debug
+        json(res, 202, payload)
         return
       }
-      const syncReply = await reply
-      const completedAt = Date.now()
-      log('request_sync_reply_received', {
-        request_id: requestId,
-        agent: record.name,
-        correlation_id: syncReply.correlation_id,
-        status: syncReply.status,
-        total_ms: completedAt - startedAt,
-      })
-      const metadata = {
-        ...(syncReply.metadata ?? {}),
-        gateway_timing: {
-          started_at: new Date(startedAt).toISOString(),
-          completed_at: new Date(completedAt).toISOString(),
+      try {
+        const syncReply = await reply
+        const completedAt = Date.now()
+        log('request_sync_reply_received', {
+          request_id: requestId,
+          agent: record.name,
+          correlation_id: syncReply.correlation_id,
+          status: syncReply.status,
           total_ms: completedAt - startedAt,
-        },
+        })
+        const metadata = {
+          ...(syncReply.metadata ?? {}),
+          gateway_timing: {
+            started_at: new Date(startedAt).toISOString(),
+            completed_at: new Date(completedAt).toISOString(),
+            total_ms: completedAt - startedAt,
+          },
+        }
+        const enrichedReply = { ...syncReply, metadata }
+        completeRequest(requestId, enrichedReply)
+        const payload: Record<string, unknown> = { ...enrichedReply }
+        if (body.verbose) {
+          payload.request_id = requestId
+          payload.debug = requests.get(requestId)?.debug
+        }
+        json(res, 200, payload)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        const response: ResponseMessage = {
+          type: 'response',
+          sender: record.name,
+          correlation_id: requestId,
+          status: 'error',
+          output: message,
+          errors: [message],
+        }
+        const existing = requests.get(requestId)
+        requests.set(requestId, {
+          request_id: requestId,
+          agent: record.name,
+          status: 'error',
+          created_at: existing?.created_at ?? new Date(startedAt).toISOString(),
+          completed_at: new Date().toISOString(),
+          response,
+          error: message,
+          debug: existing?.debug,
+        })
+        pushRequestEvent(requestId, 'request_error', { error: message })
+        const payload: Record<string, unknown> = { ...response }
+        if (body.verbose) {
+          payload.request_id = requestId
+          payload.debug = requests.get(requestId)?.debug
+        }
+        json(res, 504, payload)
       }
-      const enrichedReply = { ...syncReply, metadata }
-      completeRequest(requestId, enrichedReply)
-      json(res, 200, enrichedReply)
       return
     }
 
@@ -391,6 +476,10 @@ async function main(): Promise<void> {
         agent: waiter.agent,
         sender: response.sender,
         correlation_id: response.correlation_id,
+        status: response.status,
+      })
+      pushRequestEvent(response.correlation_id, 'reply_consumed', {
+        sender: response.sender,
         status: response.status,
       })
       clearTimeout(waiter.timer)

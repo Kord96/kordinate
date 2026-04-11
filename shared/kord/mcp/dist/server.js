@@ -16,6 +16,21 @@ async function getJson(path) {
     }
     return payload;
 }
+function withQuery(path, params) {
+    const query = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+        if (value === undefined)
+            continue;
+        if (typeof value === 'boolean') {
+            if (value)
+                query.set(key, '1');
+            continue;
+        }
+        query.set(key, value);
+    }
+    const suffix = query.size ? `?${query.toString()}` : '';
+    return `${path}${suffix}`;
+}
 async function postJson(path, body) {
     const response = await fetch(`${baseUrl}${path}`, {
         method: 'POST',
@@ -107,8 +122,9 @@ server.registerTool('delegate', {
         variant: z.string().optional(),
         backend_model: z.string().optional(),
         async: z.boolean().optional(),
+        verbose: z.boolean().optional(),
     },
-}, async ({ agent, prompt, working_dir, timeout_ms, reflect, reflection_prompt, session_id, variant, backend_model, async = false }) => {
+}, async ({ agent, prompt, working_dir, timeout_ms, reflect, reflection_prompt, session_id, variant, backend_model, async = false, verbose = false }) => {
     try {
         const body = { prompt, async };
         if (working_dir)
@@ -125,6 +141,8 @@ server.registerTool('delegate', {
             body.variant = variant;
         if (backend_model)
             body.backend_model = backend_model;
+        if (verbose)
+            body.verbose = true;
         const payload = await postJson(`/agents/${encodeURIComponent(agent)}/prompt`, body);
         return textResult(payload);
     }
@@ -137,10 +155,11 @@ server.registerTool('get_request', {
     description: 'Fetch the current status of one async kord request.',
     inputSchema: {
         request_id: z.string().min(1),
+        verbose: z.boolean().optional(),
     },
-}, async ({ request_id }) => {
+}, async ({ request_id, verbose = false }) => {
     try {
-        const payload = await getJson(`/requests/${encodeURIComponent(request_id)}`);
+        const payload = await getJson(withQuery(`/requests/${encodeURIComponent(request_id)}`, { verbose }));
         return textResult(payload);
     }
     catch (error) {
