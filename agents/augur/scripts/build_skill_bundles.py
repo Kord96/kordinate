@@ -27,11 +27,9 @@ def build_mode_reference() -> str:
     return "\n".join([
         "## Mode Resources",
         "",
-        "The runtime provides the semantic mode and appends the matching operational guide dynamically.",
-        "Use exactly one of:",
-        "- `$KORDINATE_HOME/agents/augur/skills/analyze/full-mode.md`",
-        "- `$KORDINATE_HOME/agents/augur/skills/analyze/incremental-mode.md`",
-        "",
+        "The runtime provides the semantic mode and appends the matching operational guide directly into the prompt for this run.",
+        "Treat that guide as already loaded context.",
+        "Do not spend tool calls trying to locate or read mode-guide files from disk.",
         "Do not blend full-mode and incremental-mode sequences in the same run.",
     ])
 

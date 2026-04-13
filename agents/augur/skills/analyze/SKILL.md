@@ -12,9 +12,8 @@ context: inherit
 Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs for this run.
 
 Supports three analysis modes: **full** (first run or major changes), **incremental** (update existing atlas based on what changed), and **skip** (nothing changed). The mode is determined automatically.
-The runtime provides the selected semantic mode. Follow the matching mode guide in:
-- `$KORDINATE_HOME/agents/augur/skills/analyze/full-mode.md`
-- `$KORDINATE_HOME/agents/augur/skills/analyze/incremental-mode.md`
+The runtime provides the selected semantic mode and appends the matching mode guide directly into the prompt.
+Treat that guide as already-loaded context. Do not spend tool calls trying to locate mode-guide files on disk.
 
 ## Arguments
 
@@ -53,8 +52,8 @@ The runtime prepares:
 Use those inputs as assisting evidence. They inform your semantic understanding but do not fully constrain it.
 
 Use `$RUN/blast.json` to decide semantic investigation scope:
-- If `mode=full`: investigate the whole project and follow `full-mode.md`.
-- If `mode=incremental`: start from the accepted base analysis referenced by `base_analysis_dir`, focus first on `changed_files` plus the affected blast slice, and follow `incremental-mode.md`.
+- If `mode=full`: investigate the whole project and follow the injected full-mode guidance.
+- If `mode=incremental`: start from the accepted base analysis referenced by `base_analysis_dir`, focus first on `changed_files` plus the affected blast slice, and follow the injected incremental-mode guidance.
 - If `mode=skip`: do not continue into Phase 2.
 
 Do not default to broad repo exploration when `blast.json` already provides a targeted incremental slice. Expand beyond the blast slice only when the code you inspect shows the semantic boundary is larger than the deterministic estimate.
