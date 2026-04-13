@@ -171,16 +171,10 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
         PROJECT: project,
         RUN: runDir,
     };
-    await mkdir(factsDir, { recursive: true });
     if (options?.clearSemanticOutputs) {
-        await Promise.all([
-            removePathIfExists(join(runDir, 'atlas.json')),
-            removePathIfExists(join(runDir, 'stories')),
-            removePathIfExists(join(runDir, 'narratives.yaml')),
-            removePathIfExists(join(runDir, 'meta.json')),
-            removePathIfExists(join(runDir, '.validate-lock')),
-        ]);
+        await removePathIfExists(runDir);
     }
+    await mkdir(factsDir, { recursive: true });
     const eventKindPrefix = options?.eventKindPrefix ?? 'augur.deterministic_prepare';
     await context.publishProgress(message, {
         source: 'agent-daemon',
