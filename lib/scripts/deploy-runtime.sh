@@ -18,7 +18,7 @@
 set -euo pipefail
 
 REPO="${KORDINATE_HOME:-/app}"
-RUNTIME="${KORD_RUNTIME:-/runtime}"
+RUNTIME="${KORD_RUNTIME:-/kord/agents}"
 KORD_ROOT="${KORD_ROOT:-/kord}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -146,6 +146,12 @@ deploy_agent() {
 
   # Ensure destination directory exists
   mkdir -p "$DST"
+
+  # Shared specialization alias for deterministic compatibility paths such as
+  # /kord/agents/augur/... used by some model backends during exploration.
+  if [ "$SOURCE_AGENT" != "$DEST_AGENT" ]; then
+    ln -sfn "$SRC" "$RUNTIME/$SOURCE_AGENT"
+  fi
 
   # Memory: recursive copy, don't overwrite scribe's merged files
   if [ -d "$SRC/memory" ]; then

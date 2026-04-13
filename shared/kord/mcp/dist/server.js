@@ -197,5 +197,20 @@ server.registerTool('get_request', {
         return textResult({ error: error instanceof Error ? error.message : String(error) }, true);
     }
 });
+server.registerTool('get_request_events', {
+    title: 'Get Request Events',
+    description: 'Fetch the unified E2E event timeline for one kord request. Use follow=1 on the HTTP endpoint directly for SSE streaming.',
+    inputSchema: {
+        request_id: z.string().min(1),
+    },
+}, async ({ request_id }) => {
+    try {
+        const payload = await getJson(`/requests/${encodeURIComponent(request_id)}/events`);
+        return textResult(payload);
+    }
+    catch (error) {
+        return textResult({ error: error instanceof Error ? error.message : String(error) }, true);
+    }
+});
 const transport = new StdioServerTransport();
 await server.connect(transport);

@@ -27,7 +27,8 @@ this skill repeatedly as the design progresses.
 These files are shared with /analyze — read them when producing output:
 - [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) — atlas JSON structure
 - [../../schemas/schema.md](../../schemas/schema.md) — field-level details
-- [../../schemas/story-schema.md](../../schemas/story-schema.md) — story/journey YAML format
+- [../analyze/story-schema.md](../analyze/story-schema.md) — story YAML format
+- [../analyze/narratives-schema.md](../analyze/narratives-schema.md) — narrative YAML format
 - [../../schemas/composition-guide.md](../../schemas/composition-guide.md) — how to build story trees
 - [../../schemas/writing-guide.md](../../schemas/writing-guide.md) — prose style
 - [../../schemas/augur-output-contract.md](../../schemas/augur-output-contract.md) — downstream consumer contract

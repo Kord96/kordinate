@@ -1,5 +1,6 @@
 export type ProviderName = string
-export type RuntimeKind = 'codex-sdk' | 'claude-agent-sdk' | 'openclaude-harness' | 'simple-harness'
+export type RuntimeKind = 'codex-sdk' | 'claude-agent-sdk' | 'openclaude-harness' | 'simple-harness' | 'gemini-sdk'
+export type SandboxMode = 'read-only' | 'workspace-write' | 'danger-full-access'
 
 export interface ExecutionProfile {
   provider: ProviderName
@@ -8,7 +9,9 @@ export interface ExecutionProfile {
   apiKey?: string
   baseUrl?: string
   skipGitRepoCheck?: boolean
+  homeDirectory?: string
   workingDirectory?: string
+  sandboxMode?: SandboxMode
 }
 
 export interface DaemonConfig {
@@ -18,6 +21,7 @@ export interface DaemonConfig {
   kafkaSessionTimeoutMs: number
   kafkaHeartbeatIntervalMs: number
   reflectionsTopic: string
+  progressTopic: string
   discoveryServerUrl?: string
   discoveryPublishIntervalMs: number
   healthUrl?: string
@@ -25,10 +29,20 @@ export interface DaemonConfig {
   sessionMapPath: string
 }
 
-function resolveDaemonWorkingDirectory(): string | undefined {
+function resolveAgentHomeDirectory(): string | undefined {
+  return process.env.AGENT_HOME_DIR
+}
+
+function resolveDefaultWorkingDirectory(): string | undefined {
   return process.env.DAEMON_WORKING_DIRECTORY
     ?? process.env.CODEX_WORKING_DIRECTORY
-    ?? process.env.AGENT_HOME_DIR
+}
+
+function resolveCodexSandboxMode(): SandboxMode {
+  const configured = (process.env.DAEMON_SANDBOX_MODE ?? process.env.CODEX_SANDBOX_MODE ?? '').trim()
+  return configured === 'read-only' || configured === 'workspace-write' || configured === 'danger-full-access'
+    ? configured
+    : 'workspace-write'
 }
 
 function resolveDefaultRuntime(provider?: string): RuntimeKind {
@@ -51,6 +65,9 @@ export function resolveRuntimeForModel(model?: string, provider?: string): Runti
   if (normalizedModel.includes('gpt')) {
     return 'codex-sdk'
   }
+  if (provider === 'gemini' || normalizedModel.includes('gemini')) {
+    return 'gemini-sdk'
+  }
   return provider === undefined && normalizedModel === ''
     ? 'codex-sdk'
     : 'openclaude-harness'
@@ -63,7 +80,8 @@ function buildClaudeExecutionProfile(provider: ProviderName): ExecutionProfile {
     model: process.env.DAEMON_MODEL ?? 'claude-sonnet-4-5',
     apiKey: process.env.BACKEND_API_KEY ?? process.env.ANTHROPIC_API_KEY,
     baseUrl: process.env.BACKEND_BASE_URL,
-    workingDirectory: resolveDaemonWorkingDirectory(),
+    homeDirectory: resolveAgentHomeDirectory(),
+    workingDirectory: resolveDefaultWorkingDirectory(),
   }
 }
 
@@ -78,7 +96,8 @@ function buildOpenClaudeExecutionProfile(provider: ProviderName): ExecutionProfi
       model: process.env.DAEMON_MODEL ?? 'deepseek-chat',
       apiKey: genericApiKey ?? process.env.DEEPSEEK_API_KEY,
       baseUrl: genericBaseUrl ?? 'https://api.deepseek.com/v1',
-      workingDirectory: resolveDaemonWorkingDirectory(),
+      homeDirectory: resolveAgentHomeDirectory(),
+      workingDirectory: resolveDefaultWorkingDirectory(),
     }
   }
 
@@ -88,7 +107,20 @@ function buildOpenClaudeExecutionProfile(provider: ProviderName): ExecutionProfi
     model: process.env.DAEMON_MODEL ?? 'gpt-5.4',
     apiKey: genericApiKey ?? process.env.OPENAI_API_KEY,
     baseUrl: genericBaseUrl,
-    workingDirectory: resolveDaemonWorkingDirectory(),
+    homeDirectory: resolveAgentHomeDirectory(),
+    workingDirectory: resolveDefaultWorkingDirectory(),
+  }
+}
+
+function buildGeminiExecutionProfile(provider: ProviderName): ExecutionProfile {
+  return {
+    provider,
+    runtime: 'gemini-sdk',
+    model: process.env.DAEMON_MODEL ?? 'gemini-3.1-pro-preview',
+    apiKey: process.env.BACKEND_API_KEY ?? process.env.GEMINI_API_KEY,
+    baseUrl: process.env.BACKEND_BASE_URL,
+    homeDirectory: resolveAgentHomeDirectory(),
+    workingDirectory: resolveDefaultWorkingDirectory(),
   }
 }
 
@@ -104,18 +136,24 @@ function buildCodexExecutionProfile(provider: ProviderName): ExecutionProfile {
       apiKey: genericApiKey ?? process.env.DEEPSEEK_API_KEY,
       baseUrl: genericBaseUrl ?? 'https://api.deepseek.com/v1',
       skipGitRepoCheck: process.env.CODEX_SKIP_GIT_REPO_CHECK === '1' || process.env.CODEX_SKIP_GIT_REPO_CHECK === 'true',
-      workingDirectory: resolveDaemonWorkingDirectory(),
+      homeDirectory: resolveAgentHomeDirectory(),
+      workingDirectory: resolveDefaultWorkingDirectory(),
+      sandboxMode: resolveCodexSandboxMode(),
     }
   }
+
+  const openaiApiKey = genericApiKey ?? process.env.OPENAI_API_KEY
 
   return {
     provider,
     runtime: 'codex-sdk',
     model: process.env.DAEMON_MODEL ?? 'gpt-5.4',
-    apiKey: genericApiKey ?? process.env.OPENAI_API_KEY,
-    baseUrl: genericBaseUrl,
+    apiKey: openaiApiKey,
+    baseUrl: openaiApiKey ? genericBaseUrl : undefined,
     skipGitRepoCheck: process.env.CODEX_SKIP_GIT_REPO_CHECK === '1' || process.env.CODEX_SKIP_GIT_REPO_CHECK === 'true',
-    workingDirectory: resolveDaemonWorkingDirectory(),
+    homeDirectory: resolveAgentHomeDirectory(),
+    workingDirectory: resolveDefaultWorkingDirectory(),
+    sandboxMode: resolveCodexSandboxMode(),
   }
 }
 
@@ -130,7 +168,8 @@ function buildSimpleHarnessExecutionProfile(provider: ProviderName): ExecutionPr
       model: process.env.DAEMON_MODEL ?? 'deepseek-chat',
       apiKey: genericApiKey ?? process.env.DEEPSEEK_API_KEY,
       baseUrl: genericBaseUrl ?? 'https://api.deepseek.com/v1',
-      workingDirectory: resolveDaemonWorkingDirectory(),
+      homeDirectory: resolveAgentHomeDirectory(),
+      workingDirectory: resolveDefaultWorkingDirectory(),
     }
   }
 
@@ -140,7 +179,8 @@ function buildSimpleHarnessExecutionProfile(provider: ProviderName): ExecutionPr
     model: process.env.DAEMON_MODEL ?? 'gpt-5.4',
     apiKey: genericApiKey ?? process.env.OPENAI_API_KEY,
     baseUrl: genericBaseUrl,
-    workingDirectory: resolveDaemonWorkingDirectory(),
+    homeDirectory: resolveAgentHomeDirectory(),
+    workingDirectory: resolveDefaultWorkingDirectory(),
   }
 }
 
@@ -157,6 +197,8 @@ export function loadDaemonConfig(): DaemonConfig {
 
   const executionProfile = runtime === 'claude-agent-sdk'
     ? buildClaudeExecutionProfile(provider)
+    : runtime === 'gemini-sdk'
+      ? buildGeminiExecutionProfile(provider)
     : runtime === 'openclaude-harness'
       ? buildOpenClaudeExecutionProfile(provider)
       : runtime === 'simple-harness'
@@ -170,6 +212,7 @@ export function loadDaemonConfig(): DaemonConfig {
     kafkaSessionTimeoutMs: Number.parseInt(process.env.KAFKA_SESSION_TIMEOUT_MS ?? '30000', 10),
     kafkaHeartbeatIntervalMs: Number.parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL_MS ?? '3000', 10),
     reflectionsTopic: process.env.REFLECTIONS_TOPIC ?? 'reflections',
+    progressTopic: process.env.PROGRESS_TOPIC ?? 'kord-progress',
     discoveryServerUrl: process.env.DISCOVERY_SERVER_URL,
     discoveryPublishIntervalMs: Number.parseInt(process.env.DISCOVERY_PUBLISH_INTERVAL_MS ?? '30000', 10),
     healthUrl: process.env.DAEMON_HEALTH_URL,

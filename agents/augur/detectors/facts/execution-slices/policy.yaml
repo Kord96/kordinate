@@ -1,0 +1,37 @@
+domain: execution-slices
+emits:
+  - execution-slice
+frameworks:
+  include: []
+  exclude: []
+detectors:
+  cpg:
+    enabled: true
+    detector_strength: 5
+  ast_grep:
+    enabled: false
+    detector_strength: 0
+  semgrep:
+    enabled: false
+    detector_strength: 0
+  signatures:
+    enabled: false
+    detector_strength: 0
+  manifest:
+    enabled: false
+    detector_strength: 0
+policy:
+  emit_threshold: 1
+  fallback_order:
+    - cpg
+  negative_rule_result_means: neutral
+  requires_framework_context: false
+normalization:
+  fact_kind: execution-slice
+  required_fields:
+    - slice_full_name
+    - slice_file
+  optional_fields:
+    - slice_name
+    - slice_line
+    - steps

@@ -42,17 +42,26 @@ def extract_go_routes_structured(text: str) -> list[dict[str, Any]]:
             )
 
     top_level_patterns = [
-        re.compile(
-            r"\.\s*(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|Get|Post|Put|Patch|Delete|Options|Head)\s*\(\s*\"([^\"]*)\"\s*,\s*([A-Za-z_][A-Za-z0-9_.]*)"
+        (
+            "route",
+            re.compile(
+                r"\.\s*(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD|Get|Post|Put|Patch|Delete|Options|Head)\s*\(\s*\"([^\"]*)\"\s*,\s*([A-Za-z_][A-Za-z0-9_.]*)"
+            ),
         ),
-        re.compile(r"\.\s*HandleFunc\s*\(\s*\"([^\"]+)\"\s*,\s*([A-Za-z_][A-Za-z0-9_.]*)"),
-        re.compile(r"\.\s*Handle\s*\(\s*\"([^\"]+)\"\s*,\s*([A-Za-z_][A-Za-z0-9_.]*)"),
+        (
+            "handle-func",
+            re.compile(r"\.\s*HandleFunc\s*\(\s*\"([^\"]+)\"\s*,\s*([A-Za-z_][A-Za-z0-9_.]*)"),
+        ),
+        (
+            "handle",
+            re.compile(r"\.\s*Handle\s*\(\s*\"([^\"]+)\"\s*,\s*([A-Za-z_][A-Za-z0-9_.]*)"),
+        ),
     ]
     seen = {(route["method"], route["path"], route["handler"]) for route in routes}
 
-    for pattern in top_level_patterns:
+    for pattern_kind, pattern in top_level_patterns:
         for match in pattern.finditer(text):
-            if "Handle" in match.group(0):
+            if pattern_kind in {"handle-func", "handle"}:
                 path, handler = match.groups()
                 method = "ALL"
                 method_match = re.match(r"^(GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)\s+(\/.*)", path)

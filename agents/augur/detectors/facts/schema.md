@@ -32,10 +32,13 @@ emits:
 frameworks:
   include: []
   exclude: []
-detectors:
-  ast_grep:
-    enabled: true | false
-    detector_strength: 1 | 2 | 3 | 4 | 5
+  detectors:
+    cpg:
+      enabled: true | false
+      detector_strength: 1 | 2 | 3 | 4 | 5
+    ast_grep:
+      enabled: true | false
+      detector_strength: 1 | 2 | 3 | 4 | 5
   semgrep:
     enabled: true | false
     detector_strength: 1 | 2 | 3 | 4 | 5
@@ -48,6 +51,7 @@ detectors:
 policy:
   emit_threshold: 1 | 2 | 3 | 4 | 5
   fallback_order:
+    - cpg
     - ast_grep
     - semgrep
     - signatures
@@ -83,5 +87,6 @@ Examples:
 - route extractor emits route facts
 - ORM extractor emits model and state-store facts
 - import graph extractor emits import-edge and hot-file facts
+- Joern-backed extractors emit normalized call/data/slice facts rather than raw CPG output
 
 Concept inference should consume these facts rather than re-reading raw detector matches.

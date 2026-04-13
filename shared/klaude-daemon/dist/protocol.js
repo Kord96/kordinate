@@ -10,7 +10,9 @@ export function isRequestMessage(value) {
         && (msg.session_id === undefined || typeof msg.session_id === 'string');
 }
 export function sessionKeyFor(message) {
-    return message.session_id ?? message.sender;
+    if (message.session_id)
+        return message.session_id;
+    return message.correlation_id;
 }
 export function getOrCreateSession(sessions, message) {
     const key = sessionKeyFor(message);
@@ -33,6 +35,15 @@ export function buildResponseMessage(agentName, message, response) {
         sender: agentName,
         correlation_id: message.correlation_id,
         ...response,
+    };
+}
+export function buildProgressMessage(agentName, message, event) {
+    return {
+        type: 'progress',
+        sender: agentName,
+        correlation_id: message.correlation_id,
+        timestamp: new Date().toISOString(),
+        event,
     };
 }
 export function buildReflectionEvent(input) {

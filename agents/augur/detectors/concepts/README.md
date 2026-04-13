@@ -10,10 +10,17 @@ Suggested per-concept files:
 
 ```text
 detectors/concepts/<name>/
-  policy.yaml         # detector orchestration and confirmation policy
+  meta.yaml           # concept decision, semantic questions, and monitoring metadata
   signatures.yaml     # broad textual/structural signals
   ast-grep.yaml       # executable structural rules
   semgrep.yaml        # executable semantic/security rules
 ```
 
-Generated detector bundles live under `../../bundles/detectors/`.
+Generated detector bundles live under `../../bundles/detectors/`, including:
+
+```text
+bundles/detectors/concepts/
+  all.json
+  questions.json
+  monitoring.json
+```

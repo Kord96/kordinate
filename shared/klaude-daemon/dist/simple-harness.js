@@ -157,8 +157,20 @@ export function classifyAlfredDirectIntent(prompt) {
 function resolveOriginalPrompt(request) {
     return request.raw_prompt?.trim() || request.prompt.trim();
 }
-function resolveWorkingDirectory(request, fallback) {
-    return request.working_dir ?? fallback ?? process.env.AGENT_HOME_DIR ?? process.cwd();
+function resolveRuntimeHome(homeDirectory) {
+    return homeDirectory ?? process.env.AGENT_HOME_DIR ?? process.cwd();
+}
+function resolveWorkingDirectory(request, options) {
+    return request.working_dir
+        ?? options?.workingDirectory
+        ?? options?.homeDirectory
+        ?? process.env.AGENT_HOME_DIR
+        ?? process.cwd();
+}
+async function reportProgress(progress, event) {
+    if (!progress)
+        return;
+    await progress(event);
 }
 function shellSingleQuote(value) {
     return `'${value.replace(/'/g, `'\"'\"'`)}'`;
@@ -411,23 +423,39 @@ async function executeSimpleHarnessToolCall(call, cwd) {
     }
 }
 async function runDirectIntent(request, options) {
-    const runtimeHome = resolveWorkingDirectory(request, options.workingDirectory);
+    const runtimeHome = resolveRuntimeHome(options.homeDirectory);
     const debugDir = path.join(runtimeHome, '.daemon-logs');
     await mkdir(debugDir, { recursive: true });
     const structuredLogPath = path.join(debugDir, `simple-harness-${options.sessionId}-${Date.now()}-stream.jsonl`);
     const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' });
-    const writeEvent = (event) => {
+    const writeEvent = async (event) => {
         structuredLogStream.write(`${JSON.stringify(event)}\n`);
+        await reportProgress(request.progress, {
+            source: 'provider',
+            kind: typeof event.type === 'string' ? event.type : 'unknown',
+            runtime: 'simple-harness',
+            session_id: options.sessionId,
+            structured_log_path: structuredLogPath,
+            payload: event,
+        });
     };
     const originalPrompt = resolveOriginalPrompt(request);
     const intent = classifyAlfredDirectIntent(originalPrompt);
-    const cwd = resolveWorkingDirectory(request, options.workingDirectory);
+    const cwd = resolveWorkingDirectory(request, options);
     if (!intent) {
         await new Promise(resolve => structuredLogStream.end(resolve));
         throw new Error('unsupported direct Alfred intent');
     }
     try {
-        writeEvent({
+        await reportProgress(request.progress, {
+            source: 'agent-daemon',
+            kind: 'runtime.stream.start',
+            runtime: 'simple-harness',
+            session_id: options.sessionId,
+            structured_log_path: structuredLogPath,
+            payload: { cwd, intent: intent.kind },
+        });
+        await writeEvent({
             type: 'system',
             subtype: 'init',
             runtime: 'simple-harness',
@@ -436,7 +464,7 @@ async function runDirectIntent(request, options) {
             intent: intent.kind,
         });
         if (intent.kind === 'get_secret') {
-            writeEvent({
+            await writeEvent({
                 type: 'assistant',
                 message: {
                     role: 'assistant',
@@ -444,19 +472,27 @@ async function runDirectIntent(request, options) {
                 },
             });
             const output = await passShow(intent.keyPath, cwd);
-            writeEvent({
+            await writeEvent({
                 type: 'user',
                 message: {
                     role: 'user',
                     content: [{ type: 'tool_result', tool_name: 'pass_show', key_path: intent.keyPath, output }],
                 },
             });
-            writeEvent({ type: 'result', subtype: 'success', result: output });
+            await writeEvent({ type: 'result', subtype: 'success', result: output });
+            await reportProgress(request.progress, {
+                source: 'agent-daemon',
+                kind: 'runtime.stream.complete',
+                runtime: 'simple-harness',
+                session_id: options.sessionId,
+                structured_log_path: structuredLogPath,
+                payload: { result_preview: summarizeText(output, 200) },
+            });
             await new Promise(resolve => structuredLogStream.end(resolve));
             const structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000);
             return { output, structuredLogPath, structuredLogTail };
         }
-        writeEvent({
+        await writeEvent({
             type: 'assistant',
             message: {
                 role: 'assistant',
@@ -464,7 +500,7 @@ async function runDirectIntent(request, options) {
             },
         });
         await passInsert(intent.keyPath, intent.value, cwd);
-        writeEvent({
+        await writeEvent({
             type: 'user',
             message: {
                 role: 'user',
@@ -472,30 +508,46 @@ async function runDirectIntent(request, options) {
             },
         });
         const verified = await passShow(intent.keyPath, cwd);
-        writeEvent({
+        await writeEvent({
             type: 'assistant',
             message: {
                 role: 'assistant',
                 content: [{ type: 'tool_use', name: 'pass_show', input: { key_path: intent.keyPath } }],
             },
         });
-        writeEvent({
+        await writeEvent({
             type: 'user',
             message: {
                 role: 'user',
                 content: [{ type: 'tool_result', tool_name: 'pass_show', key_path: intent.keyPath, output: verified }],
             },
         });
-        writeEvent({ type: 'result', subtype: 'success', result: 'stored' });
+        await writeEvent({ type: 'result', subtype: 'success', result: 'stored' });
+        await reportProgress(request.progress, {
+            source: 'agent-daemon',
+            kind: 'runtime.stream.complete',
+            runtime: 'simple-harness',
+            session_id: options.sessionId,
+            structured_log_path: structuredLogPath,
+            payload: { result_preview: 'stored' },
+        });
         await new Promise(resolve => structuredLogStream.end(resolve));
         const structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000);
         return { output: 'stored', structuredLogPath, structuredLogTail };
     }
     catch (error) {
-        writeEvent({
+        await writeEvent({
             type: 'result',
             subtype: 'error',
             error: error instanceof Error ? error.message : String(error),
+        });
+        await reportProgress(request.progress, {
+            source: 'agent-daemon',
+            kind: 'runtime.stream.error',
+            runtime: 'simple-harness',
+            session_id: options.sessionId,
+            structured_log_path: structuredLogPath,
+            payload: { error: error instanceof Error ? error.message : String(error) },
         });
         await new Promise(resolve => structuredLogStream.end(resolve));
         let structuredLogTail = '';
@@ -512,15 +564,24 @@ async function runDirectIntent(request, options) {
     }
 }
 async function runToolLoop(request, options) {
-    const runtimeHome = resolveWorkingDirectory(request, options.workingDirectory);
+    const runtimeHome = resolveRuntimeHome(options.homeDirectory);
     const debugDir = path.join(runtimeHome, '.daemon-logs');
     await mkdir(debugDir, { recursive: true });
     const structuredLogPath = path.join(debugDir, `simple-harness-${options.sessionId}-${Date.now()}-stream.jsonl`);
     const structuredLogStream = createWriteStream(structuredLogPath, { flags: 'a' });
-    const writeEvent = (event) => {
+    const writeEvent = async (event) => {
         structuredLogStream.write(`${JSON.stringify(event)}\n`);
+        await reportProgress(request.progress, {
+            source: 'provider',
+            kind: typeof event.type === 'string' ? event.type : 'unknown',
+            runtime: 'simple-harness',
+            model: options.model,
+            session_id: options.sessionId,
+            structured_log_path: structuredLogPath,
+            payload: event,
+        });
     };
-    const cwd = resolveWorkingDirectory(request, options.workingDirectory);
+    const cwd = resolveWorkingDirectory(request, options);
     const messages = [
         {
             role: 'system',
@@ -533,7 +594,16 @@ async function runToolLoop(request, options) {
     ];
     const tools = simpleHarnessTools();
     try {
-        writeEvent({ type: 'system', subtype: 'init', runtime: 'simple-harness', cwd, session_id: options.sessionId, model: options.model });
+        await reportProgress(request.progress, {
+            source: 'agent-daemon',
+            kind: 'runtime.stream.start',
+            runtime: 'simple-harness',
+            model: options.model,
+            session_id: options.sessionId,
+            structured_log_path: structuredLogPath,
+            payload: { cwd },
+        });
+        await writeEvent({ type: 'system', subtype: 'init', runtime: 'simple-harness', cwd, session_id: options.sessionId, model: options.model });
         for (let step = 0; step < 8; step += 1) {
             const response = await callOpenAiChatCompletion({
                 model: options.model,
@@ -543,7 +613,7 @@ async function runToolLoop(request, options) {
                 tools,
                 timeoutMs: request.timeout_ms,
             });
-            writeEvent({ type: 'assistant', message: response });
+            await writeEvent({ type: 'assistant', message: response });
             const choice = Array.isArray(response.choices) ? response.choices[0] : undefined;
             const message = choice && typeof choice === 'object' ? choice.message : undefined;
             const toolCalls = Array.isArray(message?.tool_calls) ? message.tool_calls : [];
@@ -553,7 +623,16 @@ async function runToolLoop(request, options) {
                     : Array.isArray(message?.content)
                         ? message.content.map(item => typeof item === 'string' ? item : summarizeUnknown(item, 400) ?? '').join('\n').trim()
                         : '';
-                writeEvent({ type: 'result', subtype: 'success', result: content });
+                await writeEvent({ type: 'result', subtype: 'success', result: content });
+                await reportProgress(request.progress, {
+                    source: 'agent-daemon',
+                    kind: 'runtime.stream.complete',
+                    runtime: 'simple-harness',
+                    model: options.model,
+                    session_id: options.sessionId,
+                    structured_log_path: structuredLogPath,
+                    payload: { result_preview: summarizeText(content, 200) },
+                });
                 await new Promise(resolve => structuredLogStream.end(resolve));
                 const structuredLogTail = (await readFile(structuredLogPath, 'utf8')).slice(-4000);
                 return { output: content.trim(), structuredLogPath, structuredLogTail };
@@ -574,9 +653,9 @@ async function runToolLoop(request, options) {
                 catch {
                     args = {};
                 }
-                writeEvent({ type: 'tool_use', id, name, arguments: args });
+                await writeEvent({ type: 'tool_use', id, name, arguments: args });
                 const output = await executeSimpleHarnessToolCall({ id, name, arguments: args }, cwd);
-                writeEvent({ type: 'tool_result', id, name, output: summarizeText(output, 1200) });
+                await writeEvent({ type: 'tool_result', id, name, output: summarizeText(output, 1200) });
                 messages.push({
                     role: 'tool',
                     tool_call_id: id,
@@ -587,7 +666,16 @@ async function runToolLoop(request, options) {
         throw new Error('simple harness exceeded maximum steps');
     }
     catch (error) {
-        writeEvent({ type: 'result', subtype: 'error', error: error instanceof Error ? error.message : String(error) });
+        await writeEvent({ type: 'result', subtype: 'error', error: error instanceof Error ? error.message : String(error) });
+        await reportProgress(request.progress, {
+            source: 'agent-daemon',
+            kind: 'runtime.stream.error',
+            runtime: 'simple-harness',
+            model: options.model,
+            session_id: options.sessionId,
+            structured_log_path: structuredLogPath,
+            payload: { error: error instanceof Error ? error.message : String(error) },
+        });
         await new Promise(resolve => structuredLogStream.end(resolve));
         let structuredLogTail = '';
         try {
@@ -630,11 +718,13 @@ export class SimpleHarnessAdapter {
     model;
     baseUrl;
     apiKey;
+    homeDirectory;
     workingDirectory;
     constructor(model, options) {
         this.model = model;
         this.baseUrl = options.baseUrl;
         this.apiKey = options.apiKey;
+        this.homeDirectory = options.homeDirectory;
         this.workingDirectory = options.workingDirectory;
     }
     async startOrResumeWarmSession(session) {
@@ -648,6 +738,7 @@ export class SimpleHarnessAdapter {
             const execution = classifyAlfredDirectIntent(originalPrompt)
                 ? await runDirectIntent({ ...request, raw_prompt: originalPrompt }, {
                     sessionId,
+                    homeDirectory: this.homeDirectory,
                     workingDirectory: this.workingDirectory,
                 })
                 : await runToolLoop(request, {
@@ -655,6 +746,7 @@ export class SimpleHarnessAdapter {
                     apiKey: this.apiKey,
                     baseUrl: this.baseUrl,
                     sessionId,
+                    homeDirectory: this.homeDirectory,
                     workingDirectory: this.workingDirectory,
                 });
             const baseResult = enforceAlfredDirectIntentContract({ ...request, raw_prompt: originalPrompt }, successResult(execution.output));

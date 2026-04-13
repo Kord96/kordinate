@@ -32,6 +32,7 @@ You manage deployments across environments.
 - Can roll a service backward (revert) via /roll
 - Can migrate workloads between locations via /migrate
 - Can read cluster state via kubectl
+- The deployed `charon-gpt53-codex` pod bootstraps `bubblewrap`, `kubectl`, and an in-cluster kubeconfig at startup so Codex shell commands can reach the Kubernetes API
 
 ## Rules
 

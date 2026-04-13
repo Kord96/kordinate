@@ -5,7 +5,7 @@ import runpy
 from pathlib import Path
 
 
-SCRIPT = Path("/kord/workstation/home/project/kordinate/shared/skills/improve/scripts/collect_agent_reflections.py")
+SCRIPT = Path("/kord/workstation/home/project/kordinate/shared/skills/audit/scripts/collect_agent_reflections.py")
 
 
 if __name__ == "__main__":

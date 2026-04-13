@@ -27,6 +27,95 @@ profiles:
       secret_key: api-key
     required_choices: []
 
+  generic-gemini-31-pro:
+    description: Generic daemon-backed Gemini 3.1 Pro agent over the OpenAI-compatible Gemini endpoint.
+    defaults:
+      flavor: generic
+      image_customization: none
+      runtime_kind: gemini-sdk
+      provider: gemini
+      model: gemini-3.1-pro-preview
+      backend: gemini
+      backend_base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      secret_env: BACKEND_API_KEY
+      secret_name: gemini-api
+      secret_key: api-key
+    required_choices: []
+
+  generic-gemini-25-pro:
+    description: Generic daemon-backed Gemini 2.5 Pro agent over the OpenAI-compatible Gemini endpoint.
+    defaults:
+      flavor: generic
+      image_customization: none
+      runtime_kind: gemini-sdk
+      provider: gemini
+      model: gemini-2.5-pro
+      backend: gemini
+      backend_base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      secret_env: BACKEND_API_KEY
+      secret_name: gemini-api
+      secret_key: api-key
+    required_choices: []
+
+  generic-gemini-25-flash:
+    description: Generic daemon-backed Gemini 2.5 Flash agent over the OpenAI-compatible Gemini endpoint.
+    defaults:
+      flavor: generic
+      image_customization: none
+      runtime_kind: gemini-sdk
+      provider: gemini
+      model: gemini-2.5-flash
+      backend: gemini
+      backend_base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      secret_env: BACKEND_API_KEY
+      secret_name: gemini-api
+      secret_key: api-key
+    required_choices: []
+
+  generic-deepseek-reasoner:
+    description: Generic daemon-backed DeepSeek Reasoner agent.
+    defaults:
+      flavor: generic
+      image_customization: none
+      provider: deepseek
+      model: deepseek-reasoner
+      backend: deepseek
+      backend_base_url: https://api.deepseek.com/v1
+      secret_env: BACKEND_API_KEY
+      secret_name: deepseek-api
+      secret_key: api-key
+    required_choices: []
+
+  generic-glm5:
+    description: Generic daemon-backed GLM-5 agent through Fireworks.
+    defaults:
+      flavor: generic
+      image_customization: none
+      provider: fireworks
+      model: accounts/fireworks/models/glm-5
+      backend: fireworks
+      backend_base_url: https://api.fireworks.ai/inference/v1
+      secret_env: BACKEND_API_KEY
+      secret_name: fireworks-api
+      secret_key: api-key
+    required_choices: []
+
+  generic-gpt54:
+    description: Generic daemon-backed GPT-5.4 agent on the OpenAI API.
+    defaults:
+      flavor: generic
+      image_customization: none
+      provider: openai
+      model: gpt-5.4
+      backend: openai
+      backend_base_url: https://api.openai.com/v1
+      skip_git_repo_check: true
+      sandbox_mode: workspace-write
+      secret_env: BACKEND_API_KEY
+      secret_name: codex-api
+      secret_key: api-key
+    required_choices: []
+
   augur-opus:
     description: Augur specialist pinned to Claude Opus via the native Claude SDK runtime.
     defaults:
@@ -56,8 +145,61 @@ profiles:
     defaults:
       flavor: augur
       image_customization: agent-augur
+      runtime_kind: gemini-sdk
       provider: gemini
       model: gemini-3.1-pro-preview
+      backend: gemini
+      backend_base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      secret_env: BACKEND_API_KEY
+      secret_name: gemini-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  augur-gemini-25-pro:
+    description: Augur specialist pinned to Gemini 2.5 Pro over the OpenAI-compatible Gemini endpoint.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: gemini-sdk
+      provider: gemini
+      model: gemini-2.5-pro
+      backend: gemini
+      backend_base_url: https://generativelanguage.googleapis.com/v1beta/openai
+      secret_env: BACKEND_API_KEY
+      secret_name: gemini-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
+  augur-gemini-25-flash:
+    description: Augur specialist pinned to Gemini 2.5 Flash over the OpenAI-compatible Gemini endpoint.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      runtime_kind: gemini-sdk
+      provider: gemini
+      model: gemini-2.5-flash
       backend: gemini
       backend_base_url: https://generativelanguage.googleapis.com/v1beta/openai
       secret_env: BACKEND_API_KEY
@@ -136,6 +278,7 @@ profiles:
       backend: openai
       backend_base_url: https://api.openai.com/v1
       skip_git_repo_check: true
+      sandbox_mode: workspace-write
       secret_env: BACKEND_API_KEY
       secret_name: codex-api
       secret_key: api-key
@@ -162,6 +305,7 @@ profiles:
       backend: openai
       backend_base_url: https://api.openai.com/v1
       skip_git_repo_check: true
+      sandbox_mode: danger-full-access
       secret_env: BACKEND_API_KEY
       secret_name: codex-api
       secret_key: api-key

@@ -14,13 +14,13 @@ Concept detection is deterministic runtime machinery and should be kept separate
 
 ```text
 detectors/concepts/<name>/
-  policy.yaml         # orchestration and confirmation policy
+  meta.yaml           # decision rules, semantic questions, monitoring guidance
   signatures.yaml     # broad textual/structural signals
   ast-grep.yaml       # optional executable structural rules
   semgrep.yaml        # optional executable semantic/security rules
 ```
 
-## `policy.yaml`
+## `meta.yaml`
 
 ```yaml
 concept: <kebab-case concept id>
@@ -59,6 +59,15 @@ questions:
       prompt: <question text>
       weight: <integer>
       signals: []
+monitoring:
+  applies_to: []
+  health_signals:
+    - name: <metric name>
+      description: <what health condition this signal helps detect>
+  business_metrics:
+    - name: <metric name>
+      description: <what business outcome this metric measures>
+  gaps: []
 ```
 
 ## `signatures.yaml`
@@ -77,6 +86,6 @@ notes: []
 
 Keep the split clean:
 - semantic meaning stays with the concept semantics side
-- detector policy/questions live in `policy.yaml`
+- concept decision/questions/monitoring metadata live in `meta.yaml`
 - broad textual clues live in `signatures.yaml`
 - executable AST/semgrep rules remain standalone detector artifacts

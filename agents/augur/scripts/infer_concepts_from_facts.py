@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
-"""Infer Augur concepts from normalized facts.
+"""Infer deterministic concept evidence facts from normalized facts.
 
-This script is intentionally pragmatic rather than exhaustive. It turns the new
-facts layer into atlas-compatible concept evidence so Augur can move toward a
-facts-first pipeline without waiting on every concept detector to be rewritten.
+This script is intentionally pragmatic rather than exhaustive. It turns the
+facts layer into normalized concept-candidate evidence so Phase 1 can stay
+fully deterministic while Phase 2 owns final concept judgment.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
-
-from concept_decision import build_concept_verdict
-
 
 ROOT = Path(__file__).resolve().parents[1]
 SEMANTIC_REVIEW_CONCEPTS = {
@@ -114,9 +112,20 @@ def fact_components(fact: dict[str, Any]) -> list[str]:
 def make_evidence(concept_id: str, facts: list[dict[str, Any]], note: str, detector_class: str = "inference") -> dict[str, Any]:
     fact_ids = [fact["id"] for fact in facts if fact.get("id")]
     files = sorted({source for fact in facts for source in fact.get("source_files", [])})
+    components = sorted({component for fact in facts for component in fact_components(fact)})
+    fingerprint_source = "|".join(
+        [
+            concept_id,
+            *fact_ids,
+            *files,
+            *components,
+        ]
+    )
     return {
         "fact_ids": fact_ids,
         "files": files,
+        "components": components,
+        "fingerprint": hashlib.sha256(fingerprint_source.encode("utf-8")).hexdigest(),
         "method": "inferred-from-facts",
         "detector_class": detector_class,
         "note": note,
@@ -167,35 +176,17 @@ def build_pattern(
     grounded_in = evidence["files"]
     fact_evidence = evidence["fact_ids"]
     contradictions = contradiction_summary(concept_id, facts)
-    decision_mode = concept_decision_mode(concept_id)
-    detector_verdict = concept_detector_verdict(concept_id, confidence)
-    semantic_review_required = decision_mode == "semantic-review"
-    review_required_reason = (
-        "Architecture-level concept requires repo-wide semantic confirmation."
-        if semantic_review_required
-        else ""
-    )
-    explanation = note
     return {
         "id": concept_id,
         "category": category,
         "confidence": confidence,
         "components": components,
         "evidence": evidence,
-        "verdict": build_concept_verdict(
-            concept=concept_id,
-            category=category,
-            confidence=confidence,
-            detector_verdict=detector_verdict,
-            decision_mode=decision_mode,
-            grounded_in=grounded_in,
-            detector_evidence=[evidence["method"]],
-            fact_evidence=fact_evidence,
-            contradictions=contradictions,
-            semantic_review_required=semantic_review_required,
-            review_required_reason=review_required_reason,
-            explanation=explanation,
-        ),
+        "grounded_in": grounded_in,
+        "fact_evidence": fact_evidence,
+        "contradictions": contradictions,
+        "decision_mode": concept_decision_mode(concept_id),
+        "semantic_review_required": concept_decision_mode(concept_id) == "semantic-review",
     }
 
 
@@ -476,20 +467,123 @@ def infer_gaps(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return gaps
 
 
-def build_output(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any]:
-    domains = sorted({fact.get("domain") for fact in facts if fact.get("domain")})
+def metadata_from_facts_path(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any]:
+    index_path = facts_path / "index.json" if facts_path.is_dir() else facts_path
+    try:
+      payload = load_json(index_path)
+    except Exception:
+      payload = {}
+    if not isinstance(payload, dict):
+      payload = {}
     return {
-        "version": "1",
-        "generated_from": str(facts_path),
-        "concepts": {
-            "detected_patterns": infer_patterns(facts),
-            "detected_anti_patterns": infer_anti_patterns(facts),
-            "gaps": infer_gaps(facts),
-            "scan_metadata": {
-                "facts_index": str((facts_path / "index.json") if facts_path.is_dir() else facts_path),
-                "fact_domains_used": domains,
-                "tools_used": sorted({fact.get("detector", {}).get("class") for fact in facts if fact.get("detector", {}).get("class")}),
-            },
+        "version": str(payload.get("version") or "1"),
+        "generated": payload.get("generated"),
+        "project": payload.get("project"),
+        "analysis_mode": payload.get("analysis_mode"),
+        "root": payload.get("root"),
+        "metadata": payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {},
+        "framework_context": sorted({ctx for fact in facts for ctx in (fact.get("framework_context") or []) if isinstance(ctx, str) and ctx}),
+    }
+
+
+def pattern_to_fact(pattern: dict[str, Any]) -> dict[str, Any]:
+    evidence = pattern.get("evidence") or {}
+    raw_evidence = {
+        "concept_id": pattern.get("id"),
+        "category": pattern.get("category"),
+        "inference_method": evidence.get("method") or "inferred-from-facts",
+        "note": evidence.get("note") or "",
+        "fingerprint": evidence.get("fingerprint") or "",
+        "supporting_fact_ids": evidence.get("fact_ids") or [],
+        "supporting_components": evidence.get("components") or [],
+        "decision_mode": pattern.get("decision_mode") or "fact-inference",
+        "semantic_review_required": bool(pattern.get("semantic_review_required")),
+    }
+    fingerprint_source = "|".join(
+        [
+            str(pattern.get("id") or ""),
+            *(str(item) for item in (evidence.get("fact_ids") or [])),
+            *(str(item) for item in (evidence.get("files") or [])),
+        ]
+    )
+    fact_id = f"concept-{hashlib.sha256(fingerprint_source.encode('utf-8')).hexdigest()[:10]}"
+    return {
+        "id": fact_id,
+        "kind": "concept-candidate",
+        "domain": "concept-evidence",
+        "summary": f"Candidate concept `{pattern.get('id')}` inferred from deterministic facts.",
+        "confidence": str(pattern.get("confidence") or "low"),
+        "framework_context": [],
+        "source_files": list(evidence.get("files") or []),
+        "detector": {
+            "id": f"concept-evidence-{pattern.get('id')}",
+            "class": "inference",
+            "strength": 3,
+            "rule": None,
+            "bundle": "bundles/detectors/concepts",
+        },
+        "raw_evidence": raw_evidence,
+        "negative_evidence": [],
+        "contradictions": list(pattern.get("contradictions") or []),
+        "relationships": {
+            "component_ids": list(pattern.get("components") or []),
+            "depends_on_fact_ids": list(evidence.get("fact_ids") or []),
+            "related_fact_ids": [],
+        },
+    }
+
+
+def gap_to_fact(gap: dict[str, Any]) -> dict[str, Any]:
+    gap_id = str(gap.get("id") or "unknown-gap")
+    return {
+        "id": f"concept-gap-{gap_id}",
+        "kind": "concept-gap",
+        "domain": "concept-evidence",
+        "summary": str(gap.get("relevance") or f"Gap detected for concept `{gap_id}`."),
+        "confidence": "medium",
+        "framework_context": [],
+        "source_files": [],
+        "detector": {
+            "id": f"concept-gap-{gap_id}",
+            "class": "inference",
+            "strength": 2,
+            "rule": None,
+            "bundle": "bundles/detectors/concepts",
+        },
+        "raw_evidence": {
+            "concept_id": gap_id,
+            "recommendation": str(gap.get("recommendation") or ""),
+            "kind": "gap",
+        },
+        "negative_evidence": [],
+        "contradictions": [],
+        "relationships": {
+            "component_ids": [],
+            "depends_on_fact_ids": [],
+            "related_fact_ids": [],
+        },
+    }
+
+
+def build_output(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any]:
+    meta = metadata_from_facts_path(facts_path, facts)
+    patterns = infer_patterns(facts)
+    gaps = infer_gaps(facts)
+    concept_facts = [pattern_to_fact(pattern) for pattern in patterns]
+    concept_facts.extend(gap_to_fact(gap) for gap in gaps)
+    return {
+        "version": meta["version"],
+        "generated": meta["generated"],
+        "project": meta["project"],
+        "analysis_mode": meta["analysis_mode"],
+        "domain": "concept-evidence",
+        "count": len(concept_facts),
+        "facts": concept_facts,
+        "metadata": {
+            **meta["metadata"],
+            "generated_from": str(facts_path),
+            "fact_domains_used": sorted({fact.get("domain") for fact in facts if fact.get("domain")}),
+            "tools_used": sorted({fact.get("detector", {}).get("class") for fact in facts if fact.get("detector", {}).get("class")}),
         },
     }
 

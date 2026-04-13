@@ -3,6 +3,8 @@ FROM node:22-bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 ENV PATH="/usr/local/bin:${PATH}"
+# Baked Kordinate code root inside the image. Keep this separate from HOME,
+# which remains the standard Unix tool home for shells and CLIs.
 ENV KORDINATE_HOME=/app
 
 RUN apt-get update \

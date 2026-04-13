@@ -2,7 +2,7 @@
 
 Level 3 resource for the analyze skill. Referenced from step 9 (write atlas). Defines the structural inventory output format.
 
-Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_contexts` to domain model, deepens `state` with schema evolution and concurrency, adds `observability`, `security`, and `developer_experience` sections, expands `module_graph` with CI/CD and IaC.
+Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_contexts` to domain model, deepens `state` with schema evolution and concurrency, attaches `health` to operational entities, attaches `business_metrics` to flows, keeps `security` and `developer_experience`, and expands `module_graph` with CI/CD and IaC.
 
 ## Schema
 
@@ -71,6 +71,21 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
       "depends_on": ["<component-id>"],
       "abstraction": ["<abstraction-name>"],
       "patterns": ["<pattern-name>"],
+      "health": {
+        "failure_modes": [
+          {
+            "id": "<kebab-case>",
+            "trigger": "<what goes wrong>",
+            "impact": "<what users or operators experience>",
+            "signals": ["<metric or symptom name>"],
+            "gaps": ["<missing instrumentation or guardrail>"],
+            "recovery": ["<manual or automatic recovery step>"],
+            "severity": "critical | high | medium | low",
+            "grounded_in": ["<file:line>"]
+          }
+        ],
+        "gaps": ["<missing signal or resilience control>"]
+      },
       "deployment": {
         "namespace": "<k8s namespace>",
         "kind": "<Deployment | StatefulSet | CronJob | Pod>",
@@ -92,6 +107,29 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
       "trigger": "<what starts it>",
       "actors": ["<actor-id>"],
       "grounded_in": ["<file:line>"],
+      "health": {
+        "failure_modes": [
+          {
+            "id": "<kebab-case>",
+            "trigger": "<what breaks this flow>",
+            "impact": "<what the caller or user experiences>",
+            "signals": ["<flow-level signal>"],
+            "gaps": ["<missing flow instrumentation>"],
+            "recovery": ["<recovery step or fallback>"],
+            "severity": "critical | high | medium | low",
+            "grounded_in": ["<file:line>"]
+          }
+        ],
+        "gaps": ["<missing flow health visibility>"]
+      },
+      "business_metrics": [
+        {
+          "name": "<metric name>",
+          "description": "<what business outcome it measures>",
+          "owner": "<flow-id or system>",
+          "grounded_in": ["<file:line>"]
+        }
+      ],
       "steps": [
         {
           // ── Common (all flow types) ──
@@ -172,31 +210,27 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
       "components": ["<component-id>"],
       "purpose": "<why needed>",
       "criticality": "critical | important | optional",
+      "health": {
+        "failure_modes": [
+          {
+            "id": "<kebab-case>",
+            "trigger": "<dependency degradation or outage>",
+            "impact": "<what features degrade>",
+            "signals": ["<latency/error/availability signal>"],
+            "gaps": ["<missing timeout/retry/circuit-breaker>"],
+            "recovery": ["<fallback or operator action>"],
+            "severity": "critical | high | medium | low",
+            "grounded_in": ["<file:line>"]
+          }
+        ],
+        "gaps": ["<missing protection or signal>"]
+      },
       "resilience": {
         "timeout": true,
         "retry": false,
         "circuit_breaker": false,
         "fallback": "<description or null>"
       }
-    }
-  ],
-
-  "failure_modes": [
-    {
-      "id": "<kebab-case>",
-      "trigger": "<what goes wrong>",
-      "cascade": [
-        {"component": "<component-id>", "effect": "<what happens>"}
-      ],
-      "impact": "<what end users experience>",
-      "detection": {
-        "signals": ["<observable symptom — metric behavior, log pattern, error type>"],
-        "concern": "<abstract category: dependency-availability | data-integrity | throughput | latency | resource-exhaustion | state-consistency>",
-        "source_pattern": "<concept name if detection derives from a known pattern, else null>"
-      },
-      "recovery": ["<step — automatic or manual>"],
-      "severity": "critical | high | medium | low",
-      "grounded_in": ["<file:line>"]
     }
   ],
 
@@ -313,31 +347,6 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
       ],
       "unversioned_deps": ["<description>"]
     }
-  },
-
-  // ── Observability ──────────────────────────────────────────────
-
-  "observability": {
-    "logging": {
-      "format": "json | plain | mixed",
-      "levels_used": ["<DEBUG | INFO | WARN | ERROR>"],
-      "correlation_id": true,
-      "libraries": ["<structlog | winston | slog | log4j>"],
-      "grounded_in": ["<file:line>"]
-    },
-    "metrics": {
-      "format": "prometheus | statsd | otlp | none",
-      "endpoint": "</metrics or null>",
-      "key_metrics": ["<metric name or pattern>"],
-      "grounded_in": ["<file:line>"]
-    },
-    "tracing": {
-      "enabled": true,
-      "provider": "<opentelemetry | jaeger | datadog | zipkin | none>",
-      "propagation": "w3c | b3 | jaeger | none",
-      "grounded_in": ["<file:line>"]
-    },
-    "gaps": ["<what's missing — e.g., no correlation IDs, no metrics endpoint, no error tracking>"]
   },
 
   // ── Security ───────────────────────────────────────────────────
@@ -470,6 +479,10 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
     "analyzed_at_sha": "<git commit SHA at time of analysis>",
     "analysis_mode": "full | incremental | skip",
     "affected_components": ["<component-id — only populated in incremental mode>"],
+    "analysis_root": "<path to current/ or history/commits/<sha>>",
+    "meta_path": "<path to meta.json>",
+    "base_sha": "<base analysis SHA when incremental context exists>",
+    "base_commit_time": "<base commit time when incremental context exists>",
     "flags": {
       "detect_only": false
     }
@@ -501,7 +514,7 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
 - **Components should number 5-10** for most projects. >12 means not abstracting enough. <4 means over-abstracting
 - **Groups must number 3-5.** This is a hard constraint. If you have more, merge related groups. If you have fewer, the project may be too small to warrant grouping.
 - **Flows trace critical paths**, not every code path. 2-6 flows typical across all types
-- **Failure modes should cover** every external dependency and every stateful component. The `detection` field is structured: `signals` are observable symptoms (metric behavior, log patterns), `concern` is an abstract category (dependency-availability, data-integrity, throughput, latency, resource-exhaustion, state-consistency), and `source_pattern` links to the concept catalog entry the detection derives from. This structure is portable — any ops team can implement the signals in their monitoring stack. For /design, detection concerns are derived from the selected patterns' concept semantics and detector-side signatures/policy.
+- **Health should cover** every external dependency and every stateful component. Attach failure modes, detection signals, and instrumentation gaps to the entity they affect instead of using a detached top-level list. The health shape remains portable across monitoring stacks because signals and gaps stay grounded in code and concept semantics.
 - Components nest via `children`. Don't nest deeper than the code's natural structure
 - `deployment` field enables the deployment viewpoint. Only add to components that map to a k8s workload
 - `technology` on flow steps enables annotated sequence diagrams
@@ -509,10 +522,9 @@ Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_conte
 - Omit `module_graph.reverse_dependencies` if `--reverse` was not used
 - Omit `api_surface` entirely if no endpoints were found and the project is not an API
 - Omit empty severity lists in `api_surface.findings` and empty `debt.by_category` entries
-- Omit `observability` if no logging/metrics/tracing found (rare — flag as gap in debt)
 - Omit `security` if the project has no auth, no secrets, no external entry points (flag as gap)
 - Omit `developer_experience` fields that don't apply (e.g., no `e2e` if none exist)
-- **`grounded_in`** on flows, state, failure_modes, observability, security, and concept evidence lists the source files that justify the entry. Format: `["<file:line>"]`. These are used during evaluation to verify claims against actual code — not against other atlas entries (which would be circular)
+- **`grounded_in`** on flows, state, health entries, security, business metrics, and concept evidence lists the source files that justify the entry. Format: `["<file:line>"]`. These are used during evaluation to verify claims against actual code — not against other atlas entries (which would be circular)
 
 ## Flow Type Guide
 
@@ -580,7 +592,6 @@ Guidelines:
   "flows": [],
   "state": [],
   "external_dependencies": [],
-  "failure_modes": [],
   "concepts": {
     "detected_patterns": [],
     "detected_anti_patterns": [],

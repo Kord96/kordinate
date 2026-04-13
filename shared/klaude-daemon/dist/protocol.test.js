@@ -11,27 +11,49 @@ test('isRequestMessage accepts valid request envelope', () => {
     };
     assert.equal(isRequestMessage(message), true);
 });
-test('sessionKeyFor uses sender', () => {
+test('sessionKeyFor uses correlation_id when no explicit session_id is provided', () => {
     const message = {
         type: 'request',
         sender: 'agent-a',
         correlation_id: '123',
         prompt: 'hello',
+        working_dir: '/tmp/project-a',
     };
-    assert.equal(sessionKeyFor(message), 'agent-a');
+    assert.equal(sessionKeyFor(message), '123');
 });
-test('getOrCreateSession reuses session by sender', () => {
+test('getOrCreateSession reuses session by correlation_id', () => {
     const sessions = new Map();
     const message = {
         type: 'request',
         sender: 'agent-a',
         correlation_id: '123',
         prompt: 'hello',
+        working_dir: '/tmp/project-a',
     };
     const first = getOrCreateSession(sessions, message);
     const second = getOrCreateSession(sessions, message);
     assert.equal(first, second);
-    assert.equal(first.key, 'agent-a');
+    assert.equal(first.key, '123');
+});
+test('getOrCreateSession isolates sessions for different correlation ids', () => {
+    const sessions = new Map();
+    const first = getOrCreateSession(sessions, {
+        type: 'request',
+        sender: 'agent-a',
+        correlation_id: '123',
+        prompt: 'hello',
+        working_dir: '/tmp/project-a',
+    });
+    const second = getOrCreateSession(sessions, {
+        type: 'request',
+        sender: 'agent-a',
+        correlation_id: '456',
+        prompt: 'hello',
+        working_dir: '/tmp/project-b',
+    });
+    assert.notEqual(first.key, second.key);
+    assert.equal(first.key, '123');
+    assert.equal(second.key, '456');
 });
 test('buildResponseMessage targets original correlation and daemon sender', () => {
     const request = {

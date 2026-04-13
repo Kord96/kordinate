@@ -17,6 +17,7 @@ test('loadDaemonConfig supports deepseek through openclaude harness', () => {
     model: 'deepseek-chat',
     apiKey: 'deepseek-key',
     baseUrl: 'https://api.deepseek.com/v1',
+    homeDirectory: undefined,
     workingDirectory: undefined,
   })
 

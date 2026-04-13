@@ -1,0 +1,9 @@
+domain: execution-slices
+positive:
+  strong: []
+  medium: []
+  weak: []
+negative: []
+notes:
+  - This domain is produced by the shared Joern-backed CPG extractor rather than textual signatures.
+  - Records should preserve a stable ordered slice of concrete call steps for each owner method.

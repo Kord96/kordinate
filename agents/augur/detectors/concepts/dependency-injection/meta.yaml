@@ -1,0 +1,49 @@
+concept: dependency-injection
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 4
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 5
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+      - broad_match
+      - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 6
+  entries:
+    - id: di-constructor-or-container
+      prompt: Are collaborators provided through constructors, framework DI, or a composition root rather than instantiated inline?
+      weight: 3
+      signals:
+        - "Depends("
+        - "@Injectable"
+        - "@Autowired"
+    - id: di-no-service-locator
+      prompt: Is the pattern true DI rather than arbitrary runtime service-location calls?
+      weight: 3
+      signals:
+        - container.get
+        - injector.get
+monitoring:
+  applies_to:
+    - component
+  health_signals: []
+  business_metrics: []
+  gaps:
+    - Dependency injection itself is not a runtime health signal; monitor the injected collaborators instead.

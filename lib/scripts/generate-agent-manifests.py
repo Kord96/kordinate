@@ -132,6 +132,12 @@ def emit_env_lines(agent: dict) -> list[str]:
         env.append(("CODEX_WORKING_DIRECTORY", daemon["default_working_dir"]))
     if daemon.get("skip_git_repo_check") is not None:
         env.append(("CODEX_SKIP_GIT_REPO_CHECK", "true" if daemon["skip_git_repo_check"] else "false"))
+    if daemon.get("sandbox_mode"):
+        env.append(("CODEX_SANDBOX_MODE", str(daemon["sandbox_mode"])))
+    if name == "charon-gpt53-codex":
+        env.append(("CODEX_NETWORK_ACCESS_ENABLED", "true"))
+        env.append(("KUBECONFIG", "/home/node/.kube/config"))
+        env.append(("KUBECTL_VERSION", "v1.34.5"))
     if creation.get("memory_bundle"):
         env.append(("AGENT_MEMORY_BUNDLE", creation["memory_bundle"]))
     if creation.get("skill_bundle"):
@@ -142,7 +148,13 @@ def emit_env_lines(agent: dict) -> list[str]:
         env.append(("PASSWORD_STORE_DIR", "/kord/alfred/pass"))
         env.append(("GNUPGHOME", "/kord/alfred/gnupg"))
 
-    env_lines = [f"            - {{ name: {key}, value: {json.dumps(value)} }}" for key, value in env]
+    env_lines: list[str] = []
+    for key, value in env:
+        if key == "HOME":
+            env_lines.append("            # Standard Unix home for shells and CLIs that implicitly read $HOME.")
+        if key == "KORDINATE_HOME":
+            env_lines.append("            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.")
+        env_lines.append(f"            - {{ name: {key}, value: {json.dumps(value)} }}")
 
     secret = daemon.get("secret", {}) if isinstance(daemon.get("secret"), dict) else {}
     if secret.get("env") and secret.get("name") and secret.get("key"):
@@ -169,7 +181,7 @@ def build_init_script(agent: dict) -> str:
     if creation.get("runtime_bundle"):
         env_prefix.append(f"AGENT_RUNTIME_BUNDLE={shlex.quote(str(creation['runtime_bundle']))}")
     env_prefix.append("KORDINATE_HOME=/app")
-    env_prefix.append("KORD_RUNTIME=/runtime")
+    env_prefix.append("KORD_RUNTIME=/kord/agents")
     prefix = " ".join(env_prefix)
     lines = [f"bash /app/scripts/setup-agent-dir.sh {shlex.quote(name)}"]
     if flavor in SPECIAL_FLAVORS:
@@ -185,7 +197,95 @@ def build_init_script(agent: dict) -> str:
 
 def build_exec_script(agent: dict) -> str:
     command = agent.get("runtime", {}).get("command") or ["klaude-daemon"]
+    if agent["name"] == "charon-gpt53-codex":
+        lines = [
+            "set -e",
+            "if ! command -v bwrap >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then",
+            "  export DEBIAN_FRONTEND=noninteractive",
+            "  apt-get update >/dev/null",
+            "  apt-get install -y --no-install-recommends bubblewrap curl ca-certificates >/dev/null",
+            "fi",
+            "if ! command -v kubectl >/dev/null 2>&1; then",
+            "  curl -fsSL -o /usr/local/bin/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION:-v1.34.5}/bin/linux/amd64/kubectl",
+            "  chmod +x /usr/local/bin/kubectl",
+            "fi",
+            "mkdir -p /home/node/.kube",
+            "TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)",
+            "CA=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+            "SERVER=https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}",
+            "cat > /home/node/.kube/config <<KUBECONFIG_EOF",
+            "apiVersion: v1",
+            "kind: Config",
+            "clusters:",
+            "- cluster:",
+            "    certificate-authority: ${CA}",
+            "    server: ${SERVER}",
+            "  name: in-cluster",
+            "contexts:",
+            "- context:",
+            "    cluster: in-cluster",
+            "    namespace: kord",
+            "    user: serviceaccount",
+            "  name: in-cluster",
+            "current-context: in-cluster",
+            "users:",
+            "- name: serviceaccount",
+            "  user:",
+            "    token: ${TOKEN}",
+            "KUBECONFIG_EOF",
+            "chmod 600 /home/node/.kube/config",
+            "exec " + " ".join(shlex.quote(part) for part in command),
+        ]
+        return "\n".join(lines)
     return "exec " + " ".join(shlex.quote(part) for part in command)
+
+
+def pod_security_lines(agent: dict) -> list[str]:
+    return []
+
+
+def container_security_lines(agent: dict) -> list[str]:
+    daemon = agent.get("runtime", {}).get("daemon", {})
+    if agent["name"] == "charon-gpt53-codex":
+        return [
+            "            privileged: true",
+            "            allowPrivilegeEscalation: true",
+            "            runAsNonRoot: false",
+            "            runAsUser: 0",
+            "            runAsGroup: 0",
+            "            capabilities:",
+            "              add:",
+            "                - SYS_ADMIN",
+        ]
+    if daemon.get("kind") != "codex-sdk":
+        return [
+            "            runAsNonRoot: true",
+            "            runAsUser: 1000",
+            "            runAsGroup: 1000",
+        ]
+
+    return [
+        "            runAsNonRoot: true",
+        "            runAsUser: 1000",
+        "            runAsGroup: 1000",
+        "            capabilities:",
+        "              add:",
+        "                - SETUID",
+        "                - SETGID",
+    ]
+
+
+def pod_level_security_lines(agent: dict) -> list[str]:
+    daemon = agent.get("runtime", {}).get("daemon", {})
+    base = [
+        "      securityContext:",
+        "        fsGroup: 1000",
+        "        seccompProfile:",
+        "          type: RuntimeDefault",
+    ]
+    if daemon.get("kind") != "codex-sdk":
+        return base
+    return base
 
 
 def yaml_block(text: str, spaces: int = 14) -> str:
@@ -205,6 +305,9 @@ def emit_agent(agent: dict) -> tuple[str, str, str]:
     env_lines = "\n".join(emit_env_lines(agent))
     init_script = yaml_block(build_init_script(agent))
     exec_script = yaml_block(build_exec_script(agent))
+    pod_security = "\n".join(pod_security_lines(agent))
+    container_security = "\n".join(container_security_lines(agent))
+    pod_level_security = "\n".join(pod_level_security_lines(agent))
 
     deployment = f"""---
 apiVersion: apps/v1
@@ -222,6 +325,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+{pod_security}
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -233,15 +337,12 @@ spec:
 {init_script}
           volumeMounts:
             - {{ name: runtime, mountPath: /kord }}
-            - {{ name: agent-runtime, mountPath: /runtime }}
       containers:
         - name: agent
           image: {image}
           imagePullPolicy: Always
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
+{container_security}
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -263,14 +364,10 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - {{ name: runtime, mountPath: /kord }}
-            - {{ name: agent-runtime, mountPath: /runtime }}
       volumes:
         - name: runtime
           persistentVolumeClaim: {{ claimName: agent-runtime }}
-        - name: agent-runtime
-          emptyDir: {{}}
-      securityContext:
-        fsGroup: 1000
+{pod_level_security}
 """
 
     service = f"""---

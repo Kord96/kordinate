@@ -39,8 +39,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/generic-opus
-        state_dir: /kord/generic-opus
+        agent_home_dir: /kord/agents/generic-opus
+        state_dir: /kord/agents/generic-opus
     deploy:
       replicas:
         min: 1
@@ -80,12 +80,266 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/augur-opus
-        state_dir: /kord/augur-opus
+        agent_home_dir: /kord/agents/augur-opus
+        state_dir: /kord/agents/augur-opus
     deploy:
       replicas:
         min: 1
         max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: generic-gemini-31-pro
+    flavor: generic
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: gemini-sdk
+        provider: gemini
+        model: gemini-3.1-pro-preview
+        backend:
+          name: gemini
+          base_url: https://generativelanguage.googleapis.com/v1beta/openai
+        secret:
+          env: BACKEND_API_KEY
+          name: gemini-api
+          key: api-key
+      kafka:
+        request_topic: generic-gemini-31-pro
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/generic-gemini-31-pro
+        state_dir: /kord/agents/generic-gemini-31-pro
+    deploy:
+      replicas:
+        min: 1
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: generic-gemini-25-pro
+    flavor: generic
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: gemini-sdk
+        provider: gemini
+        model: gemini-2.5-pro
+        backend:
+          name: gemini
+          base_url: https://generativelanguage.googleapis.com/v1beta/openai
+        secret:
+          env: BACKEND_API_KEY
+          name: gemini-api
+          key: api-key
+      kafka:
+        request_topic: generic-gemini-25-pro
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/generic-gemini-25-pro
+        state_dir: /kord/agents/generic-gemini-25-pro
+    deploy:
+      replicas:
+        min: 1
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: generic-gemini-25-flash
+    flavor: generic
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: gemini-sdk
+        provider: gemini
+        model: gemini-2.5-flash
+        backend:
+          name: gemini
+          base_url: https://generativelanguage.googleapis.com/v1beta/openai
+        secret:
+          env: BACKEND_API_KEY
+          name: gemini-api
+          key: api-key
+      kafka:
+        request_topic: generic-gemini-25-flash
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/generic-gemini-25-flash
+        state_dir: /kord/agents/generic-gemini-25-flash
+    deploy:
+      replicas:
+        min: 1
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: generic-deepseek-reasoner
+    flavor: generic
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: gemini-sdk
+        provider: deepseek
+        model: deepseek-reasoner
+        backend:
+          name: deepseek
+          base_url: https://api.deepseek.com/v1
+        secret:
+          env: BACKEND_API_KEY
+          name: deepseek-api
+          key: api-key
+      kafka:
+        request_topic: generic-deepseek-reasoner
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/generic-deepseek-reasoner
+        state_dir: /kord/agents/generic-deepseek-reasoner
+    deploy:
+      replicas:
+        min: 1
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: generic-glm5
+    flavor: generic
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: fireworks
+        model: accounts/fireworks/models/glm-5
+        backend:
+          name: fireworks
+          base_url: https://api.fireworks.ai/inference/v1
+        secret:
+          env: BACKEND_API_KEY
+          name: fireworks-api
+          key: api-key
+      kafka:
+        request_topic: generic-glm5
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/generic-glm5
+        state_dir: /kord/agents/generic-glm5
+    deploy:
+      replicas:
+        min: 1
+        max: 1
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: generic-gpt54
+    flavor: generic
+    image:
+      base: agent-base
+      customization: none
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: codex-sdk
+        provider: openai
+        model: gpt-5.4
+        backend:
+          name: openai
+          base_url: https://api.openai.com/v1
+        skip_git_repo_check: true
+        sandbox_mode: workspace-write
+        secret:
+          env: BACKEND_API_KEY
+          name: codex-api
+          key: api-key
+      kafka:
+        request_topic: generic-gpt54
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/generic-gpt54
+        state_dir: /kord/agents/generic-gpt54
+    deploy:
+      replicas:
+        min: 1
+        max: 1
         cooldown: 300
       resources:
         requests:
@@ -102,7 +356,7 @@ agents:
     runtime:
       command: ["klaude-daemon"]
       daemon:
-        kind: openclaude-harness
+        kind: gemini-sdk
         provider: gemini
         model: gemini-3.1-pro-preview
         backend:
@@ -122,8 +376,98 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/augur-gemini-31-pro
-        state_dir: /kord/augur-gemini-31-pro
+        agent_home_dir: /kord/agents/augur-gemini-31-pro
+        state_dir: /kord/agents/augur-gemini-31-pro
+    deploy:
+      replicas:
+        min: 1
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: augur-gemini-25-pro
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: gemini-sdk
+        provider: gemini
+        model: gemini-2.5-pro
+        backend:
+          name: gemini
+          base_url: https://generativelanguage.googleapis.com/v1beta/openai
+        secret:
+          env: BACKEND_API_KEY
+          name: gemini-api
+          key: api-key
+      kafka:
+        request_topic: augur-gemini-25-pro
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/augur-gemini-25-pro
+        state_dir: /kord/agents/augur-gemini-25-pro
+    creation:
+      memory_bundle: analyze-selective-v1
+      runtime_bundle: analyze-selective-v1
+    deploy:
+      replicas:
+        min: 1
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
+  - name: augur-gemini-25-flash
+    flavor: augur
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: gemini-sdk
+        provider: gemini
+        model: gemini-2.5-flash
+        backend:
+          name: gemini
+          base_url: https://generativelanguage.googleapis.com/v1beta/openai
+        secret:
+          env: BACKEND_API_KEY
+          name: gemini-api
+          key: api-key
+      kafka:
+        request_topic: augur-gemini-25-flash
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/augur-gemini-25-flash
+        state_dir: /kord/agents/augur-gemini-25-flash
+    creation:
+      memory_bundle: analyze-selective-v1
+      runtime_bundle: analyze-selective-v1
     deploy:
       replicas:
         min: 1
@@ -164,8 +508,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/augur-deepseek-reasoner
-        state_dir: /kord/augur-deepseek-reasoner
+        agent_home_dir: /kord/agents/augur-deepseek-reasoner
+        state_dir: /kord/agents/augur-deepseek-reasoner
     deploy:
       replicas:
         min: 1
@@ -206,8 +550,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/augur-glm5
-        state_dir: /kord/augur-glm5
+        agent_home_dir: /kord/agents/augur-glm5
+        state_dir: /kord/agents/augur-glm5
     deploy:
       replicas:
         min: 1
@@ -235,6 +579,7 @@ agents:
           name: openai
           base_url: https://api.openai.com/v1
         skip_git_repo_check: true
+        sandbox_mode: workspace-write
         secret:
           env: BACKEND_API_KEY
           name: codex-api
@@ -249,8 +594,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/augur-gpt54
-        state_dir: /kord/augur-gpt54
+        agent_home_dir: /kord/agents/augur-gpt54
+        state_dir: /kord/agents/augur-gpt54
     deploy:
       replicas:
         min: 1
@@ -278,6 +623,7 @@ agents:
           name: openai
           base_url: https://api.openai.com/v1
         skip_git_repo_check: true
+        sandbox_mode: danger-full-access
         secret:
           env: BACKEND_API_KEY
           name: codex-api
@@ -292,8 +638,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/charon-gpt53-codex
-        state_dir: /kord/charon-gpt53-codex
+        agent_home_dir: /kord/agents/charon-gpt53-codex
+        state_dir: /kord/agents/charon-gpt53-codex
     creation:
       profile: charon-gpt53-codex
       memory_bundle: platform-core-v1
@@ -326,6 +672,7 @@ agents:
           name: openai
           base_url: https://api.openai.com/v1
         skip_git_repo_check: true
+        sandbox_mode: workspace-write
         secret:
           env: BACKEND_API_KEY
           name: codex-api
@@ -340,8 +687,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/sauron-gpt53-codex
-        state_dir: /kord/sauron-gpt53-codex
+        agent_home_dir: /kord/agents/sauron-gpt53-codex
+        state_dir: /kord/agents/sauron-gpt53-codex
     deploy:
       replicas:
         min: 1
@@ -382,8 +729,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/alfred-deepseek-chat
-        state_dir: /kord/alfred-deepseek-chat
+        agent_home_dir: /kord/agents/alfred-deepseek-chat
+        state_dir: /kord/agents/alfred-deepseek-chat
     creation:
       profile: alfred-deepseek-chat
       memory_bundle: operate-direct-v1
@@ -429,8 +776,8 @@ agents:
           required: [type, sender, correlation_id, status, output]
           optional: [reflection, errors, metadata]
       state:
-        agent_home_dir: /runtime/alfred-gpt-oss-20b
-        state_dir: /kord/alfred-gpt-oss-20b
+        agent_home_dir: /kord/agents/alfred-gpt-oss-20b
+        state_dir: /kord/agents/alfred-gpt-oss-20b
     creation:
       profile: alfred-gpt-oss-20b
       memory_bundle: operate-direct-v1

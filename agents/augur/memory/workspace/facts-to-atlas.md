@@ -10,10 +10,10 @@ detectors -> facts -> concept inference -> atlas synthesis
 
 ## User-facing entrypoint
 
-The new synthesis CLI reads facts and derives the atlas sections that can be built directly from first-order evidence:
+The synthesis CLI reads facts and, when available, concept decisions. It derives the atlas sections that can be built directly from first-order evidence and then late-loads concept monitoring guidance:
 
 ```bash
-python3 scripts/synthesize_atlas_from_facts.py <facts-dir> --project <name> --output <atlas.json>
+python3 scripts/synthesize_atlas_from_facts.py <facts-dir> --concepts <concepts.json> --project <name> --output <atlas.json>
 ```
 
 ## What it derives
@@ -24,6 +24,8 @@ python3 scripts/synthesize_atlas_from_facts.py <facts-dir> --project <name> --ou
 - `state`
 - `external_dependencies`
 - `module_graph`
+- attached `health` enrichment on components and dependencies when concept metadata exists
+- top-level `business_metrics` when concept metadata provides them
 
 ## What it does not replace
 

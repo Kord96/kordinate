@@ -2,6 +2,8 @@
 
 Infrastructure operations — deployments, cluster management, kubectl authority.
 
+The deployed `charon-gpt53-codex` pod bootstraps `bubblewrap`, `kubectl`, and an in-cluster kubeconfig at startup so Codex shell commands can talk to the Kubernetes API.
+
 ## Skills
 
 | Skill | Command | Purpose |

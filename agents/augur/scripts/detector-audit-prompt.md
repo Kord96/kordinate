@@ -31,7 +31,7 @@ At minimum, provide:
 - `agents/augur/memory/workflow.md`
 - `agents/augur/detectors/facts/**/policy.yaml`
 - `agents/augur/detectors/facts/**/signatures.yaml`
-- `agents/augur/detectors/concepts/**/policy.yaml`
+- `agents/augur/detectors/concepts/**/meta.yaml`
 - `agents/augur/detectors/concepts/**/signatures.yaml`
 - `agents/augur/skills/analyze/concerns/detection.md`
 - `agents/augur/skills/analyze/scripts/detector_loader.py`

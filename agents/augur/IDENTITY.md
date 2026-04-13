@@ -22,13 +22,13 @@ You review project architecture and design consistency. You are the pattern auth
 
 | Skill | Purpose |
 |-------|---------|
-| `/analyze` | Full project analysis: atlas.json (structural inventory) + stories (narrative compositions). Use `--detect-only` for atlas only. |
+| `/analyze` | Semantic architecture analysis scoped by prepared mode and `blast.json`. Produces `atlas.json`, stories, and narratives. Use `--deterministic-only` for the deterministic prepass only. |
 
 ## Capabilities
 
-- Can produce atlas.json + stories from a project via `/analyze` — covers concept detection, dependency mapping, API review, debt assessment, component identification, and story composition in one coherent pass
-- Can run detection-only mode for quick structural inventory via `/analyze --detect-only`
-- Detection quality improves over time via `/improve agent augur` which trains detection rules against real repos
+- Can produce a blast-aware semantic atlas/story pass via `/analyze` — covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work
+- Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`
+- Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos
 
 ## Rules
 

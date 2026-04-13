@@ -9,7 +9,7 @@ metadata:
   labels:
     strimzi.io/cluster: kafka
 spec:
-  partitions: 3
+  partitions: 1
   replicas: 1
   config:
     retention.ms: "604800000"
@@ -31,7 +31,111 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: augur-gemini-pro
+  name: generic-gemini-31-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: generic-gemini-25-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: generic-gemini-25-flash
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: generic-deepseek-reasoner
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: generic-glm5
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: generic-gpt54
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: augur-gemini-31-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: augur-gemini-25-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 3
+  replicas: 1
+  config:
+    retention.ms: "604800000"
+
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: augur-gemini-25-flash
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -96,20 +200,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: warden-haiku
-  labels:
-    strimzi.io/cluster: kafka
-spec:
-  partitions: 3
-  replicas: 1
-  config:
-    retention.ms: "604800000"
-
----
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaTopic
-metadata:
-  name: sauron-sonnet
+  name: sauron-gpt53-codex
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -189,7 +280,111 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.augur-gemini-pro
+  name: memory.updates.generic-gemini-31-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.generic-gemini-25-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.generic-gemini-25-flash
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.generic-deepseek-reasoner
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.generic-glm5
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.generic-gpt54
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.augur-gemini-31-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.augur-gemini-25-pro
+  labels:
+    strimzi.io/cluster: kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    retention.ms: "86400000"
+---
+
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: memory.updates.augur-gemini-25-flash
   labels:
     strimzi.io/cluster: kafka
 spec:
@@ -254,20 +449,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.warden-haiku
-  labels:
-    strimzi.io/cluster: kafka
-spec:
-  partitions: 1
-  replicas: 1
-  config:
-    retention.ms: "86400000"
----
-
-apiVersion: kafka.strimzi.io/v1beta2
-kind: KafkaTopic
-metadata:
-  name: memory.updates.sauron-sonnet
+  name: memory.updates.sauron-gpt53-codex
   labels:
     strimzi.io/cluster: kafka
 spec:

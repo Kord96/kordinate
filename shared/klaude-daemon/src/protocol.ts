@@ -1,4 +1,4 @@
-import type { RequestMessage, ResponseMessage, ReflectionEvent, RuntimeResult, SessionState } from './types.js'
+import type { ProgressEventPayload, ProgressMessage, RequestMessage, ResponseMessage, ReflectionEvent, RuntimeResult, SessionState } from './types.js'
 
 export function isRequestMessage(value: unknown): value is RequestMessage {
   if (!value || typeof value !== 'object') return false
@@ -12,7 +12,8 @@ export function isRequestMessage(value: unknown): value is RequestMessage {
 }
 
 export function sessionKeyFor(message: RequestMessage): string {
-  return message.session_id ?? message.sender
+  if (message.session_id) return message.session_id
+  return message.correlation_id
 }
 
 export function getOrCreateSession(sessions: Map<string, SessionState>, message: RequestMessage): SessionState {
@@ -38,6 +39,16 @@ export function buildResponseMessage(agentName: string, message: RequestMessage,
     sender: agentName,
     correlation_id: message.correlation_id,
     ...response,
+  }
+}
+
+export function buildProgressMessage(agentName: string, message: RequestMessage, event: ProgressEventPayload): ProgressMessage {
+  return {
+    type: 'progress',
+    sender: agentName,
+    correlation_id: message.correlation_id,
+    timestamp: new Date().toISOString(),
+    event,
   }
 }
 

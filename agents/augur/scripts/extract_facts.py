@@ -14,7 +14,9 @@ from fact_extractor_support import build_facts_payload
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Extract normalized Augur facts from a project.")
     parser.add_argument("root", nargs="?", default=".", help="Project root to scan.")
+    parser.add_argument("--repo-dir", help="Alias for the project root to scan.")
     parser.add_argument("--output", "-o", help="Write JSON to this file instead of stdout.")
+    parser.add_argument("--output-dir", help="Write a facts directory rooted at this path.")
     parser.add_argument(
         "--analysis-mode",
         choices=["full", "incremental", "design"],
@@ -27,7 +29,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
-    root = Path(args.root).resolve()
+    root_arg = args.repo_dir or args.root
+    root = Path(root_arg).resolve()
     if not root.exists():
         print(f"error: root not found: {root}", file=sys.stderr)
         return 2
@@ -40,7 +43,44 @@ def main(argv: list[str] | None = None) -> int:
     if args.pretty:
         serialized += "\n"
 
-    if args.output:
+    if args.output_dir:
+        output_dir = Path(args.output_dir).resolve()
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        facts = payload.get("facts", [])
+        domains: dict[str, list[dict[str, object]]] = {}
+        for fact in facts:
+            domain = str(fact.get("domain") or "").strip()
+            if not domain:
+                continue
+            domains.setdefault(domain, []).append(fact)
+
+        for domain, items in sorted(domains.items()):
+            domain_path = output_dir / f"{domain}.json"
+            domain_payload = {
+                "version": payload.get("version", "1"),
+                "generated": payload.get("generated"),
+                "project": payload.get("project"),
+                "analysis_mode": payload.get("analysis_mode"),
+                "domain": domain,
+                "count": len(items),
+                "facts": items,
+            }
+            domain_path.write_text(
+                json.dumps(domain_payload, indent=2 if args.pretty else None, sort_keys=bool(args.pretty)) + ("\n" if args.pretty else ""),
+                encoding="utf-8",
+            )
+
+        index_payload = {
+            key: value
+            for key, value in payload.items()
+            if key != "facts"
+        }
+        (output_dir / "index.json").write_text(
+            json.dumps(index_payload, indent=2 if args.pretty else None, sort_keys=bool(args.pretty)) + ("\n" if args.pretty else ""),
+            encoding="utf-8",
+        )
+    elif args.output:
         out = Path(args.output).resolve()
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(serialized, encoding="utf-8")

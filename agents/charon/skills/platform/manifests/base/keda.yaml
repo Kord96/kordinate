@@ -65,6 +65,186 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
+  name: agent-generic-gemini-31-pro
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-generic-gemini-31-pro
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: generic-gemini-31-pro
+        topic: generic-gemini-31-pro
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-generic-gemini-25-pro
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-generic-gemini-25-pro
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: generic-gemini-25-pro
+        topic: generic-gemini-25-pro
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-generic-gemini-25-flash
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-generic-gemini-25-flash
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: generic-gemini-25-flash
+        topic: generic-gemini-25-flash
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-generic-deepseek-reasoner
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-generic-deepseek-reasoner
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: generic-deepseek-reasoner
+        topic: generic-deepseek-reasoner
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-generic-glm5
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-generic-glm5
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: generic-glm5
+        topic: generic-glm5
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-generic-gpt54
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 1
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-generic-gpt54
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: generic-gpt54
+        topic: generic-gpt54
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
   name: agent-augur-gemini-31-pro
 spec:
   pollingInterval: 30
@@ -87,6 +267,66 @@ spec:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
         consumerGroup: augur-gemini-31-pro
         topic: augur-gemini-31-pro
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-augur-gemini-25-pro
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-augur-gemini-25-pro
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: augur-gemini-25-pro
+        topic: augur-gemini-25-pro
+        lagThreshold: "1"
+        activationLagThreshold: "0"
+        offsetResetPolicy: earliest
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: agent-augur-gemini-25-flash
+spec:
+  pollingInterval: 30
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  cooldownPeriod: 300
+  advanced:
+    restoreToOriginalReplicaCount: true
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+        scaleUp:
+          stabilizationWindowSeconds: 300
+  scaleTargetRef:
+    name: agent-augur-gemini-25-flash
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
+        consumerGroup: augur-gemini-25-flash
+        topic: augur-gemini-25-flash
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest

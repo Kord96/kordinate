@@ -16,8 +16,8 @@ def read(path: Path) -> str:
 
 def extract_core_sections() -> str:
     text = read(SKILL)
-    start = text.find("Produce `facts/`, `atlas.json`, and stories")
-    end = text.find("## Step 9 — Report")
+    start = text.find("Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs for this run.")
+    end = text.find("## Report")
     if start == -1 or end == -1:
         raise RuntimeError("Failed to locate stable analyze skill sections.")
     return text[start:end].rstrip()
@@ -28,7 +28,7 @@ def build_common() -> str:
         "# Augur Analyze Skill Bundle — Core v1",
         "",
         "This is the stable operational bundle for Augur `/analyze`.",
-        "It defines execution order, mode handling, fact/concept/atlas expectations, and output obligations.",
+        "It defines execution order, mode handling, deterministic evidence expectations, semantic output obligations, and report rules.",
         "It should change less often than repo context and less often than semantic preload bundles.",
         "",
         "## Cache Role",

@@ -42,7 +42,7 @@ Current detector-side coverage after migration:
 
 - `175` concepts with `ast-grep.yaml`
 - `8` concepts with `semgrep.yaml`
-- only a small subset still has detector-side `policy.yaml` and `signatures.yaml`
+- only a small subset still has concept-side `meta.yaml` and `signatures.yaml`
 
 This is a much better source layout for runtime execution, but it also means the next detector task is policy quality, not just file placement.
 

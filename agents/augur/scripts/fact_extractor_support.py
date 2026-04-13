@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -61,6 +62,13 @@ MAX_FILE_BYTES = 100 * 1024
 ROOT = Path(__file__).resolve().parents[1]
 FACT_DETECTORS = ROOT / "detectors" / "facts"
 AST_GREP_BIN = shutil.which("ast-grep")
+REPO_PROFILE_SCRIPT = ROOT.parent.parent / "shared" / "tools" / "repo_profile" / "detect_repo_profile.py"
+JOERN_BATCH_EXPORTER = ROOT.parent.parent / "shared" / "tools" / "joern" / "export_augur_facts.py"
+JOERN_CALL_EDGE_EXPORTER = ROOT.parent.parent / "shared" / "tools" / "joern" / "export_call_edges.py"
+JOERN_DATA_TOUCH_EXPORTER = ROOT.parent.parent / "shared" / "tools" / "joern" / "export_data_touches.py"
+JOERN_EXECUTION_SLICE_EXPORTER = ROOT.parent.parent / "shared" / "tools" / "joern" / "export_execution_slices.py"
+JOERN_SUPPORTED_LANGUAGES = {"java", "c", "cpp", "javascript", "python", "go", "kotlin", "csharp", "php", "ruby", "swift"}
+_JOERN_BATCH_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
 
 SOURCE_EXTENSIONS = {
     ".py",
@@ -510,6 +518,341 @@ def get_git_sha(root: Path) -> str | None:
     return sha or None
 
 
+def _normalize_joern_path(path: str) -> str:
+    if not path:
+        return ""
+    if path.startswith("/repo/"):
+        return path.removeprefix("/repo/")
+    return path.lstrip("/")
+
+
+def _run_joern_export(
+    *,
+    root: Path,
+    repo_profile: dict[str, Any],
+    exporter: Path,
+    detector_id: str,
+    domain: str,
+    output_file: str,
+) -> tuple[str | None, dict[str, Any], dict[str, Any] | None]:
+    language = str(repo_profile.get("dominant_language") or "").strip().lower()
+    if language not in JOERN_SUPPORTED_LANGUAGES:
+        return language, {
+            "id": detector_id,
+            "domain": domain,
+            "class": "cpg",
+            "framework_context": [],
+            "status": "skipped",
+        }, None
+    cache_key = (str(root.resolve()), language)
+    if JOERN_BATCH_EXPORTER.exists():
+        cached = _JOERN_BATCH_CACHE.get(cache_key)
+        if cached is None:
+            try:
+                with tempfile.TemporaryDirectory(prefix="augur-joern-") as temp_dir:
+                    output_path = Path(temp_dir) / "joern-augur-facts.json"
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            str(JOERN_BATCH_EXPORTER),
+                            str(root),
+                            "--language",
+                            language,
+                            "--output",
+                            str(output_path),
+                        ],
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        timeout=1200,
+                    )
+                    if result.returncode != 0 or not output_path.exists():
+                        return language, {
+                            "id": detector_id,
+                            "domain": domain,
+                            "class": "cpg",
+                            "framework_context": [],
+                            "status": "failed",
+                        }, None
+                    cached = json.loads(output_path.read_text(encoding="utf-8"))
+                    _JOERN_BATCH_CACHE[cache_key] = cached
+            except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+                return language, {
+                    "id": detector_id,
+                    "domain": domain,
+                    "class": "cpg",
+                    "framework_context": [],
+                    "status": "failed",
+                }, None
+        domain_payload = (cached.get("domains", {}) or {}).get(domain)
+        if isinstance(domain_payload, dict):
+            return language, {
+                "id": detector_id,
+                "domain": domain,
+                "class": "cpg",
+                "framework_context": [],
+                "status": "success" if domain_payload.get("records") else "partial",
+            }, domain_payload
+    if not exporter.exists():
+        return language, {
+            "id": detector_id,
+            "domain": domain,
+            "class": "cpg",
+            "framework_context": [],
+            "status": "skipped",
+        }, None
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="augur-joern-") as temp_dir:
+            output_path = Path(temp_dir) / output_file
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(exporter),
+                    str(root),
+                    "--language",
+                    language,
+                    "--output",
+                    str(output_path),
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+            if result.returncode != 0 or not output_path.exists():
+                return language, {
+                    "id": detector_id,
+                    "domain": domain,
+                    "class": "cpg",
+                    "framework_context": [],
+                    "status": "failed",
+                }, None
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+        return language, {
+            "id": detector_id,
+            "domain": domain,
+            "class": "cpg",
+            "framework_context": [],
+            "status": "failed",
+        }, None
+    return language, {
+        "id": detector_id,
+        "domain": domain,
+        "class": "cpg",
+        "framework_context": [],
+        "status": "success" if payload.get("records") else "partial",
+    }, payload
+
+
+def extract_joern_call_edge_facts(root: Path, repo_profile: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    language, detector_run, payload = _run_joern_export(
+        root=root,
+        repo_profile=repo_profile,
+        exporter=JOERN_CALL_EDGE_EXPORTER,
+        detector_id="joern-call-edge-detector",
+        domain="call-edges",
+        output_file="call-edges.json",
+    )
+    if payload is None:
+        return [], detector_run
+
+    facts: list[dict[str, Any]] = []
+    for idx, record in enumerate(payload.get("records", [])):
+        source_file = _normalize_joern_path(str(record.get("source_file", "")))
+        caller_file = _normalize_joern_path(str(record.get("caller_file", "")))
+        line_number = int(record.get("line_number", -1) or -1)
+        caller_full_name = str(record.get("caller_full_name", "") or "")
+        callee_full_name = str(record.get("callee_full_name", "") or "")
+        if not source_file or not caller_full_name or not callee_full_name:
+            continue
+
+        component_ids = list(dict.fromkeys(infer_component_ids(source_file) + (infer_component_ids(caller_file) if caller_file else [])))
+        source_ref = f"{source_file}:{line_number}" if line_number > 0 else source_file
+        confidence = "high" if callee_full_name and callee_full_name != "<unknownFullName>" else "medium"
+        caller_name = str(record.get("caller_name", "") or "")
+        callee_name = str(record.get("callee_name", "") or "")
+        summary = f"Detected call edge {caller_name or caller_full_name} -> {callee_name or callee_full_name}"
+        facts.append(
+            {
+                "id": stable_id(
+                    "call-edge",
+                    source_file,
+                    str(line_number),
+                    caller_full_name,
+                    callee_full_name,
+                    str(idx),
+                ),
+                "kind": "call-edge",
+                "domain": "call-edges",
+                "summary": summary,
+                "confidence": confidence,
+                "framework_context": [],
+                "source_files": [source_ref],
+                "detector": {
+                    "id": "joern-call-edge-detector",
+                    "class": "cpg",
+                    "strength": 5,
+                    "rule": language or "",
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "caller_name": caller_name,
+                    "caller_full_name": caller_full_name,
+                    "caller_signature": str(record.get("caller_signature", "") or ""),
+                    "caller_file": caller_file,
+                    "caller_line": int(record.get("caller_line", -1) or -1),
+                    "callee_name": callee_name,
+                    "callee_full_name": callee_full_name,
+                    "callee_signature": str(record.get("callee_signature", "") or ""),
+                    "call_code": str(record.get("call_code", "") or ""),
+                    "dispatch_type": str(record.get("dispatch_type", "") or ""),
+                    "source_file": source_file,
+                    "line_number": line_number,
+                    "column_number": int(record.get("column_number", -1) or -1),
+                    "tool": "joern",
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": {
+                    "component_ids": component_ids,
+                    "depends_on_fact_ids": [],
+                    "related_fact_ids": [],
+                },
+            }
+        )
+
+    return facts, detector_run
+
+
+def extract_joern_data_touch_facts(root: Path, repo_profile: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    language, detector_run, payload = _run_joern_export(
+        root=root,
+        repo_profile=repo_profile,
+        exporter=JOERN_DATA_TOUCH_EXPORTER,
+        detector_id="joern-data-touch-detector",
+        domain="data-touches",
+        output_file="data-touches.json",
+    )
+    if payload is None:
+        return [], detector_run
+
+    facts: list[dict[str, Any]] = []
+    for idx, record in enumerate(payload.get("records", [])):
+        owner_file = _normalize_joern_path(str(record.get("owner_file", "")))
+        owner_full_name = str(record.get("owner_full_name", "") or "")
+        touch_kind = str(record.get("touch_kind", "") or "")
+        line_number = int(record.get("line_number", -1) or -1)
+        if not owner_file or not owner_full_name or not touch_kind:
+            continue
+
+        target_name = str(record.get("target_name", "") or "")
+        target_full_name = str(record.get("target_full_name", "") or "")
+        source_ref = f"{owner_file}:{line_number}" if line_number > 0 else owner_file
+        facts.append(
+            {
+                "id": stable_id("data-touch", owner_file, str(line_number), owner_full_name, touch_kind, target_full_name or target_name, str(idx)),
+                "kind": "data-touch",
+                "domain": "data-touches",
+                "summary": f"Detected {touch_kind} data touch from {owner_full_name} to {target_name or target_full_name or 'unknown target'}",
+                "confidence": "high" if target_full_name else "medium",
+                "framework_context": [],
+                "source_files": [source_ref],
+                "detector": {
+                    "id": "joern-data-touch-detector",
+                    "class": "cpg",
+                    "strength": 5,
+                    "rule": language or "",
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "owner_name": str(record.get("owner_name", "") or ""),
+                    "owner_full_name": owner_full_name,
+                    "owner_file": owner_file,
+                    "owner_line": int(record.get("owner_line", -1) or -1),
+                    "touch_kind": touch_kind,
+                    "target_name": target_name,
+                    "target_full_name": target_full_name,
+                    "target_code": str(record.get("target_code", "") or ""),
+                    "line_number": line_number,
+                    "column_number": int(record.get("column_number", -1) or -1),
+                    "tool": "joern",
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": {
+                    "component_ids": infer_component_ids(owner_file),
+                    "depends_on_fact_ids": [],
+                    "related_fact_ids": [],
+                },
+            }
+        )
+
+    return facts, detector_run
+
+
+def extract_joern_execution_slice_facts(root: Path, repo_profile: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    language, detector_run, payload = _run_joern_export(
+        root=root,
+        repo_profile=repo_profile,
+        exporter=JOERN_EXECUTION_SLICE_EXPORTER,
+        detector_id="joern-execution-slice-detector",
+        domain="execution-slices",
+        output_file="execution-slices.json",
+    )
+    if payload is None:
+        return [], detector_run
+
+    facts: list[dict[str, Any]] = []
+    for idx, record in enumerate(payload.get("records", [])):
+        slice_file = _normalize_joern_path(str(record.get("slice_file", "")))
+        slice_full_name = str(record.get("slice_full_name", "") or "")
+        steps = record.get("steps", [])
+        if not slice_file or not slice_full_name:
+            continue
+        if not isinstance(steps, list) or not steps:
+            continue
+
+        slice_line = int(record.get("slice_line", -1) or -1)
+        source_ref = f"{slice_file}:{slice_line}" if slice_line > 0 else slice_file
+        facts.append(
+            {
+                "id": stable_id("execution-slice", slice_file, str(slice_line), slice_full_name, str(idx)),
+                "kind": "execution-slice",
+                "domain": "execution-slices",
+                "summary": f"Detected execution slice {slice_full_name} with {len(steps)} steps",
+                "confidence": "high" if len(steps) >= 3 else "medium",
+                "framework_context": [],
+                "source_files": [source_ref],
+                "detector": {
+                    "id": "joern-execution-slice-detector",
+                    "class": "cpg",
+                    "strength": 5,
+                    "rule": language or "",
+                    "bundle": "bundles/detectors/facts/all.json",
+                },
+                "raw_evidence": {
+                    "slice_name": str(record.get("slice_name", "") or ""),
+                    "slice_full_name": slice_full_name,
+                    "slice_file": slice_file,
+                    "slice_line": slice_line,
+                    "steps": steps,
+                    "tool": "joern",
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": {
+                    "component_ids": infer_component_ids(slice_file),
+                    "depends_on_fact_ids": [],
+                    "related_fact_ids": [],
+                },
+            }
+        )
+
+    return facts, detector_run
+
+
 def infer_languages(files: Iterable[Path]) -> list[str]:
     langs: set[str] = set()
     for path in files:
@@ -537,6 +880,22 @@ def infer_languages(files: Iterable[Path]) -> list[str]:
     if not langs:
         langs.add("Unknown")
     return sorted(langs)
+
+
+def load_repo_profile(root: Path) -> dict[str, Any]:
+    if not REPO_PROFILE_SCRIPT.exists():
+        return {}
+    try:
+        result = subprocess.run(
+            [sys.executable, str(REPO_PROFILE_SCRIPT), str(root), "--json"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        data = json.loads(result.stdout)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
 
 
 def parse_manifest_frameworks(root: Path) -> dict[str, list[str]]:
@@ -2402,6 +2761,7 @@ def file_hotness_scores(facts: list[dict[str, Any]]) -> Counter[str]:
 
 def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, Any]:
     files = iter_project_files(root)
+    repo_profile = load_repo_profile(root)
     frameworks = detect_frameworks(files, root)
     facts: list[dict[str, Any]] = []
     detectors_run: list[dict[str, Any]] = []
@@ -2700,6 +3060,21 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
             }
         )
 
+    joern_call_edges, joern_detector_run = extract_joern_call_edge_facts(root, repo_profile)
+    if joern_call_edges:
+        facts.extend(joern_call_edges)
+    detectors_run.append(joern_detector_run)
+
+    joern_data_touches, joern_data_touch_detector_run = extract_joern_data_touch_facts(root, repo_profile)
+    if joern_data_touches:
+        facts.extend(joern_data_touches)
+    detectors_run.append(joern_data_touch_detector_run)
+
+    joern_execution_slices, joern_execution_slice_detector_run = extract_joern_execution_slice_facts(root, repo_profile)
+    if joern_execution_slices:
+        facts.extend(joern_execution_slices)
+    detectors_run.append(joern_execution_slice_detector_run)
+
     for fact in facts:
         if fact.get("kind") != "framework" and not fact.get("framework_context"):
             fact["framework_context"] = framework_context
@@ -2731,6 +3106,7 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
         "metadata": {
             "analyzed_at_sha": get_git_sha(root),
             "execution_plan_version": 1,
+            "repo_profile": repo_profile,
             "bundle_versions": {
                 "frameworks": "1",
                 "facts": "1",

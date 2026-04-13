@@ -5,7 +5,7 @@ import { createServer } from 'node:http'
 import { Kafka, Partitioners } from 'kafkajs'
 import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-registry.js'
 import { log } from './log.js'
-import type { AgentMessage, RequestMessage, ResponseMessage } from './types.js'
+import type { AgentMessage, ProgressMessage, RequestMessage, ResponseMessage } from './types.js'
 
 const host = process.env.KORD_API_HOST ?? '0.0.0.0'
 const port = Number.parseInt(process.env.KORD_API_PORT ?? '9091', 10)
@@ -14,7 +14,9 @@ const catalogPath = process.env.DISCOVERY_CATALOG_PATH ?? '/app/agents/charon/sk
 const ttlMs = Number.parseInt(process.env.DISCOVERY_TTL_MS ?? '120000', 10)
 const kafkaBrokers = (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(',')
 const replyTopic = process.env.KORD_API_REPLY_TOPIC ?? 'kord-api-replies'
+const progressTopic = process.env.KORD_API_PROGRESS_TOPIC ?? process.env.PROGRESS_TOPIC ?? 'kord-progress'
 const defaultTimeoutMs = Number.parseInt(process.env.KORD_API_DEFAULT_TIMEOUT_MS ?? '120000', 10)
+const augurAnalyzeDefaultTimeoutMs = Number.parseInt(process.env.KORD_API_AUGUR_ANALYZE_TIMEOUT_MS ?? '900000', 10)
 const kubernetesHost = process.env.KUBERNETES_SERVICE_HOST ?? 'kubernetes.default.svc'
 const kubernetesPort = Number.parseInt(process.env.KUBERNETES_SERVICE_PORT_HTTPS ?? '443', 10)
 const kubernetesNamespacePath = process.env.KUBERNETES_NAMESPACE_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
@@ -41,6 +43,7 @@ const pending = new Map<string, {
   reject: (error: Error) => void
   timer: NodeJS.Timeout
 }>()
+const requestStreams = new Map<string, Set<import('node:http').ServerResponse>>()
 const requests = new Map<string, {
   request_id: string
   agent: string
@@ -58,10 +61,45 @@ let kubernetesNamespacePromise: Promise<string> | undefined
 let kubernetesTokenPromise: Promise<string> | undefined
 let kubernetesCaPromise: Promise<Buffer> | undefined
 
+function canonicalizeWorkingDir(workingDir?: string): string | undefined {
+  if (!workingDir) return workingDir
+
+  if (workingDir.startsWith('/kord/shared/repos/')) {
+    return workingDir.replace('/kord/shared/repos/', '/kord/repos/')
+  }
+
+  const workstationPrefix = '/kord/workstation/home/project/'
+  if (!workingDir.startsWith(workstationPrefix)) return workingDir
+
+  const suffix = workingDir.slice(workstationPrefix.length)
+  const slashIndex = suffix.indexOf('/')
+  const repo = slashIndex === -1 ? suffix : suffix.slice(0, slashIndex)
+  const rest = slashIndex === -1 ? '' : suffix.slice(slashIndex)
+  if (!repo) return workingDir
+
+  return `/kord/repos/${repo}${rest}`
+}
+
+function resolveTimeoutMs(agent: string, body: {
+  prompt: string
+  timeout_ms?: number
+}): number {
+  if (typeof body.timeout_ms === 'number') return body.timeout_ms
+  if (agent.startsWith('augur-') && body.prompt.trimStart().startsWith('/analyze')) {
+    return augurAnalyzeDefaultTimeoutMs
+  }
+  return defaultTimeoutMs
+}
+
 function json(res: import('node:http').ServerResponse, statusCode: number, payload: unknown): void {
   res.statusCode = statusCode
   res.setHeader('content-type', 'application/json')
   res.end(JSON.stringify(payload))
+}
+
+function writeSseEvent(res: import('node:http').ServerResponse, event: string, data: unknown): void {
+  res.write(`event: ${event}\n`)
+  res.write(`data: ${JSON.stringify(data)}\n\n`)
 }
 
 function extractApiKey(req: import('node:http').IncomingMessage): string | undefined {
@@ -430,17 +468,76 @@ function isPromptBody(value: unknown): value is {
     && (body.verbose === undefined || typeof body.verbose === 'boolean')
 }
 
-function pushRequestEvent(requestId: string, event: string, details: Record<string, unknown> = {}): void {
+function recordRequestEvent(requestId: string, eventRecord: Record<string, unknown>): void {
   const existing = requests.get(requestId)
   if (!existing) return
   const events = existing.debug?.events ?? []
-  events.push({
+  events.push(eventRecord)
+  existing.debug = { events: events.slice(-200) }
+  requests.set(requestId, existing)
+  const subscribers = requestStreams.get(requestId)
+  if (!subscribers) return
+  for (const subscriber of subscribers) {
+    writeSseEvent(subscriber, 'request.event', eventRecord)
+  }
+}
+
+function pushRequestEvent(requestId: string, event: string, details: Record<string, unknown> = {}): void {
+  recordRequestEvent(requestId, {
     event,
     timestamp: new Date().toISOString(),
+    source: 'gateway',
     ...details,
   })
-  existing.debug = { events: events.slice(-20) }
-  requests.set(requestId, existing)
+}
+
+function recordProgressEvent(message: ProgressMessage): void {
+  recordRequestEvent(message.correlation_id, {
+    event: message.event.kind,
+    timestamp: message.timestamp,
+    source: message.event.source,
+    sender: message.sender,
+    runtime: message.event.runtime ?? null,
+    model: message.event.model ?? null,
+    session_id: message.event.session_id ?? null,
+    structured_log_path: message.event.structured_log_path ?? null,
+    payload: message.event.payload ?? null,
+  })
+}
+
+function openRequestEventStream(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse, requestId: string): void {
+  const requestRecord = requests.get(requestId)
+  if (!requestRecord) {
+    json(res, 404, { error: `request '${requestId}' not found` })
+    return
+  }
+  res.writeHead(200, {
+    'content-type': 'text/event-stream',
+    'cache-control': 'no-cache, no-transform',
+    connection: 'keep-alive',
+  })
+  const subscribers = requestStreams.get(requestId) ?? new Set<import('node:http').ServerResponse>()
+  subscribers.add(res)
+  requestStreams.set(requestId, subscribers)
+  writeSseEvent(res, 'request.snapshot', {
+    request_id: requestId,
+    status: requestRecord.status,
+    created_at: requestRecord.created_at,
+    completed_at: requestRecord.completed_at ?? null,
+    events: requestRecord.debug?.events ?? [],
+  })
+  const heartbeat = setInterval(() => {
+    res.write(': keepalive\n\n')
+  }, 15000)
+  const cleanup = () => {
+    clearInterval(heartbeat)
+    const current = requestStreams.get(requestId)
+    if (!current) return
+    current.delete(res)
+    if (current.size === 0) requestStreams.delete(requestId)
+  }
+  req.on('close', cleanup)
+  res.on('close', cleanup)
 }
 
 function deferReply(correlationId: string, agent: string, timeoutMs: number): Promise<ResponseMessage> {
@@ -471,14 +568,15 @@ async function sendPrompt(agent: string, body: {
   session_id?: string
 }, requestId?: string): Promise<{ correlationId: string, reply: Promise<ResponseMessage> }> {
   const correlationId = requestId ?? `${agent}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-  const timeoutMs = body.timeout_ms ?? defaultTimeoutMs
+  const timeoutMs = resolveTimeoutMs(agent, body)
+  const workingDir = canonicalizeWorkingDir(body.working_dir)
   const request: RequestMessage = {
     type: 'request',
     sender: replyTopic,
     correlation_id: correlationId,
     prompt: body.prompt,
-    working_dir: body.working_dir,
-    timeout_ms: body.timeout_ms,
+    working_dir: workingDir,
+    timeout_ms: timeoutMs,
     reflect: body.reflect,
     reflection_prompt: body.reflection_prompt,
     agent_params: body.agent_params,
@@ -645,7 +743,29 @@ const server = createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && url.pathname.startsWith('/requests/')) {
-      const requestId = decodeURIComponent(url.pathname.slice('/requests/'.length))
+      const requestPath = url.pathname.slice('/requests/'.length)
+      const eventSuffix = '/events'
+      if (requestPath.endsWith(eventSuffix)) {
+        const requestId = decodeURIComponent(requestPath.slice(0, -eventSuffix.length))
+        const requestRecord = requests.get(requestId)
+        if (!requestRecord) {
+          json(res, 404, { error: `request '${requestId}' not found` })
+          return
+        }
+        if (url.searchParams.get('follow') === '1') {
+          openRequestEventStream(req, res, requestId)
+          return
+        }
+        json(res, 200, {
+          request_id: requestId,
+          status: requestRecord.status,
+          created_at: requestRecord.created_at,
+          completed_at: requestRecord.completed_at ?? null,
+          events: requestRecord.debug?.events ?? [],
+        })
+        return
+      }
+      const requestId = decodeURIComponent(requestPath)
       const verbose = url.searchParams.get('verbose') === '1'
       const requestRecord = requests.get(requestId)
       if (!requestRecord) {
@@ -694,7 +814,7 @@ const server = createServer(async (req, res) => {
         requested_variant: body.variant ?? null,
         requested_backend_model: body.backend_model ?? null,
         async: body.async === true,
-        timeout_ms: body.timeout_ms ?? defaultTimeoutMs,
+        timeout_ms: resolveTimeoutMs(record.name, body),
         has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
         session_id: body.session_id ?? null,
       })
@@ -711,7 +831,7 @@ const server = createServer(async (req, res) => {
         requested_variant: body.variant ?? null,
         requested_backend_model: body.backend_model ?? null,
         async: body.async === true,
-        timeout_ms: body.timeout_ms ?? defaultTimeoutMs,
+        timeout_ms: resolveTimeoutMs(record.name, body),
         has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
         session_id: body.session_id ?? null,
       })
@@ -747,6 +867,8 @@ const server = createServer(async (req, res) => {
           agent: record.name,
           resolved_agent: record.name,
           status_url: `/requests/${requestId}`,
+          events_url: `/requests/${requestId}/events`,
+          events_stream_url: `/requests/${requestId}/events?follow=1`,
         }
         if (body.verbose) payload.debug = requests.get(requestId)?.debug
         json(res, 202, payload)
@@ -821,18 +943,29 @@ async function main(): Promise<void> {
   await producer.connect()
   await consumer.connect()
   await consumer.subscribe({ topic: replyTopic, fromBeginning: false })
+  if (progressTopic !== replyTopic) {
+    await consumer.subscribe({ topic: progressTopic, fromBeginning: false })
+  }
   await consumer.run({
-    eachMessage: async ({ message }) => {
+    eachMessage: async ({ topic, message }) => {
       const raw = message.value?.toString() ?? ''
       let parsed: unknown
       try {
         parsed = JSON.parse(raw)
       } catch {
-        log('reply_parse_failed', { raw_length: raw.length })
+        log('reply_parse_failed', { topic, raw_length: raw.length })
         return
       }
-      if (!parsed || typeof parsed !== 'object' || (parsed as ResponseMessage).type !== 'response') {
-        log('reply_ignored', { raw_length: raw.length })
+      if (!parsed || typeof parsed !== 'object') {
+        log('reply_ignored', { topic, raw_length: raw.length })
+        return
+      }
+      if ((parsed as ProgressMessage).type === 'progress') {
+        recordProgressEvent(parsed as ProgressMessage)
+        return
+      }
+      if ((parsed as ResponseMessage).type !== 'response') {
+        log('reply_ignored', { topic, raw_length: raw.length })
         return
       }
       const response = parsed as ResponseMessage
@@ -869,6 +1002,7 @@ async function main(): Promise<void> {
     host,
     port,
     reply_topic: replyTopic,
+    progress_topic: progressTopic,
     state_path: statePath,
     catalog_path: catalogPath,
     ttl_ms: ttlMs,

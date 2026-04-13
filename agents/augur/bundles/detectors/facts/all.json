@@ -16,10 +16,24 @@
       }
     },
     {
+      "name": "call-edges",
+      "files": {
+        "policy.yaml": "detectors/facts/call-edges/policy.yaml",
+        "signatures.yaml": "detectors/facts/call-edges/signatures.yaml"
+      }
+    },
+    {
       "name": "config",
       "files": {
         "policy.yaml": "detectors/facts/config/policy.yaml",
         "signatures.yaml": "detectors/facts/config/signatures.yaml"
+      }
+    },
+    {
+      "name": "data-touches",
+      "files": {
+        "policy.yaml": "detectors/facts/data-touches/policy.yaml",
+        "signatures.yaml": "detectors/facts/data-touches/signatures.yaml"
       }
     },
     {
@@ -34,6 +48,13 @@
       "files": {
         "policy.yaml": "detectors/facts/events/policy.yaml",
         "signatures.yaml": "detectors/facts/events/signatures.yaml"
+      }
+    },
+    {
+      "name": "execution-slices",
+      "files": {
+        "policy.yaml": "detectors/facts/execution-slices/policy.yaml",
+        "signatures.yaml": "detectors/facts/execution-slices/signatures.yaml"
       }
     },
     {

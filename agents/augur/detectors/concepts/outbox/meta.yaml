@@ -1,0 +1,74 @@
+concept: outbox
+detectors:
+  ast_grep:
+    enabled: false
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+      - noisy_rule_match
+      - conflicting_evidence
+      - broad_match
+      - low_rule_confidence
+      - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 6
+  entries:
+    - id: outbox-atomic-write
+      prompt: Are events written to an outbox table in the same database transaction as the business state change?
+      weight: 3
+      signals:
+        - outbox insert in same transaction
+        - atomic write of state + event
+        - transactional outbox
+    - id: outbox-separate-publisher
+      prompt: Does a separate process poll or stream from the outbox table to publish events to a message broker?
+      weight: 3
+      signals:
+        - outbox publisher process
+        - Debezium CDC on outbox
+        - polling outbox for unpublished
+    - id: outbox-published-marking
+      prompt: Are published events marked or deleted to prevent re-publishing on the next poll cycle?
+      weight: 2
+      signals:
+        - published_at timestamp set
+        - processed flag updated
+        - delete after publish
+    - id: outbox-stale-monitoring
+      prompt: Is there monitoring for stale unpublished events that may indicate a publisher failure?
+      weight: 2
+      signals:
+        - alert on unpublished age
+        - outbox lag metric
+        - stale event monitoring
+monitoring:
+  applies_to:
+    - component
+    - flow
+  health_signals:
+    - name: outbox.pending.count
+      description: Number of unpublished outbox rows waiting to be delivered.
+    - name: outbox.max_age
+      description: Age of the oldest unpublished outbox row.
+    - name: outbox.publish.failure.rate
+      description: Failure rate for the background publisher draining the outbox.
+  business_metrics: []
+  gaps:
+    - Without lag and stale-age monitoring, dual-write protection exists but delivery failure is invisible.

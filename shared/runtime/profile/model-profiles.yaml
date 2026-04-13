@@ -31,7 +31,6 @@ profiles:
     model: gpt-5.3-codex
     base_url: https://api.openai.com/v1
     credential_ref: kordinate/charon/codex-api-key
-    account_id_ref: kordinate/charon/codex-account-id
     notes: Operational Codex profile for Charon and similar platform-operations agents.
 
   fireworks-glm-5:

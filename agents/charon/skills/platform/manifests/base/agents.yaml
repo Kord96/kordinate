@@ -17,6 +17,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -28,7 +29,6 @@ spec:
               bash /app/scripts/setup-agent-dir.sh generic-opus
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -44,15 +44,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-opus" }
             - { name: AGENT_PROFILE, value: "generic" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/generic-opus" }
-            - { name: AGENT_STATE_DIR, value: "/kord/generic-opus" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/generic-opus" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/generic-opus/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/generic-opus/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-opus" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-opus" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-opus" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-opus/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-opus/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -81,14 +83,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -120,6 +121,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -129,10 +131,9 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-opus
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-opus
+              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-opus
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-augur:latest
@@ -148,15 +149,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-opus" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/augur-opus" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur-opus" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-opus" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-opus/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-opus/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-opus" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-opus" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-opus" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-opus/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-opus/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -185,14 +188,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -212,34 +214,33 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-augur-gemini-31-pro
-  labels: { app: kord-agent, agent: augur-gemini-31-pro }
+  name: agent-generic-gemini-31-pro
+  labels: { app: kord-agent, agent: generic-gemini-31-pro }
 spec:
   selector:
-    matchLabels: { app: kord-agent, agent: augur-gemini-31-pro }
+    matchLabels: { app: kord-agent, agent: generic-gemini-31-pro }
   template:
     metadata:
-      labels: { app: kord-agent, agent: augur-gemini-31-pro }
+      labels: { app: kord-agent, agent: generic-gemini-31-pro }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
-          image: REGISTRY/agent-augur:latest
+          image: REGISTRY/agent-base:latest
           imagePullPolicy: Always
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh augur-gemini-31-pro
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-gemini-31-pro
+              bash /app/scripts/setup-agent-dir.sh generic-gemini-31-pro
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
-          image: REGISTRY/agent-augur:latest
+          image: REGISTRY/agent-base:latest
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
@@ -250,22 +251,24 @@ spec:
             - |
               exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: "augur-gemini-31-pro" }
-            - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/augur-gemini-31-pro" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur-gemini-31-pro" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-gemini-31-pro" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-gemini-31-pro/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-gemini-31-pro/.daemon-state/sessions.json" }
+            - { name: AGENT_NAME, value: "generic-gemini-31-pro" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-31-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-31-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-31-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gemini-31-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gemini-31-pro/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-31-pro:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-31-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
             - { name: DAEMON_PROVIDER, value: "gemini" }
             - { name: DAEMON_MODEL, value: "gemini-3.1-pro-preview" }
             - { name: DAEMON_BACKEND, value: "gemini" }
@@ -290,14 +293,650 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-generic-gemini-31-pro
+  labels: { app: kord-agent, agent: generic-gemini-31-pro }
+spec:
+  selector:
+    app: kord-agent
+    agent: generic-gemini-31-pro
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-generic-gemini-25-pro
+  labels: { app: kord-agent, agent: generic-gemini-25-pro }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: generic-gemini-25-pro }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: generic-gemini-25-pro }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh generic-gemini-25-pro
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "generic-gemini-25-pro" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-25-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-25-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-25-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gemini-25-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gemini-25-pro/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-pro" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-generic-gemini-25-pro
+  labels: { app: kord-agent, agent: generic-gemini-25-pro }
+spec:
+  selector:
+    app: kord-agent
+    agent: generic-gemini-25-pro
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-generic-gemini-25-flash
+  labels: { app: kord-agent, agent: generic-gemini-25-flash }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: generic-gemini-25-flash }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: generic-gemini-25-flash }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh generic-gemini-25-flash
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "generic-gemini-25-flash" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-25-flash" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-25-flash" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-25-flash" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gemini-25-flash/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gemini-25-flash/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-flash:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-flash" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-generic-gemini-25-flash
+  labels: { app: kord-agent, agent: generic-gemini-25-flash }
+spec:
+  selector:
+    app: kord-agent
+    agent: generic-gemini-25-flash
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-generic-deepseek-reasoner
+  labels: { app: kord-agent, agent: generic-deepseek-reasoner }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: generic-deepseek-reasoner }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: generic-deepseek-reasoner }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh generic-deepseek-reasoner
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "generic-deepseek-reasoner" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-deepseek-reasoner" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-deepseek-reasoner" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-deepseek-reasoner" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-deepseek-reasoner/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-deepseek-reasoner/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-deepseek-reasoner:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "deepseek" }
+            - { name: DAEMON_MODEL, value: "deepseek-reasoner" }
+            - { name: DAEMON_BACKEND, value: "deepseek" }
+            - { name: BACKEND_BASE_URL, value: "https://api.deepseek.com/v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: deepseek-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-generic-deepseek-reasoner
+  labels: { app: kord-agent, agent: generic-deepseek-reasoner }
+spec:
+  selector:
+    app: kord-agent
+    agent: generic-deepseek-reasoner
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-generic-glm5
+  labels: { app: kord-agent, agent: generic-glm5 }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: generic-glm5 }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: generic-glm5 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh generic-glm5
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "generic-glm5" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-glm5" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-glm5" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-glm5" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-glm5/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-glm5/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-glm5:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "fireworks" }
+            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/glm-5" }
+            - { name: DAEMON_BACKEND, value: "fireworks" }
+            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fireworks-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-generic-glm5
+  labels: { app: kord-agent, agent: generic-glm5 }
+spec:
+  selector:
+    app: kord-agent
+    agent: generic-glm5
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-generic-gpt54
+  labels: { app: kord-agent, agent: generic-gpt54 }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: generic-gpt54 }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: generic-gpt54 }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh generic-gpt54
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-base:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              add:
+                - SETUID
+                - SETGID
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "generic-gpt54" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gpt54" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gpt54" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gpt54" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gpt54/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gpt54/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gpt54:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.4" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codex-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-generic-gpt54
+  labels: { app: kord-agent, agent: generic-gpt54 }
+spec:
+  selector:
+    app: kord-agent
+    agent: generic-gpt54
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-augur-gemini-31-pro
+  labels: { app: kord-agent, agent: augur-gemini-31-pro }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-gemini-31-pro }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-gemini-31-pro }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-gemini-31-pro
+              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gemini-31-pro
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-gemini-31-pro" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-31-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-31-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-31-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gemini-31-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gemini-31-pro/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-31-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-3.1-pro-preview" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -308,6 +947,222 @@ spec:
   selector:
     app: kord-agent
     agent: augur-gemini-31-pro
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-augur-gemini-25-pro
+  labels: { app: kord-agent, agent: augur-gemini-25-pro }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-gemini-25-pro }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-gemini-25-pro }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-gemini-25-pro
+              AGENT_MEMORY_BUNDLE=analyze-selective-v1 AGENT_RUNTIME_BUNDLE=analyze-selective-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gemini-25-pro
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-gemini-25-pro" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-25-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-25-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-25-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gemini-25-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gemini-25-pro/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-pro" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "analyze-selective-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "analyze-selective-v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur-gemini-25-pro
+  labels: { app: kord-agent, agent: augur-gemini-25-pro }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur-gemini-25-pro
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-augur-gemini-25-flash
+  labels: { app: kord-agent, agent: augur-gemini-25-flash }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-gemini-25-flash }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-gemini-25-flash }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-gemini-25-flash
+              AGENT_MEMORY_BUNDLE=analyze-selective-v1 AGENT_RUNTIME_BUNDLE=analyze-selective-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gemini-25-flash
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-gemini-25-flash" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-25-flash" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-25-flash" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-25-flash" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gemini-25-flash/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gemini-25-flash/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-flash:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-flash" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "analyze-selective-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "analyze-selective-v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur-gemini-25-flash
+  labels: { app: kord-agent, agent: augur-gemini-25-flash }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur-gemini-25-flash
   ports:
     - name: health
       port: 9090
@@ -329,6 +1184,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -338,10 +1194,9 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-deepseek-reasoner
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-deepseek-reasoner
+              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-deepseek-reasoner
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-augur:latest
@@ -357,15 +1212,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-deepseek-reasoner" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/augur-deepseek-reasoner" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur-deepseek-reasoner" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-deepseek-reasoner" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-deepseek-reasoner/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-deepseek-reasoner/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-deepseek-reasoner" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-deepseek-reasoner" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-deepseek-reasoner" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-deepseek-reasoner/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-deepseek-reasoner/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -395,14 +1252,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -434,6 +1290,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -443,10 +1300,9 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-glm5
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-glm5
+              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-glm5
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-augur:latest
@@ -462,15 +1318,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-glm5" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/augur-glm5" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur-glm5" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-glm5" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-glm5/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-glm5/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-glm5" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-glm5" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-glm5" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-glm5/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-glm5/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -500,14 +1358,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -539,6 +1396,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -548,10 +1406,9 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-gpt54
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh augur augur-gpt54
+              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gpt54
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-augur:latest
@@ -560,6 +1417,10 @@ spec:
             runAsNonRoot: true
             runAsUser: 1000
             runAsGroup: 1000
+            capabilities:
+              add:
+                - SETUID
+                - SETGID
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -567,15 +1428,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-gpt54" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/augur-gpt54" }
-            - { name: AGENT_STATE_DIR, value: "/kord/augur-gpt54" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/augur-gpt54" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/augur-gpt54/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/augur-gpt54/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gpt54" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gpt54" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gpt54" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gpt54/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gpt54/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -586,6 +1449,7 @@ spec:
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
             - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -606,14 +1470,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -645,6 +1508,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -654,34 +1518,75 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh charon-gpt53-codex
-              AGENT_MEMORY_BUNDLE=platform-core-v1 AGENT_SKILL_BUNDLE=platform-ops-v1 AGENT_RUNTIME_BUNDLE=ops-default-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh charon charon-gpt53-codex
+              AGENT_MEMORY_BUNDLE=platform-core-v1 AGENT_SKILL_BUNDLE=platform-ops-v1 AGENT_RUNTIME_BUNDLE=ops-default-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh charon charon-gpt53-codex
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-charon:latest
           imagePullPolicy: Always
           securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
+            privileged: true
+            allowPrivilegeEscalation: true
+            runAsNonRoot: false
+            runAsUser: 0
+            runAsGroup: 0
+            capabilities:
+              add:
+                - SYS_ADMIN
           command: ["/bin/bash", "-c"]
           args:
             - |
+              set -e
+              if ! command -v bwrap >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
+                export DEBIAN_FRONTEND=noninteractive
+                apt-get update >/dev/null
+                apt-get install -y --no-install-recommends bubblewrap curl ca-certificates >/dev/null
+              fi
+              if ! command -v kubectl >/dev/null 2>&1; then
+                curl -fsSL -o /usr/local/bin/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION:-v1.34.5}/bin/linux/amd64/kubectl
+                chmod +x /usr/local/bin/kubectl
+              fi
+              mkdir -p /home/node/.kube
+              TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              CA=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              SERVER=https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}
+              cat > /home/node/.kube/config <<KUBECONFIG_EOF
+              apiVersion: v1
+              kind: Config
+              clusters:
+              - cluster:
+                  certificate-authority: ${CA}
+                  server: ${SERVER}
+                name: in-cluster
+              contexts:
+              - context:
+                  cluster: in-cluster
+                  namespace: kord
+                  user: serviceaccount
+                name: in-cluster
+              current-context: in-cluster
+              users:
+              - name: serviceaccount
+                user:
+                  token: ${TOKEN}
+              KUBECONFIG_EOF
+              chmod 600 /home/node/.kube/config
               exec klaude-daemon
           env:
             - { name: AGENT_NAME, value: "charon-gpt53-codex" }
             - { name: AGENT_PROFILE, value: "charon" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/charon-gpt53-codex" }
-            - { name: AGENT_STATE_DIR, value: "/kord/charon-gpt53-codex" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/charon-gpt53-codex" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/charon-gpt53-codex/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/charon-gpt53-codex/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/charon-gpt53-codex" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/charon-gpt53-codex" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/charon-gpt53-codex" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/charon-gpt53-codex/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/charon-gpt53-codex/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -692,6 +1597,10 @@ spec:
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
             - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: CODEX_SANDBOX_MODE, value: "danger-full-access" }
+            - { name: CODEX_NETWORK_ACCESS_ENABLED, value: "true" }
+            - { name: KUBECONFIG, value: "/home/node/.kube/config" }
+            - { name: KUBECTL_VERSION, value: "v1.34.5" }
             - { name: AGENT_MEMORY_BUNDLE, value: "platform-core-v1" }
             - { name: AGENT_SKILL_BUNDLE, value: "platform-ops-v1" }
             - { name: AGENT_RUNTIME_BUNDLE, value: "ops-default-v1" }
@@ -715,14 +1624,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -754,6 +1662,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -763,10 +1672,9 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh sauron-gpt53-codex
-              KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh sauron sauron-gpt53-codex
+              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh sauron sauron-gpt53-codex
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -775,6 +1683,10 @@ spec:
             runAsNonRoot: true
             runAsUser: 1000
             runAsGroup: 1000
+            capabilities:
+              add:
+                - SETUID
+                - SETGID
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -782,15 +1694,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "sauron-gpt53-codex" }
             - { name: AGENT_PROFILE, value: "sauron" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/sauron-gpt53-codex" }
-            - { name: AGENT_STATE_DIR, value: "/kord/sauron-gpt53-codex" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/sauron-gpt53-codex" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/sauron-gpt53-codex/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/sauron-gpt53-codex/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/sauron-gpt53-codex" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/sauron-gpt53-codex" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/sauron-gpt53-codex" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/sauron-gpt53-codex/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/sauron-gpt53-codex/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -801,6 +1715,7 @@ spec:
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
             - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -821,14 +1736,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -860,6 +1774,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -869,10 +1784,9 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh alfred-deepseek-chat
-              AGENT_MEMORY_BUNDLE=operate-direct-v1 AGENT_SKILL_BUNDLE=get-store-core-v1 AGENT_RUNTIME_BUNDLE=direct-action-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-deepseek-chat
+              AGENT_MEMORY_BUNDLE=operate-direct-v1 AGENT_SKILL_BUNDLE=get-store-core-v1 AGENT_RUNTIME_BUNDLE=direct-action-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh alfred alfred-deepseek-chat
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -888,15 +1802,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "alfred-deepseek-chat" }
             - { name: AGENT_PROFILE, value: "alfred" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/alfred-deepseek-chat" }
-            - { name: AGENT_STATE_DIR, value: "/kord/alfred-deepseek-chat" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/alfred-deepseek-chat" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/alfred-deepseek-chat/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/alfred-deepseek-chat/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/alfred-deepseek-chat" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/alfred-deepseek-chat" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/alfred-deepseek-chat" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/alfred-deepseek-chat/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/alfred-deepseek-chat/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -931,14 +1847,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -970,6 +1885,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
+
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -979,10 +1895,9 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh alfred-gpt-oss-20b
-              AGENT_MEMORY_BUNDLE=operate-direct-v1 AGENT_SKILL_BUNDLE=get-store-core-v1 AGENT_RUNTIME_BUNDLE=direct-action-v1 KORDINATE_HOME=/app KORD_RUNTIME=/runtime bash /app/scripts/deploy-runtime.sh alfred alfred-gpt-oss-20b
+              AGENT_MEMORY_BUNDLE=operate-direct-v1 AGENT_SKILL_BUNDLE=get-store-core-v1 AGENT_RUNTIME_BUNDLE=direct-action-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh alfred alfred-gpt-oss-20b
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -998,15 +1913,17 @@ spec:
           env:
             - { name: AGENT_NAME, value: "alfred-gpt-oss-20b" }
             - { name: AGENT_PROFILE, value: "alfred" }
-            - { name: AGENT_HOME_DIR, value: "/runtime/alfred-gpt-oss-20b" }
-            - { name: AGENT_STATE_DIR, value: "/kord/alfred-gpt-oss-20b" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/runtime/alfred-gpt-oss-20b" }
-            - { name: DAEMON_STATE_DIR, value: "/runtime/alfred-gpt-oss-20b/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/runtime/alfred-gpt-oss-20b/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/alfred-gpt-oss-20b" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/alfred-gpt-oss-20b" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/alfred-gpt-oss-20b" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/alfred-gpt-oss-20b/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/alfred-gpt-oss-20b/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
             - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
@@ -1041,14 +1958,13 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-            - { name: agent-runtime, mountPath: /runtime }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-        - name: agent-runtime
-          emptyDir: {}
       securityContext:
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service

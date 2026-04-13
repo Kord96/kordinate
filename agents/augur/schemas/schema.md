@@ -135,17 +135,12 @@ Version 3 evolves from architecture.yaml v2: JSON format, `groups` replace `capa
     }
   ],
 
-  "failure_modes": [
+  "business_metrics": [
     {
-      "id": "<kebab-case>",
-      "trigger": "<what goes wrong>",
-      "cascade": [
-        {"component": "<component-id>", "effect": "<what happens>"}
-      ],
-      "impact": "<what end users experience>",
-      "detection": ["<signal — metric, log, error, or 'none'>"],
-      "recovery": ["<step — automatic or manual>"],
-      "severity": "critical | high | medium | low",
+      "name": "<metric name>",
+      "description": "<what business or product outcome this measures>",
+      "owner": "<flow-id | group-id | system>",
+      "signals": ["<metric or event name>"],
       "grounded_in": ["<file:line>"]
     }
   ],
@@ -339,7 +334,7 @@ All detection sections (concepts, module_graph, api_surface, debt) are structura
 - **Components should number 5-10** for most projects. >12 means not abstracting enough. <4 means over-abstracting
 - **Groups must number 3-5.** This is a hard constraint. If you have more, merge related groups. If you have fewer, the project may be too small to warrant grouping.
 - **Data flows trace critical paths**, not every code path. 2-4 flows typical
-- **Failure modes should cover** every external dependency and every stateful component
+- **Health should cover** every external dependency and every stateful component. Attach failure modes, detection signals, and instrumentation gaps to the relevant component, flow, or external dependency.
 - Components nest via `children`. Don't nest deeper than the code's natural structure
 - `deployment` field enables the deployment viewpoint. Only add to components that map to a k8s workload
 - `technology` on flow steps enables annotated sequence diagrams
@@ -347,7 +342,7 @@ All detection sections (concepts, module_graph, api_surface, debt) are structura
 - Omit `module_graph.reverse_dependencies` if `--reverse` was not used
 - Omit `api_surface` entirely if no endpoints were found and the project is not an API
 - Omit empty severity lists in `api_surface.findings` and empty `debt.by_category` entries
-- **`grounded_in`** on data_flows, state, failure_modes, and concept evidence lists the source files that justify the entry. Format: `["<file:line>"]`. These are used during evaluation to verify claims against actual code — not against other atlas entries (which would be circular)
+- **`grounded_in`** on data_flows, state, health entries, business metrics, and concept evidence lists the source files that justify the entry. Format: `["<file:line>"]`. These are used during evaluation to verify claims against actual code — not against other atlas entries (which would be circular)
 
 ## Group Assignment
 
@@ -375,7 +370,7 @@ Guidelines:
   "data_flows": [],
   "state": [],
   "external_dependencies": [],
-  "failure_modes": [],
+  "business_metrics": [],
   "concepts": {
     "detected_patterns": [],
     "detected_anti_patterns": [],

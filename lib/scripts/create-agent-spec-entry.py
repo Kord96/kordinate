@@ -16,6 +16,8 @@ def infer_runtime_kind(model: str, provider: str) -> str:
         return "claude-agent-sdk"
     if "gpt" in normalized_model:
         return "codex-sdk"
+    if "gemini" in normalized_model or (provider or "").strip().lower() == "gemini":
+        return "gemini-sdk"
     return "openclaude-harness"
 
 
@@ -47,6 +49,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--default-working-dir", default="", help="Optional default working directory for tasks")
     parser.add_argument("--working-directory", default="", help="Deprecated alias for --default-working-dir")
     parser.add_argument("--skip-git-repo-check", action="store_true", help="Set CODEX_SKIP_GIT_REPO_CHECK=true")
+    parser.add_argument("--sandbox-mode", default="", help="Optional codex sandbox mode override")
     parser.add_argument("--min-replicas", type=int, default=0)
     parser.add_argument("--max-replicas", type=int, default=3)
     parser.add_argument("--cooldown", type=int, default=300)
@@ -81,6 +84,7 @@ def resolve_profile(args: argparse.Namespace, profiles: dict, model_catalog: dic
         "skill_bundle": args.skill_bundle or defaults.get("skill_bundle", ""),
         "runtime_bundle": args.runtime_bundle or defaults.get("runtime_bundle", ""),
         "skip_git_repo_check": args.skip_git_repo_check or defaults.get("skip_git_repo_check", False),
+        "sandbox_mode": args.sandbox_mode or defaults.get("sandbox_mode", ""),
         "required_choices": profile.get("required_choices", []),
         "choices": profile.get("choices", {}),
     }
@@ -130,8 +134,8 @@ def build_agent(args: argparse.Namespace) -> dict:
                 },
             },
             "state": {
-                "agent_home_dir": f"/runtime/{name}",
-                "state_dir": f"/kord/{name}",
+                "agent_home_dir": f"/kord/agents/{name}",
+                "state_dir": f"/kord/agents/{name}",
             },
         },
         "creation": {
@@ -173,6 +177,8 @@ def build_agent(args: argparse.Namespace) -> dict:
         agent["runtime"]["daemon"]["default_working_dir"] = default_working_dir
     if profile["skip_git_repo_check"]:
         agent["runtime"]["daemon"]["skip_git_repo_check"] = True
+    if profile["sandbox_mode"]:
+        agent["runtime"]["daemon"]["sandbox_mode"] = profile["sandbox_mode"]
     if flavor in SPECIAL_FLAVORS and flavor != name and profile["image_customization"] == "none":
         agent["image"]["customization"] = f"agent-{flavor}"
     return agent

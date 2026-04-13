@@ -1,0 +1,65 @@
+concept: retry
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 5
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+      - broad_match
+      - noisy_rule_match
+      - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 4
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 6
+  entries:
+    - id: retry-bounded-attempts
+      prompt: Is the retry behavior bounded by an explicit attempt or deadline limit?
+      weight: 3
+      signals:
+        - stop_after_attempt
+        - retries:
+        - maxRetries
+    - id: retry-backoff
+      prompt: Is there exponential backoff or jitter rather than a fixed-delay loop?
+      weight: 2
+      signals:
+        - wait_exponential
+        - backoff
+        - jitter
+    - id: retry-idempotent-or-dlq
+      prompt: Is the retried operation idempotent or routed to a dead-letter path on exhaustion?
+      weight: 1
+      signals:
+        - dead letter
+        - idempotent
+monitoring:
+  applies_to:
+    - component
+    - dependency
+    - flow
+  health_signals:
+    - name: retry.attempts
+      description: Distribution of retry attempts before success or terminal failure.
+    - name: retry.exhausted.rate
+      description: Rate at which retries are exhausted without recovery.
+    - name: downstream.retryable_error.rate
+      description: Rate of retryable downstream failures that trigger the retry path.
+  business_metrics: []
+  gaps:
+    - If retries are invisible, transient downstream instability can silently consume latency budgets.

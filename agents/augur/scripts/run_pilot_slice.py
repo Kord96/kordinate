@@ -103,11 +103,11 @@ def apply_response_metadata(manifest: dict[str, Any], response_payload: dict[str
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the deterministic Augur pilot slice and emit a run manifest.")
+    parser = argparse.ArgumentParser(description="Run the deterministic Augur pilot slice and emit benchmark analysis metadata.")
     parser.add_argument("repo_root", type=Path, help="Repository root to analyze.")
     parser.add_argument("--output-dir", type=Path, help="Directory for pilot artifacts. Defaults to /kord/augur/memory/projects/<repo>/benchmark/runs/<run-id>/")
-    parser.add_argument("--model", default="augur", help="Model label to record in the run manifest.")
-    parser.add_argument("--provider", default="augur", help="Provider label to record in the run manifest.")
+    parser.add_argument("--model", default="augur", help="Model label to record in the benchmark metadata.")
+    parser.add_argument("--provider", default="augur", help="Provider label to record in the benchmark metadata.")
     parser.add_argument("--runtime-kind", default="augur")
     parser.add_argument("--memory-bundle", default="selective")
     parser.add_argument("--skill-bundle", default="selective")
@@ -139,7 +139,7 @@ def main() -> int:
     facts_path = output_dir / "facts.json"
     concepts_path = output_dir / "concepts.json"
     semantic_review_path = output_dir / "semantic-review.json"
-    manifest_path = output_dir / "run-manifest.json"
+    meta_path = output_dir / "meta.json"
 
     total_start = time.perf_counter()
     runtime_ms = {
@@ -256,7 +256,7 @@ def main() -> int:
     }
     write_json(reflection_path, reflection_record)
 
-    manifest = {
+    meta = {
         "run_id": run_id,
         "timestamp": timestamp,
         "repo": repo_root.name,
@@ -304,9 +304,9 @@ def main() -> int:
         ],
     }
     if args.response_json:
-        apply_response_metadata(manifest, load_json(args.response_json.resolve()))
-    write_json(manifest_path, manifest)
-    print(json.dumps(manifest, indent=2))
+        apply_response_metadata(meta, load_json(args.response_json.resolve()))
+    write_json(meta_path, meta)
+    print(json.dumps(meta, indent=2))
     return 0 if success else 1
 
 

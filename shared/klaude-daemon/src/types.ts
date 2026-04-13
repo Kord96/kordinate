@@ -1,4 +1,4 @@
-export type MessageType = 'request' | 'response'
+export type MessageType = 'request' | 'response' | 'progress'
 export type JobStatus = 'success' | 'error' | 'timeout' | 'cancelled'
 
 export interface ReflectionPayload {
@@ -6,15 +6,38 @@ export interface ReflectionPayload {
   general: string
 }
 
+export interface ProgressEventPayload {
+  source: 'agent-daemon' | 'provider' | 'gateway'
+  kind: string
+  sequence?: number
+  runtime?: string
+  model?: string
+  session_id?: string
+  structured_log_path?: string
+  payload?: Record<string, unknown>
+}
+
+export type ProgressReporter = (event: ProgressEventPayload) => void | Promise<void>
+
+export interface PromptPlan {
+  fullPrompt: string
+  dynamicPrompt: string
+  cacheablePrefix?: string
+  cacheKey?: string
+  cacheStrategy?: 'provider' | 'session'
+}
+
 export interface RuntimeRequest {
   prompt: string
   raw_prompt?: string
+  promptPlan?: PromptPlan
   working_dir?: string
   timeout_ms?: number
   reflect?: boolean
   reflection_prompt?: string
   agent_params?: Record<string, unknown>
   session_id?: string
+  progress?: ProgressReporter
 }
 
 export interface RuntimeResult {
@@ -37,7 +60,15 @@ export interface ResponseMessage extends RuntimeResult {
   correlation_id: string
 }
 
-export type AgentMessage = RequestMessage | ResponseMessage
+export interface ProgressMessage {
+  type: 'progress'
+  sender: string
+  correlation_id: string
+  timestamp: string
+  event: ProgressEventPayload
+}
+
+export type AgentMessage = RequestMessage | ResponseMessage | ProgressMessage
 
 export interface ReflectionEvent {
   agent: string
@@ -56,6 +87,7 @@ export interface SessionState {
   key: string
   providerSessionId?: string
   lastCorrelationId?: string
+  promptCacheKey?: string
 }
 
 export interface AgentProfile {
@@ -65,6 +97,13 @@ export interface AgentProfile {
   promptPrefix?: string
   defaultReflectionPrompt?: string
   supportedAgentParams?: string[]
+  requiresWorkingDirectory?: boolean
+  validation?: {
+    required: boolean
+    validatorScript: string
+    maxAttempts?: number
+    finalizeScript?: string
+  }
 }
 
 export interface ProviderSessionAdapter {
@@ -109,6 +148,18 @@ export interface ResponseUsageMetadata {
 }
 
 export interface ResponseMetadata {
-  timing: ResponseTimingMetadata
+  timing?: ResponseTimingMetadata
   usage?: ResponseUsageMetadata
+  artifacts?: {
+    root?: string
+    files?: Record<string, string>
+    schemas?: Record<string, string>
+  }
+  validation?: {
+    required: boolean
+    passed: boolean
+    attempts: number
+    token?: string
+    target_dir?: string
+  }
 }

@@ -1,0 +1,54 @@
+concept: input-validation
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 5
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 4
+    ask_when:
+      - broad_match
+      - low_rule_confidence
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 4
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 5
+  entries:
+    - id: input-validation-boundary
+      prompt: Is validation applied at the request or API boundary before business logic?
+      weight: 3
+      signals:
+        - "BaseModel"
+        - "zod"
+        - "@Valid"
+    - id: input-validation-reject-invalid
+      prompt: Does invalid input trigger a reject-early response rather than deep business-logic checks?
+      weight: 2
+      signals:
+        - "ValidationError"
+        - "bad request"
+monitoring:
+  applies_to:
+    - flow
+    - component
+  health_signals:
+    - name: validation.failure.rate
+      description: Rate of rejected requests or payloads due to schema or contract violations.
+    - name: malformed_input.rate
+      description: Frequency of malformed or incomplete external inputs hitting the boundary.
+  business_metrics: []
+  gaps:
+    - Without validation rejection metrics, abuse and client integration failures are easy to miss.

@@ -8,6 +8,7 @@ test('loadDaemonConfig defaults to openai via codex sdk', () => {
     'DAEMON_PROVIDER', 'DAEMON_RUNTIME', 'DAEMON_MODEL',
     'BACKEND_API_KEY', 'BACKEND_BASE_URL',
     'CODEX_SKIP_GIT_REPO_CHECK', 'CODEX_WORKING_DIRECTORY', 'DAEMON_WORKING_DIRECTORY',
+    'CODEX_SANDBOX_MODE', 'DAEMON_SANDBOX_MODE',
     'KAFKA_BROKERS', 'REFLECTIONS_TOPIC', 'DISCOVERY_SERVER_URL',
     'DISCOVERY_PUBLISH_INTERVAL_MS', 'DAEMON_HEALTH_URL',
     'DAEMON_STATE_DIR', 'DAEMON_SESSION_MAP_PATH',
@@ -22,10 +23,13 @@ test('loadDaemonConfig defaults to openai via codex sdk', () => {
     apiKey: undefined,
     baseUrl: undefined,
     skipGitRepoCheck: false,
+    homeDirectory: undefined,
     workingDirectory: undefined,
+    sandboxMode: 'workspace-write',
   })
   assert.deepEqual(config.kafkaBrokers, ['localhost:9092'])
   assert.equal(config.reflectionsTopic, 'reflections')
+  assert.equal(config.progressTopic, 'kord-progress')
   assert.equal(config.discoveryServerUrl, undefined)
   assert.equal(config.discoveryPublishIntervalMs, 30000)
   assert.equal(config.kafkaSessionTimeoutMs, 30000)
@@ -41,6 +45,8 @@ test('loadDaemonConfig supports claude execution profile', () => {
   const previous = { ...process.env }
   delete process.env.DAEMON_WORKING_DIRECTORY
   delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.CODEX_SANDBOX_MODE
+  delete process.env.DAEMON_SANDBOX_MODE
   delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'anthropic'
   process.env.DAEMON_RUNTIME = 'claude-agent-sdk'
@@ -57,6 +63,7 @@ test('loadDaemonConfig supports claude execution profile', () => {
     model: 'claude-sonnet-4-6',
     apiKey: 'anthropic-key',
     baseUrl: 'https://api.anthropic.com',
+    homeDirectory: undefined,
     workingDirectory: undefined,
   })
 
@@ -67,6 +74,8 @@ test('loadDaemonConfig supports openclaude harness openai api key fallback', () 
   const previous = { ...process.env }
   delete process.env.DAEMON_WORKING_DIRECTORY
   delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.CODEX_SANDBOX_MODE
+  delete process.env.DAEMON_SANDBOX_MODE
   delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'openai'
   process.env.DAEMON_RUNTIME = 'openclaude-harness'
@@ -83,6 +92,7 @@ test('loadDaemonConfig supports openclaude harness openai api key fallback', () 
     model: 'gpt-5.4',
     apiKey: 'openai-key',
     baseUrl: undefined,
+    homeDirectory: undefined,
     workingDirectory: undefined,
   })
 
@@ -98,6 +108,8 @@ test('loadDaemonConfig supports codex execution profile overrides', () => {
   process.env.BACKEND_BASE_URL = 'https://proxy.example.com/v1'
   process.env.CODEX_SKIP_GIT_REPO_CHECK = 'true'
   process.env.DAEMON_WORKING_DIRECTORY = '/tmp/workdir'
+  delete process.env.CODEX_SANDBOX_MODE
+  delete process.env.DAEMON_SANDBOX_MODE
   process.env.KAFKA_BROKERS = 'kafka-a:9092,kafka-b:9092'
   process.env.DISCOVERY_SERVER_URL = 'http://discovery.internal'
   process.env.DISCOVERY_PUBLISH_INTERVAL_MS = '45000'
@@ -114,7 +126,9 @@ test('loadDaemonConfig supports codex execution profile overrides', () => {
     apiKey: 'codex-key',
     baseUrl: 'https://proxy.example.com/v1',
     skipGitRepoCheck: true,
+    homeDirectory: undefined,
     workingDirectory: '/tmp/workdir',
+    sandboxMode: 'workspace-write',
   })
   assert.deepEqual(config.kafkaBrokers, ['kafka-a:9092', 'kafka-b:9092'])
   assert.equal(config.discoveryServerUrl, 'http://discovery.internal')
@@ -134,6 +148,8 @@ test('loadDaemonConfig maps legacy alfred-direct runtime to simple-harness', () 
   process.env.BACKEND_API_KEY = 'fireworks-key'
   process.env.BACKEND_BASE_URL = 'https://api.fireworks.ai/inference/v1'
   process.env.DAEMON_WORKING_DIRECTORY = '/runtime/alfred-gpt-oss-20b'
+  delete process.env.CODEX_SANDBOX_MODE
+  delete process.env.DAEMON_SANDBOX_MODE
 
   const config = loadDaemonConfig()
 
@@ -143,15 +159,16 @@ test('loadDaemonConfig maps legacy alfred-direct runtime to simple-harness', () 
     model: 'accounts/fireworks/models/gpt-oss-20b',
     apiKey: 'fireworks-key',
     baseUrl: 'https://api.fireworks.ai/inference/v1',
+    homeDirectory: undefined,
     workingDirectory: '/runtime/alfred-gpt-oss-20b',
   })
 
   process.env = previous
 })
 
-test('loadDaemonConfig falls back to AGENT_HOME_DIR for state and working directory', () => {
+test('loadDaemonConfig falls back to AGENT_HOME_DIR for state and home directory', () => {
   const previous = { ...process.env }
-  for (const key of ['DAEMON_PROVIDER', 'DAEMON_RUNTIME', 'DAEMON_MODEL', 'BACKEND_API_KEY', 'BACKEND_BASE_URL', 'DAEMON_WORKING_DIRECTORY', 'CODEX_WORKING_DIRECTORY', 'DAEMON_STATE_DIR', 'DAEMON_SESSION_MAP_PATH']) {
+  for (const key of ['DAEMON_PROVIDER', 'DAEMON_RUNTIME', 'DAEMON_MODEL', 'BACKEND_API_KEY', 'BACKEND_BASE_URL', 'DAEMON_WORKING_DIRECTORY', 'CODEX_WORKING_DIRECTORY', 'CODEX_SANDBOX_MODE', 'DAEMON_SANDBOX_MODE', 'DAEMON_STATE_DIR', 'DAEMON_SESSION_MAP_PATH']) {
     delete process.env[key]
   }
   process.env.DAEMON_PROVIDER = 'anthropic'
@@ -161,7 +178,8 @@ test('loadDaemonConfig falls back to AGENT_HOME_DIR for state and working direct
 
   const config = loadDaemonConfig()
 
-  assert.equal(config.executionProfile.workingDirectory, '/runtime/augur-opus')
+  assert.equal(config.executionProfile.homeDirectory, '/runtime/augur-opus')
+  assert.equal(config.executionProfile.workingDirectory, undefined)
   assert.equal(config.stateDir, '/runtime/augur-opus/.daemon-state')
   assert.equal(config.sessionMapPath, '/runtime/augur-opus/.daemon-state/sessions.json')
 
@@ -174,6 +192,8 @@ test('loadDaemonConfig supports deepseek through codex sdk', () => {
   delete process.env.BACKEND_BASE_URL
   delete process.env.DAEMON_WORKING_DIRECTORY
   delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.CODEX_SANDBOX_MODE
+  delete process.env.DAEMON_SANDBOX_MODE
   delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'deepseek'
   process.env.DAEMON_RUNTIME = 'codex-sdk'
@@ -188,7 +208,9 @@ test('loadDaemonConfig supports deepseek through codex sdk', () => {
     apiKey: 'deepseek-key',
     baseUrl: 'https://api.deepseek.com/v1',
     skipGitRepoCheck: false,
+    homeDirectory: undefined,
     workingDirectory: undefined,
+    sandboxMode: 'workspace-write',
   })
 
   process.env = previous
@@ -201,7 +223,7 @@ test('resolveRuntimeForModel maps model families to the expected runtimes', () =
   assert.equal(resolveRuntimeForModel('sonnet', 'anthropic'), 'claude-agent-sdk')
   assert.equal(resolveRuntimeForModel('haiku', 'anthropic'), 'claude-agent-sdk')
   assert.equal(resolveRuntimeForModel('deepseek-reasoner', 'deepseek'), 'openclaude-harness')
-  assert.equal(resolveRuntimeForModel('gemini-3.1-pro-preview', 'gemini'), 'openclaude-harness')
+  assert.equal(resolveRuntimeForModel('gemini-3.1-pro-preview', 'gemini'), 'gemini-sdk')
   assert.equal(resolveRuntimeForModel('accounts/fireworks/models/glm-5', 'fireworks'), 'openclaude-harness')
 })
 
@@ -210,6 +232,8 @@ test('loadDaemonConfig defaults non-claude non-gpt models to openclaude harness'
   delete process.env.BACKEND_BASE_URL
   delete process.env.DAEMON_WORKING_DIRECTORY
   delete process.env.CODEX_WORKING_DIRECTORY
+  delete process.env.CODEX_SANDBOX_MODE
+  delete process.env.DAEMON_SANDBOX_MODE
   delete process.env.AGENT_HOME_DIR
   process.env.DAEMON_PROVIDER = 'deepseek'
   process.env.DAEMON_MODEL = 'deepseek-reasoner'
@@ -224,6 +248,7 @@ test('loadDaemonConfig defaults non-claude non-gpt models to openclaude harness'
     model: 'deepseek-reasoner',
     apiKey: 'deepseek-key',
     baseUrl: 'https://api.deepseek.com/v1',
+    homeDirectory: undefined,
     workingDirectory: undefined,
   })
 

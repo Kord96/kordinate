@@ -8,7 +8,7 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
 
 ## Command Shape
 
-`/platform create-agent <name> [--profile generic|generic-opus|augur-opus|augur-gemini-31-pro|augur-deepseek-reasoner|augur-glm5|augur-gpt54|charon-gpt53-codex|alfred-deepseek-chat|sauron-gpt53-codex] [profile-specific flags]`
+`/platform create-agent <name> [--profile generic|generic-opus|generic-gemini-31-pro|generic-deepseek-reasoner|generic-glm5|generic-gpt54|augur-opus|augur-gemini-31-pro|augur-deepseek-reasoner|augur-glm5|augur-gpt54|charon-gpt53-codex|alfred-deepseek-chat|sauron-gpt53-codex] [profile-specific flags]`
 
 ## Steps
 
@@ -22,6 +22,8 @@ Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the ne
    - specialist profiles may require extra choices
    - example: every Augur model profile requires both `--memory-bundle` and `--runtime-bundle`
    - profile defaults also determine the pod secret wiring unless explicitly overridden
+  - for `codex-sdk` pod agents, prefer `workspace-write` sandbox mode; `approvalPolicy: never` already handles non-interactive execution
+  - exception: `charon-gpt53-codex` is the cluster-ops profile and intentionally uses `danger-full-access` plus pod bootstrap for `kubectl` and `bubblewrap`
    - runtime selection is inferred from the chosen model unless `--runtime-kind` is explicitly set:
      - GPT family -> `codex-sdk`
      - Claude family -> `claude-agent-sdk`

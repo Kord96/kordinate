@@ -2,23 +2,27 @@
 
 What augur produces and what downstream consumers (scribe, improve loop) can depend on.
 
-This document is the stable interface. Internal methodology may change; these outputs won't break without a version bump. For full schema details, see [facts-schema.md](facts-schema.md), [atlas-schema.md](atlas-schema.md), and [story-schema.md](story-schema.md).
+This document is the stable interface. Internal methodology may change; these outputs won't break without a version bump. For full schema details, see [facts-schema.md](facts-schema.md), [atlas-schema.md](atlas-schema.md), [narrative-schema.md](../skills/analyze/narrative-schema.md), and [meta-schema.md](../skills/analyze/meta-schema.md).
 
 ## Output Layout
 
 ```
-$MEM/
-  facts/
-    index.json        # normalized extraction manifest
-    <domain>.json     # concrete extracted observations (routes, models, deps, ...)
-  atlas.json            # structural inventory — complete, scoreable
-  stories/
-    <id>.yaml           # 8-15 stories, each a scoped architectural concern
-  journeys/
-    <id>.yaml           # at least one — teaching-order path through stories
+$PROJECT_MEM/
+  analysis/
+    latest.json
+    <commit-time>-<commit-sha>/
+      meta.json
+      blast.json
+      facts/
+        index.json
+        <domain>.json
+      atlas.json
+      stories/
+        <id>.yaml
+      narratives.yaml
 ```
 
-`--detect-only` produces `facts/` and `atlas.json` (no stories or journeys).
+`--detect-only` produces `meta.json`, `facts/`, and `atlas.json` (no stories or narratives).
 
 ---
 
@@ -61,7 +65,7 @@ Facts are the stable contract between deterministic extraction and semantic conc
 
 Full structural inventory. JSON, version `"4"`. See [atlas-schema.md](atlas-schema.md) for the complete field-by-field schema.
 
-**Top-level sections:** `version`, `generated`, `project`, `purpose`, `domain_model`, `stack`, `groups`, `actors`, `components`, `flows`, `state`, `events`, `external_dependencies`, `failure_modes`, `concepts`, `module_graph`, `api_surface`, `debt`, `metadata`.
+**Top-level sections:** `version`, `generated`, `project`, `purpose`, `domain_model`, `stack`, `groups`, `actors`, `components`, `flows`, `state`, `events`, `external_dependencies`, `concepts`, `module_graph`, `api_surface`, `debt`, `metadata`.
 
 ### Constraints scribe can depend on
 
@@ -70,7 +74,7 @@ Full structural inventory. JSON, version `"4"`. See [atlas-schema.md](atlas-sche
 | Top-level groups | 3-5 | Yes |
 | Components | 5-10 (4-12 acceptable) | Guideline |
 | Critical data flows | 2-4 | Guideline |
-| Failure modes | covers every external dep + stateful component | Yes |
+| Health coverage | every external dependency and every stateful component carries `health.failure_modes` and `health.gaps` | Yes |
 | Component IDs | kebab-case, unique | Yes |
 | All cross-references | resolve to existing IDs | Yes |
 | Omit empty sections | events, reverse_deps, api_surface when N/A | Yes |
@@ -89,7 +93,7 @@ Full structural inventory. JSON, version `"4"`. See [atlas-schema.md](atlas-sche
 
 ## Story Tree
 
-Stories form a tree mirroring the atlas group hierarchy. See [story-schema.md](story-schema.md) for the full schema.
+Stories form a tree mirroring the atlas group hierarchy. See [narrative-schema.md](../skills/analyze/narrative-schema.md) for the full schema.
 
 ### Tree structure
 
@@ -118,17 +122,17 @@ Stories form a tree mirroring the atlas group hierarchy. See [story-schema.md](s
 
 ---
 
-## Journeys
+## Narratives
 
-Thin cross-cutting paths through the story tree. Only created when a concern spans multiple root groups. See [story-schema.md](story-schema.md).
+Thin cross-cutting paths through the story tree. Stored in one `narratives.yaml` file when a concern spans multiple root groups. See [narrative-schema.md](../skills/analyze/narrative-schema.md).
 
 **Properties:**
-- Just ordered lists of story IDs — no content of their own
+- Ordered lists of story IDs with short per-step descriptions
 - Pull from any level of the tree (root or child, any group)
-- At least one journey required: `getting-started.yaml` — teaching-order path covering all groups, for someone new to the codebase
-- Additional journeys for cross-cutting concerns (resilience review, security audit, etc.) as the codebase warrants
-- Every story ID in a journey exists in `stories/`
-- 3-8 stories per journey
+- At least one narrative required: `getting-started` — teaching-order path covering all groups, for someone new to the codebase
+- Additional narratives for cross-cutting concerns (resilience review, security audit, etc.) as the codebase warrants
+- Every story ID in a narrative exists in `stories/`
+- 3-8 stories per narrative
 
 ---
 
@@ -145,18 +149,45 @@ Each story carries:
 1. **facts/index.json always exists** after `/analyze`
 2. **atlas.json always exists** after `/analyze`
 3. **stories/ directory exists** (may be empty if `--detect-only`)
-4. **journeys/ directory exists** with at least `getting-started.yaml` (empty if `--detect-only`)
+4. **narratives.yaml exists** with at least `getting-started` when Phase 2 runs
 5. **All IDs are kebab-case and unique** within their section
-6. **All cross-references resolve** — node IDs in stories exist in atlas, story IDs in journeys exist in stories/
+6. **All cross-references resolve** — node IDs in stories exist in atlas, story IDs in `narratives.yaml` exist in `stories/`
 7. **3-5 groups** — hard constraint
 8. **Bold refs in summaries match atlas node IDs**
 9. **Observation evidence includes file paths** relative to project root
-10. **Journeys are ordered** — render stories in the sequence given
+10. **Narratives are ordered** — render stories in the sequence given
+
+## meta.json
+
+Each durable analysis root carries a `meta.json` file that summarizes the accepted analysis state.
+
+Fields consumers can depend on:
+- `project`
+- `sha`
+- `commit_time`
+- `analyzed_at`
+- `analysis_mode`
+- `base_sha`
+- `base_commit_time`
+- `blast`
+- `artifacts`
+- `schemas`
+- `validation`
+
+## Daemon Response
+
+When Augur runs through the Kafka daemon and validation passes, the response metadata may include:
+- `validation`
+- `artifacts.root`
+- `artifacts.files`
+- `artifacts.schemas`
+
+These transport fields should point back to the validated analysis directory and its stable schema files rather than duplicating the durable analysis record.
 
 ## What May Change (Not Stable)
 
 - Number of stories (depends on project)
-- Number and types of journeys
+- Number and types of narratives
 - Structure/flow type strings (freeform, new types may appear)
 - Observation fields (may add new ones)
 - Detection methodology internals

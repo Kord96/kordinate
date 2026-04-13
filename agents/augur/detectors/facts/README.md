@@ -44,6 +44,9 @@ Initial domains:
 - `jobs`
 - `events`
 - `auth-surface`
+- `call-edges`
+- `data-touches`
+- `execution-slices`
 
 Borrow from codesight here:
 - narrow, framework-native extractors

@@ -253,8 +253,7 @@ $MEM/
   atlas.json
   stories/
     <id>.yaml              # both roots and children in the same directory
-  journeys/
-    <id>.yaml              # only created when cross-cutting paths are needed
+  narratives.yaml          # one YAML index of cross-cutting story sequences
 ```
 
-Story filenames use the story `id`. Parent/child relationships are inside the files, not in the directory structure.
+Story filenames use the story `id`. Parent/child relationships are inside the files, not in the directory structure. `narratives.yaml` is the only narrative index file.

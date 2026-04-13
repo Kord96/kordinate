@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { AgentProfile, RequestMessage } from './types.js'
+import type { AgentProfile, PromptPlan, RequestMessage } from './types.js'
 import { loadIdentityMetadata } from './identity.js'
 
 const DEFAULT_REFLECTION_PROMPT = [
@@ -39,7 +40,7 @@ function seededAgentHome(agentName: string): string[] {
   const envHome = process.env.AGENT_HOME_DIR
   return [
     envHome ?? '',
-    join('/runtime', agentName),
+    join('/kord/agents', agentName),
   ].filter(Boolean)
 }
 
@@ -67,6 +68,14 @@ function augurRootCandidates(): string[] {
     '/app/agents/augur',
     join(moduleDir, '..', '..', '..', 'agents', 'augur'),
   ]
+}
+
+function resolveAugurPath(...segments: string[]): string {
+  for (const root of augurRootCandidates()) {
+    const candidate = join(root, ...segments)
+    if (existsSync(candidate)) return candidate
+  }
+  return join('/app/agents/augur', ...segments)
 }
 
 function resolveBundleMode(message: RequestMessage): 'selective' | 'holistic' {
@@ -132,6 +141,13 @@ export function loadAgentProfile(agentName: string): AgentProfile {
         'For general, focus on transferable architecture and review lessons.',
       ].join('\n'),
       supportedAgentParams: ['bundle_mode'],
+      requiresWorkingDirectory: true,
+      validation: {
+        required: true,
+        validatorScript: resolveAugurPath('skills', 'analyze', 'scripts', 'validate_output.py'),
+        maxAttempts: 3,
+        finalizeScript: resolveAugurPath('scripts', 'finalize_analysis.py'),
+      },
     }
   }
 
@@ -139,21 +155,41 @@ export function loadAgentProfile(agentName: string): AgentProfile {
     ...identity,
     defaultReflectionPrompt: DEFAULT_REFLECTION_PROMPT,
     supportedAgentParams: [],
+    requiresWorkingDirectory: false,
+    validation: undefined,
   }
 }
 
-export function buildPromptFromProfile(profile: AgentProfile, message: RequestMessage): string {
+function hashPromptPrefix(value: string): string {
+  return createHash('sha256').update(value).digest('hex')
+}
+
+export function buildPromptPlanFromProfile(profile: AgentProfile, message: RequestMessage): PromptPlan {
   const workingDirSuffix = message.working_dir
-    ? `\n\nWorking directory hint: focus your work in \`${message.working_dir}\`. Start there unless the task clearly requires files outside it.`
+    ? `\n\nWorking directory hint: use \`${message.working_dir}\` as the authoritative starting project root and current working directory. Do not search alternative repo paths unless this exact path is missing or clearly not the target project.`
     : ''
   const bundlePrefix = profile.supportedAgentParams?.includes('bundle_mode')
     ? loadAugurBundlePrefix(message)
     : loadSeededBundlePrefix(profile.name ?? 'generic')
+  const cacheablePrefix = profile.promptPrefix || bundlePrefix
+    ? `${profile.promptPrefix ? `${profile.promptPrefix}\n\n` : ''}${bundlePrefix}`
+    : ''
+  const dynamicPrompt = `${message.prompt}${workingDirSuffix}`
+  const fullPrompt = cacheablePrefix
+    ? `${cacheablePrefix}${dynamicPrompt}`
+    : dynamicPrompt
 
-  if (!profile.promptPrefix) {
-    return `${bundlePrefix}${message.prompt}${workingDirSuffix}`
+  return {
+    fullPrompt,
+    dynamicPrompt,
+    cacheablePrefix: cacheablePrefix || undefined,
+    cacheKey: cacheablePrefix ? hashPromptPrefix(cacheablePrefix) : undefined,
+    cacheStrategy: cacheablePrefix ? 'provider' : undefined,
   }
-  return `${profile.promptPrefix}\n\n${bundlePrefix}${message.prompt}${workingDirSuffix}`
+}
+
+export function buildPromptFromProfile(profile: AgentProfile, message: RequestMessage): string {
+  return buildPromptPlanFromProfile(profile, message).fullPrompt
 }
 
 export function resolveReflectionPrompt(profile: AgentProfile, message: RequestMessage): string {

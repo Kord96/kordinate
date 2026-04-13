@@ -5,10 +5,10 @@ Level 2.5 resource for Augur analysis. Facts are the stable output of determinis
 Pipeline:
 
 ```text
-detectors -> facts -> concepts -> atlas -> stories/journeys
+detectors -> facts (including concept-evidence) -> atlas -> stories/narratives
 ```
 
-Facts are not concepts. A fact records a normalized observation about the codebase. Concepts interpret groups of facts using semantic memory, detector policy, and diagnostic questions when needed.
+Facts are not final semantic conclusions. A fact records a normalized observation about the codebase. Some deterministic inference outputs, such as `concept-evidence`, are still facts: they preserve candidate concept evidence without making the final semantic judgment. Final concept interpretation happens in the atlas phase.
 
 ## Output Layout
 
@@ -32,6 +32,10 @@ $MEM/
     hot-files.json
     jobs.json
     events.json
+    call-edges.json
+    data-touches.json
+    execution-slices.json
+    concept-evidence.json
 ```
 
 `index.json` is the canonical manifest. Domain files may be omitted when empty.
@@ -57,7 +61,7 @@ $MEM/
       {
         "id": "fastapi-routes",
         "domain": "routes",
-        "class": "ast | semgrep | signature | regex | manifest | question | inference",
+        "class": "ast | semgrep | signature | regex | manifest | question | inference | cpg",
         "framework_context": ["fastapi"],
         "status": "success | partial | skipped | failed"
       }
@@ -66,7 +70,7 @@ $MEM/
   "facts": [
     {
       "id": "<stable fact id>",
-      "kind": "framework | route | graphql-operation | grpc-service | websocket-channel | model | state-store | middleware | registration | handler | dispatch-binding | boundary | external-client | config-source | import-edge | hot-file | job | event | auth-surface",
+      "kind": "framework | route | graphql-operation | grpc-service | websocket-channel | model | state-store | middleware | registration | handler | dispatch-binding | boundary | external-client | config-source | import-edge | hot-file | job | event | auth-surface | call-edge | data-touch | execution-slice | concept-candidate | concept-gap",
       "domain": "<domain file name>",
       "summary": "<one sentence describing the observation>",
       "confidence": "high | medium | low",
@@ -74,7 +78,7 @@ $MEM/
       "source_files": ["<path:line>"],
       "detector": {
         "id": "<stable detector id>",
-        "class": "ast | semgrep | signature | regex | manifest | question | inference",
+        "class": "ast | semgrep | signature | regex | manifest | question | inference | cpg",
         "strength": 1,
         "rule": "<rule id or null>",
         "bundle": "<bundle id or null>"
@@ -189,6 +193,52 @@ Expected `raw_evidence` keys:
 - `import_type`
 - `fan_in`
 - `fan_out`
+
+### Call Edges
+
+Capture deterministic caller-to-callee relationships from the Joern-backed CPG extractor. These facts strengthen flows, component dependencies, and blast-radius targeting without requiring the concept layer to read raw CPG output.
+
+Expected `raw_evidence` keys:
+- `caller_name`
+- `caller_full_name`
+- `caller_signature`
+- `caller_file`
+- `caller_line`
+- `callee_name`
+- `callee_full_name`
+- `callee_signature`
+- `call_code`
+- `dispatch_type`
+- `source_file`
+- `line_number`
+- `column_number`
+
+### Data Touches
+
+Capture deterministic read, write, and emit-style touch evidence from the Joern-backed CPG extractor. These facts help refine state ownership, dependency usage, and flow grounding without exposing raw CPG structure to later phases.
+
+Expected `raw_evidence` keys:
+- `owner_name`
+- `owner_full_name`
+- `owner_file`
+- `owner_line`
+- `touch_kind`
+- `target_name`
+- `target_full_name`
+- `target_code`
+- `line_number`
+- `column_number`
+
+### Execution Slices
+
+Capture ordered call slices from the Joern-backed CPG extractor. These facts are intended to strengthen flow construction and later narrative sequencing while staying deterministic.
+
+Expected `raw_evidence` keys:
+- `slice_name`
+- `slice_full_name`
+- `slice_file`
+- `slice_line`
+- `steps`
 
 ## Fact-to-Concept Contract
 

@@ -3,11 +3,15 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import test from 'node:test'
-import { buildPromptFromProfile, loadAgentProfile, resolveReflectionPrompt } from './agent-profile.js'
+import { buildPromptFromProfile, buildPromptPlanFromProfile, loadAgentProfile, resolveReflectionPrompt } from './agent-profile.js'
 
 test('augur profile exposes supported bundle param', () => {
   const profile = loadAgentProfile('augur')
   assert.deepEqual(profile.supportedAgentParams, ['bundle_mode'])
+  assert.equal(profile.requiresWorkingDirectory, true)
+  assert.equal(profile.validation?.required, true)
+  assert.match(profile.validation?.validatorScript ?? '', /validate_output\.py$/)
+  assert.match(profile.validation?.finalizeScript ?? '', /finalize_analysis\.py$/)
   assert.ok(Array.isArray(profile.capabilities))
 })
 
@@ -26,7 +30,7 @@ test('buildPromptFromProfile prepends prompt prefix when present', () => {
 
 test('buildPromptFromProfile composes augur bundle layers for bundle_mode', () => {
   const profile = loadAgentProfile('augur')
-  const prompt = buildPromptFromProfile(profile, {
+  const promptPlan = buildPromptPlanFromProfile(profile, {
     type: 'request',
     sender: 'agent-a',
     correlation_id: 'corr-1',
@@ -34,9 +38,12 @@ test('buildPromptFromProfile composes augur bundle layers for bundle_mode', () =
     agent_params: { bundle_mode: 'selective' },
   })
 
-  assert.match(prompt, /Augur Analyze Skill Bundle — Core v1/)
-  assert.match(prompt, /Augur Analyze Bundle — Selective v1/)
-  assert.match(prompt, /framework detection -> fact extraction -> concept inference -> atlas synthesis/)
+  assert.match(promptPlan.fullPrompt, /Augur Analyze Skill Bundle — Core v1/)
+  assert.match(promptPlan.fullPrompt, /Augur Analyze Bundle — Selective v1/)
+  assert.match(promptPlan.fullPrompt, /framework detection -> fact extraction -> concept inference -> atlas synthesis/)
+  assert.match(promptPlan.dynamicPrompt, /Analyze the repo/)
+  assert.ok(promptPlan.cacheablePrefix)
+  assert.ok(promptPlan.cacheKey)
 })
 
 test('custom reflection prompt overrides profile default', () => {
@@ -63,6 +70,8 @@ test('unknown agent profile falls back to generic behavior', () => {
 
   assert.equal(prompt, 'Do the task')
   assert.deepEqual(profile.supportedAgentParams, [])
+  assert.equal(profile.requiresWorkingDirectory, false)
+  assert.equal(profile.validation, undefined)
 })
 
 test('buildPromptFromProfile appends working directory hint when provided', () => {
@@ -109,4 +118,21 @@ test('buildPromptFromProfile composes seeded bundle layers for non-augur agents'
     }
     rmSync(runtimeDir, { recursive: true, force: true })
   }
+})
+
+test('buildPromptPlanFromProfile keeps cacheable prefix separate from task prompt', () => {
+  const profile = loadAgentProfile('augur')
+  const promptPlan = buildPromptPlanFromProfile(profile, {
+    type: 'request',
+    sender: 'agent-a',
+    correlation_id: 'corr-1',
+    prompt: 'Analyze only the auth flow',
+    working_dir: '/kord/repos/kordinate',
+    agent_params: { bundle_mode: 'selective' },
+  })
+
+  assert.match(promptPlan.cacheablePrefix ?? '', /You are Augur/)
+  assert.doesNotMatch(promptPlan.cacheablePrefix ?? '', /Analyze only the auth flow/)
+  assert.match(promptPlan.dynamicPrompt, /Analyze only the auth flow/)
+  assert.match(promptPlan.dynamicPrompt, /Working directory hint:/)
 })

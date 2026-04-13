@@ -58,7 +58,26 @@ export interface ResponseMessage {
   metadata?: Record<string, unknown>
 }
 
-export type AgentMessage = RequestMessage | ResponseMessage
+export interface ProgressEventPayload {
+  source: 'agent-daemon' | 'provider' | 'gateway'
+  kind: string
+  sequence?: number
+  runtime?: string
+  model?: string
+  session_id?: string
+  structured_log_path?: string
+  payload?: Record<string, unknown>
+}
+
+export interface ProgressMessage {
+  type: 'progress'
+  sender: string
+  correlation_id: string
+  timestamp: string
+  event: ProgressEventPayload
+}
+
+export type AgentMessage = RequestMessage | ResponseMessage | ProgressMessage
 
 export interface AgentDiscoveryRecord {
   name: string

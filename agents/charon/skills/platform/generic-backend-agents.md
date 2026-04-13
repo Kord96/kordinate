@@ -27,6 +27,13 @@ Use the Charon platform workflow:
 
 This updates `agent-spec.yaml`, regenerates platform manifests, and prepares the new agent for the normal `/platform deploy <env>` path.
 
+Predefined generic profiles currently exist for:
+- `generic-opus`
+- `generic-gemini-31-pro`
+- `generic-deepseek-reasoner`
+- `generic-glm5`
+- `generic-gpt54`
+
 ## When Not To Use Generic
 
 Do not use `generic` when:

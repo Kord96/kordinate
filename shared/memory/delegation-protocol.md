@@ -97,7 +97,8 @@ Architecture review: publish a request to `augur` with the repo path in `working
 
 Agents share work through the filesystem. All agents mount the same persistent volumes.
 
-- **Project files**: Reference by absolute path. The agent receiving the job can read and write files at the same paths you see.
+- **Project files**: Reference by pod-visible absolute path. Do not assume workstation-local paths such as `/kord/workstation/home/project/...` exist inside agent pods.
+- **Repo roots**: Prefer `/kord/shared/repos/<repo>` when sending a repository working directory to daemon-backed agents.
 - **Reports and outputs**: Agents write results to their memory directories under `/kord/<agent>/memory/`. Read these paths to retrieve detailed artifacts.
 - **Repo context**: Pass the `repo` field with the absolute path so the agent checks out and works in the correct directory.
 - **Cross-agent handoffs**: When chaining work (e.g., augur reviews then charon deploys), include the prior agent's output in the next agent's prompt. Example: "Augur approved the design. Here is the review: [paste output]. Now deploy to staging."
