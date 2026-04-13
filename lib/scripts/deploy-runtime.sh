@@ -24,49 +24,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[deploy-runtime] $*"; }
 
-resolve_bundle_file() {
-  local dir="$1"
-  local selection="${2:-}"
-  local candidate=""
-  local ext=""
-
-  [ -d "$dir" ] || return 1
-
-  if [ -n "$selection" ]; then
-    if [ -f "$dir/$selection" ]; then
-      echo "$dir/$selection"
-      return 0
-    fi
-    for ext in md json yaml yml; do
-      if [ -f "$dir/$selection.$ext" ]; then
-        echo "$dir/$selection.$ext"
-        return 0
-      fi
-    done
-    return 1
-  fi
-
-  for candidate in \
-    "$dir/default-v1.md" \
-    "$dir/default-v1.json" \
-    "$dir/default-v1.yaml" \
-    "$dir/default-v1.yml" \
-    "$dir/core-v1.md" \
-    "$dir/core-v1.json" \
-    "$dir/core-v1.yaml" \
-    "$dir/core-v1.yml"
-  do
-    if [ -f "$candidate" ]; then
-      echo "$candidate"
-      return 0
-    fi
-  done
-
-  candidate="$(find "$dir" -maxdepth 1 -type f \( -name '*.md' -o -name '*.json' -o -name '*.yaml' -o -name '*.yml' \) | sort | head -n 1)"
-  [ -n "$candidate" ] || return 1
-  echo "$candidate"
-}
-
 normalize_backend_name() {
   local profile="$1"
   local model="$2"
@@ -133,10 +90,6 @@ deploy_agent() {
   local SRC="$REPO/agents/$SOURCE_AGENT"
   local DST="$RUNTIME/$DEST_AGENT"
   local SHARED_ALFRED_ROOT="$KORD_ROOT/alfred"
-  local MEMORY_BUNDLE_SELECTION="${AGENT_MEMORY_BUNDLE:-}"
-  local RUNTIME_BUNDLE_SELECTION="${AGENT_RUNTIME_BUNDLE:-}"
-  local SKILL_BUNDLE_SELECTION="${AGENT_SKILL_BUNDLE:-}"
-
   if [ ! -d "$SRC" ]; then
     log "WARN: no source dir at $SRC"
     return
@@ -409,79 +362,13 @@ EOF
     log "  $AGENT_BUNDLE_NAME generated"
   fi
 
-  local MEMORY_BUNDLE_SRC=""
-  local MEMORY_BUNDLE_DST=""
-  MEMORY_BUNDLE_SRC="$(resolve_bundle_file "$SRC/bundles/memory" "$MEMORY_BUNDLE_SELECTION" || true)"
-  if [ -n "$MEMORY_BUNDLE_SRC" ]; then
-    MEMORY_BUNDLE_DST="$DST/memory-bundle.md"
-    cp "$MEMORY_BUNDLE_SRC" "$MEMORY_BUNDLE_DST"
-    log "  memory bundle installed ($(basename "$MEMORY_BUNDLE_SRC"))"
-  elif [ -n "$MEMORY_BUNDLE_SELECTION" ]; then
-    log "  WARN: memory bundle not found for selection '$MEMORY_BUNDLE_SELECTION'"
-  fi
-
-  local RUNTIME_BUNDLE_SRC=""
-  local RUNTIME_BUNDLE_DST=""
-  local RUNTIME_BUNDLE_REF=""
-  RUNTIME_BUNDLE_SRC="$(resolve_bundle_file "$SRC/bundles/runtime" "$RUNTIME_BUNDLE_SELECTION" || true)"
-  if [ -n "$RUNTIME_BUNDLE_SRC" ]; then
-    local runtime_ext="${RUNTIME_BUNDLE_SRC##*.}"
-    RUNTIME_BUNDLE_DST="$DST/runtime-bundle.$runtime_ext"
-    RUNTIME_BUNDLE_REF="$(basename "$RUNTIME_BUNDLE_DST")"
-    cp "$RUNTIME_BUNDLE_SRC" "$RUNTIME_BUNDLE_DST"
-    log "  runtime bundle installed ($(basename "$RUNTIME_BUNDLE_SRC"))"
-  elif [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
-    log "  WARN: runtime bundle not found for selection '$RUNTIME_BUNDLE_SELECTION'"
-  fi
-
-  local SKILL_BUNDLE_SRC=""
-  local SKILL_BUNDLE_DST=""
-  SKILL_BUNDLE_SRC="$(resolve_bundle_file "$SRC/bundles/skill" "$SKILL_BUNDLE_SELECTION" || true)"
-  if [ -n "$SKILL_BUNDLE_SRC" ]; then
-    SKILL_BUNDLE_DST="$DST/skill-bundle.md"
-    cp "$SKILL_BUNDLE_SRC" "$SKILL_BUNDLE_DST"
-    log "  skill bundle installed ($(basename "$SKILL_BUNDLE_SRC"))"
-  elif [ -n "$SKILL_BUNDLE_SELECTION" ]; then
-    log "  WARN: skill bundle not found for selection '$SKILL_BUNDLE_SELECTION'"
-  fi
-
-  local BUNDLE_SELECTION_DST="$DST/bundle-selection.md"
-  if [ -n "$MEMORY_BUNDLE_SELECTION" ] || [ -n "$RUNTIME_BUNDLE_SELECTION" ] || [ -n "$SKILL_BUNDLE_SELECTION" ]; then
-    {
-      echo "# Bundle Selection"
-      echo
-      if [ -n "$MEMORY_BUNDLE_SELECTION" ]; then
-        echo "- memory_bundle: $MEMORY_BUNDLE_SELECTION"
-      fi
-      if [ -n "$RUNTIME_BUNDLE_SELECTION" ]; then
-        echo "- runtime_bundle: $RUNTIME_BUNDLE_SELECTION"
-      fi
-      if [ -n "$SKILL_BUNDLE_SELECTION" ]; then
-        echo "- skill_bundle: $SKILL_BUNDLE_SELECTION"
-      fi
-      echo
-      echo "These selections are part of the seeded runtime for this agent instance."
-    } > "$BUNDLE_SELECTION_DST"
-    log "  bundle-selection.md generated"
-  fi
-
-  # Generate CLAUDE.md — static shim only
+  # Generate CLAUDE.md as a compatibility shim for runtimes that still look for it.
+  # AGENT.md is the canonical seeded-context bundle; CLAUDE.md should only reference it.
   {
-    echo "@identity.md"
-    if [ -f "$BUNDLE_SELECTION_DST" ]; then
-      echo "@bundle-selection.md"
-    fi
-    if [ -f "$MEMORY_BUNDLE_DST" ]; then
-      echo "@memory-bundle.md"
-    fi
-    if [ -f "$SKILL_BUNDLE_DST" ]; then
-      echo "@skill-bundle.md"
-    fi
-    if [ -n "$RUNTIME_BUNDLE_REF" ]; then
-      echo "@$RUNTIME_BUNDLE_REF"
-    fi
     if [ -f "$AGENT_BUNDLE_DST" ]; then
       echo "@$AGENT_BUNDLE_NAME"
+    else
+      echo "@identity.md"
     fi
   } > "$DST/CLAUDE.md"
   log "  CLAUDE.md generated"

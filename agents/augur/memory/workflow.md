@@ -14,7 +14,7 @@ description: Augur workflow — analyze existing code or design new projects, pr
 
 ### Facts
 
-Facts are the normalized result of deterministic extraction. They are concrete observations like routes, models, external clients, import edges, and jobs. Facts are consumed by concept inference and may also be consumed directly for targeted tasks like blast radius or focused summaries.
+Facts are the normalized result of deterministic extraction. They are concrete observations like routes, models, external clients, import edges, jobs, and concept-evidence. Facts are consumed by semantic atlas work and may also be consumed directly for targeted tasks like blast radius or focused summaries.
 
 See `schemas/facts-schema.md` for the full schema.
 
@@ -43,7 +43,7 @@ See `schemas/atlas-schema.md` for the full schema.
 1. Gather source code and identify languages and frameworks
 2. Use framework detector assets to establish stack context and prioritize fact domains plus concept families
 3. Run deterministic fact extraction to normalize directly observable evidence
-4. Run concept inference over facts using concept semantics, detector policy, and questions as needed
+4. Use deterministic facts, including concept-evidence, to guide semantic atlas work
 5. Produce atlas with failure_modes.detection for sauron consumption
 
 ## Design Workflow

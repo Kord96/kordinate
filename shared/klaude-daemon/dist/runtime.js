@@ -635,14 +635,27 @@ function resolveTaskWorkingDirectory(request, profile) {
 function shellSingleQuote(value) {
     return `'${value.replace(/'/g, `'\"'\"'`)}'`;
 }
+function withGitSafeDirectoryEnv(baseEnv, repoPath) {
+    const normalized = Object.fromEntries(Object.entries(baseEnv).filter((entry) => typeof entry[1] === 'string'));
+    if (!repoPath?.trim())
+        return normalized;
+    if (normalized.GIT_CONFIG_COUNT !== undefined)
+        return normalized;
+    return {
+        ...normalized,
+        GIT_CONFIG_COUNT: '1',
+        GIT_CONFIG_KEY_0: 'safe.directory',
+        GIT_CONFIG_VALUE_0: repoPath,
+    };
+}
 async function runBashCommand(options) {
     return await new Promise((resolve, reject) => {
         const child = spawn('/bin/bash', ['-lc', options.command], {
             cwd: options.cwd,
-            env: {
+            env: withGitSafeDirectoryEnv({
                 ...process.env,
                 ...(options.env ?? {}),
-            },
+            }, options.cwd),
             stdio: ['ignore', 'pipe', 'pipe'],
         });
         let stdout = '';
@@ -769,11 +782,11 @@ function geminiSdkFunctionDeclarations() {
         },
     ];
 }
-async function executeGeminiSdkToolCall(call, cwd) {
+async function executeGeminiSdkToolCall(call, cwd, env) {
     switch (call.name) {
         case 'bash': {
             const command = String(call.arguments.command ?? '');
-            const { stdout, stderr } = await runBashCommand({ command, cwd, timeoutMs: 10000 });
+            const { stdout, stderr } = await runBashCommand({ command, cwd, env, timeoutMs: 10000 });
             return stderr ? `${stdout}${stdout && !stdout.endsWith('\n') ? '\n' : ''}${stderr}`.trimEnd() : stdout.trimEnd();
         }
         case 'read_file': {
@@ -920,6 +933,16 @@ async function runOpenClaudePrint(prompt, options) {
     env.OPENAI_MODEL = options.model;
     env.CLAUDE_CODE_USE_OPENAI = '1';
     env.HOME = runtimeHome;
+    env.KORDINATE_HOME = process.env.KORDINATE_HOME ?? '/app';
+    if (typeof options.request?.agent_params?.run_dir === 'string') {
+        const runDir = options.request.agent_params.run_dir.trim();
+        if (runDir) {
+            env.RUN = runDir;
+            env.ANALYSIS = path.dirname(runDir);
+            env.PROJECT_MEM = path.dirname(path.dirname(runDir));
+        }
+    }
+    Object.assign(env, withGitSafeDirectoryEnv({}, cwd));
     const args = [
         '--print',
         '--bare',
@@ -1357,6 +1380,17 @@ export class GeminiSdkAdapter {
             homeDirectory: this.homeDirectory,
             workingDirectory: this.workingDirectory,
         });
+        const toolEnv = {
+            AGENT_HOME_DIR: runtimeHome,
+            KORDINATE_HOME: process.env.KORDINATE_HOME ?? '/app',
+            ...(typeof request.agent_params?.run_dir === 'string' && request.agent_params.run_dir.trim()
+                ? {
+                    RUN: request.agent_params.run_dir.trim(),
+                    ANALYSIS: path.dirname(request.agent_params.run_dir.trim()),
+                    PROJECT_MEM: path.dirname(path.dirname(request.agent_params.run_dir.trim())),
+                }
+                : {}),
+        };
         const debugDir = path.join(runtimeHome, '.daemon-logs');
         try {
             await mkdir(debugDir, { recursive: true });
@@ -1375,32 +1409,18 @@ export class GeminiSdkAdapter {
                     payload: event,
                 });
             };
-            let cachedContentName;
             if (request.promptPlan?.cacheablePrefix && request.promptPlan.cacheKey) {
-                try {
-                    cachedContentName = await ensureGeminiCachedContent({
-                        client: this.client,
-                        runtimeHome,
-                        model: this.model,
-                        cacheKey: request.promptPlan.cacheKey,
-                        cacheablePrefix: request.promptPlan.cacheablePrefix,
-                        writeEvent,
-                    });
-                }
-                catch (error) {
-                    await writeEvent({
-                        type: 'prompt_cache',
-                        subtype: 'error',
-                        cache_key: request.promptPlan.cacheKey,
-                        message: summarizeUnknown(error, 800) ?? 'failed to initialize Gemini cached content',
-                    });
-                }
+                await writeEvent({
+                    type: 'prompt_cache',
+                    subtype: 'bypass',
+                    cache_key: request.promptPlan.cacheKey,
+                    message: 'Gemini SDK provider cache bypassed; relying on session history reuse for tool-enabled runs.',
+                });
             }
-            const promptText = cachedContentName && request.promptPlan?.dynamicPrompt
-                ? request.promptPlan.dynamicPrompt
-                : request.promptPlan?.cacheKey && request.prompt === request.promptPlan.dynamicPrompt
-                    ? request.promptPlan.fullPrompt
-                    : request.prompt;
+            const usingDynamicOnlyPrompt = Boolean(request.promptPlan?.cacheKey && request.prompt === request.promptPlan.dynamicPrompt);
+            const promptText = usingDynamicOnlyPrompt
+                ? request.prompt
+                : request.promptPlan?.fullPrompt ?? request.prompt;
             if (history.length === 0) {
                 history.push({
                     role: 'user',
@@ -1424,7 +1444,8 @@ export class GeminiSdkAdapter {
                     cwd,
                     prompt_preview: summarizeText(promptText, 200),
                     prompt_cache_key: request.promptPlan?.cacheKey,
-                    cached_content: cachedContentName ?? null,
+                    cached_content: null,
+                    prompt_mode: usingDynamicOnlyPrompt ? 'dynamic-only' : 'full-with-prefix',
                 },
             });
             let finalText = '';
@@ -1433,7 +1454,6 @@ export class GeminiSdkAdapter {
                     model: this.model,
                     contents: history,
                     config: {
-                        cachedContent: cachedContentName,
                         tools: [{ functionDeclarations: geminiSdkFunctionDeclarations() }],
                     },
                 });
@@ -1485,7 +1505,7 @@ export class GeminiSdkAdapter {
                         arguments: functionCall.args ?? {},
                     };
                     await writeEvent({ type: 'tool_use', id: call.id, name: call.name, arguments: call.arguments });
-                    const output = await executeGeminiSdkToolCall(call, cwd);
+                    const output = await executeGeminiSdkToolCall(call, cwd, toolEnv);
                     await writeEvent({ type: 'tool_result', id: call.id, name: call.name, output: summarizeText(output, 1200) });
                     history.push({
                         role: 'user',
@@ -1508,7 +1528,27 @@ export class GeminiSdkAdapter {
             return { session: nextSession, result: baseResult };
         }
         catch (error) {
-            return { session, result: errorResultFromError(error) };
+            const rendered = error instanceof Error ? error.message : String(error);
+            await reportProgress(request.progress, {
+                source: 'agent-daemon',
+                kind: 'runtime.stream.error',
+                runtime: 'gemini-sdk',
+                model: this.model,
+                session_id: sessionId,
+                payload: {
+                    error: rendered,
+                    prompt_cache_key: request.promptPlan?.cacheKey ?? null,
+                },
+            });
+            log('gemini_sdk_execute_error', {
+                runtime: 'gemini-sdk',
+                model: this.model,
+                session_id: sessionId,
+                cwd,
+                prompt_cache_key: request.promptPlan?.cacheKey ?? null,
+                error: rendered,
+            });
+            return { session: nextSession, result: errorResultFromError(error) };
         }
     }
     async interruptActiveExecution(_session) {

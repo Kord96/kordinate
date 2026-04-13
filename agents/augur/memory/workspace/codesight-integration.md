@@ -19,10 +19,10 @@ Borrow from `codesight` only where it improves the lower layer:
 ## Target Pipeline
 
 ```text
-framework detection -> fact extraction -> concept inference -> atlas -> stories/journeys
+framework detection -> fact extraction (including concept-evidence) -> semantic atlas -> stories/narratives
 ```
 
-Questions stay in concept inference, after facts and before concept confirmation.
+Questions stay in the semantic atlas phase, after deterministic facts and before final architectural conclusions.
 
 ## Workstreams
 
@@ -70,7 +70,7 @@ Use facts to populate:
 - `module_graph`
 - `flows`
 
-Use concept inference over facts to populate:
+Use deterministic concept-evidence plus semantic atlas reasoning over facts to populate:
 - `concepts.detected_patterns`
 - `concepts.detected_anti_patterns`
 - `concepts.gaps`
@@ -99,7 +99,7 @@ Add outputs that do not require full atlas consumption:
 
 ## Success Criteria
 
-- atlas can be regenerated from facts plus concept inference
+- atlas can be regenerated from facts, including concept-evidence
 - every concept can explain which fact IDs caused it to fire
 - detector outputs are debuggable without reading implementation code
 - Augur matches or exceeds `codesight` on targeted extraction classes while preserving richer higher-level outputs

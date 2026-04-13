@@ -2,15 +2,16 @@
 
 Deterministic fact extractors live here.
 
-This layer sits between raw detector execution and semantic concept inference:
+This layer sits between raw detector execution and semantic atlas synthesis:
 
 ```text
-framework detection -> fact extraction -> concept inference -> atlas synthesis
+framework detection -> fact extraction (including concept-evidence) -> atlas synthesis
 ```
 
 Responsibilities:
 - read code and manifests deterministically
 - emit normalized facts following `schemas/facts-schema.md`
+- emit deterministic concept evidence as normalized facts when applicable
 - stay concrete and directly observable
 
 Non-responsibilities:

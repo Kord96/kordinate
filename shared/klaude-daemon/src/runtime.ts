@@ -776,6 +776,20 @@ function shellSingleQuote(value: string): string {
   return `'${value.replace(/'/g, `'\"'\"'`)}'`
 }
 
+function withGitSafeDirectoryEnv(baseEnv: Record<string, string | undefined>, repoPath?: string): Record<string, string> {
+  const normalized = Object.fromEntries(
+    Object.entries(baseEnv).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+  )
+  if (!repoPath?.trim()) return normalized
+  if (normalized.GIT_CONFIG_COUNT !== undefined) return normalized
+  return {
+    ...normalized,
+    GIT_CONFIG_COUNT: '1',
+    GIT_CONFIG_KEY_0: 'safe.directory',
+    GIT_CONFIG_VALUE_0: repoPath,
+  }
+}
+
 async function runBashCommand(options: {
   command: string
   cwd?: string
@@ -785,10 +799,10 @@ async function runBashCommand(options: {
   return await new Promise((resolve, reject) => {
     const child = spawn('/bin/bash', ['-lc', options.command], {
       cwd: options.cwd,
-      env: {
+      env: withGitSafeDirectoryEnv({
         ...process.env,
         ...(options.env ?? {}),
-      },
+      }, options.cwd),
       stdio: ['ignore', 'pipe', 'pipe'],
     })
     let stdout = ''
@@ -1104,6 +1118,7 @@ async function runOpenClaudePrint(prompt: string, options: {
       env.PROJECT_MEM = path.dirname(path.dirname(runDir))
     }
   }
+  Object.assign(env, withGitSafeDirectoryEnv({}, cwd))
 
   const args = [
     '--print',

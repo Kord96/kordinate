@@ -21,30 +21,50 @@ function readCached(path) {
     bundleTextCache.set(path, text);
     return text;
 }
-function seededAgentHome(agentName) {
-    const envHome = process.env.AGENT_HOME_DIR;
+function agentRootCandidates(agentName) {
     return [
-        envHome ?? '',
-        join('/kord/agents', agentName),
-    ].filter(Boolean);
+        join('/app/agents', agentName),
+        join(moduleDir, '..', '..', '..', 'agents', agentName),
+    ];
+}
+function resolveRepoBundleFile(agentName, dir, selection) {
+    const exts = ['', '.md', '.json', '.yaml', '.yml'];
+    for (const root of agentRootCandidates(agentName)) {
+        const bundleDir = join(root, 'bundles', dir);
+        if (!existsSync(bundleDir))
+            continue;
+        if (selection) {
+            for (const ext of exts) {
+                const candidate = join(bundleDir, `${selection}${ext}`);
+                if (existsSync(candidate))
+                    return candidate;
+            }
+            continue;
+        }
+        const defaults = ['default-v1.md', 'default-v1.json', 'default-v1.yaml', 'default-v1.yml', 'core-v1.md', 'core-v1.json'];
+        for (const candidateName of defaults) {
+            const candidate = join(bundleDir, candidateName);
+            if (existsSync(candidate))
+                return candidate;
+        }
+    }
+    return undefined;
+}
+function loadRepoBundlePrefix(agentName) {
+    const layers = [
+        { label: 'Skill Bundle', dir: 'skill', selection: process.env.AGENT_SKILL_BUNDLE },
+        { label: 'Memory Bundle', dir: 'memory', selection: process.env.AGENT_MEMORY_BUNDLE },
+        { label: 'Runtime Bundle', dir: 'runtime', selection: process.env.AGENT_RUNTIME_BUNDLE },
+    ];
+    const parts = layers.flatMap(layer => {
+        const path = resolveRepoBundleFile(agentName, layer.dir, layer.selection);
+        const text = path ? readCached(path)?.trim() : undefined;
+        return text ? [`## ${layer.label}\n\n${text}`] : [];
+    });
+    return parts.length > 0 ? `${parts.join('\n\n')}\n\n` : '';
 }
 function loadSeededBundlePrefix(agentName) {
-    const layers = [
-        { label: 'Skill Bundle', file: 'skill-bundle.md' },
-        { label: 'Memory Bundle', file: 'memory-bundle.md' },
-        { label: 'Runtime Bundle', file: 'runtime-bundle.md' },
-    ];
-    for (const root of seededAgentHome(agentName)) {
-        if (!existsSync(root))
-            continue;
-        const parts = layers.flatMap(layer => {
-            const text = readCached(join(root, layer.file))?.trim();
-            return text ? [`## ${layer.label}\n\n${text}`] : [];
-        });
-        if (parts.length > 0)
-            return `${parts.join('\n\n')}\n\n`;
-    }
-    return '';
+    return loadRepoBundlePrefix(agentName);
 }
 function augurRootCandidates() {
     return [

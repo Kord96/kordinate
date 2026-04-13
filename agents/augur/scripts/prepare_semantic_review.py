@@ -24,49 +24,56 @@ def build_fact_index(facts_payload: dict[str, Any]) -> dict[str, dict[str, Any]]
     return {fact["id"]: fact for fact in facts_payload.get("facts", []) if fact.get("id")}
 
 
-def packet_item(pattern: dict[str, Any], fact_index: dict[str, dict[str, Any]]) -> dict[str, Any]:
-    verdict = pattern.get("verdict", {})
-    fact_ids = verdict.get("fact_evidence", [])
+def packet_item(fact: dict[str, Any], fact_index: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    raw_evidence = fact.get("raw_evidence", {})
+    relationships = fact.get("relationships", {})
+    fact_ids = list(raw_evidence.get("supporting_fact_ids") or [])
     supporting_facts = []
     for fact_id in fact_ids[:12]:
-        fact = fact_index.get(fact_id)
-        if fact:
+        supporting_fact = fact_index.get(fact_id)
+        if supporting_fact:
             supporting_facts.append(
                 {
                     "id": fact_id,
-                    "kind": fact.get("kind"),
-                    "summary": fact.get("summary"),
-                    "source_files": fact.get("source_files", []),
-                    "raw_evidence": fact.get("raw_evidence", {}),
+                    "kind": supporting_fact.get("kind"),
+                    "summary": supporting_fact.get("summary"),
+                    "source_files": supporting_fact.get("source_files", []),
+                    "raw_evidence": supporting_fact.get("raw_evidence", {}),
                 }
             )
     return {
-        "concept": pattern.get("id"),
-        "category": pattern.get("category"),
-        "confidence": pattern.get("confidence"),
-        "components": pattern.get("components", []),
-        "grounded_in": verdict.get("grounded_in", []),
+        "concept": raw_evidence.get("concept_id"),
+        "category": raw_evidence.get("category"),
+        "confidence": fact.get("confidence"),
+        "components": relationships.get("component_ids", []),
+        "grounded_in": relationships.get("component_ids", []),
         "fact_evidence": fact_ids,
-        "detector_evidence": verdict.get("detector_evidence", []),
-        "contradictions": verdict.get("contradictions", []),
-        "review_required_reason": verdict.get("semantic_review", {}).get("review_required_reason", ""),
+        "detector_evidence": [fact.get("detector", {})] if fact.get("detector") else [],
+        "contradictions": fact.get("contradictions", []),
+        "review_required_reason": (
+            "Deterministic concept evidence requires semantic adjudication."
+            if raw_evidence.get("semantic_review_required")
+            else ""
+        ),
         "supporting_facts": supporting_facts,
     }
 
 
-def build_review_packet(concepts_payload: dict[str, Any], facts_payload: dict[str, Any]) -> dict[str, Any]:
+def build_review_packet(concept_evidence_payload: dict[str, Any], facts_payload: dict[str, Any]) -> dict[str, Any]:
     fact_index = build_fact_index(facts_payload)
     candidates = []
-    for pattern in concepts_payload.get("concepts", {}).get("detected_patterns", []):
-        verdict = pattern.get("verdict", {})
-        if not verdict.get("semantic_review", {}).get("required"):
+    for fact in concept_evidence_payload.get("facts", []):
+        raw_evidence = fact.get("raw_evidence", {})
+        if fact.get("kind") != "concept-candidate":
             continue
-        candidates.append(packet_item(pattern, fact_index))
+        if not raw_evidence.get("semantic_review_required"):
+            continue
+        candidates.append(packet_item(fact, fact_index))
     return {
         "version": "1",
         "prompt_path": str(PROMPT_PATH),
         "generated_from": {
-            "concepts": concepts_payload.get("generated_from", ""),
+            "concept_evidence": concept_evidence_payload.get("metadata", {}).get("generated_from", ""),
             "facts": facts_payload.get("root", ""),
         },
         "candidates": candidates,
@@ -74,8 +81,8 @@ def build_review_packet(concepts_payload: dict[str, Any], facts_payload: dict[st
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Prepare a semantic-review packet from inferred concepts and facts.")
-    parser.add_argument("concepts_json", type=Path, help="Path to inferred concepts JSON.")
+    parser = argparse.ArgumentParser(description="Prepare a semantic-review packet from concept evidence facts and facts.")
+    parser.add_argument("concept_evidence_json", type=Path, help="Path to deterministic concept-evidence JSON.")
     parser.add_argument("facts_json", type=Path, help="Path to facts payload JSON.")
     parser.add_argument("--output", type=Path, required=True, help="Output review packet JSON path.")
     return parser.parse_args()
@@ -83,9 +90,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    concepts_payload = load_json(args.concepts_json)
+    concept_evidence_payload = load_json(args.concept_evidence_json)
     facts_payload = load_json(args.facts_json)
-    write_json(args.output, build_review_packet(concepts_payload, facts_payload))
+    write_json(args.output, build_review_packet(concept_evidence_payload, facts_payload))
     return 0
 
 

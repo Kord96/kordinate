@@ -9,7 +9,7 @@
     {
       "name": "fact-extraction",
       "bundle": "bundles/detectors/facts/all.json",
-      "purpose": "Extract normalized facts before semantic concept inference"
+      "purpose": "Extract normalized facts, including concept-evidence inputs for semantic atlas work"
     },
     {
       "name": "concept-detection",

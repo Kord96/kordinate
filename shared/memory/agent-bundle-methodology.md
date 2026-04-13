@@ -91,13 +91,13 @@ Selection is carried in agent creation metadata and exposed to the runtime throu
 - `AGENT_SKILL_BUNDLE`
 - `AGENT_RUNTIME_BUNDLE`
 
-`deploy-runtime.sh` seeds the selected files into the agent runtime home as:
-- `memory-bundle.md`
-- `skill-bundle.md`
-- `runtime-bundle.<ext>`
-- `bundle-selection.md`
+`deploy-runtime.sh` generates a deterministic `AGENT.md` from `INDEX.yaml` in the agent runtime home.
 
-`CLAUDE.md` should reference these seeded files, and the daemon should compose seeded markdown bundle layers into the effective prompt surface for non-Augur agents.
+`AGENT.md` is the canonical seeded context entrypoint.
+
+`CLAUDE.md` is only a compatibility shim for runtimes that still look for it and should normally contain a single `@AGENT.md` reference.
+
+The daemon should load seeded context from canonical repo/image bundle sources, not duplicated mutable runtime bundle files.
 
 ## `INDEX.yaml`
 

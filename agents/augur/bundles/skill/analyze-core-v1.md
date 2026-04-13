@@ -30,6 +30,13 @@ Use:
 
 The runtime already prepared the deterministic analysis root for this request. Treat `$RUN` as authoritative. Do not recompute `$RUN`, do not guess or override `AGENT_HOME_DIR`, and do not rerun `prepare_analysis_dir.py` or other setup scripts unless the prepared paths are obviously missing or inconsistent with the current `working_dir`.
 
+Start from the prepared artifacts, not from general repo orientation:
+- Do not run `git status`, `git rev-parse`, or other Git discovery commands during normal semantic analysis.
+- Do not list the repo root or scan unrelated top-level directories unless `$RUN` is missing or clearly inconsistent.
+- First inspect, in order: `$RUN/blast.json`, `$RUN/facts/`, `$RUN/facts/concept-evidence.json`, and any existing `$RUN/atlas.json`.
+- Only widen into repo files after those prepared artifacts identify what still needs semantic judgment.
+- If the prepared artifacts are missing or inconsistent, fail clearly instead of improvising a different setup flow.
+
 Structured outputs live in the durable analysis directory for the analyzed commit: `$RUN`. Keep one canonical `meta.json` inside each analysis directory. `latest.json` is only a convenience pointer to the most recent accepted analysis directory.
 
 ---
@@ -52,6 +59,13 @@ Use `$RUN/blast.json` to decide semantic investigation scope:
 
 Do not default to broad repo exploration when `blast.json` already provides a targeted incremental slice. Expand beyond the blast slice only when the code you inspect shows the semantic boundary is larger than the deterministic estimate.
 
+Preferred semantic sequence:
+1. Read `$RUN/blast.json`.
+2. Read the relevant files in `$RUN/facts/`, especially `frameworks.json`, `concept-evidence.json`, and any domain files named by the blast slice.
+3. Read any existing `$RUN/atlas.json` as a draft or baseline, then correct it from evidence.
+4. Read only the repo files needed to resolve ambiguity, verify claims, or ground specific atlas/story/narrative content.
+5. Write outputs under `$RUN`.
+
 Write the authoritative semantic atlas to `$RUN/atlas.json` following [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) v4 format. Set `version: "4"`, `generated` to today, and `metadata.analyzed_at_sha` to the current git HEAD SHA. Set `metadata.analysis_mode` to the prepared mode. In **INCREMENTAL** mode, set `metadata.affected_components` to the list of components that were re-analyzed. Set `metadata.analysis_root` to `$RUN`, `metadata.meta_path` to `$RUN/meta.json`, `metadata.base_sha` to the base analysis SHA when available, and `metadata.base_commit_time` to the base commit time when available. Atlas entries must be grounded in code inspection informed by deterministic evidence and semantic review, not emitted solely because a detector or Joern slice exists.
 
 Use the current atlas synthesis CLI as a starting point if helpful, but the semantic phase owns the final architectural judgment:
@@ -64,7 +78,12 @@ python3 $KORDINATE_HOME/agents/augur/scripts/synthesize_atlas_from_facts.py \
   --analysis-mode full
 ```
 
-Then compose stories and narratives following [story-schema.md](story-schema.md) and [narratives-schema.md](narratives-schema.md). Use `execution-slices` facts as narrative evidence for ordered runtime paths when they are available, especially for sequencing stories inside `narratives.yaml`.
+Then compose stories and narratives following:
+- `$KORDINATE_HOME/agents/augur/skills/analyze/story-schema.md`
+- `$KORDINATE_HOME/agents/augur/skills/analyze/narratives-schema.md`
+
+Do not guess alternate schema locations such as `/app/schemas/...`.
+Use `execution-slices` facts as narrative evidence for ordered runtime paths when they are available, especially for sequencing stories inside `narratives.yaml`.
 
 Coverage requirements during semantic work:
 - dependencies: internal modules, imports, external services, infra manifests, inter-service config
@@ -82,8 +101,8 @@ This phase is required unless `--deterministic-only` was explicitly passed. Befo
 - `$RUN/stories/` exists and contains story `.yaml` files
 - `$RUN/narratives.yaml` exists
 - atlas `metadata.story_ids` reflects the composed stories when applicable
-- every story file conforms to [story-schema.md](story-schema.md)
-- `narratives.yaml` conforms to [narratives-schema.md](narratives-schema.md), including a `getting-started` narrative
+- every story file conforms to `$KORDINATE_HOME/agents/augur/skills/analyze/story-schema.md`
+- `narratives.yaml` conforms to `$KORDINATE_HOME/agents/augur/skills/analyze/narratives-schema.md`, including a `getting-started` narrative
 
 ### Refine
 
