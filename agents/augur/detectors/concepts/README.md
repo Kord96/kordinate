@@ -17,10 +17,10 @@ detectors/concepts/<name>/
   semgrep.yaml        # executable semantic/security rules
 ```
 
-Generated detector bundles live under `../../bundles/detectors/`, including:
+Generated detector bundles live under `../../.generated/bundles/detectors/`, including:
 
 ```text
-bundles/detectors/concept-evidence/
+.generated/bundles/detectors/concept-evidence/
   all.json
   questions.json
   monitoring.json

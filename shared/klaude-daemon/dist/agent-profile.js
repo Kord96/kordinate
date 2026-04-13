@@ -92,20 +92,15 @@ function resolveBundleMode(message) {
 function loadRuntimeManifest(mode) {
     const filename = `analyze-${mode}-v1.json`;
     for (const root of augurRootCandidates()) {
-        const candidates = [
-            join(root, '.generated', 'bundles', 'runtime', filename),
-            join(root, 'bundles', 'runtime', filename),
-        ];
-        for (const path of candidates) {
-            const text = readCached(path);
-            if (!text)
-                continue;
-            try {
-                return { root, manifest: JSON.parse(text) };
-            }
-            catch {
-                continue;
-            }
+        const path = join(root, '.generated', 'bundles', 'runtime', filename);
+        const text = readCached(path);
+        if (!text)
+            continue;
+        try {
+            return { root, manifest: JSON.parse(text) };
+        }
+        catch {
+            continue;
         }
     }
     return undefined;
