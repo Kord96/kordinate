@@ -5,7 +5,6 @@ Augur's source memory is organized into:
 - `catalog/` — semantic source of truth for frameworks and concepts
 - `indexes/` — compact navigational indexes and ontology summaries
 - `contracts/` — normative architectural requirements
-- `workspace/` — local working notes, not canonical knowledge
 
 Generated runtime artifacts live outside this source tree under `../bundles/`.
 

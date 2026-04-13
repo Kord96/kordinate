@@ -9,12 +9,12 @@
     {
       "name": "fact-extraction",
       "bundle": "bundles/detectors/facts/all.json",
-      "purpose": "Extract normalized facts, including concept-evidence inputs for semantic atlas work"
+      "purpose": "Extract normalized facts before semantic concept inference"
     },
     {
-      "name": "concept-detection",
-      "bundle": "bundles/detectors/concepts/all.json",
-      "purpose": "Interpret facts using prioritized candidates, semantic catalogs, and diagnostic questions"
+      "name": "concept-evidence-inference",
+      "bundle": "bundles/detectors/concept-evidence/all.json",
+      "purpose": "Infer concept-evidence facts from normalized deterministic evidence"
     }
   ]
 }

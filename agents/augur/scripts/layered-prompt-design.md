@@ -27,7 +27,7 @@ Purpose:
 Recommended bundle:
 
 ```text
-agents/augur/bundles/skill/analyze-core-v1.md
+agents/augur/.generated/bundles/skill/analyze-core-v1.md
 ```
 
 This should be the most cache-stable layer after agent identity.
@@ -43,8 +43,8 @@ Purpose:
 Recommended bundles:
 
 ```text
-agents/augur/bundles/memory/analyze-selective-v1.md
-agents/augur/bundles/memory/analyze-holistic-v1.md
+agents/augur/.generated/bundles/memory/analyze-selective-v1.md
+agents/augur/.generated/bundles/memory/analyze-holistic-v1.md
 ```
 
 This layer should change independently from the skill contract.
@@ -124,7 +124,7 @@ Most volatile:
 
 ## Practical Implication
 
-The current `bundles/runtime/analyze-*.md` files should stop inlining full memory bundle text.
+The current `.generated/bundles/runtime/analyze-*.json` files should stop inlining full memory bundle text.
 
 Instead, runtime composition should be treated as:
 
@@ -135,9 +135,9 @@ Suggested runtime manifest shape:
 
 ```json
 {
-  "skill_bundle": "bundles/skill/analyze-core-v1.md",
-  "memory_bundle": "bundles/memory/analyze-selective-v1.md",
-  "detector_plan": "bundles/detectors/execution-plan.json",
+  "skill_bundle": ".generated/bundles/skill/analyze-core-v1.md",
+  "memory_bundle": ".generated/bundles/memory/analyze-selective-v1.md",
+  "detector_plan": ".generated/bundles/detectors/execution-plan.json",
   "composition_order": [
     "skill_bundle",
     "memory_bundle",

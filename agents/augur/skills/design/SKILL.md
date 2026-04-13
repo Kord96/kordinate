@@ -61,7 +61,7 @@ Extract:
 
 Work through the concept catalog by abstraction level. At each level, browse
 the relevant **categories** in `concepts.md` — don't hardcode pattern names.
-Read concept summaries from the index to find fits. Only read full `concept.md`
+Read concept summaries from the index to find fits. Only read full concept files
 files for the strongest candidates.
 
 **Level 1 — Architecture** (categories: `architecture`, `structural`)
@@ -127,8 +127,8 @@ Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,re
 ### Step 1 — Load patterns
 
 For each pattern in the comma-separated list:
-1. Read `memory/catalog/concepts/<pattern>/concept.md`
-2. Load deterministic detector metadata from `detectors/concepts/<pattern>/` when needed
+1. Read `memory/catalog/concepts/<pattern>.md`
+2. Load deterministic concept-evidence detector metadata from `detectors/concepts/<pattern>/` when needed
 
 ### Step 2 — Read infra atlas
 

@@ -36,7 +36,7 @@ That means the system is still relying heavily on broad textual heuristics and d
 
 ### 3. Concept detector rules now live in the detector tree
 
-Executable concept rules have been moved from `memory/catalog/concepts/` into `detectors/concepts/`.
+Executable concept-evidence rules have been moved from `memory/catalog/concepts/` into `detectors/concepts/`.
 
 Current detector-side coverage after migration:
 

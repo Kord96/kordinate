@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = ROOT / "skills" / "analyze" / "SKILL.md"
-BUNDLES = ROOT / "bundles" / "skill"
+BUNDLES = ROOT / ".generated" / "bundles" / "skill"
 
 
 def read(path: Path) -> str:
@@ -23,6 +23,19 @@ def extract_core_sections() -> str:
     return text[start:end].rstrip()
 
 
+def build_mode_reference() -> str:
+    return "\n".join([
+        "## Mode Resources",
+        "",
+        "The runtime provides the semantic mode and appends the matching operational guide dynamically.",
+        "Use exactly one of:",
+        "- `$KORDINATE_HOME/agents/augur/skills/analyze/full-mode.md`",
+        "- `$KORDINATE_HOME/agents/augur/skills/analyze/incremental-mode.md`",
+        "",
+        "Do not blend full-mode and incremental-mode sequences in the same run.",
+    ])
+
+
 def build_common() -> str:
     return "\n".join([
         "# Augur Analyze Skill Bundle — Core v1",
@@ -36,6 +49,8 @@ def build_common() -> str:
         "- Use this as the stable skill-prefix layer.",
         "- Pair it with a separate memory preload bundle.",
         "- Append repo-specific evidence and run-specific instructions last.",
+        "",
+        build_mode_reference(),
         "",
         "## Analyze Contract",
         "",

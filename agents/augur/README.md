@@ -25,9 +25,9 @@ Architecture review and pattern authority — reviews design consistency, identi
 - [detectors/frameworks/](detectors/frameworks/) — Deterministic framework detector assets
 
 ### Generated bundles
-- [bundles/memory/](bundles/memory/) — Model-facing semantic memory bundles for analyze holistic/selective modes
-- [bundles/runtime/](bundles/runtime/) — Final runtime analyze bundles with distinct cacheable prefixes for holistic and selective execution
-- [bundles/detectors/](bundles/detectors/) — Generated detector execution bundles
+- [.generated/bundles/memory/](.generated/bundles/memory/) — Model-facing semantic memory bundles for analyze holistic/selective modes
+- [.generated/bundles/runtime/](.generated/bundles/runtime/) — Final runtime analyze bundles with distinct cacheable prefixes for holistic and selective execution
+- [.generated/bundles/detectors/](.generated/bundles/detectors/) — Generated detector execution bundles
 
 ### Facts-first synthesis
 - [schemas/facts-schema.md](schemas/facts-schema.md) — normalized extraction contract

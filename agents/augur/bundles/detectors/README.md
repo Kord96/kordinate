@@ -6,7 +6,7 @@ Suggested artifacts:
 - `execution-plan.json` — orchestrated detector run plan
 - `frameworks/<language>.ast-grep.yaml` — bundled framework detectors
 - `facts/<domain>.json` — bundled fact extractor definitions and normalization metadata
-- `concepts/<language>-<category>.ast-grep.yaml` — bundled concept detectors
+- `concept-evidence/*.json` — bundled deterministic concept-evidence manifests
 - `grep-signatures.json` — grouped textual signature bundles
 
 Execution order:

@@ -26,8 +26,8 @@ Important assumption:
 
 At minimum, provide:
 
-- `agents/augur/bundles/memory/analyze-selective-v1.md`
-- `agents/augur/bundles/memory/analyze-holistic-v1.md`
+- `agents/augur/.generated/bundles/memory/analyze-selective-v1.md`
+- `agents/augur/.generated/bundles/memory/analyze-holistic-v1.md`
 - `agents/augur/memory/workflow.md`
 - `agents/augur/detectors/facts/**/policy.yaml`
 - `agents/augur/detectors/facts/**/signatures.yaml`

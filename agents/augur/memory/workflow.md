@@ -30,7 +30,7 @@ See `schemas/atlas-schema.md` for the full schema.
 
 ## Knowledge Base
 
-- **Concept catalog semantics** at `memory/catalog/concepts/` — `concept.md` remains canonical for concept meaning and architectural implications
+- **Concept catalog semantics** at `memory/catalog/concepts/` — `<concept>.md` remains canonical for concept meaning and architectural implications
 - **Framework catalog semantics** at `memory/catalog/frameworks/` — framework primitives, conventions, and common co-occurring concepts
 - **Ontology/index layer** at `memory/indexes/` — abstractions, concept index, anti-pattern index
 - **Detector source assets** at `detectors/` — deterministic framework and concept detection rules and policies

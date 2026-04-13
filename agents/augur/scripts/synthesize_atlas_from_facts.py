@@ -404,14 +404,19 @@ def load_detected_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def load_monitoring_index() -> dict[str, dict[str, Any]]:
-    path = ROOT / "bundles" / "detectors" / "concepts" / "monitoring.json"
-    if not path.exists():
-        return {}
-    payload = read_json(path)
-    if not isinstance(payload, dict):
-        return {}
-    concepts = payload.get("concepts") or {}
-    return concepts if isinstance(concepts, dict) else {}
+    candidates = [
+        ROOT / ".generated" / "bundles" / "detectors" / "concept-evidence" / "monitoring.json",
+        ROOT / "bundles" / "detectors" / "concept-evidence" / "monitoring.json",
+    ]
+    for path in candidates:
+        if not path.exists():
+            continue
+        payload = read_json(path)
+        if not isinstance(payload, dict):
+            continue
+        concepts = payload.get("concepts") or {}
+        return concepts if isinstance(concepts, dict) else {}
+    return {}
 
 
 def classify_language(path: str) -> str | None:

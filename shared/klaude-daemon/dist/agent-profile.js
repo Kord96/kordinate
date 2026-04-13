@@ -30,22 +30,24 @@ function agentRootCandidates(agentName) {
 function resolveRepoBundleFile(agentName, dir, selection) {
     const exts = ['', '.md', '.json', '.yaml', '.yml'];
     for (const root of agentRootCandidates(agentName)) {
-        const bundleDir = join(root, 'bundles', dir);
-        if (!existsSync(bundleDir))
-            continue;
-        if (selection) {
-            for (const ext of exts) {
-                const candidate = join(bundleDir, `${selection}${ext}`);
+        const bundleDirs = [join(root, '.generated', 'bundles', dir), join(root, 'bundles', dir)];
+        for (const bundleDir of bundleDirs) {
+            if (!existsSync(bundleDir))
+                continue;
+            if (selection) {
+                for (const ext of exts) {
+                    const candidate = join(bundleDir, `${selection}${ext}`);
+                    if (existsSync(candidate))
+                        return candidate;
+                }
+                continue;
+            }
+            const defaults = ['default-v1.md', 'default-v1.json', 'default-v1.yaml', 'default-v1.yml', 'core-v1.md', 'core-v1.json'];
+            for (const candidateName of defaults) {
+                const candidate = join(bundleDir, candidateName);
                 if (existsSync(candidate))
                     return candidate;
             }
-            continue;
-        }
-        const defaults = ['default-v1.md', 'default-v1.json', 'default-v1.yaml', 'default-v1.yml', 'core-v1.md', 'core-v1.json'];
-        for (const candidateName of defaults) {
-            const candidate = join(bundleDir, candidateName);
-            if (existsSync(candidate))
-                return candidate;
         }
     }
     return undefined;
@@ -90,15 +92,20 @@ function resolveBundleMode(message) {
 function loadRuntimeManifest(mode) {
     const filename = `analyze-${mode}-v1.json`;
     for (const root of augurRootCandidates()) {
-        const path = join(root, 'bundles', 'runtime', filename);
-        const text = readCached(path);
-        if (!text)
-            continue;
-        try {
-            return { root, manifest: JSON.parse(text) };
-        }
-        catch {
-            continue;
+        const candidates = [
+            join(root, '.generated', 'bundles', 'runtime', filename),
+            join(root, 'bundles', 'runtime', filename),
+        ];
+        for (const path of candidates) {
+            const text = readCached(path);
+            if (!text)
+                continue;
+            try {
+                return { root, manifest: JSON.parse(text) };
+            }
+            catch {
+                continue;
+            }
         }
     }
     return undefined;
@@ -130,6 +137,16 @@ function loadAugurBundlePrefix(message) {
             addLayer('Detector Plan', manifest.detector_plan);
     }
     return parts.length > 0 ? `${parts.join('\n\n')}\n\n` : '';
+}
+function loadAugurModeGuide(message) {
+    const mode = typeof message.agent_params?.analysis_mode === 'string'
+        ? message.agent_params.analysis_mode.trim().toLowerCase()
+        : '';
+    if (mode !== 'full' && mode !== 'incremental')
+        return '';
+    const path = resolveAugurPath('skills', 'analyze', `${mode}-mode.md`);
+    const text = readCached(path)?.trim();
+    return text ? `## ${mode === 'full' ? 'Full Mode Guide' : 'Incremental Mode Guide'}\n\n${text}\n\n` : '';
 }
 export function loadAgentProfile(agentName) {
     const identity = loadIdentityMetadata(agentName);
@@ -164,16 +181,32 @@ function hashPromptPrefix(value) {
     return createHash('sha256').update(value).digest('hex');
 }
 export function buildPromptPlanFromProfile(profile, message) {
-    const workingDirSuffix = message.working_dir
-        ? `\n\nWorking directory hint: use \`${message.working_dir}\` as the authoritative starting project root and current working directory. Do not search alternative repo paths unless this exact path is missing or clearly not the target project.`
+    const workingDirHint = message.working_dir
+        ? `Working directory hint: use \`${message.working_dir}\` as the authoritative starting project root and current working directory. Do not search alternative repo paths unless this exact path is missing or clearly not the target project.`
+        : '';
+    const runDir = typeof message.agent_params?.run_dir === 'string' && message.agent_params.run_dir.trim()
+        ? message.agent_params.run_dir.trim()
+        : '';
+    const runtimeHints = [];
+    if (workingDirHint)
+        runtimeHints.push(workingDirHint);
+    if (runDir) {
+        runtimeHints.push(`Prepared analysis run: use \`${runDir}\` as the authoritative semantic analysis directory for this request.`);
+        runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\`.`);
+        runtimeHints.push('Treat `$RUN` as this prepared directory and prefer its artifacts before broad repo exploration.');
+        runtimeHints.push('Do not rediscover or infer alternate analysis roots unless this exact path is missing.');
+    }
+    const runtimePreamble = runtimeHints.length > 0
+        ? `## Runtime Context\n${runtimeHints.map(line => `- ${line}`).join('\n')}\n\n`
         : '';
     const bundlePrefix = profile.supportedAgentParams?.includes('bundle_mode')
         ? loadAugurBundlePrefix(message)
         : loadSeededBundlePrefix(profile.name ?? 'generic');
+    const modeGuide = profile.name === 'augur' ? loadAugurModeGuide(message) : '';
     const cacheablePrefix = profile.promptPrefix || bundlePrefix
         ? `${profile.promptPrefix ? `${profile.promptPrefix}\n\n` : ''}${bundlePrefix}`
         : '';
-    const dynamicPrompt = `${message.prompt}${workingDirSuffix}`;
+    const dynamicPrompt = `${runtimePreamble}${modeGuide}${message.prompt}`;
     const fullPrompt = cacheablePrefix
         ? `${cacheablePrefix}${dynamicPrompt}`
         : dynamicPrompt;

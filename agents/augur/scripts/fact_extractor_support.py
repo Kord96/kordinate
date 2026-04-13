@@ -695,7 +695,7 @@ def extract_joern_call_edge_facts(root: Path, repo_profile: dict[str, Any]) -> t
                     "class": "cpg",
                     "strength": 5,
                     "rule": language or "",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "caller_name": caller_name,
@@ -764,7 +764,7 @@ def extract_joern_data_touch_facts(root: Path, repo_profile: dict[str, Any]) -> 
                     "class": "cpg",
                     "strength": 5,
                     "rule": language or "",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "owner_name": str(record.get("owner_name", "") or ""),
@@ -830,7 +830,7 @@ def extract_joern_execution_slice_facts(root: Path, repo_profile: dict[str, Any]
                     "class": "cpg",
                     "strength": 5,
                     "rule": language or "",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "slice_name": str(record.get("slice_name", "") or ""),
@@ -1054,7 +1054,7 @@ def detect_frameworks(files: Iterable[Path], root: Path) -> dict[str, dict[str, 
                 "class": "manifest" if any(src.endswith(("package.json", "go.mod", "Cargo.toml", "pom.xml", "Gemfile", "composer.json")) for src in sources) else "signature",
                 "strength": 5 if confidence == "high" else 3,
                 "rule": None,
-                "bundle": "bundles/detectors/frameworks/all.json",
+                "bundle": "detectors:frameworks",
             },
             "raw_evidence": {
                 "framework": name,
@@ -1531,7 +1531,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "ast",
                     "strength": 5,
                     "rule": "python-import",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "from": rel,
@@ -1565,7 +1565,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "ast",
                     "strength": 5,
                     "rule": route.get("decorator", f"route-{method.lower()}"),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "style": "rest",
@@ -1600,7 +1600,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "ast",
                     "strength": 5,
                     "rule": model.get("rule_id", model["source"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": model["source"],
@@ -1633,7 +1633,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "ast" if client["source"] == "ast" else ("signature" if client["source"] == "import" else "regex"),
                     "strength": 5 if client["source"] == "ast" else 4,
                     "rule": client.get("rule_id", client["technology"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": client["technology"],
@@ -1665,7 +1665,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "ast",
                     "strength": 4,
                     "rule": mw.get("rule_id", mw["name"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "name": mw["name"],
@@ -1695,7 +1695,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "ast" if "rule_id" in surface else "regex",
                     "strength": 5 if "rule_id" in surface else 3,
                     "rule": surface.get("rule_id", surface["technology"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": surface,
                 "negative_evidence": [],
@@ -1719,7 +1719,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "regex",
                     "strength": 3,
                     "rule": config["source_type"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": config,
                 "negative_evidence": [],
@@ -1743,7 +1743,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "regex",
                     "strength": 3,
                     "rule": job["job_type"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": job,
                 "negative_evidence": [],
@@ -1767,7 +1767,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "regex",
                     "strength": 3,
                     "rule": event["event_type"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": event,
                 "negative_evidence": [],
@@ -1786,7 +1786,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "python-registration-detector", "class": "signature", "strength": 3, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "python-registration-detector", "class": "signature", "strength": 3, "rule": item["registration_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -1804,7 +1804,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "python-handler-detector", "class": "signature", "strength": 3, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "python-handler-detector", "class": "signature", "strength": 3, "rule": item["handler_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -1822,7 +1822,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "python-dispatch-detector", "class": "signature", "strength": 3, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "python-dispatch-detector", "class": "signature", "strength": 3, "rule": item["binding_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -1840,7 +1840,7 @@ def parse_python_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "python-boundary-detector", "class": "signature", "strength": 3, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "python-boundary-detector", "class": "signature", "strength": 3, "rule": item["boundary_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -1873,7 +1873,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "regex",
                     "strength": 4,
                     "rule": "js-import",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "from": rel,
@@ -1904,7 +1904,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "ast" if route.get("source") == "ast" else "regex",
                     "strength": 5 if route.get("source") == "ast" else 4,
                     "rule": route["decorator"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "style": "rest",
@@ -1939,7 +1939,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "ast" if "rule_id" in model else "regex",
                     "strength": 5 if "rule_id" in model else 4,
                     "rule": model.get("rule_id", model["source"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": model["source"],
@@ -1971,7 +1971,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "ast" if client.get("source") == "ast" else "regex",
                     "strength": 5 if client.get("source") == "ast" else 4,
                     "rule": client.get("rule_id", client["technology"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": client["technology"],
@@ -2003,7 +2003,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "ast",
                     "strength": 4,
                     "rule": mw.get("rule_id", mw["name"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "name": mw["name"],
@@ -2033,7 +2033,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "ast" if "rule_id" in surface else "regex",
                     "strength": 5 if "rule_id" in surface else 3,
                     "rule": surface.get("rule_id", surface["technology"]),
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": surface,
                 "negative_evidence": [],
@@ -2057,7 +2057,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "regex",
                     "strength": 3,
                     "rule": config["source_type"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": config,
                 "negative_evidence": [],
@@ -2081,7 +2081,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "regex",
                     "strength": 3,
                     "rule": job["job_type"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": job,
                 "negative_evidence": [],
@@ -2105,7 +2105,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "regex",
                     "strength": 3,
                     "rule": event["event_type"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": event,
                 "negative_evidence": [],
@@ -2124,7 +2124,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "js-registration-detector", "class": "signature", "strength": 3, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "js-registration-detector", "class": "signature", "strength": 3, "rule": item["registration_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2142,7 +2142,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "js-handler-detector", "class": "signature", "strength": 3, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "js-handler-detector", "class": "signature", "strength": 3, "rule": item["handler_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2160,7 +2160,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "js-dispatch-detector", "class": "signature", "strength": 3, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "js-dispatch-detector", "class": "signature", "strength": 3, "rule": item["binding_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2178,7 +2178,7 @@ def parse_js_ts_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "js-boundary-detector", "class": "signature", "strength": 3, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "js-boundary-detector", "class": "signature", "strength": 3, "rule": item["boundary_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2210,7 +2210,7 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "structured",
                     "strength": 5,
                     "rule": route["decorator"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "style": "rest",
@@ -2242,7 +2242,7 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "structured",
                     "strength": 5,
                     "rule": "gorm-struct",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": "gorm",
@@ -2268,7 +2268,7 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "high",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "go-registration-detector", "class": "structured", "strength": 4, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "go-registration-detector", "class": "structured", "strength": 4, "rule": item["registration_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2286,7 +2286,7 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "go-handler-detector", "class": "structured", "strength": 4, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "go-handler-detector", "class": "structured", "strength": 4, "rule": item["handler_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2304,7 +2304,7 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "go-dispatch-detector", "class": "structured", "strength": 4, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "go-dispatch-detector", "class": "structured", "strength": 4, "rule": item["binding_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2322,7 +2322,7 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "go-boundary-detector", "class": "structured", "strength": 4, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "go-boundary-detector", "class": "structured", "strength": 4, "rule": item["boundary_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2331,11 +2331,11 @@ def parse_go_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
         )
 
     for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "detectors:facts"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "detectors:facts"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "go-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "detectors:facts"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
     return facts
 
@@ -2360,7 +2360,7 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "structured",
                     "strength": 5,
                     "rule": route["decorator"],
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "style": "rest",
@@ -2392,7 +2392,7 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "structured",
                     "strength": 5,
                     "rule": "entity-framework",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": "entity-framework",
@@ -2418,7 +2418,7 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "high",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "csharp-registration-detector", "class": "structured", "strength": 4, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "csharp-registration-detector", "class": "structured", "strength": 4, "rule": item["registration_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2436,7 +2436,7 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "csharp-handler-detector", "class": "structured", "strength": 4, "rule": item["handler_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "csharp-handler-detector", "class": "structured", "strength": 4, "rule": item["handler_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2454,7 +2454,7 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "csharp-dispatch-detector", "class": "structured", "strength": 4, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "csharp-dispatch-detector", "class": "structured", "strength": 4, "rule": item["binding_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2472,7 +2472,7 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "csharp-boundary-detector", "class": "structured", "strength": 4, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "csharp-boundary-detector", "class": "structured", "strength": 4, "rule": item["boundary_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2481,11 +2481,11 @@ def parse_csharp_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
         )
 
     for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "detectors:facts"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "detectors:facts"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "csharp-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "detectors:facts"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     return facts
 
 
@@ -2504,7 +2504,7 @@ def parse_java_kotlin_file(path: Path, root: Path, text: str) -> list[dict[str, 
                 "confidence": "high",
                 "framework_context": [],
                 "source_files": [f"{rel}:{route['line']}"],
-                "detector": {"id": "java-kotlin-route-detector", "class": "structured", "strength": 5, "rule": route["decorator"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "java-kotlin-route-detector", "class": "structured", "strength": 5, "rule": route["decorator"], "bundle": "detectors:facts"},
                 "raw_evidence": {"style": "rest", "method": route["method"], "path": route["path"], "handler": route["handler"], "router": "java-kotlin-structured", "auth": "", "validation": ""},
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2522,7 +2522,7 @@ def parse_java_kotlin_file(path: Path, root: Path, text: str) -> list[dict[str, 
                 "confidence": "high" if model["fields"] else "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{model['line']}"],
-                "detector": {"id": "java-kotlin-model-detector", "class": "structured", "strength": 5, "rule": model["source"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "java-kotlin-model-detector", "class": "structured", "strength": 5, "rule": model["source"], "bundle": "detectors:facts"},
                 "raw_evidence": {"technology": model["source"], "entity": model["name"], "fields": model["fields"], "relations": [], "migration_path": "", "store_purpose": "source-of-truth"},
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2547,7 +2547,7 @@ def parse_java_kotlin_file(path: Path, root: Path, text: str) -> list[dict[str, 
                     "confidence": "medium" if domain in {"handlers", "boundaries"} else "high",
                     "framework_context": [],
                     "source_files": [f"{rel}:{int(item.get('line', 1))}"],
-                    "detector": {"id": detector_id, "class": "structured", "strength": 4, "rule": item.get(rule_key, ""), "bundle": "bundles/detectors/facts/all.json"},
+                    "detector": {"id": detector_id, "class": "structured", "strength": 4, "rule": item.get(rule_key, ""), "bundle": "detectors:facts"},
                     "raw_evidence": item,
                     "negative_evidence": [],
                     "contradictions": [],
@@ -2556,11 +2556,11 @@ def parse_java_kotlin_file(path: Path, root: Path, text: str) -> list[dict[str, 
             )
 
     for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "detectors:facts"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "detectors:facts"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "java-kotlin-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "detectors:facts"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
     return facts
 
@@ -2582,7 +2582,7 @@ def append_plugin_facts(
                 "confidence": "high",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "plugin-registration-detector", "class": "signature", "strength": 4, "rule": item["registration_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "plugin-registration-detector", "class": "signature", "strength": 4, "rule": item["registration_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2599,7 +2599,7 @@ def append_plugin_facts(
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "plugin-dispatch-detector", "class": "signature", "strength": 4, "rule": item["binding_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "plugin-dispatch-detector", "class": "signature", "strength": 4, "rule": item["binding_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2616,7 +2616,7 @@ def append_plugin_facts(
                 "confidence": "medium",
                 "framework_context": [],
                 "source_files": [f"{rel}:{item['line']}"],
-                "detector": {"id": "plugin-boundary-detector", "class": "signature", "strength": 4, "rule": item["boundary_type"], "bundle": "bundles/detectors/facts/all.json"},
+                "detector": {"id": "plugin-boundary-detector", "class": "signature", "strength": 4, "rule": item["boundary_type"], "bundle": "detectors:facts"},
                 "raw_evidence": item,
                 "negative_evidence": [],
                 "contradictions": [],
@@ -2647,7 +2647,7 @@ def parse_generic_source_file(path: Path, root: Path, text: str) -> list[dict[st
                     "confidence": "medium",
                     "framework_context": [],
                     "source_files": [f"{rel}:{int(item.get('line', 1))}"],
-                    "detector": {"id": detector_id, "class": "signature", "strength": 3, "rule": item.get(rule_key, ""), "bundle": "bundles/detectors/facts/all.json"},
+                    "detector": {"id": detector_id, "class": "signature", "strength": 3, "rule": item.get(rule_key, ""), "bundle": "detectors:facts"},
                     "raw_evidence": item,
                     "negative_evidence": [],
                     "contradictions": [],
@@ -2656,11 +2656,11 @@ def parse_generic_source_file(path: Path, root: Path, text: str) -> list[dict[st
             )
 
     for idx, config in enumerate(extract_config_sources(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("config", rel, config["source_type"], str(idx)), "kind": "config-source", "domain": "config", "summary": f"Detected config source {config['source_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-config-detector", "class": "regex", "strength": 3, "rule": config["source_type"], "bundle": "detectors:facts"}, "raw_evidence": config, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, job in enumerate(extract_jobs(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("job", rel, job["job_type"], str(idx)), "kind": "job", "domain": "jobs", "summary": f"Detected job type {job['job_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-job-detector", "class": "regex", "strength": 3, "rule": job["job_type"], "bundle": "detectors:facts"}, "raw_evidence": job, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     for idx, event in enumerate(extract_events(text, path.suffix.lower()), start=1):
-        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "bundles/detectors/facts/all.json"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
+        facts.append({"id": stable_id("event", rel, event["event_type"], str(idx)), "kind": "event", "domain": "events", "summary": f"Detected event flow {event['event_type']}", "confidence": "medium", "framework_context": [], "source_files": [f"{rel}:1"], "detector": {"id": "generic-event-detector", "class": "regex", "strength": 3, "rule": event["event_type"], "bundle": "detectors:facts"}, "raw_evidence": event, "negative_evidence": [], "contradictions": [], "relationships": relationships})
     append_plugin_facts(facts, rel, relationships, text, path.suffix.lower())
     return facts
 
@@ -2685,7 +2685,7 @@ def parse_prisma_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]
                     "class": "regex",
                     "strength": 5,
                     "rule": "prisma-model",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": "prisma",
@@ -2727,7 +2727,7 @@ def parse_sql_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
                     "class": "regex",
                     "strength": 4,
                     "rule": "create-table",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "technology": "sql",
@@ -3031,7 +3031,7 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                     "class": "inference",
                     "strength": 3,
                     "rule": "fan-in",
-                    "bundle": "bundles/detectors/facts/all.json",
+                    "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "file": rel,

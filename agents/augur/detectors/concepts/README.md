@@ -1,10 +1,11 @@
-# Concept detectors
+# Concept-evidence detectors
 
-Deterministic detector source assets live here.
+Deterministic source assets for concept-evidence inference live here.
 
 This layer is separate from semantic memory:
 - `memory/catalog/concepts/` describes what a concept means
-- `detectors/concepts/` describes how to detect it deterministically
+- `detectors/concepts/` describes how to infer concept-evidence facts
+  deterministically
 
 Suggested per-concept files:
 
@@ -19,7 +20,7 @@ detectors/concepts/<name>/
 Generated detector bundles live under `../../bundles/detectors/`, including:
 
 ```text
-bundles/detectors/concepts/
+bundles/detectors/concept-evidence/
   all.json
   questions.json
   monitoring.json

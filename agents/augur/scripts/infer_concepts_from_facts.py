@@ -520,7 +520,7 @@ def pattern_to_fact(pattern: dict[str, Any]) -> dict[str, Any]:
             "class": "inference",
             "strength": 3,
             "rule": None,
-            "bundle": "bundles/detectors/concepts",
+            "bundle": "detectors:concept-evidence",
         },
         "raw_evidence": raw_evidence,
         "negative_evidence": [],
@@ -548,7 +548,7 @@ def gap_to_fact(gap: dict[str, Any]) -> dict[str, Any]:
             "class": "inference",
             "strength": 2,
             "rule": None,
-            "bundle": "bundles/detectors/concepts",
+            "bundle": "detectors:concept-evidence",
         },
         "raw_evidence": {
             "concept_id": gap_id,

@@ -2,9 +2,11 @@ import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { basename, join } from 'node:path';
 import { constants as fsConstants } from 'node:fs';
-import { access, mkdir, readdir, readFile, rm } from 'node:fs/promises';
+import { access, readdir, readFile, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { Kafka } from 'kafkajs';
+import { createAgentWorkflowHooks } from './agent-workflows.js';
+import { CompletedRequestStore } from './completed-request-store.js';
 import { loadDaemonConfig } from './config.js';
 import { buildPromptPlanFromProfile, loadAgentProfile } from './agent-profile.js';
 import { buildDiscoveryRecord, publishDiscoveryRegistration } from './discovery.js';
@@ -34,6 +36,8 @@ const producer = kafka.producer();
 const runtime = createProviderAdapter(daemonConfig.executionProfile);
 const sessionStore = new SessionStore(daemonConfig.sessionMapPath);
 const sessions = await sessionStore.load();
+const completedRequestStore = new CompletedRequestStore(daemonConfig.sessionMapPath.replace(/sessions\.json$/, 'completed-requests.json'));
+const completedRequests = await completedRequestStore.load();
 const healthPort = Number.parseInt(process.env.DAEMON_HEALTH_PORT ?? '9090', 10);
 const healthUrl = daemonConfig.healthUrl ?? `http://127.0.0.1:${healthPort}/health`;
 let daemonReady = false;
@@ -42,6 +46,14 @@ const healthServer = createServer((_req, res) => {
     res.statusCode = daemonReady ? 200 : 503;
     res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify({ ok: daemonReady, agent: AGENT_NAME }));
+});
+const agentWorkflowHooks = createAgentWorkflowHooks({
+    agentName: AGENT_NAME,
+    agentProfileName: AGENT_PROFILE,
+    agentProfile,
+    daemonConfig,
+    publishProgress,
+    buildArtifactsMetadata,
 });
 function sessionForMessage(message) {
     const sessionKey = message.session_id ?? message.correlation_id;
@@ -66,6 +78,19 @@ function sessionForMessage(message) {
 }
 async function persistSessions() {
     await sessionStore.save(sessions);
+}
+async function persistCompletedRequests() {
+    await completedRequestStore.save(completedRequests);
+}
+function hasCompletedRequest(correlationId) {
+    return completedRequests.has(correlationId);
+}
+function markCompletedRequest(correlationId, status) {
+    completedRequests.set(correlationId, {
+        correlation_id: correlationId,
+        completed_at: nowIso(),
+        status,
+    });
 }
 async function publishResponse(message, response) {
     const payload = buildResponseMessage(AGENT_NAME, message, response);
@@ -222,255 +247,6 @@ function requestCommandText(message) {
         ? message.raw_prompt
         : message.prompt;
 }
-function isAugurDeterministicOnlyRequest(message) {
-    const commandText = requestCommandText(message);
-    return AGENT_PROFILE === 'augur'
-        && commandText.trim().startsWith('/analyze')
-        && commandText.includes('--deterministic-only')
-        && typeof message.working_dir === 'string'
-        && message.working_dir.length > 0;
-}
-function isAugurAnalyzeRequest(message) {
-    const commandText = requestCommandText(message);
-    return AGENT_PROFILE === 'augur'
-        && commandText.trim().startsWith('/analyze')
-        && typeof message.working_dir === 'string'
-        && message.working_dir.length > 0;
-}
-function isForceFullAugurAnalyzeRequest(message) {
-    const commandText = requestCommandText(message);
-    return isAugurAnalyzeRequest(message) && commandText.includes('--full');
-}
-async function computeAugurBlastManifest(message) {
-    const workingDir = message.working_dir;
-    const agentHome = daemonConfig.executionProfile.homeDirectory;
-    if (!workingDir || !agentHome) {
-        throw new Error('working_dir and agent home are required for Augur analysis');
-    }
-    const project = basename(workingDir);
-    const kordHome = process.env.KORDINATE_HOME ?? '/app';
-    const payload = await runCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'compute_blast_radius.py'),
-        workingDir,
-        '--agent-home', agentHome,
-        '--project', project,
-    ]);
-    if (!payload) {
-        throw new Error('compute_blast_radius.py did not return a manifest');
-    }
-    return JSON.parse(payload);
-}
-async function maybeRunAugurSkipFastPath(message) {
-    if (!isAugurAnalyzeRequest(message) || isAugurDeterministicOnlyRequest(message))
-        return undefined;
-    if (isForceFullAugurAnalyzeRequest(message))
-        return undefined;
-    const blast = await computeAugurBlastManifest(message);
-    if (blast.mode !== 'skip')
-        return undefined;
-    const targetDir = typeof blast.base_analysis_dir === 'string' && blast.base_analysis_dir.trim()
-        ? blast.base_analysis_dir.trim()
-        : undefined;
-    const agentHome = daemonConfig.executionProfile.homeDirectory;
-    const workingDir = message.working_dir;
-    const project = workingDir ? basename(workingDir) : undefined;
-    const acceptedLatestDir = agentHome && project
-        ? await resolveAcceptedAugurLatestAnalysisDir(agentHome, project)
-        : undefined;
-    if (!targetDir || !(await pathExists(targetDir)) || !acceptedLatestDir || acceptedLatestDir !== targetDir) {
-        throw new Error('blast reported skip but no accepted latest semantic analysis directory was available');
-    }
-    await publishProgress(message, {
-        source: 'agent-daemon',
-        kind: 'augur.semantic.skip',
-        payload: {
-            mode: blast.mode,
-            tier: blast.tier ?? null,
-            reasons: blast.reasons ?? [],
-            target_dir: targetDir,
-            previous_sha: blast.previous_sha ?? null,
-            current_sha: blast.current_sha ?? null,
-        },
-    });
-    const token = await hashValidatedDirectory(targetDir);
-    return {
-        status: 'success',
-        output: `No architectural changes detected. Reusing accepted analysis at ${targetDir}\n\nValidation token: ${token}`,
-        metadata: {
-            artifacts: buildArtifactsMetadata(targetDir),
-            validation: {
-                required: true,
-                passed: true,
-                attempts: 0,
-                token,
-                target_dir: targetDir,
-            },
-        },
-    };
-}
-async function resolveAcceptedAugurLatestAnalysisDir(agentHome, project) {
-    const latestPath = join(agentHome, 'memory', 'projects', project, 'analysis', 'latest.json');
-    if (!(await pathExists(latestPath)))
-        return undefined;
-    try {
-        const latest = JSON.parse(await readFile(latestPath, 'utf8'));
-        const analysisDir = typeof latest.analysis_dir === 'string' && latest.analysis_dir.trim()
-            ? latest.analysis_dir.trim()
-            : undefined;
-        if (!analysisDir)
-            return undefined;
-        if (!(await isAcceptedAugurSemanticAnalysisDir(analysisDir)))
-            return undefined;
-        return analysisDir;
-    }
-    catch {
-        return undefined;
-    }
-}
-async function isAcceptedAugurSemanticAnalysisDir(targetDir) {
-    const metaPath = join(targetDir, 'meta.json');
-    const atlasPath = join(targetDir, 'atlas.json');
-    const storiesDir = join(targetDir, 'stories');
-    const narrativesPath = join(targetDir, 'narratives.yaml');
-    if (!(await pathExists(metaPath)))
-        return false;
-    if (!(await pathExists(atlasPath)))
-        return false;
-    if (!(await pathExists(storiesDir)))
-        return false;
-    if (!(await pathExists(narrativesPath)))
-        return false;
-    try {
-        const meta = JSON.parse(await readFile(metaPath, 'utf8'));
-        return meta.validation?.passed === true;
-    }
-    catch {
-        return false;
-    }
-}
-async function runAugurDeterministicOnly(message) {
-    const workingDir = message.working_dir;
-    const agentHome = daemonConfig.executionProfile.homeDirectory;
-    if (!workingDir || !agentHome) {
-        return {
-            status: 'error',
-            output: 'working_dir and agent home are required for Augur deterministic-only',
-            errors: ['working_dir and agent home are required for Augur deterministic-only'],
-        };
-    }
-    try {
-        const prepared = await prepareAugurDeterministicArtifacts(message, {
-            clearSemanticOutputs: true,
-            eventKindPrefix: 'augur.deterministic_only',
-        });
-        return {
-            status: 'success',
-            output: `Deterministic phase artifacts written to ${prepared.runDir}`,
-            metadata: {
-                artifacts: {
-                    root: prepared.runDir,
-                    files: {},
-                    schemas: {},
-                },
-            },
-        };
-    }
-    catch (error) {
-        const rendered = error instanceof Error ? error.message : String(error);
-        return {
-            status: 'error',
-            output: rendered,
-            errors: [rendered],
-        };
-    }
-}
-async function prepareAugurDeterministicArtifacts(message, options) {
-    const workingDir = message.working_dir;
-    const agentHome = daemonConfig.executionProfile.homeDirectory;
-    if (!workingDir || !agentHome) {
-        throw new Error('working_dir and agent home are required for Augur deterministic preparation');
-    }
-    const project = basename(workingDir);
-    const kordHome = process.env.KORDINATE_HOME ?? '/app';
-    const currentSha = await runCommand('git', gitArgsForRepo(workingDir, 'rev-parse', 'HEAD'));
-    const commitTime = currentSha
-        ? await runCommand('git', gitArgsForRepo(workingDir, 'show', '-s', '--format=%ct', currentSha))
-        : undefined;
-    if (!currentSha || !commitTime) {
-        throw new Error('could not resolve git HEAD for Augur deterministic preparation');
-    }
-    const runDir = join(agentHome, 'memory', 'projects', project, 'analysis', `${commitTime}-${currentSha.slice(0, 40)}`);
-    const factsDir = join(runDir, 'facts');
-    const env = {
-        KORDINATE_HOME: kordHome,
-        AGENT_HOME_DIR: agentHome,
-        ROOT: workingDir,
-        PROJECT: project,
-        RUN: runDir,
-    };
-    await mkdir(factsDir, { recursive: true });
-    if (options?.clearSemanticOutputs) {
-        await Promise.all([
-            removePathIfExists(join(runDir, 'atlas.json')),
-            removePathIfExists(join(runDir, 'stories')),
-            removePathIfExists(join(runDir, 'narratives.yaml')),
-            removePathIfExists(join(runDir, 'meta.json')),
-            removePathIfExists(join(runDir, '.validate-lock')),
-        ]);
-    }
-    const eventKindPrefix = options?.eventKindPrefix ?? 'augur.deterministic_prepare';
-    await publishProgress(message, {
-        source: 'agent-daemon',
-        kind: `${eventKindPrefix}.start`,
-        payload: { project, working_dir: workingDir, run_dir: runDir },
-    });
-    await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'compute_blast_radius.py'),
-        workingDir,
-        '--agent-home', agentHome,
-        '--project', project,
-        '--current-sha', currentSha,
-        '--output', join(runDir, 'blast.json'),
-    ], env);
-    await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'detect_frameworks.py'),
-        workingDir,
-        '--project', project,
-        '--agent-home', agentHome,
-        '--output', join(factsDir, 'frameworks.json'),
-        '--pretty',
-    ], env);
-    await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'extract_facts.py'),
-        workingDir,
-        '--output-dir', factsDir,
-        '--analysis-mode', 'full',
-        '--pretty',
-    ], env);
-    await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'infer_concepts_from_facts.py'),
-        factsDir,
-        '--output', join(factsDir, 'concept-evidence.json'),
-    ], env);
-    await publishProgress(message, {
-        source: 'agent-daemon',
-        kind: `${eventKindPrefix}.complete`,
-        payload: { run_dir: runDir },
-    });
-    return {
-        project,
-        runDir,
-        factsDir,
-        currentSha,
-        commitTime,
-    };
-}
-async function runAugurSemanticDeterministicPrepass(message) {
-    return await prepareAugurDeterministicArtifacts(message, {
-        clearSemanticOutputs: true,
-        eventKindPrefix: 'augur.semantic_prepare',
-    });
-}
 async function ensureGitSafeDirectory(repoPath) {
     if (!repoPath)
         return;
@@ -500,6 +276,9 @@ async function findLatestAnalysisDir(analysisRoot) {
     }
 }
 async function resolveValidationTargetDir(message) {
+    const workflowContext = await agentWorkflowHooks?.validationContext?.(message);
+    if (workflowContext?.targetDir)
+        return workflowContext.targetDir;
     const explicit = message.agent_params?.memory_dir;
     if (typeof explicit === 'string' && explicit.trim())
         return explicit.trim();
@@ -704,12 +483,8 @@ async function maybeRunValidationLoop(session, message, result) {
         };
     }
     const maxAttempts = Math.max(validation.maxAttempts ?? 3, 1);
-    const commandText = requestCommandText(message);
-    const validatorEnv = commandText.includes('--deterministic-only')
-        ? {
-            AUGUR_DETERMINISTIC_ONLY: '1',
-        }
-        : undefined;
+    const workflowContext = await agentWorkflowHooks?.validationContext?.(message);
+    const validatorEnv = workflowContext?.extraEnv;
     let currentSession = session;
     let currentResult = result;
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -763,7 +538,8 @@ async function maybeRunValidationLoop(session, message, result) {
                 },
             };
         }
-        const repairPrompt = buildValidationRepairPrompt({
+        const repairPromptBuilder = workflowContext?.repairPromptBuilder ?? buildValidationRepairPrompt;
+        const repairPrompt = repairPromptBuilder({
             targetDir,
             validatorScript: validation.validatorScript,
             findings: validationRun.findings,
@@ -814,38 +590,25 @@ async function handleRequest(message) {
     const executeStartAt = Date.now();
     let executedSession = session;
     let executedResult;
-    if (isAugurDeterministicOnlyRequest(preparedMessage)) {
-        executedResult = await runAugurDeterministicOnly(preparedMessage);
+    const workflowResult = await agentWorkflowHooks?.beforeRuntime?.(preparedMessage);
+    if (workflowResult?.skipResult) {
+        executedResult = workflowResult.skipResult;
     }
     else {
-        const skipResult = await maybeRunAugurSkipFastPath(preparedMessage);
-        if (skipResult) {
-            executedResult = skipResult;
-        }
-        else {
-            let runtimeMessage = preparedMessage;
-            if (isAugurAnalyzeRequest(preparedMessage)) {
-                const prepared = await runAugurSemanticDeterministicPrepass(preparedMessage);
-                runtimeMessage = {
-                    ...preparedMessage,
-                    agent_params: {
-                        ...(preparedMessage.agent_params ?? {}),
-                        run_dir: prepared.runDir,
-                    },
-                };
-            }
-            const readySession = await runtime.startOrResumeWarmSession(session);
-            const runtimeRequest = buildRuntimePromptRequest(readySession, runtimeMessage);
-            const run = await runtime.executePrompt(readySession, runtimeRequest);
-            executedSession = updateSessionPromptCache(run.session, runtimeRequest, run.result);
-            executedResult = run.result;
-        }
+        const runtimeMessage = workflowResult?.runtimeMessage ?? preparedMessage;
+        const readySession = await runtime.startOrResumeWarmSession(session);
+        const runtimeRequest = buildRuntimePromptRequest(readySession, runtimeMessage);
+        const run = await runtime.executePrompt(readySession, runtimeRequest);
+        executedSession = updateSessionPromptCache(run.session, runtimeRequest, run.result);
+        executedResult = run.result;
     }
     const { session: nextSession, result } = await maybeRunValidationLoop(executedSession, preparedMessage, executedResult);
     const executeEndAt = Date.now();
     sessions.set(nextSession.key, nextSession);
     const persistStartAt = Date.now();
     await persistSessions();
+    markCompletedRequest(message.correlation_id, result.status);
+    await persistCompletedRequests();
     const persistEndAt = Date.now();
     const response = {
         status: result.status,
@@ -942,6 +705,14 @@ async function main() {
                 log('message_ignored', { topic, reason: 'not_request' });
                 return;
             }
+            if (hasCompletedRequest(parsed.correlation_id)) {
+                log('message_ignored', {
+                    topic,
+                    reason: 'duplicate_completed_request',
+                    correlation_id: parsed.correlation_id,
+                });
+                return;
+            }
             log('request_received', {
                 topic,
                 sender: parsed.sender,
@@ -985,6 +756,8 @@ async function main() {
                         },
                     },
                 });
+                markCompletedRequest(parsed.correlation_id, 'error');
+                await persistCompletedRequests();
             }
         },
     });
