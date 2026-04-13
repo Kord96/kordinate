@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { spawn } from 'node:child_process'
-import { basename, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { access, mkdir, readFile, rm } from 'node:fs/promises'
 import type { AgentProfile, RequestMessage, RuntimeResult } from './types.js'
@@ -63,6 +63,19 @@ interface AugurBlastManifest {
 type AugurPreparedDeterministicArtifacts = {
   project: string
   runDir: string
+}
+
+type AugurAnalysisContext = {
+  project: string
+  mode: 'full' | 'incremental'
+  working_dir: string
+  run_dir: string
+  analysis_dir: string
+  project_mem: string
+  facts_dir: string
+  blast_path: string
+  concept_evidence_path: string
+  latest_path: string
 }
 
 async function pathExists(path: string): Promise<boolean> {
@@ -291,6 +304,28 @@ async function prepareAugurDeterministicArtifacts(
   return { project, runDir }
 }
 
+function buildAugurAnalysisContext(
+  workingDir: string,
+  project: string,
+  runDir: string,
+  analysisMode: 'full' | 'incremental',
+): AugurAnalysisContext {
+  const analysisDir = dirname(runDir)
+  const projectMem = dirname(analysisDir)
+  return {
+    project,
+    mode: analysisMode,
+    working_dir: workingDir,
+    run_dir: runDir,
+    analysis_dir: analysisDir,
+    project_mem: projectMem,
+    facts_dir: join(runDir, 'facts'),
+    blast_path: join(runDir, 'blast.json'),
+    concept_evidence_path: join(runDir, 'facts', 'concept-evidence.json'),
+    latest_path: join(analysisDir, 'latest.json'),
+  }
+}
+
 function buildAugurValidationRepairPrompt(input: ValidationRepairPromptInput): string {
   const findings = input.findings.map(line => `- ${line}`).join('\n')
   return [
@@ -398,6 +433,11 @@ function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks 
         clearSemanticOutputs: true,
         eventKindPrefix: 'augur.semantic_prepare',
       })
+      const workingDir = message.working_dir
+      if (!workingDir) {
+        throw new Error('working_dir is required for Augur semantic preparation')
+      }
+      const analysisContext = buildAugurAnalysisContext(workingDir, prepared.project, prepared.runDir, analysisMode)
       return {
         runtimeMessage: {
           ...message,
@@ -405,6 +445,7 @@ function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks 
             ...(message.agent_params ?? {}),
             run_dir: prepared.runDir,
             analysis_mode: analysisMode,
+            analysis_context: analysisContext,
           },
         },
       }

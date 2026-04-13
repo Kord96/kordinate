@@ -161,6 +161,32 @@ function loadAugurModeGuide(message: RequestMessage): string {
   return text ? `## ${mode === 'full' ? 'Full Mode Guide' : 'Incremental Mode Guide'}\n\n${text}\n\n` : ''
 }
 
+function renderStructuredRuntimeContext(message: RequestMessage): string {
+  const analysisContext = message.agent_params?.analysis_context
+  if (analysisContext && typeof analysisContext === 'object' && !Array.isArray(analysisContext)) {
+    const serialized = JSON.stringify(analysisContext, null, 2)
+    return `## Runtime Context\n\n\`\`\`json\n${serialized}\n\`\`\`\n\n`
+  }
+
+  const workingDirHint = message.working_dir
+    ? `Working directory hint: use \`${message.working_dir}\` as the authoritative starting project root and current working directory. Do not search alternative repo paths unless this exact path is missing or clearly not the target project.`
+    : ''
+  const runDir = typeof message.agent_params?.run_dir === 'string' && message.agent_params.run_dir.trim()
+    ? message.agent_params.run_dir.trim()
+    : ''
+  const runtimeHints: string[] = []
+  if (workingDirHint) runtimeHints.push(workingDirHint)
+  if (runDir) {
+    runtimeHints.push(`Prepared analysis run: use \`${runDir}\` as the authoritative semantic analysis directory for this request.`)
+    runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\`.`)
+    runtimeHints.push('Treat `$RUN` as this prepared directory and prefer its artifacts before broad repo exploration.')
+    runtimeHints.push('Do not rediscover or infer alternate analysis roots unless this exact path is missing.')
+  }
+  return runtimeHints.length > 0
+    ? `## Runtime Context\n${runtimeHints.map(line => `- ${line}`).join('\n')}\n\n`
+    : ''
+}
+
 export function loadAgentProfile(agentName: string): AgentProfile {
   const identity = loadIdentityMetadata(agentName)
   if (agentName === 'augur') {
@@ -197,23 +223,7 @@ function hashPromptPrefix(value: string): string {
 }
 
 export function buildPromptPlanFromProfile(profile: AgentProfile, message: RequestMessage): PromptPlan {
-  const workingDirHint = message.working_dir
-    ? `Working directory hint: use \`${message.working_dir}\` as the authoritative starting project root and current working directory. Do not search alternative repo paths unless this exact path is missing or clearly not the target project.`
-    : ''
-  const runDir = typeof message.agent_params?.run_dir === 'string' && message.agent_params.run_dir.trim()
-    ? message.agent_params.run_dir.trim()
-    : ''
-  const runtimeHints: string[] = []
-  if (workingDirHint) runtimeHints.push(workingDirHint)
-  if (runDir) {
-    runtimeHints.push(`Prepared analysis run: use \`${runDir}\` as the authoritative semantic analysis directory for this request.`)
-    runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\`.`)
-    runtimeHints.push('Treat `$RUN` as this prepared directory and prefer its artifacts before broad repo exploration.')
-    runtimeHints.push('Do not rediscover or infer alternate analysis roots unless this exact path is missing.')
-  }
-  const runtimePreamble = runtimeHints.length > 0
-    ? `## Runtime Context\n${runtimeHints.map(line => `- ${line}`).join('\n')}\n\n`
-    : ''
+  const runtimePreamble = renderStructuredRuntimeContext(message)
   const bundlePrefix = profile.supportedAgentParams?.includes('bundle_mode')
     ? loadAugurBundlePrefix(message)
     : loadSeededBundlePrefix(profile.name ?? 'generic')

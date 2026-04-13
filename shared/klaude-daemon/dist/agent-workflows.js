@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { constants as fsConstants } from 'node:fs';
 import { access, mkdir, readFile, rm } from 'node:fs/promises';
 async function pathExists(path) {
@@ -216,6 +216,22 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
     });
     return { project, runDir };
 }
+function buildAugurAnalysisContext(workingDir, project, runDir, analysisMode) {
+    const analysisDir = dirname(runDir);
+    const projectMem = dirname(analysisDir);
+    return {
+        project,
+        mode: analysisMode,
+        working_dir: workingDir,
+        run_dir: runDir,
+        analysis_dir: analysisDir,
+        project_mem: projectMem,
+        facts_dir: join(runDir, 'facts'),
+        blast_path: join(runDir, 'blast.json'),
+        concept_evidence_path: join(runDir, 'facts', 'concept-evidence.json'),
+        latest_path: join(analysisDir, 'latest.json'),
+    };
+}
 function buildAugurValidationRepairPrompt(input) {
     const findings = input.findings.map(line => `- ${line}`).join('\n');
     return [
@@ -318,6 +334,11 @@ function createAugurWorkflowHooks(context) {
                 clearSemanticOutputs: true,
                 eventKindPrefix: 'augur.semantic_prepare',
             });
+            const workingDir = message.working_dir;
+            if (!workingDir) {
+                throw new Error('working_dir is required for Augur semantic preparation');
+            }
+            const analysisContext = buildAugurAnalysisContext(workingDir, prepared.project, prepared.runDir, analysisMode);
             return {
                 runtimeMessage: {
                     ...message,
@@ -325,6 +346,7 @@ function createAugurWorkflowHooks(context) {
                         ...(message.agent_params ?? {}),
                         run_dir: prepared.runDir,
                         analysis_mode: analysisMode,
+                        analysis_context: analysisContext,
                     },
                 },
             };
