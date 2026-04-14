@@ -563,7 +563,12 @@ async function maybeRunValidationLoop(
     }
   }
 
-  const maxAttempts = Math.max(validation.maxAttempts ?? 3, 1)
+  const maxAttempts = Number.isFinite(validation.maxAttempts)
+    ? Math.max(validation.maxAttempts as number, 1)
+    : Number.POSITIVE_INFINITY
+  const timeoutMs = Number.isFinite(message.timeout_ms) ? Math.max(1, message.timeout_ms as number) : 300000
+  const validationDeadline = Date.now() + timeoutMs
+  const minRepairBudgetMs = 15000
   const workflowContext = await agentWorkflowHooks?.validationContext?.(message)
   const validatorEnv = workflowContext?.extraEnv
   let currentSession = session
@@ -601,7 +606,11 @@ async function maybeRunValidationLoop(
       }
     }
 
-    if (attempt >= maxAttempts || currentResult.status === 'cancelled') {
+    const remainingBudgetMs = validationDeadline - Date.now()
+    const outOfAttempts = Number.isFinite(maxAttempts) && attempt >= maxAttempts
+    const outOfTime = remainingBudgetMs <= minRepairBudgetMs
+
+    if (outOfAttempts || outOfTime || currentResult.status === 'cancelled') {
       await runValidatorScript(validation.validatorScript, targetDir, true, validatorEnv)
       return {
         session: currentSession,

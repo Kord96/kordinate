@@ -1722,6 +1722,7 @@ def build_output(
     facts_index_path: Path,
     analysis_mode: str,
     purpose: str | None,
+    seed_mode: bool = False,
 ) -> dict[str, Any]:
     index, documents = load_fact_documents(facts_root)
     facts = collect_facts(documents)
@@ -1729,29 +1730,56 @@ def build_output(
     detected_patterns = load_detected_patterns(facts)
     monitoring_index = load_monitoring_index()
 
-    stack = build_stack(facts)
-    api_surface, _ = build_routes(facts)
-    domain_model = build_domain_model(facts)
-    state = build_state_entries(facts, joern)
-    external_dependencies = build_external_dependencies(facts, joern)
-    module_graph = build_module_graph(facts)
     components, groups = build_components_and_groups(facts, joern)
-    events = build_events(facts)
-    actors = build_actors(facts)
-    flows = build_flows(facts, components, state, external_dependencies, joern)
-    attach_concept_monitoring(
-        components,
-        external_dependencies,
-        flows,
-        detected_patterns,
-        monitoring_index,
-    )
-    for component in components:
-        normalize_health_block(component)
-    for dependency in external_dependencies:
-        normalize_health_block(dependency)
-    for flow in flows:
-        normalize_health_block(flow)
+    if seed_mode:
+        frameworks, language_hints = build_frameworks(facts)
+        repo_profile = index.get("metadata", {}).get("repo_profile", {})
+        stack = {
+            "languages": unique_strings(
+                list(language_hints)
+                + repo_profile.get("secondary_languages", [])
+                + [repo_profile.get("dominant_language", "")]
+            ),
+            "frameworks": frameworks[:3],
+            "runtime": "Deterministic semantic seed synthesized from extracted facts.",
+        }
+        api_surface = {"style": "", "frameworks": [], "endpoints": [], "findings": {"critical": [], "recommended": [], "minor": []}}
+        domain_model = {
+            "primary": "software-system",
+            "description": "Initial semantic seed synthesized from deterministic facts.",
+            "entities": [],
+            "relationships": [],
+            "bounded_contexts": [],
+        }
+        state = []
+        external_dependencies = []
+        module_graph = {"modules": [], "circular_dependencies": [], "hub_modules": [], "infrastructure": [], "inter_service": [], "ci_cd": [], "iac": [], "risks": {"hardcoded_endpoints": [], "missing_resilience": [], "unversioned_deps": []}}
+        events = []
+        actors = []
+        flows = []
+    else:
+        stack = build_stack(facts)
+        api_surface, _ = build_routes(facts)
+        domain_model = build_domain_model(facts)
+        state = build_state_entries(facts, joern)
+        external_dependencies = build_external_dependencies(facts, joern)
+        module_graph = build_module_graph(facts)
+        events = build_events(facts)
+        actors = build_actors(facts)
+        flows = build_flows(facts, components, state, external_dependencies, joern)
+        attach_concept_monitoring(
+            components,
+            external_dependencies,
+            flows,
+            detected_patterns,
+            monitoring_index,
+        )
+        for component in components:
+            normalize_health_block(component)
+        for dependency in external_dependencies:
+            normalize_health_block(dependency)
+        for flow in flows:
+            normalize_health_block(flow)
     if not purpose:
         if stack["frameworks"]:
             purpose = f"{project} system synthesized from extracted facts."
@@ -1774,6 +1802,7 @@ def build_output(
         "facts_count": len(facts),
         "concept_count": len(detected_patterns),
         "facts_domains": unique_strings([fact.get("domain", "") for fact in facts if fact.get("domain")]),
+        "seed_mode": seed_mode,
     }
 
     concepts = {
@@ -1828,6 +1857,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--purpose", default="", help="Optional explicit purpose override")
     parser.add_argument("--output", type=Path, default=None, help="Write synthesized atlas JSON to this file")
     parser.add_argument("--analysis-mode", default="facts-to-atlas", help="Metadata analysis mode label")
+    parser.add_argument("--seed", action="store_true", help="Emit a compact schema-correct semantic seed instead of a broad facts-derived atlas")
     return parser.parse_args(argv)
 
 
@@ -1856,6 +1886,7 @@ def main(argv: list[str]) -> int:
         index_path,
         args.analysis_mode,
         args.purpose.strip() or None,
+        seed_mode=args.seed,
     )
     text = json.dumps(output, indent=2, sort_keys=False) + "\n"
     if args.output:

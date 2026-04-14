@@ -7,13 +7,13 @@ This document defines the detector-side files for Augur concepts.
 Concept detection is deterministic runtime machinery and should be kept separate from semantic memory.
 
 - semantic meaning lives under `memory/catalog/concepts/`
-- deterministic concept-evidence inference lives under `detectors/concepts/`
-- generated execution bundles live under `bundles/detectors/`
+- deterministic concept-evidence inference lives under `detectors/facts/concept-evidence/`
+- generated execution bundles live under `.generated/bundles/detectors/`
 
 ## Directory shape
 
 ```text
-detectors/concepts/<name>/
+detectors/facts/concept-evidence/<name>/
   meta.yaml           # decision rules, semantic questions, monitoring guidance
   signatures.yaml     # broad textual/structural signals
   ast-grep.yaml       # optional executable structural rules

@@ -8,7 +8,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PROMPT_PATH = ROOT / "skills" / "analyze" / "semantic-review-prompt.md"
+PROMPT_PATH = ROOT / "skills" / "analyze" / "audit" / "prompts" / "semantic-review.md"
 
 
 def load_json(path: Path) -> dict[str, Any]:

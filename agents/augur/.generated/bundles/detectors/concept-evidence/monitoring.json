@@ -1,0 +1,283 @@
+{
+  "concepts": {
+    "circuit-breaker": {
+      "applies_to": [
+        "component",
+        "dependency"
+      ],
+      "health_signals": [
+        {
+          "name": "circuit.open.rate",
+          "description": "Rate of circuit transitions to open state."
+        },
+        {
+          "name": "fallback.activation.rate",
+          "description": "Frequency of fallback or degraded-mode activation when the circuit opens."
+        },
+        {
+          "name": "dependency.error.rate",
+          "description": "Downstream failure rate that should correlate with circuit activation."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Missing circuit state visibility makes degraded behavior hard to distinguish from total outage."
+      ]
+    },
+    "dependency-injection": {
+      "applies_to": [
+        "component"
+      ],
+      "health_signals": [],
+      "business_metrics": [],
+      "gaps": [
+        "Dependency injection itself is not a runtime health signal; monitor the injected collaborators instead."
+      ]
+    },
+    "event-sourcing": {
+      "applies_to": [
+        "component",
+        "flow"
+      ],
+      "health_signals": [
+        {
+          "name": "event_store.append.latency",
+          "description": "Latency for appending new events to the store or stream."
+        },
+        {
+          "name": "projection.lag",
+          "description": "Delay between event append and read-model projection completion."
+        },
+        {
+          "name": "replay.duration",
+          "description": "Time required to rebuild aggregate state from historical events."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Missing projection lag or replay duration metrics hides read-side staleness and recovery cost."
+      ]
+    },
+    "health-check": {
+      "applies_to": [
+        "component",
+        "dependency"
+      ],
+      "health_signals": [
+        {
+          "name": "readiness.failure.rate",
+          "description": "Frequency of failed readiness checks that would remove the instance from service."
+        },
+        {
+          "name": "liveness.failure.rate",
+          "description": "Frequency of failed liveness checks that would trigger restart behavior."
+        },
+        {
+          "name": "health_check.latency",
+          "description": "Time taken to execute health probes, especially if they touch dependencies."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Combining dependency health into liveness without visibility can trigger cascading restart loops."
+      ]
+    },
+    "hexagonal": {
+      "applies_to": [
+        "component"
+      ],
+      "health_signals": [
+        {
+          "name": "adapter.error.rate",
+          "description": "Error rate per adapter boundary to expose which edge of the hexagon is failing."
+        },
+        {
+          "name": "adapter.latency",
+          "description": "Latency per port or adapter boundary to surface slow infrastructure interactions."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "If ports and adapters are not measured separately, infrastructure regressions look like generic application failures."
+      ]
+    },
+    "input-validation": {
+      "applies_to": [
+        "flow",
+        "component"
+      ],
+      "health_signals": [
+        {
+          "name": "validation.failure.rate",
+          "description": "Rate of rejected requests or payloads due to schema or contract violations."
+        },
+        {
+          "name": "malformed_input.rate",
+          "description": "Frequency of malformed or incomplete external inputs hitting the boundary."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Without validation rejection metrics, abuse and client integration failures are easy to miss."
+      ]
+    },
+    "outbox": {
+      "applies_to": [
+        "component",
+        "flow"
+      ],
+      "health_signals": [
+        {
+          "name": "outbox.pending.count",
+          "description": "Number of unpublished outbox rows waiting to be delivered."
+        },
+        {
+          "name": "outbox.max_age",
+          "description": "Age of the oldest unpublished outbox row."
+        },
+        {
+          "name": "outbox.publish.failure.rate",
+          "description": "Failure rate for the background publisher draining the outbox."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Without lag and stale-age monitoring, dual-write protection exists but delivery failure is invisible."
+      ]
+    },
+    "repository": {
+      "applies_to": [
+        "component",
+        "dependency"
+      ],
+      "health_signals": [
+        {
+          "name": "repository.error.rate",
+          "description": "Failure rate of repository operations, grouped by repository or aggregate boundary."
+        },
+        {
+          "name": "repository.latency",
+          "description": "Latency distribution for repository operations that cross a persistence boundary."
+        },
+        {
+          "name": "repository.slow_query.rate",
+          "description": "Rate of repository calls crossing slow-query or saturation thresholds."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "If repository calls are not visible separately from application logic, persistence regressions are hard to isolate."
+      ]
+    },
+    "retry": {
+      "applies_to": [
+        "component",
+        "dependency",
+        "flow"
+      ],
+      "health_signals": [
+        {
+          "name": "retry.attempts",
+          "description": "Distribution of retry attempts before success or terminal failure."
+        },
+        {
+          "name": "retry.exhausted.rate",
+          "description": "Rate at which retries are exhausted without recovery."
+        },
+        {
+          "name": "downstream.retryable_error.rate",
+          "description": "Rate of retryable downstream failures that trigger the retry path."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "If retries are invisible, transient downstream instability can silently consume latency budgets."
+      ]
+    },
+    "route-guard": {
+      "applies_to": [
+        "flow",
+        "component"
+      ],
+      "health_signals": [
+        {
+          "name": "authorization.denied.rate",
+          "description": "Rate of requests denied by route guards or authorization middleware."
+        },
+        {
+          "name": "route_guard.error.rate",
+          "description": "Failures inside guard logic that can block or misroute requests."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Missing deny-rate and guard-error metrics makes it hard to distinguish policy enforcement from auth regressions."
+      ]
+    },
+    "router": {
+      "applies_to": [
+        "flow",
+        "component"
+      ],
+      "health_signals": [
+        {
+          "name": "route.dispatch.latency",
+          "description": "End-to-end dispatch latency across the routing layer."
+        },
+        {
+          "name": "route.not_found.rate",
+          "description": "Frequency of unmatched requests returning 404 or equivalent dispatch misses."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Missing route-level latency and not-found metrics hides contract drift and traffic shape changes."
+      ]
+    },
+    "structured-logging": {
+      "applies_to": [
+        "component",
+        "system"
+      ],
+      "health_signals": [
+        {
+          "name": "structured_log.error.rate",
+          "description": "Error log rate with structured context preserved for aggregation."
+        },
+        {
+          "name": "missing_log_context.rate",
+          "description": "Frequency of logs missing expected request, trace, or correlation identifiers."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "If structured context is inconsistent, downstream monitoring and incident triage quality degrades quickly."
+      ]
+    },
+    "timeout": {
+      "applies_to": [
+        "component",
+        "dependency",
+        "flow"
+      ],
+      "health_signals": [
+        {
+          "name": "timeout.rate",
+          "description": "Rate of requests, jobs, or downstream calls that terminate due to timeout."
+        },
+        {
+          "name": "timeout.cancellation.rate",
+          "description": "Frequency of successful cancellation or cleanup when a timeout occurs."
+        },
+        {
+          "name": "downstream.timeout.rate",
+          "description": "Timeout rate for specific external calls or slow internal boundaries."
+        }
+      ],
+      "business_metrics": [],
+      "gaps": [
+        "Timeout handling without timeout metrics hides latency collapse until users experience hard failures."
+      ]
+    }
+  }
+}

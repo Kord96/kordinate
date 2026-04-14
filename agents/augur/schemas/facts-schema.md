@@ -1,4 +1,4 @@
-# facts.json Schema (v1)
+# Facts Schema (v1)
 
 Level 2.5 resource for Augur analysis. Facts are the stable output of deterministic extraction and the input to concept inference. They exist to decouple detector implementation details from higher-level semantic reasoning.
 
@@ -12,7 +12,7 @@ Facts are not final semantic conclusions. A fact records a normalized observatio
 
 ## Output Layout
 
-Facts may be written as a single `facts.json` file or as a `facts/` directory containing domain files plus an index:
+The canonical deterministic output is a `facts/` directory containing domain files plus an index:
 
 ```text
 $MEM/
@@ -39,6 +39,8 @@ $MEM/
 ```
 
 `index.json` is the canonical manifest. Domain files may be omitted when empty.
+
+Some benchmark and legacy tooling may still materialize a consolidated `facts.json` payload, but the directory layout above is the source-of-truth contract for Augur analysis.
 
 ## Schema
 

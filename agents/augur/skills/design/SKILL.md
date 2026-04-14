@@ -2,7 +2,7 @@
 name: design
 description: >
   Design a new project: pattern recommendation from concept catalog, design atlas
-  with stories/journeys for visual review, monitoring/deployment/test specs for
+  with stories/narratives for visual review, monitoring/deployment/test specs for
   agent handoff, and scaffold generation. Supports flag-driven modes for
   workstation orchestration.
 argument-hint: "<project-name> [--patterns 'p1,p2,...'] [--approve] [--scaffold]"
@@ -18,7 +18,7 @@ this skill repeatedly as the design progresses.
 | Flag | What it does | Input | Output |
 |------|-------------|-------|--------|
 | (none) | Recommend patterns | Requirements in prompt | Pattern recommendations |
-| `--patterns "p1,p2,..."` | Generate design atlas | Approved pattern list | design-atlas.json + stories + journeys |
+| `--patterns "p1,p2,..."` | Generate design atlas | Approved pattern list | design-atlas.json + stories + narratives |
 | `--approve` | Lock design | Existing design atlas | Status → approved |
 | `--scaffold` | Generate code + repo | Approved atlas + stories | GitHub repo with stubs |
 
@@ -27,10 +27,9 @@ this skill repeatedly as the design progresses.
 These files are shared with /analyze — read them when producing output:
 - [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) — atlas JSON structure
 - [../../schemas/schema.md](../../schemas/schema.md) — field-level details
-- [../analyze/story-schema.md](../analyze/story-schema.md) — story YAML format
-- [../analyze/narratives-schema.md](../analyze/narratives-schema.md) — narrative YAML format
+- [../../schemas/story-schema.md](../../schemas/story-schema.md) — story YAML format
+- [../../schemas/narratives-schema.md](../../schemas/narratives-schema.md) — narrative YAML format
 - [../../schemas/composition-guide.md](../../schemas/composition-guide.md) — how to build story trees
-- [../../schemas/writing-guide.md](../../schemas/writing-guide.md) — prose style
 - [../../schemas/augur-output-contract.md](../../schemas/augur-output-contract.md) — downstream consumer contract
 
 ---
@@ -128,7 +127,7 @@ Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,re
 
 For each pattern in the comma-separated list:
 1. Read `memory/catalog/concepts/<pattern>.md`
-2. Load deterministic concept-evidence detector metadata from `detectors/concepts/<pattern>/` when needed
+2. Load deterministic concept-evidence detector metadata from `detectors/facts/concept-evidence/<pattern>/` when needed
 
 ### Step 2 — Read infra atlas
 
@@ -152,7 +151,7 @@ Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../.
 - **metadata.status** — `"draft"`
 - **metadata.new_infrastructure** — services not in infra atlas that charon needs to provision
 
-### Step 4 — Compose stories and journeys
+### Step 4 — Compose stories and narratives
 
 Follow [../../schemas/composition-guide.md](../../schemas/composition-guide.md).
 
@@ -160,9 +159,9 @@ For a design atlas, stories explain the PROPOSED architecture:
 - Root stories per component group — what it does and why
 - Child stories for key flows — how data moves through the design
 - Child stories for design decisions — why this pattern was chosen (use rationale blocks)
-- Getting-started journey — the reading order for someone onboarding to this new project
+- Getting-started narrative — the reading order for someone onboarding to this new project
 
-Write to `$MEM/stories/` and `$MEM/journeys/`.
+Write to `$MEM/stories/` and `$MEM/narratives.yaml`.
 
 ### Step 5 — Report
 
@@ -173,9 +172,9 @@ Components (N): <names>
 Patterns (N): <grouped by level>
 Flows (N): <names>
 Stories: N root, N child
-Journeys: N
+Narratives: N
 
-Written to: $MEM/design-atlas.json, $MEM/stories/, $MEM/journeys/
+Written to: $MEM/design-atlas.json, $MEM/stories/, $MEM/narratives.yaml
 
 Review the design. Then:
 - To approve: `/design <name> --approve`
@@ -203,9 +202,9 @@ Update `design-atlas.json`: `metadata.status` → `"approved"`.
 
 Atlas: $MEM/design-atlas.json
 Stories: $MEM/stories/
-Journeys: $MEM/journeys/
+Narratives: $MEM/narratives.yaml
 
-Other agents read the atlas + stories + journeys for full context:
+Other agents read the atlas + stories + narratives for full context:
 - Sauron: failure_modes.detection for monitoring, stories for architecture understanding
 - Charon: failure_modes for rollout concerns, flows for deployment dependencies
 - Developer: stories for onboarding, detected_patterns → concept semantics and detector assets for implementation guidance

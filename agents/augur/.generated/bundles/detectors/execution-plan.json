@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "steps": [
+    {
+      "name": "framework-detection",
+      "bundle": ".generated/bundles/detectors/frameworks/all.json",
+      "purpose": "Detect frameworks first to establish stack context"
+    },
+    {
+      "name": "fact-extraction",
+      "bundle": ".generated/bundles/detectors/facts/all.json",
+      "purpose": "Extract normalized facts before semantic concept inference"
+    },
+    {
+      "name": "concept-evidence-inference",
+      "bundle": ".generated/bundles/detectors/concept-evidence/all.json",
+      "purpose": "Infer concept-evidence facts from normalized deterministic evidence"
+    }
+  ]
+}

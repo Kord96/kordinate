@@ -36,7 +36,7 @@ That means the system is still relying heavily on broad textual heuristics and d
 
 ### 3. Concept detector rules now live in the detector tree
 
-Executable concept-evidence rules have been moved from `memory/catalog/concepts/` into `detectors/concepts/`.
+Executable concept-evidence rules have been moved from `memory/catalog/concepts/` into `detectors/facts/concept-evidence/`.
 
 Current detector-side coverage after migration:
 
@@ -146,7 +146,7 @@ Concepts should be finalized by combining:
 
 The concept decision model is documented in:
 
-- `agents/augur/scripts/concept-decision-design.md`
+- `agents/augur/scripts/notes/concept-decision-design.md`
 
 That document defines:
 
@@ -157,7 +157,7 @@ That document defines:
 
 ## Recommended Next Step
 
-Use `agents/augur/scripts/detector-audit-prompt.md` with Gemini and DeepSeek, giving them the bundle generators, generated bundles, detector source, and analyze scripts.
+Use `agents/augur/scripts/notes/detector-audit-prompt.md` with Gemini and DeepSeek, giving them the bundle generators, generated bundles, detector source, and analyze scripts.
 
 The goal should be:
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SKILL = ROOT / "skills" / "analyze" / "SKILL.md"
 BUNDLES = ROOT / ".generated" / "bundles" / "skill"
 
@@ -17,10 +17,9 @@ def read(path: Path) -> str:
 def extract_core_sections() -> str:
     text = read(SKILL)
     start = text.find("Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs for this run.")
-    end = text.find("## Report")
-    if start == -1 or end == -1:
+    if start == -1:
         raise RuntimeError("Failed to locate stable analyze skill sections.")
-    return text[start:end].rstrip()
+    return text[start:].rstrip()
 
 
 def build_mode_reference() -> str:

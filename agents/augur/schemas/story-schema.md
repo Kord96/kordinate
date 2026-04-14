@@ -8,6 +8,17 @@ Stories nest like components. A **root story** gives the high-level view of a gr
 
 **Journeys** are secondary — thin cross-cutting paths through the tree for specific audiences (resilience review, onboarding). They're just ordered lists of story IDs pulled from anywhere in the tree.
 
+## Prose Rules
+
+Apply these rules to story summaries, findings, and rationale:
+
+- state facts about the system, not facts about the document
+- name concrete components, dependencies, and flows
+- keep summaries concise and grounded
+- use `**bold**` component references only when they resolve to real atlas ids
+- prefer active phrasing and direct relationships
+- avoid filler such as "this story covers" or "the following section"
+
 ## Building Blocks
 
 Every story is assembled from these blocks. Only `summary` is required.
@@ -165,8 +176,6 @@ Summary length scales with depth and grounding scope. The deeper and more focuse
 | 1 (child) | 3 | 80-120 words | Explain: one specific concern, with evidence |
 
 **Grounding influence**: a story grounded in 1-2 files can say what it needs in 1 paragraph. A story grounded in 10+ files may need all 3. But never exceed the max — the structures, flows, and observations carry the detail.
-
-All prose follows [writing-guide.md](writing-guide.md).
 
 ## Suggested Types
 

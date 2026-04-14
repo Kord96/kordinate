@@ -12,7 +12,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_DIR = Path(__file__).resolve().parent
-REFLECTION_PROMPT_PATH = ROOT / "skills" / "analyze" / "reflection-prompt.md"
+REFLECTION_PROMPT_PATH = ROOT / "skills" / "analyze" / "prompts" / "reflection.md"
 RUNTIME_ROOT = Path("/kord/augur")
 
 
@@ -292,7 +292,7 @@ def main() -> int:
             "facts_dir": str(facts_path),
             "stories_dir": "",
             "transcript_path": "",
-            "concepts_path": str(concepts_path),
+            "concept_evidence_path": str(concept_evidence_path),
             "semantic_review_path": str(semantic_review_path),
         },
         "validation": validation,

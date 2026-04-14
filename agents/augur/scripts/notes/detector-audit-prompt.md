@@ -31,12 +31,12 @@ At minimum, provide:
 - `agents/augur/memory/workflow.md`
 - `agents/augur/detectors/facts/**/policy.yaml`
 - `agents/augur/detectors/facts/**/signatures.yaml`
-- `agents/augur/detectors/concepts/**/meta.yaml`
-- `agents/augur/detectors/concepts/**/signatures.yaml`
-- `agents/augur/skills/analyze/concerns/detection.md`
-- `agents/augur/skills/analyze/scripts/detector_loader.py`
-- `agents/augur/skills/analyze/scripts/run_ast_grep.py`
-- `agents/augur/skills/analyze/scripts/run_concept_detection.py`
+- `agents/augur/detectors/facts/concept-evidence/**/meta.yaml`
+- `agents/augur/detectors/facts/concept-evidence/**/signatures.yaml`
+- `agents/augur/skills/analyze/references/detection-method.md`
+- `agents/augur/detectors/scripts/detector_loader.py`
+- `agents/augur/detectors/scripts/run_ast_grep.py`
+- `agents/augur/detectors/scripts/run_concept_detection.py`
 - `agents/augur/scripts/infer_concepts_from_facts.py`
 
 ## Instructions

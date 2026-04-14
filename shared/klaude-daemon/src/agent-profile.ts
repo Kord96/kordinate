@@ -156,9 +156,30 @@ function loadAugurModeGuide(message: RequestMessage): string {
     ? message.agent_params.analysis_mode.trim().toLowerCase()
     : ''
   if (mode !== 'full' && mode !== 'incremental') return ''
-  const path = resolveAugurPath('skills', 'analyze', `${mode}-mode.md`)
+  const path = resolveAugurPath('skills', 'analyze', 'modes', `${mode}.md`)
   const text = readCached(path)?.trim()
   return text ? `## ${mode === 'full' ? 'Full Mode Guide' : 'Incremental Mode Guide'}\n\n${text}\n\n` : ''
+}
+
+function renderStartupGuidance(agentParams?: Record<string, unknown>): string {
+  const guidance = agentParams?.startup_guidance
+  if (!guidance || typeof guidance !== 'object' || Array.isArray(guidance)) return ''
+  const guidanceRecord = guidance as Record<string, unknown>
+
+  const directive = typeof guidanceRecord.directive === 'string' ? guidanceRecord.directive.trim() : ''
+  const starterFiles = Array.isArray(guidanceRecord.starter_files)
+    ? guidanceRecord.starter_files.filter((value: unknown): value is string => typeof value === 'string' && value.trim().length > 0)
+    : []
+
+  const parts: string[] = []
+  if (directive) {
+    parts.push(`Directive: ${directive}`)
+  }
+  if (starterFiles.length > 0) {
+    parts.push('Starter artifacts:')
+    parts.push(...starterFiles.map((path: string) => `- \`${path}\``))
+  }
+  return parts.length > 0 ? `## Startup Guidance\n\n${parts.join('\n')}\n\n` : ''
 }
 
 function renderStructuredRuntimeContext(message: RequestMessage): string {
@@ -203,7 +224,6 @@ export function loadAgentProfile(agentName: string): AgentProfile {
       validation: {
         required: true,
         validatorScript: resolveAugurPath('skills', 'analyze', 'scripts', 'validate_output.py'),
-        maxAttempts: 3,
         finalizeScript: resolveAugurPath('scripts', 'finalize_analysis.py'),
       },
     }
@@ -224,6 +244,7 @@ function hashPromptPrefix(value: string): string {
 
 export function buildPromptPlanFromProfile(profile: AgentProfile, message: RequestMessage): PromptPlan {
   const runtimePreamble = renderStructuredRuntimeContext(message)
+  const startupGuidance = renderStartupGuidance(message.agent_params)
   const bundlePrefix = profile.supportedAgentParams?.includes('bundle_mode')
     ? loadAugurBundlePrefix(message)
     : loadSeededBundlePrefix(profile.name ?? 'generic')
@@ -231,7 +252,7 @@ export function buildPromptPlanFromProfile(profile: AgentProfile, message: Reque
   const cacheablePrefix = profile.promptPrefix || bundlePrefix
     ? `${profile.promptPrefix ? `${profile.promptPrefix}\n\n` : ''}${bundlePrefix}`
     : ''
-  const dynamicPrompt = `${runtimePreamble}${modeGuide}${message.prompt}`
+  const dynamicPrompt = `${runtimePreamble}${startupGuidance}${modeGuide}${message.prompt}`
   const fullPrompt = cacheablePrefix
     ? `${cacheablePrefix}${dynamicPrompt}`
     : dynamicPrompt

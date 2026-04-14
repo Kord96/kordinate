@@ -1,0 +1,16 @@
+framework: fastapi
+signals:
+  strong:
+    - "from fastapi import FastAPI"
+    - "app = FastAPI()"
+    - "from fastapi import APIRouter"
+  medium:
+    - "@app.get("
+    - "@app.post("
+    - "@router.get("
+    - "@router.post("
+    - "Depends("
+    - "BaseModel"
+negative_signals:
+  - "from flask import Flask"
+  - "from django.urls import path"

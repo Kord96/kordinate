@@ -9,9 +9,9 @@ Facts are stable normalized observations. They are produced by deterministic ext
 Keep these responsibilities separate:
 
 - semantic meaning lives under `memory/catalog/`
-- deterministic extraction lives under `detectors/frameworks/` and `detectors/facts/`
+- deterministic extraction lives under `detectors/facts/`
 - semantic interpretation and ambiguity resolution happen in concept inference
-- generated runtime bundles live under `bundles/detectors/`
+- generated runtime bundles live under `.generated/bundles/detectors/`
 
 ## Directory shape
 

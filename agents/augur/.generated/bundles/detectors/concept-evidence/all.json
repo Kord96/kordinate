@@ -1,0 +1,1970 @@
+{
+  "concepts": [
+    {
+      "name": "abstract-factory",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/abstract-factory/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "active-record",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/active-record/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "actor-model",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/actor-model/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "adapter",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/adapter/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "aggregate",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/aggregate/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "anemic-domain-model",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/anemic-domain-model/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "api-key-auth",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/api-key-auth/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "audit-logging",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/audit-logging/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "backpressure",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/backpressure/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "batch-loader",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/batch-loader/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "big-ball-of-mud",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/big-ball-of-mud/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "block-content",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/block-content/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "bloom-filter",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/bloom-filter/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "boolean-blindness",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/boolean-blindness/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "bridge",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/bridge/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "builder",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/builder/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "bulkhead",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/bulkhead/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "busy-waiting",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/busy-waiting/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "cache-aside",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/cache-aside/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "cache-stampede-prevention",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/cache-stampede-prevention/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "callback-hell",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/callback-hell/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "chain-of-responsibility",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/chain-of-responsibility/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "chatty-api",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/chatty-api/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "circuit-breaker",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/circuit-breaker/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/circuit-breaker/signatures.yaml"
+      },
+      "question_count": 3,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "noisy_rule_match"
+        ],
+        "threshold": 6,
+        "entries": [
+          {
+            "id": "circuit-breaker-state",
+            "prompt": "Is there explicit open or half-open state behavior rather than only retries?",
+            "weight": 3,
+            "signals": [
+              "CircuitBreaker",
+              "half-open",
+              "outlierDetection"
+            ]
+          },
+          {
+            "id": "circuit-breaker-fallback",
+            "prompt": "Is fallback or degraded behavior defined when the circuit opens?",
+            "weight": 2,
+            "signals": [
+              "fallback",
+              "degrade"
+            ]
+          },
+          {
+            "id": "circuit-breaker-thresholds",
+            "prompt": "Are failure thresholds and recovery timing explicitly configured?",
+            "weight": 1,
+            "signals": [
+              "failure threshold",
+              "recovery timeout"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "dependency"
+        ],
+        "health_signals": [
+          {
+            "name": "circuit.open.rate",
+            "description": "Rate of circuit transitions to open state."
+          },
+          {
+            "name": "fallback.activation.rate",
+            "description": "Frequency of fallback or degraded-mode activation when the circuit opens."
+          },
+          {
+            "name": "dependency.error.rate",
+            "description": "Downstream failure rate that should correlate with circuit activation."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Missing circuit state visibility makes degraded behavior hard to distinguish from total outage."
+        ]
+      }
+    },
+    {
+      "name": "circular-dependency",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/circular-dependency/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "command",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/command/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "component",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/component/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "component-slot",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/component-slot/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "composite",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/composite/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "config-management",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/config-management/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "config-sprawl",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/config-sprawl/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "connection-pooling",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/connection-pooling/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "content-negotiation",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/content-negotiation/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "contract-testing",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/contract-testing/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "copy-paste-programming",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/copy-paste-programming/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "correlation-id",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/correlation-id/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "cors",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/cors/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "cqrs",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/cqrs/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "data-mapper",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/data-mapper/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "database-migration",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/database-migration/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "ddd",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/ddd/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "decorator",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/decorator/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "deep-nesting",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/deep-nesting/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "dependency-injection",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/dependency-injection/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/dependency-injection/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/dependency-injection/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": false,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "architecture_level_concept"
+        ],
+        "threshold": 6,
+        "entries": [
+          {
+            "id": "di-constructor-or-container",
+            "prompt": "Are collaborators provided through constructors, framework DI, or a composition root rather than instantiated inline?",
+            "weight": 3,
+            "signals": [
+              "Depends(",
+              "@Injectable",
+              "@Autowired"
+            ]
+          },
+          {
+            "id": "di-no-service-locator",
+            "prompt": "Is the pattern true DI rather than arbitrary runtime service-location calls?",
+            "weight": 3,
+            "signals": [
+              "container.get",
+              "injector.get"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component"
+        ],
+        "health_signals": [],
+        "business_metrics": [],
+        "gaps": [
+          "Dependency injection itself is not a runtime health signal; monitor the injected collaborators instead."
+        ]
+      }
+    },
+    {
+      "name": "distributed-lock",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/distributed-lock/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "distributed-tracing",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/distributed-tracing/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "dual-writes",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/dual-writes/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "entity-component-system",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/entity-component-system/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "error-boundary",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/error-boundary/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "error-code-returns",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/error-code-returns/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "etl",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/etl/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "event-sourcing",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/event-sourcing/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/event-sourcing/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/event-sourcing/ast-grep.yaml"
+      },
+      "question_count": 4,
+      "policy": {
+        "auto_confirm_allowed": false,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "noisy_rule_match",
+          "conflicting_evidence",
+          "broad_match",
+          "low_rule_confidence",
+          "architecture_level_concept"
+        ],
+        "threshold": 6,
+        "entries": [
+          {
+            "id": "event-sourcing-replay-derived-state",
+            "prompt": "Is aggregate state derived solely by replaying an append-only sequence of events?",
+            "weight": 3,
+            "signals": [
+              "apply methods on aggregates that mutate state from events",
+              "load_events and replay to reconstruct state"
+            ]
+          },
+          {
+            "id": "event-sourcing-append-only-store",
+            "prompt": "Are events stored in an append-only event store or stream?",
+            "weight": 3,
+            "signals": [
+              "EventStore or EventStream with append_events",
+              "EventStoreDB client or append-only table"
+            ]
+          },
+          {
+            "id": "event-sourcing-past-tense-events",
+            "prompt": "Are events named as immutable past-tense facts?",
+            "weight": 2,
+            "signals": [
+              "OrderPlaced",
+              "PaymentReceived"
+            ]
+          },
+          {
+            "id": "event-sourcing-snapshots",
+            "prompt": "Do snapshots exist for aggregates with long event histories?",
+            "weight": 1,
+            "signals": [
+              "Snapshot class",
+              "snapshot repository",
+              "snapshot interval configuration"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "flow"
+        ],
+        "health_signals": [
+          {
+            "name": "event_store.append.latency",
+            "description": "Latency for appending new events to the store or stream."
+          },
+          {
+            "name": "projection.lag",
+            "description": "Delay between event append and read-model projection completion."
+          },
+          {
+            "name": "replay.duration",
+            "description": "Time required to rebuild aggregate state from historical events."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Missing projection lag or replay duration metrics hides read-side staleness and recovery cost."
+        ]
+      }
+    },
+    {
+      "name": "experiment-framework",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/experiment-framework/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "facade",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/facade/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "factory",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/factory/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "feature-envy",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/feature-envy/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "feature-flag",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/feature-flag/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "feature-store",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/feature-store/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "fire-and-forget",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/fire-and-forget/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "fixture-builder",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/fixture-builder/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "flaky-tests",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/flaky-tests/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "flux",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/flux/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "flyweight",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/flyweight/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "form-binding",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/form-binding/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "future-promise",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/future-promise/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "game-loop",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/game-loop/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "god-endpoint",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/god-endpoint/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "god-object",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/god-object/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "graceful-degradation",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/graceful-degradation/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "graphql",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/graphql/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "grpc",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/grpc/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "hardcoded-credentials",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/hardcoded-credentials/semgrep.yaml"
+      }
+    },
+    {
+      "name": "hardcoded-urls",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/hardcoded-urls/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "health-check",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/health-check/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/health-check/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/health-check/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match"
+        ],
+        "threshold": 5,
+        "entries": [
+          {
+            "id": "health-check-dedicated-endpoint",
+            "prompt": "Is there a dedicated health, liveness, or readiness endpoint or probe?",
+            "weight": 3,
+            "signals": [
+              "/health",
+              "/ready",
+              "livenessProbe"
+            ]
+          },
+          {
+            "id": "health-check-correct-scope",
+            "prompt": "Are liveness and readiness concerns kept distinct enough to avoid cascading restarts?",
+            "weight": 2,
+            "signals": [
+              "readiness",
+              "liveness"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "dependency"
+        ],
+        "health_signals": [
+          {
+            "name": "readiness.failure.rate",
+            "description": "Frequency of failed readiness checks that would remove the instance from service."
+          },
+          {
+            "name": "liveness.failure.rate",
+            "description": "Frequency of failed liveness checks that would trigger restart behavior."
+          },
+          {
+            "name": "health_check.latency",
+            "description": "Time taken to execute health probes, especially if they touch dependencies."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Combining dependency health into liveness without visibility can trigger cascading restart loops."
+        ]
+      }
+    },
+    {
+      "name": "hexagonal",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/hexagonal/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/hexagonal/signatures.yaml"
+      },
+      "question_count": 4,
+      "policy": {
+        "auto_confirm_allowed": false,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "noisy_rule_match",
+          "conflicting_evidence",
+          "broad_match",
+          "low_rule_confidence",
+          "architecture_level_concept"
+        ],
+        "threshold": 6,
+        "entries": [
+          {
+            "id": "hexagonal-ports-adapters-structure",
+            "prompt": "Is there a ports/ and adapters/ directory structure with Port-suffixed interfaces and Adapter-suffixed implementations?",
+            "weight": 3,
+            "signals": [
+              "ports/ directory",
+              "adapters/ directory",
+              "RepositoryPort interface",
+              "PostgresAdapter class"
+            ]
+          },
+          {
+            "id": "hexagonal-domain-free-of-infra",
+            "prompt": "Is the domain layer free of infrastructure imports like HTTP libraries, database drivers, or cloud SDKs?",
+            "weight": 3,
+            "signals": [
+              "no requests import in domain",
+              "no boto3 in domain",
+              "no DB driver in domain"
+            ]
+          },
+          {
+            "id": "hexagonal-di-wiring",
+            "prompt": "Are adapters wired to ports via dependency injection at application startup?",
+            "weight": 2,
+            "signals": [
+              "inject adapter at startup",
+              "bind port to adapter",
+              "DI container wiring"
+            ]
+          },
+          {
+            "id": "hexagonal-test-adapters",
+            "prompt": "Do tests use in-memory adapter implementations rather than mocking concrete infrastructure classes?",
+            "weight": 1,
+            "signals": [
+              "InMemoryRepository in tests",
+              "fake adapter for testing",
+              "test adapter implements port"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component"
+        ],
+        "health_signals": [
+          {
+            "name": "adapter.error.rate",
+            "description": "Error rate per adapter boundary to expose which edge of the hexagon is failing."
+          },
+          {
+            "name": "adapter.latency",
+            "description": "Latency per port or adapter boundary to surface slow infrastructure interactions."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "If ports and adapters are not measured separately, infrastructure regressions look like generic application failures."
+        ]
+      }
+    },
+    {
+      "name": "hydration",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/hydration/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "ice-cream-cone",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/ice-cream-cone/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "idempotent-consumer",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/idempotent-consumer/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "inbox",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/inbox/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "inconsistent-naming",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/inconsistent-naming/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "infrastructure-as-code",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/infrastructure-as-code/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "input-validation",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/input-validation/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/input-validation/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/input-validation/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "low_rule_confidence"
+        ],
+        "threshold": 5,
+        "entries": [
+          {
+            "id": "input-validation-boundary",
+            "prompt": "Is validation applied at the request or API boundary before business logic?",
+            "weight": 3,
+            "signals": [
+              "BaseModel",
+              "zod",
+              "@Valid"
+            ]
+          },
+          {
+            "id": "input-validation-reject-invalid",
+            "prompt": "Does invalid input trigger a reject-early response rather than deep business-logic checks?",
+            "weight": 2,
+            "signals": [
+              "ValidationError",
+              "bad request"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "flow",
+          "component"
+        ],
+        "health_signals": [
+          {
+            "name": "validation.failure.rate",
+            "description": "Rate of rejected requests or payloads due to schema or contract violations."
+          },
+          {
+            "name": "malformed_input.rate",
+            "description": "Frequency of malformed or incomplete external inputs hitting the boundary."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Without validation rejection metrics, abuse and client integration failures are easy to miss."
+        ]
+      }
+    },
+    {
+      "name": "insecure-deserialization",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/insecure-deserialization/semgrep.yaml"
+      }
+    },
+    {
+      "name": "intermediate-representation",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/intermediate-representation/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "iterator",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/iterator/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "lava-flow",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/lava-flow/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "lazy-loading",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/lazy-loading/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "lexer-parser",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/lexer-parser/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "log-and-throw",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/log-and-throw/semgrep.yaml"
+      }
+    },
+    {
+      "name": "log-spam",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/log-spam/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "long-polling",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/long-polling/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "long-transactions",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/long-transactions/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "lru-cache",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/lru-cache/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "magic-numbers",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/magic-numbers/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "mediator",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/mediator/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "memento",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/memento/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "memory-leak",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/memory-leak/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "message-queue",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/message-queue/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "metric-cardinality-explosion",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/metric-cardinality-explosion/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "metrics-instrumentation",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/metrics-instrumentation/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "micro-frontend",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/micro-frontend/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "middleware",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/middleware/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "misleading-names",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/misleading-names/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "missing-log-context",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/missing-log-context/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "model-registry",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/model-registry/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "monad",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/monad/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "multi-tenant",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/multi-tenant/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "mvvm",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/mvvm/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "n-plus-one",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/n-plus-one/semgrep.yaml"
+      }
+    },
+    {
+      "name": "null-object",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/null-object/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "oauth-oidc",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/oauth-oidc/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "object-pool",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/object-pool/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "observer",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/observer/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "optimistic-locking",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/optimistic-locking/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "optimistic-update",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/optimistic-update/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "outbox",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/outbox/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/outbox/signatures.yaml"
+      },
+      "question_count": 4,
+      "policy": {
+        "auto_confirm_allowed": false,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "noisy_rule_match",
+          "conflicting_evidence",
+          "broad_match",
+          "low_rule_confidence",
+          "architecture_level_concept"
+        ],
+        "threshold": 6,
+        "entries": [
+          {
+            "id": "outbox-atomic-write",
+            "prompt": "Are events written to an outbox table in the same database transaction as the business state change?",
+            "weight": 3,
+            "signals": [
+              "outbox insert in same transaction",
+              "atomic write of state + event",
+              "transactional outbox"
+            ]
+          },
+          {
+            "id": "outbox-separate-publisher",
+            "prompt": "Does a separate process poll or stream from the outbox table to publish events to a message broker?",
+            "weight": 3,
+            "signals": [
+              "outbox publisher process",
+              "Debezium CDC on outbox",
+              "polling outbox for unpublished"
+            ]
+          },
+          {
+            "id": "outbox-published-marking",
+            "prompt": "Are published events marked or deleted to prevent re-publishing on the next poll cycle?",
+            "weight": 2,
+            "signals": [
+              "published_at timestamp set",
+              "processed flag updated",
+              "delete after publish"
+            ]
+          },
+          {
+            "id": "outbox-stale-monitoring",
+            "prompt": "Is there monitoring for stale unpublished events that may indicate a publisher failure?",
+            "weight": 2,
+            "signals": [
+              "alert on unpublished age",
+              "outbox lag metric",
+              "stale event monitoring"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "flow"
+        ],
+        "health_signals": [
+          {
+            "name": "outbox.pending.count",
+            "description": "Number of unpublished outbox rows waiting to be delivered."
+          },
+          {
+            "name": "outbox.max_age",
+            "description": "Age of the oldest unpublished outbox row."
+          },
+          {
+            "name": "outbox.publish.failure.rate",
+            "description": "Failure rate for the background publisher draining the outbox."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Without lag and stale-age monitoring, dual-write protection exists but delivery failure is invisible."
+        ]
+      }
+    },
+    {
+      "name": "over-under-fetching",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/over-under-fetching/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "pagination",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/pagination/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "pipeline-filter",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/pipeline-filter/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "plugin",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/plugin/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "pokemon-exception",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/pokemon-exception/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "producer-consumer",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/producer-consumer/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "prop-drilling",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/prop-drilling/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "property-testing",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/property-testing/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "prototype",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/prototype/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "proxy",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/proxy/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "race-condition",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/race-condition/semgrep.yaml"
+      }
+    },
+    {
+      "name": "rate-limiting",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/rate-limiting/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "rbac",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/rbac/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "reactive-store",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/reactive-store/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "read-through",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/read-through/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "read-write-lock",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/read-write-lock/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "repository",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/repository/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/repository/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/repository/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": false,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "architecture_level_concept"
+        ],
+        "threshold": 6,
+        "entries": [
+          {
+            "id": "repository-domain-facing-interface",
+            "prompt": "Does the repository expose a stable data-access contract to the domain or service layer?",
+            "weight": 3,
+            "signals": [
+              "Repository",
+              "JpaRepository",
+              "@Repository"
+            ]
+          },
+          {
+            "id": "repository-storage-separation",
+            "prompt": "Is storage logic encapsulated here rather than leaking direct queries into services or controllers?",
+            "weight": 3,
+            "signals": [
+              "session.query",
+              "prisma",
+              "SELECT"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "dependency"
+        ],
+        "health_signals": [
+          {
+            "name": "repository.error.rate",
+            "description": "Failure rate of repository operations, grouped by repository or aggregate boundary."
+          },
+          {
+            "name": "repository.latency",
+            "description": "Latency distribution for repository operations that cross a persistence boundary."
+          },
+          {
+            "name": "repository.slow_query.rate",
+            "description": "Rate of repository calls crossing slow-query or saturation thresholds."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "If repository calls are not visible separately from application logic, persistence regressions are hard to isolate."
+        ]
+      }
+    },
+    {
+      "name": "request-reply",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/request-reply/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "rest",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/rest/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "result-type",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/result-type/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "retry",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/retry/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/retry/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/retry/ast-grep.yaml"
+      },
+      "question_count": 3,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "noisy_rule_match",
+          "low_rule_confidence"
+        ],
+        "threshold": 6,
+        "entries": [
+          {
+            "id": "retry-bounded-attempts",
+            "prompt": "Is the retry behavior bounded by an explicit attempt or deadline limit?",
+            "weight": 3,
+            "signals": [
+              "stop_after_attempt",
+              {
+                "retries": null
+              },
+              "maxRetries"
+            ]
+          },
+          {
+            "id": "retry-backoff",
+            "prompt": "Is there exponential backoff or jitter rather than a fixed-delay loop?",
+            "weight": 2,
+            "signals": [
+              "wait_exponential",
+              "backoff",
+              "jitter"
+            ]
+          },
+          {
+            "id": "retry-idempotent-or-dlq",
+            "prompt": "Is the retried operation idempotent or routed to a dead-letter path on exhaustion?",
+            "weight": 1,
+            "signals": [
+              "dead letter",
+              "idempotent"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "dependency",
+          "flow"
+        ],
+        "health_signals": [
+          {
+            "name": "retry.attempts",
+            "description": "Distribution of retry attempts before success or terminal failure."
+          },
+          {
+            "name": "retry.exhausted.rate",
+            "description": "Rate at which retries are exhausted without recovery."
+          },
+          {
+            "name": "downstream.retryable_error.rate",
+            "description": "Rate of retryable downstream failures that trigger the retry path."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "If retries are invisible, transient downstream instability can silently consume latency budgets."
+        ]
+      }
+    },
+    {
+      "name": "ring-buffer",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/ring-buffer/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "route-guard",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/route-guard/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/route-guard/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/route-guard/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "architecture_level_concept"
+        ],
+        "threshold": 5,
+        "entries": [
+          {
+            "id": "route-guard-pre-render",
+            "prompt": "Does the guard block navigation before protected content renders?",
+            "weight": 3,
+            "signals": [
+              "redirect(",
+              "CanActivate",
+              "middleware.ts"
+            ]
+          },
+          {
+            "id": "route-guard-auth-check",
+            "prompt": "Does the guard evaluate auth or permissions rather than only client-side state toggles?",
+            "weight": 2,
+            "signals": [
+              "isAuthenticated",
+              "hasRole",
+              "permission"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "flow",
+          "component"
+        ],
+        "health_signals": [
+          {
+            "name": "authorization.denied.rate",
+            "description": "Rate of requests denied by route guards or authorization middleware."
+          },
+          {
+            "name": "route_guard.error.rate",
+            "description": "Failures inside guard logic that can block or misroute requests."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Missing deny-rate and guard-error metrics makes it hard to distinguish policy enforcement from auth regressions."
+        ]
+      }
+    },
+    {
+      "name": "router",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/router/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/router/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/router/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match"
+        ],
+        "threshold": 4,
+        "entries": [
+          {
+            "id": "router-declarative-map",
+            "prompt": "Is there a declarative mapping from paths to views, components, or handlers?",
+            "weight": 2,
+            "signals": [
+              "BrowserRouter",
+              "Route",
+              "path("
+            ]
+          },
+          {
+            "id": "router-navigation-and-params",
+            "prompt": "Are navigation helpers or route parameters used as part of the routing system?",
+            "weight": 2,
+            "signals": [
+              "useNavigate",
+              "useParams",
+              "router.push"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "flow",
+          "component"
+        ],
+        "health_signals": [
+          {
+            "name": "route.dispatch.latency",
+            "description": "End-to-end dispatch latency across the routing layer."
+          },
+          {
+            "name": "route.not_found.rate",
+            "description": "Frequency of unmatched requests returning 404 or equivalent dispatch misses."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Missing route-level latency and not-found metrics hides contract drift and traffic shape changes."
+        ]
+      }
+    },
+    {
+      "name": "rule-engine",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/rule-engine/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "saga",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/saga/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "saga-orchestrator",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/saga-orchestrator/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "scheduler",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/scheduler/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "select-star",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/select-star/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "server-prefetch",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/server-prefetch/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "server-sent-events",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/server-sent-events/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "serverless",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/serverless/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "service-manager",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/service-manager/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "session-auth",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/session-auth/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "side-effect-hook",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/side-effect-hook/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "singleton",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/singleton/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "snapshot-testing",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/snapshot-testing/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "soft-delete",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/soft-delete/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "spaghetti-code",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/spaghetti-code/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "spatial-partitioning",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/spatial-partitioning/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "specification",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/specification/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "sql-injection",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/sql-injection/semgrep.yaml"
+      }
+    },
+    {
+      "name": "state-machine",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/state-machine/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "strategy",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/strategy/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "stream-to-store",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/stream-to-store/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "stringly-typed",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/stringly-typed/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "structured-logging",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/structured-logging/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/structured-logging/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/structured-logging/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "low_rule_confidence"
+        ],
+        "threshold": 4,
+        "entries": [
+          {
+            "id": "structured-logging-kv",
+            "prompt": "Do log calls carry structured key-value fields or JSON formatting rather than plain text interpolation?",
+            "weight": 2,
+            "signals": [
+              "logger.bind",
+              "WithFields",
+              "pino"
+            ]
+          },
+          {
+            "id": "structured-logging-context",
+            "prompt": "Is request or correlation context propagated through log calls?",
+            "weight": 2,
+            "signals": [
+              "request_id",
+              "correlation_id"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "system"
+        ],
+        "health_signals": [
+          {
+            "name": "structured_log.error.rate",
+            "description": "Error log rate with structured context preserved for aggregation."
+          },
+          {
+            "name": "missing_log_context.rate",
+            "description": "Frequency of logs missing expected request, trace, or correlation identifiers."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "If structured context is inconsistent, downstream monitoring and incident triage quality degrades quickly."
+        ]
+      }
+    },
+    {
+      "name": "suspense-boundary",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/suspense-boundary/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "swallowed-exception",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/swallowed-exception/semgrep.yaml"
+      }
+    },
+    {
+      "name": "sync-in-async",
+      "files": {
+        "semgrep.yaml": "detectors/facts/concept-evidence/sync-in-async/semgrep.yaml"
+      }
+    },
+    {
+      "name": "template-method",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/template-method/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "tenant-isolation",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/tenant-isolation/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "tenant-routing",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/tenant-routing/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "tensor",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/tensor/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "test-doubles",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/test-doubles/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "tick-simulation",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/tick-simulation/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "timeout",
+      "files": {
+        "meta.yaml": "detectors/facts/concept-evidence/timeout/meta.yaml",
+        "signatures.yaml": "detectors/facts/concept-evidence/timeout/signatures.yaml",
+        "ast-grep.yaml": "detectors/facts/concept-evidence/timeout/ast-grep.yaml"
+      },
+      "question_count": 2,
+      "policy": {
+        "auto_confirm_allowed": true,
+        "unresolved_state": "candidate",
+        "broad_match_requires_questions": true
+      },
+      "questions": {
+        "enabled": true,
+        "ask_when": [
+          "broad_match",
+          "low_rule_confidence"
+        ],
+        "threshold": 5,
+        "entries": [
+          {
+            "id": "timeout-explicit-on-external-calls",
+            "prompt": "Are timeouts explicitly configured on real external calls rather than only in generic config?",
+            "weight": 3,
+            "signals": [
+              "timeout=",
+              "wait_for(",
+              "AbortController"
+            ]
+          },
+          {
+            "id": "timeout-distinct-handling",
+            "prompt": "Are timeout failures handled distinctly from generic errors?",
+            "weight": 2,
+            "signals": [
+              "TimeoutError",
+              "DeadlineExceeded"
+            ]
+          }
+        ]
+      },
+      "monitoring": {
+        "applies_to": [
+          "component",
+          "dependency",
+          "flow"
+        ],
+        "health_signals": [
+          {
+            "name": "timeout.rate",
+            "description": "Rate of requests, jobs, or downstream calls that terminate due to timeout."
+          },
+          {
+            "name": "timeout.cancellation.rate",
+            "description": "Frequency of successful cancellation or cleanup when a timeout occurs."
+          },
+          {
+            "name": "downstream.timeout.rate",
+            "description": "Timeout rate for specific external calls or slow internal boundaries."
+          }
+        ],
+        "business_metrics": [],
+        "gaps": [
+          "Timeout handling without timeout metrics hides latency collapse until users experience hard failures."
+        ]
+      }
+    },
+    {
+      "name": "token-auth",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/token-auth/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "train-wreck",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/train-wreck/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "training-pipeline",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/training-pipeline/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "trie",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/trie/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "unbounded-growth",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/unbounded-growth/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "unit-of-work",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/unit-of-work/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "value-object",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/value-object/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "visitor",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/visitor/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "webhook",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/webhook/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "websocket",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/websocket/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "worker-pool",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/worker-pool/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "workflow-engine",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/workflow-engine/ast-grep.yaml"
+      }
+    },
+    {
+      "name": "write-behind",
+      "files": {
+        "ast-grep.yaml": "detectors/facts/concept-evidence/write-behind/ast-grep.yaml"
+      }
+    }
+  ]
+}

@@ -142,3 +142,26 @@ test('buildPromptPlanFromProfile keeps cacheable prefix separate from task promp
   assert.match(promptPlan.dynamicPrompt, /Analyze only the auth flow/)
   assert.match(promptPlan.dynamicPrompt, /Working directory hint:/)
 })
+
+test('buildPromptPlanFromProfile renders startup guidance outside the cached prefix', () => {
+  const profile = loadAgentProfile('augur')
+  const promptPlan = buildPromptPlanFromProfile(profile, {
+    type: 'request',
+    sender: 'agent-a',
+    correlation_id: 'corr-1',
+    prompt: 'Analyze the repo',
+    agent_params: {
+      bundle_mode: 'selective',
+      startup_guidance: {
+        directive: 'Read prepared artifacts before repo exploration.',
+        starter_files: ['/tmp/blast.json', '/tmp/facts/index.json'],
+      },
+    },
+  })
+
+  assert.doesNotMatch(promptPlan.cacheablePrefix ?? '', /Startup Guidance/)
+  assert.match(promptPlan.dynamicPrompt, /## Startup Guidance/)
+  assert.match(promptPlan.dynamicPrompt, /Read prepared artifacts before repo exploration\./)
+  assert.match(promptPlan.dynamicPrompt, /\/tmp\/blast\.json/)
+  assert.match(promptPlan.dynamicPrompt, /\/tmp\/facts\/index\.json/)
+})

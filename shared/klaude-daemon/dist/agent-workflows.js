@@ -219,6 +219,29 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
 function buildAugurAnalysisContext(workingDir, project, runDir, analysisMode) {
     const analysisDir = dirname(runDir);
     const projectMem = dirname(analysisDir);
+    const factsDir = join(runDir, 'facts');
+    const blastPath = join(runDir, 'blast.json');
+    const conceptEvidencePath = join(factsDir, 'concept-evidence.json');
+    const atlasPath = join(runDir, 'atlas.json');
+    const starterFiles = [
+        blastPath,
+        join(factsDir, 'index.json'),
+        join(factsDir, 'frameworks.json'),
+        join(factsDir, 'boundaries.json'),
+        join(factsDir, 'routes.json'),
+        join(factsDir, 'dispatch-bindings.json'),
+    ];
+    const startupDirective = analysisMode === 'incremental'
+        ? [
+            'Begin with the prepared analysis artifacts, not generic repo orientation.',
+            'Read starter_files first and treat facts/index.json as the manifest for follow-up fact selection.',
+            'Preserve unchanged accepted outputs unless blast evidence forces wider revision.',
+        ].join(' ')
+        : [
+            'Begin with the prepared analysis artifacts, not generic repo orientation.',
+            'Read starter_files first and treat facts/index.json as the manifest for follow-up fact selection.',
+            'Follow the already-loaded Augur skill, mode guide, and canonical schema files instead of guessing alternate paths or formats.',
+        ].join(' ');
     return {
         project,
         mode: analysisMode,
@@ -226,10 +249,13 @@ function buildAugurAnalysisContext(workingDir, project, runDir, analysisMode) {
         run_dir: runDir,
         analysis_dir: analysisDir,
         project_mem: projectMem,
-        facts_dir: join(runDir, 'facts'),
-        blast_path: join(runDir, 'blast.json'),
-        concept_evidence_path: join(runDir, 'facts', 'concept-evidence.json'),
+        facts_dir: factsDir,
+        blast_path: blastPath,
+        concept_evidence_path: conceptEvidencePath,
+        atlas_path: atlasPath,
         latest_path: join(analysisDir, 'latest.json'),
+        starter_files: starterFiles,
+        startup_directive: startupDirective,
     };
 }
 function buildAugurValidationRepairPrompt(input) {
@@ -245,6 +271,10 @@ function buildAugurValidationRepairPrompt(input) {
         '',
         'Repair the output files now. Do not restart analysis. Keep the same project understanding and only change what is needed to pass validation.',
         `Do not call \`/validate-output\` as a shell command. If you need to validate manually inside the runtime, run \`python3 ${input.validatorScript} ${input.targetDir}\`.`,
+        'Re-read the canonical schema files and fix the output to match them exactly:',
+        '- `/app/agents/augur/schemas/atlas-schema.md`',
+        '- `/app/agents/augur/schemas/story-schema.md`',
+        '- `/app/agents/augur/schemas/narratives-schema.md`',
     ].join('\n');
 }
 function createAugurWorkflowHooks(context) {
@@ -347,6 +377,10 @@ function createAugurWorkflowHooks(context) {
                         run_dir: prepared.runDir,
                         analysis_mode: analysisMode,
                         analysis_context: analysisContext,
+                        startup_guidance: {
+                            directive: analysisContext.startup_directive,
+                            starter_files: analysisContext.starter_files,
+                        },
                     },
                 },
             };

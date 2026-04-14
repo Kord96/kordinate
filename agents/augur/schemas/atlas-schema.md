@@ -4,6 +4,17 @@ Level 3 resource for the analyze skill. Referenced from step 9 (write atlas). De
 
 Version 4 evolves from v3: typed flows replace `data_flows`, adds `bounded_contexts` to domain model, deepens `state` with schema evolution and concurrency, attaches `health` to operational entities, attaches `business_metrics` to flows, keeps `security` and `developer_experience`, and expands `module_graph` with CI/CD and IaC.
 
+## Prose Rules
+
+Apply these rules to atlas prose fields such as `purpose`, descriptions, flow text, findings, and rationale:
+
+- state facts about the system, not facts about the document
+- name concrete components, stores, protocols, and files when known
+- keep prose short and direct
+- lead with action, not setup
+- avoid vague phrasing such as "this section describes" or "there is a potential issue"
+- use one sentence when one sentence is enough
+
 ## Schema
 
 ```json

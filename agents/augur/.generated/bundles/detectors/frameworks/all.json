@@ -1,0 +1,11 @@
+{
+  "frameworks": [
+    {
+      "name": "fastapi",
+      "files": {
+        "policy.yaml": "detectors/facts/frameworks/fastapi/policy.yaml",
+        "signatures.yaml": "detectors/facts/frameworks/fastapi/signatures.yaml"
+      }
+    }
+  ]
+}
