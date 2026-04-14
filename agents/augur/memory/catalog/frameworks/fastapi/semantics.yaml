@@ -1,0 +1,20 @@
+name: fastapi
+kind: framework
+language: python
+summary: Async Python API framework with typed routing and validation
+traits:
+  api_surface: true
+  async_native: true
+  validation_native: true
+  dependency_injection_native: true
+common_concepts:
+  - rest
+  - input-validation
+  - dependency-injection
+  - repository
+  - layered
+  - hexagonal
+common_failure_modes:
+  - business-logic-in-routes
+  - mixed-sync-async
+  - leaking-persistence-models
