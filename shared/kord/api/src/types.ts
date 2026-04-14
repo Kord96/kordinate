@@ -79,6 +79,33 @@ export interface ProgressMessage {
 
 export type AgentMessage = RequestMessage | ResponseMessage | ProgressMessage
 
+export interface RequestTranscriptEvent {
+  type:
+    | 'request.accepted'
+    | 'request.routed'
+    | 'agent.started'
+    | 'agent.update'
+    | 'tool.started'
+    | 'tool.finished'
+    | 'result.partial'
+    | 'result.final'
+    | 'request.timed_out'
+    | 'request.failed'
+  at: string
+  request_id: string
+  agent?: string
+  runtime?: string | null
+  model?: string | null
+  session_id?: string | null
+  topic?: string | null
+  tool_name?: string | null
+  message?: string | null
+  status?: JobStatus | 'timed_out' | null
+  error?: string | null
+  timeout_ms?: number | null
+  agent_may_continue?: boolean | null
+}
+
 export interface AgentDiscoveryRecord {
   name: string
   capabilities: string[]

@@ -5,7 +5,9 @@ import { createServer } from 'node:http'
 import { Kafka, Partitioners } from 'kafkajs'
 import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-registry.js'
 import { log } from './log.js'
-import type { AgentMessage, ProgressMessage, RequestMessage, ResponseMessage } from './types.js'
+import type { AgentMessage, ProgressMessage, RequestMessage, RequestTranscriptEvent, ResponseMessage } from './types.js'
+import { applyFailureToRequestRecord, applyResponseToRequestRecord, createRequestRecord, type RequestRecord } from './request-model.js'
+import { buildFinalTranscriptEvent, buildTranscriptEventFromGateway, buildTranscriptEventFromProgress, coalesceTranscriptEvent, summarizeValue } from './request-transcript.js'
 
 const host = process.env.KORD_API_HOST ?? '0.0.0.0'
 const port = Number.parseInt(process.env.KORD_API_PORT ?? '9091', 10)
@@ -42,20 +44,13 @@ const pending = new Map<string, {
   resolve: (value: ResponseMessage) => void
   reject: (error: Error) => void
   timer: NodeJS.Timeout
+  timeout_ms: number
+  queue_started_at: number
+  execution_started_at?: number
 }>()
 const requestStreams = new Map<string, Set<import('node:http').ServerResponse>>()
-const requests = new Map<string, {
-  request_id: string
-  agent: string
-  status: 'pending' | 'completed' | 'error'
-  created_at: string
-  completed_at?: string
-  response?: ResponseMessage
-  error?: string
-  debug?: {
-    events: Array<Record<string, unknown>>
-  }
-}>()
+const requestTranscriptStreams = new Map<string, Set<import('node:http').ServerResponse>>()
+const requests = new Map<string, RequestRecord>()
 let ready = false
 let kubernetesNamespacePromise: Promise<string> | undefined
 let kubernetesTokenPromise: Promise<string> | undefined
@@ -452,6 +447,8 @@ function isPromptBody(value: unknown): value is {
   variant?: string
   backend_model?: string
   verbose?: boolean
+  stream?: boolean
+  debug?: boolean
 } {
   if (!value || typeof value !== 'object') return false
   const body = value as Record<string, unknown>
@@ -466,6 +463,8 @@ function isPromptBody(value: unknown): value is {
     && (body.variant === undefined || typeof body.variant === 'string')
     && (body.backend_model === undefined || typeof body.backend_model === 'string')
     && (body.verbose === undefined || typeof body.verbose === 'boolean')
+    && (body.stream === undefined || typeof body.stream === 'boolean')
+    && (body.debug === undefined || typeof body.debug === 'boolean')
 }
 
 function recordRequestEvent(requestId: string, eventRecord: Record<string, unknown>): void {
@@ -482,17 +481,40 @@ function recordRequestEvent(requestId: string, eventRecord: Record<string, unkno
   }
 }
 
+function recordTranscriptEvent(requestId: string, event: RequestTranscriptEvent): void {
+  const existing = requests.get(requestId)
+  if (!existing) return
+  const events = existing.transcript?.events ?? []
+  if (coalesceTranscriptEvent(events.at(-1), event)) return
+  const nextEvents = [...events, event].slice(-200)
+  existing.transcript = { events: nextEvents }
+  existing.last_progress_at = event.at
+  if (event.type !== 'tool.started' && event.type !== 'tool.finished') {
+    existing.last_meaningful_event = event
+  }
+  requests.set(requestId, existing)
+
+  const subscribers = requestTranscriptStreams.get(requestId)
+  if (!subscribers) return
+  for (const subscriber of subscribers) {
+    writeSseEvent(subscriber, 'transcript.event', event)
+  }
+}
+
 function pushRequestEvent(requestId: string, event: string, details: Record<string, unknown> = {}): void {
-  recordRequestEvent(requestId, {
+  const eventRecord = {
     event,
     timestamp: new Date().toISOString(),
     source: 'gateway',
     ...details,
-  })
+  }
+  recordRequestEvent(requestId, eventRecord)
+  const transcriptEvent = buildTranscriptEventFromGateway(requestId, eventRecord)
+  if (transcriptEvent) recordTranscriptEvent(requestId, transcriptEvent)
 }
 
 function recordProgressEvent(message: ProgressMessage): void {
-  recordRequestEvent(message.correlation_id, {
+  const eventRecord = {
     event: message.event.kind,
     timestamp: message.timestamp,
     source: message.event.source,
@@ -502,7 +524,11 @@ function recordProgressEvent(message: ProgressMessage): void {
     session_id: message.event.session_id ?? null,
     structured_log_path: message.event.structured_log_path ?? null,
     payload: message.event.payload ?? null,
-  })
+  }
+  recordRequestEvent(message.correlation_id, eventRecord)
+  noteRequestExecutionStarted(message.correlation_id, message.timestamp)
+  const transcriptEvent = buildTranscriptEventFromProgress(message)
+  if (transcriptEvent) recordTranscriptEvent(message.correlation_id, transcriptEvent)
 }
 
 function openRequestEventStream(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse, requestId: string): void {
@@ -540,21 +566,95 @@ function openRequestEventStream(req: import('node:http').IncomingMessage, res: i
   res.on('close', cleanup)
 }
 
+function openRequestTranscriptStream(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse, requestId: string): void {
+  const requestRecord = requests.get(requestId)
+  if (!requestRecord) {
+    json(res, 404, { error: `request '${requestId}' not found` })
+    return
+  }
+  res.writeHead(200, {
+    'content-type': 'text/event-stream',
+    'cache-control': 'no-cache, no-transform',
+    connection: 'keep-alive',
+  })
+  const subscribers = requestTranscriptStreams.get(requestId) ?? new Set<import('node:http').ServerResponse>()
+  subscribers.add(res)
+  requestTranscriptStreams.set(requestId, subscribers)
+  writeSseEvent(res, 'transcript.snapshot', {
+    request_id: requestId,
+    status: requestRecord.status,
+    created_at: requestRecord.created_at,
+    completed_at: requestRecord.completed_at ?? null,
+    events: requestRecord.transcript?.events ?? [],
+  })
+  const heartbeat = setInterval(() => {
+    res.write(': keepalive\n\n')
+  }, 15000)
+  const cleanup = () => {
+    clearInterval(heartbeat)
+    const current = requestTranscriptStreams.get(requestId)
+    if (!current) return
+    current.delete(res)
+    if (current.size === 0) requestTranscriptStreams.delete(requestId)
+  }
+  req.on('close', cleanup)
+  res.on('close', cleanup)
+}
+
+function buildPendingTimeoutError(correlationId: string): Error {
+  return new Error(`timed out waiting for ${correlationId}`)
+}
+
+function armPendingTimer(waiter: {
+  agent: string
+  resolve: (value: ResponseMessage) => void
+  reject: (error: Error) => void
+  timer: NodeJS.Timeout
+  timeout_ms: number
+  queue_started_at: number
+  execution_started_at?: number
+}, correlationId: string, timeoutMs: number): void {
+  waiter.timer = setTimeout(() => {
+    pending.delete(correlationId)
+    log('prompt_timeout', {
+      agent: waiter.agent,
+      correlation_id: correlationId,
+      timeout_ms: timeoutMs,
+      phase: waiter.execution_started_at ? 'execution' : 'queue',
+    })
+    pushRequestEvent(correlationId, 'prompt_timeout', {
+      timeout_ms: timeoutMs,
+      phase: waiter.execution_started_at ? 'execution' : 'queue',
+    })
+    waiter.reject(buildPendingTimeoutError(correlationId))
+  }, timeoutMs)
+}
+
+function noteRequestExecutionStarted(correlationId: string, startedAt?: string): void {
+  const waiter = pending.get(correlationId)
+  if (!waiter || waiter.execution_started_at) return
+  clearTimeout(waiter.timer)
+  waiter.execution_started_at = startedAt ? Date.parse(startedAt) || Date.now() : Date.now()
+  armPendingTimer(waiter, correlationId, waiter.timeout_ms)
+  pushRequestEvent(correlationId, 'request_picked_up', {
+    queue_ms: Math.max(0, waiter.execution_started_at - waiter.queue_started_at),
+  })
+}
+
 function deferReply(correlationId: string, agent: string, timeoutMs: number): Promise<ResponseMessage> {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      pending.delete(correlationId)
-      log('prompt_timeout', {
-        agent,
-        correlation_id: correlationId,
-        timeout_ms: timeoutMs,
-      })
-      pushRequestEvent(correlationId, 'prompt_timeout', {
-        timeout_ms: timeoutMs,
-      })
-      reject(new Error(`timed out waiting for ${correlationId}`))
-    }, timeoutMs)
-    pending.set(correlationId, { agent, resolve, reject, timer })
+    const waiter = {
+      agent,
+      resolve,
+      reject,
+      timer: setTimeout(() => undefined, 0),
+      timeout_ms: timeoutMs,
+      queue_started_at: Date.now(),
+      execution_started_at: undefined as number | undefined,
+    }
+    clearTimeout(waiter.timer)
+    armPendingTimer(waiter, correlationId, timeoutMs)
+    pending.set(correlationId, waiter)
   })
 }
 
@@ -613,17 +713,14 @@ function completeRequest(requestId: string, response: ResponseMessage): void {
     correlation_id: response.correlation_id,
     status: response.status,
   })
-  requests.set(requestId, {
-    ...existing,
-    status: response.status === 'error' ? 'error' : 'completed',
-    completed_at: new Date().toISOString(),
-    response,
-    error: response.status === 'error' ? response.output : undefined,
-  })
+  const alreadyTimedOut = existing.status === 'timed_out'
+  const nextRecord = applyResponseToRequestRecord(existing, response, new Date().toISOString())
+  requests.set(requestId, nextRecord)
   pushRequestEvent(requestId, 'request_complete', {
     correlation_id: response.correlation_id,
     status: response.status,
   })
+  recordTranscriptEvent(requestId, buildFinalTranscriptEvent(requestId, existing.agent, alreadyTimedOut ? 'timed_out' : response.status, response.output))
 }
 
 const server = createServer(async (req, res) => {
@@ -765,6 +862,27 @@ const server = createServer(async (req, res) => {
         })
         return
       }
+      const streamSuffix = '/stream'
+      if (requestPath.endsWith(streamSuffix)) {
+        const requestId = decodeURIComponent(requestPath.slice(0, -streamSuffix.length))
+        const requestRecord = requests.get(requestId)
+        if (!requestRecord) {
+          json(res, 404, { error: `request '${requestId}' not found` })
+          return
+        }
+        if (url.searchParams.get('follow') === '1') {
+          openRequestTranscriptStream(req, res, requestId)
+          return
+        }
+        json(res, 200, {
+          request_id: requestId,
+          status: requestRecord.status,
+          created_at: requestRecord.created_at,
+          completed_at: requestRecord.completed_at ?? null,
+          events: requestRecord.transcript?.events ?? [],
+        })
+        return
+      }
       const requestId = decodeURIComponent(requestPath)
       const verbose = url.searchParams.get('verbose') === '1'
       const requestRecord = requests.get(requestId)
@@ -772,12 +890,33 @@ const server = createServer(async (req, res) => {
         json(res, 404, { error: `request '${requestId}' not found` })
         return
       }
+      const summary = {
+        request_id: requestRecord.request_id,
+        agent: requestRecord.agent,
+        status: requestRecord.status,
+        created_at: requestRecord.created_at,
+        completed_at: requestRecord.completed_at ?? null,
+        timeout_ms: requestRecord.timeout_ms ?? null,
+        timed_out_at: requestRecord.timed_out_at ?? null,
+        late_reply_received: requestRecord.late_reply_received ?? false,
+        last_progress_at: requestRecord.last_progress_at ?? null,
+        last_meaningful_event: requestRecord.last_meaningful_event ?? null,
+        final_output_preview: summarizeValue(requestRecord.response?.output ?? requestRecord.late_response?.output, 400) ?? null,
+        stream_url: `/requests/${requestId}/stream`,
+        events_url: `/requests/${requestId}/events`,
+      }
       if (!verbose) {
-        const { debug: _debug, ...rest } = requestRecord
-        json(res, 200, rest)
+        json(res, 200, summary)
         return
       }
-      json(res, 200, requestRecord)
+      json(res, 200, {
+        ...summary,
+        response: requestRecord.response ?? null,
+        late_response: requestRecord.late_response ?? null,
+        error: requestRecord.error ?? null,
+        debug: requestRecord.debug,
+        transcript: requestRecord.transcript ?? { events: [] },
+      })
       return
     }
 
@@ -818,13 +957,12 @@ const server = createServer(async (req, res) => {
         has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
         session_id: body.session_id ?? null,
       })
-      requests.set(requestId, {
+      requests.set(requestId, createRequestRecord({
         request_id: requestId,
         agent: record.name,
-        status: 'pending',
         created_at: new Date(startedAt).toISOString(),
-        debug: { events: [] },
-      })
+        timeout_ms: resolveTimeoutMs(record.name, body),
+      }))
       pushRequestEvent(requestId, 'request_received', {
         requested_agent: name,
         resolved_agent: record.name,
@@ -850,14 +988,16 @@ const server = createServer(async (req, res) => {
             })
             const existing = requests.get(requestId)
             if (!existing) return
-            requests.set(requestId, {
-              ...existing,
-              status: 'error',
+            const message = error instanceof Error ? error.message : String(error)
+            const isTimeout = message.includes('timed out waiting for')
+            requests.set(requestId, applyFailureToRequestRecord(existing, {
+              message,
               completed_at: new Date().toISOString(),
-              error: error instanceof Error ? error.message : String(error),
-            })
-            pushRequestEvent(requestId, 'request_error', {
-              error: error instanceof Error ? error.message : String(error),
+              is_timeout: isTimeout,
+            }))
+            pushRequestEvent(requestId, isTimeout ? 'prompt_timeout' : 'request_error', {
+              ...(isTimeout ? { timeout_ms: existing.timeout_ms ?? null } : {}),
+              error: message,
             })
           },
         )
@@ -869,6 +1009,8 @@ const server = createServer(async (req, res) => {
           status_url: `/requests/${requestId}`,
           events_url: `/requests/${requestId}/events`,
           events_stream_url: `/requests/${requestId}/events?follow=1`,
+          stream_url: `/requests/${requestId}/stream`,
+          stream_follow_url: `/requests/${requestId}/stream?follow=1`,
         }
         if (body.verbose) payload.debug = requests.get(requestId)?.debug
         json(res, 202, payload)
@@ -895,39 +1037,56 @@ const server = createServer(async (req, res) => {
         const enrichedReply = { ...syncReply, metadata }
         completeRequest(requestId, enrichedReply)
         const payload: Record<string, unknown> = { ...enrichedReply }
-        if (body.verbose) {
+        if (body.verbose || body.stream || body.debug) {
           payload.request_id = requestId
+          payload.stream_url = `/requests/${requestId}/stream`
+          payload.stream_follow_url = `/requests/${requestId}/stream?follow=1`
+          payload.status_url = `/requests/${requestId}`
           payload.debug = requests.get(requestId)?.debug
+          payload.transcript = requests.get(requestId)?.transcript
         }
         json(res, 200, payload)
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
+        const isTimeout = message.includes('timed out waiting for')
         const response: ResponseMessage = {
           type: 'response',
           sender: record.name,
           correlation_id: requestId,
-          status: 'error',
+          status: isTimeout ? 'timeout' : 'error',
           output: message,
           errors: [message],
         }
         const existing = requests.get(requestId)
-        requests.set(requestId, {
+        const baseRecord = existing ?? createRequestRecord({
           request_id: requestId,
           agent: record.name,
-          status: 'error',
-          created_at: existing?.created_at ?? new Date(startedAt).toISOString(),
-          completed_at: new Date().toISOString(),
-          response,
-          error: message,
-          debug: existing?.debug,
+          created_at: new Date(startedAt).toISOString(),
+          timeout_ms: resolveTimeoutMs(record.name, body),
         })
-        pushRequestEvent(requestId, 'request_error', { error: message })
+        const failedRecord = applyFailureToRequestRecord(baseRecord, {
+          message,
+          completed_at: new Date().toISOString(),
+          is_timeout: isTimeout,
+        })
+        requests.set(requestId, {
+          ...failedRecord,
+          response,
+        })
+        pushRequestEvent(requestId, isTimeout ? 'prompt_timeout' : 'request_error', {
+          ...(isTimeout ? { timeout_ms: existing?.timeout_ms ?? resolveTimeoutMs(record.name, body) } : {}),
+          error: message,
+        })
         const payload: Record<string, unknown> = { ...response }
-        if (body.verbose) {
+        if (body.verbose || body.stream || body.debug) {
           payload.request_id = requestId
+          payload.stream_url = `/requests/${requestId}/stream`
+          payload.stream_follow_url = `/requests/${requestId}/stream?follow=1`
+          payload.status_url = `/requests/${requestId}`
           payload.debug = requests.get(requestId)?.debug
+          payload.transcript = requests.get(requestId)?.transcript
         }
-        json(res, 504, payload)
+        json(res, isTimeout ? 504 : 500, payload)
       }
       return
     }

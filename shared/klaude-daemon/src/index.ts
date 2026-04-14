@@ -796,75 +796,115 @@ async function main(): Promise<void> {
   startDiscoveryHeartbeat(discoveryRecord)
 
   await consumer.run({
-    eachMessage: async ({ topic, message }) => {
-      const raw = message.value?.toString() ?? ''
-      let parsed: unknown
-      try {
-        parsed = JSON.parse(raw)
-      } catch (error) {
-        log('message_parse_failed', { topic, error: (error as Error).message })
-        return
-      }
+    eachBatchAutoResolve: false,
+    eachBatch: async ({ batch, resolveOffset, heartbeat, commitOffsetsIfNecessary, isRunning, isStale }) => {
+      for (const message of batch.messages) {
+        if (!isRunning() || isStale()) break
 
-      if (!isRequestMessage(parsed)) {
-        log('message_ignored', { topic, reason: 'not_request' })
-        return
-      }
+        const raw = message.value?.toString() ?? ''
+        let parsed: unknown
+        try {
+          parsed = JSON.parse(raw)
+        } catch (error) {
+          log('message_parse_failed', { topic: batch.topic, error: (error as Error).message })
+          resolveOffset(message.offset)
+          await commitOffsetsIfNecessary()
+          await heartbeat()
+          continue
+        }
 
-      if (hasCompletedRequest(parsed.correlation_id)) {
-        log('message_ignored', {
-          topic,
-          reason: 'duplicate_completed_request',
-          correlation_id: parsed.correlation_id,
-        })
-        return
-      }
+        if (!isRequestMessage(parsed)) {
+          log('message_ignored', { topic: batch.topic, reason: 'not_request' })
+          resolveOffset(message.offset)
+          await commitOffsetsIfNecessary()
+          await heartbeat()
+          continue
+        }
 
-      log('request_received', {
-        topic,
-        sender: parsed.sender,
-        correlation_id: parsed.correlation_id,
-        working_dir: parsed.working_dir ?? null,
-        session_id: parsed.session_id ?? null,
-        has_working_dir: Boolean(parsed.working_dir),
-      })
+        if (hasCompletedRequest(parsed.correlation_id)) {
+          log('message_ignored', {
+            topic: batch.topic,
+            reason: 'duplicate_completed_request',
+            correlation_id: parsed.correlation_id,
+          })
+          resolveOffset(message.offset)
+          await commitOffsetsIfNecessary()
+          await heartbeat()
+          continue
+        }
 
-      try {
-        const summary = await handleRequest(parsed)
-        log('request_handled', {
-          topic,
-          sender: parsed.sender,
-          correlation_id: parsed.correlation_id,
-          status: summary.status,
-          errors: summary.errors,
-        })
-      } catch (error) {
-        const messageText = (error as Error).message
-        log('request_failed', {
-          topic,
-          sender: parsed.sender,
-          correlation_id: parsed.correlation_id,
-          error: messageText,
-        })
-        await publishResponse(parsed, {
-          status: 'error',
-          output: messageText,
-          errors: [messageText],
-          metadata: {
-            timing: {
-              received_at: nowIso(),
-              started_at: nowIso(),
-              completed_at: nowIso(),
-              total_ms: 0,
-              session_prepare_ms: 0,
-              execute_prompt_ms: 0,
-              persist_sessions_ms: 0,
-              publish_response_ms: 0,
-            },
+        await publishProgress(parsed, {
+          source: 'agent-daemon',
+          kind: 'request.picked_up',
+          payload: {
+            topic: batch.topic,
+            partition: batch.partition,
+            offset: message.offset,
           },
         })
-        markCompletedRequest(parsed.correlation_id, 'error')
-        await persistCompletedRequests()
+
+        log('request_received', {
+          topic: batch.topic,
+          sender: parsed.sender,
+          correlation_id: parsed.correlation_id,
+          working_dir: parsed.working_dir ?? null,
+          session_id: parsed.session_id ?? null,
+          has_working_dir: Boolean(parsed.working_dir),
+        })
+
+        const heartbeatTimer = setInterval(() => {
+          void heartbeat().catch(error => {
+            log('consumer_heartbeat_failed', {
+              topic: batch.topic,
+              correlation_id: parsed.correlation_id,
+              error: error instanceof Error ? error.message : String(error),
+            })
+          })
+        }, Math.max(1000, Math.floor(daemonConfig.kafkaHeartbeatIntervalMs / 2)))
+
+        try {
+          const summary = await handleRequest(parsed)
+          log('request_handled', {
+            topic: batch.topic,
+            sender: parsed.sender,
+            correlation_id: parsed.correlation_id,
+            status: summary.status,
+            errors: summary.errors,
+          })
+        } catch (error) {
+          const messageText = (error as Error).message
+          log('request_failed', {
+            topic: batch.topic,
+            sender: parsed.sender,
+            correlation_id: parsed.correlation_id,
+            error: messageText,
+          })
+          await publishResponse(parsed, {
+            status: 'error',
+            output: messageText,
+            errors: [messageText],
+            metadata: {
+              timing: {
+                received_at: nowIso(),
+                started_at: nowIso(),
+                completed_at: nowIso(),
+                total_ms: 0,
+                session_prepare_ms: 0,
+                execute_prompt_ms: 0,
+                persist_sessions_ms: 0,
+                publish_response_ms: 0,
+              },
+            },
+          })
+          markCompletedRequest(parsed.correlation_id, 'error')
+          await persistCompletedRequests()
+        } finally {
+          clearInterval(heartbeatTimer)
+        }
+
+        resolveOffset(message.offset)
+        await commitOffsetsIfNecessary()
+        await heartbeat()
       }
     },
   })

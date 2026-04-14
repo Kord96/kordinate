@@ -125,7 +125,7 @@ server.registerTool(
   'delegate',
   {
     title: 'Delegate',
-    description: 'Send a task to a logical agent or explicit variant through kord.',
+    description: 'Send a task to a logical agent or explicit variant through kord. Prefer this tool for normal use.',
     inputSchema: {
       agent: z.string().min(1),
       prompt: z.string().min(1),
@@ -137,10 +137,12 @@ server.registerTool(
       variant: z.string().optional(),
       backend_model: z.string().optional(),
       async: z.boolean().optional(),
+      stream: z.boolean().optional(),
+      debug: z.boolean().optional(),
       verbose: z.boolean().optional(),
     },
   },
-  async ({ agent, prompt, working_dir, timeout_ms, reflect, reflection_prompt, session_id, variant, backend_model, async = false, verbose = false }) => {
+  async ({ agent, prompt, working_dir, timeout_ms, reflect, reflection_prompt, session_id, variant, backend_model, async = false, stream = false, debug = false, verbose = false }) => {
     try {
       const body: Json = { prompt, async }
       if (working_dir) body.working_dir = working_dir
@@ -150,8 +152,34 @@ server.registerTool(
       if (session_id) body.session_id = session_id
       if (variant) body.variant = variant
       if (backend_model) body.backend_model = backend_model
+      if (stream) body.stream = true
+      if (debug) body.debug = true
       if (verbose) body.verbose = true
       const payload = await postJson(`/agents/${encodeURIComponent(agent)}/prompt`, body)
+      return textResult(payload)
+    } catch (error) {
+      return textResult({ error: error instanceof Error ? error.message : String(error) }, true)
+    }
+  },
+)
+
+server.registerTool(
+  'resume_request',
+  {
+    title: 'Resume Request',
+    description: 'Resume or inspect a prior kord request through its normalized request summary or transcript.',
+    inputSchema: {
+      request_id: z.string().min(1),
+      stream: z.boolean().optional().default(false),
+      verbose: z.boolean().optional().default(false),
+    },
+  },
+  async ({ request_id, stream = false, verbose = false }) => {
+    try {
+      const path = stream
+        ? `/requests/${encodeURIComponent(request_id)}/stream`
+        : withQuery(`/requests/${encodeURIComponent(request_id)}`, { verbose })
+      const payload = await getJson(path)
       return textResult(payload)
     } catch (error) {
       return textResult({ error: error instanceof Error ? error.message : String(error) }, true)
@@ -163,7 +191,7 @@ server.registerTool(
   'get_e2e_logs',
   {
     title: 'Get E2E Logs',
-    description: 'Fetch recent end-to-end request logs for an agent through kord, optionally filtered to one request and optionally including the seeded bundles.',
+    description: 'Debug-only: fetch recent end-to-end request logs for an agent through kord.',
     inputSchema: {
       agent: z.string().min(1),
       variant: z.string().optional(),
@@ -198,7 +226,7 @@ server.registerTool(
   'get_request',
   {
     title: 'Get Request',
-    description: 'Fetch the current status of one async kord request.',
+    description: 'Fetch the current summary status of one kord request. Prefer `resume_request` for normal use.',
     inputSchema: {
       request_id: z.string().min(1),
       verbose: z.boolean().optional(),
@@ -218,7 +246,7 @@ server.registerTool(
   'get_request_events',
   {
     title: 'Get Request Events',
-    description: 'Fetch the unified E2E event timeline for one kord request. Use follow=1 on the HTTP endpoint directly for SSE streaming.',
+    description: 'Debug-only: fetch the raw unified E2E event timeline for one kord request.',
     inputSchema: {
       request_id: z.string().min(1),
     },

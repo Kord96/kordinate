@@ -5,6 +5,8 @@ import { createServer } from 'node:http';
 import { Kafka, Partitioners } from 'kafkajs';
 import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-registry.js';
 import { log } from './log.js';
+import { applyFailureToRequestRecord, applyResponseToRequestRecord, createRequestRecord } from './request-model.js';
+import { buildFinalTranscriptEvent, buildTranscriptEventFromGateway, buildTranscriptEventFromProgress, coalesceTranscriptEvent, summarizeValue } from './request-transcript.js';
 const host = process.env.KORD_API_HOST ?? '0.0.0.0';
 const port = Number.parseInt(process.env.KORD_API_PORT ?? '9091', 10);
 const statePath = process.env.DISCOVERY_STATE_PATH ?? '.daemon-state/discovery-agents.json';
@@ -34,6 +36,7 @@ const producer = kafka.producer({ createPartitioner: Partitioners.LegacyPartitio
 const consumer = kafka.consumer({ groupId: 'kord-api' });
 const pending = new Map();
 const requestStreams = new Map();
+const requestTranscriptStreams = new Map();
 const requests = new Map();
 let ready = false;
 let kubernetesNamespacePromise;
@@ -392,7 +395,9 @@ function isPromptBody(value) {
         && (body.async === undefined || typeof body.async === 'boolean')
         && (body.variant === undefined || typeof body.variant === 'string')
         && (body.backend_model === undefined || typeof body.backend_model === 'string')
-        && (body.verbose === undefined || typeof body.verbose === 'boolean');
+        && (body.verbose === undefined || typeof body.verbose === 'boolean')
+        && (body.stream === undefined || typeof body.stream === 'boolean')
+        && (body.debug === undefined || typeof body.debug === 'boolean');
 }
 function recordRequestEvent(requestId, eventRecord) {
     const existing = requests.get(requestId);
@@ -409,16 +414,41 @@ function recordRequestEvent(requestId, eventRecord) {
         writeSseEvent(subscriber, 'request.event', eventRecord);
     }
 }
+function recordTranscriptEvent(requestId, event) {
+    const existing = requests.get(requestId);
+    if (!existing)
+        return;
+    const events = existing.transcript?.events ?? [];
+    if (coalesceTranscriptEvent(events.at(-1), event))
+        return;
+    const nextEvents = [...events, event].slice(-200);
+    existing.transcript = { events: nextEvents };
+    existing.last_progress_at = event.at;
+    if (event.type !== 'tool.started' && event.type !== 'tool.finished') {
+        existing.last_meaningful_event = event;
+    }
+    requests.set(requestId, existing);
+    const subscribers = requestTranscriptStreams.get(requestId);
+    if (!subscribers)
+        return;
+    for (const subscriber of subscribers) {
+        writeSseEvent(subscriber, 'transcript.event', event);
+    }
+}
 function pushRequestEvent(requestId, event, details = {}) {
-    recordRequestEvent(requestId, {
+    const eventRecord = {
         event,
         timestamp: new Date().toISOString(),
         source: 'gateway',
         ...details,
-    });
+    };
+    recordRequestEvent(requestId, eventRecord);
+    const transcriptEvent = buildTranscriptEventFromGateway(requestId, eventRecord);
+    if (transcriptEvent)
+        recordTranscriptEvent(requestId, transcriptEvent);
 }
 function recordProgressEvent(message) {
-    recordRequestEvent(message.correlation_id, {
+    const eventRecord = {
         event: message.event.kind,
         timestamp: message.timestamp,
         source: message.event.source,
@@ -428,7 +458,12 @@ function recordProgressEvent(message) {
         session_id: message.event.session_id ?? null,
         structured_log_path: message.event.structured_log_path ?? null,
         payload: message.event.payload ?? null,
-    });
+    };
+    recordRequestEvent(message.correlation_id, eventRecord);
+    noteRequestExecutionStarted(message.correlation_id, message.timestamp);
+    const transcriptEvent = buildTranscriptEventFromProgress(message);
+    if (transcriptEvent)
+        recordTranscriptEvent(message.correlation_id, transcriptEvent);
 }
 function openRequestEventStream(req, res, requestId) {
     const requestRecord = requests.get(requestId);
@@ -466,21 +501,86 @@ function openRequestEventStream(req, res, requestId) {
     req.on('close', cleanup);
     res.on('close', cleanup);
 }
+function openRequestTranscriptStream(req, res, requestId) {
+    const requestRecord = requests.get(requestId);
+    if (!requestRecord) {
+        json(res, 404, { error: `request '${requestId}' not found` });
+        return;
+    }
+    res.writeHead(200, {
+        'content-type': 'text/event-stream',
+        'cache-control': 'no-cache, no-transform',
+        connection: 'keep-alive',
+    });
+    const subscribers = requestTranscriptStreams.get(requestId) ?? new Set();
+    subscribers.add(res);
+    requestTranscriptStreams.set(requestId, subscribers);
+    writeSseEvent(res, 'transcript.snapshot', {
+        request_id: requestId,
+        status: requestRecord.status,
+        created_at: requestRecord.created_at,
+        completed_at: requestRecord.completed_at ?? null,
+        events: requestRecord.transcript?.events ?? [],
+    });
+    const heartbeat = setInterval(() => {
+        res.write(': keepalive\n\n');
+    }, 15000);
+    const cleanup = () => {
+        clearInterval(heartbeat);
+        const current = requestTranscriptStreams.get(requestId);
+        if (!current)
+            return;
+        current.delete(res);
+        if (current.size === 0)
+            requestTranscriptStreams.delete(requestId);
+    };
+    req.on('close', cleanup);
+    res.on('close', cleanup);
+}
+function buildPendingTimeoutError(correlationId) {
+    return new Error(`timed out waiting for ${correlationId}`);
+}
+function armPendingTimer(waiter, correlationId, timeoutMs) {
+    waiter.timer = setTimeout(() => {
+        pending.delete(correlationId);
+        log('prompt_timeout', {
+            agent: waiter.agent,
+            correlation_id: correlationId,
+            timeout_ms: timeoutMs,
+            phase: waiter.execution_started_at ? 'execution' : 'queue',
+        });
+        pushRequestEvent(correlationId, 'prompt_timeout', {
+            timeout_ms: timeoutMs,
+            phase: waiter.execution_started_at ? 'execution' : 'queue',
+        });
+        waiter.reject(buildPendingTimeoutError(correlationId));
+    }, timeoutMs);
+}
+function noteRequestExecutionStarted(correlationId, startedAt) {
+    const waiter = pending.get(correlationId);
+    if (!waiter || waiter.execution_started_at)
+        return;
+    clearTimeout(waiter.timer);
+    waiter.execution_started_at = startedAt ? Date.parse(startedAt) || Date.now() : Date.now();
+    armPendingTimer(waiter, correlationId, waiter.timeout_ms);
+    pushRequestEvent(correlationId, 'request_picked_up', {
+        queue_ms: Math.max(0, waiter.execution_started_at - waiter.queue_started_at),
+    });
+}
 function deferReply(correlationId, agent, timeoutMs) {
     return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-            pending.delete(correlationId);
-            log('prompt_timeout', {
-                agent,
-                correlation_id: correlationId,
-                timeout_ms: timeoutMs,
-            });
-            pushRequestEvent(correlationId, 'prompt_timeout', {
-                timeout_ms: timeoutMs,
-            });
-            reject(new Error(`timed out waiting for ${correlationId}`));
-        }, timeoutMs);
-        pending.set(correlationId, { agent, resolve, reject, timer });
+        const waiter = {
+            agent,
+            resolve,
+            reject,
+            timer: setTimeout(() => undefined, 0),
+            timeout_ms: timeoutMs,
+            queue_started_at: Date.now(),
+            execution_started_at: undefined,
+        };
+        clearTimeout(waiter.timer);
+        armPendingTimer(waiter, correlationId, timeoutMs);
+        pending.set(correlationId, waiter);
     });
 }
 async function sendPrompt(agent, body, requestId) {
@@ -530,17 +630,14 @@ function completeRequest(requestId, response) {
         correlation_id: response.correlation_id,
         status: response.status,
     });
-    requests.set(requestId, {
-        ...existing,
-        status: response.status === 'error' ? 'error' : 'completed',
-        completed_at: new Date().toISOString(),
-        response,
-        error: response.status === 'error' ? response.output : undefined,
-    });
+    const alreadyTimedOut = existing.status === 'timed_out';
+    const nextRecord = applyResponseToRequestRecord(existing, response, new Date().toISOString());
+    requests.set(requestId, nextRecord);
     pushRequestEvent(requestId, 'request_complete', {
         correlation_id: response.correlation_id,
         status: response.status,
     });
+    recordTranscriptEvent(requestId, buildFinalTranscriptEvent(requestId, existing.agent, alreadyTimedOut ? 'timed_out' : response.status, response.output));
 }
 const server = createServer(async (req, res) => {
     try {
@@ -673,6 +770,27 @@ const server = createServer(async (req, res) => {
                 });
                 return;
             }
+            const streamSuffix = '/stream';
+            if (requestPath.endsWith(streamSuffix)) {
+                const requestId = decodeURIComponent(requestPath.slice(0, -streamSuffix.length));
+                const requestRecord = requests.get(requestId);
+                if (!requestRecord) {
+                    json(res, 404, { error: `request '${requestId}' not found` });
+                    return;
+                }
+                if (url.searchParams.get('follow') === '1') {
+                    openRequestTranscriptStream(req, res, requestId);
+                    return;
+                }
+                json(res, 200, {
+                    request_id: requestId,
+                    status: requestRecord.status,
+                    created_at: requestRecord.created_at,
+                    completed_at: requestRecord.completed_at ?? null,
+                    events: requestRecord.transcript?.events ?? [],
+                });
+                return;
+            }
             const requestId = decodeURIComponent(requestPath);
             const verbose = url.searchParams.get('verbose') === '1';
             const requestRecord = requests.get(requestId);
@@ -680,12 +798,33 @@ const server = createServer(async (req, res) => {
                 json(res, 404, { error: `request '${requestId}' not found` });
                 return;
             }
+            const summary = {
+                request_id: requestRecord.request_id,
+                agent: requestRecord.agent,
+                status: requestRecord.status,
+                created_at: requestRecord.created_at,
+                completed_at: requestRecord.completed_at ?? null,
+                timeout_ms: requestRecord.timeout_ms ?? null,
+                timed_out_at: requestRecord.timed_out_at ?? null,
+                late_reply_received: requestRecord.late_reply_received ?? false,
+                last_progress_at: requestRecord.last_progress_at ?? null,
+                last_meaningful_event: requestRecord.last_meaningful_event ?? null,
+                final_output_preview: summarizeValue(requestRecord.response?.output ?? requestRecord.late_response?.output, 400) ?? null,
+                stream_url: `/requests/${requestId}/stream`,
+                events_url: `/requests/${requestId}/events`,
+            };
             if (!verbose) {
-                const { debug: _debug, ...rest } = requestRecord;
-                json(res, 200, rest);
+                json(res, 200, summary);
                 return;
             }
-            json(res, 200, requestRecord);
+            json(res, 200, {
+                ...summary,
+                response: requestRecord.response ?? null,
+                late_response: requestRecord.late_response ?? null,
+                error: requestRecord.error ?? null,
+                debug: requestRecord.debug,
+                transcript: requestRecord.transcript ?? { events: [] },
+            });
             return;
         }
         if (req.method === 'POST' && url.pathname.startsWith('/agents/')) {
@@ -725,13 +864,12 @@ const server = createServer(async (req, res) => {
                 has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
                 session_id: body.session_id ?? null,
             });
-            requests.set(requestId, {
+            requests.set(requestId, createRequestRecord({
                 request_id: requestId,
                 agent: record.name,
-                status: 'pending',
                 created_at: new Date(startedAt).toISOString(),
-                debug: { events: [] },
-            });
+                timeout_ms: resolveTimeoutMs(record.name, body),
+            }));
             pushRequestEvent(requestId, 'request_received', {
                 requested_agent: name,
                 resolved_agent: record.name,
@@ -756,14 +894,16 @@ const server = createServer(async (req, res) => {
                     const existing = requests.get(requestId);
                     if (!existing)
                         return;
-                    requests.set(requestId, {
-                        ...existing,
-                        status: 'error',
+                    const message = error instanceof Error ? error.message : String(error);
+                    const isTimeout = message.includes('timed out waiting for');
+                    requests.set(requestId, applyFailureToRequestRecord(existing, {
+                        message,
                         completed_at: new Date().toISOString(),
-                        error: error instanceof Error ? error.message : String(error),
-                    });
-                    pushRequestEvent(requestId, 'request_error', {
-                        error: error instanceof Error ? error.message : String(error),
+                        is_timeout: isTimeout,
+                    }));
+                    pushRequestEvent(requestId, isTimeout ? 'prompt_timeout' : 'request_error', {
+                        ...(isTimeout ? { timeout_ms: existing.timeout_ms ?? null } : {}),
+                        error: message,
                     });
                 });
                 const payload = {
@@ -774,6 +914,8 @@ const server = createServer(async (req, res) => {
                     status_url: `/requests/${requestId}`,
                     events_url: `/requests/${requestId}/events`,
                     events_stream_url: `/requests/${requestId}/events?follow=1`,
+                    stream_url: `/requests/${requestId}/stream`,
+                    stream_follow_url: `/requests/${requestId}/stream?follow=1`,
                 };
                 if (body.verbose)
                     payload.debug = requests.get(requestId)?.debug;
@@ -801,40 +943,57 @@ const server = createServer(async (req, res) => {
                 const enrichedReply = { ...syncReply, metadata };
                 completeRequest(requestId, enrichedReply);
                 const payload = { ...enrichedReply };
-                if (body.verbose) {
+                if (body.verbose || body.stream || body.debug) {
                     payload.request_id = requestId;
+                    payload.stream_url = `/requests/${requestId}/stream`;
+                    payload.stream_follow_url = `/requests/${requestId}/stream?follow=1`;
+                    payload.status_url = `/requests/${requestId}`;
                     payload.debug = requests.get(requestId)?.debug;
+                    payload.transcript = requests.get(requestId)?.transcript;
                 }
                 json(res, 200, payload);
             }
             catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
+                const isTimeout = message.includes('timed out waiting for');
                 const response = {
                     type: 'response',
                     sender: record.name,
                     correlation_id: requestId,
-                    status: 'error',
+                    status: isTimeout ? 'timeout' : 'error',
                     output: message,
                     errors: [message],
                 };
                 const existing = requests.get(requestId);
-                requests.set(requestId, {
+                const baseRecord = existing ?? createRequestRecord({
                     request_id: requestId,
                     agent: record.name,
-                    status: 'error',
-                    created_at: existing?.created_at ?? new Date(startedAt).toISOString(),
-                    completed_at: new Date().toISOString(),
-                    response,
-                    error: message,
-                    debug: existing?.debug,
+                    created_at: new Date(startedAt).toISOString(),
+                    timeout_ms: resolveTimeoutMs(record.name, body),
                 });
-                pushRequestEvent(requestId, 'request_error', { error: message });
+                const failedRecord = applyFailureToRequestRecord(baseRecord, {
+                    message,
+                    completed_at: new Date().toISOString(),
+                    is_timeout: isTimeout,
+                });
+                requests.set(requestId, {
+                    ...failedRecord,
+                    response,
+                });
+                pushRequestEvent(requestId, isTimeout ? 'prompt_timeout' : 'request_error', {
+                    ...(isTimeout ? { timeout_ms: existing?.timeout_ms ?? resolveTimeoutMs(record.name, body) } : {}),
+                    error: message,
+                });
                 const payload = { ...response };
-                if (body.verbose) {
+                if (body.verbose || body.stream || body.debug) {
                     payload.request_id = requestId;
+                    payload.stream_url = `/requests/${requestId}/stream`;
+                    payload.stream_follow_url = `/requests/${requestId}/stream?follow=1`;
+                    payload.status_url = `/requests/${requestId}`;
                     payload.debug = requests.get(requestId)?.debug;
+                    payload.transcript = requests.get(requestId)?.transcript;
                 }
-                json(res, 504, payload);
+                json(res, isTimeout ? 504 : 500, payload);
             }
             return;
         }
