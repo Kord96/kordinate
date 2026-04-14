@@ -4,6 +4,10 @@ type: pattern
 testable: true
 graphable: true
 abstraction: [architectural, frontend]
+status: specialized
+scope: frontend
+relationships:
+  related_to: [layered, component]
 ---
 # Model-View-Controller
 
@@ -28,6 +32,13 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for strict separation between data (model), presentation (view), and input handling (controller).
+
+### Relationship To Other Concepts
+
+- `mvc` is an application coordination pattern, not a statement about deployment style.
+- It often appears inside a `layered` application.
+- In component-based frontends, MVC may be absent or only partially visible.
+- Prefer `component` when the code is primarily organized as a UI component tree rather than controller/view classes.
 
 ### Review Checklist
 

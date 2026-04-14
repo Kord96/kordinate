@@ -15,7 +15,8 @@ def ignorable(value: String): Boolean = {
   normalized == ":program"
 }
 
-@main def exec() = {
+@main def exec(cpgFile: String) = {
+  importCpg(cpgFile)
   cpg.method.l.foreach { method =>
     val ownerFile = method.file.name.headOption.getOrElse("")
     val calls = method.callOut.l

@@ -1,12 +1,17 @@
 # Augur Output Contract
 
-What augur produces and what downstream consumers (scribe, improve loop) can depend on.
+Stable interface for accepted Augur analysis outputs.
 
-This document is the stable interface. Internal methodology may change; these outputs won't break without a version bump. For full schema details, see [facts-schema.md](facts-schema.md), [atlas-schema.md](atlas-schema.md), [narrative-schema.md](../skills/analyze/narrative-schema.md), and [meta-schema.md](../skills/analyze/meta-schema.md).
+This document describes what downstream consumers can depend on. For field-level rules, use the canonical schema files:
+- [facts-schema.md](facts-schema.md)
+- [atlas-schema.md](atlas-schema.md)
+- [story-schema.md](story-schema.md)
+- [narratives-schema.md](narratives-schema.md)
+- [meta-schema.md](meta-schema.md)
 
 ## Output Layout
 
-```
+```text
 $PROJECT_MEM/
   analysis/
     latest.json
@@ -22,150 +27,73 @@ $PROJECT_MEM/
       narratives.yaml
 ```
 
-`--detect-only` produces `meta.json`, `facts/`, and `atlas.json` (no stories or narratives).
+Deterministic-only runs produce:
+- `blast.json`
+- `facts/`
+- `meta.json`
 
----
+Semantic runs additionally produce:
+- `atlas.json`
+- `stories/`
+- `narratives.yaml`
 
 ## facts/
 
-Normalized extraction output. JSON, version `"1"`. See [facts-schema.md](facts-schema.md).
+Normalized deterministic evidence. JSON, version `"1"`. See [facts-schema.md](facts-schema.md).
 
-Facts are the stable contract between deterministic extraction and semantic concept inference.
-
-### Constraints consumers can depend on
-
-| Constraint | Value | Hard? |
-|-----------|-------|-------|
-| `facts/index.json` exists after `/analyze` | Yes | Yes |
-| Fact IDs are stable and unique within a run | Yes | Yes |
-| Every fact has provenance | detector id/class/source files | Yes |
-| Domain files may be omitted when empty | Yes | Yes |
-| Facts are concrete observations, not concepts | Yes | Yes |
-
-### Stable domains in v1
-
-- `frameworks`
-- `routes`
-- `models`
-- `external-clients`
-- `import-graph`
-
-### Optional domains in v1
-
-- `middleware`
-- `config`
-- `hot-files`
-- `jobs`
-- `events`
-- `auth-surface`
-
----
+Stable constraints:
+- `facts/index.json` exists after deterministic analysis
+- fact ids are stable and unique within a run
+- every fact has provenance
+- domain files may be omitted when empty
+- facts are observations and candidate evidence, not final semantic conclusions
 
 ## atlas.json
 
-Full structural inventory. JSON, version `"4"`. See [atlas-schema.md](atlas-schema.md) for the complete field-by-field schema.
+Canonical semantic architecture model. JSON, version `"4"`. See [atlas-schema.md](atlas-schema.md).
 
-**Top-level sections:** `version`, `generated`, `project`, `purpose`, `domain_model`, `stack`, `groups`, `actors`, `components`, `flows`, `state`, `events`, `external_dependencies`, `concepts`, `module_graph`, `api_surface`, `debt`, `metadata`.
+Stable constraints:
+- required top-level sections match `atlas-schema.md`
+- component ids are kebab-case and unique
+- components form a hierarchy
+- top-level components should number `3-5`
+- all cross-references resolve
+- `components[].depends_on` references only component ids
+- outside systems live in `external_dependencies` or `state`
+- `tensions` are grounded architecture trade-offs, not generic debt backlogs
+- legacy sections such as `groups`, `stack`, `debt`, `api_surface`, `security`, and `developer_experience` do not appear
 
-### Constraints scribe can depend on
+## stories/
 
-| Constraint | Value | Hard? |
-|-----------|-------|-------|
-| Top-level groups | 3-5 | Yes |
-| Components | 5-10 (4-12 acceptable) | Guideline |
-| Critical data flows | 2-4 | Guideline |
-| Health coverage | every external dependency and every stateful component carries `health.failure_modes` and `health.gaps` | Yes |
-| Component IDs | kebab-case, unique | Yes |
-| All cross-references | resolve to existing IDs | Yes |
-| Omit empty sections | events, reverse_deps, api_surface when N/A | Yes |
+Primary navigation over the atlas. YAML files, one story per file. See [story-schema.md](story-schema.md).
 
-### What changed from architecture.yaml v2
+Stable constraints:
+- root stories mirror top-level components
+- child stories refine one concern beneath a root
+- story ids are unique and kebab-case
+- summary is required
+- story node references resolve to atlas ids
+- observation evidence uses project-relative paths
 
-| Change | Old | New |
-|--------|-----|-----|
-| Format | YAML | JSON |
-| Version | `"2"` | `"4"` |
-| Grouping | `capabilities` | `groups` (structural-only) |
-| Component group | via capabilities | `group` field on each component |
-| Story link | N/A | `metadata.story_ids` |
+## narratives.yaml
 
----
+Secondary cross-cutting reading paths over the story tree. YAML. See [narratives-schema.md](narratives-schema.md).
 
-## Story Tree
-
-Stories form a tree mirroring the atlas group hierarchy. See [narrative-schema.md](../skills/analyze/narrative-schema.md) for the full schema.
-
-### Tree structure
-
-- **Root stories** (3-5, one per atlas group) — high-level view, `parent: null`
-- **Child stories** (2-5 per root) — zoom into specific concerns, `parent: "<root-id>"`
-- Max depth: 2. The root stories ARE the architecture overview.
-
-### Building blocks
-
-| Block | Purpose | Multiple? |
-|-------|---------|----------|
-| **summary** | Short paragraphs (depth-dependent length) | No (required) |
-| **structures** | Nested components + typed edges | Yes |
-| **flows** | Ordered steps, typed | Yes |
-| **observations** | Evidence-backed findings | One list, multi-attached |
-| **rationale** | Decisions, trade-offs, alternatives | Yes |
-
-### Key properties
-
-- **Stories nest** — `parent`/`children` fields form a tree. Primary navigation.
-- **Types are freeform** — structures and flows have a `type` string
-- **Multiple structures and flows per story**
-- **Observations attach at three levels** — story-wide, on nodes, on flow steps
-- **Cross-group references allowed** — child stories can reference nodes outside parent's group
-- **Verbosity scales with depth** — root: 2 paragraphs max (~50-80 words), child: 3 paragraphs max (~80-120 words)
-
----
-
-## Narratives
-
-Thin cross-cutting paths through the story tree. Stored in one `narratives.yaml` file when a concern spans multiple root groups. See [narrative-schema.md](../skills/analyze/narrative-schema.md).
-
-**Properties:**
-- Ordered lists of story IDs with short per-step descriptions
-- Pull from any level of the tree (root or child, any group)
-- At least one narrative required: `getting-started` — teaching-order path covering all groups, for someone new to the codebase
-- Additional narratives for cross-cutting concerns (resilience review, security audit, etc.) as the codebase warrants
-- Every story ID in a narrative exists in `stories/`
-- 3-8 stories per narrative
-
----
-
-## Evaluation Scores
-
-Each story carries:
-- **Groundedness** — % of claims traced to atlas findings + node IDs. Target: >= 0.85
-- **Coverage** — % of critical atlas nodes in at least one story. Target: >= 0.80
-
----
-
-## What Scribe Can Depend On
-
-1. **facts/index.json always exists** after `/analyze`
-2. **atlas.json always exists** after `/analyze`
-3. **stories/ directory exists** (may be empty if `--detect-only`)
-4. **narratives.yaml exists** with at least `getting-started` when Phase 2 runs
-5. **All IDs are kebab-case and unique** within their section
-6. **All cross-references resolve** — node IDs in stories exist in atlas, story IDs in `narratives.yaml` exist in `stories/`
-7. **3-5 groups** — hard constraint
-8. **Bold refs in summaries match atlas node IDs**
-9. **Observation evidence includes file paths** relative to project root
-10. **Narratives are ordered** — render stories in the sequence given
+Stable constraints:
+- `getting-started` narrative is required when semantic outputs are present
+- every narrative story id exists in `stories/`
+- each narrative contains `3-8` stories
+- narratives may pull from any level of the story tree
 
 ## meta.json
 
-Each durable analysis root carries a `meta.json` file that summarizes the accepted analysis state.
+Durable metadata record for one accepted analysis directory. See [meta-schema.md](meta-schema.md).
 
-Fields consumers can depend on:
+Stable fields:
 - `project`
+- `analysis_id`
 - `sha`
 - `commit_time`
-- `analyzed_at`
 - `analysis_mode`
 - `base_sha`
 - `base_commit_time`
@@ -174,23 +102,10 @@ Fields consumers can depend on:
 - `schemas`
 - `validation`
 
-## Daemon Response
+## What Consumers Can Assume
 
-When Augur runs through the Kafka daemon and validation passes, the response metadata may include:
-- `validation`
-- `artifacts.root`
-- `artifacts.files`
-- `artifacts.schemas`
-
-These transport fields should point back to the validated analysis directory and its stable schema files rather than duplicating the durable analysis record.
-
-## What May Change (Not Stable)
-
-- Number of stories (depends on project)
-- Number and types of narratives
-- Structure/flow type strings (freeform, new types may appear)
-- Observation fields (may add new ones)
-- Detection methodology internals
-- Exact fact domain count beyond the stable v1 set
-- Evaluation score thresholds
-- Additional atlas metadata fields
+1. `latest.json` points only to an accepted analysis with `validation.passed = true`.
+2. Deterministic artifacts use `blast.json` plus `facts/`.
+3. Semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
+4. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.
+5. New optional fields may appear, but existing stable fields do not change without a versioned schema change.

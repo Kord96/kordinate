@@ -5,6 +5,11 @@ testable: true
 observable: true
 graphable: true
 abstraction: [security]
+status: primary
+scope: backend
+relationships:
+  disambiguates: [token-auth, oauth-oidc, session-auth]
+  related_to: [rate-limiting]
 ---
 # API Key Authentication
 
@@ -32,6 +37,11 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for API key lifecycle management with secure storage, tenant isolation, and usage controls.
+
+### Relationship To Other Concepts
+
+- `api-key-auth` is for programmatic credentials, not delegated user identity.
+- Prefer `oauth-oidc` for delegated authorization flows and `token-auth` for bearer-token user auth.
 
 ### Review Checklist
 

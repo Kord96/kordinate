@@ -6,6 +6,11 @@ observable: true
 distributed: true
 graphable: true
 abstraction: [security]
+status: primary
+scope: backend
+relationships:
+  related_to: [token-auth, session-auth, rbac]
+  disambiguates: [api-key-auth]
 ---
 # OAuth2/OpenID Connect
 
@@ -32,6 +37,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for correct implementation of the OAuth2 authorization flow with proper token validation and secure credential handling.
+
+### Relationship To Other Concepts
+
+- `oauth-oidc` adds delegated identity-provider flows on top of token validation.
+- It often coexists with `token-auth` because the resulting access tokens are still bearer tokens.
+- Prefer `session-auth` or `api-key-auth` when no delegated identity provider is involved.
 
 ### Review Checklist
 

@@ -228,11 +228,8 @@ def collect_state_map(atlas: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return state_map
 
 
-def collect_concepts(concepts_path: Path) -> list[dict[str, Any]]:
-    if not concepts_path.exists():
-        return []
-    payload = read_json(concepts_path)
-    concepts = payload.get("concepts") or {}
+def collect_concepts(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+    concepts = atlas.get("concepts") or {}
     detected = concepts.get("detected_patterns") or []
     return [item for item in detected if isinstance(item, dict)]
 
@@ -341,7 +338,6 @@ def main() -> int:
         })
 
     atlas_path = previous_dir / "atlas.json"
-    concepts_path = previous_dir / "concepts.json"
     if not atlas_path.exists():
         return emit({
             "project": project,
@@ -399,7 +395,7 @@ def main() -> int:
         })
 
     atlas = read_json(atlas_path)
-    concepts = collect_concepts(concepts_path)
+    concepts = collect_concepts(atlas)
     modules_to_components = collect_modules_to_components(atlas)
     dependency_map = collect_dependency_component_map(atlas)
     flow_map = collect_flow_map(atlas)

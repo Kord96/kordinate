@@ -1,0 +1,14 @@
+concept: middleware
+positive:
+  strong:
+    - framework middleware registration plus next-stage forwarding
+    - ordered request or action pipeline around handlers
+  medium:
+    - interceptors or hook pipelines implementing cross-cutting concerns
+  weak:
+    - decorators or wrappers that add behavior without a shared pipeline contract
+negative:
+  - business-logic handlers mislabeled as middleware
+  - one-off wrappers with no composable stage sequencing
+notes:
+  - Middleware is a pipeline shape, not a specific concern like auth or rate limiting.

@@ -5,6 +5,11 @@ testable: true
 observable: true
 graphable: true
 abstraction: [security]
+status: primary
+scope: backend
+relationships:
+  disambiguates: [session-auth, api-key-auth]
+  related_to: [oauth-oidc, route-guard, rbac]
 ---
 # Token-Based Authentication (JWT)
 
@@ -32,6 +37,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for stateless token validation with proper signing, claim verification, and secure token lifecycle management.
+
+### Relationship To Other Concepts
+
+- `token-auth` is the generic bearer-token or JWT auth pattern.
+- Prefer `oauth-oidc` when delegated identity-provider flows and authorization-code exchanges are central.
+- Prefer `api-key-auth` when the credential is an API key rather than a user or session token.
 
 ### Review Checklist
 

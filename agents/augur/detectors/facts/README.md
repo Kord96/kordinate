@@ -19,7 +19,7 @@ Non-responsibilities:
 - do not emit anti-patterns
 - do not write atlas fields directly
 
-Suggested extractors:
+Suggested layout:
 
 ```text
 detectors/facts/<domain>/
@@ -27,6 +27,13 @@ detectors/facts/<domain>/
   signatures.yaml     # broad textual/structural signals
   ast-grep.yaml       # optional executable structural rules
   semgrep.yaml        # optional executable semantic/security rules
+```
+
+Special deterministic families:
+
+```text
+detectors/facts/frameworks/<name>/         # framework-presence detection
+detectors/facts/concept-evidence/<name>/   # concept-candidate evidence detection
 ```
 
 Initial domains:
@@ -48,6 +55,8 @@ Initial domains:
 - `call-edges`
 - `data-touches`
 - `execution-slices`
+
+`frameworks` and `concept-evidence` are special deterministic families, not ordinary fact domains.
 
 Borrow from codesight here:
 - narrow, framework-native extractors

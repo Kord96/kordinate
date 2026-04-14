@@ -1,0 +1,44 @@
+id: server-route-registration-fastapi-py
+language: Python
+rule:
+  pattern: |
+    @$APP.$METHOD($PATH)
+    def $FUNC($$$ARGS):
+        $$$BODY
+---
+id: server-route-registration-flask-py
+language: Python
+rule:
+  pattern: |
+    @$APP.route($PATH, $$$ARGS)
+    def $FUNC($$$ARGS):
+        $$$BODY
+---
+id: server-route-registration-django-path-py
+language: Python
+rule:
+  pattern: path($PATH, $VIEW, $$$ARGS)
+---
+id: server-route-registration-express-ts
+language: TypeScript
+rule:
+  pattern: $APP.$METHOD($PATH, $$$ARGS)
+---
+id: server-route-registration-router-ts
+language: TypeScript
+rule:
+  pattern: $ROUTER.$METHOD($PATH, $$$ARGS)
+---
+id: server-route-registration-nestjs-ts
+language: TypeScript
+rule:
+  pattern: |
+    @$METHOD($PATH)
+    $NAME($$$ARGS) {
+        $$$BODY
+    }
+---
+id: server-route-registration-go-http
+language: Go
+rule:
+  pattern: http.HandleFunc($PATH, $HANDLER)

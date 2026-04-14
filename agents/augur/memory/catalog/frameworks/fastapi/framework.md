@@ -17,12 +17,14 @@ Common signals:
 - route handlers may stay thin, or may accumulate business logic if architecture is weak
 
 ## Common co-occurring concepts
-- REST
-- Input validation
-- Dependency injection
 - Repository
-- Layered architecture
-- Hexagonal
+- Thin route handlers are common in stronger layered or hexagonal codebases, but not guaranteed by the framework
+
+## Ontology position
+- Implements REST-style API contracts
+- Uses server-side route registration as its public surface
+- Supports dependency injection and input validation natively
+- Commonly co-occurs with layered or hexagonal application structure, but does not require either
 
 ## Common failure modes
 - business logic in route handlers

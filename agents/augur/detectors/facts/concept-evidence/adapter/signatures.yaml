@@ -1,0 +1,14 @@
+concept: adapter
+positive:
+  strong:
+    - classes or modules explicitly translating between two interfaces
+    - wrappers around vendor SDKs with a project-local contract
+  medium:
+    - gateway or wrapper naming plus clear request or response mapping
+  weak:
+    - isolated conversion helpers without a stable target interface
+negative:
+  - direct use of vendor types throughout the codebase
+  - wrappers that only rename methods and leak the adaptee shape
+notes:
+  - Keep this distinct from anti-corruption-layer, which operates at a broader boundary.

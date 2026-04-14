@@ -4,16 +4,16 @@
 This CLI reads normalized facts from `facts/` and derives the atlas sections
 that can be built directly from first-order evidence:
 
-- stack
+- component hierarchy
 - domain_model hints
-- api_surface
+- flows
 - state
 - external_dependencies
-- module_graph
+- optional module_graph support data
 
-It is intentionally conservative. It does not infer concepts or debt, and it
-does not try to recreate full architectural narration. That remains the job of
-the concept layer and the atlas composer.
+It is intentionally conservative. It does not infer concepts or tensions, and
+it does not try to recreate full architectural narration. That remains the job
+of the concept layer and the atlas composer.
 """
 
 from __future__ import annotations
@@ -633,7 +633,7 @@ def build_domain_model(facts: list[dict[str, Any]]) -> dict[str, Any]:
         if any(token in combined for token in ["event", "append", "snapshot"]):
             primary = "event-sourcing"
         elif any(token in combined for token in ["graph", "node", "edge"]):
-            primary = "property-graph"
+            primary = "graph"
         elif any(token in combined for token in ["cache"]):
             primary = "cache"
         domain_model = {
@@ -803,7 +803,7 @@ def build_external_dependencies(facts: list[dict[str, Any]], joern: dict[str, An
     return dependencies
 
 
-def build_components_and_groups(facts: list[dict[str, Any]], joern: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def build_components_and_groups(facts: list[dict[str, Any]], joern: dict[str, Any] | None = None) -> tuple[list[dict[str, Any]], list[str]]:
     buckets: dict[str, dict[str, Any]] = {}
     for fact in facts:
         for component_id in fact.get("relationships", {}).get("component_ids", []) or []:
@@ -921,7 +921,18 @@ def build_components_and_groups(facts: list[dict[str, Any]], joern: dict[str, An
     components = []
     groups_map: dict[str, list[str]] = {}
     for component_id, bucket in sorted(buckets.items()):
-        group = component_id.split("-", 1)[0] if "-" in component_id else "core"
+        module_roots = {
+            str(module).split("/", 1)[0]
+            for module in bucket.get("modules", set())
+            if module and "/" in str(module)
+        }
+        if len(module_roots) == 1:
+            group = next(iter(module_roots))
+        elif len(module_roots) > 1:
+            preferred = [name for name in ("agents", "shared", "lib", "services", "apps") if name in module_roots]
+            group = preferred[0] if preferred else sorted(module_roots)[0]
+        else:
+            group = component_id.split("-", 1)[0] if "-" in component_id else "core"
         groups_map.setdefault(group, []).append(component_id)
         components.append(
             {
@@ -929,7 +940,7 @@ def build_components_and_groups(facts: list[dict[str, Any]], joern: dict[str, An
                 "name": bucket["name"],
                 "description": f"Derived component for {component_id}.",
                 "type": bucket["type"],
-                "group": group,
+                "parent": None,
                 "modules": sorted(bucket["modules"]),
                 "depends_on": sorted(dep for dep in bucket["depends_on"] if dep in buckets and dep != component_id),
                 "abstraction": [],
@@ -942,17 +953,32 @@ def build_components_and_groups(facts: list[dict[str, Any]], joern: dict[str, An
                 "children": [],
             }
         )
-
-    groups = [
-        {
-            "id": group_id,
-            "name": group_id.replace("-", " ").title(),
-            "description": f"Derived group for {group_id}.",
-            "components": sorted(component_ids),
-        }
-        for group_id, component_ids in sorted(groups_map.items())
-    ]
-    return components, groups
+    existing_ids = {component["id"] for component in components}
+    root_ids: list[str] = []
+    for group_id, component_ids in sorted(groups_map.items()):
+        root_id = group_id if group_id not in existing_ids else f"{group_id}-root"
+        root_ids.append(root_id)
+        existing_ids.add(root_id)
+        components.append(
+            {
+                "id": root_id,
+                "name": group_id.replace("-", " ").title(),
+                "description": f"Derived top-level component for the {group_id} architecture slice.",
+                "type": "service",
+                "parent": None,
+                "modules": [],
+                "depends_on": [],
+                "abstraction": [],
+                "patterns": [],
+                "health": {"failure_modes": [], "gaps": []},
+                "deployment": {"namespace": "", "kind": "", "replicas": "", "node": ""},
+                "children": sorted(component_ids),
+            }
+        )
+        for component in components:
+            if component["id"] in component_ids:
+                component["parent"] = root_id
+    return components, root_ids
 
 
 def build_events(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1730,20 +1756,8 @@ def build_output(
     detected_patterns = load_detected_patterns(facts)
     monitoring_index = load_monitoring_index()
 
-    components, groups = build_components_and_groups(facts, joern)
+    components, root_components = build_components_and_groups(facts, joern)
     if seed_mode:
-        frameworks, language_hints = build_frameworks(facts)
-        repo_profile = index.get("metadata", {}).get("repo_profile", {})
-        stack = {
-            "languages": unique_strings(
-                list(language_hints)
-                + repo_profile.get("secondary_languages", [])
-                + [repo_profile.get("dominant_language", "")]
-            ),
-            "frameworks": frameworks[:3],
-            "runtime": "Deterministic semantic seed synthesized from extracted facts.",
-        }
-        api_surface = {"style": "", "frameworks": [], "endpoints": [], "findings": {"critical": [], "recommended": [], "minor": []}}
         domain_model = {
             "primary": "software-system",
             "description": "Initial semantic seed synthesized from deterministic facts.",
@@ -1758,8 +1772,6 @@ def build_output(
         actors = []
         flows = []
     else:
-        stack = build_stack(facts)
-        api_surface, _ = build_routes(facts)
         domain_model = build_domain_model(facts)
         state = build_state_entries(facts, joern)
         external_dependencies = build_external_dependencies(facts, joern)
@@ -1781,15 +1793,13 @@ def build_output(
         for flow in flows:
             normalize_health_block(flow)
     if not purpose:
-        if stack["frameworks"]:
-            purpose = f"{project} system synthesized from extracted facts."
-        else:
-            purpose = "System synthesized from extracted facts."
+        purpose = f"{project} system synthesized from extracted facts." if project else "System synthesized from extracted facts."
 
     metadata = {
         "story_ids": [],
         "analyzed_at_sha": index.get("metadata", {}).get("analyzed_at_sha", "") if isinstance(index, dict) else "",
         "analysis_mode": analysis_mode,
+        "root_components": root_components,
         "affected_components": unique_strings(
             [component for fact in facts for component in fact.get("relationships", {}).get("component_ids", []) if component]
         ),
@@ -1809,45 +1819,32 @@ def build_output(
         "detected_patterns": [],
         "detected_anti_patterns": [],
         "gaps": [],
-        "scan_metadata": {
-            "catalog_size": {"patterns": 0, "anti_patterns": 0},
-            "tools_used": ["facts-synthesis"],
-            "categories_scanned": [],
-            "facts_index": metadata["facts_index"],
-            "fact_domains_used": metadata["facts_domains"],
-        },
     }
 
-    debt = {
-        "score": 0,
-        "grade": "A",
-        "grade_capped": False,
-        "interpretation": "Facts-derived scaffold. Concept detection has not been run.",
-        "by_category": [],
-        "violations": [],
-        "recommendations": [],
-    }
-
-    return {
+    output: dict[str, Any] = {
         "version": "4",
         "generated": date.today().isoformat(),
         "project": project,
         "purpose": purpose,
-        "domain_model": domain_model,
-        "stack": stack,
-        "groups": groups,
-        "actors": actors,
         "components": components,
         "flows": flows,
-        "api_surface": api_surface,
         "state": state,
-        "events": events,
         "external_dependencies": external_dependencies,
         "concepts": concepts,
-        "module_graph": module_graph,
-        "debt": debt,
+        "tensions": [],
         "metadata": metadata,
     }
+    if domain_model and not seed_mode:
+        output["domain_model"] = domain_model
+    elif seed_mode:
+        output["domain_model"] = domain_model
+    if actors:
+        output["actors"] = actors
+    if events:
+        output["events"] = events
+    if module_graph and not seed_mode:
+        output["module_graph"] = module_graph
+    return output
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:

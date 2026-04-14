@@ -26,10 +26,8 @@ this skill repeatedly as the design progresses.
 
 These files are shared with /analyze — read them when producing output:
 - [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) — atlas JSON structure
-- [../../schemas/schema.md](../../schemas/schema.md) — field-level details
 - [../../schemas/story-schema.md](../../schemas/story-schema.md) — story YAML format
 - [../../schemas/narratives-schema.md](../../schemas/narratives-schema.md) — narrative YAML format
-- [../../schemas/composition-guide.md](../../schemas/composition-guide.md) — how to build story trees
 - [../../schemas/augur-output-contract.md](../../schemas/augur-output-contract.md) — downstream consumer contract
 
 ---
@@ -140,23 +138,21 @@ Read `$AGENT_HOME_DIR/memory/global/infra-atlas.json` for:
 Generate `$MEM/design-atlas.json` following [../../schemas/atlas-schema.md](../../schemas/atlas-schema.md) v4 format:
 
 - **components** — proposed modules based on the architecture pattern
-- **detected_patterns** — all selected patterns, `confidence: 1.0`, `source: "design"`
 - **flows** — designed data flows based on communication patterns
 - **external_dependencies** — with endpoints from infra atlas
 - **failure_modes** — anticipated failures from resilience patterns. For each failure mode,
   populate `detection` with structured fields from concept semantics (especially review checklists and anti-patterns) plus detector-side policy/signatures when helpful: `signals`, `concern`, and `source_pattern`. These are portable — sauron maps them to Prometheus queries and vitals evaluations
 - **domain_model** — from the data patterns
-- **debt** — empty (score: 0, grade: A)
+- **concepts.detected_patterns** — all selected patterns, `confidence: high`, `source: "design"`
+- **tensions** — grounded trade-offs implied by the chosen design, or empty when none are needed
 - **metadata.analysis_mode** — `"design"`
 - **metadata.status** — `"draft"`
 - **metadata.new_infrastructure** — services not in infra atlas that charon needs to provision
 
 ### Step 4 — Compose stories and narratives
 
-Follow [../../schemas/composition-guide.md](../../schemas/composition-guide.md).
-
 For a design atlas, stories explain the PROPOSED architecture:
-- Root stories per component group — what it does and why
+- Root stories per top-level component — what it does and why
 - Child stories for key flows — how data moves through the design
 - Child stories for design decisions — why this pattern was chosen (use rationale blocks)
 - Getting-started narrative — the reading order for someone onboarding to this new project

@@ -31,9 +31,11 @@ Each component should have:
 
 Keep `depends_on` for real internal component relationships only.
 
-## Grouping
+## Hierarchy
 
-- assign every component to exactly one top-level group
-- prefer 3-5 groups
+- prefer 3-5 top-level components
+- use top-level components for the main architecture slices
 - group by runtime boundary or architectural concern, not by folder naming
-- merge tiny groups before inventing more categories
+- represent nesting with `parent`
+- keep `children` only when you can state it consistently
+- keep the hierarchy shallow and meaningful

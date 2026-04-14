@@ -1,12 +1,19 @@
 ---
-description: Event Notification architectural pattern
-type: pattern
+description: Thin-event payload variant within event-driven architecture
+type: flow-shape
 testable: true
 distributed: true
-graphable: true
 abstraction: [messaging, integration]
+status: specialized
+scope: cross-cutting
+relationships:
+  part_of: [event-driven]
 ---
 # Event Notification (Thin Events)
+
+Treat this as a payload-design variant under [event-driven](/concepts/event-driven), not as a separate top-level event architecture family.
+
+Use it when the important distinction is that events are intentionally thin and consumers fetch the full state later.
 
 ## Recognition
 

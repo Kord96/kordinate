@@ -193,8 +193,8 @@ description: Index of recognized architectural patterns by category
 | Request-reply | RPC over message broker with correlation IDs | [view](concepts/request-reply.md) |
 | Event-driven architecture | Domain events as first-class objects flowing through an event bus | [view](concepts/event-driven.md) |
 | Outbox | Events written to DB in same transaction, published by separate process | [view](concepts/outbox.md) |
-| Event notification | Thin events containing only ID + type, consumer calls back for data | [view](concepts/event-notification.md) |
-| Event-carried state | Fat events containing full entity state for replication | [view](concepts/event-carried-state.md) |
+| Event notification | Thin-event payload variant within event-driven architecture | [view](concepts/event-notification.md) |
+| Event-carried state | Fat-event payload variant within event-driven architecture | [view](concepts/event-carried-state.md) |
 
 ### Deployment
 
@@ -229,6 +229,7 @@ description: Index of recognized architectural patterns by category
 | Pattern | Description | Reference |
 |---------|-------------|-----------|
 | REST | Resource-based HTTP API with standard methods and status codes | [view](concepts/rest.md) |
+| Server route registration | Backend route declaration and exposure for HTTP or RPC handlers | [view](concepts/server-route-registration.md) |
 | GraphQL | Schema-driven query language with single endpoint | [view](concepts/graphql.md) |
 | gRPC | Protocol buffer-based RPC with generated stubs | [view](concepts/grpc.md) |
 | BFF | Backend for Frontend — API layer tailored per client type | [view](concepts/bff.md) |
@@ -322,7 +323,7 @@ Implementation files are co-located in the pattern directory.
 | Pattern | Description | Reference |
 |---------|-------------|-----------|
 | Ledger | Double-entry ledger — debits, credits, balanced transactions | [view](concepts/ledger.md) |
-| Property graph | Typed nodes and edges with properties and traversal queries | [view](concepts/property-graph.md) |
+| Property graph | Specialized graph variant with typed nodes and edges carrying attributes | [view](concepts/property-graph.md) |
 | Search index | Inverted index, analyzers, ranked full-text retrieval | [view](concepts/search-index.md) |
 | Time-series | Timestamp-indexed append-only data with retention and downsampling | [view](concepts/time-series.md) |
 | Versioned document | Immutable revisions, diffs, conflict resolution | [view](concepts/versioned-document.md) |
@@ -333,6 +334,6 @@ Implementation files are co-located in the pattern directory.
 | Subscription | Recurring billing, plan management, usage metering | [view](concepts/subscription.md) |
 | Block content | Structured rich text with nested typed blocks | [view](concepts/block-content.md) |
 | Catalog | Product/variant/SKU hierarchy with inventory | [view](concepts/catalog.md) |
-| Social graph | Follow/connection relationships with feed generation | [view](concepts/social-graph.md) |
+| Social graph | Social-network application of graph relationships and feed generation | [view](concepts/social-graph.md) |
 | Conversation thread | Threaded messaging with real-time delivery | [view](concepts/conversation-thread.md) |
 | Graph | Generic graph model — DAGs, traversal, cycle detection | [view](concepts/graph.md) |

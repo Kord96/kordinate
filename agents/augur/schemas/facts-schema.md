@@ -10,6 +10,8 @@ detectors -> facts (including concept-evidence) -> atlas -> stories/narratives
 
 Facts are not final semantic conclusions. A fact records a normalized observation about the codebase. Some deterministic inference outputs, such as `concept-evidence`, are still facts: they preserve candidate concept evidence without making the final semantic judgment. Final concept interpretation happens in the atlas phase.
 
+For `concept-evidence`, deterministic output should include any run-specific semantic questions needed to confirm or reject an ambiguous candidate concept during Phase 2.
+
 ## Output Layout
 
 The canonical deterministic output is a `facts/` directory containing domain files plus an index:
@@ -88,6 +90,21 @@ Some benchmark and legacy tooling may still materialize a consolidated `facts.js
       "raw_evidence": {
         "<key>": "<detector-specific normalized value>"
       },
+      "semantic_questions": {
+        "enabled": true,
+        "threshold": 6,
+        "ask_when": ["<broad_match>"],
+        "entries": [
+          {
+            "id": "<stable question id>",
+            "prompt": "<question text>",
+            "weight": 3,
+            "signals": ["<signal>"]
+          }
+        ],
+        "entry_ids": ["<stable question id>"],
+        "recommended_next_step": "answer_questions | none"
+      },
       "negative_evidence": ["<contradicting or confidence-reducing signal>"],
       "contradictions": ["<fact id or textual note>"],
       "relationships": {
@@ -123,7 +140,7 @@ Expected `raw_evidence` keys:
 
 ### Routes
 
-Capture directly observable API entrypoints. These facts feed `api_surface`, `actors`, `flows`, security concepts, and failure-mode synthesis.
+Capture directly observable API entrypoints. These facts feed `actors`, `flows`, concept confirmation, and failure-mode synthesis.
 
 Expected `raw_evidence` keys:
 - `style` (`rest | graphql | grpc | websocket | sse`)
@@ -242,6 +259,32 @@ Expected `raw_evidence` keys:
 - `slice_line`
 - `steps`
 
+### Concept Evidence
+
+Capture deterministic concept candidates plus any run-specific semantic questions that Phase 2 must answer before confirming the concept in `atlas.json`.
+
+Expected `raw_evidence` keys:
+- `concept_id`
+- `category`
+- `inference_method`
+- `note`
+- `fingerprint`
+- `supporting_fact_ids`
+- `supporting_components`
+- `decision_mode`
+- `semantic_review_required`
+
+Expected `semantic_questions` keys when present:
+- `enabled`
+- `threshold`
+- `ask_when`
+- `entries`
+- `entry_ids`
+- `recommended_next_step`
+- `slice_file`
+- `slice_line`
+- `steps`
+
 ## Fact-to-Concept Contract
 
 Concept inference must consume fact IDs rather than raw detector matches whenever possible.
@@ -266,6 +309,6 @@ In incremental mode:
 Facts should not contain:
 - architectural conclusions like `hexagonal`
 - anti-pattern judgments like `tight-coupling`
-- debt scores or recommendations
+- generic debt scores or recommendation backlogs
 
 Those belong in concept inference and atlas synthesis.

@@ -1,0 +1,53 @@
+concept: rest
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 2
+  semgrep:
+    enabled: false
+    detector_strength: 1
+  signatures:
+    enabled: true
+    detector_strength: 5
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+      - broad_match
+      - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 6
+  entries:
+    - id: rest-resource-oriented-surface
+      prompt: Does the public server surface organize URLs around resources rather than action verbs?
+      weight: 3
+      signals:
+        - GET
+        - POST
+        - /users
+    - id: rest-method-and-status-semantics
+      prompt: Are HTTP method semantics and status-code usage part of the contract rather than just HTTP transport for RPC?
+      weight: 3
+      signals:
+        - 201
+        - 204
+        - OpenAPI
+monitoring:
+  applies_to:
+    - flow
+    - component
+  health_signals:
+    - name: http.4xx_5xx.rate
+      description: Error-rate visibility for REST endpoints grouped by resource or route.
+  business_metrics: []
+  gaps:
+    - REST requires semantic review of route and status conventions; AST matches alone are not sufficient.

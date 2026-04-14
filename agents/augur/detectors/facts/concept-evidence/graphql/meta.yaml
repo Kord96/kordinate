@@ -1,0 +1,55 @@
+concept: graphql
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 5
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 4
+    ask_when:
+      - broad_match
+      - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 4
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 5
+  entries:
+    - id: graphql-schema-and-resolvers
+      prompt: Does the code define a GraphQL schema plus resolver machinery rather than just mentioning GraphQL types incidentally?
+      weight: 3
+      signals:
+        - ApolloServer
+        - strawberry.type
+        - Resolver
+    - id: graphql-query-control
+      prompt: Is this a real GraphQL surface that likely needs resolver batching or query complexity controls?
+      weight: 2
+      signals:
+        - DataLoader
+        - Mutation
+        - Subscription
+monitoring:
+  applies_to:
+    - component
+    - flow
+  health_signals:
+    - name: graphql.resolver.error.rate
+      description: Resolver failures grouped by field or operation.
+    - name: graphql.query.complexity.rejection.rate
+      description: Queries rejected because depth or complexity thresholds were exceeded.
+  business_metrics: []
+  gaps:
+    - Missing per-resolver visibility hides N+1 and query-complexity regressions.

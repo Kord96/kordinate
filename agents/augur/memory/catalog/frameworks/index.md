@@ -1,5 +1,14 @@
 # Framework Detection Reference
 
+Supporting reference only.
+
+- Use this file for cross-language recognition ideas and fallback heuristics.
+- Do not treat it as the canonical detector contract.
+- The canonical detector-side contract lives under `../../../detectors/facts/frameworks/`.
+- Do not treat this file as ontology source of truth.
+- Canonical framework ontology metadata lives in `frameworks/<name>/semantics.yaml`.
+- The generated ontology view lives in `../../indexes/ontology-graph.json` and `../../indexes/ontology-graph.md`.
+
 ## Python
 
 | Framework | Import / Config Signals | Route Patterns |

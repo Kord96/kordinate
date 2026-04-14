@@ -23,6 +23,16 @@ detectors/facts/<domain>/
   semgrep.yaml        # optional
 ```
 
+Special families:
+
+```text
+detectors/facts/frameworks/<name>/
+detectors/facts/concept-evidence/<name>/
+```
+
+Use ordinary `<domain>` directories for normalized fact domains such as `routes`, `models`, or `events`.
+Use `frameworks` for stack-context detection and `concept-evidence` for concept-candidate evidence plus semantic-question policy.
+
 ## `policy.yaml`
 
 ```yaml

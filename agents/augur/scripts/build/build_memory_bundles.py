@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from subprocess import run
 
 ROOT = Path(__file__).resolve().parents[2]
 MEMORY = ROOT / 'memory'
@@ -70,7 +71,7 @@ def common_header(title: str, mode_note: str) -> list[str]:
         '3. Use deterministic evidence, including `facts/concept-evidence.json`, to decide what deserves attention.',
         '4. Interpret that evidence semantically.',
         '5. Widen into source files only where the prepared artifacts leave ambiguity or show a larger boundary.',
-        '6. Build the architectural model, derive failure modes/debt, and write atlas/stories.',
+        '6. Build the architectural model, derive grounded tensions and failure modes, and write atlas/stories.',
         '',
         'Deterministic detector evidence establishes what is likely present in the codebase. Semantic memory is used to interpret and evaluate that evidence, not to replace it.',
         '',
@@ -126,6 +127,7 @@ def main() -> int:
     BUNDLES.mkdir(parents=True, exist_ok=True)
     (BUNDLES / 'analyze-holistic-v1.md').write_text(build_holistic(), encoding='utf-8')
     (BUNDLES / 'analyze-selective-v1.md').write_text(build_selective(), encoding='utf-8')
+    run(['python3', str(Path(__file__).with_name('build_ontology_graph.py'))], check=True)
     return 0
 
 

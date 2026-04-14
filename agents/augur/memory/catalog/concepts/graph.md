@@ -3,6 +3,10 @@ description: Generic graph model covering dependency graphs, DAGs, and general g
 type: pattern
 category: domain-model
 abstraction: [data, algorithmic]
+status: primary
+scope: domain
+relationships:
+  related_to: [workflow-engine, pipeline-filter]
 ---
 # Graph
 
@@ -43,9 +47,17 @@ How to identify this pattern in code.
 - Recomputing traversals on every access instead of caching topological order or shortest paths
 
 ### Complements
-- [property-graph](/concepts/property-graph) — specialized graph with typed, attributed nodes and edges
+- Property graphs and social graphs are specialized applications of this concept, not separate top-level graph families in Augur's working ontology.
 - [workflow-engine](/concepts/workflow-engine) — workflow DAGs are a common graph application
 - [pipeline-filter](/concepts/pipeline-filter) — pipelines are often modeled as DAGs
+
+### Scope
+
+Treat `graph` as the primary concept for graph-shaped domain models and graph algorithms.
+
+- Use this concept when the code models nodes, edges, traversals, reachability, or topological ordering.
+- Use supporting notes or examples to capture specialized graph variants such as attributed/property graphs or social-network graphs.
+- Do not introduce a separate top-level concept unless the specialized graph changes architecture meaningfully beyond "graph with a specific domain."
 
 ## Impact
 

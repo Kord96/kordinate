@@ -24,7 +24,7 @@ Checks:
         - Version is "4"
         - IDs are kebab-case and unique
         - All cross-references resolve
-        - Group count is 3-5
+        - Top-level component count is 3-5
         - Component count is 5-10 (warning if outside 4-12)
         - grounded_in arrays present on flows, state, and attached health failure modes
 
@@ -69,9 +69,18 @@ except ImportError:
 KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 REQUIRED_ATLAS_FIELDS = [
-    "version", "generated", "project", "purpose", "stack",
-    "groups", "components", "flows", "state",
-    "external_dependencies", "concepts", "debt"
+    "version", "generated", "project", "purpose",
+    "components", "flows", "state",
+    "external_dependencies", "concepts", "tensions"
+]
+
+FORBIDDEN_LEGACY_ATLAS_FIELDS = [
+    "groups",
+    "stack",
+    "debt",
+    "api_surface",
+    "security",
+    "developer_experience",
 ]
 
 DETERMINISTIC_ONLY = (
@@ -146,31 +155,13 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
         if field not in atlas:
             error(f"Missing required field: {field}", "atlas")
 
+    for field in FORBIDDEN_LEGACY_ATLAS_FIELDS:
+        if field in atlas:
+            error(f"Legacy field '{field}' must not appear in atlas.json", "atlas")
+
     # Version
     if atlas.get("version") != "4":
         error(f"Expected version '4', got '{atlas.get('version')}'", "atlas")
-
-    # Groups
-    groups = atlas.get("groups", [])
-    if len(groups) < 3:
-        error(f"Too few groups: {len(groups)} (minimum 3)", "groups")
-    elif len(groups) > 5:
-        error(f"Too many groups: {len(groups)} (maximum 5)", "groups")
-
-    group_ids = set()
-    for g in groups:
-        gid = g.get("id", "")
-        if not kebab_case(gid):
-            error(f"Group ID not kebab-case: '{gid}'", "groups")
-        if gid in group_ids:
-            error(f"Duplicate group ID: '{gid}'", "groups")
-        group_ids.add(gid)
-        # Per-group component count (2-5 rule)
-        group_comps = g.get("components", [])
-        if len(group_comps) > 5:
-            error(f"Group '{gid}' has {len(group_comps)} components (max 5). Split the group or consolidate components.", "groups")
-        elif len(group_comps) < 2:
-            warn(f"Group '{gid}' has {len(group_comps)} component (min 2). Merge with another group.", "groups")
 
     # Components
     components = atlas.get("components", [])
@@ -180,23 +171,69 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
         warn(f"Many components: {len(components)} (expected 5-10)", "components")
 
     component_ids = set()
+    parent_of: dict[str, str] = {}
+    child_links: dict[str, set[str]] = {}
 
-    def collect_component_ids(comps):
-        for c in comps:
-            cid = c.get("id", "")
-            if cid:
-                if not kebab_case(cid):
-                    error(f"Component ID not kebab-case: '{cid}'", "components")
-                if cid in component_ids:
-                    error(f"Duplicate component ID: '{cid}'", "components")
-                component_ids.add(cid)
-            cgroup = c.get("group", "")
-            if cgroup and cgroup not in group_ids:
-                error(f"Component '{cid}' references unknown group '{cgroup}'", "components")
-            issues.extend(validate_health(c.get("health"), "components", cid or "<component>", project_root))
-            collect_component_ids(c.get("children", []))
+    for component in components:
+        cid = component.get("id", "")
+        if not cid:
+            error("Component missing id", "components")
+            continue
+        if not kebab_case(cid):
+            error(f"Component ID not kebab-case: '{cid}'", "components")
+        if cid in component_ids:
+            error(f"Duplicate component ID: '{cid}'", "components")
+        component_ids.add(cid)
 
-    collect_component_ids(components)
+    for component in components:
+        cid = component.get("id", "")
+        if not cid:
+            continue
+        parent = component.get("parent")
+        if parent:
+            if parent not in component_ids:
+                error(f"Component '{cid}' references unknown parent '{parent}'", "components")
+            elif parent == cid:
+                error(f"Component '{cid}' cannot parent itself", "components")
+            else:
+                if cid in parent_of and parent_of[cid] != parent:
+                    error(f"Component '{cid}' has conflicting parents '{parent_of[cid]}' and '{parent}'", "components")
+                parent_of[cid] = parent
+                child_links.setdefault(parent, set()).add(cid)
+        for child in component.get("children", []) or []:
+            if child not in component_ids:
+                error(f"Component '{cid}' lists unknown child '{child}'", "components")
+            elif child == cid:
+                error(f"Component '{cid}' cannot list itself as child", "components")
+            else:
+                child_links.setdefault(cid, set()).add(child)
+                if child in parent_of and parent_of[child] != cid:
+                    error(f"Component '{child}' has conflicting parents '{parent_of[child]}' and '{cid}'", "components")
+                parent_of[child] = cid
+        issues.extend(validate_health(component.get("health"), "components", cid or "<component>", project_root))
+
+    if component_ids and not parent_of and len(component_ids) >= 4:
+        error("Component hierarchy is fully flat. Use parent/child structure for real nested subsystems.", "components")
+
+    root_components = [cid for cid in component_ids if cid not in parent_of]
+    if len(root_components) < 3:
+        error(f"Too few top-level components: {len(root_components)} (minimum 3)", "components")
+    elif len(root_components) > 5:
+        error(f"Too many top-level components: {len(root_components)} (maximum 5)", "components")
+
+    def compute_depth(cid: str, seen: set[str]) -> int:
+        if cid in seen:
+            error(f"Component hierarchy cycle detected at '{cid}'", "components")
+            return 0
+        parent = parent_of.get(cid)
+        if not parent:
+            return 1
+        return 1 + compute_depth(parent, seen | {cid})
+
+    for cid in component_ids:
+        depth = compute_depth(cid, set())
+        if depth > 3:
+            warn(f"Component '{cid}' is at depth {depth} (preferred max 3)", "components")
 
     # All node IDs
     actor_ids = {a.get("id") for a in atlas.get("actors", [])}
@@ -210,7 +247,6 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
             for dep in c.get("depends_on", []):
                 if dep not in component_ids:
                     error(f"Component '{c.get('id')}' depends_on unknown '{dep}'", "components")
-            check_deps(c.get("children", []))
 
     check_deps(components)
 
@@ -272,11 +308,11 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
             if comp not in all_node_ids:
                 error(f"Anti-pattern '{ap.get('id')}' references unknown component '{comp}'", "concepts")
 
-    # Debt
-    for v in atlas.get("debt", {}).get("violations", []):
-        for comp in v.get("components", []):
+    # Tensions
+    for tension in atlas.get("tensions", []):
+        for comp in tension.get("components", []):
             if comp not in all_node_ids:
-                error(f"Debt violation references unknown component '{comp}'", "debt")
+                error(f"Tension '{tension.get('id', '?')}' references unknown component '{comp}'", "tensions")
 
     # External dependency health
     for dependency in atlas.get("external_dependencies", []):
@@ -355,10 +391,10 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
     issues = []
 
     def error(msg):
-        issues.append({"level": "ERROR", "section": "journey", "message": msg})
+        issues.append({"level": "ERROR", "section": "narrative", "message": msg})
 
     def warn(msg):
-        issues.append({"level": "WARNING", "section": "journey", "message": msg})
+        issues.append({"level": "WARNING", "section": "narrative", "message": msg})
 
     jid = narrative.get("id", "<unknown>")
 
@@ -518,6 +554,18 @@ def main():
                     all_issues.append({"level": "WARNING", "section": "story",
                         "message": f"Story '{parent_id}' has {count} child (min 2). Add more or merge into parent."})
 
+            root_story_count = sum(1 for story in all_stories.values() if not story.get("parent"))
+            if root_story_count < 3:
+                all_issues.append({"level": "ERROR", "section": "story",
+                    "message": f"Too few root stories: {root_story_count} (minimum 3, one per top-level component)"})
+            elif root_story_count > 5:
+                all_issues.append({"level": "ERROR", "section": "story",
+                    "message": f"Too many root stories: {root_story_count} (maximum 5, one per top-level component)"})
+
+            if all_stories and not children_count and len(all_stories) >= 4:
+                all_issues.append({"level": "ERROR", "section": "story",
+                    "message": "Story tree is fully flat. Add child stories when root stories contain distinct nested concerns."})
+
         # --- Narratives ---
         narratives_path = analysis_dir / "narratives.yaml"
         if not narratives_path.exists():
@@ -542,7 +590,7 @@ def main():
                         ids.add(nid)
                         all_issues.extend(validate_narrative(narrative, story_ids))
                     if "getting-started" not in ids:
-                        all_issues.append({"level": "ERROR", "section": "narrative", "message": "getting-started narrative is required — teaching-order path covering all groups"})
+                        all_issues.append({"level": "ERROR", "section": "narrative", "message": "getting-started narrative is required — teaching-order path covering the main top-level components"})
 
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]

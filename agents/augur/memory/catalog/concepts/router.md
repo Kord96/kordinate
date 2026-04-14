@@ -1,10 +1,19 @@
 ---
-description: Router — URL-based navigation and view switching
+description: Router — frontend URL-based navigation and view switching
 type: pattern
 graphable: true
 abstraction: [frontend, integration]
+status: primary
+scope: frontend
+relationships:
+  related_to: [server-route-registration, route-guard]
 ---
 # Router
+
+This concept is for frontend or UI navigation routing.
+
+- Use it when URLs or navigation state select views, screens, or UI trees.
+- Do not use it for backend route declaration; use [server-route-registration](/concepts/server-route-registration) for that.
 
 ## Recognition
 
@@ -22,6 +31,9 @@ How to identify this pattern in code.
 - Path parameters (`:id`, `[id]`, `{id}`), wildcard routes, catch-all segments
 - Nested route configurations with `Outlet`, `RouterView`, or `router-outlet` placeholders
 - Programmatic navigation: `navigate()`, `router.push()`, `router.navigate()`
+
+This concept is for frontend or UI-navigation routers.
+Backend API route registration belongs in deterministic `routes` facts, not this concept.
 
 ### Confidence
 

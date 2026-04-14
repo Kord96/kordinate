@@ -13,7 +13,9 @@ from analysis_paths import write_json, write_latest_analysis_pointer
 ROOT = Path(__file__).resolve().parents[1]
 ATLAS_SCHEMA = ROOT / "schemas" / "atlas-schema.md"
 FACTS_SCHEMA = ROOT / "schemas" / "facts-schema.md"
-NARRATIVE_SCHEMA = ROOT / "skills" / "analyze" / "narrative-schema.md"
+STORY_SCHEMA = ROOT / "schemas" / "story-schema.md"
+NARRATIVES_SCHEMA = ROOT / "schemas" / "narratives-schema.md"
+META_SCHEMA = ROOT / "schemas" / "meta-schema.md"
 
 
 def now_iso() -> str:
@@ -70,8 +72,6 @@ def main() -> int:
     facts_index = analysis_dir / "facts" / "index.json"
     stories_dir = analysis_dir / "stories"
     narratives_path = analysis_dir / "narratives.yaml"
-    concepts_path = analysis_dir / "concepts.json"
-
     meta = {
         "project": project_name,
         "analysis_id": analysis_id,
@@ -95,7 +95,6 @@ def main() -> int:
             "root": str(analysis_dir),
             "atlas": str(atlas_path),
             "facts_index": str(facts_index) if facts_index.exists() else "",
-            "concepts": str(concepts_path) if concepts_path.exists() else "",
             "stories_dir": str(stories_dir) if stories_dir.exists() else "",
             "narratives": str(narratives_path) if narratives_path.exists() else "",
             "blast": str(blast_path) if blast_path.exists() else "",
@@ -103,7 +102,9 @@ def main() -> int:
         "schemas": {
             "facts": str(FACTS_SCHEMA),
             "atlas": str(ATLAS_SCHEMA),
-            "narrative": str(NARRATIVE_SCHEMA),
+            "story": str(STORY_SCHEMA),
+            "narratives": str(NARRATIVES_SCHEMA),
+            "meta": str(META_SCHEMA),
         },
         "validation": {
             "passed": True,

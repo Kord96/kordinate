@@ -76,6 +76,9 @@ These are too complex for simple kustomize patches — generate the full ConfigM
 Read `network.grafana_public` and `network.docs_public` from Alfred-owned source config. Construct service DNS from namespace context. Generate:
 - `@grafana` host matcher → reverse proxy to `grafana.master.svc.cluster.local:3000`
 - `@docs` host matcher → reverse proxy to `docs.master.svc.cluster.local:80`
+- `@dev_api` host matcher for `dev.khaledkord.com` + `/api/*` → strip `/api` and reverse proxy to `localhost:4010`
+- `@dev_root` host matcher for `dev.khaledkord.com` + `/` → `302` redirect to `/dev/`
+- `@dev` host matcher for `dev.khaledkord.com` → reverse proxy to `localhost:4321`
 - Fallback 404 handler
 
 ### grafana-datasources (master namespace)

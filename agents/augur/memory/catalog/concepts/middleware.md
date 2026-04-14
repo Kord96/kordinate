@@ -3,6 +3,10 @@ description: Middleware — request/response pipeline interceptors for cross-cut
 type: pattern
 graphable: true
 abstraction: [integration, lifecycle]
+status: primary
+scope: cross-cutting
+relationships:
+  related_to: [layered, rest, graphql, server-route-registration, request-path]
 ---
 # Middleware
 
@@ -33,6 +37,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for a composable pipeline of handlers that each process a request or action, optionally transform it, and forward to the next handler in the chain.
+
+### Relationship To Other Concepts
+
+- `middleware` is a request or action pipeline pattern.
+- It commonly enforces cross-cutting concerns around a `rest`, `graphql`, or server route surface.
+- It often surrounds a `layered` core but is not the same thing as layering.
 
 ### Review Checklist
 

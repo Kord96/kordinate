@@ -1,9 +1,20 @@
 ---
-description: Workflow/state machine domain model — entities with defined states, transitions, and guards
+description: Workflow state modeling note; prefer workflow-engine or state-machine as the primary concept
 type: domain-model
 abstraction: [data, lifecycle]
+status: compatibility
+scope: backend
+relationships:
+  related_to: [workflow-engine, state-machine]
 ---
 # Workflow / State Machine
+
+This concept is retained as a compatibility note, but Augur should usually prefer one of:
+
+- [workflow-engine](/concepts/workflow-engine) for multi-step orchestration
+- [state-machine](/concepts/state-machine) for explicit states, transitions, and guards
+
+Use this page only when the code intentionally blurs both concerns and the distinction is genuinely unclear.
 
 ## Recognition
 

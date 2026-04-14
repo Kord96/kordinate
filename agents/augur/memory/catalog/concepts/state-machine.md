@@ -5,6 +5,10 @@ testable: true
 observable: true
 graphable: true
 abstraction: [design, lifecycle]
+status: primary
+scope: cross-cutting
+relationships:
+  related_to: [workflow-engine]
 ---
 # State Machine
 

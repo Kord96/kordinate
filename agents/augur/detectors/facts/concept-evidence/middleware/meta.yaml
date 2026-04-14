@@ -1,0 +1,55 @@
+concept: middleware
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 5
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 4
+    ask_when:
+      - broad_match
+      - noisy_rule_match
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 4
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 5
+  entries:
+    - id: middleware-pipeline
+      prompt: Is there a composable request or action pipeline where each stage forwards control to the next?
+      weight: 3
+      signals:
+        - app.use
+        - middleware
+        - next(
+    - id: middleware-cross-cutting
+      prompt: Does the middleware implement cross-cutting concerns such as auth, logging, or rate limiting rather than core business logic?
+      weight: 2
+      signals:
+        - BaseHTTPMiddleware
+        - canActivate
+        - interceptor
+monitoring:
+  applies_to:
+    - component
+    - flow
+  health_signals:
+    - name: middleware.error.rate
+      description: Failures in request-pipeline stages before the main handler runs.
+    - name: middleware.short_circuit.rate
+      description: Requests terminated early by auth, validation, rate-limit, or redirect middleware.
+  business_metrics: []
+  gaps:
+    - Missing stage-level visibility makes ordering and short-circuit bugs hard to debug.

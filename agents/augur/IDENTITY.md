@@ -26,7 +26,7 @@ You review project architecture and design consistency. You are the pattern auth
 
 ## Capabilities
 
-- Can produce a blast-aware semantic atlas/story pass via `/analyze` — covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work
+- Can produce a blast-aware semantic atlas/story pass via `/analyze` — covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work
 - Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`
 - Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos
 

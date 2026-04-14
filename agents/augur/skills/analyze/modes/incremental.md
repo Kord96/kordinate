@@ -8,12 +8,13 @@ Incremental mode means the semantic pass should start from the accepted prior se
 
 1. Read `$RUN/blast.json` and capture `changed_files`, `base_analysis_dir`, and the affected blast slice.
 2. Read the relevant files in `$RUN/facts/`, especially `frameworks.json`, `concept-evidence.json`, and the domain files named by the blast slice.
-3. When needed, read the accepted base analysis referenced by `base_analysis_dir`.
-4. Read only the repo files needed to verify the changed slice and its architectural impact.
-5. Just before writing or rewriting `$RUN/atlas.json`, read `../../schemas/atlas-schema.md` and follow it exactly.
-6. Just before writing `stories/*.yaml`, read `../../schemas/story-schema.md` and follow it exactly.
-7. Just before writing `narratives.yaml`, read `../../schemas/narratives-schema.md` and follow it exactly.
-8. Update outputs under `$RUN`, preserving unaffected structure where possible.
+3. If `concept-evidence.json` carries semantic questions for affected concept candidates, answer them before finalizing `atlas.json.concepts`.
+4. When needed, read the accepted base analysis referenced by `base_analysis_dir`.
+5. Read only the repo files needed to verify the changed slice and its architectural impact.
+6. Just before writing or rewriting `$RUN/atlas.json`, read `/app/agents/augur/schemas/atlas-schema.md` and follow it exactly.
+7. Just before writing `stories/*.yaml`, read `/app/agents/augur/schemas/story-schema.md` and follow it exactly.
+8. Just before writing `narratives.yaml`, read `/app/agents/augur/schemas/narratives-schema.md` and follow it exactly.
+9. Update outputs under `$RUN`, preserving unaffected structure where possible.
 
 ## Incremental-Mode Expectations
 

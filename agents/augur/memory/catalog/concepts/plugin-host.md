@@ -2,8 +2,16 @@
 description: Plugin host structure — core system with pluggable extensions via defined interfaces
 type: structure-shape
 abstraction: [architectural, design]
+status: specialized
+scope: cross-cutting
+relationships:
+  related_to: [plugin]
 ---
 # Plugin Host
+
+`plugin-host` is the host-side companion to [plugin](/concepts/plugin).
+
+Use it when the codebase owns the extension surface itself: discovery, lifecycle, compatibility policy, and plugin execution boundaries.
 
 ## Recognition
 

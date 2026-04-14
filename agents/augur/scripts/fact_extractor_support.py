@@ -2749,13 +2749,25 @@ def parse_sql_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
     return facts
 
 
-def file_hotness_scores(facts: list[dict[str, Any]]) -> Counter[str]:
+def file_hotness_scores(facts: list[dict[str, Any]], root: Path) -> Counter[str]:
     counts: Counter[str] = Counter()
     for fact in facts:
         for source in fact.get("source_files", []):
-            counts[source.split(":", 1)[0]] += 1
-        for component_id in fact.get("relationships", {}).get("component_ids", []):
-            counts[component_id] += 1
+            candidate = source.split(":", 1)[0]
+            if not candidate:
+                continue
+            candidate_path = Path(candidate)
+            if candidate_path.is_absolute():
+                if root not in candidate_path.parents:
+                    continue
+                candidate_path = candidate_path.relative_to(root)
+            resolved = (root / candidate_path).resolve()
+            try:
+                resolved.relative_to(root.resolve())
+            except ValueError:
+                continue
+            if resolved.is_file():
+                counts[str(candidate_path)] += 1
     return counts
 
 
@@ -3011,7 +3023,7 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                 ]
             )
 
-    hot_scores = file_hotness_scores(facts)
+    hot_scores = file_hotness_scores(facts, root)
     hot_files: list[dict[str, Any]] = []
     for file_path, score in hot_scores.most_common(10):
         if score < 2:

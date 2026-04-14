@@ -185,8 +185,22 @@ function renderStartupGuidance(agentParams?: Record<string, unknown>): string {
 function renderStructuredRuntimeContext(message: RequestMessage): string {
   const analysisContext = message.agent_params?.analysis_context
   if (analysisContext && typeof analysisContext === 'object' && !Array.isArray(analysisContext)) {
-    const serialized = JSON.stringify(analysisContext, null, 2)
-    return `## Runtime Context\n\n\`\`\`json\n${serialized}\n\`\`\`\n\n`
+    const context = analysisContext as Record<string, unknown>
+    const lines: string[] = []
+    const pushLine = (label: string, value: unknown): void => {
+      if (typeof value === 'string' && value.trim()) lines.push(`- ${label}: \`${value.trim()}\``)
+    }
+    pushLine('Mode', context.mode)
+    pushLine('Run dir', context.run_dir)
+    pushLine('Facts dir', context.facts_dir)
+    pushLine('Blast file', context.blast_path)
+    pushLine('Concept evidence', context.concept_evidence_path)
+    pushLine('Seed atlas path', context.atlas_path)
+    lines.push('- Start from the prepared run artifacts above before reading repo code.')
+    lines.push('- Use `facts/index.json` to choose follow-up fact domains and code hotspots.')
+    lines.push('- Read repo code only through fact-selected files, architecture entrypoints, or concrete validation gaps.')
+    lines.push('- Do not begin with repo-root listings or metadata-file discovery.')
+    return `## Runtime Context\n${lines.join('\n')}\n\n`
   }
 
   const workingDirHint = message.working_dir

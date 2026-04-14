@@ -33,7 +33,6 @@ def reset_incomplete_run_dir(run_dir: Path) -> None:
         run_dir / "stories",
         run_dir / "atlas.json",
         run_dir / "narratives.yaml",
-        run_dir / "concepts.json",
         run_dir / "blast.json",
         run_dir / "meta.json",
     ]
@@ -49,14 +48,21 @@ def reset_incomplete_run_dir(run_dir: Path) -> None:
             path.unlink(missing_ok=True)
 
 
-def build_payload(repo_root: Path, agent_home: Path, project: str | None) -> dict[str, str]:
+def build_payload(repo_root: Path, agent_home: Path, project: str | None, run_suffix: str | None = None) -> dict[str, str]:
     repo_root = repo_root.resolve()
     sha = run_git(repo_root, "rev-parse", "HEAD")
     commit_time = run_git(repo_root, "show", "-s", "--format=%ct", sha)
     project_name = slug_repo_name(project or repo_root.name)
     project_mem = agent_home / "memory" / "projects" / project_name
     analysis = project_mem / "analysis"
-    run_dir = analysis / f"{commit_time}-{sha[:40]}"
+    suffix = (run_suffix or "").strip()
+    run_id = f"{commit_time}-{sha[:40]}"
+    if suffix:
+        safe_suffix = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in suffix)
+        safe_suffix = safe_suffix.strip("-_")
+        if safe_suffix:
+            run_id = f"{run_id}-{safe_suffix[-12:]}"
+    run_dir = analysis / run_id
     analysis.mkdir(parents=True, exist_ok=True)
     run_dir.mkdir(parents=True, exist_ok=True)
     reset_incomplete_run_dir(run_dir)
@@ -78,13 +84,14 @@ def main() -> int:
     parser.add_argument("repo_root", help="Repository root to analyze")
     parser.add_argument("--agent-home", default=os.environ.get("AGENT_HOME_DIR", ""), help="Agent home directory")
     parser.add_argument("--project", default=None, help="Optional explicit project slug")
+    parser.add_argument("--run-suffix", default=None, help="Optional unique suffix to isolate concurrent runs")
     parser.add_argument("--shell", action="store_true", help="Print shell exports")
     args = parser.parse_args()
 
     if not args.agent_home:
         raise SystemExit("AGENT_HOME_DIR or --agent-home is required")
 
-    payload = build_payload(Path(args.repo_root), Path(args.agent_home), args.project)
+    payload = build_payload(Path(args.repo_root), Path(args.agent_home), args.project, args.run_suffix)
     if args.shell:
         for key, value in payload.items():
             print(f"export {key}={json.dumps(value)}")

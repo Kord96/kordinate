@@ -4,6 +4,10 @@ type: pattern
 testable: true
 graphable: true
 abstraction: [architectural, frontend]
+status: specialized
+scope: frontend
+relationships:
+  related_to: [layered, component]
 ---
 # Model-View-ViewModel
 
@@ -28,6 +32,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for a ViewModel layer providing observable state that views bind to declaratively.
+
+### Relationship To Other Concepts
+
+- `mvvm` is a UI state/presentation coordination pattern.
+- It can coexist with `component` architecture, especially in reactive frontends.
+- It often overlaps with `layered` naming but is narrower and presentation-focused.
 
 ### Review Checklist
 

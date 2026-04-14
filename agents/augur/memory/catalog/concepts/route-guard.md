@@ -3,6 +3,10 @@ description: Route Guard — conditional access control on route navigation
 type: pattern
 graphable: true
 abstraction: [frontend, security]
+status: specialized
+scope: frontend
+relationships:
+  related_to: [router, session-auth, token-auth, oauth-oidc, rbac]
 ---
 # Route Guard
 
@@ -31,6 +35,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for a centralized or per-route gate that evaluates access conditions before rendering the target view, with well-defined redirect behavior on denial.
+
+### Relationship To Other Concepts
+
+- `route-guard` is a specialized routing concern, not the primary routing concept.
+- Prefer [router](/concepts/router) for the navigation system itself.
+- Prefer `route-guard` when the main architectural concern is pre-render authorization or navigation gating.
 
 ### Review Checklist
 

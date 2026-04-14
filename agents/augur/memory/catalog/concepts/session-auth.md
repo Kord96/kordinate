@@ -5,6 +5,11 @@ testable: true
 observable: true
 graphable: true
 abstraction: [security]
+status: primary
+scope: backend
+relationships:
+  disambiguates: [token-auth, oauth-oidc, api-key-auth]
+  related_to: [route-guard, rbac]
 ---
 # Session-Based Authentication
 
@@ -33,6 +38,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for server-side session state management with secure cookie transport and CSRF protection.
+
+### Relationship To Other Concepts
+
+- `session-auth` is server-owned auth state carried via cookies or session IDs.
+- Prefer `token-auth` when requests authenticate with self-contained bearer tokens.
+- Prefer `oauth-oidc` when delegated identity-provider flows are part of the design.
 
 ### Review Checklist
 

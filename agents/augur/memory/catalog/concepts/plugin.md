@@ -4,6 +4,10 @@ type: pattern
 testable: true
 graphable: true
 abstraction: [design]
+status: primary
+scope: cross-cutting
+relationships:
+  related_to: [plugin-host]
 ---
 # Plugin Architecture
 
@@ -31,6 +35,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for a stable plugin interface with discovery/registration and no core modifications needed.
+
+### Relationship To Other Concepts
+
+- `plugin` describes the extension implementation side.
+- `plugin-host` describes the core system that discovers, loads, and governs those plugins.
+- Keep both when the codebase clearly contains both roles.
 
 ### Review Checklist
 

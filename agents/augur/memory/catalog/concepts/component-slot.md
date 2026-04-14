@@ -1,10 +1,16 @@
 ---
-description: Component Slot — parent-controlled content injection into child components
+description: Content-projection technique within component architecture
 type: pattern
 graphable: false
 abstraction: [frontend, design]
+status: specialized
+scope: frontend
+relationships:
+  part_of: [component]
 ---
 # Component Slot
+
+Treat this as a specialized technique under [component](/concepts/component), not as a separate primary UI architecture family.
 
 ## Recognition
 

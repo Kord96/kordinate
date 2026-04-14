@@ -7,7 +7,7 @@ description: Augur workflow — analyze existing code or design new projects, pr
 
 | Skill | Purpose |
 |-------|---------|
-| `/analyze` | Analyze existing codebases — pattern detection, debt assessment, failure modes |
+| `/analyze` | Analyze existing codebases — deterministic fact extraction, semantic atlas composition, stories, and narratives |
 | `/design` | Design new projects (4 modes: full, api, service, component) |
 
 ## Structured Outputs
@@ -21,10 +21,10 @@ See `schemas/facts-schema.md` for the full schema.
 ### Atlas
 
 The atlas is the primary output consumed by all agents (charon, sauron, alfred). It contains:
-- Components and their connections
-- Failure modes with structured detection metadata (signals, concerns, source patterns)
-- Infrastructure requirements (vitals config, dashboard stubs, resource defaults)
-- Dependency map
+- Hierarchical components and their connections
+- Flows, state, and outside dependencies
+- Confirmed concepts and grounded architecture tensions
+- Optional grounded sections such as actors, events, module graph, security, and API surface
 
 See `agents/augur/schemas/atlas-schema.md` for the full atlas schema.
 
@@ -33,6 +33,7 @@ See `agents/augur/schemas/atlas-schema.md` for the full atlas schema.
 - **Concept catalog semantics** at `memory/catalog/concepts/` — `<concept>.md` is canonical for concept meaning and architectural implications
 - **Framework catalog semantics** at `memory/catalog/frameworks/` — framework primitives, conventions, and common co-occurring concepts
 - **Ontology/index layer** at `memory/indexes/` — abstractions, concept index, anti-pattern index
+- **Ontology graph index** at `memory/indexes/ontology-graph.json` and `memory/indexes/ontology-graph.md` — machine-readable and visual graph of concepts, frameworks, abstractions, and cross-links, generated from concept/framework source metadata
 - **Detector source assets** at `detectors/` — deterministic fact-production rules and policies
 - **Generated bundles** at `.generated/bundles/` — derived prompt/runtime assets, not canonical source
 - **Infra-atlas** at `/kord/agents/charon/memory/global/infra-atlas.json` — cluster topology, observability endpoints, workload contract

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+BUNDLED_CONCEPT_QUESTIONS = ROOT / ".generated" / "bundles" / "detectors" / "concept-evidence" / "questions.json"
 SEMANTIC_REVIEW_CONCEPTS = {
     "active-record",
     "aggregate",
@@ -486,8 +487,43 @@ def metadata_from_facts_path(facts_path: Path, facts: list[dict[str, Any]]) -> d
     }
 
 
-def pattern_to_fact(pattern: dict[str, Any]) -> dict[str, Any]:
+def load_concept_question_bundle() -> dict[str, Any]:
+    if not BUNDLED_CONCEPT_QUESTIONS.exists():
+        return {}
+    try:
+        payload = load_json(BUNDLED_CONCEPT_QUESTIONS)
+    except Exception:
+        return {}
+    concepts = payload.get("concepts")
+    return concepts if isinstance(concepts, dict) else {}
+
+
+def questions_for_pattern(pattern: dict[str, Any], question_bundle: dict[str, Any]) -> dict[str, Any]:
+    concept_id = str(pattern.get("id") or "")
+    bundled = question_bundle.get(concept_id)
+    if not isinstance(bundled, dict):
+        return {
+            "enabled": False,
+            "threshold": None,
+            "ask_when": [],
+            "entries": [],
+        }
+    questions = bundled.get("questions") if isinstance(bundled.get("questions"), dict) else {}
+    entries = questions.get("entries") if isinstance(questions.get("entries"), list) else []
+    entry_ids = [entry.get("id") for entry in entries if isinstance(entry, dict) and entry.get("id")]
+    return {
+        "enabled": bool(questions.get("enabled", False)),
+        "threshold": questions.get("threshold"),
+        "ask_when": list(questions.get("ask_when") or []),
+        "entries": entries,
+        "entry_ids": entry_ids,
+        "recommended_next_step": "answer_questions" if entries else "none",
+    }
+
+
+def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any]) -> dict[str, Any]:
     evidence = pattern.get("evidence") or {}
+    question_payload = questions_for_pattern(pattern, question_bundle)
     raw_evidence = {
         "concept_id": pattern.get("id"),
         "category": pattern.get("category"),
@@ -498,6 +534,7 @@ def pattern_to_fact(pattern: dict[str, Any]) -> dict[str, Any]:
         "supporting_components": evidence.get("components") or [],
         "decision_mode": pattern.get("decision_mode") or "fact-inference",
         "semantic_review_required": bool(pattern.get("semantic_review_required")),
+        "semantic_questions": question_payload,
     }
     fingerprint_source = "|".join(
         [
@@ -569,7 +606,8 @@ def build_output(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any
     meta = metadata_from_facts_path(facts_path, facts)
     patterns = infer_patterns(facts)
     gaps = infer_gaps(facts)
-    concept_facts = [pattern_to_fact(pattern) for pattern in patterns]
+    question_bundle = load_concept_question_bundle()
+    concept_facts = [pattern_to_fact(pattern, question_bundle) for pattern in patterns]
     concept_facts.extend(gap_to_fact(gap) for gap in gaps)
     return {
         "version": meta["version"],

@@ -48,3 +48,5 @@ Framework detection should run before concept detection and should influence:
 - category prioritization
 - which detector bundles are loaded
 - API review and framework-native expectations
+
+`memory/catalog/frameworks/index.md` is a supporting cross-language reference, not the canonical detector contract.

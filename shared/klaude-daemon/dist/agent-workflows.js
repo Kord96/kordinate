@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { basename, dirname, join } from 'node:path';
 import { constants as fsConstants } from 'node:fs';
-import { access, mkdir, readFile, rm } from 'node:fs/promises';
+import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 async function pathExists(path) {
     try {
         await access(path, fsConstants.F_OK);
@@ -22,6 +22,13 @@ function requestCommandText(message) {
 }
 function gitArgsForRepo(repoPath, ...gitArgs) {
     return ['-c', `safe.directory=${repoPath}`, '-C', repoPath, ...gitArgs];
+}
+function correlationSuffix(message) {
+    const raw = typeof message.correlation_id === 'string' ? message.correlation_id.trim() : '';
+    if (!raw)
+        return 'run';
+    const safe = raw.replace(/[^a-zA-Z0-9_-]+/g, '-');
+    return safe.slice(-12) || 'run';
 }
 async function runCommand(command, args, cwd, extraEnv) {
     return await new Promise((resolve, reject) => {
@@ -162,7 +169,8 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
     if (!currentSha || !commitTime) {
         throw new Error('could not resolve git HEAD for Augur deterministic preparation');
     }
-    const runDir = join(agentHome, 'memory', 'projects', project, 'analysis', `${commitTime}-${currentSha.slice(0, 40)}`);
+    const runId = `${commitTime}-${currentSha.slice(0, 40)}-${correlationSuffix(message)}`;
+    const runDir = join(agentHome, 'memory', 'projects', project, 'analysis', runId);
     const factsDir = join(runDir, 'facts');
     const env = {
         KORDINATE_HOME: kordHome,
@@ -189,6 +197,22 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
         '--current-sha', currentSha,
         '--output', join(runDir, 'blast.json'),
     ], agentHome, env);
+    const blastPath = join(runDir, 'blast.json');
+    try {
+        const blast = JSON.parse(await readFile(blastPath, 'utf8'));
+        if (options?.forcedBlastMode) {
+            blast.mode = options.forcedBlastMode;
+            const existingReasons = Array.isArray(blast.reasons)
+                ? blast.reasons.map(reason => String(reason))
+                : [];
+            blast.reasons = Array.from(new Set([...existingReasons, `forced-${options.forcedBlastMode}`]));
+        }
+        blast.analysis_dir = runDir;
+        await writeFile(blastPath, `${JSON.stringify(blast, null, 2)}\n`, 'utf8');
+    }
+    catch {
+        // Leave the original blast file untouched if rewrite fails; validation will surface it later.
+    }
     await runRequiredCommand('python3', [
         join(kordHome, 'agents', 'augur', 'scripts', 'detect_frameworks.py'),
         workingDir,
@@ -230,17 +254,27 @@ function buildAugurAnalysisContext(workingDir, project, runDir, analysisMode) {
         join(factsDir, 'boundaries.json'),
         join(factsDir, 'routes.json'),
         join(factsDir, 'dispatch-bindings.json'),
+        join(factsDir, 'hot-files.json'),
     ];
     const startupDirective = analysisMode === 'incremental'
         ? [
             'Begin with the prepared analysis artifacts, not generic repo orientation.',
             'Read starter_files first and treat facts/index.json as the manifest for follow-up fact selection.',
+            'Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.',
+            'Use hot-files.json and fact source_files to rank what code to inspect next.',
             'Preserve unchanged accepted outputs unless blast evidence forces wider revision.',
+            'When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.',
         ].join(' ')
         : [
             'Begin with the prepared analysis artifacts, not generic repo orientation.',
             'Read starter_files first and treat facts/index.json as the manifest for follow-up fact selection.',
+            'Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.',
+            'Use hot-files.json and fact source_files to rank what code to inspect next.',
+            'Do not read large domains like concept-evidence.json, external-clients.json, config.json, or import-graph.json in full before narrowing them by component, concept, or hotspot.',
+            'Before atlas.json exists, only inspect those large domains through filtered queries keyed by component_ids, source_files, concept ids, or hotspot paths.',
+            'Do not begin by listing the repo root or reading repo metadata files.',
             'Follow the already-loaded Augur skill, mode guide, and canonical schema files instead of guessing alternate paths or formats.',
+            'When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.',
         ].join(' ');
     return {
         project,
@@ -363,6 +397,7 @@ function createAugurWorkflowHooks(context) {
             const prepared = await prepareAugurDeterministicArtifacts(context, message, {
                 clearSemanticOutputs: true,
                 eventKindPrefix: 'augur.semantic_prepare',
+                forcedBlastMode: analysisMode,
             });
             const workingDir = message.working_dir;
             if (!workingDir) {

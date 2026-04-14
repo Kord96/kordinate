@@ -11,3 +11,4 @@ negative:
   - URL-based conditionals without a coherent routing system
 notes:
   - Keep this separate from backend API route extraction.
+  - Use this concept for UI navigation routers, not server route registration.

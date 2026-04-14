@@ -14,14 +14,14 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-generic-opus:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "generic-opus"
   },
   {
     "name": "augur-opus",
     "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`",
       "Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos"
     ],
@@ -35,8 +35,8 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-augur-opus:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "augur-opus"
   },
   {
@@ -54,8 +54,8 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-generic-gemini-31-pro:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "generic-gemini-31-pro"
   },
   {
@@ -73,8 +73,8 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-generic-gemini-25-pro:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "generic-gemini-25-pro"
   },
   {
@@ -92,8 +92,8 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-generic-gemini-25-flash:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "generic-gemini-25-flash"
   },
   {
@@ -111,8 +111,8 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-generic-deepseek-reasoner:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "generic-deepseek-reasoner"
   },
   {
@@ -130,8 +130,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-generic-glm5:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "generic-glm5"
   },
   {
@@ -149,14 +149,14 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-generic-gpt54:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "generic-gpt54"
   },
   {
     "name": "augur-gemini-31-pro",
     "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`",
       "Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos"
     ],
@@ -170,14 +170,14 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-augur-gemini-31-pro:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "augur-gemini-31-pro"
   },
   {
     "name": "augur-gemini-25-pro",
     "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`",
       "Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos"
     ],
@@ -191,14 +191,14 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-augur-gemini-25-pro:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "augur-gemini-25-pro"
   },
   {
     "name": "augur-gemini-25-flash",
     "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`",
       "Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos"
     ],
@@ -212,14 +212,14 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-augur-gemini-25-flash:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "augur-gemini-25-flash"
   },
   {
     "name": "augur-deepseek-reasoner",
     "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`",
       "Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos"
     ],
@@ -233,14 +233,14 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-deepseek-reasoner:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "augur-deepseek-reasoner"
   },
   {
     "name": "augur-glm5",
     "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`",
       "Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos"
     ],
@@ -254,14 +254,14 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-glm5:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "augur-glm5"
   },
   {
     "name": "augur-gpt54",
     "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, debt assessment, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`",
       "Detection quality improves over time via `/audit agents/augur --mode loop` which trains detection rules against real repos"
     ],
@@ -275,8 +275,8 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-augur-gpt54:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "augur-gpt54"
   },
   {
@@ -298,8 +298,8 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-charon-gpt53-codex:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "charon-gpt53-codex"
   },
   {
@@ -319,8 +319,8 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-sauron-gpt53-codex:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "sauron-gpt53-codex"
   },
   {
@@ -339,8 +339,8 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-alfred-deepseek-chat:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "alfred-deepseek-chat"
   },
   {
@@ -359,8 +359,8 @@
     "runtime": "simple-harness",
     "health_url": "http://agent-alfred-gpt-oss-20b:9090/health",
     "default_working_dir": null,
-    "registered_at": "2026-04-13T19:21:12Z",
-    "last_seen_at": "2026-04-13T19:21:12Z",
+    "registered_at": "2026-04-14T14:28:57Z",
+    "last_seen_at": "2026-04-14T14:28:57Z",
     "request_topic": "alfred-gpt-oss-20b"
   }
 ]

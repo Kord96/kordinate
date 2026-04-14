@@ -19,6 +19,8 @@ The deterministic phase is already done. Work from the prepared run directory an
    - `$RUN/facts/index.json`
    - the small high-signal fact files named by the runtime
    - treat `$RUN/facts/index.json` as the manifest for deterministic evidence
+   - treat `$RUN/facts/concept-evidence.json` as the canonical source for candidate concepts and run-specific semantic questions
+   - inspect `concept-evidence.json` selectively by candidate concept, supporting file, or component; do not read the whole file at startup
 
 2. Follow the mode-specific instructions already provided by the runtime.
    - the semantic mode is determined before this skill runs
@@ -28,22 +30,27 @@ The deterministic phase is already done. Work from the prepared run directory an
 
 3. Use facts as guidance, then explore code semantically.
    - use `facts/index.json` to identify likely high-signal domains and files
-   - prefer selective reads for large fact domains
+   - start with `hot-files.json` and with repo files named by the prepared fact domains, especially routes, handlers, boundaries, dispatch bindings, and framework source files
+   - use `facts/concept-evidence.json` to identify candidate concepts that still need semantic confirmation
+   - answer any attached semantic questions before finalizing `atlas.json.concepts`
+   - prefer selective reads for large fact domains, and extract only the entries you need before opening repo files
+   - for larger domains such as `external-clients.json`, `config.json`, and `import-graph.json`, filter by `component_ids`, `source_files`, or hotspot paths with `python`, `jq`, or `rg` instead of reading the whole file
    - inspect the actual repo code to understand boundaries, responsibilities, flows, and ambiguities
+   - widen from fact-selected files to adjacent code only when the deterministic evidence leaves a real ambiguity
    - do not treat deterministic facts as final truth
 
 4. Write `$RUN/atlas.json`.
-   - read `../../schemas/atlas-schema.md` before writing
+   - read `/app/agents/augur/schemas/atlas-schema.md` before writing
    - `components[].depends_on` may reference only component ids
    - outside systems belong in `external_dependencies` or `state`
    - flow node references must resolve to real atlas ids
 
 5. Write `$RUN/stories/*.yaml`.
-   - read `../../schemas/story-schema.md` before writing
+   - read `/app/agents/augur/schemas/story-schema.md` before writing
    - keep every story grounded in inspected evidence
 
 6. Write `$RUN/narratives.yaml`.
-   - read `../../schemas/narratives-schema.md` before writing
+   - read `/app/agents/augur/schemas/narratives-schema.md` before writing
    - include a narrative with exact id `getting-started`
    - narrative story entries must reference real story ids
 

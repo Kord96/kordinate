@@ -1,10 +1,23 @@
 ---
-description: Property graph model with typed nodes and edges carrying attributes
-type: pattern
-category: domain-model
+description: Specialized graph variant with typed nodes and edges carrying attributes
+type: domain-model
 abstraction: [data, graph]
+status: specialized
+scope: domain
+relationships:
+  is_a: [graph]
+  related_to: [search-index]
 ---
 # Property Graph
+
+This is a specialized variant of [graph](/concepts/graph), not a separate top-level graph family.
+
+Use it when the code clearly models:
+- typed nodes and edges
+- attributed relationships
+- multi-hop traversal or graph query APIs
+
+If the code only needs a general dependency graph, DAG, or traversal structure, prefer `graph`.
 
 ## Recognition
 
@@ -41,8 +54,7 @@ How to identify this pattern in code.
 - Treating the graph as a document store by cramming all data into node properties instead of modeling relationships
 
 ### Complements
-- [graph](/concepts/graph) — property graph is a specialized form of the generic graph model
-- [social-graph](/concepts/social-graph) — social networks are a common property graph application
+- [graph](/concepts/graph) — primary graph concept in Augur
 - [search-index](/concepts/search-index) — graph data often needs full-text search over node properties
 
 ## Impact

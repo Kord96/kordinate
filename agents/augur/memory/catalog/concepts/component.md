@@ -4,6 +4,10 @@ type: pattern
 testable: true
 graphable: true
 abstraction: [design, frontend]
+status: primary
+scope: frontend
+relationships:
+  related_to: [mvc, mvvm]
 ---
 # Component Architecture
 
@@ -28,6 +32,12 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for a tree of self-contained, composable UI components with clear data flow through props and events.
+
+### Relationship To Other Concepts
+
+- `component` is the primary UI composition concept.
+- `component-slot` is a specialized content-projection technique within a component system, not a separate primary architecture family.
+- `mvvm` and `mvc` can coexist with components; they describe state/presentation coordination, not the rendering tree itself.
 
 ### Review Checklist
 

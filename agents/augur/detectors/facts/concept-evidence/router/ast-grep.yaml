@@ -27,16 +27,3 @@ id: router-vue-createRouter-ts
 language: TypeScript
 rule:
   pattern: 'createRouter($$$ARGS)'
----
-id: router-django-urlpatterns-py
-language: Python
-rule:
-  pattern: 'path($ROUTE, $VIEW, $$$REST)'
----
-id: router-fastapi-route-py
-language: Python
-rule:
-  pattern: |
-    @$APP.get($PATH)
-    async def $HANDLER($$$PARAMS):
-        $$$BODY

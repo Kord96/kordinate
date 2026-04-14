@@ -1,9 +1,19 @@
 ---
-description: Request path flow — synchronous request through a handler chain with response
+description: Request path flow note; prefer router or server-route-registration for the route surface itself
 type: flow-shape
 abstraction: [api, integration]
+status: supporting
+scope: backend
+relationships:
+  related_to: [server-route-registration, middleware]
 ---
 # Request Path
+
+Treat this as a supporting end-to-end flow note, not a primary routing concept.
+
+- Use [router](/concepts/router) for frontend navigation routing.
+- Use [server-route-registration](/concepts/server-route-registration) for backend route declaration and exposure.
+- Use this concept when the important question is the request's path across layers and components after routing has already been resolved.
 
 ## Recognition
 

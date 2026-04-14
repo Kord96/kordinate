@@ -6,6 +6,11 @@ observable: true
 distributed: true
 graphable: true
 abstraction: [lifecycle, integration]
+status: primary
+scope: backend
+relationships:
+  preferred_over: [workflow-state-machine]
+  related_to: [state-machine, saga]
 ---
 # Workflow Engine
 
@@ -32,6 +37,13 @@ How to identify this pattern in code.
 ## Architecture
 
 Look for DAG-based task orchestration with explicit step dependencies, state tracking, and failure handling.
+
+### Relationship To Other Concepts
+
+- `workflow-engine` is the orchestration concept: task graphs, retries, persistence, compensation, and long-running execution.
+- `state-machine` is the more fundamental transition-model concept.
+- If the code is only modeling entity states and transitions, prefer `state-machine`.
+- If the code is orchestrating multi-step execution across tasks, workers, or services, prefer `workflow-engine`.
 
 ### Review Checklist
 

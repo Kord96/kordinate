@@ -7,7 +7,8 @@ def encode(value: String): String = {
     .replace("\r", "\\r")
 }
 
-@main def exec() = {
+@main def exec(cpgFile: String) = {
+  importCpg(cpgFile)
   cpg.method.l.foreach { method =>
     method.callOut.l.foreach { call =>
       val callerFile = method.file.name.headOption.getOrElse("")

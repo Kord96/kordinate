@@ -1,0 +1,56 @@
+concept: grpc
+detectors:
+  ast_grep:
+    enabled: true
+    detector_strength: 5
+  semgrep:
+    enabled: false
+    detector_strength: 2
+  signatures:
+    enabled: true
+    detector_strength: 4
+  questions:
+    enabled: true
+    detector_strength: 4
+    ask_when:
+      - broad_match
+      - architecture_level_concept
+policy:
+  auto_confirm:
+    allowed: true
+    min_detector_strength: 5
+    min_match_confidence: 4
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 5
+  entries:
+    - id: grpc-contract-and-stubs
+      prompt: Does the system define or consume protobuf service contracts with generated stubs?
+      weight: 3
+      signals:
+        - grpc
+        - .proto
+        - addService
+    - id: grpc-server-or-client-surface
+      prompt: Are server or client RPC calls part of the primary integration surface rather than incidental library usage?
+      weight: 2
+      signals:
+        - insecure_channel
+        - add_insecure_port
+        - service
+monitoring:
+  applies_to:
+    - component
+    - dependency
+    - flow
+  health_signals:
+    - name: grpc.call.error.rate
+      description: RPC failures grouped by service and method.
+    - name: grpc.deadline.exceeded.rate
+      description: Rate of gRPC calls exceeding configured deadlines.
+  business_metrics: []
+  gaps:
+    - Missing method-level latency and deadline visibility hides gRPC contract regressions.

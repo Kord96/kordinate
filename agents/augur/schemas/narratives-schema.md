@@ -2,11 +2,18 @@
 
 Defines the top-level `narratives.yaml` contract.
 
-## Design Principle
-
 `narratives.yaml` is a thin cross-cutting index over the story tree. It pulls stories from anywhere in the tree into specific reading orders for specific audiences.
 
 Narratives are secondary navigation. The story tree is primary.
+
+## Prose Rules
+
+Apply these rules to narrative titles, descriptions, and per-story bridge text:
+
+- keep each description short and directional
+- explain why this story is next, not what the document contains
+- name the system concern or transition explicitly
+- avoid generic filler such as "this narrative explains"
 
 ## Narratives YAML Contract
 
@@ -32,26 +39,17 @@ narratives:
 - create narratives for cross-cutting concerns and audience-specific reading paths
 - do not create a narrative when tree navigation alone is enough
 
-## Prose Rules
-
-Apply these rules to narrative titles, descriptions, and per-story bridge text:
-
-- keep each description short and directional
-- explain why this story is next, not what the document contains
-- name the system concern or transition explicitly
-- avoid generic filler such as "this narrative explains"
-
 ## Required Narrative
 
-Include a narrative with exact id `getting-started` that provides a teaching-order path covering the main groups.
+Include a narrative with exact id `getting-started` that provides a teaching-order path covering the main top-level components.
 
 Do not rename this required narrative to variants such as `narrative-getting-started`.
 
 ## When To Create A Narrative
 
-- Do create one when a concern spans multiple root groups
-- Do create one for a specific audience such as onboarding or resilience review
-- Do not create one for a single-group drilldown already covered by the story tree
+- do create one when a concern spans multiple top-level components
+- do create one for a specific audience such as onboarding or resilience review
+- do not create one for a single-root drilldown already covered by the story tree
 
 ## File Layout
 

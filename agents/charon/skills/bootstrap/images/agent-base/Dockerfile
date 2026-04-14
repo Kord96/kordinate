@@ -6,21 +6,35 @@ ENV PATH="/usr/local/bin:${PATH}"
 # Baked Kordinate code root inside the image. Keep this separate from HOME,
 # which remains the standard Unix tool home for shells and CLIs.
 ENV KORDINATE_HOME=/app
+ENV JOERN_HOME=/opt/joern
+ENV PATH="${JOERN_HOME}/joern-cli:${JOERN_HOME}/joern-cli/bin:${PATH}"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     bash \
     ca-certificates \
     curl \
+    docker.io \
     git \
     gnupg \
+    openjdk-17-jre-headless \
     openssh-client \
     pass \
     python3 \
     python3-yaml \
     jq \
     ripgrep \
+    unzip \
+    wget \
   && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p "${JOERN_HOME}" \
+  && cd /tmp \
+  && wget -q "https://github.com/joernio/joern/releases/download/v4.0.518/joern-install.sh" \
+  && chmod +x joern-install.sh \
+  && sed -i 's/sudo //g' joern-install.sh \
+  && ./joern-install.sh \
+  && rm -f joern-install.sh joern-cli.zip
 
 WORKDIR /app
 

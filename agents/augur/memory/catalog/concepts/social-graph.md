@@ -1,10 +1,22 @@
 ---
-description: Social graph pattern for user relationships and activity feeds
-type: pattern
+description: Specialized graph application for user relationships and activity feeds
+type: domain-model
 category: domain-model
 abstraction: [data, social]
+status: specialized
+scope: domain
+relationships:
+  is_a: [graph]
+  related_to: [pub-sub, cache-aside]
 ---
 # Social Graph
+
+This is a social-network application of [graph](/concepts/graph), not a separate foundational graph family.
+
+Use it when the code clearly models:
+- follower/following or friend relationships
+- timeline or feed fan-out
+- mutual-connection or social-neighborhood traversal
 
 ## Recognition
 
@@ -42,7 +54,7 @@ How to identify this pattern in code.
 - No fan-out strategy, forcing timeline assembly at query time for every request
 
 ### Complements
-- [property-graph](/concepts/property-graph) — social relationships form a natural property graph
+- [graph](/concepts/graph) — primary graph concept in Augur
 - [pub-sub](/concepts/pub-sub) — fan-out on write uses pub/sub to distribute activities
 - [cache-aside](/concepts/cache-aside) — hot timelines benefit from cache-aside for feed caching
 

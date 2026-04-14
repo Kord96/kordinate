@@ -6,6 +6,10 @@ observable: true
 distributed: true
 graphable: true
 abstraction: [architectural, messaging]
+status: primary
+scope: cross-cutting
+relationships:
+  related_to: [pub-sub]
 ---
 # Event-Driven Architecture
 
@@ -33,6 +37,15 @@ How to identify this pattern in code.
 
 Look for components communicating through well-defined domain events rather than direct method calls, with producers decoupled from consumers.
 
+### Payload Variants
+
+Treat these as event payload design choices within an event-driven system, not separate top-level architecture families:
+
+- thin events / notification-first payloads
+- fat events / event-carried state transfer
+
+Use `pub-sub` separately when the delivery mechanism itself matters.
+
 ### Review Checklist
 
 - Events are immutable and carry all data needed for handlers to act (no callbacks to the source)
@@ -48,4 +61,4 @@ Look for components communicating through well-defined domain events rather than
 - Handlers that query back to the producer for additional data (tight coupling disguised as events)
 - No event schema registry, leading to silent contract breakage between services
 
-See also: event-notification (thin events), event-carried-state (fat events)
+See also: `pub-sub` for topic fan-out delivery semantics

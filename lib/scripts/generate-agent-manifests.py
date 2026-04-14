@@ -308,6 +308,19 @@ def emit_agent(agent: dict) -> tuple[str, str, str]:
     pod_security = "\n".join(pod_security_lines(agent))
     container_security = "\n".join(container_security_lines(agent))
     pod_level_security = "\n".join(pod_level_security_lines(agent))
+    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    extra_init_mounts = ""
+    extra_agent_mounts = ""
+    extra_volumes = ""
+    if flavor == "augur":
+        extra_init_mounts = '\n            - { name: docker-sock, mountPath: /var/run/docker.sock }'
+        extra_agent_mounts = '\n            - { name: docker-sock, mountPath: /var/run/docker.sock }'
+        extra_volumes = """
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+"""
 
     deployment = f"""---
 apiVersion: apps/v1
@@ -337,6 +350,7 @@ spec:
 {init_script}
           volumeMounts:
             - {{ name: runtime, mountPath: /kord }}
+{extra_init_mounts}
       containers:
         - name: agent
           image: {image}
@@ -364,9 +378,11 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - {{ name: runtime, mountPath: /kord }}
+{extra_agent_mounts}
       volumes:
         - name: runtime
           persistentVolumeClaim: {{ claimName: agent-runtime }}
+{extra_volumes}
 {pod_level_security}
 """
 

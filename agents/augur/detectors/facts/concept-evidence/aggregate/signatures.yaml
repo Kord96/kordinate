@@ -1,0 +1,14 @@
+concept: aggregate
+positive:
+  strong:
+    - explicit aggregate root base types or repository contracts around roots
+    - root-owned mutation methods and domain-event emission
+  medium:
+    - root entity with child collections and invariant checks
+  weak:
+    - large entity with many children but unclear boundary rules
+negative:
+  - child entities mutated directly from outside the root
+  - repositories persist child entities independently of the root
+notes:
+  - Distinguish this from a generic god object; an aggregate has a consistency boundary.

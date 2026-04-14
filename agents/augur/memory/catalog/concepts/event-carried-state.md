@@ -1,12 +1,19 @@
 ---
-description: Event-Carried State Transfer architectural pattern
-type: pattern
+description: Fat-event payload variant within event-driven architecture
+type: flow-shape
 testable: true
 distributed: true
-graphable: true
 abstraction: [messaging, data]
+status: specialized
+scope: cross-cutting
+relationships:
+  part_of: [event-driven]
 ---
 # Event-Carried State Transfer (Fat Events)
+
+Treat this as a payload-design variant under [event-driven](/concepts/event-driven), not as a separate top-level event architecture family.
+
+Use it when the important distinction is that events carry enough state for downstream replication or projection without a callback to the source.
 
 ## Recognition
 

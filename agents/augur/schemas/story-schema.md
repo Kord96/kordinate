@@ -1,12 +1,8 @@
 # Story Schema
 
-Level 3 resource for the analyze skill. Referenced from Phase 2 (compose). Defines story tree, building block, and journey formats.
+Canonical contract for `stories/*.yaml`.
 
-## Design Principle
-
-Stories nest like components. A **root story** gives the high-level view of a group (3-5 roots, mirroring atlas groups). **Child stories** zoom into specific concerns within that group. The story tree IS the primary navigation — drill down from root to children.
-
-**Journeys** are secondary — thin cross-cutting paths through the tree for specific audiences (resilience review, onboarding). They're just ordered lists of story IDs pulled from anywhere in the tree.
+Stories are the primary navigation layer over the atlas. Root stories mirror top-level components. Child stories zoom into a specific concern within that component subtree or a cross-cutting concern anchored there.
 
 ## Prose Rules
 
@@ -19,59 +15,30 @@ Apply these rules to story summaries, findings, and rationale:
 - prefer active phrasing and direct relationships
 - avoid filler such as "this story covers" or "the following section"
 
-## Building Blocks
-
-Every story is assembled from these blocks. Only `summary` is required.
-
-| Block | Purpose | Multiple per story? |
-|-------|---------|-------------------|
-| **summary** | Short paragraphs orienting the reader | No |
-| **structure** | Nested components + typed edges | Yes |
-| **flow** | Ordered steps through components, typed | Yes |
-| **observations** | Evidence-backed findings, attachable to nodes and steps | One list |
-| **rationale** | Design decisions, trade-offs, alternatives | Yes |
-
-### Why these blocks
-
-- **Structure** covers component topology, data store lineage, infrastructure layout, security boundaries — anything that's "things and their relationships."
-- **Flow** covers request paths, data pipelines, failure cascades, deployment sequences, event chains — anything that's "things happening in order."
-- **Rationale** captures the "why" — decisions, trade-offs, alternatives considered.
-- **Observations** are findings that attach to the story, to specific structure nodes, or to specific flow steps.
-
 ## Story Schema
 
 ```yaml
-# ── Identity ──────────────────────────────────────────────────────
-
-id: "<kebab-case>"                        # unique across all stories
+id: "<kebab-case>"
 title: "<Human Readable Title>"
 teaches: "<one sentence — what the reader learns>"
-tags: ["<freeform>"]                     # for filtering and indexing
+tags: ["<freeform>"]
 
-# ── Anchor ───────────────────────────────────────────────────────
+anchor:
+  file: "<relative path>"
+  line: <number>
+  description: "<one sentence — where to start reading>"
 
-anchor:                                  # optional — the single most important code location
-  file: "<relative path>"               # relative to project root
-  line: <number>                         # starting line
-  description: "<one sentence — what the reader sees here>"
-
-# ── Tree ──────────────────────────────────────────────────────────
-
-parent: "<story-id>"                     # null for root stories
-children: ["<story-id>"]                 # ordered — this is the drill-down sequence
-
-# ── Summary (required) ────────────────────────────────────────────
+parent: "<story-id or null>"
+children: ["<story-id>"]
 
 summary: |
-  <paragraphs — length varies by depth, see Verbosity Rules>
+  <paragraphs — concise and grounded>
   <**bold refs** resolve to atlas node IDs>
-
-# ── Structures (0+) ──────────────────────────────────────────────
 
 structures:
   - id: "<kebab-case>"
     title: "<Human Readable>"
-    type: "<freeform — see suggested types below>"
+    type: "<freeform>"
     nodes:
       - id: "<atlas-node-id>"
         children: ["<atlas-node-id>"]
@@ -80,14 +47,12 @@ structures:
       - from: "<node-id>"
         to: "<node-id>"
         label: "<short>"
-        type: "<freeform: depends_on, reads, writes, contains, calls, publishes, subscribes, ...>"
-
-# ── Flows (0+) ────────────────────────────────────────────────────
+        type: "<depends_on | reads | writes | contains | calls | publishes | subscribes | ...>"
 
 flows:
   - id: "<kebab-case>"
     title: "<Human Readable>"
-    type: "<freeform — see suggested types below>"
+    type: "<freeform>"
     trigger: "<what starts this flow>"
     severity: "<critical|high|medium|low>"
     detection: ["<signal or 'none'>"]
@@ -95,12 +60,10 @@ flows:
     steps:
       - node: "<atlas-node-id>"
         action: "<what it does>"
-        effect: "<what happens to it>"
+        effect: "<what happens>"
         to: "<atlas-node-id>"
         technology: "<protocol>"
         observation_ids: ["<obs-id>"]
-
-# ── Observations (0+) ─────────────────────────────────────────────
 
 observations:
   - id: "<obs-id>"
@@ -117,16 +80,12 @@ observations:
     related: ["<obs-id>"]
     grounded_in: ["<file:line>"]
 
-# ── Rationale (0+) ────────────────────────────────────────────────
-
 rationale:
   - id: "<kebab-case>"
     decision: "<what was decided>"
     context: "<why this decision was needed>"
     trade_offs: "<gained vs given up>"
     alternatives: ["<rejected alternative and why>"]
-
-# ── Evaluation ────────────────────────────────────────────────────
 
 evaluation:
   groundedness: 0.92
@@ -137,132 +96,66 @@ evaluation:
 
 ## Story Tree
 
-Stories form a tree mirroring the atlas group/component hierarchy.
+Stories form a tree that mirrors the component hierarchy.
 
 ### Constraints
 
 | Rule | Value |
 |------|-------|
-| Root stories | 3-5 (one per atlas group) |
-| Max depth | 2 (root → child, no deeper) |
+| Root stories | 3-5 (one per top-level component) |
+| Max depth | 2 |
 | Children per root | 2-5 |
-| Cross-group references | Allowed — a child can reference atlas nodes outside its parent's group |
+| Cross-boundary references | Allowed when the concern crosses component boundaries |
 
-### Root stories (depth 0)
+### Root stories
 
-One per atlas group. The root story gives the high-level view of the group: what components it contains, how they relate, why this grouping exists. Its `structures` block shows the group's components. Its `children` list the drill-down stories.
+One per top-level component. A root story gives the high-level view of that component subtree: what it owns, how it relates to adjacent top-level components, and which major flows or state it anchors.
 
 Root stories have `parent: null`.
 
-### Child stories (depth 1)
+### Child stories
 
-Zoom into one concern within the parent's group. A child story focuses on a subset of the parent's nodes — a specific flow, a data store, a failure mode, a design decision. It can reference nodes from outside the parent's group when the concern crosses boundaries (e.g., a failure cascade that propagates from the API group to the data group).
+Zoom into one concern within the parent component subtree: a critical flow, state boundary, failure mode, or design decision. A child story may reference nodes outside the parent subtree when the concern genuinely crosses boundaries.
 
 Child stories have `parent: "<root-story-id>"`.
 
 ### Scoping rules
 
-- A child story should reference **fewer nodes** than its parent — it's zooming in, not expanding
-- A child's structures/flows don't need to be a strict subset of the parent's — they can pull in nodes from other groups when the concern requires it
-- If a concern spans multiple groups equally (no primary group), attach it to the most relevant root and use `tags` to help journeys find it
+- a child story should focus on fewer nodes than its parent
+- a child story may include nodes outside the parent subtree when needed to explain a real interaction
+- if a concern spans multiple top-level components equally, attach it to the most relevant root and use `tags` to aid narrative assembly
 
 ## Verbosity Rules
 
-Summary length scales with depth and grounding scope. The deeper and more focused, the more room to explain. But always cap at 3 paragraphs.
+Summary length scales with depth and grounding scope. Cap at 3 paragraphs.
 
 | Depth | Max paragraphs | Word target | Role |
 |-------|---------------|-------------|------|
-| 0 (root) | 2 | 50-80 words | Orient: what is this group, what's in it, why it exists |
-| 1 (child) | 3 | 80-120 words | Explain: one specific concern, with evidence |
-
-**Grounding influence**: a story grounded in 1-2 files can say what it needs in 1 paragraph. A story grounded in 10+ files may need all 3. But never exceed the max — the structures, flows, and observations carry the detail.
+| 0 (root) | 2 | 50-80 words | Orient: what this top-level component owns and why it matters |
+| 1 (child) | 3 | 80-120 words | Explain: one specific concern with evidence |
 
 ## Suggested Types
 
-Types are freeform strings. Augur invents new ones as needed.
+Types are freeform strings.
 
 **Structure types:**
-- `component topology` — how components are organized and depend on each other
-- `data lineage` — stores, readers, writers, persistence model
-- `infrastructure` — deployment, k8s resources, cloud services
-- `security boundary` — auth zones, trust boundaries, permission model
-- `module graph` — internal code organization, import relationships
+- `component topology`
+- `data lineage`
+- `infrastructure`
+- `security boundary`
+- `module graph`
 
 **Flow types:**
-- `request path` — user/API request through the system
-- `data pipeline` — data transformation or ETL sequence
-- `failure cascade` — what breaks when a component fails
-- `event chain` — async event propagation
-- `deployment sequence` — how code gets to production
-- `config resolution` — how configuration is loaded and resolved
+- `request path`
+- `data pipeline`
+- `failure cascade`
+- `event chain`
+- `deployment sequence`
+- `config resolution`
 
-Scribe uses the type to choose rendering strategy. Unknown types fall back to generic rendering.
+## Attachment Rules
 
-## Failure Flow Conventions
-
-When a flow has cascade semantics, include `trigger`, `severity`, `detection`, `recovery`. Use `effect` on steps instead of `action`. `detection: ["none"]` or `recovery: ["none"]` should auto-generate a gap observation.
-
-## Data Structure Conventions
-
-When a structure has data lineage semantics, use `reads`/`writes` edge types. Inherit `purpose`/`persistence` from atlas nodes.
-
-## Observation Attachment
-
-Observations defined once in the story's `observations` list. Attach at three levels:
-1. **Story-wide** — exists in the list (default)
-2. **Structure node** — via `observation_ids` on a node
-3. **Flow step** — via `observation_ids` on a step
-
----
-
-## Journey Schema
-
-A journey is a **thin cross-cutting path** through the story tree. It pulls stories from anywhere in the tree into a specific reading order for a specific audience.
-
-Journeys are secondary navigation. The story tree is primary.
-
-```yaml
-id: "<kebab-case>"
-title: "<Human Readable Title>"
-description: "<one sentence — what the reader achieves>"
-audience: ["<role>"]
-stories:
-  - id: "<story-id>"                     # can be root or child, from any group
-  - id: "<story-id>"
-    bridge: "<one sentence — creates curiosity for what comes next>"
-```
-
-### Bridge text
-
-- `bridge` is optional, one sentence
-- It appears before the story it's attached to
-- It creates curiosity for what comes next — typically a question the next story answers
-- The first story has no bridge (it's the entry point)
-- Bridge text is **required** for `getting-started` journeys, optional for others
-
-### Journey design rules
-
-- **3-8 stories** per journey
-- Stories can come from **any level** of the tree (root or child)
-- **Teaching order**: foundational to dependent
-- Journeys exist for **cross-cutting concerns** that don't fit one branch of the tree (resilience review, onboarding path)
-- For concerns that DO fit one branch, just navigate the tree — no journey needed
-
-### When to create a journey
-
-- **Do create**: when a concern spans multiple root groups (resilience across API + data + external)
-- **Do create**: when a specific audience needs a curated path (frontend onboarding)
-- **Don't create**: for navigating within one group (that's what the tree is for)
-- **Don't create**: for an "overview" (the root stories ARE the overview)
-
-## File Layout
-
-```
-$MEM/
-  atlas.json
-  stories/
-    <id>.yaml              # both roots and children in the same directory
-  narratives.yaml          # one YAML index of cross-cutting story sequences
-```
-
-Story filenames use the story `id`. Parent/child relationships are inside the files, not in the directory structure. `narratives.yaml` is the only narrative index file.
+Observations are defined once in the story `observations` list and may attach at three levels:
+1. story-wide
+2. structure node via `observation_ids`
+3. flow step via `observation_ids`
