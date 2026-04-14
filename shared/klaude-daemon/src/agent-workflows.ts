@@ -73,6 +73,7 @@ type AugurAnalysisContext = {
   analysis_dir: string
   project_mem: string
   facts_dir: string
+  startup_path: string
   blast_path: string
   concept_evidence_path: string
   latest_path: string
@@ -339,30 +340,31 @@ function buildAugurAnalysisContext(
   const analysisDir = dirname(runDir)
   const projectMem = dirname(analysisDir)
   const factsDir = join(runDir, 'facts')
+  const startupPath = join(factsDir, 'startup.json')
   const blastPath = join(runDir, 'blast.json')
   const conceptEvidencePath = join(factsDir, 'concept-evidence.json')
   const atlasPath = join(runDir, 'atlas.json')
   const starterFiles = [
     blastPath,
-    join(factsDir, 'index.json'),
+    startupPath,
     join(factsDir, 'frameworks.json'),
     join(factsDir, 'boundaries.json'),
-    join(factsDir, 'routes.json'),
     join(factsDir, 'dispatch-bindings.json'),
     join(factsDir, 'hot-files.json'),
   ]
   const startupDirective = analysisMode === 'incremental'
     ? [
         'Begin with the prepared analysis artifacts, not generic repo orientation.',
-        'Read starter_files first and treat facts/index.json as the manifest for follow-up fact selection.',
+        'Read starter_files first and treat facts/startup.json as the startup manifest for follow-up fact selection.',
         'Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.',
         'Use hot-files.json and fact source_files to rank what code to inspect next.',
         'Preserve unchanged accepted outputs unless blast evidence forces wider revision.',
         'When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.',
+        'Available tools are Read, Edit, and Bash. Use Bash with find, rg, jq, or python for discovery or filtering; do not assume Glob or Grep tools exist.',
       ].join(' ')
     : [
         'Begin with the prepared analysis artifacts, not generic repo orientation.',
-        'Read starter_files first and treat facts/index.json as the manifest for follow-up fact selection.',
+        'Read starter_files first and treat facts/startup.json as the startup manifest for follow-up fact selection.',
         'Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.',
         'Use hot-files.json and fact source_files to rank what code to inspect next.',
         'Do not read large domains like concept-evidence.json, external-clients.json, config.json, or import-graph.json in full before narrowing them by component, concept, or hotspot.',
@@ -370,6 +372,7 @@ function buildAugurAnalysisContext(
         'Do not begin by listing the repo root or reading repo metadata files.',
         'Follow the already-loaded Augur skill, mode guide, and canonical schema files instead of guessing alternate paths or formats.',
         'When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.',
+        'Available tools are Read, Edit, and Bash. Use Bash with find, rg, jq, or python for discovery or filtering; do not assume Glob or Grep tools exist.',
       ].join(' ')
   return {
     project,
@@ -379,6 +382,7 @@ function buildAugurAnalysisContext(
     analysis_dir: analysisDir,
     project_mem: projectMem,
     facts_dir: factsDir,
+    startup_path: startupPath,
     blast_path: blastPath,
     concept_evidence_path: conceptEvidencePath,
     atlas_path: atlasPath,
@@ -534,9 +538,12 @@ function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks 
         : undefined
       return {
         targetDir: explicitRunDir ?? latestDir,
-        extraEnv: requestCommandText(message).includes('--deterministic-only')
-          ? { AUGUR_DETERMINISTIC_ONLY: '1' }
-          : undefined,
+        extraEnv: {
+          ...(requestCommandText(message).includes('--deterministic-only')
+            ? { AUGUR_DETERMINISTIC_ONLY: '1' }
+            : {}),
+          AUGUR_PROJECT_ROOT: workingDir,
+        },
         repairPromptBuilder: buildAugurValidationRepairPrompt,
       }
     },

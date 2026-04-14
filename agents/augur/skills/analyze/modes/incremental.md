@@ -7,7 +7,7 @@ Incremental mode means the semantic pass should start from the accepted prior se
 ## Sequence
 
 1. Read `$RUN/blast.json` and capture `changed_files`, `base_analysis_dir`, and the affected blast slice.
-2. Read the relevant files in `$RUN/facts/`, especially `frameworks.json`, `concept-evidence.json`, and the domain files named by the blast slice.
+2. Read `$RUN/facts/startup.json`, then the relevant files in `$RUN/facts/`, especially `frameworks.json`, `concept-evidence.json`, and the domain files named by the blast slice. Open `$RUN/facts/index.json` only when you need the full deterministic manifest.
 3. If `concept-evidence.json` carries semantic questions for affected concept candidates, answer them before finalizing `atlas.json.concepts`.
 4. When needed, read the accepted base analysis referenced by `base_analysis_dir`.
 5. Read only the repo files needed to verify the changed slice and its architectural impact.
@@ -22,3 +22,4 @@ Incremental mode means the semantic pass should start from the accepted prior se
 - Reuse unchanged semantic conclusions when the deterministic evidence and code inspection still support them.
 - Escalate to broader rereads only when the changed slice proves the boundary is larger than the blast estimate.
 - Avoid broad whole-repo exploration unless incremental evidence is clearly insufficient.
+- The available tools in this runtime are `Read`, `Edit`, and `Bash`. Use `Bash` with `find`, `rg`, `jq`, or `python` for discovery or filtering instead of assuming `Glob` or `Grep` tools exist.

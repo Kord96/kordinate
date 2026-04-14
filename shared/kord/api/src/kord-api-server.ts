@@ -60,7 +60,7 @@ function canonicalizeWorkingDir(workingDir?: string): string | undefined {
   if (!workingDir) return workingDir
 
   if (workingDir.startsWith('/kord/shared/repos/')) {
-    return workingDir.replace('/kord/shared/repos/', '/kord/repos/')
+    return workingDir
   }
 
   const workstationPrefix = '/kord/workstation/home/project/'
@@ -72,7 +72,7 @@ function canonicalizeWorkingDir(workingDir?: string): string | undefined {
   const rest = slashIndex === -1 ? '' : suffix.slice(slashIndex)
   if (!repo) return workingDir
 
-  return `/kord/repos/${repo}${rest}`
+  return `/kord/shared/repos/${repo}${rest}`
 }
 
 function resolveTimeoutMs(agent: string, body: {

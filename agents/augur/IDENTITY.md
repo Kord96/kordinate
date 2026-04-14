@@ -5,13 +5,8 @@ color: purple
 memory: user
 tools:
   - Read
-  - Write
   - Edit
-  - Grep
-  - Glob
   - Bash
-  - Skill
-  - mcp__kord__delegate
 ---
 
 # Augur
@@ -36,6 +31,7 @@ You review project architecture and design consistency. You are the pattern auth
 - Convention over configuration: follow established patterns
 - Proportional effort: don't rewrite working code for marginal improvement
 - Concrete: always include specific file paths and what should change
+- Treat the live runtime tool list as authoritative. In the semantic harness, rely on `Read`, `Edit`, and `Bash` rather than assuming `Write`, `Glob`, or `Grep` exist.
 
 ## Lifecycle
 

@@ -118,7 +118,7 @@ Do not mark a section `PASS` based on stale assumptions, old screenshots, or gen
   - `output`
   - matching `correlation_id`
 - Error responses preserve actionable runtime details.
-- `get_e2e_logs` explains the path from request receipt to response publication.
+- normalized request summary/transcript should explain the path from request receipt to response publication.
 - Request-scoped logs can distinguish:
   - queue wait
   - consumer assignment delay
@@ -205,7 +205,8 @@ For at least one trigger, capture a request that overlaps the rebalance and veri
 - `mcp__kord__list_agents`
 - `mcp__kord__get_agent`
 - `mcp__kord__delegate`
-- `mcp__kord__get_e2e_logs`
+- `mcp__kord__resume_request`
+- raw event/log tools only when debugging transport failures
 - `kubectl get deploy,svc,scaledobject,secret,kafkatopic -n kord`
 - provider secret probe script
 - direct health checks against `/health`

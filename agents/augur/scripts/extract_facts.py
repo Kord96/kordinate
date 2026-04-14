@@ -80,6 +80,50 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(index_payload, indent=2 if args.pretty else None, sort_keys=bool(args.pretty)) + ("\n" if args.pretty else ""),
             encoding="utf-8",
         )
+
+        startup_domains = [
+            domain
+            for domain in ("frameworks", "boundaries", "routes", "dispatch-bindings", "hot-files")
+            if domain in domains
+        ]
+        startup_payload = {
+            "version": payload.get("version", "1"),
+            "generated": payload.get("generated"),
+            "project": payload.get("project"),
+            "analysis_mode": payload.get("analysis_mode"),
+            "root": payload.get("root"),
+            "startup_files": [f"facts/{domain}.json" for domain in startup_domains],
+            "large_domains": [
+                {
+                    "name": domain.get("name"),
+                    "file": domain.get("file"),
+                    "count": domain.get("count"),
+                }
+                for domain in (index_payload.get("index", {}) or {}).get("domains", [])
+                if str(domain.get("name") or "") in {"concept-evidence", "external-clients", "config", "import-graph"}
+            ],
+            "domain_counts": [
+                {
+                    "name": domain.get("name"),
+                    "file": domain.get("file"),
+                    "count": domain.get("count"),
+                }
+                for domain in (index_payload.get("index", {}) or {}).get("domains", [])
+            ],
+            "detector_status": [
+                {
+                    "id": run.get("id"),
+                    "domain": run.get("domain"),
+                    "class": run.get("class"),
+                    "status": run.get("status"),
+                }
+                for run in (index_payload.get("index", {}) or {}).get("detectors_run", [])
+            ],
+        }
+        (output_dir / "startup.json").write_text(
+            json.dumps(startup_payload, indent=2 if args.pretty else None, sort_keys=bool(args.pretty)) + ("\n" if args.pretty else ""),
+            encoding="utf-8",
+        )
     elif args.output:
         out = Path(args.output).resolve()
         out.parent.mkdir(parents=True, exist_ok=True)

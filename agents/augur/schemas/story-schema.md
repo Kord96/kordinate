@@ -11,9 +11,24 @@ Apply these rules to story summaries, findings, and rationale:
 - state facts about the system, not facts about the document
 - name concrete components, dependencies, and flows
 - keep summaries concise and grounded
-- use `**bold**` component references only when they resolve to real atlas ids
+- use `**bold**` atlas references only when they resolve to real atlas ids such as components, state entries, dependencies, flows, events, concepts, or tensions
 - prefer active phrasing and direct relationships
 - avoid filler such as "this story covers" or "the following section"
+
+## Core Rules
+
+- every structure node id must already exist in `atlas.json`
+- every flow step `node` and `to` reference must already exist in `atlas.json`
+- do not invent pseudo-nodes such as `detectors`, `scripts`, `http-server`, `kafka-consumer`, `llm-runtime`, or `fact-store` unless they are real atlas ids
+- do not turn filenames or helper modules into structure nodes; if `fact_extractor_support.py` or a similar file matters, cite it in `anchor`, `evidence`, or `grounded_in` instead of inventing a node id from the filename
+- describe internal subparts through observations, findings, and prose when they are not modeled as atlas nodes
+- bold references in `summary` must resolve to real atlas ids; do not bold filenames, fact artifacts, or schema names
+- root story ids should normally match the top-level component ids they explain
+- child story ids should stay story-specific, but `parent` must always reference a real story id
+- before you cite a repo file in `anchor`, `evidence.file`, or `grounded_in`, confirm the path actually exists in the repo or analysis run; do not guess filenames such as `agents/augur/agent.yaml`
+- `evidence.file` and `grounded_in` may point to either:
+  - project-relative repo files such as `shared/klaude-daemon/src/index.ts`
+  - analysis-relative run artifacts such as `facts/startup.json`
 
 ## Story Schema
 
@@ -33,7 +48,7 @@ children: ["<story-id>"]
 
 summary: |
   <paragraphs — concise and grounded>
-  <**bold refs** resolve to atlas node IDs>
+  <**bold refs** resolve to atlas IDs>
 
 structures:
   - id: "<kebab-case>"
@@ -112,6 +127,7 @@ Stories form a tree that mirrors the component hierarchy.
 One per top-level component. A root story gives the high-level view of that component subtree: what it owns, how it relates to adjacent top-level components, and which major flows or state it anchors.
 
 Root stories have `parent: null`.
+Prefer root story ids that exactly match the corresponding top-level component ids.
 
 ### Child stories
 

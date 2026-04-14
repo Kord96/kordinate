@@ -193,13 +193,15 @@ function renderStructuredRuntimeContext(message: RequestMessage): string {
     pushLine('Mode', context.mode)
     pushLine('Run dir', context.run_dir)
     pushLine('Facts dir', context.facts_dir)
+    pushLine('Startup manifest', context.startup_path)
     pushLine('Blast file', context.blast_path)
     pushLine('Concept evidence', context.concept_evidence_path)
     pushLine('Seed atlas path', context.atlas_path)
     lines.push('- Start from the prepared run artifacts above before reading repo code.')
-    lines.push('- Use `facts/index.json` to choose follow-up fact domains and code hotspots.')
+    lines.push('- Use `facts/startup.json` first, then `facts/index.json` only when you need the full deterministic manifest.')
     lines.push('- Read repo code only through fact-selected files, architecture entrypoints, or concrete validation gaps.')
     lines.push('- Do not begin with repo-root listings or metadata-file discovery.')
+    lines.push('- Available tools in this runtime are `Read`, `Edit`, and `Bash`; use `Bash` with `find`, `rg`, `jq`, or `python` instead of assuming `Glob` or `Grep` tools exist.')
     return `## Runtime Context\n${lines.join('\n')}\n\n`
   }
 

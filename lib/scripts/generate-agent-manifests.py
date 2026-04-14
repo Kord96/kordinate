@@ -309,6 +309,9 @@ def emit_agent(agent: dict) -> tuple[str, str, str]:
     container_security = "\n".join(container_security_lines(agent))
     pod_level_security = "\n".join(pod_level_security_lines(agent))
     flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    strategy_block = ""
+    if maxr == 1:
+        strategy_block = "  strategy:\n    type: Recreate\n"
     extra_init_mounts = ""
     extra_agent_mounts = ""
     extra_volumes = ""
@@ -329,7 +332,7 @@ metadata:
   name: agent-{name}
   labels: {{ app: kord-agent, agent: {name} }}
 spec:
-  selector:
+{strategy_block}  selector:
     matchLabels: {{ app: kord-agent, agent: {name} }}
   template:
     metadata:

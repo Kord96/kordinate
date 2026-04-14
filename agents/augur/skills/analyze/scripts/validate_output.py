@@ -92,15 +92,27 @@ def kebab_case(s: str) -> bool:
     return bool(KEBAB_RE.match(s))
 
 
-def check_grounded_in(refs: list, project_root: Path | None, section: str, item_id: str) -> list[dict]:
-    """Verify grounded_in file:line references point to real files."""
+def check_grounded_in(
+    refs: list,
+    project_root: Path | None,
+    analysis_dir: Path | None,
+    section: str,
+    item_id: str,
+) -> list[dict]:
+    """Verify grounded_in file:line references point to real files.
+
+    References may resolve against:
+    - the analyzed project root for repo files
+    - the analysis directory for run artifacts such as facts/startup.json
+    """
     issues = []
-    if not project_root:
-        return issues
     for ref in refs:
         filepath = ref.split(":")[0]
-        full_path = project_root / filepath
-        if not full_path.exists():
+        candidate = Path(filepath)
+        if candidate.is_absolute() and candidate.exists():
+            continue
+        roots = [root for root in (project_root, analysis_dir) if root]
+        if not any((root / filepath).exists() for root in roots):
             issues.append({"level": "ERROR", "section": section,
                            "message": f"'{item_id}' grounded_in references non-existent file: {filepath}"})
     return issues
@@ -111,6 +123,7 @@ def validate_health(
     section: str,
     item_id: str,
     project_root: Path | None = None,
+    analysis_dir: Path | None = None,
 ) -> list[dict]:
     issues = []
     if not isinstance(health, dict):
@@ -136,12 +149,12 @@ def validate_health(
         grounded = failure_mode.get("grounded_in") or []
         if not grounded:
             issues.append({"level": "WARNING", "section": section, "message": f"'{item_id}' health failure mode '{failure_id}' has no grounded_in"})
-        elif project_root:
-            issues.extend(check_grounded_in(grounded, project_root, section, f"{item_id}/{failure_id}"))
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in(grounded, project_root, analysis_dir, section, f"{item_id}/{failure_id}"))
     return issues
 
 
-def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
+def validate_atlas(atlas: dict, project_root: Path | None = None, analysis_dir: Path | None = None) -> list[dict]:
     issues = []
 
     def error(msg, section=""):
@@ -210,7 +223,7 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
                 if child in parent_of and parent_of[child] != cid:
                     error(f"Component '{child}' has conflicting parents '{parent_of[child]}' and '{cid}'", "components")
                 parent_of[child] = cid
-        issues.extend(validate_health(component.get("health"), "components", cid or "<component>", project_root))
+        issues.extend(validate_health(component.get("health"), "components", cid or "<component>", project_root, analysis_dir))
 
     if component_ids and not parent_of and len(component_ids) >= 4:
         error("Component hierarchy is fully flat. Use parent/child structure for real nested subsystems.", "components")
@@ -255,9 +268,9 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
         fid = f.get("id", "")
         if not f.get("grounded_in"):
             warn(f"Flow '{fid}' has no grounded_in", "flows")
-        elif project_root:
-            issues.extend(check_grounded_in(f["grounded_in"], project_root, "flows", fid))
-        issues.extend(validate_health(f.get("health"), "flows", fid or "<flow>", project_root))
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in(f["grounded_in"], project_root, analysis_dir, "flows", fid))
+        issues.extend(validate_health(f.get("health"), "flows", fid or "<flow>", project_root, analysis_dir))
         for metric in f.get("business_metrics", []):
             if not isinstance(metric, dict):
                 error(f"Flow '{fid}' business_metrics contains a non-object entry", "flows")
@@ -271,8 +284,8 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
             grounded = metric.get("grounded_in") or []
             if not grounded:
                 warn(f"Flow '{fid}' business metric '{metric.get('name', '?')}' has no grounded_in", "flows")
-            elif project_root:
-                issues.extend(check_grounded_in(grounded, project_root, "flows", f"{fid}/{metric.get('name', '?')}"))
+            elif project_root or analysis_dir:
+                issues.extend(check_grounded_in(grounded, project_root, analysis_dir, "flows", f"{fid}/{metric.get('name', '?')}"))
         for step in f.get("steps", []):
             for key in ("component", "to"):
                 ref = step.get(key, "")
@@ -284,8 +297,8 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
         sid = s.get("id", "")
         if not s.get("grounded_in"):
             warn(f"State '{sid}' has no grounded_in", "state")
-        elif project_root:
-            issues.extend(check_grounded_in(s["grounded_in"], project_root, "state", sid))
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in(s["grounded_in"], project_root, analysis_dir, "state", sid))
         for key in ("component",):
             ref = s.get(key, "")
             if ref and ref not in all_node_ids:
@@ -317,12 +330,26 @@ def validate_atlas(atlas: dict, project_root: Path | None = None) -> list[dict]:
     # External dependency health
     for dependency in atlas.get("external_dependencies", []):
         did = dependency.get("id", "")
-        issues.extend(validate_health(dependency.get("health"), "external_dependencies", did or "<dependency>", project_root))
+        issues.extend(validate_health(dependency.get("health"), "external_dependencies", did or "<dependency>", project_root, analysis_dir))
 
-    return issues, all_node_ids
+    flow_ids = {f.get("id") for f in atlas.get("flows", []) if f.get("id")}
+    event_ids = {e.get("id") for e in atlas.get("events", []) if e.get("id")}
+    concept_ids = {p.get("id") for p in concepts.get("detected_patterns", []) if p.get("id")}
+    concept_ids |= {ap.get("id") for ap in concepts.get("detected_anti_patterns", []) if ap.get("id")}
+    concept_ids |= {gap.get("id") for gap in concepts.get("gaps", []) if gap.get("id")}
+    tension_ids = {t.get("id") for t in atlas.get("tensions", []) if t.get("id")}
+    all_entity_ids = all_node_ids | flow_ids | event_ids | concept_ids | tension_ids
+
+    return issues, all_node_ids, all_entity_ids
 
 
-def validate_story(story: dict, atlas_node_ids: set, project_root: Path | None = None) -> list[dict]:
+def validate_story(
+    story: dict,
+    atlas_node_ids: set,
+    atlas_entity_ids: set,
+    project_root: Path | None = None,
+    analysis_dir: Path | None = None,
+) -> list[dict]:
     issues = []
 
     def error(msg):
@@ -346,12 +373,12 @@ def validate_story(story: dict, atlas_node_ids: set, project_root: Path | None =
     if word_count > 100:
         warn(f"Story '{sid}' summary is {word_count} words (max 100)")
 
-    # Bold refs in summary
+    # Bold refs in summary should resolve to atlas entities, not filenames or fact artifacts.
     bold_refs = re.findall(r"\*\*([^*]+)\*\*", summary)
     for ref in bold_refs:
         ref_kebab = ref.lower().replace(" ", "-")
-        if ref_kebab not in atlas_node_ids and ref not in atlas_node_ids:
-            error(f"Story '{sid}' bold ref '**{ref}**' doesn't match any atlas node")
+        if ref_kebab not in atlas_entity_ids and ref not in atlas_entity_ids:
+            error(f"Story '{sid}' bold ref '**{ref}**' doesn't match any atlas entity")
 
     # Structure node refs
     for struct in story.get("structures", []):
@@ -378,8 +405,8 @@ def validate_story(story: dict, atlas_node_ids: set, project_root: Path | None =
         oid = obs.get("id", "?")
         if not obs.get("grounded_in"):
             warn(f"Story '{sid}' observation '{oid}' has no grounded_in")
-        elif project_root:
-            issues.extend(check_grounded_in(obs["grounded_in"], project_root, "story", f"{sid}/{oid}"))
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in(obs["grounded_in"], project_root, analysis_dir, "story", f"{sid}/{oid}"))
         comp = obs.get("component", "")
         if comp and comp not in atlas_node_ids:
             error(f"Story '{sid}' observation component '{comp}' not in atlas")
@@ -452,14 +479,21 @@ def main():
 
     # Derive project root from analysis dir path.
     # Expected: /kord/agents/<agent>/memory/projects/<project>/analysis/<analysis-id>/
-    # Project code lives at /kord/shared/repos/<project>/
+    # Project code may live in multiple locations depending on runtime wiring.
     project_root = None
-    if "projects" in analysis_dir.parts:
+    explicit_project_root = os.environ.get("AUGUR_PROJECT_ROOT", "").strip()
+    if explicit_project_root:
+        explicit_candidate = Path(explicit_project_root)
+        if explicit_candidate.exists():
+            project_root = explicit_candidate
+
+    if project_root is None and "projects" in analysis_dir.parts:
         proj_idx = analysis_dir.parts.index("projects")
         if proj_idx + 1 < len(analysis_dir.parts):
             project_name = analysis_dir.parts[proj_idx + 1]
             for candidate in (
                 Path("/kord/repos") / project_name,
+                Path("/kord/agents/shared/repos") / project_name,
                 Path("/kord/shared/repos") / project_name,
                 Path("/kord/projects") / project_name,
             ):
@@ -493,6 +527,7 @@ def main():
             all_issues.append({"level": "ERROR", "section": "concept-evidence", "message": f"JSON parse error: {e}"})
 
     atlas_node_ids = set()
+    atlas_entity_ids = set()
     if not DETERMINISTIC_ONLY:
         # --- Atlas ---
         atlas_path = analysis_dir / "atlas.json"
@@ -504,7 +539,7 @@ def main():
         else:
             try:
                 atlas = json.loads(atlas_path.read_text())
-                issues, atlas_node_ids = validate_atlas(atlas, project_root)
+                issues, atlas_node_ids, atlas_entity_ids = validate_atlas(atlas, project_root, analysis_dir)
                 all_issues.extend(issues)
             except json.JSONDecodeError as e:
                 all_issues.append({"level": "ERROR", "section": "atlas", "message": f"JSON parse error: {e}"})
@@ -529,7 +564,7 @@ def main():
                     continue
                 sid = story.get("id", f.stem)
                 story_ids.add(sid)
-                all_issues.extend(validate_story(story, atlas_node_ids, project_root))
+                all_issues.extend(validate_story(story, atlas_node_ids, atlas_entity_ids, project_root, analysis_dir))
 
             # Story tree: check children per parent
             all_stories = {}

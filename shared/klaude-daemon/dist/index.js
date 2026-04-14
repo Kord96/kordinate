@@ -599,18 +599,21 @@ async function handleRequest(message) {
     let executedSession = session;
     let executedResult;
     const workflowResult = await agentWorkflowHooks?.beforeRuntime?.(preparedMessage);
+    const effectiveMessage = workflowResult?.runtimeMessage ?? preparedMessage;
     if (workflowResult?.skipResult) {
         executedResult = workflowResult.skipResult;
     }
     else {
-        const runtimeMessage = workflowResult?.runtimeMessage ?? preparedMessage;
         const readySession = await runtime.startOrResumeWarmSession(session);
-        const runtimeRequest = buildRuntimePromptRequest(readySession, runtimeMessage);
-        const run = await runtime.executePrompt(readySession, runtimeRequest);
+        const runtimeSession = effectiveMessage.agent_params?.run_dir
+            ? { ...readySession, providerSessionId: undefined }
+            : readySession;
+        const runtimeRequest = buildRuntimePromptRequest(runtimeSession, effectiveMessage);
+        const run = await runtime.executePrompt(runtimeSession, runtimeRequest);
         executedSession = updateSessionPromptCache(run.session, runtimeRequest, run.result);
         executedResult = run.result;
     }
-    const { session: nextSession, result } = await maybeRunValidationLoop(executedSession, preparedMessage, executedResult);
+    const { session: nextSession, result } = await maybeRunValidationLoop(executedSession, effectiveMessage, executedResult);
     const executeEndAt = Date.now();
     sessions.set(nextSession.key, nextSession);
     const persistStartAt = Date.now();

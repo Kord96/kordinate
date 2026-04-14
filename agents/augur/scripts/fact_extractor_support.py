@@ -2749,25 +2749,118 @@ def parse_sql_file(path: Path, root: Path, text: str) -> list[dict[str, Any]]:
     return facts
 
 
+HOT_FILE_DOMAIN_WEIGHTS: dict[str, int] = {
+    "frameworks": 5,
+    "boundaries": 5,
+    "dispatch-bindings": 5,
+    "handlers": 4,
+    "routes": 4,
+    "registrations": 3,
+    "external-clients": 3,
+    "middleware": 3,
+    "auth-surface": 3,
+    "call-edges": 3,
+    "execution-slices": 3,
+    "data-touches": 2,
+    "models": 2,
+    "events": 1,
+    "jobs": 1,
+    "config": 1,
+    "import-graph": 1,
+    "concept-evidence": 1,
+}
+
+LOW_SIGNAL_PATH_SEGMENTS = {
+    "docs",
+    "doc",
+    "tests",
+    "test",
+    "__tests__",
+    "__mocks__",
+    "fixtures",
+    "fixture",
+    "examples",
+    "example",
+    ".github",
+    "vendor",
+    "third_party",
+    "node_modules",
+    ".generated",
+}
+
+SUPPORT_PATH_SEGMENTS = {
+    "audit",
+    "benchmark",
+    "benchmarks",
+    "notes",
+    "schema",
+    "schemas",
+}
+
+SUPPORT_PATH_SUFFIXES = (
+    ("detectors", "scripts"),
+    ("skills", "analyze", "scripts"),
+    ("scripts", "benchmark"),
+)
+
+
+def _path_parts_lower(path: Path) -> tuple[str, ...]:
+    return tuple(part.lower() for part in path.parts)
+
+
+def _is_excluded_hotfile_candidate(candidate: Path) -> bool:
+    parts = _path_parts_lower(candidate)
+    return any(part in EXCLUDE_DIRS for part in parts)
+
+
+def _is_support_hotfile_candidate(candidate: Path) -> bool:
+    parts = _path_parts_lower(candidate)
+    if set(parts) & SUPPORT_PATH_SEGMENTS:
+        return True
+    return any(parts[-len(suffix):] == suffix for suffix in SUPPORT_PATH_SUFFIXES if len(parts) >= len(suffix))
+
+
 def file_hotness_scores(facts: list[dict[str, Any]], root: Path) -> Counter[str]:
     counts: Counter[str] = Counter()
+    domain_coverage: dict[str, set[str]] = defaultdict(set)
+
     for fact in facts:
+        domain = str(fact.get("domain") or "").strip()
+        weight = HOT_FILE_DOMAIN_WEIGHTS.get(domain, 0)
+        if weight <= 0:
+            continue
         for source in fact.get("source_files", []):
             candidate = source.split(":", 1)[0]
             if not candidate:
                 continue
             candidate_path = Path(candidate)
+            if _is_excluded_hotfile_candidate(candidate_path):
+                continue
             if candidate_path.is_absolute():
                 if root not in candidate_path.parents:
                     continue
                 candidate_path = candidate_path.relative_to(root)
+            if _is_excluded_hotfile_candidate(candidate_path):
+                continue
             resolved = (root / candidate_path).resolve()
             try:
                 resolved.relative_to(root.resolve())
             except ValueError:
                 continue
-            if resolved.is_file():
-                counts[str(candidate_path)] += 1
+            if not resolved.is_file():
+                continue
+            rel = str(candidate_path)
+            counts[rel] += weight
+            domain_coverage.setdefault(rel, set()).add(domain)
+
+    for rel, covered_domains in domain_coverage.items():
+        counts[rel] += max(0, len(covered_domains) - 1)
+        parts = {part.lower() for part in Path(rel).parts}
+        if parts & LOW_SIGNAL_PATH_SEGMENTS and not (covered_domains & {"frameworks", "boundaries", "dispatch-bindings", "routes", "handlers", "call-edges", "execution-slices"}):
+            counts[rel] = max(0, counts[rel] - 4)
+        if _is_support_hotfile_candidate(Path(rel)) and not (covered_domains & {"frameworks", "boundaries", "dispatch-bindings", "routes", "handlers", "registrations", "call-edges", "execution-slices", "startup"}):
+            counts[rel] = max(0, counts[rel] - 10)
+
     return counts
 
 
@@ -3023,10 +3116,25 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                 ]
             )
 
+    joern_call_edges, joern_detector_run = extract_joern_call_edge_facts(root, repo_profile)
+    if joern_call_edges:
+        facts.extend(joern_call_edges)
+    detectors_run.append(joern_detector_run)
+
+    joern_data_touches, joern_data_touch_detector_run = extract_joern_data_touch_facts(root, repo_profile)
+    if joern_data_touches:
+        facts.extend(joern_data_touches)
+    detectors_run.append(joern_data_touch_detector_run)
+
+    joern_execution_slices, joern_execution_slice_detector_run = extract_joern_execution_slice_facts(root, repo_profile)
+    if joern_execution_slices:
+        facts.extend(joern_execution_slices)
+    detectors_run.append(joern_execution_slice_detector_run)
+
     hot_scores = file_hotness_scores(facts, root)
     hot_files: list[dict[str, Any]] = []
     for file_path, score in hot_scores.most_common(10):
-        if score < 2:
+        if score < 3:
             break
         rel = str(Path(file_path).relative_to(root)) if Path(file_path).is_absolute() and root in Path(file_path).parents else file_path
         hot_files.append(
@@ -3034,19 +3142,20 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                 "id": stable_id("hot-file", rel, str(score)),
                 "kind": "hot-file",
                 "domain": "hot-files",
-                "summary": f"{rel} participates in {score} extracted facts",
-                "confidence": "medium" if score < 4 else "high",
+                "summary": f"{rel} participates in {score} weighted architecture signals",
+                "confidence": "medium" if score < 6 else "high",
                 "framework_context": [],
                 "source_files": [rel],
                 "detector": {
                     "id": "hot-file-ranker",
                     "class": "inference",
-                    "strength": 3,
-                    "rule": "fan-in",
+                    "strength": 4,
+                    "rule": "weighted-centrality",
                     "bundle": "detectors:facts",
                 },
                 "raw_evidence": {
                     "file": rel,
+                    "score": score,
                     "fan_in": score,
                     "fan_out": 0,
                 },
@@ -3071,21 +3180,6 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
                 "status": "success",
             }
         )
-
-    joern_call_edges, joern_detector_run = extract_joern_call_edge_facts(root, repo_profile)
-    if joern_call_edges:
-        facts.extend(joern_call_edges)
-    detectors_run.append(joern_detector_run)
-
-    joern_data_touches, joern_data_touch_detector_run = extract_joern_data_touch_facts(root, repo_profile)
-    if joern_data_touches:
-        facts.extend(joern_data_touches)
-    detectors_run.append(joern_data_touch_detector_run)
-
-    joern_execution_slices, joern_execution_slice_detector_run = extract_joern_execution_slice_facts(root, repo_profile)
-    if joern_execution_slices:
-        facts.extend(joern_execution_slices)
-    detectors_run.append(joern_execution_slice_detector_run)
 
     for fact in facts:
         if fact.get("kind") != "framework" and not fact.get("framework_context"):
