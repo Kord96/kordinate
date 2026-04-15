@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
-import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import { GoogleGenAI, Type } from '@google/genai';
 import { Codex } from '@openai/codex-sdk';
@@ -404,16 +404,25 @@ async function runCodexStructuredTurn(threadFactory, prompt, options) {
     };
 }
 function processClaudeStructuredMessage(message, options) {
+    const sanitized = sanitizeClaudeStructuredMessage(message);
     const type = typeof message.type === 'string' ? message.type : 'unknown';
     log('claude_message', {
         runtime: 'claude-agent-sdk',
         model: options.model,
         session_id: options.sessionId,
         message_type: type,
-        subtype: typeof message.subtype === 'string' ? message.subtype : null,
-        parent_tool_use_id: typeof message.parent_tool_use_id === 'string' ? message.parent_tool_use_id : null,
-        content: summarizeUnknown(message, 1200) ?? null,
+        subtype: typeof sanitized.subtype === 'string' ? sanitized.subtype : null,
+        parent_tool_use_id: typeof sanitized.parent_tool_use_id === 'string' ? sanitized.parent_tool_use_id : null,
+        content: summarizeUnknown(sanitized, 1200) ?? null,
     });
+}
+function sanitizeClaudeStructuredMessage(message) {
+    if (!(message.type === 'system' && message.subtype === 'init'))
+        return message;
+    if (!Object.prototype.hasOwnProperty.call(message, 'slash_commands'))
+        return message;
+    const { slash_commands: _ignored, ...rest } = message;
+    return rest;
 }
 async function runClaudeStructuredQuery(streamFactory, options) {
     const runtimeHome = resolveRuntimeHome(options.homeDirectory);
@@ -439,17 +448,18 @@ async function runClaudeStructuredQuery(streamFactory, options) {
     });
     try {
         for await (const message of streamFactory()) {
-            messages.push(message);
-            structuredLogStream.write(`${JSON.stringify(message)}\n`);
-            processClaudeStructuredMessage(message, options);
+            const sanitized = sanitizeClaudeStructuredMessage(message);
+            messages.push(sanitized);
+            structuredLogStream.write(`${JSON.stringify(sanitized)}\n`);
+            processClaudeStructuredMessage(sanitized, options);
             await reportProgress(options.progress, {
                 source: 'provider',
-                kind: typeof message.type === 'string' ? message.type : 'unknown',
+                kind: typeof sanitized.type === 'string' ? sanitized.type : 'unknown',
                 runtime: 'claude-agent-sdk',
                 model: options.model,
                 session_id: options.sessionId,
                 structured_log_path: structuredLogPath,
-                payload: message,
+                payload: sanitized,
             });
         }
     }
@@ -625,6 +635,49 @@ function resolveRuntimeHome(homeDirectory) {
         ?? process.env.AGENT_HOME_DIR
         ?? process.env.HOME
         ?? process.cwd();
+}
+async function ensureClaudeSkillRegistry(runtimeHome) {
+    const skillsRoot = path.join(runtimeHome, '.claude', 'skills');
+    await mkdir(skillsRoot, { recursive: true });
+    const skillSources = [
+        path.join(process.env.KORDINATE_HOME ?? '/app', 'shared', 'skills'),
+        process.env.AGENT_PROFILE
+            ? path.join(process.env.KORDINATE_HOME ?? '/app', 'agents', process.env.AGENT_PROFILE, 'skills')
+            : '',
+    ].filter(Boolean);
+    for (const sourceRoot of skillSources) {
+        let entries = [];
+        try {
+            entries = await readdir(sourceRoot);
+        }
+        catch {
+            continue;
+        }
+        for (const entry of entries) {
+            const sourcePath = path.join(sourceRoot, entry);
+            try {
+                const sourceStat = await stat(sourcePath);
+                if (!sourceStat.isDirectory())
+                    continue;
+            }
+            catch {
+                continue;
+            }
+            const targetPath = path.join(skillsRoot, entry);
+            try {
+                await rm(targetPath, { recursive: true, force: true });
+            }
+            catch {
+                // ignore
+            }
+            try {
+                await symlink(sourcePath, targetPath, 'dir');
+            }
+            catch {
+                // ignore
+            }
+        }
+    }
 }
 function resolveTaskWorkingDirectory(request, profile) {
     return request.working_dir
@@ -918,6 +971,7 @@ async function runOpenClaudePrint(prompt, options) {
             env[key] = value;
     }
     const runtimeHome = resolveRuntimeHome(options.homeDirectory);
+    await ensureClaudeSkillRegistry(runtimeHome);
     const cwd = options.workingDirectory ?? runtimeHome;
     const timeoutMs = Number.isFinite(options.timeoutMs)
         ? Math.max(1, options.timeoutMs)
@@ -1186,9 +1240,12 @@ export class ClaudeAgentSdkAdapter {
             return { session, result: errorResult('BACKEND_API_KEY is not configured for Claude runtime') };
         }
         const sessionId = session.providerSessionId ?? randomUUID();
+        const runtimeHome = resolveRuntimeHome(this.homeDirectory);
+        await ensureClaudeSkillRegistry(runtimeHome);
         const env = {
             ...process.env,
             ANTHROPIC_API_KEY: this.apiKey,
+            HOME: runtimeHome,
         };
         try {
             const executeOnce = async (resumeSessionId) => {

@@ -37,6 +37,18 @@ test('buildPromptFromProfile composes augur bundle layers for bundle_mode', () =
     assert.ok(promptPlan.cacheablePrefix);
     assert.ok(promptPlan.cacheKey);
 });
+test('buildPromptFromProfile accepts full-bundle aliases for holistic mode', () => {
+    const profile = loadAgentProfile('augur');
+    const promptPlan = buildPromptPlanFromProfile(profile, {
+        type: 'request',
+        sender: 'agent-a',
+        correlation_id: 'corr-1',
+        prompt: 'Analyze the repo deeply',
+        agent_params: { bundle_mode: 'full-bundle' },
+    });
+    assert.match(promptPlan.fullPrompt, /Augur Analyze Bundle — Holistic v1/);
+    assert.match(promptPlan.dynamicPrompt, /Bundle mode hint: use `holistic`/);
+});
 test('custom reflection prompt overrides profile default', () => {
     const profile = loadAgentProfile('augur');
     const prompt = resolveReflectionPrompt(profile, {

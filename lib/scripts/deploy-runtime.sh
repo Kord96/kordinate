@@ -8,6 +8,8 @@
 #   repo/agents/<name>/memory/     → <runtime>/<name>/memory/global/ (recursive, no-clobber)
 #   repo/agents/<name>/IDENTITY.md → <runtime>/<name>/identity.md (strip frontmatter)
 #   repo/agents/<name>/skills/     → <runtime>/<name>/skills/ (symlinks to repo)
+#   repo/shared/skills/ + repo/agents/<name>/skills/
+#                                  → <runtime>/<name>/.claude/skills/ (symlinks for Claude-family runtimes)
 #   repo/shared/memory/            → /kord/shared/memory/ (copy, no-clobber)
 #
 # If "all" is passed, deploys for all agents. Otherwise deploys from the source
@@ -343,6 +345,29 @@ EOF
       local skill_name=$(basename "$skill_dir")
       ln -sfn "$skill_dir" "$DST/skills/$skill_name"
       log "  linked skills/$skill_name"
+    done
+  fi
+
+  # Claude-family runtimes discover skills from $HOME/.claude/skills.
+  # Mirror both shared skills and agent-local skills into the runtime home so
+  # runtime-native Skill tool invocation can resolve the same source-of-truth
+  # SKILL.md files that the repo owns.
+  local CLAUDE_SKILLS_DIR="$DST/.claude/skills"
+  mkdir -p "$CLAUDE_SKILLS_DIR"
+  if [ -d "$REPO/shared/skills" ]; then
+    for skill_dir in "$REPO/shared/skills"/*/; do
+      [ -d "$skill_dir" ] || continue
+      local skill_name=$(basename "$skill_dir")
+      ln -sfn "$skill_dir" "$CLAUDE_SKILLS_DIR/$skill_name"
+      log "  linked .claude/skills/$skill_name (shared)"
+    done
+  fi
+  if [ -d "$SRC/skills" ]; then
+    for skill_dir in "$SRC/skills"/*/; do
+      [ -d "$skill_dir" ] || continue
+      local skill_name=$(basename "$skill_dir")
+      ln -sfn "$skill_dir" "$CLAUDE_SKILLS_DIR/$skill_name"
+      log "  linked .claude/skills/$skill_name (agent)"
     done
   fi
 

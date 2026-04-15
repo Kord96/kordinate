@@ -38,6 +38,10 @@ The deterministic phase is already done. Work from the prepared run directory an
    - prefer selective reads for large fact domains, and extract only the entries you need before opening repo files
    - for larger domains such as `external-clients.json`, `config.json`, and `import-graph.json`, filter by `component_ids`, `source_files`, or hotspot paths with `python`, `jq`, or `rg` instead of reading the whole file
    - use the available tools you actually have: `Read`, `Edit`, and `Bash`; use `Bash` for `find`, `rg`, `jq`, and `python` queries instead of assuming `Glob` or `Grep` tools exist
+   - treat deterministic evidence as ranked hints, not equal signals
+   - prefer runtime wiring, service entrypoints, registration code, and cross-component communication over validators, support scripts, bootstrap helpers, or identity docs
+   - for agent or plugin systems, identify the host or chassis first, then attach skills, plugins, or capabilities beneath it
+   - do not promote a top-level component from one isolated utility file; require corroboration from multiple strong signals
    - inspect the actual repo code to understand boundaries, responsibilities, flows, and ambiguities
    - widen from fact-selected files to adjacent code only when the deterministic evidence leaves a real ambiguity
    - do not treat deterministic facts as final truth

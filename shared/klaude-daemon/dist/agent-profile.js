@@ -87,7 +87,13 @@ function resolveBundleMode(message) {
         ?? process.env.AGENT_MEMORY_BUNDLE
         ?? process.env.AGENT_RUNTIME_BUNDLE
         ?? 'selective').toLowerCase();
-    return raw.includes('holistic') ? 'holistic' : 'selective';
+    if (raw.includes('holistic')
+        || raw.includes('full-bundle')
+        || raw === 'full'
+        || raw === 'opus-full') {
+        return 'holistic';
+    }
+    return 'selective';
 }
 function loadRuntimeManifest(mode) {
     const filename = `analyze-${mode}-v1.json`;
@@ -164,6 +170,9 @@ function renderStartupGuidance(agentParams) {
 }
 function renderStructuredRuntimeContext(message) {
     const analysisContext = message.agent_params?.analysis_context;
+    const requestedBundleMode = typeof message.agent_params?.bundle_mode === 'string'
+        ? resolveBundleMode(message)
+        : undefined;
     if (analysisContext && typeof analysisContext === 'object' && !Array.isArray(analysisContext)) {
         const context = analysisContext;
         const lines = [];
@@ -178,6 +187,9 @@ function renderStructuredRuntimeContext(message) {
         pushLine('Blast file', context.blast_path);
         pushLine('Concept evidence', context.concept_evidence_path);
         pushLine('Seed atlas path', context.atlas_path);
+        if (requestedBundleMode) {
+            lines.push(`- Bundle mode: \`${requestedBundleMode}\``);
+        }
         lines.push('- Start from the prepared run artifacts above before reading repo code.');
         lines.push('- Use `facts/startup.json` first, then `facts/index.json` only when you need the full deterministic manifest.');
         lines.push('- Read repo code only through fact-selected files, architecture entrypoints, or concrete validation gaps.');
@@ -199,6 +211,9 @@ function renderStructuredRuntimeContext(message) {
         runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\`.`);
         runtimeHints.push('Treat `$RUN` as this prepared directory and prefer its artifacts before broad repo exploration.');
         runtimeHints.push('Do not rediscover or infer alternate analysis roots unless this exact path is missing.');
+    }
+    if (requestedBundleMode) {
+        runtimeHints.push(`Bundle mode hint: use \`${requestedBundleMode}\` prompt preload assumptions for this request.`);
     }
     return runtimeHints.length > 0
         ? `## Runtime Context\n${runtimeHints.map(line => `- ${line}`).join('\n')}\n\n`

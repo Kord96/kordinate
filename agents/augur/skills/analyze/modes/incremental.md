@@ -22,4 +22,7 @@ Incremental mode means the semantic pass should start from the accepted prior se
 - Reuse unchanged semantic conclusions when the deterministic evidence and code inspection still support them.
 - Escalate to broader rereads only when the changed slice proves the boundary is larger than the blast estimate.
 - Avoid broad whole-repo exploration unless incremental evidence is clearly insufficient.
+- Preserve existing top-level component boundaries unless new strong evidence disproves them.
+- When changed files belong to a capability or plugin under an existing host, update that capability story first instead of promoting a new top-level component.
+- Prefer runtime wiring, registrations, entrypoints, and inter-component communication over validators, helpers, identity docs, or support scripts when deciding whether architecture has materially changed.
 - The available tools in this runtime are `Read`, `Edit`, and `Bash`. Use `Bash` with `find`, `rg`, `jq`, or `python` for discovery or filtering instead of assuming `Glob` or `Grep` tools exist.

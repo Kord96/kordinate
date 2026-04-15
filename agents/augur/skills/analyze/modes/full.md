@@ -26,6 +26,14 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - Use deterministic facts first, then code inspection.
 - Use `concept-evidence.json` to drive concept confirmation work. Query only the entries tied to the components, flows, or hotspot files you are actively resolving. If a candidate carries semantic questions, answer them before finalizing `atlas.json.concepts`.
 - Use `source_files` inside high-signal facts as the primary bridge from deterministic evidence into semantic code reading. Use `hot-files.json` as a secondary ranking hint when several candidate files are still plausible.
+- Treat evidence as tiered:
+  - strongest: runtime entrypoints, service startup, registration, deployment wiring, cross-component calls, message/topic bindings
+  - medium: core implementation modules repeatedly referenced by strong fact domains
+  - weak: validators, support scripts, bootstrap helpers, notes, and identity docs
+- Prefer strong evidence when naming components, responsibilities, and flows.
+- For agent, plugin, hook, or skill-oriented repos, identify the host runtime or chassis first, then model capabilities beneath it. Do not define the host component by one capability file.
+- Do not promote a top-level component unless multiple strong signals support it. A lone helper, validator, or utility file is not enough.
+- Distinguish top-level components from shared libraries, skills, plugins, and utilities. If something is primarily reused implementation support, keep it as a child capability, observation, or prose detail rather than a root component.
 - The available tools in this runtime are `Read`, `Edit`, and `Bash`. Use `Bash` with `find`, `rg`, `jq`, or `python` for discovery or filtering instead of assuming `Glob` or `Grep` tools exist.
 - Keep schema families distinct:
   - `atlas.json` uses atlas-style fields such as `name` and `description`
