@@ -17,9 +17,9 @@ The deterministic phase is already done. Work from the prepared run directory an
 1. Read startup inputs first.
    - `$RUN/blast.json`
    - `$RUN/facts/startup.json`
-   - the small high-signal fact files named by the runtime
-   - treat `$RUN/facts/startup.json` as the startup manifest for deterministic evidence
-   - open `$RUN/facts/index.json` only when you need the full domain manifest
+   - `$RUN/facts/index.json`
+   - the small high-signal fact files listed in `$RUN/facts/startup.json`
+   - treat `$RUN/facts/startup.json` and `$RUN/facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run
    - treat `$RUN/facts/concept-evidence.json` as the canonical source for candidate concepts and run-specific semantic questions
    - inspect `concept-evidence.json` selectively by candidate concept, supporting file, or component; do not read the whole file at startup
 
@@ -31,7 +31,7 @@ The deterministic phase is already done. Work from the prepared run directory an
 
 3. Use facts as guidance, then explore code semantically.
    - use `facts/index.json` to identify likely high-signal domains and files
-   - use `facts/startup.json` first for the high-signal startup path, then `facts/index.json` for deeper follow-up only when needed
+   - use `facts/startup.json` and `facts/index.json` to confirm which domains exist before reading any domain-specific fact file
    - start with `hot-files.json` and with repo files named by the prepared fact domains, especially routes, handlers, boundaries, dispatch bindings, and framework source files
    - use `facts/concept-evidence.json` to identify candidate concepts that still need semantic confirmation
    - answer any attached semantic questions before finalizing `atlas.json.concepts`

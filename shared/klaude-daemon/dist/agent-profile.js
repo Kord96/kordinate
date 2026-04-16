@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -95,59 +96,24 @@ function resolveBundleMode(message) {
     }
     return 'selective';
 }
-function loadRuntimeManifest(mode) {
-    const filename = `analyze-${mode}-v1.json`;
-    for (const root of augurRootCandidates()) {
-        const path = join(root, '.generated', 'bundles', 'runtime', filename);
-        const text = readCached(path);
-        if (!text)
-            continue;
-        try {
-            return { root, manifest: JSON.parse(text) };
-        }
-        catch {
-            continue;
-        }
-    }
-    return undefined;
-}
-function loadAugurBundlePrefix(message) {
-    const resolved = loadRuntimeManifest(resolveBundleMode(message));
-    if (!resolved)
-        return '';
-    const { root, manifest } = resolved;
-    const parts = [];
-    const addLayer = (label, relativePath) => {
-        if (!relativePath)
-            return;
-        const path = join(root, relativePath);
-        const text = readCached(path)?.trim();
-        if (!text)
-            return;
-        parts.push(`## ${label}\n\n${text}`);
-    };
-    const order = manifest.composition_order ?? ['skill_bundle', 'memory_bundle', 'detector_plan'];
-    for (const layer of order) {
-        if (layer === 'repo_context')
-            continue;
-        if (layer === 'skill_bundle')
-            addLayer('Skill Bundle', manifest.skill_bundle);
-        if (layer === 'memory_bundle')
-            addLayer('Memory Bundle', manifest.memory_bundle);
-        if (layer === 'detector_plan')
-            addLayer('Detector Plan', manifest.detector_plan);
-    }
-    return parts.length > 0 ? `${parts.join('\n\n')}\n\n` : '';
-}
-function loadAugurModeGuide(message) {
+function loadAugurPromptContext(message) {
+    const scriptPath = resolveAugurPath('scripts', 'build_prompt_context.py');
     const mode = typeof message.agent_params?.analysis_mode === 'string'
-        ? message.agent_params.analysis_mode.trim().toLowerCase()
+        ? message.agent_params.analysis_mode.trim()
         : '';
-    if (mode !== 'full' && mode !== 'incremental')
-        return '';
-    const path = resolveAugurPath('skills', 'analyze', 'modes', `${mode}.md`);
-    const text = readCached(path)?.trim();
-    return text ? `## ${mode === 'full' ? 'Full Mode Guide' : 'Incremental Mode Guide'}\n\n${text}\n\n` : '';
+    const payload = execFileSync('python3', [
+        scriptPath,
+        '--bundle-mode', resolveBundleMode(message),
+        '--analysis-mode', mode,
+    ], {
+        encoding: 'utf8',
+    }).trim();
+    try {
+        return JSON.parse(payload);
+    }
+    catch {
+        return {};
+    }
 }
 function renderStartupGuidance(agentParams) {
     const guidance = agentParams?.startup_guidance;
@@ -191,7 +157,7 @@ function renderStructuredRuntimeContext(message) {
             lines.push(`- Bundle mode: \`${requestedBundleMode}\``);
         }
         lines.push('- Start from the prepared run artifacts above before reading repo code.');
-        lines.push('- Use `facts/startup.json` first, then `facts/index.json` only when you need the full deterministic manifest.');
+        lines.push('- Use `facts/startup.json` and `facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run.');
         lines.push('- Read repo code only through fact-selected files, architecture entrypoints, or concrete validation gaps.');
         lines.push('- Do not begin with repo-root listings or metadata-file discovery.');
         lines.push('- Available tools in this runtime are `Read`, `Edit`, and `Bash`; use `Bash` with `find`, `rg`, `jq`, or `python` instead of assuming `Glob` or `Grep` tools exist.');
@@ -253,10 +219,11 @@ function hashPromptPrefix(value) {
 export function buildPromptPlanFromProfile(profile, message) {
     const runtimePreamble = renderStructuredRuntimeContext(message);
     const startupGuidance = renderStartupGuidance(message.agent_params);
-    const bundlePrefix = profile.supportedAgentParams?.includes('bundle_mode')
-        ? loadAugurBundlePrefix(message)
-        : loadSeededBundlePrefix(profile.name ?? 'generic');
-    const modeGuide = profile.name === 'augur' ? loadAugurModeGuide(message) : '';
+    const augurPromptContext = profile.supportedAgentParams?.includes('bundle_mode')
+        ? loadAugurPromptContext(message)
+        : undefined;
+    const bundlePrefix = augurPromptContext?.bundle_prefix ?? loadSeededBundlePrefix(profile.name ?? 'generic');
+    const modeGuide = augurPromptContext?.mode_guide ?? '';
     const cacheablePrefix = profile.promptPrefix || bundlePrefix
         ? `${profile.promptPrefix ? `${profile.promptPrefix}\n\n` : ''}${bundlePrefix}`
         : '';

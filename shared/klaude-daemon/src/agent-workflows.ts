@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { basename, dirname, join } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
@@ -331,85 +331,43 @@ async function prepareAugurDeterministicArtifacts(
   return { project, runDir }
 }
 
-function buildAugurAnalysisContext(
+async function buildAugurAnalysisContext(
   workingDir: string,
   project: string,
   runDir: string,
   analysisMode: 'full' | 'incremental',
-): AugurAnalysisContext {
-  const analysisDir = dirname(runDir)
-  const projectMem = dirname(analysisDir)
-  const factsDir = join(runDir, 'facts')
-  const startupPath = join(factsDir, 'startup.json')
-  const blastPath = join(runDir, 'blast.json')
-  const conceptEvidencePath = join(factsDir, 'concept-evidence.json')
-  const atlasPath = join(runDir, 'atlas.json')
-  const starterFiles = [
-    blastPath,
-    startupPath,
-    join(factsDir, 'frameworks.json'),
-    join(factsDir, 'boundaries.json'),
-    join(factsDir, 'dispatch-bindings.json'),
-    join(factsDir, 'hot-files.json'),
-  ]
-  const startupDirective = analysisMode === 'incremental'
-    ? [
-        'Begin with the prepared analysis artifacts, not generic repo orientation.',
-        'Read starter_files first and treat facts/startup.json as the startup manifest for follow-up fact selection.',
-        'Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.',
-        'Use hot-files.json and fact source_files to rank what code to inspect next.',
-        'Preserve unchanged accepted outputs unless blast evidence forces wider revision.',
-        'When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.',
-        'Available tools are Read, Edit, and Bash. Use Bash with find, rg, jq, or python for discovery or filtering; do not assume Glob or Grep tools exist.',
-      ].join(' ')
-    : [
-        'Begin with the prepared analysis artifacts, not generic repo orientation.',
-        'Read starter_files first and treat facts/startup.json as the startup manifest for follow-up fact selection.',
-        'Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.',
-        'Use hot-files.json and fact source_files to rank what code to inspect next.',
-        'Do not read large domains like concept-evidence.json, external-clients.json, config.json, or import-graph.json in full before narrowing them by component, concept, or hotspot.',
-        'Before atlas.json exists, only inspect those large domains through filtered queries keyed by component_ids, source_files, concept ids, or hotspot paths.',
-        'Do not begin by listing the repo root or reading repo metadata files.',
-        'Follow the already-loaded Augur skill, mode guide, and canonical schema files instead of guessing alternate paths or formats.',
-        'When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.',
-        'Available tools are Read, Edit, and Bash. Use Bash with find, rg, jq, or python for discovery or filtering; do not assume Glob or Grep tools exist.',
-      ].join(' ')
-  return {
-    project,
-    mode: analysisMode,
-    working_dir: workingDir,
-    run_dir: runDir,
-    analysis_dir: analysisDir,
-    project_mem: projectMem,
-    facts_dir: factsDir,
-    startup_path: startupPath,
-    blast_path: blastPath,
-    concept_evidence_path: conceptEvidencePath,
-    atlas_path: atlasPath,
-    latest_path: join(analysisDir, 'latest.json'),
-    starter_files: starterFiles,
-    startup_directive: startupDirective,
-  }
+): Promise<AugurAnalysisContext> {
+  const kordHome = process.env.KORDINATE_HOME ?? '/app'
+  const cwd = contextHomeDirectoryFallback()
+  const payload = await runCommand('python3', [
+    join(kordHome, 'agents', 'augur', 'scripts', 'build_analysis_context.py'),
+    '--project', project,
+    '--working-dir', workingDir,
+    '--run-dir', runDir,
+    '--analysis-mode', analysisMode,
+  ], cwd)
+  return JSON.parse(payload) as AugurAnalysisContext
+}
+
+function contextHomeDirectoryFallback(): string {
+  return process.env.AGENT_HOME_DIR
+    ?? process.env.HOME
+    ?? process.cwd()
 }
 
 function buildAugurValidationRepairPrompt(input: ValidationRepairPromptInput): string {
-  const findings = input.findings.map(line => `- ${line}`).join('\n')
-  return [
-    `Validation failed for \`${input.targetDir}\`.`,
-    'You must fix the generated output in place and obtain a validation completion token before finishing.',
-    `Validator: \`${input.validatorScript}\``,
-    `Attempt ${input.attempt} of ${input.maxAttempts}.`,
-    '',
-    'Current validator findings:',
-    findings || '- Validation failed with no structured findings.',
-    '',
-    'Repair the output files now. Do not restart analysis. Keep the same project understanding and only change what is needed to pass validation.',
-    `Do not call \`/validate-output\` as a shell command. If you need to validate manually inside the runtime, run \`python3 ${input.validatorScript} ${input.targetDir}\`.`,
-    'Re-read the canonical schema files and fix the output to match them exactly:',
-    '- `/app/agents/augur/schemas/atlas-schema.md`',
-    '- `/app/agents/augur/schemas/story-schema.md`',
-    '- `/app/agents/augur/schemas/narratives-schema.md`',
-  ].join('\n')
+  const kordHome = process.env.KORDINATE_HOME ?? '/app'
+  const payload = execFileSync('python3', [
+    join(kordHome, 'agents', 'augur', 'scripts', 'build_validation_repair_prompt.py'),
+    '--target-dir', input.targetDir,
+    '--validator-script', input.validatorScript,
+    '--attempt', String(input.attempt),
+    '--max-attempts', String(input.maxAttempts),
+    '--findings-json', JSON.stringify(input.findings),
+  ], {
+    encoding: 'utf8',
+  }).trim()
+  return payload
 }
 
 function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks {
@@ -508,7 +466,7 @@ function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks 
       if (!workingDir) {
         throw new Error('working_dir is required for Augur semantic preparation')
       }
-      const analysisContext = buildAugurAnalysisContext(workingDir, prepared.project, prepared.runDir, analysisMode)
+      const analysisContext = await buildAugurAnalysisContext(workingDir, prepared.project, prepared.runDir, analysisMode)
       return {
         runtimeMessage: {
           ...message,

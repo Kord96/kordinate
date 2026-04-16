@@ -636,9 +636,17 @@ function resolveRuntimeHome(homeDirectory) {
         ?? process.env.HOME
         ?? process.cwd();
 }
-async function ensureClaudeSkillRegistry(runtimeHome) {
+async function ensureClaudeSkillRegistryFallback(runtimeHome) {
     const skillsRoot = path.join(runtimeHome, '.claude', 'skills');
     await mkdir(skillsRoot, { recursive: true });
+    try {
+        const existing = await readdir(skillsRoot);
+        if (existing.length > 0)
+            return;
+    }
+    catch {
+        // continue with fallback seeding
+    }
     const skillSources = [
         path.join(process.env.KORDINATE_HOME ?? '/app', 'shared', 'skills'),
         process.env.AGENT_PROFILE
@@ -971,7 +979,7 @@ async function runOpenClaudePrint(prompt, options) {
             env[key] = value;
     }
     const runtimeHome = resolveRuntimeHome(options.homeDirectory);
-    await ensureClaudeSkillRegistry(runtimeHome);
+    await ensureClaudeSkillRegistryFallback(runtimeHome);
     const cwd = options.workingDirectory ?? runtimeHome;
     const timeoutMs = Number.isFinite(options.timeoutMs)
         ? Math.max(1, options.timeoutMs)
@@ -1241,7 +1249,7 @@ export class ClaudeAgentSdkAdapter {
         }
         const sessionId = session.providerSessionId ?? randomUUID();
         const runtimeHome = resolveRuntimeHome(this.homeDirectory);
-        await ensureClaudeSkillRegistry(runtimeHome);
+        await ensureClaudeSkillRegistryFallback(runtimeHome);
         const env = {
             ...process.env,
             ANTHROPIC_API_KEY: this.apiKey,

@@ -2,7 +2,7 @@
 name: platform
 description: >
   Deploy and manage the agent runtime platform — agents, curators, kafka, and KEDA scaling.
-  Use for platform deploys, scaling changes, status checks, component restarts, and adding daemon-backed agents.
+  Use for platform deploys, scaling changes, status checks, component restarts, image rollouts, and adding daemon-backed agents.
 argument-hint: "deploy <env> | status [env] | scale <agent> <min> <max> [env] | restart <component> [env] | create-agent <name> [flags]"
 ---
 
@@ -25,6 +25,7 @@ Deploy and manage the agent runtime platform. Applies kustomize overlays for pla
 | `status [env]` | Show platform pod status, KEDA scaling, Kafka topic lag |
 | `scale <agent> <min> <max> [env]` | Update KEDA scaling for an agent and re-apply |
 | `restart <agent\|curator\|all> [env]` | Rollout restart specific components |
+| `rebuild-image <image> [env]` | Build/push one platform image and roll all affected deployments |
 | `create-agent <name> [flags]` | Add a daemon-backed agent entry to the platform spec and regenerate manifests |
 
 Default environment is `dev` if not specified.
@@ -86,6 +87,26 @@ Default environment is `dev` if not specified.
 
 4. **Report** — components restarted, pod ready state.
 
+## Rebuild Image
+
+`/platform rebuild-image <image> [env]`
+
+1. Parse image and env from `$ARGUMENTS` (default env: `dev`).
+
+2. **Resolve registry** — read the platform registry from Alfred-owned config/runtime projection.
+
+3. **Build and push** — use:
+
+   `bash $KORDINATE_HOME/lib/scripts/build-agent-images.sh <registry> --image <image> --tag <timestamp>`
+
+4. **Roll affected deployments** — use:
+
+   `python3 $KORDINATE_HOME/lib/scripts/roll-platform-image.py <image> <registry> <tag> --env <env>`
+
+5. **Verify** — confirm affected deployments roll out and the new image tag is present on the setup and agent containers.
+
+6. **Report** — image, tag, affected deployments, rollout result.
+
 ## Create Agent
 
 `/platform create-agent <name> [flags]`
@@ -119,6 +140,8 @@ Read the detailed procedure at [create-agent.md](create-agent.md).
 - [create-agent.md](create-agent.md) — how to add a new daemon-backed agent to the platform
 - [agent-creation-profiles.yaml](agent-creation-profiles.yaml) — flavor-aware creation defaults and required specialist choices
 - [layered-image-rollout.md](layered-image-rollout.md) — first rollout procedure for `agent-base`, `agent-charon`, and `agent-augur`
+- `lib/scripts/build-agent-images.sh` — selective platform image builds with optional explicit tags
+- `lib/scripts/roll-platform-image.py` — rollout helper that maps an image to the agent deployments that use it
 - [generic-backend-agents.md](generic-backend-agents.md) — generic backend-based consultation agents routed through the same platform path as specialized agents
 - [../../../../docs/bootstrap-image-policy.md](../../../../docs/bootstrap-image-policy.md) — bootstrap rule for prebuilt agent images and post-bootstrap Charon ownership
 - `shared/runtime/profile/overlays/platform/<env>/` — runtime projection used for deploy/apply

@@ -16,7 +16,6 @@ At minimum, the bootstrap set includes:
 - `agent-augur`
 - `agent-sauron`
 - `agent-alfred`
-- `agent-warden`
 
 ## Why
 
@@ -54,7 +53,6 @@ The first rollout after introducing layered images must ensure the following ima
 - `agent-augur:latest`
 - `agent-alfred:latest`
 - `agent-sauron:latest`
-- `agent-warden:latest`
 
 When Docker is available locally, validate these with:
 

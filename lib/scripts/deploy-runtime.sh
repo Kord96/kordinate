@@ -453,7 +453,6 @@ deploy_team() {
 | charon | Infrastructure, deployments, cluster ops | sonnet |
 | sauron | Monitoring, observability, metrics | sonnet |
 | alfred | Config, credentials, overlays | haiku |
-| warden | Security validation, output contracts | haiku |
 
 ## Delegation
 

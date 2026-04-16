@@ -20,8 +20,6 @@ Ensure `agent-base` carries the shared `klaude-daemon` binary and that specialis
   - derives from `agent-base`
 - `agent-sauron`
   - derives from `agent-base`
-- `agent-warden`
-  - derives from `agent-base`
 
 ## Rollout Order
 
@@ -39,6 +37,15 @@ lib/scripts/build-agent-images.sh <registry-host> --verify-local
 ```
 
 This verifies each built image contains `klaude-daemon` before pushing.
+
+For targeted image refreshes after the platform is already healthy, prefer:
+
+```bash
+lib/scripts/build-agent-images.sh <registry-host> --image agent-augur --tag <timestamp> --verify-local
+python3 lib/scripts/roll-platform-image.py agent-augur <registry-host> <timestamp> --env <env>
+```
+
+This keeps image ownership in the Charon/platform path instead of ad hoc deployment patching.
 
 ## Verification
 
