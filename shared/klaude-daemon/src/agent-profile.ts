@@ -150,6 +150,10 @@ function renderStartupGuidance(agentParams?: Record<string, unknown>): string {
   if (directive) {
     parts.push(`Directive: ${directive}`)
   }
+  parts.push('Tool discipline:')
+  parts.push('- Use `Read` to open files such as `blast.json`, `startup.json`, schemas, and repo source files.')
+  parts.push('- Use `Bash` only for real shell commands such as `find`, `rg`, `jq`, `python`, `git`, or validators.')
+  parts.push('- Do not write pseudo-shell calls such as `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.')
   if (starterFiles.length > 0) {
     parts.push('Starter artifacts:')
     parts.push(...starterFiles.map((path: string) => `- \`${path}\``))
@@ -182,7 +186,9 @@ function renderStructuredRuntimeContext(message: RequestMessage): string {
     lines.push('- Use `facts/startup.json` and `facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run.')
     lines.push('- Read repo code only through fact-selected files, architecture entrypoints, or concrete validation gaps.')
     lines.push('- Do not begin with repo-root listings or metadata-file discovery.')
-    lines.push('- Available tools in this runtime are `Read`, `Edit`, and `Bash`; use `Bash` with `find`, `rg`, `jq`, or `python` instead of assuming `Glob` or `Grep` tools exist.')
+    lines.push('- Available tools in this runtime are `Read`, `Edit`, and `Bash`.')
+    lines.push('- Use `Read` for file access. When a path is given, open it with `Read` instead of trying to read it inside Bash.')
+    lines.push('- Use `Bash` only for real shell commands such as `find`, `rg`, `jq`, `python`, `git`, or validators; do not call invented helpers like `read_file` inside Bash.')
     return `## Runtime Context\n${lines.join('\n')}\n\n`
   }
 
@@ -199,6 +205,7 @@ function renderStructuredRuntimeContext(message: RequestMessage): string {
     runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\`.`)
     runtimeHints.push('Treat `$RUN` as this prepared directory and prefer its artifacts before broad repo exploration.')
     runtimeHints.push('Do not rediscover or infer alternate analysis roots unless this exact path is missing.')
+    runtimeHints.push('Use `Read` for file access and `Bash` only for real shell commands; do not call invented helpers like `read_file` inside Bash.')
   }
   if (requestedBundleMode) {
     runtimeHints.push(`Bundle mode hint: use \`${requestedBundleMode}\` prompt preload assumptions for this request.`)

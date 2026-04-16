@@ -34,7 +34,10 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - For agent, plugin, hook, or skill-oriented repos, identify the host runtime or chassis first, then model capabilities beneath it. Do not define the host component by one capability file.
 - Do not promote a top-level component unless multiple strong signals support it. A lone helper, validator, or utility file is not enough.
 - Distinguish top-level components from shared libraries, skills, plugins, and utilities. If something is primarily reused implementation support, keep it as a child capability, observation, or prose detail rather than a root component.
-- The available tools in this runtime are `Read`, `Edit`, and `Bash`. Use `Bash` with `find`, `rg`, `jq`, or `python` for discovery or filtering instead of assuming `Glob` or `Grep` tools exist.
+- The available tools in this runtime are `Read`, `Edit`, and `Bash`.
+- Use `Read` to open files.
+- Use `Bash` only for real shell commands such as `find`, `rg`, `jq`, `python`, `git`, or the validator.
+- Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.
 - Keep schema families distinct:
   - `atlas.json` uses atlas-style fields such as `name` and `description`
   - `stories/*.yaml` use story-schema fields such as `id`, `title`, and `summary`

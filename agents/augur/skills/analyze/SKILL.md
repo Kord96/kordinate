@@ -37,7 +37,10 @@ The deterministic phase is already done. Work from the prepared run directory an
    - answer any attached semantic questions before finalizing `atlas.json.concepts`
    - prefer selective reads for large fact domains, and extract only the entries you need before opening repo files
    - for larger domains such as `external-clients.json`, `config.json`, and `import-graph.json`, filter by `component_ids`, `source_files`, or hotspot paths with `python`, `jq`, or `rg` instead of reading the whole file
-   - use the available tools you actually have: `Read`, `Edit`, and `Bash`; use `Bash` for `find`, `rg`, `jq`, and `python` queries instead of assuming `Glob` or `Grep` tools exist
+   - use the available tools you actually have: `Read`, `Edit`, and `Bash`
+   - use `Read` to open files
+   - use `Bash` only for real shell commands such as `find`, `rg`, `jq`, `python`, `git`, or the validator
+   - do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash
    - treat deterministic evidence as ranked hints, not equal signals
    - prefer runtime wiring, service entrypoints, registration code, and cross-component communication over validators, support scripts, bootstrap helpers, or identity docs
    - for agent or plugin systems, identify the host or chassis first, then attach skills, plugins, or capabilities beneath it
