@@ -32,7 +32,8 @@ The deterministic phase is already done. Work from the prepared run directory an
 3. Use facts as guidance, then explore code semantically.
    - use `facts/index.json` to identify likely high-signal domains and files
    - use `facts/startup.json` and `facts/index.json` to confirm which domains exist before reading any domain-specific fact file
-   - start with `hot-files.json` and with repo files named by the prepared fact domains, especially routes, handlers, boundaries, dispatch bindings, and framework source files
+   - start with `hot-files.json` and with repo files named by the prepared fact domains
+   - do not assume optional domain files such as `routes.json`, `dispatch-bindings.json`, `handlers.json`, `events.json`, or `models.json` exist unless `facts/index.json` lists them for this run
    - use `facts/concept-evidence.json` to identify candidate concepts that still need semantic confirmation
    - answer any attached semantic questions before finalizing `atlas.json.concepts`
    - prefer selective reads for large fact domains, and extract only the entries you need before opening repo files

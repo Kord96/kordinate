@@ -8,7 +8,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 
 1. Read `$RUN/blast.json` to confirm `mode=full` and capture any invalidation reasons.
 2. Read `$RUN/facts/startup.json` and `$RUN/facts/index.json` and use them as the authoritative manifest for available domains, counts, detector coverage, and failed domains.
-3. Read `hot-files.json` as a secondary hint layer. Prefer files surfaced by `frameworks`, `boundaries`, `routes`, `dispatch-bindings`, `handlers`, `registrations`, `call-edges`, and `execution-slices` before following generic hotspots.
+3. Read `hot-files.json` as a secondary hint layer. Prefer files surfaced by whichever strong domains are actually listed in `facts/index.json`, such as `frameworks`, `boundaries`, `handlers`, `registrations`, `call-edges`, or `execution-slices`, before following generic hotspots.
 4. Inspect `concept-evidence.json` early, but only through filtered queries for the candidate entries and semantic questions that matter for the current architectural picture.
 5. Read only the small, high-signal fact files first, especially `frameworks.json`, `boundaries.json`, and `dispatch-bindings.json`, plus `routes.json` when it is actually present.
 6. Read repo files only as needed to resolve ambiguity or verify architecture boundaries, starting from files named by the prepared fact domains and `hot-files.json`.
@@ -56,7 +56,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - In flow steps, `component` and `to` must reference real atlas node ids. Do not use placeholders such as `filesystem`; represent persistence through `state` entries instead.
 - If a component interacts with Kafka, keep that relationship in `external_dependencies`, `events`, and flow steps. Do not put `kafka` in `components[].depends_on`.
 - If you create multiple narratives, one of them must still be exactly `id: getting-started`, and every narrative must list 3-8 real story ids.
-- Treat `facts/startup.json` and `facts/index.json` as the authority for which fact domains exist in this run. Do not read every fact domain wholesale before you know which domains matter.
+- Treat `facts/startup.json` and `facts/index.json` as the authority for which fact domains exist in this run. Do not read any domain-specific fact file unless `facts/index.json` lists it for this run, and do not read every fact domain wholesale before you know which domains matter.
 - For larger domains such as `concept-evidence.json`, `import-graph.json`, `config.json`, or `external-clients.json`, inspect them selectively with `jq`, `python`, `rg`, or targeted reads instead of full-file slurps.
 - Do not read `concept-evidence.json`, `external-clients.json`, `config.json`, or `import-graph.json` in full during early orientation. Filter them by relevant `component_ids`, `source_files`, hotspot paths, or concept ids first.
 - Until you have written an initial `atlas.json`, never full-read `concept-evidence.json`, `external-clients.json`, `config.json`, or `import-graph.json`. Query only the entries tied to the components, flows, hotspot files, or concept candidates you are actively resolving.
