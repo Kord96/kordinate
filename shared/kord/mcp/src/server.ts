@@ -131,6 +131,7 @@ server.registerTool(
       prompt: z.string().min(1),
       working_dir: z.string().optional(),
       timeout_ms: z.number().int().positive().optional(),
+      agent_params: z.record(z.string(), z.unknown()).optional(),
       reflect: z.boolean().optional(),
       reflection_prompt: z.string().optional(),
       session_id: z.string().optional(),
@@ -142,11 +143,12 @@ server.registerTool(
       verbose: z.boolean().optional(),
     },
   },
-  async ({ agent, prompt, working_dir, timeout_ms, reflect, reflection_prompt, session_id, variant, backend_model, async = false, stream = false, debug = false, verbose = false }) => {
+  async ({ agent, prompt, working_dir, timeout_ms, agent_params, reflect, reflection_prompt, session_id, variant, backend_model, async = false, stream = false, debug = false, verbose = false }) => {
     try {
       const body: Json = { prompt, async }
       if (working_dir) body.working_dir = working_dir
       if (timeout_ms !== undefined) body.timeout_ms = timeout_ms
+      if (agent_params && Object.keys(agent_params).length > 0) body.agent_params = agent_params
       if (reflect !== undefined) body.reflect = reflect
       if (reflection_prompt) body.reflection_prompt = reflection_prompt
       if (session_id) body.session_id = session_id
