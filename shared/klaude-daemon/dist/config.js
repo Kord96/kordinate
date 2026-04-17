@@ -103,7 +103,7 @@ function buildCodexExecutionProfile(provider) {
         runtime: 'codex-sdk',
         model: process.env.DAEMON_MODEL ?? 'gpt-5.4',
         apiKey: openaiApiKey,
-        baseUrl: openaiApiKey ? genericBaseUrl : undefined,
+        baseUrl: genericBaseUrl,
         skipGitRepoCheck: process.env.CODEX_SKIP_GIT_REPO_CHECK === '1' || process.env.CODEX_SKIP_GIT_REPO_CHECK === 'true',
         homeDirectory: resolveAgentHomeDirectory(),
         workingDirectory: resolveDefaultWorkingDirectory(),

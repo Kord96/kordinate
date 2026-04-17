@@ -25,7 +25,6 @@ def main() -> int:
     facts_dir = run_dir / "facts"
     startup_path = facts_dir / "startup.json"
     blast_path = run_dir / "blast.json"
-    concept_evidence_path = facts_dir / "concept-evidence.json"
     atlas_path = run_dir / "atlas.json"
 
     starter_files: list[str] = [str(blast_path), str(startup_path)]
@@ -85,9 +84,8 @@ def main() -> int:
         "facts_dir": str(facts_dir),
         "startup_path": str(startup_path),
         "blast_path": str(blast_path),
-        "concept_evidence_path": str(concept_evidence_path),
         "atlas_path": str(atlas_path),
-        "latest_path": str(analysis_dir / "latest.json"),
+        "latest_path": str(analysis_dir.parent / "latest.json"),
         "starter_files": starter_files,
         "startup_directive": startup_directive,
     }

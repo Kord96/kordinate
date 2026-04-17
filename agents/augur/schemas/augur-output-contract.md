@@ -14,26 +14,33 @@ This document describes what downstream consumers can depend on. For field-level
 ```text
 $PROJECT_MEM/
   analysis/
-    latest.json
     index.json
-    by-sha/
-      <commit-sha>.json
-    <analysis-id>/
-      meta.json
-      blast.json
-      facts/
-        index.json
-        <domain>.json
-      atlas.json
-      stories/
-        <id>.yaml
-      narratives.yaml
+    latest.json                  # convenience pointer to latest accepted run in the project
+    <commit-sha>/
+      index.json
+      latest.json
+      <analysis-id>/
+        meta.json
+        blast.json
+        facts/
+          index.json
+          <domain>.json
+        atlas.json
+        stories/
+          <id>.yaml
+        narratives.yaml
+        overlays/
+          index.json
+        reflections/
+          index.json
 ```
 
 Deterministic-only runs produce:
 - `blast.json`
 - `facts/`
 - `meta.json`
+- `overlays/index.json`
+- `reflections/index.json`
 
 Semantic runs additionally produce:
 - `atlas.json`
@@ -106,12 +113,31 @@ Stable fields:
 - `execution`
 - `validation`
 
+## overlays/
+
+Mutable user-authored layers against one concrete accepted run.
+
+Stable constraints:
+- `overlays/index.json` exists for every finalized analysis
+- overlay content must not mutate the base run in place
+- overlays are attached to one specific `<commit-sha>/<analysis-id>` snapshot
+
+## reflections/
+
+Immutable evaluations, critiques, or compare outputs attached to one accepted run.
+
+Stable constraints:
+- `reflections/index.json` exists for every finalized analysis
+- reflections are distinct from overlays and do not replace generated artifacts
+
 ## What Consumers Can Assume
 
-1. `latest.json` points only to an accepted analysis with `validation.passed = true`.
+1. `analysis/latest.json` points only to an accepted analysis with `validation.passed = true`.
 2. `analysis/index.json` provides a per-project history of accepted analyses.
-3. `analysis/by-sha/<sha>.json` groups accepted analyses by analyzed commit.
-4. Deterministic artifacts use `blast.json` plus `facts/`.
-5. Semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
-6. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.
-7. New optional fields may appear, but existing stable fields do not change without a versioned schema change.
+3. `analysis/<sha>/index.json` groups accepted analyses by analyzed commit.
+4. `analysis/<sha>/latest.json` points to the latest accepted run for that commit.
+5. Deterministic artifacts use `blast.json` plus `facts/`.
+6. Semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
+7. Overlay and reflection containers exist beside every accepted run even before any user edits or reviews are created.
+8. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.
+9. New optional fields may appear, but existing stable fields do not change without a versioned schema change.

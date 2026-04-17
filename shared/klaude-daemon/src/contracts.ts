@@ -150,7 +150,6 @@ function renderRuntimeContext(message: RequestMessage, runtimeProfile: RuntimePr
     pushLine('Facts dir', context.facts_dir)
     pushLine('Startup manifest', context.startup_path)
     pushLine('Blast file', context.blast_path)
-    pushLine('Concept evidence', context.concept_evidence_path)
     pushLine('Seed atlas path', context.atlas_path)
     if (requestedBundleMode) {
       lines.push(`- Bundle mode: \`${requestedBundleMode}\``)

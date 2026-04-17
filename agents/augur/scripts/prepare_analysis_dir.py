@@ -68,12 +68,14 @@ def build_payload(repo_root: Path, agent_home: Path, project: str | None, run_su
     project_name = slug_repo_name(project or repo_root.name)
     project_mem = agent_home / "memory" / "projects" / project_name
     analysis = project_mem / "analysis"
+    sha_dir = analysis / sha
     run_id = analysis_timestamp()
     safe_suffix = sanitize_suffix(run_suffix)
     if safe_suffix:
         run_id = f"{run_id}--{safe_suffix[-12:]}"
-    run_dir = analysis / run_id
+    run_dir = sha_dir / run_id
     analysis.mkdir(parents=True, exist_ok=True)
+    sha_dir.mkdir(parents=True, exist_ok=True)
     run_dir.mkdir(parents=True, exist_ok=True)
     reset_incomplete_run_dir(run_dir)
     latest = analysis / "latest.json"
@@ -85,6 +87,7 @@ def build_payload(repo_root: Path, agent_home: Path, project: str | None, run_su
         "ANALYSIS_ID": run_id,
         "PROJECT_MEM": str(project_mem),
         "ANALYSIS": str(analysis),
+        "SHA_DIR": str(sha_dir),
         "LATEST": str(latest),
         "RUN": str(run_dir),
     }

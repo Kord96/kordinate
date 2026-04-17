@@ -31,13 +31,17 @@ def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def analysis_context(analysis_dir: Path) -> tuple[str, str]:
-    try:
+def analysis_context(analysis_dir: Path) -> tuple[str, str, Path]:
+    analysis_id = analysis_dir.name
+    if analysis_dir.parent.name == "analysis":
         project = analysis_dir.parents[1].name
-        analysis_id = analysis_dir.name
-    except IndexError as exc:
-        raise SystemExit(f"analysis directory is not under memory/projects/<project>/analysis/<id>: {analysis_dir}") from exc
-    return project, analysis_id
+        agent_home = analysis_dir.parents[4]
+        return project, analysis_id, agent_home
+    if analysis_dir.parent.parent.name == "analysis":
+        project = analysis_dir.parents[2].name
+        agent_home = analysis_dir.parents[5]
+        return project, analysis_id, agent_home
+    raise SystemExit(f"analysis directory is not under memory/projects/<project>/analysis/<sha>/<id>: {analysis_dir}")
 
 
 def main() -> int:
@@ -58,7 +62,7 @@ def main() -> int:
     existing_meta_path = analysis_dir / "meta.json"
     existing_meta = read_json(existing_meta_path) if existing_meta_path.exists() else {}
 
-    project_slug, analysis_id = analysis_context(analysis_dir)
+    project_slug, analysis_id, agent_home = analysis_context(analysis_dir)
     project_name = str(atlas.get("project") or existing_meta.get("project") or project_slug)
     sha = str(atlas.get("metadata", {}).get("analyzed_at_sha") or existing_meta.get("sha") or blast.get("current_sha") or "")
     commit_time = str(blast.get("current_commit_time") or existing_meta.get("commit_time") or "")
@@ -69,6 +73,16 @@ def main() -> int:
     facts_index = analysis_dir / "facts" / "index.json"
     stories_dir = analysis_dir / "stories"
     narratives_path = analysis_dir / "narratives.yaml"
+    overlays_dir = analysis_dir / "overlays"
+    reflections_dir = analysis_dir / "reflections"
+    overlays_index = overlays_dir / "index.json"
+    reflections_index = reflections_dir / "index.json"
+    overlays_dir.mkdir(parents=True, exist_ok=True)
+    reflections_dir.mkdir(parents=True, exist_ok=True)
+    if not overlays_index.exists():
+        write_json(overlays_index, {"analysis_id": analysis_id, "overlays": []})
+    if not reflections_index.exists():
+        write_json(reflections_index, {"analysis_id": analysis_id, "reflections": []})
     meta = {
         "project": project_name,
         "analysis_id": analysis_id,
@@ -95,6 +109,10 @@ def main() -> int:
             "stories_dir": str(stories_dir) if stories_dir.exists() else "",
             "narratives": str(narratives_path) if narratives_path.exists() else "",
             "blast": str(blast_path) if blast_path.exists() else "",
+            "overlays_dir": str(overlays_dir),
+            "overlays_index": str(overlays_index),
+            "reflections_dir": str(reflections_dir),
+            "reflections_index": str(reflections_index),
         },
         "schemas": {
             "facts": str(FACTS_SCHEMA),
@@ -121,8 +139,8 @@ def main() -> int:
     }
 
     write_json(existing_meta_path, meta)
-    write_latest_analysis_pointer(project_slug, analysis_id, sha, commit_time)
-    write_analysis_indexes(project_slug)
+    write_latest_analysis_pointer(project_slug, analysis_id, sha, commit_time, agent_home=agent_home, analysis_path=analysis_dir)
+    write_analysis_indexes(project_slug, agent_home=agent_home)
 
     print(json.dumps(meta, indent=2))
     return 0

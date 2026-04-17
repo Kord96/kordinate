@@ -5,10 +5,10 @@ Usage:
     python validate_output.py <analysis-dir>
 
     <analysis-dir> is the validated Augur analysis directory.
-    Deterministic-only runs must contain blast.json, facts/, and facts/concept-evidence.json.
+    Deterministic-only runs must contain blast.json and facts/.
     Full semantic runs must also contain atlas.json, stories/, and narratives.yaml.
     meta.json is validated when present, but it may be finalized after semantic validation.
-    e.g., /kord/augur/memory/projects/<project>/analysis/<analysis-id>/
+    e.g., /kord/augur/memory/projects/<project>/analysis/<sha>/<analysis-id>/
 
 Lock management is automatic when VALIDATE_LOCK=1 is set in the environment.
 This is used by the hook infrastructure, not by the agent directly.
@@ -17,7 +17,6 @@ Checks:
     Phase 1 deterministic:
         - blast.json exists and is valid JSON
         - facts/ exists and contains extracted domain files
-        - facts/concept-evidence.json exists and is valid JSON
 
     Phase 2 semantic (atlas v4):
         - atlas.json exists and is valid JSON
@@ -51,7 +50,7 @@ Checks:
         - artifact and schema paths are absolute
 
     Structure:
-        - blast.json and facts/concept-evidence.json are JSON
+        - blast.json is JSON
         - atlas.json is JSON (not YAML)
         - stories/*.yaml are YAML (not .md or .json)
         - narratives.yaml is YAML
@@ -67,6 +66,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import Iterable
 
 try:
     import yaml
@@ -79,15 +79,6 @@ REQUIRED_ATLAS_FIELDS = [
     "version", "generated", "project", "purpose",
     "components", "flows", "state",
     "external_dependencies", "concepts", "tensions"
-]
-
-FORBIDDEN_LEGACY_ATLAS_FIELDS = [
-    "groups",
-    "stack",
-    "debt",
-    "api_surface",
-    "security",
-    "developer_experience",
 ]
 
 DETERMINISTIC_ONLY = (
@@ -122,6 +113,112 @@ def check_grounded_in(
         if not any((root / filepath).exists() for root in roots):
             issues.append({"level": "ERROR", "section": section,
                            "message": f"'{item_id}' grounded_in references non-existent file: {filepath}"})
+    return issues
+
+
+def resolve_reference_file(
+    ref: str,
+    project_root: Path | None,
+    analysis_dir: Path | None,
+) -> Path | None:
+    filepath = ref.split(":")[0]
+    candidate = Path(filepath)
+    if candidate.is_absolute():
+        return candidate if candidate.exists() else None
+    for root in (project_root, analysis_dir):
+        if not root:
+            continue
+        resolved = root / filepath
+        if resolved.exists():
+            return resolved
+    return None
+
+
+def parse_reference_line(ref: str) -> int | None:
+    parts = ref.rsplit(":", 1)
+    if len(parts) != 2:
+        return None
+    try:
+        return int(parts[1])
+    except (TypeError, ValueError):
+        return None
+
+
+def tokenize_for_overlap(text: str) -> set[str]:
+    return {
+        token for token in re.findall(r"[A-Za-z0-9_./-]{3,}", text.lower())
+        if not token.isdigit()
+    }
+
+
+def verify_grounding_quality(
+    refs: Iterable[str],
+    claim_text: str,
+    project_root: Path | None,
+    analysis_dir: Path | None,
+    section: str,
+    item_id: str,
+) -> list[dict]:
+    issues = []
+    claim_tokens = tokenize_for_overlap(claim_text or "")
+    if not claim_tokens:
+        return issues
+    for ref in refs:
+        resolved = resolve_reference_file(ref, project_root, analysis_dir)
+        if not resolved:
+            continue
+        line_no = parse_reference_line(ref)
+        if line_no is None:
+            issues.append({"level": "WARNING", "section": section, "message": f"'{item_id}' grounding reference has no valid line number: {ref}"})
+            continue
+        try:
+            lines = resolved.read_text(encoding="utf-8", errors="ignore").splitlines()
+        except OSError:
+            continue
+        if line_no < 1 or line_no > len(lines):
+            issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' grounding line out of range for {resolved}: {line_no}"})
+            continue
+        start = max(0, line_no - 3)
+        end = min(len(lines), line_no + 2)
+        snippet_tokens = tokenize_for_overlap("\n".join(lines[start:end]))
+        if not (claim_tokens & snippet_tokens):
+            issues.append({"level": "WARNING", "section": section, "message": f"'{item_id}' grounding at {ref} has weak lexical overlap with the claim"})
+    return issues
+
+
+def validate_evidence_file(
+    filepath: str | None,
+    lines: list | None,
+    claim_text: str,
+    project_root: Path | None,
+    analysis_dir: Path | None,
+    section: str,
+    item_id: str,
+) -> list[dict]:
+    issues = []
+    if not filepath:
+        return issues
+    resolved = resolve_reference_file(filepath, project_root, analysis_dir)
+    if not resolved:
+        issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' evidence references non-existent file: {filepath}"})
+        return issues
+    if not lines:
+        issues.append({"level": "WARNING", "section": section, "message": f"'{item_id}' evidence is missing line numbers"})
+        return issues
+    try:
+        content = resolved.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except OSError:
+        return issues
+    valid_refs: list[str] = []
+    for raw_line in lines:
+        if not isinstance(raw_line, int):
+            issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' evidence line is not an integer: {raw_line}"})
+            continue
+        if raw_line < 1 or raw_line > len(content):
+            issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' evidence line out of range for {filepath}: {raw_line}"})
+            continue
+        valid_refs.append(f"{filepath}:{raw_line}")
+    issues.extend(verify_grounding_quality(valid_refs, claim_text, project_root, analysis_dir, section, item_id))
     return issues
 
 
@@ -174,10 +271,6 @@ def validate_atlas(atlas: dict, project_root: Path | None = None, analysis_dir: 
     for field in REQUIRED_ATLAS_FIELDS:
         if field not in atlas:
             error(f"Missing required field: {field}", "atlas")
-
-    for field in FORBIDDEN_LEGACY_ATLAS_FIELDS:
-        if field in atlas:
-            error(f"Legacy field '{field}' must not appear in atlas.json", "atlas")
 
     # Version
     if atlas.get("version") != "4":
@@ -277,6 +370,14 @@ def validate_atlas(atlas: dict, project_root: Path | None = None, analysis_dir: 
             warn(f"Flow '{fid}' has no grounded_in", "flows")
         elif project_root or analysis_dir:
             issues.extend(check_grounded_in(f["grounded_in"], project_root, analysis_dir, "flows", fid))
+            issues.extend(verify_grounding_quality(
+                f["grounded_in"],
+                " ".join(str(part) for part in (f.get("name"), f.get("title"), f.get("summary"), f.get("trigger")) if part),
+                project_root,
+                analysis_dir,
+                "flows",
+                fid,
+            ))
         issues.extend(validate_health(f.get("health"), "flows", fid or "<flow>", project_root, analysis_dir))
         for metric in f.get("business_metrics", []):
             if not isinstance(metric, dict):
@@ -293,6 +394,14 @@ def validate_atlas(atlas: dict, project_root: Path | None = None, analysis_dir: 
                 warn(f"Flow '{fid}' business metric '{metric.get('name', '?')}' has no grounded_in", "flows")
             elif project_root or analysis_dir:
                 issues.extend(check_grounded_in(grounded, project_root, analysis_dir, "flows", f"{fid}/{metric.get('name', '?')}"))
+                issues.extend(verify_grounding_quality(
+                    grounded,
+                    " ".join(str(part) for part in (metric.get("name"), metric.get("description"), metric.get("owner")) if part),
+                    project_root,
+                    analysis_dir,
+                    "flows",
+                    f"{fid}/{metric.get('name', '?')}",
+                ))
         for step in f.get("steps", []):
             for key in ("component", "to"):
                 ref = step.get(key, "")
@@ -306,6 +415,14 @@ def validate_atlas(atlas: dict, project_root: Path | None = None, analysis_dir: 
             warn(f"State '{sid}' has no grounded_in", "state")
         elif project_root or analysis_dir:
             issues.extend(check_grounded_in(s["grounded_in"], project_root, analysis_dir, "state", sid))
+            issues.extend(verify_grounding_quality(
+                s["grounded_in"],
+                " ".join(str(part) for part in (s.get("name"), s.get("title"), s.get("description"), s.get("summary"), s.get("purpose")) if part),
+                project_root,
+                analysis_dir,
+                "state",
+                sid,
+            ))
         for key in ("component",):
             ref = s.get(key, "")
             if ref and ref not in all_node_ids:
@@ -387,6 +504,14 @@ def validate_story(
             error(f"Story '{sid}' anchor is missing file")
         elif project_root or analysis_dir:
             issues.extend(check_grounded_in([f"{anchor_file}:{anchor_line or 1}"], project_root, analysis_dir, "story", f"{sid}/anchor"))
+            issues.extend(verify_grounding_quality(
+                [f"{anchor_file}:{anchor_line or 1}"],
+                " ".join(str(part) for part in (anchor_description, story.get("title"), story.get("summary")) if part),
+                project_root,
+                analysis_dir,
+                "story",
+                f"{sid}/anchor",
+            ))
         if not isinstance(anchor_line, int):
             error(f"Story '{sid}' anchor line must be an integer")
         if not anchor_description:
@@ -428,10 +553,23 @@ def validate_story(
     # Observation grounded_in
     for obs in story.get("observations", []):
         oid = obs.get("id", "?")
+        finding = obs.get("finding", "")
         if not obs.get("grounded_in"):
             warn(f"Story '{sid}' observation '{oid}' has no grounded_in")
         elif project_root or analysis_dir:
             issues.extend(check_grounded_in(obs["grounded_in"], project_root, analysis_dir, "story", f"{sid}/{oid}"))
+            issues.extend(verify_grounding_quality(obs["grounded_in"], finding, project_root, analysis_dir, "story", f"{sid}/{oid}"))
+        evidence = obs.get("evidence") if isinstance(obs.get("evidence"), dict) else None
+        if evidence and (project_root or analysis_dir):
+            issues.extend(validate_evidence_file(
+                evidence.get("file"),
+                evidence.get("lines"),
+                finding,
+                project_root,
+                analysis_dir,
+                "story",
+                f"{sid}/{oid}/evidence",
+            ))
         comp = obs.get("component", "")
         if comp and comp not in atlas_node_ids:
             error(f"Story '{sid}' observation component '{comp}' not in atlas")
@@ -604,9 +742,7 @@ def main():
         all_issues.append({"level": "ERROR", "section": "structure", "message": f"facts path exists but is not a directory: {facts_dir}"})
 
     concepts_path = facts_dir / "concept-evidence.json"
-    if not concepts_path.exists():
-        all_issues.append({"level": "ERROR", "section": "structure", "message": f"facts/concept-evidence.json not found at {concepts_path}. Write deterministic concept evidence facts to this exact path."})
-    else:
+    if concepts_path.exists():
         try:
             json.loads(concepts_path.read_text())
         except json.JSONDecodeError as e:
@@ -632,10 +768,6 @@ def main():
 
     story_ids = set()
     if not DETERMINISTIC_ONLY:
-        journeys_dir = analysis_dir / "journeys"
-        if journeys_dir.exists():
-            all_issues.append({"level": "ERROR", "section": "structure", "message": f"Legacy journeys/ directory must not appear at {journeys_dir}. Use narratives.yaml instead."})
-
         # --- Stories ---
         stories_dir = analysis_dir / "stories"
 
@@ -750,7 +882,6 @@ def main():
         print(f"\nExpected output structure at {analysis_dir}:")
         print(f"  {analysis_dir}/blast.json           — deterministic blast radius JSON")
         print(f"  {analysis_dir}/facts/               — normalized fact domain files")
-        print(f"  {analysis_dir}/facts/concept-evidence.json — deterministic concept evidence facts")
         if not DETERMINISTIC_ONLY:
             print(f"  {analysis_dir}/atlas.json           — v4 JSON (see atlas-schema.md)")
             print(f"  {analysis_dir}/stories/*.yaml       — one YAML file per story")

@@ -5,10 +5,10 @@ Canonical metadata record for one accepted Augur analysis directory.
 Location:
 
 ```text
-$AGENT_HOME_DIR/memory/projects/<project>/analysis/<analysis-id>/meta.json
+$AGENT_HOME_DIR/memory/projects/<project>/analysis/<sha>/<analysis-id>/meta.json
 ```
 
-`latest.json` is only a convenience pointer. `meta.json` is the durable per-analysis record.
+`analysis/latest.json` and `analysis/<sha>/latest.json` are convenience pointers. `meta.json` is the durable per-analysis record.
 
 ## Schema
 
@@ -38,7 +38,11 @@ $AGENT_HOME_DIR/memory/projects/<project>/analysis/<analysis-id>/meta.json
     "facts_index": "<absolute facts/index.json path or empty>",
     "stories_dir": "<absolute stories dir path or empty>",
     "narratives": "<absolute narratives.yaml path or empty>",
-    "blast": "<absolute blast.json path or empty>"
+    "blast": "<absolute blast.json path or empty>",
+    "overlays_dir": "<absolute overlays dir path>",
+    "overlays_index": "<absolute overlays/index.json path>",
+    "reflections_dir": "<absolute reflections dir path>",
+    "reflections_index": "<absolute reflections/index.json path>"
   },
   "schemas": {
     "facts": "<absolute facts schema path>",
@@ -69,9 +73,11 @@ $AGENT_HOME_DIR/memory/projects/<project>/analysis/<analysis-id>/meta.json
 
 - `analysis_id` should identify the analysis run itself and should default to a sortable UTC timestamp such as `2026-04-16T20-21-02Z`.
 - If multiple concurrent runs need isolation, a short suffix may be appended, e.g. `2026-04-16T20-21-02Z--abc123`.
-- `sha` and `commit_time` describe the commit being analyzed, not the time the job started.
+- `sha` identifies the analyzed commit and determines the parent analysis directory.
+- `commit_time` describes the commit being analyzed, not the time the job started.
 - `base_sha` / `base_commit_time` describe the analysis used for drift comparison. They may be empty on a full first-run analysis.
 - `blast` is the durable summary of drift evaluation for this accepted analysis.
 - `artifacts` and `schemas` should contain absolute paths so daemon and downstream consumers can follow them directly.
+- `overlays/` and `reflections/` are sibling containers for mutable user overlays and immutable review artifacts. Their index files should always exist once an analysis is finalized.
 - `execution` records how the analysis was produced so runs can be compared across models, runtimes, and bundle strategies.
-- `validation.passed` must be `true` for any analysis referenced by `latest.json`.
+- `validation.passed` must be `true` for any analysis referenced by `analysis/latest.json` or `analysis/<sha>/latest.json`.

@@ -1815,6 +1815,9 @@ export class CodexSdkAdapter implements ProviderSessionAdapter {
         env[key] = value
       }
     }
+    const runtimeHome = resolveRuntimeHome(options.homeDirectory ?? options.workingDirectory)
+    env.HOME = runtimeHome
+    env.AGENT_HOME_DIR = options.homeDirectory ?? env.AGENT_HOME_DIR ?? runtimeHome
 
     this.codex = new Codex({
       apiKey: options.apiKey,
@@ -1834,7 +1837,6 @@ export class CodexSdkAdapter implements ProviderSessionAdapter {
 
   async executePrompt(session: SessionState, request: RuntimeRequest): Promise<{ session: SessionState; result: RuntimeResult }> {
     try {
-      const effectiveHomeDirectory = this.homeDirectory ?? this.workingDirectory
       const cwd = resolveTaskWorkingDirectory(request, {
         homeDirectory: this.homeDirectory,
         workingDirectory: this.workingDirectory,
@@ -1859,7 +1861,7 @@ export class CodexSdkAdapter implements ProviderSessionAdapter {
         {
           model: this.model,
           sessionId,
-          homeDirectory: effectiveHomeDirectory,
+          homeDirectory: this.homeDirectory ?? this.workingDirectory,
           progress: request.progress,
           request,
         }

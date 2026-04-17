@@ -20,7 +20,6 @@ The deterministic phase is already done. Work from the prepared run directory an
    - `$RUN/facts/index.json`
    - the small high-signal fact files listed in `$RUN/facts/startup.json`
    - treat `$RUN/facts/startup.json` and `$RUN/facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run
-   - treat `$RUN/facts/concept-evidence.json` as the canonical source for candidate concepts and run-specific semantic questions
 
 2. Follow the mode-specific instructions already provided by the runtime.
    - the semantic mode is determined before this skill runs
@@ -34,10 +33,10 @@ The deterministic phase is already done. Work from the prepared run directory an
    - use the deterministic phase in three tiers:
      - startup orientation: `blast.json`, `facts/startup.json`, `facts/index.json`, and the small high-signal startup fact files
      - early architectural guidance: `hot-files.json` plus the most relevant routing, boundary, handler, dispatch, or framework domains
-     - targeted disambiguation only when needed: larger or noisier domains like `concept-evidence.json`, `import-graph.json`, `config.json`, or similar supporting artifacts
+     - targeted disambiguation only when needed: optional or noisier domains listed in `facts/index.json`, such as `concept-evidence.json`, `import-graph.json`, `config.json`, or similar supporting artifacts
    - after startup orientation, move into repo code before doing more fact reduction
-   - use `facts/concept-evidence.json` to identify candidate concepts that still need semantic confirmation
-   - answer any attached semantic questions before finalizing `atlas.json.concepts`
+   - if `facts/concept-evidence.json` is present in this run, use it to identify candidate concepts that still need semantic confirmation
+   - if present, answer any attached semantic questions before finalizing `atlas.json.concepts`
    - treat deterministic evidence as guidance, not final truth
    - prefer strong architectural evidence when naming components, boundaries, and flows
    - prefer entrypoints, runtime wiring, registration points, and cross-component communication over helper, validator, identity, or support files when promoting major components

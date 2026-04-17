@@ -1606,6 +1606,9 @@ export class CodexSdkAdapter {
                 env[key] = value;
             }
         }
+        const runtimeHome = resolveRuntimeHome(options.homeDirectory ?? options.workingDirectory);
+        env.HOME = runtimeHome;
+        env.AGENT_HOME_DIR = options.homeDirectory ?? env.AGENT_HOME_DIR ?? runtimeHome;
         this.codex = new Codex({
             apiKey: options.apiKey,
             baseUrl: options.baseUrl,
@@ -1622,7 +1625,6 @@ export class CodexSdkAdapter {
     }
     async executePrompt(session, request) {
         try {
-            const effectiveHomeDirectory = this.homeDirectory ?? this.workingDirectory;
             const cwd = resolveTaskWorkingDirectory(request, {
                 homeDirectory: this.homeDirectory,
                 workingDirectory: this.workingDirectory,
@@ -1642,7 +1644,7 @@ export class CodexSdkAdapter {
             const runResult = await runCodexStructuredTurn(() => thread, request.prompt, {
                 model: this.model,
                 sessionId,
-                homeDirectory: effectiveHomeDirectory,
+                homeDirectory: this.homeDirectory ?? this.workingDirectory,
                 progress: request.progress,
                 request,
             });

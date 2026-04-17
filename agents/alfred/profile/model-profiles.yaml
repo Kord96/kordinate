@@ -9,7 +9,7 @@ profiles:
     profile: openai
     model: gpt-5.4
     base_url: https://api.openai.com/v1
-    credential_ref: kordinate/charon/codex-api-key
+    credential_ref: kordinate/codex-api/api-key
     notes: Standard OpenAI API candidate for comparison.
 
   deepseek-chat:
@@ -30,7 +30,7 @@ profiles:
     profile: openai
     model: gpt-5.3-codex
     base_url: https://api.openai.com/v1
-    credential_ref: kordinate/charon/codex-api-key
+    credential_ref: kordinate/codex-api/api-key
     notes: Operational Codex profile for Charon and similar platform-operations agents.
 
   fireworks-glm-5:

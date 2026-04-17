@@ -177,7 +177,7 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
     const runId = suffix === 'run'
         ? analysisTimestamp()
         : `${analysisTimestamp()}--${suffix}`;
-    const runDir = join(agentHome, 'memory', 'projects', project, 'analysis', runId);
+    const runDir = join(agentHome, 'memory', 'projects', project, 'analysis', currentSha, runId);
     const factsDir = join(runDir, 'facts');
     const env = {
         KORDINATE_HOME: kordHome,
@@ -197,12 +197,14 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
         payload: { project, working_dir: workingDir, run_dir: runDir },
     });
     await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'compute_blast_radius.py'),
+        join(kordHome, 'agents', 'augur', 'scripts', 'prepare_deterministic_run.py'),
         workingDir,
-        '--agent-home', agentHome,
+        '--run-dir', runDir,
         '--project', project,
+        '--agent-home', agentHome,
+        '--analysis-mode', 'full',
         '--current-sha', currentSha,
-        '--output', join(runDir, 'blast.json'),
+        '--pretty',
     ], agentHome, env);
     const blastPath = join(runDir, 'blast.json');
     try {
@@ -220,26 +222,6 @@ async function prepareAugurDeterministicArtifacts(context, message, options) {
     catch {
         // Leave the original blast file untouched if rewrite fails; validation will surface it later.
     }
-    await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'detect_frameworks.py'),
-        workingDir,
-        '--project', project,
-        '--agent-home', agentHome,
-        '--output', join(factsDir, 'frameworks.json'),
-        '--pretty',
-    ], agentHome, env);
-    await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'extract_facts.py'),
-        workingDir,
-        '--output-dir', factsDir,
-        '--analysis-mode', 'full',
-        '--pretty',
-    ], agentHome, env);
-    await runRequiredCommand('python3', [
-        join(kordHome, 'agents', 'augur', 'scripts', 'infer_concepts_from_facts.py'),
-        factsDir,
-        '--output', join(factsDir, 'concept-evidence.json'),
-    ], agentHome, env);
     await context.publishProgress(message, {
         source: 'agent-daemon',
         kind: `${eventKindPrefix}.complete`,
