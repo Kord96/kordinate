@@ -141,7 +141,9 @@ function renderRuntimeContext(message, runtimeProfile) {
         lines.push('- Start from the prepared run artifacts above before reading repo code.');
         lines.push('- Treat the prepared run dir above as the authoritative home for generated artifacts such as `facts/*`, `atlas.json`, `stories/`, `narratives.yaml`, and `meta.json`.');
         lines.push('- Use `facts/startup.json` and `facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run.');
-        lines.push('- Read repo code only through fact-selected files, architecture entrypoints, or concrete validation gaps.');
+        lines.push('- Use deterministic artifacts for startup orientation first, then move into repo code for the main architectural synthesis.');
+        lines.push('- Revisit larger supporting fact domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.');
+        lines.push('- Read repo code through fact-selected files, architecture entrypoints, adjacent implementation, or concrete validation gaps.');
         lines.push('- Do not begin with repo-root listings or metadata-file discovery.');
         lines.push('- Available tools in this runtime are `Read`, `Edit`, and `Bash`.');
         for (const guidance of toolGuidance) {
