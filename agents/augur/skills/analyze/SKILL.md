@@ -31,11 +31,16 @@ The deterministic phase is already done. Work from the prepared run directory an
 3. Use facts as guidance, then explore code semantically.
    - use `facts/index.json` to identify likely high-signal domains and files
    - treat each domain file in `facts/` as a JSON object with metadata and a top-level `facts` array
-   - start with `hot-files.json` and with repo files named by the prepared fact domains
+   - use the deterministic phase in three tiers:
+     - startup orientation: `blast.json`, `facts/startup.json`, `facts/index.json`, and the small high-signal startup fact files
+     - early architectural guidance: `hot-files.json` plus the most relevant routing, boundary, handler, dispatch, or framework domains
+     - targeted disambiguation only when needed: larger or noisier domains like `concept-evidence.json`, `import-graph.json`, `config.json`, or similar supporting artifacts
+   - after startup orientation, move into repo code before doing more fact reduction
    - use `facts/concept-evidence.json` to identify candidate concepts that still need semantic confirmation
    - answer any attached semantic questions before finalizing `atlas.json.concepts`
    - treat deterministic evidence as guidance, not final truth
    - prefer strong architectural evidence when naming components, boundaries, and flows
+   - prefer entrypoints, runtime wiring, registration points, and cross-component communication over helper, validator, identity, or support files when promoting major components
    - inspect the actual repo code to understand boundaries, responsibilities, flows, and ambiguities
    - widen from fact-selected files to adjacent code when you need broader context
 

@@ -1,0 +1,6 @@
+framework: angular
+policy:
+  auto_confirm:
+    allowed: true
+    min_signal_strength: strong
+  unresolved_state: candidate

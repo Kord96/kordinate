@@ -23,6 +23,9 @@ Supporting reference only.
 
 | Framework | Import / Config Signals | Route Patterns |
 |-----------|------------------------|----------------|
+| React | `react` / `react-dom` deps, `createRoot`, `hydrateRoot` | Component tree composition; no native route surface by itself |
+| Vue | `vue` dep, `.vue` files, `createApp`, `defineComponent` | Component tree composition; route surfaces depend on surrounding stack |
+| Angular | `@angular/core`, `@Component`, `RouterModule` | Component tree and router configuration; route guards are common |
 | Express | `require('express')`, `import express` | `app.get/post/put/delete(`, `router.get/post/...` |
 | Koa | `require('koa')`, `import Koa` | `router.get/post(` (via `@koa/router` or `koa-router`) |
 | Fastify | `require('fastify')`, `import fastify` | `fastify.get/post(`, `fastify.route({` |

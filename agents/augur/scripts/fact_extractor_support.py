@@ -80,6 +80,7 @@ SOURCE_EXTENSIONS = {
     ".jsx",
     ".ts",
     ".tsx",
+    ".vue",
     ".go",
     ".rs",
     ".java",
@@ -989,22 +990,27 @@ def detect_frameworks(files: Iterable[Path], root: Path) -> dict[str, dict[str, 
         for rule in rules:
             if rule.source_extensions and suffix not in rule.source_extensions and suffix:
                 continue
-            matched = False
+            positive_strength: str | None = None
             for strength in ("strong", "medium", "weak"):
                 if _match_signal_group(rule.path_patterns.get(strength, ()), rel_lower):
-                    evidence[rule.name].append((rel, strength))
-                    matched = True
+                    positive_strength = strength
                     break
                 if text and _match_signal_group(rule.source_patterns.get(strength, ()), text):
-                    evidence[rule.name].append((rel, strength))
-                    matched = True
+                    positive_strength = strength
                     break
-            if matched:
-                continue
+
+            negative_match = False
             if text and _match_signal_group(rule.negative_source_patterns, text):
                 negative_evidence[rule.name].append(rel)
+                negative_match = True
             elif _match_signal_group(rule.negative_path_patterns, rel_lower):
                 negative_evidence[rule.name].append(rel)
+                negative_match = True
+
+            if positive_strength:
+                evidence[rule.name].append((rel, positive_strength))
+            elif negative_match:
+                continue
 
     manifest_evidence = parse_manifest_frameworks(root)
     for name, sources in manifest_evidence.items():
@@ -1017,6 +1023,15 @@ def detect_frameworks(files: Iterable[Path], root: Path) -> dict[str, dict[str, 
         sources = sorted({source for source, _ in weighted_sources})
         strengths = {strength for _, strength in weighted_sources}
         manifest_like = any(":" in source or source.endswith(tuple(MANIFEST_FILES.values())) for source in sources)
+        non_manifest_sources = [
+            source for source in sources
+            if not (":" in source or source.endswith(tuple(MANIFEST_FILES.values())))
+        ]
+        negatives = sorted(set(negative_evidence.get(name, [])))
+        if negatives and not manifest_like:
+            continue
+        if negatives and manifest_like and not non_manifest_sources:
+            continue
         if "strong" in strengths or manifest_like or len(sources) >= 2:
             confidence = "high"
             detector_strength = 5
@@ -1056,9 +1071,9 @@ def detect_frameworks(files: Iterable[Path], root: Path) -> dict[str, dict[str, 
                 "common_failure_modes": metadata.get("common_failure_modes", []),
                 "concepts": metadata.get("concepts", []),
                 "signals": sources,
-                "negative_signals": sorted(set(negative_evidence.get(name, []))),
+                "negative_signals": negatives,
             },
-            "negative_evidence": sorted(set(negative_evidence.get(name, []))),
+            "negative_evidence": negatives,
             "contradictions": [],
             "relationships": {
                 "component_ids": [],
@@ -1089,7 +1104,7 @@ def is_framework_signal_file(path: Path, root: Path) -> bool:
         ".env.sample",
     }:
         return True
-    if path.suffix.lower() in {".py", ".js", ".jsx", ".ts", ".tsx", ".go", ".rs", ".java", ".kt", ".scala", ".rb", ".php", ".cs", ".swift", ".dart", ".ex", ".exs"}:
+    if path.suffix.lower() in {".py", ".js", ".jsx", ".ts", ".tsx", ".vue", ".go", ".rs", ".java", ".kt", ".scala", ".rb", ".php", ".cs", ".swift", ".dart", ".ex", ".exs"}:
         return True
     return False
 

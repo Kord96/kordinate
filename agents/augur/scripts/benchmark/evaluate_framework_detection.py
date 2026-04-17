@@ -30,6 +30,18 @@ def build_case(repo: Path, case_id: str) -> set[str]:
         write(repo / "package.json", json.dumps({"dependencies": {"@nestjs/common": "^1.0.0", "@nestjs/core": "^1.0.0"}}))
         write(repo / "app.controller.ts", "@Controller()\nexport class AppController {\n  @Get()\n  hello() { return 'ok' }\n}\n")
         return {"nestjs"}
+    if case_id == "react":
+        write(repo / "package.json", json.dumps({"dependencies": {"react": "^19.0.0", "react-dom": "^19.0.0"}}))
+        write(repo / "src" / "main.tsx", "import { createRoot } from 'react-dom/client';\nimport { useState } from 'react';\nfunction App() { const [count] = useState(0); return <div>{count}</div>; }\ncreateRoot(document.getElementById('root')!).render(<App />);\n")
+        return {"react"}
+    if case_id == "vue":
+        write(repo / "package.json", json.dumps({"dependencies": {"vue": "^3.5.0"}}))
+        write(repo / "src" / "App.vue", "<template><div>{{ message }}</div></template>\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\nconst message = ref('ok')\n</script>\n")
+        return {"vue"}
+    if case_id == "angular":
+        write(repo / "package.json", json.dumps({"dependencies": {"@angular/core": "^18.0.0", "@angular/router": "^18.0.0"}}))
+        write(repo / "src" / "app" / "app.component.ts", "import { Component } from '@angular/core';\n@Component({ selector: 'app-root', template: '<div>ok</div>' })\nexport class AppComponent {}\n")
+        return {"angular"}
     if case_id == "nextjs":
         write(repo / "package.json", json.dumps({"dependencies": {"next": "^1.0.0"}}))
         write(repo / "app" / "api" / "users" / "route.ts", "export async function GET() { return Response.json([]) }\n")
@@ -118,6 +130,9 @@ def main() -> int:
         default=[
             "fastapi",
             "nestjs",
+            "react",
+            "vue",
+            "angular",
             "nextjs",
             "rails",
             "spring",

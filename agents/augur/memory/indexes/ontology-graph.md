@@ -11,8 +11,8 @@ Plain prose links are kept as low-confidence inferred `references` edges for mai
 
 ## Maintenance
 
-- Authored edges: `857`
-- Inferred edges: `665`
+- Authored edges: `874`
+- Inferred edges: `668`
 - Low-confidence inferred references needing review: `5`
 
 Top low-confidence inferred references:
@@ -330,6 +330,7 @@ graph TD
   type_unknown["unknown"]
   framework_actix_web["Actix Web"]
   framework_aiohttp["aiohttp"]
+  framework_angular["Angular"]
   framework_aspnet_controllers["ASP.NET Controllers"]
   framework_aspnet_minimal["ASP.NET Minimal"]
   framework_axum["Axum"]
@@ -354,6 +355,7 @@ graph TD
   framework_phoenix["Phoenix"]
   framework_quarkus["Quarkus"]
   framework_rails["Rails"]
+  framework_react["React"]
   framework_sinatra["Sinatra"]
   framework_slim["Slim"]
   framework_spring["Spring"]
@@ -361,6 +363,7 @@ graph TD
   framework_sveltekit["SvelteKit"]
   framework_symfony["Symfony"]
   framework_vapor["Vapor"]
+  framework_vue["Vue"]
   language_csharp["csharp"]
   language_elixir["elixir"]
   language_go["go"]
@@ -645,6 +648,7 @@ graph TD
   class concept_write_behind status_0
   class framework_actix_web status_1
   class framework_aiohttp status_1
+  class framework_angular status_0
   class framework_aspnet_controllers status_0
   class framework_aspnet_minimal status_0
   class framework_axum status_0
@@ -669,6 +673,7 @@ graph TD
   class framework_phoenix status_0
   class framework_quarkus status_1
   class framework_rails status_0
+  class framework_react status_2
   class framework_sinatra status_1
   class framework_slim status_1
   class framework_spring status_0
@@ -676,6 +681,7 @@ graph TD
   class framework_sveltekit status_0
   class framework_symfony status_0
   class framework_vapor status_1
+  class framework_vue status_2
   framework_django -->|commonly implies| concept_active_record
   linkStyle 0 stroke-dasharray: 4 2
   framework_fastapi -->|commonly implies| concept_repository
@@ -1953,6 +1959,7 @@ graph TD
   linkStyle 643 stroke-dasharray: 4 2
   framework_actix_web -->|implements| concept_rest
   framework_aiohttp -->|implements| concept_rest
+  framework_angular -->|implements| concept_component
   framework_aspnet_controllers -->|implements| concept_rest
   framework_aspnet_minimal -->|implements| concept_rest
   framework_axum -->|implements| concept_rest
@@ -1976,12 +1983,14 @@ graph TD
   framework_phoenix -->|implements| concept_rest
   framework_quarkus -->|implements| concept_rest
   framework_rails -->|implements| concept_rest
+  framework_react -->|implements| concept_component
   framework_sinatra -->|implements| concept_rest
   framework_slim -->|implements| concept_rest
   framework_spring -->|implements| concept_rest
   framework_starlette -->|implements| concept_rest
   framework_symfony -->|implements| concept_rest
   framework_vapor -->|implements| concept_rest
+  framework_vue -->|implements| concept_component
   concept_property_graph -->|is a| concept_graph
   concept_social_graph -->|is a| concept_graph
   concept_component_slot -->|part of| concept_component
@@ -1993,7 +2002,7 @@ graph TD
   concept_microservices -->|preferred over| concept_distributed_monolith
   concept_workflow_engine -->|preferred over| concept_workflow_state_machine
   concept_request_path -->|references| concept_server_route_registration
-  linkStyle 685 stroke-dasharray: 4 2
+  linkStyle 688 stroke-dasharray: 4 2
   concept_abstract_factory -->|related to| concept_bridge
   concept_abstract_factory -->|related to| concept_builder
   concept_abstract_factory -->|related to| concept_factory
@@ -2737,6 +2746,7 @@ graph TD
   concept_write_behind -->|related to| concept_cache_aside
   concept_write_behind -->|related to| concept_message_queue
   concept_write_behind -->|related to| concept_read_through
+  framework_angular -->|related to| concept_mvvm
   framework_django -->|related to| concept_layered
   framework_express -->|related to| concept_middleware
   framework_fastapi -->|related to| concept_hexagonal
@@ -2745,8 +2755,15 @@ graph TD
   framework_laravel -->|related to| concept_layered
   framework_nestjs -->|related to| concept_layered
   framework_rails -->|related to| concept_layered
+  framework_react -->|related to| concept_prop_drilling
+  framework_react -->|related to| concept_reactive_store
   framework_spring -->|related to| concept_layered
   framework_symfony -->|related to| concept_layered
+  framework_vue -->|related to| concept_reactive_store
+  framework_angular -->|supports| concept_dependency_injection
+  framework_angular -->|supports| concept_form_binding
+  framework_angular -->|supports| concept_hydration
+  framework_angular -->|supports| concept_route_guard
   framework_chi -->|supports| concept_middleware
   framework_django -->|supports| concept_input_validation
   framework_elysia -->|supports| concept_input_validation
@@ -2760,10 +2777,16 @@ graph TD
   framework_nestjs -->|supports| concept_input_validation
   framework_quarkus -->|supports| concept_dependency_injection
   framework_rails -->|supports| concept_input_validation
+  framework_react -->|supports| concept_error_boundary
+  framework_react -->|supports| concept_form_binding
+  framework_react -->|supports| concept_hydration
+  framework_react -->|supports| concept_suspense_boundary
   framework_spring -->|supports| concept_dependency_injection
   framework_spring -->|supports| concept_input_validation
   framework_symfony -->|supports| concept_dependency_injection
   framework_symfony -->|supports| concept_input_validation
+  framework_vue -->|supports| concept_form_binding
+  framework_vue -->|supports| concept_hydration
   framework_actix_web -->|uses| concept_server_route_registration
   framework_aiohttp -->|uses| concept_server_route_registration
   framework_aspnet_controllers -->|uses| concept_server_route_registration
@@ -2798,69 +2821,75 @@ graph TD
   framework_symfony -->|uses| concept_server_route_registration
   framework_vapor -->|uses| concept_server_route_registration
   framework_actix_web -->|uses language| language_rust
-  linkStyle 1489 stroke-dasharray: 4 2
-  framework_aiohttp -->|uses language| language_python
-  linkStyle 1490 stroke-dasharray: 4 2
-  framework_aspnet_controllers -->|uses language| language_csharp
-  linkStyle 1491 stroke-dasharray: 4 2
-  framework_aspnet_minimal -->|uses language| language_csharp
-  linkStyle 1492 stroke-dasharray: 4 2
-  framework_axum -->|uses language| language_rust
-  linkStyle 1493 stroke-dasharray: 4 2
-  framework_chi -->|uses language| language_go
-  linkStyle 1494 stroke-dasharray: 4 2
-  framework_django -->|uses language| language_python
-  linkStyle 1495 stroke-dasharray: 4 2
-  framework_echo -->|uses language| language_go
-  linkStyle 1496 stroke-dasharray: 4 2
-  framework_elysia -->|uses language| language_typescript
-  linkStyle 1497 stroke-dasharray: 4 2
-  framework_express -->|uses language| language_typescript
-  linkStyle 1498 stroke-dasharray: 4 2
-  framework_fastapi -->|uses language| language_python
-  linkStyle 1499 stroke-dasharray: 4 2
-  framework_fastify -->|uses language| language_typescript
-  linkStyle 1500 stroke-dasharray: 4 2
-  framework_fiber -->|uses language| language_go
-  linkStyle 1501 stroke-dasharray: 4 2
-  framework_flask -->|uses language| language_python
-  linkStyle 1502 stroke-dasharray: 4 2
-  framework_gin -->|uses language| language_go
-  linkStyle 1503 stroke-dasharray: 4 2
-  framework_grape -->|uses language| language_ruby
-  linkStyle 1504 stroke-dasharray: 4 2
-  framework_hono -->|uses language| language_typescript
-  linkStyle 1505 stroke-dasharray: 4 2
-  framework_koa -->|uses language| language_typescript
   linkStyle 1506 stroke-dasharray: 4 2
-  framework_ktor -->|uses language| language_kotlin
+  framework_aiohttp -->|uses language| language_python
   linkStyle 1507 stroke-dasharray: 4 2
-  framework_laravel -->|uses language| language_php
+  framework_angular -->|uses language| language_typescript
   linkStyle 1508 stroke-dasharray: 4 2
-  framework_nestjs -->|uses language| language_typescript
+  framework_aspnet_controllers -->|uses language| language_csharp
   linkStyle 1509 stroke-dasharray: 4 2
-  framework_net_http -->|uses language| language_go
+  framework_aspnet_minimal -->|uses language| language_csharp
   linkStyle 1510 stroke-dasharray: 4 2
-  framework_nextjs -->|uses language| language_typescript
+  framework_axum -->|uses language| language_rust
   linkStyle 1511 stroke-dasharray: 4 2
-  framework_phoenix -->|uses language| language_elixir
+  framework_chi -->|uses language| language_go
   linkStyle 1512 stroke-dasharray: 4 2
-  framework_quarkus -->|uses language| language_java
+  framework_django -->|uses language| language_python
   linkStyle 1513 stroke-dasharray: 4 2
-  framework_rails -->|uses language| language_ruby
+  framework_echo -->|uses language| language_go
   linkStyle 1514 stroke-dasharray: 4 2
-  framework_sinatra -->|uses language| language_ruby
+  framework_elysia -->|uses language| language_typescript
   linkStyle 1515 stroke-dasharray: 4 2
-  framework_slim -->|uses language| language_php
+  framework_express -->|uses language| language_typescript
   linkStyle 1516 stroke-dasharray: 4 2
-  framework_spring -->|uses language| language_java
+  framework_fastapi -->|uses language| language_python
   linkStyle 1517 stroke-dasharray: 4 2
-  framework_starlette -->|uses language| language_python
+  framework_fastify -->|uses language| language_typescript
   linkStyle 1518 stroke-dasharray: 4 2
-  framework_sveltekit -->|uses language| language_typescript
+  framework_fiber -->|uses language| language_go
   linkStyle 1519 stroke-dasharray: 4 2
-  framework_symfony -->|uses language| language_php
+  framework_flask -->|uses language| language_python
   linkStyle 1520 stroke-dasharray: 4 2
-  framework_vapor -->|uses language| language_swift
+  framework_gin -->|uses language| language_go
   linkStyle 1521 stroke-dasharray: 4 2
+  framework_grape -->|uses language| language_ruby
+  linkStyle 1522 stroke-dasharray: 4 2
+  framework_hono -->|uses language| language_typescript
+  linkStyle 1523 stroke-dasharray: 4 2
+  framework_koa -->|uses language| language_typescript
+  linkStyle 1524 stroke-dasharray: 4 2
+  framework_ktor -->|uses language| language_kotlin
+  linkStyle 1525 stroke-dasharray: 4 2
+  framework_laravel -->|uses language| language_php
+  linkStyle 1526 stroke-dasharray: 4 2
+  framework_nestjs -->|uses language| language_typescript
+  linkStyle 1527 stroke-dasharray: 4 2
+  framework_net_http -->|uses language| language_go
+  linkStyle 1528 stroke-dasharray: 4 2
+  framework_nextjs -->|uses language| language_typescript
+  linkStyle 1529 stroke-dasharray: 4 2
+  framework_phoenix -->|uses language| language_elixir
+  linkStyle 1530 stroke-dasharray: 4 2
+  framework_quarkus -->|uses language| language_java
+  linkStyle 1531 stroke-dasharray: 4 2
+  framework_rails -->|uses language| language_ruby
+  linkStyle 1532 stroke-dasharray: 4 2
+  framework_react -->|uses language| language_typescript
+  linkStyle 1533 stroke-dasharray: 4 2
+  framework_sinatra -->|uses language| language_ruby
+  linkStyle 1534 stroke-dasharray: 4 2
+  framework_slim -->|uses language| language_php
+  linkStyle 1535 stroke-dasharray: 4 2
+  framework_spring -->|uses language| language_java
+  linkStyle 1536 stroke-dasharray: 4 2
+  framework_starlette -->|uses language| language_python
+  linkStyle 1537 stroke-dasharray: 4 2
+  framework_sveltekit -->|uses language| language_typescript
+  linkStyle 1538 stroke-dasharray: 4 2
+  framework_symfony -->|uses language| language_php
+  linkStyle 1539 stroke-dasharray: 4 2
+  framework_vapor -->|uses language| language_swift
+  linkStyle 1540 stroke-dasharray: 4 2
+  framework_vue -->|uses language| language_typescript
+  linkStyle 1541 stroke-dasharray: 4 2
 ```

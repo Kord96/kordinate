@@ -24,6 +24,24 @@ def build_fact_index(facts_payload: dict[str, Any]) -> dict[str, dict[str, Any]]
     return {fact["id"]: fact for fact in facts_payload.get("facts", []) if fact.get("id")}
 
 
+def framework_review_context(concept_evidence_payload: dict[str, Any]) -> dict[str, Any]:
+    metadata = concept_evidence_payload.get("metadata", {})
+    context = metadata.get("framework_review_context") if isinstance(metadata, dict) else {}
+    if not isinstance(context, dict):
+        return {
+            "detected_frameworks": [],
+            "inspect_concepts": [],
+            "focus_areas": [],
+            "concept_to_frameworks": {},
+        }
+    return {
+        "detected_frameworks": list(context.get("detected_frameworks") or []),
+        "inspect_concepts": list(context.get("inspect_concepts") or []),
+        "focus_areas": list(context.get("focus_areas") or []),
+        "concept_to_frameworks": dict(context.get("concept_to_frameworks") or {}),
+    }
+
+
 def packet_item(fact: dict[str, Any], fact_index: dict[str, dict[str, Any]]) -> dict[str, Any]:
     raw_evidence = fact.get("raw_evidence", {})
     relationships = fact.get("relationships", {})
@@ -55,12 +73,15 @@ def packet_item(fact: dict[str, Any], fact_index: dict[str, dict[str, Any]]) -> 
             if raw_evidence.get("semantic_review_required")
             else ""
         ),
+        "semantic_questions": raw_evidence.get("semantic_questions", {}),
+        "framework_hints": raw_evidence.get("framework_heuristics", {}),
         "supporting_facts": supporting_facts,
     }
 
 
 def build_review_packet(concept_evidence_payload: dict[str, Any], facts_payload: dict[str, Any]) -> dict[str, Any]:
     fact_index = build_fact_index(facts_payload)
+    review_context = framework_review_context(concept_evidence_payload)
     candidates = []
     for fact in concept_evidence_payload.get("facts", []):
         raw_evidence = fact.get("raw_evidence", {})
@@ -76,6 +97,7 @@ def build_review_packet(concept_evidence_payload: dict[str, Any], facts_payload:
             "concept_evidence": concept_evidence_payload.get("metadata", {}).get("generated_from", ""),
             "facts": facts_payload.get("root", ""),
         },
+        "framework_review_context": review_context,
         "candidates": candidates,
     }
 

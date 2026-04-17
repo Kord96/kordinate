@@ -4035,6 +4035,25 @@
       "scope": "backend"
     },
     {
+      "id": "framework:angular",
+      "kind": "framework",
+      "slug": "angular",
+      "label": "Angular",
+      "description": "TypeScript frontend application framework with dependency injection, components, routing, and structured forms",
+      "language": "typescript",
+      "framework_kind": "ui-app",
+      "traits": {
+        "ui_surface": true,
+        "component_model_native": true,
+        "dependency_injection_native": true,
+        "routing_native": true,
+        "forms_native": true
+      },
+      "path": "memory/catalog/frameworks/angular/framework.md",
+      "status": "primary",
+      "scope": "frontend"
+    },
+    {
       "id": "framework:aspnet-controllers",
       "kind": "framework",
       "slug": "aspnet-controllers",
@@ -4430,6 +4449,24 @@
       "scope": "backend"
     },
     {
+      "id": "framework:react",
+      "kind": "framework",
+      "slug": "react",
+      "label": "React",
+      "description": "Component-oriented UI library for declarative rendering, client hydration, and async boundary composition",
+      "language": "typescript",
+      "framework_kind": "library",
+      "traits": {
+        "ui_surface": true,
+        "component_model_native": true,
+        "client_hydration_native": true,
+        "suspense_native": true
+      },
+      "path": "memory/catalog/frameworks/react/framework.md",
+      "status": "supporting",
+      "scope": "frontend"
+    },
+    {
       "id": "framework:sinatra",
       "kind": "framework",
       "slug": "sinatra",
@@ -4542,6 +4579,24 @@
       "path": "memory/catalog/frameworks/vapor/framework.md",
       "status": "specialized",
       "scope": "backend"
+    },
+    {
+      "id": "framework:vue",
+      "kind": "framework",
+      "slug": "vue",
+      "label": "Vue",
+      "description": "Reactive component framework with template bindings, composition APIs, and progressive hydration options",
+      "language": "typescript",
+      "framework_kind": "library",
+      "traits": {
+        "ui_surface": true,
+        "component_model_native": true,
+        "template_binding_native": true,
+        "reactive_state_native": true
+      },
+      "path": "memory/catalog/frameworks/vue/framework.md",
+      "status": "supporting",
+      "scope": "frontend"
     },
     {
       "id": "language:csharp",
@@ -8477,6 +8532,12 @@
       "authored": true
     },
     {
+      "source": "framework:angular",
+      "target": "concept:component",
+      "relation": "implements",
+      "authored": true
+    },
+    {
       "source": "framework:aspnet-controllers",
       "target": "concept:rest",
       "relation": "implements",
@@ -8615,6 +8676,12 @@
       "authored": true
     },
     {
+      "source": "framework:react",
+      "target": "concept:component",
+      "relation": "implements",
+      "authored": true
+    },
+    {
       "source": "framework:sinatra",
       "target": "concept:rest",
       "relation": "implements",
@@ -8647,6 +8714,12 @@
     {
       "source": "framework:vapor",
       "target": "concept:rest",
+      "relation": "implements",
+      "authored": true
+    },
+    {
+      "source": "framework:vue",
+      "target": "concept:component",
       "relation": "implements",
       "authored": true
     },
@@ -13175,6 +13248,12 @@
       "authored": true
     },
     {
+      "source": "framework:angular",
+      "target": "concept:mvvm",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
       "source": "framework:django",
       "target": "concept:layered",
       "relation": "related_to",
@@ -13223,6 +13302,18 @@
       "authored": true
     },
     {
+      "source": "framework:react",
+      "target": "concept:prop-drilling",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "framework:react",
+      "target": "concept:reactive-store",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
       "source": "framework:spring",
       "target": "concept:layered",
       "relation": "related_to",
@@ -13232,6 +13323,36 @@
       "source": "framework:symfony",
       "target": "concept:layered",
       "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "framework:vue",
+      "target": "concept:reactive-store",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "framework:angular",
+      "target": "concept:dependency-injection",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:angular",
+      "target": "concept:form-binding",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:angular",
+      "target": "concept:hydration",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:angular",
+      "target": "concept:route-guard",
+      "relation": "supports",
       "authored": true
     },
     {
@@ -13313,6 +13434,30 @@
       "authored": true
     },
     {
+      "source": "framework:react",
+      "target": "concept:error-boundary",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:react",
+      "target": "concept:form-binding",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:react",
+      "target": "concept:hydration",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:react",
+      "target": "concept:suspense-boundary",
+      "relation": "supports",
+      "authored": true
+    },
+    {
       "source": "framework:spring",
       "target": "concept:dependency-injection",
       "relation": "supports",
@@ -13333,6 +13478,18 @@
     {
       "source": "framework:symfony",
       "target": "concept:input-validation",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:vue",
+      "target": "concept:form-binding",
+      "relation": "supports",
+      "authored": true
+    },
+    {
+      "source": "framework:vue",
+      "target": "concept:hydration",
       "relation": "supports",
       "authored": true
     },
@@ -13543,6 +13700,12 @@
     {
       "source": "framework:aiohttp",
       "target": "language:python",
+      "relation": "uses_language",
+      "authored": false
+    },
+    {
+      "source": "framework:angular",
+      "target": "language:typescript",
       "relation": "uses_language",
       "authored": false
     },
@@ -13691,6 +13854,12 @@
       "authored": false
     },
     {
+      "source": "framework:react",
+      "target": "language:typescript",
+      "relation": "uses_language",
+      "authored": false
+    },
+    {
       "source": "framework:sinatra",
       "target": "language:ruby",
       "relation": "uses_language",
@@ -13731,11 +13900,17 @@
       "target": "language:swift",
       "relation": "uses_language",
       "authored": false
+    },
+    {
+      "source": "framework:vue",
+      "target": "language:typescript",
+      "relation": "uses_language",
+      "authored": false
     }
   ],
   "maintenance": {
-    "authored_edge_count": 857,
-    "inferred_edge_count": 665,
+    "authored_edge_count": 874,
+    "inferred_edge_count": 668,
     "low_confidence_reference_count": 5,
     "low_confidence_references": [
       {

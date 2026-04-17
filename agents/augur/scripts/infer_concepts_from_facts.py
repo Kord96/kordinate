@@ -64,6 +64,28 @@ AUTO_CONFIRM_FACT_CONCEPTS = {
     "timeout",
     "token-auth",
 }
+FRAMEWORK_PHASE2_HINTS = {
+    "react": {
+        "inspect_concepts": ["component", "form-binding", "hydration", "error-boundary", "suspense-boundary"],
+        "focus": "Treat React as frontend structure evidence. Inspect component boundaries, hydration/bootstrap paths, and whether state or data-fetching leaks into presentation code.",
+    },
+    "vue": {
+        "inspect_concepts": ["component", "form-binding", "hydration", "reactive-store"],
+        "focus": "Treat Vue as frontend structure evidence. Inspect component composition, template-driven form binding, hydration/SSR handoff, and reactive store usage only when grounded in code.",
+    },
+    "angular": {
+        "inspect_concepts": ["component", "dependency-injection", "form-binding", "route-guard", "hydration"],
+        "focus": "Treat Angular as frontend app-framework evidence. Inspect DI seams, router guards, and whether forms and services are framework-structured rather than ad hoc.",
+    },
+    "nextjs": {
+        "inspect_concepts": ["hydration", "server-prefetch", "server-route-registration", "error-boundary", "suspense-boundary"],
+        "focus": "Treat Next.js as full-stack frontend evidence. Inspect server/client boundaries, prefetch and hydration flow, route handlers, and whether loading or error boundaries are framework-shaped.",
+    },
+    "sveltekit": {
+        "inspect_concepts": ["hydration", "server-prefetch", "server-route-registration", "error-boundary", "suspense-boundary"],
+        "focus": "Treat SvelteKit as full-stack frontend evidence. Inspect load functions, endpoint/page coupling, hydration flow, and whether server routes are distinct from UI composition.",
+    },
+}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -223,6 +245,46 @@ def group_by_kind(facts: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]
     for fact in facts:
         grouped[fact.get("kind", "")].append(fact)
     return grouped
+
+
+def build_framework_review_context(framework_facts: list[dict[str, Any]]) -> dict[str, Any]:
+    detected_frameworks: list[dict[str, Any]] = []
+    inspect_concepts: list[str] = []
+    focus_areas: list[str] = []
+    concept_to_frameworks: dict[str, list[str]] = defaultdict(list)
+
+    for fact in framework_facts:
+        raw = fact.get("raw_evidence", {}) or {}
+        framework = str(raw.get("framework") or "").strip()
+        if not framework:
+            continue
+        detected_frameworks.append({
+            "framework": framework,
+            "confidence": str(fact.get("confidence") or "low"),
+            "scope": str(raw.get("scope") or ""),
+            "framework_kind": str(raw.get("framework_kind") or ""),
+        })
+        hint = FRAMEWORK_PHASE2_HINTS.get(framework)
+        if not hint:
+            continue
+        for concept_id in hint.get("inspect_concepts", []):
+            concept_name = str(concept_id or "").strip()
+            if not concept_name:
+                continue
+            if concept_name not in inspect_concepts:
+                inspect_concepts.append(concept_name)
+            if framework not in concept_to_frameworks[concept_name]:
+                concept_to_frameworks[concept_name].append(framework)
+        focus = str(hint.get("focus") or "").strip()
+        if focus and focus not in focus_areas:
+            focus_areas.append(focus)
+
+    return {
+        "detected_frameworks": detected_frameworks,
+        "inspect_concepts": inspect_concepts,
+        "focus_areas": focus_areas,
+        "concept_to_frameworks": dict(concept_to_frameworks),
+    }
 
 
 def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -548,11 +610,13 @@ def questions_for_pattern(pattern: dict[str, Any], question_bundle: dict[str, An
     }
 
 
-def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any]) -> dict[str, Any]:
+def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any], framework_review_context: dict[str, Any]) -> dict[str, Any]:
     evidence = pattern.get("evidence") or {}
     question_payload = questions_for_pattern(pattern, question_bundle)
+    concept_id = str(pattern.get("id") or "")
+    heuristic_frameworks = framework_review_context.get("concept_to_frameworks", {}).get(concept_id, [])
     raw_evidence = {
-        "concept_id": pattern.get("id"),
+        "concept_id": concept_id,
         "category": pattern.get("category"),
         "inference_method": evidence.get("method") or "inferred-from-facts",
         "note": evidence.get("note") or "",
@@ -562,6 +626,16 @@ def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any]) ->
         "decision_mode": pattern.get("decision_mode") or "fact-inference",
         "semantic_review_required": bool(pattern.get("semantic_review_required")),
         "semantic_questions": question_payload,
+        "framework_heuristics": {
+            "suggested_by_frameworks": heuristic_frameworks,
+            "heuristic_only": bool(heuristic_frameworks),
+            "inspect_next": [
+                item
+                for item in framework_review_context.get("inspect_concepts", [])
+                if item != concept_id
+            ][:8] if heuristic_frameworks else [],
+            "focus_areas": framework_review_context.get("focus_areas", [])[:6] if heuristic_frameworks else [],
+        },
     }
     fingerprint_source = "|".join(
         [
@@ -634,7 +708,8 @@ def build_output(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any
     patterns = infer_patterns(facts)
     gaps = infer_gaps(facts)
     question_bundle = load_concept_question_bundle()
-    concept_facts = [pattern_to_fact(pattern, question_bundle) for pattern in patterns]
+    framework_review_context = build_framework_review_context(group_by_kind(facts).get("framework", []))
+    concept_facts = [pattern_to_fact(pattern, question_bundle, framework_review_context) for pattern in patterns]
     concept_facts.extend(gap_to_fact(gap) for gap in gaps)
     return {
         "version": meta["version"],
@@ -649,6 +724,7 @@ def build_output(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any
             "generated_from": str(facts_path),
             "fact_domains_used": sorted({fact.get("domain") for fact in facts if fact.get("domain")}),
             "tools_used": sorted({fact.get("detector", {}).get("class") for fact in facts if fact.get("detector", {}).get("class")}),
+            "framework_review_context": framework_review_context,
         },
     }
 

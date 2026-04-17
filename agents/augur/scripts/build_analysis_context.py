@@ -57,7 +57,8 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
-                "Use those facts to choose where to investigate in the repo, then widen into code as needed.",
+                "Use those facts to form initial hypotheses, then move into repo code before doing more fact reduction.",
+                "Use larger supporting domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
                 "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
             ]
@@ -67,7 +68,8 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
-                "Use those facts to choose where to investigate in the repo, then widen into code as needed.",
+                "Use those facts to form initial architectural hypotheses, then move into repo code before doing more fact reduction.",
+                "Use larger supporting domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.",
                 "Use the run manifest for available fact files instead of guessing optional paths.",
                 "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
             ]
