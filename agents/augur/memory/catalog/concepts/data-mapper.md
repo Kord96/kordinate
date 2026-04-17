@@ -3,7 +3,24 @@ description: Data Mapper architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, data]
+abstraction:
+- design
+- data
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - repository
+  - unit-of-work
+  preferred_over:
+  - active-record
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Data Mapper
 
@@ -45,3 +62,15 @@ Look for domain models completely decoupled from the database, with an explicit 
 - Mapper that simply copies fields 1:1 with no structural difference (unnecessary indirection)
 - Mapping logic scattered across services instead of centralized in mapper classes
 - Leaking database column names into the domain model vocabulary
+
+### Relationship To Other Concepts
+
+- Related to [repository](/concepts/repository) because repositories often expose domain-facing access while mappers handle the persistence translation underneath.
+- Related to [unit-of-work](/concepts/unit-of-work) when object state changes are tracked and flushed through one transactional boundary.
+- Usually prefer this over [active-record](/concepts/active-record) when persistence logic is intentionally separated from domain objects.
+
+### Boundary
+
+Use `data-mapper` when the architecture deliberately keeps domain objects persistence-ignorant and translates them through a dedicated mapping layer.
+
+Do not use it for any serialization or DTO mapping code. The key distinction is mapping between domain objects and persistence representations.

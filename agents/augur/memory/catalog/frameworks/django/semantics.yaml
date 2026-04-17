@@ -1,0 +1,27 @@
+name: django
+kind: framework
+language: python
+framework_kind: full-stack
+summary: Batteries-included Python web framework with ORM, routing, templating, and admin surfaces
+status: primary
+scope: backend
+relationships:
+  implements:
+    - rest
+  supports:
+    - input-validation
+  uses:
+    - server-route-registration
+  related_to:
+    - layered
+traits:
+  api_surface: true
+  orm_native: true
+  validation_native: true
+  admin_surface: true
+common_concepts:
+  - active-record
+common_failure_modes:
+  - fat-models
+  - implicit-coupling-through-settings
+  - leaking-orm-models

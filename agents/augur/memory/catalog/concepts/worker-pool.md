@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [concurrency, infrastructure]
+abstraction:
+- concurrency
+- infrastructure
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - producer-consumer
+  - competing-consumers
+  - backpressure
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Worker/Thread Pool
 
@@ -45,3 +61,15 @@ Look for a fixed set of reusable workers pulling tasks from a shared submission 
 - Pool size equal to unbounded input (defeats the purpose of pooling)
 - Blocking the main thread waiting on every future immediately after submission (serial execution)
 - No timeout on task execution, allowing hung tasks to consume a worker forever
+
+### Relationship To Other Concepts
+
+- Related to [producer-consumer](/concepts/producer-consumer) because worker pools often consume queued work from producers.
+- Related to [competing-consumers](/concepts/competing-consumers) when many workers share one external queue or broker source.
+- Related to [backpressure](/concepts/backpressure) when task submission must slow down or reject work because the pool is saturated.
+
+### Boundary
+
+Use `worker-pool` when a fixed or bounded set of reusable workers executes many tasks instead of spawning one new worker per task.
+
+Do not use it for any background thread usage. The key signal is pooled reusable workers with bounded concurrency.

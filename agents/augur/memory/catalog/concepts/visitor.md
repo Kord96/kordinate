@@ -3,7 +3,22 @@ description: Visitor architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - ast
+  - composite
+  - interpreter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Visitor
 
@@ -46,3 +61,15 @@ Look for correct double dispatch and separation of algorithm from data structure
 - Adding a new element type requires modifying every existing visitor (fragile)
 - Visitor accumulating mutable state across visits without clear reset boundaries
 - Using visitor when a simple polymorphic method on the elements would suffice
+
+### Relationship To Other Concepts
+
+- Related to [ast](/concepts/ast) because AST traversal is one of the most common concrete uses of the visitor pattern.
+- Related to [composite](/concepts/composite) when operations need to traverse composite object trees without putting every operation on the node types.
+- Related to [interpreter](/concepts/interpreter) when visiting node types produces evaluation or execution behavior.
+
+### Boundary
+
+Use `visitor` when new operations are added over a stable object structure by dispatching on element types through visitor methods.
+
+Do not use it for any callback traversal. The key signal is double-dispatch or explicit visitor interfaces over a stable structure.

@@ -3,7 +3,23 @@ description: Database Migration architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [lifecycle, data]
+abstraction:
+- lifecycle
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - config-management
+  - schema-registry
+  - database-per-service
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Database Migration
 
@@ -46,3 +62,15 @@ Look for versioned, reversible schema changes managed by a migration framework w
 - Migrations that break backward compatibility (dropping columns still referenced by running code)
 - No rollback path -- down migrations are empty or missing entirely
 - Coupling data migrations with schema migrations in the same file (mixing DDL and bulk DML)
+
+### Relationship To Other Concepts
+
+- Related to [config-management](/concepts/config-management) when migration tooling and database connection targets are environment-controlled.
+- Related to [schema-registry](/concepts/schema-registry) because both govern schema evolution, though migrations act on live databases rather than message contracts.
+- Related to [database-per-service](/concepts/database-per-service) when each service owns and migrates its schema independently.
+
+### Boundary
+
+Use `database-migration` when schema evolution is managed through explicit, versioned migration steps applied over time.
+
+Do not use it for one-off SQL scripts or ad hoc schema changes unless they are part of a managed migration workflow.

@@ -3,7 +3,22 @@ description: Abstract Factory architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - builder
+  - factory
+  - bridge
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Abstract Factory
 
@@ -45,3 +60,15 @@ Look for a factory interface that produces families of related objects, with con
 - Client code depending on concrete product types instead of abstractions
 - Single concrete factory with conditional logic instead of polymorphic factory hierarchy
 - Over-engineering with abstract factory when only one product family will ever exist
+
+### Relationship To Other Concepts
+
+- Related to [builder](/concepts/builder) because both abstract object creation, though abstract factory chooses product families while builders assemble one product step by step.
+- Related to [factory](/concepts/factory) as the simpler creation pattern from which abstract factory generalizes to coherent product families.
+- Related to [bridge](/concepts/bridge) when families of implementations vary independently from the abstractions that consume them.
+
+### Boundary
+
+Use `abstract-factory` when clients create related families of objects through an abstract creation interface without binding to concrete implementations.
+
+Do not use it for any helper with multiple factory methods. The key signal is creation of coherent product families behind an abstract boundary.

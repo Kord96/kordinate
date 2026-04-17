@@ -3,7 +3,23 @@ description: Pipeline/Filter architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, data]
+abstraction:
+- design
+- data
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - data-pipeline
+  - middleware
+  - batch-processing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Pipeline/Filter
 
@@ -46,3 +62,15 @@ Look for each stage being a pure transform with a uniform interface and no coupl
 - Monolithic transform that does everything in one function disguised as a "pipeline"
 - No error propagation -- a failing stage silently passes corrupt data downstream
 - Tightly coupled stage ordering where inserting or removing a stage breaks the chain
+
+### Relationship To Other Concepts
+
+- Related to [data-pipeline](/concepts/data-pipeline) because many data pipelines are concrete pipeline/filter systems over staged transforms.
+- Related to [middleware](/concepts/middleware) when request processing is modeled as a filter chain around a handler.
+- Related to [batch-processing](/concepts/batch-processing) when filters operate over discrete chunks or stages in one batch flow.
+
+### Boundary
+
+Use `pipeline-filter` when data or requests move through a sequence of independent transformation stages connected by well-defined outputs and inputs.
+
+Do not use it for any multi-step function. The key signal is separable filter stages composed into a pipeline.

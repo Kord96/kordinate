@@ -2,7 +2,23 @@
 description: Multi-tenant isolation pattern for shared infrastructure
 type: pattern
 category: domain-model
-abstraction: [architectural, data]
+abstraction:
+- architectural
+- data
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - rbac
+  - rate-limiting
+  - sharding
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Multi-Tenant
 
@@ -49,3 +65,15 @@ How to identify this pattern in code.
 ## Impact
 
 Multi-tenancy is a cross-cutting concern that must be enforced at every data access path. A single missing tenant filter is a security vulnerability. Testing must include cross-tenant isolation verification, and monitoring should track per-tenant resource consumption to detect noisy neighbors.
+
+### Relationship To Other Concepts
+
+- Related to [rbac](/concepts/rbac) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [rate-limiting](/concepts/rate-limiting) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [sharding](/concepts/sharding) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `multi-tenant` when the important observation is this specific architectural concern within a cross-cutting architectural concern that can span multiple layers or services.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

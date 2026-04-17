@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data, resilience]
+abstraction:
+- data
+- resilience
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - repository
+  - search-index
+  - write-behind
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Cache-Aside
 
@@ -47,3 +63,15 @@ Look for a read path that tries cache first and falls back to the source of trut
 - Cache keys without namespacing leading to collisions across entities
 - No TTL set, relying entirely on manual invalidation (cache grows unbounded)
 - Caching errors or empty results (negative caching without short TTL)
+
+### Relationship To Other Concepts
+
+- Related to [repository](/concepts/repository) when repositories coordinate reads through a cache before falling back to a primary store.
+- Related to [search-index](/concepts/search-index) when cached query results or projections reduce repeated expensive lookups.
+- Related to [write-behind](/concepts/write-behind) as a different cache persistence strategy where writes are deferred rather than reads being populated on miss.
+
+### Boundary
+
+Use `cache-aside` when the application explicitly checks a cache first, loads from the source on miss, and then populates the cache.
+
+Do not use it for any caching. The important signal is the miss-path population pattern controlled by the application or repository layer.

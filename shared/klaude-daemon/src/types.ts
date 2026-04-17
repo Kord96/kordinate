@@ -90,20 +90,46 @@ export interface SessionState {
   promptCacheKey?: string
 }
 
-export interface AgentProfile {
-  name?: string
+export interface ValidationContract {
+  required: boolean
+  validatorScript: string
+  maxAttempts?: number
+  finalizeScript?: string
+}
+
+export interface WorkflowContract {
+  analysisContextScript?: string
+  promptContextScript?: string
+  repairPromptScript?: string
+}
+
+export interface BundleRefs {
+  memory?: string
+  skill?: string
+  runtime?: string
+}
+
+export interface AgentContract {
+  version?: string
+  name: string
+  specialization: string
   description?: string
-  capabilities?: string[]
+  capabilities: string[]
   promptPrefix?: string
   defaultReflectionPrompt?: string
-  supportedAgentParams?: string[]
-  requiresWorkingDirectory?: boolean
-  validation?: {
-    required: boolean
-    validatorScript: string
-    maxAttempts?: number
-    finalizeScript?: string
-  }
+  supportedAgentParams: string[]
+  requiresWorkingDirectory: boolean
+  bundleRefs?: BundleRefs
+  workflow?: WorkflowContract
+  validation?: ValidationContract
+}
+
+export interface RuntimeProfile {
+  version?: string
+  kind: string
+  promptPreamble?: string
+  toolGuidance?: string[]
+  runArtifactGuidance?: string[]
 }
 
 export interface ProviderSessionAdapter {

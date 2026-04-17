@@ -4,6 +4,20 @@ type: anti-pattern
 testable: true
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - over-under-fetching
+  - materialized-view
+  - repository
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Select Star
 
@@ -45,3 +59,15 @@ Unnecessary data transfer over the wire, slower queries, and wasted application 
 - Add projections to NoSQL queries (`find({}, {field1: 1, field2: 1})`)
 - Create dedicated read models or DTOs for list/summary endpoints that only query required columns
 - Add a query review step or linting rule that flags `SELECT *` outside of ad-hoc/debug contexts
+
+### Relationship To Other Concepts
+
+- Related to [over-under-fetching](/concepts/over-under-fetching) because `SELECT *` often reflects an API or read-path that pulls more data than the caller actually needs.
+- Related to [materialized-view](/concepts/materialized-view) when dedicated read projections are introduced to avoid broad row fetches.
+- Related to [repository](/concepts/repository) because repository or query-layer abstractions should usually centralize explicit field selection.
+
+### Boundary
+
+Use `select-star` when query paths fetch all columns by default even though only a subset is needed.
+
+Do not use it for exploratory SQL, small tables, or cases where the full row is intentionally and consistently required.

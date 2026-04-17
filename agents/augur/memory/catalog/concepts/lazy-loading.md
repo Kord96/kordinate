@@ -1,9 +1,26 @@
 ---
-description: Lazy Loading — deferring component or module loading until needed to reduce initial bundle size
+description: "Lazy Loading \u2014 deferring component or module loading until needed\
+  \ to reduce initial bundle size"
 type: pattern
 testable: true
 graphable: true
-abstraction: [frontend, deployment]
+abstraction:
+- frontend
+- deployment
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - suspense-boundary
+  - server-prefetch
+  - micro-frontend
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Lazy Loading
 
@@ -46,3 +63,15 @@ Look for deferred loading of components or modules via dynamic imports, with loa
 - No fallback UI -- user sees blank space during load
 - No error handling for failed chunk loads (stale deployment, network failure)
 - Splitting too granularly -- hundreds of tiny chunks increase HTTP request overhead
+
+### Relationship To Other Concepts
+
+- Related to [suspense-boundary](/concepts/suspense-boundary) because many modern frontend stacks use suspense-like boundaries to manage deferred loading states.
+- Related to [server-prefetch](/concepts/server-prefetch) because prefetching and lazy loading are complementary strategies for controlling when data and code arrive.
+- Related to [micro-frontend](/concepts/micro-frontend) because independently loaded frontend slices often rely heavily on lazy chunk loading.
+
+### Boundary
+
+Use `lazy-loading` when code or components are intentionally deferred until actually needed to reduce initial load cost.
+
+Do not use it for ordinary pagination, backend demand loading, or any delayed operation that is not about deferred code or component loading.

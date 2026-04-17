@@ -3,7 +3,22 @@ description: Property-Based Testing architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [testing]
+abstraction:
+- testing
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - fixture-builder
+  - result-type
+  - fuzz-testing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Property-Based Testing
 
@@ -45,3 +60,15 @@ Look for tests that assert universal properties (invariants) over generated inpu
 - Overly constrained strategies that reduce to a handful of fixed inputs, defeating the purpose of generation
 - Ignoring shrunk counterexamples and debugging against the original large input
 - No CI integration for property tests because they are "too slow" -- use smaller example counts with periodic full runs
+
+### Relationship To Other Concepts
+
+- Related to [fixture-builder](/concepts/fixture-builder) as another testing aid, though property testing generates inputs from properties rather than hand-assembling cases.
+- Related to [result-type](/concepts/result-type) when functions expose invariants that property tests can exercise across success and failure shapes.
+- Related to [fuzz-testing](/concepts/fuzz-testing) because both generate inputs, though property testing asserts domain invariants rather than only crashing behavior.
+
+### Boundary
+
+Use `property-testing` when behavior is tested by generating many inputs and asserting invariants or algebraic properties over the outputs.
+
+Do not use it for ordinary parameterized tests. The key signal is generated input space plus property assertions.

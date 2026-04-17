@@ -3,11 +3,25 @@ description: Component Architecture architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, frontend]
+abstraction:
+- design
+- frontend
 status: primary
 scope: frontend
 relationships:
-  related_to: [mvc, mvvm]
+  related_to:
+  - mvc
+  - mvvm
+  preferred_over:
+  - component-slot
+aliases: []
+disambiguates_from: []
+preferred_over:
+- component-slot
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Component Architecture
 
@@ -38,6 +52,7 @@ Look for a tree of self-contained, composable UI components with clear data flow
 - `component` is the primary UI composition concept.
 - `component-slot` is a specialized content-projection technique within a component system, not a separate primary architecture family.
 - `mvvm` and `mvc` can coexist with components; they describe state/presentation coordination, not the rendering tree itself.
+- Prefer `component` when the main structure is a tree of reusable UI units, even if some components expose slots, render props, or compound APIs.
 
 ### Review Checklist
 
@@ -53,3 +68,9 @@ Look for a tree of self-contained, composable UI components with clear data flow
 - Prop drilling through many levels instead of using context/provide-inject or state management
 - Direct DOM manipulation bypassing the component framework's rendering cycle
 - Tightly coupled components that import and reference each other's internal state
+
+### Boundary
+
+Use `component` when the important observation is this specific architectural concern within a frontend, UI, or client-side architectural concern.
+
+Do not use a nearby alternative label when this concept more precisely matches the code and intent.

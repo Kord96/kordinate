@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [messaging, concurrency]
+abstraction:
+- messaging
+- concurrency
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - outbox
+  - dead-letter
+  - worker-pool
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Competing Consumers
 
@@ -48,3 +64,15 @@ Look for multiple consumer instances sharing the workload of a single queue or t
 - No rebalance listener, causing duplicate processing during consumer group changes
 - All consumers configured with the same partition affinity (no actual distribution)
 - Scaling consumers beyond the partition count (idle consumers with no work)
+
+### Relationship To Other Concepts
+
+- Related to [outbox](/concepts/outbox) when multiple workers or consumers drain staged work items or event rows for publication.
+- Related to [dead-letter](/concepts/dead-letter) when poisoned work items must be removed from a shared consumer stream safely.
+- Related to [worker-pool](/concepts/worker-pool) because both scale processing with multiple workers, though competing consumers coordinate over a shared message source.
+
+### Boundary
+
+Use `competing-consumers` when multiple consumers pull from the same queue or stream partition set and each work item is processed by only one of them.
+
+Do not use it for pub-sub fan-out or generic worker pools unless the defining semantic is shared-consumption competition.

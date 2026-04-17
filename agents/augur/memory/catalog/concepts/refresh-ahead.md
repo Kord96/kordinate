@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data, resilience]
+abstraction:
+- data
+- resilience
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - read-through
+  - cache-aside
+  - scheduler
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Refresh-Ahead Cache
 
@@ -46,3 +62,15 @@ Look for a cache that proactively refreshes entries before they expire, ensuring
 - Refreshing all cached keys regardless of access frequency (wasted resources)
 - No fallback when the refresh source is unavailable, causing cache entries to expire with no replacement
 - Unbounded refresh thread pool that can saturate the backing data source
+
+### Relationship To Other Concepts
+
+- Related to [read-through](/concepts/read-through) because refresh-ahead often extends read-through caches with proactive refresh behavior.
+- Related to [cache-aside](/concepts/cache-aside) as another read caching strategy where values are refreshed on demand rather than before expiry.
+- Related to [scheduler](/concepts/scheduler) when refresh timing is driven by proactive time-based policies.
+
+### Boundary
+
+Use `refresh-ahead` when cached values are proactively renewed before they expire so future readers avoid cold misses.
+
+Do not use it for ordinary cache misses or lazy reload. The key signal is proactive refresh before expiration.

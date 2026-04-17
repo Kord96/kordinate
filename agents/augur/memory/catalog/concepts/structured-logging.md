@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [observability]
+abstraction:
+- observability
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - correlation-id
+  - metrics-instrumentation
+  - distributed-tracing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Structured Logging
 
@@ -46,3 +61,15 @@ Look for consistent structured output with contextual fields propagated through 
 - Logging full request/response bodies without redaction
 - Using string formatting inside structured log calls (`logger.info(f"user {user_id}")` instead of `logger.info("user_login", user_id=user_id)`)
 - No correlation ID -- structured output with no way to trace a request across log entries
+
+### Relationship To Other Concepts
+
+- Related to [correlation-id](/concepts/correlation-id) because structured fields make request or flow identifiers useful across many log entries.
+- Related to [metrics-instrumentation](/concepts/metrics-instrumentation) because both contribute to observability, though logs capture discrete events while metrics summarize behavior.
+- Related to [distributed-tracing](/concepts/distributed-tracing) when trace and span identifiers are emitted in structured log fields.
+
+### Boundary
+
+Use `structured-logging` when logs are emitted as machine-readable fields rather than only unstructured text strings.
+
+Do not use it for any logging framework. The key signal is structured event fields intended for parsing and correlation.

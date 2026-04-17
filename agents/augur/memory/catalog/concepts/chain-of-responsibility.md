@@ -3,7 +3,22 @@ description: Chain of Responsibility architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - middleware
+  - command
+  - rule-engine
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Chain of Responsibility
 
@@ -46,3 +61,15 @@ Look for correct chain traversal: each handler decides to process, pass through,
 - Order-dependent handlers with no documentation of required ordering
 - Chain with no termination -- request falls through without any handler processing it
 - Handlers with circular references causing infinite loops
+
+### Relationship To Other Concepts
+
+- Related to [middleware](/concepts/middleware) because middleware pipelines are often concrete examples of chain-of-responsibility in request processing.
+- Related to [command](/concepts/command) when commands pass through a sequence of decorators or handlers before execution.
+- Related to [rule-engine](/concepts/rule-engine) when decision logic is decomposed into ordered handlers rather than declarative rules.
+
+### Boundary
+
+Use `chain-of-responsibility` when processing is modeled as an ordered sequence of handlers, each of which can act or delegate onward.
+
+Do not use it for any list of callbacks. The key signal is delegated responsibility flowing through a handler chain.

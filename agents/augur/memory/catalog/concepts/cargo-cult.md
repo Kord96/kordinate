@@ -2,6 +2,20 @@
 description: Cargo Cult Programming anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - golden-hammer
+  - copy-paste-programming
+  - premature-optimization
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Cargo Cult Programming
 
@@ -42,3 +56,15 @@ Adds complexity without benefit, making the codebase harder to read and maintain
 - Replace single-implementation interfaces with concrete classes until polymorphism is actually needed
 - Consolidate copy-pasted boilerplate into shared utilities or eliminate it entirely
 - Review configuration values against documentation and remove or explain each non-default setting
+
+### Relationship To Other Concepts
+
+- Related to [golden-hammer](/concepts/golden-hammer) because both involve applying patterns uncritically rather than from fit.
+- Related to [copy-paste-programming](/concepts/copy-paste-programming) when unexplained boilerplate is propagated without understanding.
+- Related to [premature-optimization](/concepts/premature-optimization) when complex patterns are copied in for imagined needs rather than real constraints.
+
+### Boundary
+
+Use `cargo-cult` when code or architecture copies a pattern ritualistically without understanding why it exists or whether it fits.
+
+Do not use it for any borrowed pattern. The key issue is imitation without causal understanding.

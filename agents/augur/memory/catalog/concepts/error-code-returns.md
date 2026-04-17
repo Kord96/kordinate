@@ -2,6 +2,20 @@
 description: Error Code Returns anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - result-type
+  - swallowed-exception
+  - magic-numbers
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Error Code Returns
 
@@ -43,3 +57,15 @@ Unchecked error codes lead to silent failures, because nothing forces the caller
 - If error codes are unavoidable (C, Go), use a consistent struct or tuple: `(result, error)` not magic values
 - Wrap legacy error-code APIs in an adapter that throws exceptions for your application code
 - Add static analysis rules to flag unchecked return values from functions known to return error codes
+
+### Relationship To Other Concepts
+
+- Related to [result-type](/concepts/result-type) as a stronger alternative that models success and failure explicitly in the type system.
+- Related to [swallowed-exception](/concepts/swallowed-exception) because both can hide failure semantics from callers or observability systems.
+- Related to [magic-numbers](/concepts/magic-numbers) when sentinel error values rely on undocumented numeric conventions.
+
+### Boundary
+
+Use `error-code-returns` when APIs communicate failure through sentinel values or numeric codes instead of structured error outcomes.
+
+Do not use it for deliberate low-level C-style interfaces where explicit code returns are the intended contract.

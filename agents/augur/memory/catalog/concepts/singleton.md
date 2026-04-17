@@ -3,7 +3,22 @@ description: Singleton architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - dependency-injection
+  - service-manager
+  - tight-coupling
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Singleton
 
@@ -44,3 +59,15 @@ Look for thread safety and verify the singleton is genuinely needed over depende
 - No way to reset or replace the instance in tests
 - Lazy initialization with race conditions in multi-threaded contexts
 - Hidden dependencies -- classes reach for the singleton instead of receiving it via injection
+
+### Relationship To Other Concepts
+
+- Related to [dependency-injection](/concepts/dependency-injection) because singletons are often overused where injected shared services would be safer and easier to test.
+- Related to [service-manager](/concepts/service-manager) when one global instance coordinates lifecycle for a shared service.
+- Related to [tight-coupling](/concepts/tight-coupling) because hidden singleton access creates hard-wired global dependencies.
+
+### Boundary
+
+Use `singleton` when one globally shared instance is intentionally enforced as the only instance of a type.
+
+Do not use it for ordinary process-wide services that are simply created once by composition or dependency injection without singleton access semantics.

@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [security, observability]
+abstraction:
+- security
+- observability
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - ledger
+  - event-sourcing
+  - structured-logging
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Audit Logging
 
@@ -47,3 +63,15 @@ Look for an immutable, structured record of every significant action with actor 
 - Missing actor attribution -- logs show what happened but not who did it
 - Audit writes in the critical path causing latency on every user action
 - No retention policy -- audit data grows unbounded without archival or rotation
+
+### Relationship To Other Concepts
+
+- Related to [ledger](/concepts/ledger) when audit records are preserved as append-only history with strong immutability expectations.
+- Related to [event-sourcing](/concepts/event-sourcing) because both retain historical events, though audit logging usually records what happened for accountability rather than driving current state reconstruction.
+- Related to [structured-logging](/concepts/structured-logging) when audit records use machine-readable fields for actor, action, and target.
+
+### Boundary
+
+Use `audit-logging` when the architecture intentionally records accountable, durable who-did-what history for security, compliance, or forensic review.
+
+Do not use it for ordinary diagnostics or request logs unless the purpose is durable auditability of sensitive actions.

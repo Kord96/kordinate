@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - data-pipeline
+  - batch-processing
+  - schema-on-read
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # ETL/ELT
 
@@ -47,3 +62,15 @@ Look for idempotent loads and clear checkpoint/bookmark tracking.
 - Transform logic embedded in SQL without version control or tests
 - No checkpoint — failures require manual restart from scratch
 - Silent data loss on transform errors (records dropped without logging)
+
+### Relationship To Other Concepts
+
+- Related to [data-pipeline](/concepts/data-pipeline) because ETL is one common staged data movement architecture.
+- Related to [batch-processing](/concepts/batch-processing) when extraction, transform, and load steps execute on schedules or chunked windows.
+- Related to [schema-on-read](/concepts/schema-on-read) as a contrast: ETL usually imposes structure before loading, while schema-on-read defers it until consumption.
+
+### Boundary
+
+Use `etl` when data is explicitly extracted from one system, transformed, and then loaded into another target as a managed pipeline.
+
+Do not use it for any data transform. The key signal is extract-transform-load as a deliberate staged movement pattern.

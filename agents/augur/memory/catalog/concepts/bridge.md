@@ -3,7 +3,22 @@ description: Bridge architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - abstract-factory
+  - adapter
+  - strategy
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Bridge
 
@@ -45,3 +60,15 @@ Look for two independent hierarchies connected by composition: an abstraction hi
 - Abstraction leaking implementation details through its interface
 - Tight coupling between abstraction and implementation hierarchies despite the bridge
 - Confusing bridge with simple interface extraction or strategy pattern
+
+### Relationship To Other Concepts
+
+- Related to [abstract-factory](/concepts/abstract-factory) when a bridge needs families of implementations selected independently from abstractions.
+- Related to [adapter](/concepts/adapter) because both introduce indirection, though bridge is about decoupling parallel hierarchies rather than translating one interface into another.
+- Related to [strategy](/concepts/strategy) when implementations vary independently behind a stable abstraction surface.
+
+### Boundary
+
+Use `bridge` when abstractions and implementations vary independently and are explicitly decoupled through composition.
+
+Do not use it for simple interface extraction or wrappers. The important signal is two axes of variation kept independent.

@@ -3,7 +3,22 @@ description: Snapshot Testing architectural pattern
 type: pattern
 testable: true
 graphable: false
-abstraction: [testing]
+abstraction:
+- testing
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - fixture-builder
+  - flaky-tests
+  - memento
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Snapshot Testing
 
@@ -44,3 +59,15 @@ Look for snapshot assertions that capture complex output and detect unintended c
 - Snapshotting entire DOM trees or large JSON blobs where small unrelated changes cause noisy diffs
 - No normalization of non-deterministic values, causing snapshots to break on every run
 - Using snapshots as a substitute for targeted assertions when specific field checks would be clearer
+
+### Relationship To Other Concepts
+
+- Related to [fixture-builder](/concepts/fixture-builder) because stable fixture construction makes snapshots more focused and less noisy.
+- Related to [flaky-tests](/concepts/flaky-tests) when snapshots include nondeterministic values and become unreliable.
+- Related to [memento](/concepts/memento) in the limited sense that both preserve prior state for comparison or restoration, though snapshot testing is verification, not runtime behavior.
+
+### Boundary
+
+Use `snapshot-testing` when tests intentionally compare current complex output against stored approved snapshots.
+
+Do not use it for ordinary expected-value assertions or golden files that are not part of a snapshot-driven review workflow.

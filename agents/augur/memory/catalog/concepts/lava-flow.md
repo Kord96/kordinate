@@ -2,6 +2,20 @@
 description: Lava Flow (Dead Code) anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - feature-flag
+  - copy-paste-programming
+  - shotgun-surgery
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Lava Flow (Dead Code)
 
@@ -44,3 +58,15 @@ Increases codebase size, confuses readers about what is live, and produces false
 - Enforce `@deprecated` annotations with a removal-by date and track them in a backlog
 - Add linter rules that fail on unused imports, variables, and unreachable code
 - Schedule regular dead-code sweeps as part of maintenance sprints
+
+### Relationship To Other Concepts
+
+- Related to [feature-flag](/concepts/feature-flag) when stale flag branches and cleanup debt accumulate into abandoned code strata.
+- Related to [copy-paste-programming](/concepts/copy-paste-programming) because duplicated abandoned paths often accumulate into dead layers of code.
+- Related to [shotgun-surgery](/concepts/shotgun-surgery) when nobody deletes obsolete code because changes require too many uncertain edits.
+
+### Boundary
+
+Use `lava-flow` when dead or abandoned code remains in place and actively confuses maintenance or understanding.
+
+Do not use it for code that is merely stable, old, or intentionally dormant behind a planned compatibility surface.

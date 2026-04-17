@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [data, ml]
+abstraction:
+- data
+- ml
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - model-registry
+  - training-pipeline
+  - stream-to-store
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Feature Store
 
@@ -48,3 +64,15 @@ Look for a centralized registry that serves pre-computed features consistently t
 - No point-in-time correctness, causing future data to leak into training features
 - Online store used for batch training (latency costs, missing historical data)
 - Features defined ad-hoc per model with no shared registry or versioning
+
+### Relationship To Other Concepts
+
+- Related to [model-registry](/concepts/model-registry) because feature definitions and model versions often need coordinated lifecycle management.
+- Related to [training-pipeline](/concepts/training-pipeline) when training jobs consume curated features from the store.
+- Related to [stream-to-store](/concepts/stream-to-store) when online features are ingested continuously into serving stores.
+
+### Boundary
+
+Use `feature-store` when ML features are managed as shared, versioned, reusable data products for training and/or online serving.
+
+Do not use it for any feature table or dataset. The key signal is centralized feature lifecycle and reuse.

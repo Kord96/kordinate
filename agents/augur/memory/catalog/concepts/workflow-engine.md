@@ -5,12 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [lifecycle, integration]
+abstraction:
+- lifecycle
+- integration
 status: primary
 scope: backend
 relationships:
-  preferred_over: [workflow-state-machine]
-  related_to: [state-machine, saga]
+  preferred_over:
+  - workflow-state-machine
+  related_to: []
+aliases: []
+disambiguates_from: []
+preferred_over:
+- workflow-state-machine
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Workflow Engine
 
@@ -62,3 +73,9 @@ Look for DAG-based task orchestration with explicit step dependencies, state tra
 - No persistent state -- a process crash loses all progress and requires full restart
 
 See also: saga (for distributed transactions with compensation)
+
+### Boundary
+
+Use `workflow-engine` when the important observation is this specific architectural concern within a backend service, storage, or server-side architectural concern.
+
+Do not use a nearby alternative label when this concept more precisely matches the code and intent.

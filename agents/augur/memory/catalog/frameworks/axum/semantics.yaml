@@ -1,0 +1,20 @@
+name: axum
+kind: framework
+language: rust
+framework_kind: api-server
+summary: Rust web framework centered on typed routers and composable handlers
+status: primary
+scope: backend
+relationships:
+  implements:
+    - rest
+  uses:
+    - server-route-registration
+traits:
+  api_surface: true
+  typed_handlers: true
+common_concepts: []
+common_failure_modes:
+  - router-sprawl
+  - extractor-coupling
+  - handler-bloat

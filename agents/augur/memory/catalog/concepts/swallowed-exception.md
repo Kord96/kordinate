@@ -2,6 +2,20 @@
 description: Swallowed Exception anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - log-and-throw
+  - result-type
+  - hidden-side-effects
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Swallowed Exception
 
@@ -42,3 +56,15 @@ Failures go completely unnoticed, making debugging impossible because the system
 - If an exception is truly ignorable, document explicitly why with a comment and emit a metric for visibility
 - Add linting rules that flag empty catch blocks and bare `except:` clauses
 - Use the "let it crash" principle: prefer failing loudly over silently returning wrong results
+
+### Relationship To Other Concepts
+
+- Related to [log-and-throw](/concepts/log-and-throw) because both mishandle error propagation, one by duplicating it and the other by hiding it.
+- Related to [result-type](/concepts/result-type) when explicit success or failure values would make silent swallowing less likely.
+- Related to [hidden-side-effects](/concepts/hidden-side-effects) because suppressed failures make state changes and operational consequences difficult to see.
+
+### Boundary
+
+Use `swallowed-exception` when an error is caught and then suppressed or ignored without meaningful propagation, handling, or visibility.
+
+Do not use it for deliberate, documented best-effort cleanup where failure is intentionally and safely non-fatal.

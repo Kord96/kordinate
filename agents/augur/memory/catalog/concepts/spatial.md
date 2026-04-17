@@ -2,7 +2,23 @@
 description: Spatial data model for geographic and geometric computations
 type: pattern
 category: domain-model
-abstraction: [data, geospatial]
+abstraction:
+- data
+- geospatial
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - search-index
+  - cache-aside
+  - pagination
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Spatial
 
@@ -49,3 +65,15 @@ How to identify this pattern in code.
 ## Impact
 
 Spatial data requires specialized indexing (R-tree, GiST) that differs fundamentally from B-tree indices. Query performance depends heavily on spatial index health, and incorrect CRS handling produces silently wrong results that are difficult to catch without geospatial-aware testing.
+
+### Relationship To Other Concepts
+
+- Related to [search-index](/concepts/search-index) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [cache-aside](/concepts/cache-aside) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [pagination](/concepts/pagination) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `spatial` when the important observation is this specific architectural concern within a domain-modeling or product-domain concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

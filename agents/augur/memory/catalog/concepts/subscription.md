@@ -2,7 +2,23 @@
 description: Subscription and recurring billing pattern for SaaS monetization
 type: pattern
 category: domain-model
-abstraction: [data, financial]
+abstraction:
+- data
+- financial
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - multi-tenant
+  - state-machine
+  - webhook
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Subscription
 
@@ -33,6 +49,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `subscription` is the revenue-domain model: plans, billing cycles, invoices, renewals, and churn.
+- Use `webhook` when the key concern is provider event ingress rather than billing lifecycle semantics.
+- Use `state-machine` for lifecycle transitions like trial, active, past_due, and canceled.
+- Use `multi-tenant` when entitlements are attached to tenant scope rather than individual users.
+
 ### When to use
 - SaaS products with tiered pricing plans and recurring revenue
 - Usage-based or metered billing where charges depend on consumption
@@ -47,6 +70,16 @@ How to identify this pattern in code.
 - [webhook](/concepts/webhook) — payment provider events arrive via webhooks
 - [state-machine](/concepts/state-machine) — subscription lifecycle (trial, active, past_due, canceled) is a state machine
 - [multi-tenant](/concepts/multi-tenant) — subscriptions often gate tenant-level feature access
+
+### Relationship To Other Concepts
+
+- Related to [multi-tenant](/concepts/multi-tenant) because subscription tiers often control tenant-level entitlements and limits.
+- Related to [state-machine](/concepts/state-machine) because subscription lifecycle changes usually move through well-defined states such as trial, active, past-due, and canceled.
+- Related to [webhook](/concepts/webhook) when billing providers notify the system about renewal, payment failure, or cancellation events asynchronously.
+
+### Boundary
+
+Do not use `subscription` for any premium flag or simple entitlement check. Prefer it only when recurring billing and lifecycle management are part of the architecture.
 
 ## Impact
 

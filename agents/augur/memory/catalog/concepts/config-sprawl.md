@@ -2,6 +2,18 @@
 description: Configuration Sprawl anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - config-management
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Configuration Sprawl
 
@@ -44,3 +56,13 @@ Inconsistent behavior across environments because no one knows which configurati
 - Add integration tests that verify configuration loading produces expected values for each environment
 
 See also: config-management pattern
+
+### Relationship To Other Concepts
+
+- Related to [config-management](/concepts/config-management) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `config-sprawl` when the failure mode is duplicated, inconsistent, or scattered configuration with no reliable source of truth.
+
+Do not use it for a large but well-organized config surface. The key issue is fragmentation and inconsistency, not simply quantity.

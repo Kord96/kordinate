@@ -3,7 +3,23 @@ description: Game Loop architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [lifecycle, realtime]
+abstraction:
+- lifecycle
+- realtime
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - tick-simulation
+  - entity-component-system
+  - reactor
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Game Loop
 
@@ -47,3 +63,15 @@ Look for a well-structured main loop with clear phase separation and proper time
 - No delta time cap, causing simulation explosions after a lag spike
 - Mixing input handling, logic updates, and rendering in a single function
 - Busy-waiting without sleep or vsync (100% CPU for no benefit)
+
+### Relationship To Other Concepts
+
+- Related to [tick-simulation](/concepts/tick-simulation) because fixed or semi-fixed update ticks are a common game-loop discipline.
+- Related to [entity-component-system](/concepts/entity-component-system) because ECS systems are often executed in ordered phases inside a loop.
+- Related to [reactor](/concepts/reactor) as another event-driven control model, though game loops are frame or tick oriented rather than readiness oriented.
+
+### Boundary
+
+Use `game-loop` when one main realtime loop repeatedly updates simulation state and rendering or output phases.
+
+Do not use it for ordinary schedulers or background polling loops.

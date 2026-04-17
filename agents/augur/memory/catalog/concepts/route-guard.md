@@ -1,12 +1,26 @@
 ---
-description: Route Guard — conditional access control on route navigation
+description: "Route Guard \u2014 conditional access control on route navigation"
 type: pattern
 graphable: true
-abstraction: [frontend, security]
+abstraction:
+- frontend
+- security
 status: specialized
 scope: frontend
 relationships:
-  related_to: [router, session-auth, token-auth, oauth-oidc, rbac]
+  related_to:
+  - router
+  - session-auth
+  - token-auth
+  - oauth-oidc
+  - rbac
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Route Guard
 
@@ -58,3 +72,9 @@ Look for a centralized or per-route gate that evaluates access conditions before
 - Hardcoded role strings scattered across guard implementations instead of a permissions abstraction
 - Guards that silently fail, leaving the user on a broken or empty page instead of redirecting
 - Duplicating guard logic in every page component instead of using route-level or layout-level guards
+
+### Boundary
+
+Use `route-guard` when the code conditionally allows or redirects frontend navigation before a route is entered.
+
+Do not use it for backend authorization middleware or API gateway checks unless the guarded boundary is frontend route navigation.

@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [infrastructure]
+abstraction:
+- infrastructure
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - bulkhead
+  - health-check
+  - distributed-lock
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Connection Pooling
 
@@ -48,3 +63,15 @@ Look for bounded, reusable connection pools with health checks and proper lifecy
 - Pool size set to match max concurrent users (overprovisioned, exhausting DB connection limits)
 - No connection validation -- stale or broken connections handed to callers
 - Missing connection return in error paths -- pool drains under sustained errors
+
+### Relationship To Other Concepts
+
+- Related to [bulkhead](/concepts/bulkhead) because dedicated pools are one common way to isolate capacity across dependencies or workloads.
+- Related to [health-check](/concepts/health-check) when broken or stale connections need validation before being handed to traffic.
+- Related to [distributed-lock](/concepts/distributed-lock) when lock providers or coordination clients rely on pooled backend connections.
+
+### Boundary
+
+Use `connection-pooling` when expensive backend connections are intentionally reused through a managed pool instead of being created per operation.
+
+Do not use it for any resource cache. The key signal is lifecycle management of reusable network or database connections.

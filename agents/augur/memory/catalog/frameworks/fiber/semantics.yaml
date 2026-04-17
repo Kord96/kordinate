@@ -1,0 +1,20 @@
+name: fiber
+kind: framework
+language: go
+framework_kind: api-server
+summary: Express-style Go web framework with grouped routes and middleware chaining
+status: specialized
+scope: backend
+relationships:
+  implements:
+    - rest
+  uses:
+    - server-route-registration
+traits:
+  api_surface: true
+  middleware_native: true
+common_concepts: []
+common_failure_modes:
+  - handler-bloat
+  - middleware-ordering-surprises
+  - express-style-overuse

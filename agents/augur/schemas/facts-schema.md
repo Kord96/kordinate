@@ -42,6 +42,8 @@ $MEM/
 
 `index.json` is the canonical manifest. Domain files may be omitted when empty.
 
+Each domain file is a JSON object containing metadata plus a top-level `facts` array. Consumers should query `file.facts`, not treat the whole domain file as a bare array.
+
 Some benchmark and legacy tooling may still materialize a consolidated `facts.json` payload, but the directory layout above is the source-of-truth contract for Augur analysis.
 
 ## Schema
@@ -130,11 +132,19 @@ Some benchmark and legacy tooling may still materialize a consolidated `facts.js
 
 ### Frameworks
 
-Detect language/runtime/framework context first. These facts narrow the search space for extractors and concept inference.
+Detect language/runtime/framework context first. These facts are deterministic evidence, not final semantic truth. They narrow the search space for extractors and Phase 2 interpretation.
 
 Expected `raw_evidence` keys:
-- `language`
 - `framework`
+- `language`
+- `scope`
+- `framework_kind`
+- `status`
+- `traits`
+- `relationships`
+- `common_concepts`
+- `common_failure_modes`
+- `concepts`
 - `signals`
 - `negative_signals`
 

@@ -3,6 +3,18 @@ description: N+1 Queries anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - batch-loader
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # N+1 Queries
 
@@ -45,3 +57,13 @@ Linear query explosion that overwhelms the database as dataset size grows.
 - Profile with query logging enabled in staging to catch regressions before production
 
 See also: batch-loader pattern (remediation)
+
+### Relationship To Other Concepts
+
+- Related to [batch-loader](/concepts/batch-loader) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `n-plus-one` when the important observation is this specific recurring architectural failure mode within a cross-cutting architectural concern that can span multiple layers or services.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

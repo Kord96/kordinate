@@ -3,6 +3,20 @@ description: Shotgun Surgery anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - copy-paste-programming
+  - tight-coupling
+  - god-object
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Shotgun Surgery
 
@@ -45,3 +59,15 @@ Changes are expensive and error-prone because a single logical modification requ
 - Apply the DRY principle by extracting shared logic into one authoritative location
 - Introduce a facade or service layer that centralizes the scattered operations
 - Set up architectural linting rules to prevent the concern from spreading again
+
+### Relationship To Other Concepts
+
+- Related to [copy-paste-programming](/concepts/copy-paste-programming) because duplicated logic is one common cause of changes being scattered across many files.
+- Related to [tight-coupling](/concepts/tight-coupling) because widespread dependency entanglement makes one logical change ripple everywhere.
+- Related to [god-object](/concepts/god-object) when one over-centralized class forces many callers and extensions to change together.
+
+### Boundary
+
+Use `shotgun-surgery` when one logical change repeatedly forces coordinated edits across many scattered files or modules.
+
+Do not use it for large but cohesive refactors that touch many places for a clearly centralized reason.

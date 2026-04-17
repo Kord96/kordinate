@@ -3,7 +3,23 @@ description: Lexer/Parser architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, compiler]
+abstraction:
+- design
+- compiler
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - ast
+  - intermediate-representation
+  - visitor
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Lexer/Parser
 
@@ -46,3 +62,15 @@ Look for clean separation between lexical analysis (characters to tokens) and sy
 - No source location tracking, making error messages useless for users
 - Deeply nested recursive descent with no precedence climbing (stack overflow on expressions)
 - Grammar rules scattered across unrelated modules instead of grouped by language construct
+
+### Relationship To Other Concepts
+
+- Related to [ast](/concepts/ast) because parsers commonly produce ASTs as their first structured output.
+- Related to [intermediate-representation](/concepts/intermediate-representation) because lexer/parser pipelines often feed a later lowering phase.
+- Related to [visitor](/concepts/visitor) when parse trees or ASTs are traversed through structured tree-walking passes.
+
+### Boundary
+
+Use `lexer-parser` when input text is intentionally split into lexical and syntactic phases before semantic processing.
+
+Do not use it for generic string splitting or ad hoc format parsing with no real tokenization or grammar layer.

@@ -66,6 +66,7 @@ python3 $KORDINATE_HOME/lib/scripts/generate-agent-manifests.py \
 
 6. Report what was added and the next step:
    - `/platform deploy <env>` to apply
+   - or `bash $KORDINATE_HOME/lib/scripts/apply-platform-manifests.sh <env> $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>`
    - if this is a specialist flavor, ensure the required seed/runtime inputs exist
 
 ## Notes

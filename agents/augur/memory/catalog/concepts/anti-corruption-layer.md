@@ -3,7 +3,23 @@ description: Anti-Corruption Layer architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [integration, design]
+abstraction:
+- integration
+- design
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - adapter
+  - hexagonal
+  - gateway-backends
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Anti-Corruption Layer
 
@@ -47,3 +63,15 @@ Look for a boundary translation layer that isolates internal domain models from 
 - No ACL at all -- domain objects mirror the external system's schema one-to-one
 
 See also: adapter (implementation mechanism)
+
+### Relationship To Other Concepts
+
+- Related to [adapter](/concepts/adapter) because adapters are a common implementation technique for an anti-corruption layer, but the ACL is the broader integration boundary pattern.
+- Related to [hexagonal](/concepts/hexagonal) when external systems are isolated behind ports and adapters.
+- Related to [gateway-backends](/concepts/gateway-backends) when the system hides or reshapes external service behavior behind a controlled integration edge.
+
+### Boundary
+
+Use `anti-corruption-layer` when the important architectural choice is protecting the internal domain model from the vocabulary or schema of an external system.
+
+Do not use it for every mapper or wrapper. A simple adapter becomes an ACL only when it clearly enforces a model boundary between internal and external concepts.

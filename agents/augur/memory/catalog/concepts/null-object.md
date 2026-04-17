@@ -3,7 +3,22 @@ description: Null Object architectural pattern
 type: pattern
 testable: true
 graphable: false
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - result-type
+  - strategy
+  - singleton
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Null Object
 
@@ -44,3 +59,15 @@ Look for polymorphic no-op implementations that eliminate null checks by providi
 - Partial null implementations that throw `NotImplementedError` on some methods
 - Using null objects where an Optional/Maybe type would be more appropriate (when absence itself is meaningful)
 - Null objects with side effects or mutable state that break the expectation of inert behavior
+
+### Relationship To Other Concepts
+
+- Related to [result-type](/concepts/result-type) as another way to model absence or failure explicitly, though result types preserve distinction while null objects substitute inert behavior.
+- Related to [strategy](/concepts/strategy) when a no-op strategy implementation acts as the null object.
+- Related to [singleton](/concepts/singleton) because null-object implementations are often reused as one shared inert instance.
+
+### Boundary
+
+Use `null-object` when absence is modeled by an inert implementation of the same interface rather than by null checks or option wrappers.
+
+Do not use it for every default implementation. The key signal is replacing null-handling with a safe do-nothing or neutral object.

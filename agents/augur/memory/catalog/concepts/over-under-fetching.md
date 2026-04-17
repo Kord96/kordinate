@@ -2,6 +2,20 @@
 description: Over/Under-Fetching anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - rest
+  - graphql
+  - bff
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Over/Under-Fetching
 
@@ -43,3 +57,15 @@ Wasted bandwidth, poor performance, and increased latency from either transferri
 - Replace N+1 API call patterns with batch endpoints or compound resources
 - Use database projections: `SELECT id, name, email` instead of `SELECT *`
 - Profile actual API usage to identify endpoints where response size and call count can be optimized
+
+### Relationship To Other Concepts
+
+- Related to [rest](/concepts/rest) because fixed endpoint shapes often trigger clients to over-fetch or under-fetch data they need.
+- Related to [graphql](/concepts/graphql) because schema-driven field selection is often adopted specifically to reduce over- and under-fetching.
+- Related to [bff](/concepts/bff) when tailored backend surfaces are introduced to better fit one client’s data needs.
+
+### Boundary
+
+Use `over-under-fetching` when an API shape systematically returns too much or too little data for its real consumers.
+
+Do not use it for one expensive query or a single missing field request in isolation.

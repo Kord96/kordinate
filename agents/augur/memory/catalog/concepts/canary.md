@@ -4,7 +4,22 @@ type: pattern
 observable: true
 distributed: true
 graphable: true
-abstraction: [deployment]
+abstraction:
+- deployment
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - blue-green
+  - feature-flag
+  - health-check
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Canary Release
 
@@ -46,3 +61,15 @@ Look for gradual traffic shifting with metrics-driven promotion or rollback deci
 - Starting canary at too high a percentage (defeats the purpose of gradual rollout)
 - No automated rollback -- relying on human intervention to catch regressions
 - Comparing canary metrics against static thresholds instead of the live stable baseline
+
+### Relationship To Other Concepts
+
+- Related to [blue-green](/concepts/blue-green) as another release strategy, though canary shifts traffic gradually rather than swapping whole environments.
+- Related to [feature-flag](/concepts/feature-flag) when deployment rollout and feature exposure are decoupled.
+- Related to [health-check](/concepts/health-check) because canary promotion typically depends on automated health and baseline comparison signals.
+
+### Boundary
+
+Use `canary` when a new version is exposed to a small percentage or subset of traffic first, then expanded based on observed behavior.
+
+Do not use it for ordinary rolling deploys or environment swaps. The key signal is gradual exposure with metric-based promotion or rollback.

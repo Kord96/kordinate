@@ -3,6 +3,20 @@ description: Memory Leak anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - cache-aside
+  - event-driven
+  - memory-boundary
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Memory Leak
 
@@ -45,3 +59,15 @@ OOM crashes in production, gradual performance degradation, and unpredictable re
 - Bound all in-memory caches with a max size and TTL eviction policy (e.g., `functools.lru_cache`, `cachetools.TTLCache`)
 - Profile memory in staging with tools like `tracemalloc`, Chrome DevTools heap snapshots, or `pprof` to detect leaks before production
 - Avoid circular references or break them with `weakref` where the language runtime uses reference counting
+
+### Relationship To Other Concepts
+
+- Related to [cache-aside](/concepts/cache-aside) when unbounded caches or missed eviction become one of the main leak sources.
+- Related to [event-driven](/concepts/event-driven) when listeners or subscriptions are retained indefinitely and accumulate over time.
+- Related to [memory-boundary](/concepts/memory-boundary) when memory usage should stay within explicit limits but the system silently grows past them.
+
+### Boundary
+
+Use `memory-leak` when memory or retained resources continue growing because objects, listeners, buffers, or caches are not released as intended.
+
+Do not use it for any high-memory workload. The key issue is unintended retention over time.

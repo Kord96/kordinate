@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data, infrastructure]
+abstraction:
+- data
+- infrastructure
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - cache-aside
+  - read-through
+  - key-value-model
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # LRU Cache
 
@@ -48,3 +64,15 @@ Look for correct bounded caching with O(1) lookup and eviction, and appropriate 
 - Caching mutable objects that callers later modify (corrupted cache entries)
 - No invalidation strategy -- stale data served indefinitely
 - Using LRU cache for items with uniform access frequency (no temporal locality to exploit)
+
+### Relationship To Other Concepts
+
+- Related to [cache-aside](/concepts/cache-aside) because LRU is a common eviction policy for application-managed caches.
+- Related to [read-through](/concepts/read-through) when bounded caches transparently load on misses and evict by recency.
+- Related to [key-value-model](/concepts/key-value-model) because LRU caches are often implemented as bounded key-value stores with recency tracking.
+
+### Boundary
+
+Use `lru-cache` when cached entries are bounded and evicted by least-recently-used recency semantics.
+
+Do not use it for any cache with size limits or TTL unless recency-based eviction is actually the defining behavior.

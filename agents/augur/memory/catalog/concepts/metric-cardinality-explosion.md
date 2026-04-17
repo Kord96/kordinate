@@ -3,6 +3,20 @@ description: Metric Cardinality Explosion anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - metrics-instrumentation
+  - structured-logging
+  - distributed-tracing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Metric Cardinality Explosion
 
@@ -44,3 +58,15 @@ Prometheus runs out of memory, queries time out, and storage costs explode from 
 - Add a linting rule or CI check that rejects metric definitions with known high-cardinality label names
 - Use recording rules to pre-aggregate high-cardinality metrics into lower-cardinality summaries
 - Audit existing metrics with `topk` by label value count and remediate any exceeding a threshold (e.g., 1000 unique values)
+
+### Relationship To Other Concepts
+
+- Related to [metrics-instrumentation](/concepts/metrics-instrumentation) because cardinality explosions usually originate in poorly designed metric labels.
+- Related to [structured-logging](/concepts/structured-logging) because high-cardinality detail often belongs in logs rather than metrics.
+- Related to [distributed-tracing](/concepts/distributed-tracing) because per-request identifiers should typically live in traces, not in metric label space.
+
+### Boundary
+
+Use `metric-cardinality-explosion` when observability data becomes operationally expensive because metrics encode too many distinct label combinations.
+
+Do not use it for generally high metric volume or for logs and traces that are designed to handle per-event richness.

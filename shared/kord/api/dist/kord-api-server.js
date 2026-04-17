@@ -45,7 +45,7 @@ let kubernetesCaPromise;
 function canonicalizeWorkingDir(workingDir) {
     if (!workingDir)
         return workingDir;
-    if (workingDir.startsWith('/kord/shared/repos/')) {
+    if (workingDir.startsWith('/kord/repos/')) {
         return workingDir;
     }
     const workstationPrefix = '/kord/workstation/home/project/';
@@ -57,7 +57,7 @@ function canonicalizeWorkingDir(workingDir) {
     const rest = slashIndex === -1 ? '' : suffix.slice(slashIndex);
     if (!repo)
         return workingDir;
-    return `/kord/shared/repos/${repo}${rest}`;
+    return `/kord/repos/${repo}${rest}`;
 }
 function resolveTimeoutMs(agent, body) {
     if (typeof body.timeout_ms === 'number')

@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [api, integration]
+abstraction:
+- api
+- integration
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - pagination
+  - rest
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # GraphQL
 
@@ -32,6 +47,12 @@ How to identify this pattern in code.
 
 Look for a well-structured schema with efficient resolver implementation and proper query complexity controls.
 
+### Relationship To Other Concepts
+
+- `graphql` is the schema-driven query API concept: typed graph schema, resolvers, and selection sets.
+- Use `pagination` for connection design and large collection traversal.
+- Prefer `rest` when the system exposes stable resource endpoints rather than a graph query surface.
+
 ### Review Checklist
 
 - Query depth and complexity limits are enforced to prevent abusive queries
@@ -47,3 +68,12 @@ Look for a well-structured schema with efficient resolver implementation and pro
 - Resolvers making individual database calls per item without batching (N+1)
 - Exposing database schema directly as GraphQL schema without an abstraction layer
 - Using GraphQL for simple CRUD with no relationships (overhead without benefit)
+
+### Boundary
+
+Do not use `graphql` for any single `/graphql` endpoint wrapper. Prefer it only when schema-driven graph querying is materially shaping the architecture.
+
+### Relationship To Other Concepts
+
+- Related to [rest](/concepts/rest) as an alternative API style with different tradeoffs around resource modeling and client query flexibility.
+- Related to [pagination](/concepts/pagination) because GraphQL collections often surface cursor-based connection patterns and query-shape-specific pagination concerns.

@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [messaging, integration]
+abstraction:
+- messaging
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - observer
+  - webhook
+  - event-driven
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Publish-Subscribe
 
@@ -32,6 +48,12 @@ How to identify this pattern in code.
 
 Look for decoupled producers and consumers communicating through named topics with fan-out delivery semantics.
 
+### Relationship To Other Concepts
+
+- `pub-sub` is the delivery topology: named topics and fan-out to multiple subscribers.
+- Use `event-driven` when the main concern is fact-oriented domain communication rather than the broadcast mechanism.
+- Use `websocket` when the important concern is long-lived client transport rather than brokered fan-out.
+
 ### Review Checklist
 
 - Subscribers are idempotent (duplicate delivery is handled gracefully)
@@ -48,3 +70,13 @@ Look for decoupled producers and consumers communicating through named topics wi
 - No monitoring of subscriber lag or dropped messages
 
 See also: observer (in-process variant)
+
+### Relationship To Other Concepts
+
+- Related to [observer](/concepts/observer) because both decouple producers from consumers, but observer is usually in-process while pub-sub is commonly inter-process or broker-mediated.
+- Related to [webhook](/concepts/webhook) when published events are delivered outward over registered HTTP callbacks.
+- Related to [event-driven](/concepts/event-driven) because pub-sub is one common delivery style inside event-driven systems.
+
+### Boundary
+
+Do not use `pub-sub` for queues where only one consumer should receive a message. Prefer it only when fan-out semantics are the defining property.

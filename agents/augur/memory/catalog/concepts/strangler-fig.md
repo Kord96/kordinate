@@ -4,7 +4,23 @@ type: pattern
 testable: true
 distributed: true
 graphable: true
-abstraction: [lifecycle, architectural]
+abstraction:
+- lifecycle
+- architectural
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - anti-corruption-layer
+  - canary
+  - modular-monolith
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Strangler Fig
 
@@ -47,3 +63,15 @@ Look for a routing layer that incrementally redirects functionality from the leg
 - Dual-write without reconciliation -- data diverges silently between old and new stores
 - No rollback path -- migrated features cannot fall back to legacy when problems arise
 - Strangler proxy becoming permanent infrastructure with no plan to remove it after migration completes
+
+### Relationship To Other Concepts
+
+- Related to [anti-corruption-layer](/concepts/anti-corruption-layer) because strangler migrations often use translation boundaries while legacy and new systems coexist.
+- Related to [canary](/concepts/canary) because migration traffic is often shifted incrementally rather than all at once.
+- Related to [modular-monolith](/concepts/modular-monolith) because some strangler efforts begin by isolating cleaner internal modules before extraction.
+
+### Boundary
+
+Use `strangler-fig` when a legacy system is intentionally replaced incrementally by routing more capability through a new implementation over time.
+
+Do not use it for ordinary rewrites, feature flags, or one-shot cutovers without a staged coexistence period.

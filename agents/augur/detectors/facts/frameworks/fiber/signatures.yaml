@@ -1,0 +1,19 @@
+framework: fiber
+manifest_packages:
+  go_mod:
+    - github.com/gofiber/fiber
+source_extensions:
+  - .go
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - fiber\.New\s*\(
+  medium:
+    - \bapp\.(Get|Post|Put|Delete|Patch)\s*\(
+    - \bapp\.Group\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []

@@ -4,7 +4,24 @@ type: pattern
 observable: true
 distributed: true
 graphable: true
-abstraction: [lifecycle, infrastructure, deployment]
+abstraction:
+- lifecycle
+- infrastructure
+- deployment
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - service-mesh
+  - sidecar-mesh
+  - service-manager
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Sidecar
 
@@ -46,3 +63,15 @@ Look for the sidecar handling only cross-cutting concerns with no business logic
 - Sidecar and main container with mismatched lifecycle (sidecar outlives the app)
 - Too many sidecars per pod — resource overhead exceeds the benefit
 - Tight version coupling between sidecar and main container deployments
+
+### Relationship To Other Concepts
+
+- Related to [service-mesh](/concepts/service-mesh) because mesh data planes are commonly implemented as sidecars.
+- Related to [sidecar-mesh](/concepts/sidecar-mesh) when the structural pattern is not only one sidecar but a repeated sidecar-plus-service topology across the fleet.
+- Related to [service-manager](/concepts/service-manager) because sidecars often participate in startup, readiness, and shutdown coordination for one service unit.
+
+### Boundary
+
+Use `sidecar` when auxiliary cross-cutting behavior is deployed as a co-located companion process or container next to the main workload.
+
+Do not use it for any adjacent helper service. The key signal is tight co-location and lifecycle coupling with one main workload.

@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - cache-aside
+  - refresh-ahead
+  - read-write-lock
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Read-Through Cache
 
@@ -46,3 +61,15 @@ Look for a cache layer that transparently loads data from the source on a miss, 
 - No TTL or eviction, causing the cache to serve stale data indefinitely
 - Caller bypassing the cache to hit the source directly, defeating the read-through contract
 - Loader function with side effects beyond data retrieval
+
+### Relationship To Other Concepts
+
+- Related to [cache-aside](/concepts/cache-aside) because both optimize reads through caching, though read-through moves loading responsibility into the cache layer itself.
+- Related to [refresh-ahead](/concepts/refresh-ahead) when cached values are proactively refreshed before expiry rather than only loaded on miss.
+- Related to [read-write-lock](/concepts/read-write-lock) when miss population or cache refresh needs coordination under contention.
+
+### Boundary
+
+Use `read-through` when callers go through a cache interface that automatically loads missing values from the source of truth.
+
+Do not use it for any cache lookup. The key signal is loader logic owned by the cache abstraction, not by the caller.

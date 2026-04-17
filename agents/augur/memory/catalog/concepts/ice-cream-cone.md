@@ -2,6 +2,20 @@
 description: Ice Cream Cone anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - flaky-tests
+  - contract-testing
+  - fixture-builder
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Ice Cream Cone
 
@@ -44,3 +58,15 @@ Slow CI, flaky tests, and poor fault isolation because the test suite is top-hea
 - Reserve end-to-end tests for critical user journeys only (login, checkout, core workflows)
 - Set CI time budgets and track test-level timing to identify slow tests for conversion
 - Introduce contract tests (Pact, Schemathesis) to replace service-to-service integration tests
+
+### Relationship To Other Concepts
+
+- Related to [flaky-tests](/concepts/flaky-tests) because top-heavy integration suites often become timing- and environment-sensitive.
+- Related to [contract-testing](/concepts/contract-testing) as one way to replace some broad end-to-end coverage with narrower interface checks.
+- Related to [fixture-builder](/concepts/fixture-builder) because stronger low-level test utilities often help teams shift effort back toward unit and component tests.
+
+### Boundary
+
+Use `ice-cream-cone` when the test portfolio is inverted, with too much reliance on end-to-end or integration tests and too little low-level coverage.
+
+Do not use it for any suite that merely includes integration tests; the issue is the inverted balance.

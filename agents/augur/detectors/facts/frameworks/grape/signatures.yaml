@@ -1,0 +1,19 @@
+framework: grape
+manifest_packages:
+  gemfile:
+    - grape
+source_extensions:
+  - .rb
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - Grape::API
+    - resource\s+:\w+
+  medium:
+    - ^\s*(get|post|put|delete|patch)\s+:\w+
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []

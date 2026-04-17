@@ -2,6 +2,20 @@
 description: Circular Dependency anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - layered
+  - dependency-injection
+  - modular-monolith
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Circular Dependency
 
@@ -44,3 +58,15 @@ Creates fragile import ordering, makes modules impossible to test or refactor in
 - Apply the Dependency Inversion Principle: high-level modules define interfaces, low-level modules implement them
 - Merge tightly coupled modules if they truly represent one concept split artificially
 - Use dependency graph visualization tools to detect and monitor cycles in CI
+
+### Relationship To Other Concepts
+
+- Related to [layered](/concepts/layered) because circular dependencies often signal broken directionality between layers.
+- Related to [dependency-injection](/concepts/dependency-injection) when abstractions and inversion can help break direct module cycles.
+- Related to [modular-monolith](/concepts/modular-monolith) because strong module boundaries are undermined by dependency cycles.
+
+### Boundary
+
+Use `circular-dependency` when modules, packages, or components depend on each other in a cycle that undermines layering or independent reasoning.
+
+Do not use it for mutual runtime interaction alone. The key issue is static or structural dependency cycles.

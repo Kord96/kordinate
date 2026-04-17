@@ -1,9 +1,26 @@
 ---
-description: Suspense Boundary — declarative loading state management for async component trees
+description: "Suspense Boundary \u2014 declarative loading state management for async\
+  \ component trees"
 type: pattern
 testable: true
 graphable: true
-abstraction: [frontend, lifecycle]
+abstraction:
+- frontend
+- lifecycle
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - lazy-loading
+  - hydration
+  - error-boundary
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Suspense Boundary
 
@@ -45,3 +62,15 @@ Look for declarative boundaries that manage the loading state of async subtrees,
 - Suspense without paired error boundary (unhandled async failures)
 - Using Suspense for synchronous conditional rendering (misuse of the pattern)
 - Waterfall loading -- nested suspense that serializes parallel fetches
+
+### Relationship To Other Concepts
+
+- Related to [lazy-loading](/concepts/lazy-loading) because suspense boundaries often wrap deferred code or data dependencies.
+- Related to [hydration](/concepts/hydration) because suspense-aware frameworks coordinate server and client resume behavior around these boundaries.
+- Related to [error-boundary](/concepts/error-boundary) because both define subtree boundaries with fallback UI, but suspense handles waiting while error boundaries handle failure.
+
+### Boundary
+
+Use `suspense-boundary` when a UI subtree explicitly declares a fallback boundary for asynchronous waiting or deferred dependency resolution.
+
+Do not use it for generic loaders, spinners, or error screens that are not tied to suspense-style boundary semantics.

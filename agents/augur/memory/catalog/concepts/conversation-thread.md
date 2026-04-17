@@ -2,7 +2,23 @@
 description: Conversation threading pattern for messaging and real-time communication
 type: pattern
 category: domain-model
-abstraction: [data, communication]
+abstraction:
+- data
+- communication
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - pagination
+  - pub-sub
+  - websocket
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Conversation Thread
 
@@ -31,6 +47,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `conversation-thread` is the domain model for messages, replies, read state, and thread membership.
+- Use `websocket` when the important concern is live transport.
+- Use `pub-sub` when the important concern is multi-consumer message fan-out.
+- Use `pagination` when the key architectural issue is scrolling or history retrieval over message streams.
+
 ### When to use
 - Chat and messaging features where users converse in threads or channels
 - Comment systems with threaded replies and nested discussions
@@ -45,6 +68,10 @@ How to identify this pattern in code.
 - [websocket](/concepts/websocket) — real-time message delivery uses WebSocket connections
 - [pub-sub](/concepts/pub-sub) — message distribution across channels follows pub/sub patterns
 - [pagination](/concepts/pagination) — message history requires cursor-based pagination for infinite scroll
+
+### Boundary
+
+Do not use `conversation-thread` for generic append-only feeds or audit streams. Prefer it only when participants, replies, read state, or threaded discussion are part of the domain.
 
 ## Impact
 

@@ -4,7 +4,23 @@ type: pattern
 testable: true
 distributed: true
 graphable: true
-abstraction: [testing, integration]
+abstraction:
+- testing
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - api-gateway
+  - rest
+  - grpc
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Contract Testing
 
@@ -47,3 +63,14 @@ Look for bidirectional contract verification: consumers define expectations, pro
 - Contracts maintained manually instead of generated from consumer tests
 - Provider verification skipped in CI, running only locally
 - Tight coupling in contracts that specify implementation details (exact headers, timestamps) instead of semantic content
+
+### Relationship To Other Concepts
+
+- Related to [api-gateway](/concepts/api-gateway) when gateway behavior forms a contract that consumers depend on and providers must verify.
+- Related to [rest](/concepts/rest) and [grpc](/concepts/grpc) because contract testing most often verifies API boundaries across those interface styles.
+
+### Boundary
+
+Use `contract-testing` when producers and consumers verify their shared interface through executable contracts rather than relying only on end-to-end environments.
+
+Do not use it for ordinary integration tests unless the key architectural behavior is explicit contract verification between independently evolving parties.

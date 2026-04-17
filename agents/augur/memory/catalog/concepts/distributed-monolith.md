@@ -3,6 +3,20 @@ description: Distributed Monolith anti-pattern
 type: anti-pattern
 distributed: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - microservices
+  - api-gateway
+  - shared-database
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Distributed Monolith
 
@@ -46,3 +60,15 @@ Microservice complexity with monolith coupling, yielding the worst properties of
 - Extract shared business logic into each service's codebase (duplication over coupling)
 - Establish independent CI/CD pipelines per service with contract tests at boundaries
 - Define service boundaries using domain-driven design bounded contexts
+
+### Relationship To Other Concepts
+
+- Related to [microservices](/concepts/microservices) as the negative contrast where the system looks like microservices operationally but retains monolithic coupling.
+- Related to [api-gateway](/concepts/api-gateway) because a gateway can hide tightly coupled backend services behind one clean edge without fixing internal coupling.
+- Related to [shared-database](/concepts/shared-database) when multiple nominal services are still coupled through one persistence boundary.
+
+### Boundary
+
+Use `distributed-monolith` when the system is split into multiple deployable services but still behaves as one tightly coupled monolith in releases, data ownership, or runtime dependencies.
+
+Do not use it for any service architecture with some coupling. The label should be reserved for materially monolithic coordination costs hiding behind distributed packaging.

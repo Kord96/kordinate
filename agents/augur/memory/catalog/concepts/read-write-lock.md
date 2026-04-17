@@ -3,7 +3,22 @@ description: Read-Write Lock architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [concurrency]
+abstraction:
+- concurrency
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - race-condition
+  - deadlock
+  - optimistic-locking
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Read-Write Lock
 
@@ -43,3 +58,15 @@ Look for shared resources protected by a lock that permits concurrent reads but 
 - Holding the write lock during I/O or network calls (long lock hold times starve readers)
 - Nested lock acquisition without consistent ordering (deadlock risk)
 - Read lock acquired but the code path mutates shared state
+
+### Relationship To Other Concepts
+
+- Related to [race-condition](/concepts/race-condition) because read-write locks are one way to protect shared state against unsafe concurrent access.
+- Related to [deadlock](/concepts/deadlock) because lock upgrade paths and nested ordering mistakes can create waiting cycles.
+- Related to [optimistic-locking](/concepts/optimistic-locking) as a contrasting concurrency strategy that avoids long-held shared locks.
+
+### Boundary
+
+Use `read-write-lock` when a shared resource allows concurrent readers but requires exclusive writers through an explicit RW lock primitive.
+
+Do not use it for any mutex or any code that merely reads more often than it writes.

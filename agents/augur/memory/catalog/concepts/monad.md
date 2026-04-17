@@ -3,7 +3,23 @@ description: Monad/Railway-Oriented Programming architectural pattern
 type: pattern
 testable: true
 graphable: false
-abstraction: [design, error-handling]
+abstraction:
+- design
+- error-handling
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - result-type
+  - future-promise
+  - pipeline-filter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Monad/Railway-Oriented Programming
 
@@ -47,3 +63,15 @@ Look for chained operations on container types that propagate failure automatica
 - Mixing exceptions and monadic error handling in the same code path
 - Overly nested `flatMap` calls instead of using for-comprehensions or do-notation
 - Using monadic types for simple cases where a plain if-else would be clearer
+
+### Relationship To Other Concepts
+
+- Related to [result-type](/concepts/result-type) because many practical monadic APIs in application code appear as result or option composition.
+- Related to [future-promise](/concepts/future-promise) because promises often expose monadic chaining semantics over deferred computations.
+- Related to [pipeline-filter](/concepts/pipeline-filter) when monadic composition is used to build linear transformation flows with contextual effects.
+
+### Boundary
+
+Use `monad` when computations are explicitly modeled as composable context-carrying values with bind or flatMap-style chaining semantics.
+
+Do not use it for every fluent API or callback chain that merely looks sequential.

@@ -2,6 +2,20 @@
 description: Deep Nesting anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - callback-hell
+  - strategy
+  - train-wreck
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Deep Nesting
 
@@ -43,3 +57,15 @@ Hard to read, hard to test, and high cyclomatic complexity makes it impossible t
 - Replace nested conditionals with polymorphism or strategy pattern where applicable
 - Use loop constructs like `continue` and `break` to avoid nesting inside loops
 - Set a maximum nesting depth lint rule (3-4 levels) and enforce it in CI
+
+### Relationship To Other Concepts
+
+- Related to [callback-hell](/concepts/callback-hell) because nested asynchronous code is one common specialized form of deep nesting.
+- Related to [strategy](/concepts/strategy) when nested conditional trees should be flattened into explicit interchangeable behavior objects.
+- Related to [train-wreck](/concepts/train-wreck) as another readability smell where structure becomes hard to follow through compounded chaining or nesting.
+
+### Boundary
+
+Use `deep-nesting` when control flow is hard to follow because the code keeps adding levels of indentation instead of flattening or extracting behavior.
+
+Do not use it for every multi-level block. The issue is harmful accumulation of nested conditionals or loops.

@@ -1,0 +1,20 @@
+name: net-http
+kind: framework
+language: go
+framework_kind: api-server
+summary: Standard Go HTTP server surface built from net/http handlers and mux wiring
+status: supporting
+scope: backend
+relationships:
+  implements:
+    - rest
+  uses:
+    - server-route-registration
+traits:
+  api_surface: true
+  standard_library: true
+common_concepts: []
+common_failure_modes:
+  - handler-bloat
+  - ad-hoc-middleware
+  - implicit-routing-sprawl

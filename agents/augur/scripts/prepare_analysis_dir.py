@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -16,6 +17,18 @@ def run_git(repo_root: Path, *args: str) -> str:
 
 def slug_repo_name(name: str) -> str:
     return name.replace("/", "--")
+
+
+def analysis_timestamp() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H-%M-%SZ")
+
+
+def sanitize_suffix(value: str | None) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return ""
+    safe = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in raw)
+    return safe.strip("-_")
 
 
 def reset_incomplete_run_dir(run_dir: Path) -> None:
@@ -55,13 +68,10 @@ def build_payload(repo_root: Path, agent_home: Path, project: str | None, run_su
     project_name = slug_repo_name(project or repo_root.name)
     project_mem = agent_home / "memory" / "projects" / project_name
     analysis = project_mem / "analysis"
-    suffix = (run_suffix or "").strip()
-    run_id = f"{commit_time}-{sha[:40]}"
-    if suffix:
-        safe_suffix = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in suffix)
-        safe_suffix = safe_suffix.strip("-_")
-        if safe_suffix:
-            run_id = f"{run_id}-{safe_suffix[-12:]}"
+    run_id = analysis_timestamp()
+    safe_suffix = sanitize_suffix(run_suffix)
+    if safe_suffix:
+        run_id = f"{run_id}--{safe_suffix[-12:]}"
     run_dir = analysis / run_id
     analysis.mkdir(parents=True, exist_ok=True)
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -72,6 +82,7 @@ def build_payload(repo_root: Path, agent_home: Path, project: str | None, run_su
         "PROJECT": project_name,
         "CURRENT_SHA": sha,
         "CURRENT_TIME": commit_time,
+        "ANALYSIS_ID": run_id,
         "PROJECT_MEM": str(project_mem),
         "ANALYSIS": str(analysis),
         "LATEST": str(latest),
@@ -80,7 +91,7 @@ def build_payload(repo_root: Path, agent_home: Path, project: str | None, run_su
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Prepare Augur commit-scoped analysis directory.")
+    parser = argparse.ArgumentParser(description="Prepare Augur run-scoped analysis directory.")
     parser.add_argument("repo_root", help="Repository root to analyze")
     parser.add_argument("--agent-home", default=os.environ.get("AGENT_HOME_DIR", ""), help="Agent home directory")
     parser.add_argument("--project", default=None, help="Optional explicit project slug")

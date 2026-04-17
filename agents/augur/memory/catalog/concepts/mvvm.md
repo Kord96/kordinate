@@ -3,11 +3,25 @@ description: Model-View-ViewModel architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [architectural, frontend]
+abstraction:
+- architectural
+- frontend
 status: specialized
 scope: frontend
 relationships:
-  related_to: [layered, component]
+  related_to:
+  - layered
+  - component
+  disambiguates:
+  - mvc
+aliases: []
+disambiguates_from:
+- mvc
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Model-View-ViewModel
 
@@ -38,6 +52,7 @@ Look for a ViewModel layer providing observable state that views bind to declara
 - `mvvm` is a UI state/presentation coordination pattern.
 - It can coexist with `component` architecture, especially in reactive frontends.
 - It often overlaps with `layered` naming but is narrower and presentation-focused.
+- Prefer `mvc` instead when explicit controllers mediate input and choose views rather than reactive view-model state driving the UI.
 
 ### Review Checklist
 
@@ -53,3 +68,9 @@ Look for a ViewModel layer providing observable state that views bind to declara
 - Two-way binding on complex objects causing unintended cascading updates
 - ViewModel holding a reference to the view (breaking the decoupling)
 - Observable properties with no cleanup, leaking subscriptions on navigation
+
+### Boundary
+
+Use `mvvm` when the important observation is this specific architectural concern within a frontend, UI, or client-side architectural concern.
+
+Do not promote it above a broader parent concept unless the specialization itself is what materially explains the design.

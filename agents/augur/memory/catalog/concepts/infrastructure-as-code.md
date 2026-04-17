@@ -3,7 +3,23 @@ description: Infrastructure as Code architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [infrastructure, deployment]
+abstraction:
+- infrastructure
+- deployment
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - gitops
+  - immutable-infra
+  - config-management
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Infrastructure as Code
 
@@ -47,3 +63,15 @@ Look for all infrastructure defined declaratively in version control with automa
 - Hardcoded secrets or credentials in `.tf` or template files
 - No plan step -- applying changes directly without previewing the diff
 - Snowflake environments with copy-pasted configs instead of parameterized modules
+
+### Relationship To Other Concepts
+
+- Related to [gitops](/concepts/gitops) when declarative infrastructure and deployment state are reconciled directly from version control.
+- Related to [immutable-infra](/concepts/immutable-infra) because IaC commonly provisions or replaces immutable environments and artifacts.
+- Related to [config-management](/concepts/config-management) when environment-specific values and infra parameters are managed centrally alongside infra definitions.
+
+### Boundary
+
+Use `infrastructure-as-code` when infrastructure is declared, versioned, and applied from source-controlled definitions instead of being created manually.
+
+Do not use it for any deployment script. The important signal is declarative or managed infrastructure definition as code.

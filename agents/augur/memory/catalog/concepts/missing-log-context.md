@@ -3,6 +3,18 @@ description: Missing Log Context anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - structured-logging
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Missing Log Context
 
@@ -46,3 +58,13 @@ Debugging requires guesswork, and incident resolution takes significantly longer
 - Add a linting rule that flags bare `logger.error("string")` calls without structured arguments
 
 See also: structured-logging, correlation-id patterns
+
+### Relationship To Other Concepts
+
+- Related to [structured-logging](/concepts/structured-logging) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `missing-log-context` when the important observation is this specific recurring architectural failure mode within a cross-cutting architectural concern that can span multiple layers or services.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

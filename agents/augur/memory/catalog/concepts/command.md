@@ -3,7 +3,22 @@ description: Command architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - cqrs
+  - workflow-engine
+  - event-driven
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Command
 
@@ -45,3 +60,15 @@ Look for proper encapsulation of operations as objects, enabling queuing, loggin
 - Undo that only works if commands are undone in exact reverse order (fragile)
 - Bloated command objects containing business logic that belongs in a service
 - Command queue with no error handling or dead-letter mechanism for failed commands
+
+### Relationship To Other Concepts
+
+- Related to [cqrs](/concepts/cqrs) when commands represent the explicit write-side intent handled separately from queries.
+- Related to [workflow-engine](/concepts/workflow-engine) when commands advance a longer-running process or orchestration.
+- Related to [event-driven](/concepts/event-driven) when successful command handling emits domain events afterward.
+
+### Boundary
+
+Use `command` when requests or actions are modeled as explicit objects representing an intention to perform work.
+
+Do not use it for every handler or API call. The important signal is explicit command objects or semantics, not just an imperative method.

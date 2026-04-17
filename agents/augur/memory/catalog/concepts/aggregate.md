@@ -3,7 +3,23 @@ description: Aggregate Root architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, data]
+abstraction:
+- design
+- data
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - ddd
+  - repository
+  - value-object
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Aggregate Root
 
@@ -47,3 +63,15 @@ Look for a consistency boundary where one root entity controls all mutations to 
 - Business rules split between the aggregate and the service layer
 
 See also: ddd
+
+### Relationship To Other Concepts
+
+- Related to [ddd](/concepts/ddd) because aggregates are one of the central tactical DDD patterns.
+- Related to [repository](/concepts/repository) when repositories persist and retrieve aggregates as consistency units.
+- Related to [value-object](/concepts/value-object) because aggregates often compose immutable value objects inside their boundary.
+
+### Boundary
+
+Use `aggregate` when the codebase clearly models a consistency boundary around one root entity controlling invariants and child mutations.
+
+Do not use it for any large domain object or object graph. A root entity with children is not automatically an aggregate unless it is also the transactional and invariant boundary.

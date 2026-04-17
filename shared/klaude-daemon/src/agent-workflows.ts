@@ -3,7 +3,7 @@ import { execFileSync, spawn } from 'node:child_process'
 import { basename, dirname, join } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
-import type { AgentProfile, RequestMessage, RuntimeResult } from './types.js'
+import type { AgentContract, RequestMessage, RuntimeResult } from './types.js'
 
 type DaemonConfigLike = {
   executionProfile: {
@@ -32,8 +32,7 @@ type BeforeRuntimeResult = {
 
 type WorkflowContext = {
   agentName: string
-  agentProfileName: string
-  agentProfile: AgentProfile
+  agentContract: AgentContract
   daemonConfig: DaemonConfigLike
   publishProgress: (message: RequestMessage, event: {
     source: 'agent-daemon' | 'provider' | 'gateway'
@@ -112,6 +111,11 @@ function correlationSuffix(message: RequestMessage): string {
   return safe.slice(-12) || 'run'
 }
 
+function analysisTimestamp(): string {
+  const iso = new Date().toISOString()
+  return iso.replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '-')
+}
+
 async function runCommand(command: string, args: string[], cwd: string, extraEnv?: Record<string, string>): Promise<string> {
   return await new Promise<string>((resolve, reject) => {
     const child = spawn(command, args, {
@@ -142,7 +146,7 @@ async function runRequiredCommand(command: string, args: string[], cwd: string, 
 
 function isAugurAnalyzeRequest(context: WorkflowContext, message: RequestMessage): boolean {
   const commandText = requestCommandText(message)
-  return context.agentProfileName === 'augur'
+  return context.agentContract.specialization === 'augur'
     && commandText.trim().startsWith('/analyze')
     && typeof message.working_dir === 'string'
     && message.working_dir.length > 0
@@ -257,7 +261,10 @@ async function prepareAugurDeterministicArtifacts(
     throw new Error('could not resolve git HEAD for Augur deterministic preparation')
   }
 
-  const runId = `${commitTime}-${currentSha.slice(0, 40)}-${correlationSuffix(message)}`
+  const suffix = correlationSuffix(message)
+  const runId = suffix === 'run'
+    ? analysisTimestamp()
+    : `${analysisTimestamp()}--${suffix}`
   const runDir = join(agentHome, 'memory', 'projects', project, 'analysis', runId)
   const factsDir = join(runDir, 'facts')
   const env = {
@@ -332,15 +339,19 @@ async function prepareAugurDeterministicArtifacts(
 }
 
 async function buildAugurAnalysisContext(
+  context: WorkflowContext,
   workingDir: string,
   project: string,
   runDir: string,
   analysisMode: 'full' | 'incremental',
 ): Promise<AugurAnalysisContext> {
-  const kordHome = process.env.KORDINATE_HOME ?? '/app'
+  const scriptPath = context.agentContract.workflow?.analysisContextScript
+  if (!scriptPath) {
+    throw new Error('augur analysis context script is missing from the injected agent contract')
+  }
   const cwd = contextHomeDirectoryFallback()
   const payload = await runCommand('python3', [
-    join(kordHome, 'agents', 'augur', 'scripts', 'build_analysis_context.py'),
+    scriptPath,
     '--project', project,
     '--working-dir', workingDir,
     '--run-dir', runDir,
@@ -355,10 +366,13 @@ function contextHomeDirectoryFallback(): string {
     ?? process.cwd()
 }
 
-function buildAugurValidationRepairPrompt(input: ValidationRepairPromptInput): string {
-  const kordHome = process.env.KORDINATE_HOME ?? '/app'
+function buildAugurValidationRepairPrompt(context: WorkflowContext, input: ValidationRepairPromptInput): string {
+  const scriptPath = context.agentContract.workflow?.repairPromptScript
+  if (!scriptPath) {
+    throw new Error('augur repair prompt script is missing from the injected agent contract')
+  }
   const payload = execFileSync('python3', [
-    join(kordHome, 'agents', 'augur', 'scripts', 'build_validation_repair_prompt.py'),
+    scriptPath,
     '--target-dir', input.targetDir,
     '--validator-script', input.validatorScript,
     '--attempt', String(input.attempt),
@@ -466,7 +480,7 @@ function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks 
       if (!workingDir) {
         throw new Error('working_dir is required for Augur semantic preparation')
       }
-      const analysisContext = await buildAugurAnalysisContext(workingDir, prepared.project, prepared.runDir, analysisMode)
+      const analysisContext = await buildAugurAnalysisContext(context, workingDir, prepared.project, prepared.runDir, analysisMode)
       return {
         runtimeMessage: {
           ...message,
@@ -502,14 +516,14 @@ function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks 
             : {}),
           AUGUR_PROJECT_ROOT: workingDir,
         },
-        repairPromptBuilder: buildAugurValidationRepairPrompt,
+        repairPromptBuilder: input => buildAugurValidationRepairPrompt(context, input),
       }
     },
   }
 }
 
 export function createAgentWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks | undefined {
-  if (context.agentProfileName === 'augur') {
+  if (context.agentContract.specialization === 'augur') {
     return createAugurWorkflowHooks(context)
   }
   return undefined

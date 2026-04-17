@@ -2,7 +2,23 @@
 description: Versioned document pattern with revision history and conflict resolution
 type: pattern
 category: domain-model
-abstraction: [data, collaboration]
+abstraction:
+- data
+- collaboration
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - block-content
+  - event-sourcing
+  - optimistic-locking
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Versioned Document
 
@@ -31,6 +47,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `versioned-document` is the document-history model: revisions, snapshots, diffs, rollback, and conflict handling.
+- Use `block-content` when the key question is the content structure, not revision history.
+- Use `optimistic-locking` for concurrency control without actual persisted history.
+- Use `event-sourcing` when the broader system is reconstructed from events, not just document revisions.
+
 ### When to use
 - Collaborative editing where multiple users modify the same document concurrently
 - Content management systems requiring full revision history and rollback capability
@@ -45,6 +68,10 @@ How to identify this pattern in code.
 - [event-sourcing](/concepts/event-sourcing) — document revisions can be modeled as an event stream
 - [block-content](/concepts/block-content) — versioned documents often use block-based content structures
 - [optimistic-locking](/concepts/optimistic-locking) — version fields serve double duty for concurrency control
+
+### Boundary
+
+Do not use `versioned-document` for plain `updated_at` tracking or a version counter with no recoverable history. Prefer it only when prior document states are durable artifacts.
 
 ## Impact
 

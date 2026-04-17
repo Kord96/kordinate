@@ -3,6 +3,18 @@ description: Hardcoded URLs anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - config-management
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Hardcoded URLs
 
@@ -46,3 +58,13 @@ Endpoints cannot be changed without a code deploy, and the application breaks wh
 - For Kubernetes deployments, use ConfigMaps or environment variable injection rather than baked-in URLs
 
 See also: config-management pattern
+
+### Relationship To Other Concepts
+
+- Related to [config-management](/concepts/config-management) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `hardcoded-urls` when the important observation is this specific recurring architectural failure mode within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

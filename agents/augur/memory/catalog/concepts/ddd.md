@@ -3,7 +3,23 @@ description: Domain-Driven Design architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [architectural, design]
+abstraction:
+- architectural
+- design
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - aggregate
+  - repository
+  - value-object
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Domain-Driven Design (DDD)
 
@@ -44,3 +60,13 @@ Look for clear bounded context boundaries with no leaking of internal models.
 - Domain objects imported directly from another context's internals
 - Anemic domain model — aggregates are plain data bags with logic elsewhere
 - God aggregate that grows unbounded instead of splitting into sub-contexts
+
+### Relationship To Other Concepts
+
+- Related to [aggregate](/concepts/aggregate), [repository](/concepts/repository), and [value-object](/concepts/value-object) because those are some of the main tactical patterns DDD uses to structure a domain model.
+
+### Boundary
+
+Use `ddd` when the codebase is explicitly organized around a rich domain model, bounded contexts, ubiquitous language, and tactical domain patterns.
+
+Do not use it for any codebase with entities and services. The label should be reserved for architectures where domain modeling is a first-class organizing principle.

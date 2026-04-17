@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [lifecycle]
+abstraction:
+- lifecycle
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - batch-processing
+  - leader-election
+  - workflow-engine
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Cron/Scheduler
 
@@ -47,3 +62,15 @@ Look for time-based triggers that invoke tasks on a recurring schedule with prop
 - No overlap protection -- long-running jobs stack up on each trigger
 - Silent failure -- jobs fail without logging, alerting, or retry
 - Schedule drift from using relative delays (`sleep(300)`) instead of wall-clock cron expressions
+
+### Relationship To Other Concepts
+
+- Related to [batch-processing](/concepts/batch-processing) because scheduled execution often drives batch jobs.
+- Related to [leader-election](/concepts/leader-election) when only one instance should execute a scheduled task in a distributed deployment.
+- Related to [workflow-engine](/concepts/workflow-engine) when scheduled triggers start or resume longer-running orchestrated work.
+
+### Boundary
+
+Use `scheduler` when work is triggered by time-based or calendar-based rules rather than direct user or event initiation.
+
+Do not use it for arbitrary background work. The key signal is time-based triggering.

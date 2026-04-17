@@ -3,6 +3,20 @@ description: Insecure Deserialization anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - input-validation
+  - sql-injection
+  - route-guard
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Insecure Deserialization
 
@@ -47,3 +61,15 @@ Remote code execution through crafted payloads that exploit deserialization to r
 - Never use `eval()` or `exec()` on external input; use `ast.literal_eval()` for Python literals
 - Validate deserialized data against a schema (Pydantic, JSON Schema, dataclasses)
 - Apply allowlist-based type checking before deserialization in Java (`ObjectInputFilter`)
+
+### Relationship To Other Concepts
+
+- Related to [input-validation](/concepts/input-validation) because schema checks and allowlists are one defense layer against unsafe payload interpretation.
+- Related to [sql-injection](/concepts/sql-injection) as another data-boundary security failure where untrusted input controls dangerous behavior.
+- Related to [route-guard](/concepts/route-guard) because deserialization safety often sits near other boundary-enforcement mechanisms, though it addresses payload interpretation rather than access control.
+
+### Boundary
+
+Use `insecure-deserialization` when untrusted serialized input can trigger unsafe object construction, code execution, or dangerous side effects.
+
+Do not use it for ordinary parsing bugs or validation gaps that do not involve unsafe deserialization semantics.

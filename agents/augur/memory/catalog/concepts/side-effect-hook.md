@@ -1,8 +1,25 @@
 ---
-description: Side Effect Hook — lifecycle-bound execution of effects in component frameworks
+description: "Side Effect Hook \u2014 lifecycle-bound execution of effects in component\
+  \ frameworks"
 type: pattern
 graphable: false
-abstraction: [frontend, lifecycle]
+abstraction:
+- frontend
+- lifecycle
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - component
+  - reactive-store
+  - hidden-side-effects
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Side Effect Hook
 
@@ -48,3 +65,15 @@ Look for side effects that are bound to component lifecycle, execute at the righ
 - Using effects for derived state that should be computed with useMemo, computed properties, or selectors
 - Fetch-in-effect without cancellation, causing state updates on unmounted components
 - Chained effects where one effect sets state that triggers another effect (effect cascade)
+
+### Relationship To Other Concepts
+
+- Related to [component](/concepts/component) because side-effect hooks are lifecycle tools attached to component composition boundaries.
+- Related to [reactive-store](/concepts/reactive-store) when effects subscribe to or synchronize with client-side reactive state containers.
+- Related to [hidden-side-effects](/concepts/hidden-side-effects) because poorly scoped hooks can make side effects feel implicit and hard to reason about.
+
+### Boundary
+
+Use `side-effect-hook` when lifecycle-bound hooks are the explicit mechanism for running and cleaning up side effects around component rendering.
+
+Do not use it for any callback or imperative helper that is not tied to a component or reactive lifecycle.

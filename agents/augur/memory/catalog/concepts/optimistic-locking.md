@@ -3,7 +3,23 @@ description: Optimistic Locking architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data, concurrency]
+abstraction:
+- data
+- concurrency
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - value-object
+  - aggregate
+  - retry
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Optimistic Locking
 
@@ -46,3 +62,15 @@ Look for version-based conflict detection on writes with clear retry or conflict
 - Infinite retry loops on conflict without backoff or a maximum retry count
 - Using optimistic locking on high-contention resources where most writes will conflict and retry
 - Checking the version in application code instead of the database WHERE clause (race condition)
+
+### Relationship To Other Concepts
+
+- Related to [aggregate](/concepts/aggregate) because optimistic locking is often applied at the aggregate root version boundary.
+- Related to [retry](/concepts/retry) when conflicts are resolved through controlled retry policy.
+- Related to [value-object](/concepts/value-object) when conflict detection protects immutable snapshots or versioned state transitions.
+
+### Boundary
+
+Use `optimistic-locking` when write conflicts are detected by comparing versions or revisions instead of acquiring long-held exclusive locks up front.
+
+Do not use it for generic version fields or caching tokens. The key signal is concurrency control on writes.

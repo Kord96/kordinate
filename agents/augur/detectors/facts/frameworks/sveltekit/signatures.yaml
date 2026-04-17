@@ -1,0 +1,23 @@
+framework: sveltekit
+manifest_packages:
+  package_json:
+    - "@sveltejs/kit"
+    - sveltekit
+source_extensions:
+  - .js
+  - .ts
+path_patterns:
+  strong:
+    - (^|/)src/routes/
+  medium:
+    - \+server\.(ts|js|mjs|cjs)$
+  weak: []
+source_patterns:
+  strong:
+    - export\s+(async\s+)?function\s+(GET|POST|PUT|DELETE|PATCH)\b
+  medium: []
+  weak: []
+negative_path_patterns: []
+negative_source_patterns:
+  - app/api/
+  - pages/api/

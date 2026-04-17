@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [messaging, integration]
+abstraction:
+- messaging
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - correlation-id
+  - request-path
+  - message-queue
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Request-Reply
 
@@ -47,3 +63,15 @@ Look for synchronous request-response semantics implemented over an asynchronous
 - Reply queues not cleaned up, leaking resources on the broker
 - Using request-reply where fire-and-forget or pub-sub would be simpler
 - Correlation ID collisions from non-unique ID generation
+
+### Relationship To Other Concepts
+
+- Related to [correlation-id](/concepts/correlation-id) because request-reply over messaging depends on correlating responses to originating requests.
+- Related to [request-path](/concepts/request-path) when the end-to-end path spans a request through asynchronous hops before a reply returns.
+- Related to [message-queue](/concepts/message-queue) because request-reply is often implemented over queue-based brokers rather than direct HTTP calls.
+
+### Boundary
+
+Use `request-reply` when one component sends a request and expects a corresponding response message or call result tied to that request.
+
+Do not use it for one-way messaging or pub-sub fan-out. The key signal is correlated response semantics.

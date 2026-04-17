@@ -1,0 +1,19 @@
+name: sinatra
+kind: framework
+language: ruby
+framework_kind: api-server
+summary: Minimal Ruby web framework with inline route blocks and explicit handlers
+status: specialized
+scope: backend
+relationships:
+  implements:
+    - rest
+  uses:
+    - server-route-registration
+traits:
+  api_surface: true
+common_concepts: []
+common_failure_modes:
+  - route-handler-bloat
+  - global-state-coupling
+  - inline-business-logic

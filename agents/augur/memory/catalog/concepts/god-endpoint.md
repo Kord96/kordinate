@@ -2,6 +2,20 @@
 description: God Endpoint anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - rest
+  - bff
+  - god-object
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # God Endpoint
 
@@ -42,3 +56,15 @@ Impossible to document, cache, rate-limit, or evolve operations independently be
 - Apply the Single Responsibility Principle at the endpoint level: one route, one operation
 - Implement a lightweight router or controller layer that maps actions to dedicated handler functions
 - Migrate incrementally by adding new dedicated endpoints and deprecating the god endpoint with a compatibility shim
+
+### Relationship To Other Concepts
+
+- Related to [rest](/concepts/rest) because god endpoints often violate resource discipline by collapsing many unrelated actions into one route.
+- Related to [bff](/concepts/bff) because endpoint aggregation can be healthy in a BFF, but becomes a god endpoint when unrelated responsibilities collapse into one surface.
+- Related to [god-object](/concepts/god-object) as the API-surface analogue of excessive responsibility concentration.
+
+### Boundary
+
+Use `god-endpoint` when one endpoint accumulates too many unrelated actions, payload shapes, or responsibilities and becomes an architectural bottleneck.
+
+Do not use it for any flexible or composite endpoint. The key issue is collapsed responsibility and incoherent surface area.

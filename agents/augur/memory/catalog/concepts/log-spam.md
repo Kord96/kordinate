@@ -3,6 +3,20 @@ description: Log Spam anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - structured-logging
+  - metrics-instrumentation
+  - missing-log-context
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Log Spam
 
@@ -44,3 +58,15 @@ Log storage costs explode, Loki/ELK clusters are overwhelmed, and real signals a
 - Replace per-iteration logging with a summary log after the loop (`processed N items in Xms`)
 - Set appropriate log levels per environment: ERROR/WARN in production, DEBUG only in development
 - Add rate limiting to log emitters for known high-volume paths
+
+### Relationship To Other Concepts
+
+- Related to [structured-logging](/concepts/structured-logging) because structured logging often reduces noise by making fewer logs more useful.
+- Related to [metrics-instrumentation](/concepts/metrics-instrumentation) because repeated per-event logs are sometimes a poor substitute for aggregate metrics.
+- Related to [missing-log-context](/concepts/missing-log-context) because noisy logs are often also low-signal when context is missing.
+
+### Boundary
+
+Use `log-spam` when excessive low-value logging creates noise, cost, or operational blindness.
+
+Do not use it for simply verbose debugging output in development. The key issue is harmful production or architectural logging behavior.

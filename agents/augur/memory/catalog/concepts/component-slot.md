@@ -2,11 +2,22 @@
 description: Content-projection technique within component architecture
 type: pattern
 graphable: false
-abstraction: [frontend, design]
+abstraction:
+- frontend
+- design
 status: specialized
 scope: frontend
 relationships:
-  part_of: [component]
+  part_of:
+  - component
+  preferred_over: []
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Component Slot
 
@@ -38,6 +49,11 @@ How to identify this pattern in code.
 
 Look for a component that defines insertion points where parent-provided content is rendered, enabling flexible composition without the child dictating the content.
 
+### Relationship To Other Concepts
+
+- Prefer `component` as the primary UI architecture concept.
+- Use `component-slot` only when content projection or slot contracts are the architectural point, not when the code merely contains reusable components.
+
 ### Review Checklist
 
 - Slots have meaningful names when a component has multiple insertion points
@@ -54,3 +70,9 @@ Look for a component that defines insertion points where parent-provided content
 - Using `React.cloneElement` to inject props into arbitrary children without type safety
 - Compound components without context, requiring specific DOM nesting order that breaks when rearranged
 - Overusing render props when simple children composition would suffice
+
+### Boundary
+
+Use `component-slot` when the important observation is this specific architectural concern within a frontend, UI, or client-side architectural concern.
+
+Do not promote it above a broader parent concept unless the specialization itself is what materially explains the design.

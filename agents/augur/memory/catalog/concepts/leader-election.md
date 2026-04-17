@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [concurrency, resilience]
+abstraction:
+- concurrency
+- resilience
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - distributed-lock
+  - scheduler
+  - health-check
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Leader Election
 
@@ -47,3 +63,15 @@ Look for a correct election protocol with leader fencing and graceful failover t
 - Leader lease TTL too long (slow failover) or too short (frequent unnecessary re-elections)
 - Business logic assumes leader identity is permanent (no handling of leadership loss mid-operation)
 - Using a single replica instead of proper election (no fault tolerance)
+
+### Relationship To Other Concepts
+
+- Related to [distributed-lock](/concepts/distributed-lock) because leader election often relies on lock- or lease-like coordination primitives.
+- Related to [scheduler](/concepts/scheduler) when only one elected instance should run a recurring job or coordinator task.
+- Related to [health-check](/concepts/health-check) because orchestration and failover often depend on correct leader liveness and readiness visibility.
+
+### Boundary
+
+Use `leader-election` when a distributed group explicitly selects one active leader to coordinate work or own a singleton responsibility.
+
+Do not use it for static primaries or single replicas. The key signal is active election and leadership turnover.

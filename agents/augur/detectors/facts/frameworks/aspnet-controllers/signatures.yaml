@@ -1,0 +1,23 @@
+framework: aspnet-controllers
+manifest_packages:
+  csproj:
+    - Microsoft.AspNetCore
+source_extensions:
+  - .cs
+  - .csproj
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - \[ApiController\]
+    - \[Http(Get|Post|Put|Delete|Patch)\]
+  medium:
+    - ControllerBase
+    - \[Route\("api/\[controller\]"\)\]
+  weak: []
+negative_path_patterns: []
+negative_source_patterns:
+  - WebApplication\.CreateBuilder\s*\(
+  - app\.Map(Get|Post|Put|Delete|Patch)\s*\(

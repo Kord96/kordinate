@@ -2,6 +2,20 @@
 description: God Object/Class anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - big-ball-of-mud
+  - god-endpoint
+  - feature-envy
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # God Object/Class
 
@@ -43,3 +57,15 @@ Impossible to test, modify, or understand in isolation because the class owns to
 - Use composition: the original class delegates to the new smaller classes
 - Apply the Single Responsibility Principle as a litmus test for each extraction
 - Set a hard line limit (300-400 lines) in linting to prevent regrowth
+
+### Relationship To Other Concepts
+
+- Related to [big-ball-of-mud](/concepts/big-ball-of-mud) because god objects are often one localized symptom of broader architectural entanglement.
+- Related to [god-endpoint](/concepts/god-endpoint) as the route-level analogue of excessive responsibility concentration.
+- Related to [feature-envy](/concepts/feature-envy) when methods cling to the god object despite logically belonging with other domain data or collaborators.
+
+### Boundary
+
+Use `god-object` when one class or module absorbs too many unrelated responsibilities, dependencies, and decisions.
+
+Do not use it for any large class. The key issue is responsibility concentration that distorts the design.

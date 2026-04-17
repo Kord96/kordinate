@@ -3,6 +3,20 @@ description: Feature Envy anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - god-object
+  - data-mapper
+  - primitive-obsession
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Feature Envy
 
@@ -45,3 +59,15 @@ Misplaced responsibility and tight coupling, where behavior lives apart from the
 - Replace getter chains with methods that encapsulate behavior (Tell, Don't Ask)
 - Eliminate trivial getters by moving the computation to the data class
 - Apply the Information Expert principle: assign responsibility to the class with the information needed to fulfill it
+
+### Relationship To Other Concepts
+
+- Related to [god-object](/concepts/god-object) because feature envy often appears when one class absorbs logic that belongs nearer to another object’s data.
+- Related to [data-mapper](/concepts/data-mapper) when logic improperly clings to passive data containers instead of richer domain behavior boundaries.
+- Related to [primitive-obsession](/concepts/primitive-obsession) when data and behavior are split unnaturally across procedural helpers and passive structures.
+
+### Boundary
+
+Use `feature-envy` when a method is more interested in another object’s data than in the responsibilities of the class that owns it.
+
+Do not use it for any cross-object collaboration. The key issue is misplaced behavior.

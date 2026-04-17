@@ -509,7 +509,14 @@ def build_frameworks(facts: list[dict[str, Any]]) -> tuple[list[dict[str, Any]],
             if inferred:
                 language_counter[inferred] += 1
 
-        frameworks.append({"name": name, "concepts": concepts})
+        frameworks.append(
+            {
+                "name": name,
+                "scope": str(raw.get("scope") or ""),
+                "framework_kind": str(raw.get("framework_kind") or ""),
+                "concepts": concepts,
+            }
+        )
 
     return frameworks, list(language_counter.keys())
 

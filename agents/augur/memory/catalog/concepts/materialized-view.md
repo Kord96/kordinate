@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - search-index
+  - cqrs
+  - cache-aside
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Materialized View
 
@@ -47,3 +62,15 @@ Look for a clear separation between the source of truth and the materialized rea
 - Refreshing synchronously in the request path, adding latency to user-facing reads
 - No monitoring on staleness, so consumers unknowingly serve outdated data
 - Materialized view used as the source of truth with no way to rebuild from original data
+
+### Relationship To Other Concepts
+
+- Related to [search-index](/concepts/search-index) because both provide read-optimized projections over source data, though a materialized view is often database-native.
+- Related to [cqrs](/concepts/cqrs) when read models are maintained separately from write models and may be materialized for query efficiency.
+- Related to [cache-aside](/concepts/cache-aside) as another read-optimization strategy, though materialized views are usually rebuilt projections rather than ephemeral caches.
+
+### Boundary
+
+Use `materialized-view` when a precomputed, refreshable read model is stored specifically to accelerate queries over underlying source data.
+
+Do not use it for any denormalized table or cache. The important signal is an intentionally maintained query projection.

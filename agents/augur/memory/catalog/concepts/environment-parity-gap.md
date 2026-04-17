@@ -2,6 +2,20 @@
 description: Environment Parity Gap anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - flaky-tests
+  - config-management
+  - infrastructure-as-code
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Environment Parity Gap
 
@@ -43,3 +57,15 @@ Bugs that only appear in production because dev and prod environments behave dif
 - Use Docker Compose profiles or Tilt to replicate production topology locally
 - Run CI tests against real dependencies (not mocks) using containers or testcontainers
 - Maintain a parity checklist: for every production dependency, verify the dev equivalent is the same technology
+
+### Relationship To Other Concepts
+
+- Related to [flaky-tests](/concepts/flaky-tests) because environment drift often shows up first as tests that pass locally but fail elsewhere.
+- Related to [config-management](/concepts/config-management) because mismatched configuration and dependency wiring are common sources of parity gaps.
+- Related to [infrastructure-as-code](/concepts/infrastructure-as-code) because reproducible environment definitions are one major remediation.
+
+### Boundary
+
+Use `environment-parity-gap` when development, test, staging, and production meaningfully differ in ways that change behavior, correctness, or performance.
+
+Do not use it for minor environment differences that do not materially affect system behavior.

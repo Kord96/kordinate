@@ -3,7 +3,23 @@ description: Configuration Management architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [infrastructure, lifecycle]
+abstraction:
+- infrastructure
+- lifecycle
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - secret-management
+  - config-sprawl
+  - feature-flag
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Configuration Management
 
@@ -46,3 +62,15 @@ Look for config separated from code, loaded once at startup, validated early, an
 - No validation -- missing config values cause cryptic runtime errors instead of startup failures
 - Config scattered across multiple mechanisms (env vars, files, hardcoded) with no clear precedence
 - Feature flags that never get cleaned up, accumulating as permanent conditional branches
+
+### Relationship To Other Concepts
+
+- Related to [secret-management](/concepts/secret-management) because secret handling is often part of configuration strategy, though secrets usually require stronger storage and rotation controls.
+- Related to [config-sprawl](/concepts/config-sprawl) as the main anti-pattern where configuration lacks a clear source of truth or structure.
+- Related to [feature-flag](/concepts/feature-flag) when runtime behavior toggles are treated as managed configuration rather than hardcoded conditionals.
+
+### Boundary
+
+Use `config-management` when the system has an explicit strategy for sourcing, validating, and injecting runtime configuration.
+
+Do not use it for isolated constants or one-off settings unless configuration handling is a meaningful architectural concern.

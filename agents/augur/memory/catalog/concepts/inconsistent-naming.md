@@ -2,6 +2,20 @@
 description: Inconsistent Naming anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - misleading-names
+  - stringly-typed
+  - magic-numbers
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Inconsistent Naming
 
@@ -43,3 +57,15 @@ Cognitive overhead increases for every reader, and text searches miss relevant c
 - Run a codebase-wide rename to unify existing divergent names
 - Add naming conventions to the contribution guide and enforce in CI
 - Use IDE refactoring tools rather than find-and-replace to catch all references safely
+
+### Relationship To Other Concepts
+
+- Related to [misleading-names](/concepts/misleading-names) because both reduce semantic clarity, though inconsistent naming is about drift across the codebase rather than one bad label.
+- Related to [stringly-typed](/concepts/stringly-typed) when inconsistent string names become the only schema for important concepts.
+- Related to [magic-numbers](/concepts/magic-numbers) as another readability smell caused by under-expressed semantics.
+
+### Boundary
+
+Use `inconsistent-naming` when the same concept is named differently across modules, layers, or APIs, creating avoidable cognitive load.
+
+Do not use it for one poorly named symbol in isolation; the issue is inconsistency, not just naming quality.

@@ -2,6 +2,20 @@
 description: Golden Hammer anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - cargo-cult
+  - premature-optimization
+  - reinventing-the-wheel
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Golden Hammer
 
@@ -42,3 +56,15 @@ Forces inappropriate solutions on problems, leading to poor performance, reliabi
 - Decouple workloads so they can migrate to better-fit tools independently
 - Establish a technology radar that the team reviews quarterly to stay aware of appropriate tools
 - Start with the highest-pain workload: migrate it first as a proof of concept
+
+### Relationship To Other Concepts
+
+- Related to [cargo-cult](/concepts/cargo-cult) because both apply solutions from habit rather than fit, though golden-hammer emphasizes overusing one favored tool.
+- Related to [premature-optimization](/concepts/premature-optimization) when one preferred technique is imposed before real constraints justify it.
+- Related to [reinventing-the-wheel](/concepts/reinventing-the-wheel) when teams insist on their favorite approach instead of choosing a better-fit existing option.
+
+### Boundary
+
+Use `golden-hammer` when one favored tool, pattern, or platform is repeatedly forced onto problems it does not fit well.
+
+Do not use it for ordinary standardization around a tool that is actually an appropriate default.

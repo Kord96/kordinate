@@ -1,7 +1,23 @@
 ---
-description: Registry domain model — entities with lifecycle states, metadata, and lookups
+description: "Registry domain model \u2014 entities with lifecycle states, metadata,\
+  \ and lookups"
 type: domain-model
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - catalog
+  - workflow-state-machine
+  - soft-delete
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Registry
 
@@ -24,3 +40,15 @@ abstraction: [data]
 - **high** — entities with explicit lifecycle states, CRUD API, unique identifiers, and audit trail
 - **medium** — standard CRUD with status fields but no defined state machine
 - **low** — simple database tables with basic CRUD but no lifecycle or metadata patterns
+
+### Relationship To Other Concepts
+
+- Related to [catalog](/concepts/catalog) because both organize identifiable records with lookup surfaces, though registries usually emphasize lifecycle and operational metadata.
+- Related to [workflow-state-machine](/concepts/workflow-state-machine) when registered entities move through explicit lifecycle states.
+- Related to [soft-delete](/concepts/soft-delete) because registries often preserve deactivated records rather than physically deleting them.
+
+### Boundary
+
+Use `registry-model` when the core domain centers on identifiable records with metadata, lifecycle state, and lookup or administration operations.
+
+Do not use it for every CRUD table or any collection of records without a meaningful lifecycle or registry semantics.

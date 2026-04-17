@@ -3,7 +3,22 @@ description: Hexagonal architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [architectural]
+abstraction:
+- architectural
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - adapter
+  - anti-corruption-layer
+  - layered
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Hexagonal (Ports & Adapters)
 
@@ -43,3 +58,15 @@ Look for clean separation between domain logic and infrastructure.
 - Domain code importing `requests`, `boto3`, or DB drivers directly
 - "Port" interfaces that leak infrastructure details (SQL, HTTP headers)
 - Adapter logic bleeding into domain services
+
+### Relationship To Other Concepts
+
+- Related to [adapter](/concepts/adapter) because adapters sit at the edge of hexagonal systems to connect ports to external technologies.
+- Related to [anti-corruption-layer](/concepts/anti-corruption-layer) when external boundaries are translated before reaching the domain core.
+- Related to [layered](/concepts/layered) as another structuring approach, though hexagonal emphasizes ports and dependency direction more strongly than simple layers.
+
+### Boundary
+
+Use `hexagonal` when domain logic is intentionally isolated behind ports and infrastructure concerns plug in through adapters at the edges.
+
+Do not use it for any codebase with interfaces or adapters. The key signal is inward dependency flow toward a protected domain core.

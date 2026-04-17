@@ -5,7 +5,22 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [integration, resilience]
+abstraction:
+- integration
+- resilience
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - event-driven
+  - workflow-engine
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Saga
 
@@ -36,6 +51,12 @@ How to identify this pattern in code.
 
 Look for correct compensation logic and failure handling across distributed steps.
 
+### Relationship To Other Concepts
+
+- `saga` is the distributed-consistency pattern: forward steps plus compensating actions.
+- Prefer `workflow-engine` when the main concern is orchestration machinery without business compensation semantics.
+- Prefer `event-driven` when the system is loosely reactive but not coordinating a compensatable transaction.
+
 ### Review Checklist
 
 - Each step has a corresponding compensating action
@@ -61,3 +82,7 @@ Key review points for the orchestration variant:
 - Saga state kept only in memory -- a process crash loses the transaction progress
 - Non-idempotent steps that produce duplicates on retry
 - Orchestrator tightly coupled to step implementations instead of calling them through interfaces
+
+### Boundary
+
+Do not use `saga` for any multi-step job or background workflow. Prefer it only when distributed steps need compensation to restore consistency.

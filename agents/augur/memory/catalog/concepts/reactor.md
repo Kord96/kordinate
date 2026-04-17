@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [concurrency, architectural]
+abstraction:
+- concurrency
+- architectural
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - event-driven
+  - server-sent-events
+  - future-promise
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Reactor/Event Loop
 
@@ -44,3 +60,15 @@ Look for a single-threaded event loop multiplexing I/O across many connections w
 - Deeply nested callback chains without error propagation (callback hell)
 - Spawning a new event loop per request instead of multiplexing on one loop
 - Ignoring backpressure -- writing faster than the socket can drain
+
+### Relationship To Other Concepts
+
+- Related to [event-driven](/concepts/event-driven) because reactor architectures dispatch work in response to readiness events and incoming signals.
+- Related to [server-sent-events](/concepts/server-sent-events) when nonblocking event loops drive streaming IO.
+- Related to [future-promise](/concepts/future-promise) because reactor-style systems often surface asynchronous completion through promise-like abstractions.
+
+### Boundary
+
+Use `reactor` when one event loop or readiness dispatcher multiplexes many IO sources and routes events to handlers without blocking threads per connection.
+
+Do not use it for any async code. The key signal is readiness-based event loop architecture.

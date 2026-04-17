@@ -2,7 +2,24 @@
 description: Microservices architectural pattern
 type: pattern
 graphable: true
-abstraction: [architectural]
+abstraction:
+- architectural
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - api-gateway
+  - event-driven
+  - distributed-monolith
+  preferred_over:
+  - distributed-monolith
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Microservices
 
@@ -45,3 +62,16 @@ Look for proper service boundaries, independent deployability, and well-defined 
 - Synchronous call chains spanning three or more services for a single user request
 - Services that cannot be deployed without coordinating releases of other services
 - No contract testing between services, relying on integration environments to catch breaks
+
+### Relationship To Other Concepts
+
+- Related to [api-gateway](/concepts/api-gateway) because many microservice systems expose a shared ingress layer in front of multiple services.
+- Related to [event-driven](/concepts/event-driven) because asynchronous communication is common in microservice systems even though it is not required.
+- Related to [distributed-monolith](/concepts/distributed-monolith) as the main negative contrast where service boundaries exist operationally but not organizationally or architecturally.
+- Usually prefer this over [distributed-monolith](/concepts/distributed-monolith) only when services are genuinely independently deployable and loosely coupled.
+
+### Boundary
+
+Use `microservices` when the system is intentionally decomposed into independently deployable services with clear ownership and service boundaries.
+
+Do not use it just because multiple services exist. If releases, data ownership, or runtime coupling are still effectively monolithic, prefer [distributed-monolith](/concepts/distributed-monolith).

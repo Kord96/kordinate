@@ -2,6 +2,20 @@
 description: Primitive Obsession anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - value-object
+  - boolean-blindness
+  - stringly-typed
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Primitive Obsession
 
@@ -43,3 +57,15 @@ No encapsulation of domain rules; validation is repeated everywhere, inconsisten
 - Use the type system to prevent mixing up same-typed primitives: `UserId(int)` vs `OrderId(int)`
 - Replace float money with a decimal type or integer-cents representation with currency code
 - Centralize formatting and comparison logic in the value object rather than in callers
+
+### Relationship To Other Concepts
+
+- Related to [value-object](/concepts/value-object) because value objects are a common antidote to encoding domain meaning as raw primitives.
+- Related to [boolean-blindness](/concepts/boolean-blindness) as one concrete case where primitive parameters obscure semantics.
+- Related to [stringly-typed](/concepts/stringly-typed) when strings become the implicit type system for rich domain concepts.
+
+### Boundary
+
+Use `primitive-obsession` when meaningful domain concepts are modeled as raw strings, numbers, booleans, or tuples instead of stronger semantic types.
+
+Do not use it for simple scalar data that does not carry richer domain rules or identity.

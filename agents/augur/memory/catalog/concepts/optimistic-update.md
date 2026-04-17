@@ -1,9 +1,27 @@
 ---
-description: Optimistic Update — immediately reflecting expected state changes in the UI before server confirmation
+description: "Optimistic Update \u2014 immediately reflecting expected state changes\
+  \ in the UI before server confirmation"
 type: pattern
 testable: true
 graphable: true
-abstraction: [frontend, data, resilience]
+abstraction:
+- frontend
+- data
+- resilience
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - optimistic-locking
+  - reactive-store
+  - event-notification
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Optimistic Update
 
@@ -44,3 +62,15 @@ Look for a mutation flow that updates client-side state immediately upon user ac
 - Optimistic updates on critical operations (payments, deletes) where false positives are harmful
 - Race conditions -- multiple optimistic updates to the same entity without sequencing
 - Silent rollback -- user doesn't know their action failed
+
+### Relationship To Other Concepts
+
+- Related to [optimistic-locking](/concepts/optimistic-locking) because optimistic UI updates often rely on later conflict detection and rollback if the backend disagrees.
+- Related to [reactive-store](/concepts/reactive-store) because pending optimistic state is frequently managed in client-side reactive stores.
+- Related to [event-notification](/concepts/event-notification) when asynchronous confirmations or rejections later reconcile provisional client state.
+
+### Boundary
+
+Use `optimistic-update` when the system intentionally shows an anticipated successful state before the authoritative write is confirmed.
+
+Do not use it for normal eventual consistency or background refresh unless the UI or caller is proactively applying the change ahead of confirmation.

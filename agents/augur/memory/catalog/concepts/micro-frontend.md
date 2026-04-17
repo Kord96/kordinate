@@ -4,7 +4,24 @@ type: pattern
 testable: true
 distributed: true
 graphable: true
-abstraction: [architectural, frontend, deployment]
+abstraction:
+- architectural
+- frontend
+- deployment
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - component
+  - modular-monolith
+  - bff
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Micro-Frontend
 
@@ -48,3 +65,15 @@ Look for independently built and deployed frontend modules composed into a unifi
 - Duplicating large framework bundles in every micro-frontend
 - Tight deployment coupling -- all micro-frontends must deploy together
 - No contract or versioning for shared APIs between modules
+
+### Relationship To Other Concepts
+
+- Related to [component](/concepts/component) because micro-frontends are often assembled from larger independently owned UI surfaces rather than simple components.
+- Related to [modular-monolith](/concepts/modular-monolith) as the main alternative where frontend boundaries stay in one deployment but retain modular discipline.
+- Related to [bff](/concepts/bff) when frontend slices also get matching backend-for-frontend boundaries.
+
+### Boundary
+
+Use `micro-frontend` when independently deployable frontend slices or applications are composed into one user experience.
+
+Do not use it for any componentized UI. The key signal is independent deployment and ownership boundaries in the frontend.

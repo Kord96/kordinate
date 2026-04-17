@@ -1,8 +1,24 @@
 ---
-description: Error Boundary — component-level error catching and fallback rendering
+description: "Error Boundary \u2014 component-level error catching and fallback rendering"
 type: pattern
 graphable: true
-abstraction: [frontend, error-handling]
+abstraction:
+- frontend
+- error-handling
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - suspense-boundary
+  - component
+  - graceful-degradation
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Error Boundary
 
@@ -49,3 +65,15 @@ Look for a component boundary that intercepts rendering errors in its subtree, d
 - Error boundaries that catch and hide errors without reporting them to monitoring
 - Using error boundaries to handle expected control flow (form validation, empty states) instead of exceptional failures
 - No error boundary at all, letting uncaught errors crash the entire React tree to a white screen
+
+### Relationship To Other Concepts
+
+- Related to [suspense-boundary](/concepts/suspense-boundary) because both introduce subtree boundaries with fallback UI, though suspense focuses on waiting rather than failure containment.
+- Related to [component](/concepts/component) because error boundaries wrap component subtrees and shape UI composition boundaries.
+- Related to [graceful-degradation](/concepts/graceful-degradation) because the goal is to preserve partial functionality when one area fails.
+
+### Boundary
+
+Use `error-boundary` when a UI subtree explicitly catches rendering or runtime failures and swaps to fallback behavior instead of crashing the whole interface.
+
+Do not use it for generic try/catch logic, form validation, or global logging alone.

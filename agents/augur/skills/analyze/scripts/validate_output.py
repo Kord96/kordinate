@@ -7,7 +7,8 @@ Usage:
     <analysis-dir> is the validated Augur analysis directory.
     Deterministic-only runs must contain blast.json, facts/, and facts/concept-evidence.json.
     Full semantic runs must also contain atlas.json, stories/, and narratives.yaml.
-    e.g., /kord/augur/memory/projects/<project>/analysis/<commit-time>-<sha>/
+    meta.json is validated when present, but it may be finalized after semantic validation.
+    e.g., /kord/augur/memory/projects/<project>/analysis/<analysis-id>/
 
 Lock management is automatic when VALIDATE_LOCK=1 is set in the environment.
 This is used by the hook infrastructure, not by the agent directly.
@@ -39,9 +40,15 @@ Checks:
 
     Phase 2 (narratives):
         - narratives.yaml exists
+        - top-level version is "1"
         - getting-started narrative exists
         - Each narrative references existing story IDs
         - Narrative length is 3-8 stories
+
+    Phase 2 (meta, optional during validation loop):
+        - meta.json, when present, is valid JSON
+        - core fields match meta-schema.md
+        - artifact and schema paths are absolute
 
     Structure:
         - blast.json and facts/concept-evidence.json are JSON
@@ -364,8 +371,26 @@ def validate_story(
         error(f"Story missing required field: id")
     if "title" not in story:
         error(f"Story '{sid}' missing required field: title")
+    if "teaches" not in story:
+        error(f"Story '{sid}' missing required field: teaches")
     if "summary" not in story:
         error(f"Story '{sid}' missing required field: summary")
+
+    anchor = story.get("anchor")
+    if not isinstance(anchor, dict):
+        error(f"Story '{sid}' missing required object field: anchor")
+    else:
+        anchor_file = anchor.get("file")
+        anchor_line = anchor.get("line")
+        anchor_description = anchor.get("description")
+        if not anchor_file:
+            error(f"Story '{sid}' anchor is missing file")
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in([f"{anchor_file}:{anchor_line or 1}"], project_root, analysis_dir, "story", f"{sid}/anchor"))
+        if not isinstance(anchor_line, int):
+            error(f"Story '{sid}' anchor line must be an integer")
+        if not anchor_description:
+            error(f"Story '{sid}' anchor is missing description")
 
     # Summary word count
     summary = story.get("summary", "")
@@ -429,6 +454,8 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
         error("Narrative missing required field: id")
     if "title" not in narrative:
         error(f"Narrative '{jid}' missing required field: title")
+    if "description" not in narrative:
+        error(f"Narrative '{jid}' missing required field: description")
 
     stories = narrative.get("stories", [])
     if len(stories) < 3:
@@ -439,10 +466,74 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
     for entry in stories:
         if isinstance(entry, dict):
             sid = entry.get("id", "")
+            if not entry.get("description"):
+                error(f"Narrative '{jid}' story '{sid or '?'}' is missing description")
         else:
             sid = entry
         if sid not in story_ids:
             error(f"Narrative '{jid}' references unknown story '{sid}'")
+
+    return issues
+
+
+def validate_meta(meta: dict, analysis_dir: Path) -> list[dict]:
+    issues = []
+
+    def error(msg):
+        issues.append({"level": "ERROR", "section": "meta", "message": msg})
+
+    def warn(msg):
+        issues.append({"level": "WARNING", "section": "meta", "message": msg})
+
+    required_fields = [
+        "project",
+        "analysis_id",
+        "sha",
+        "commit_time",
+        "analysis_mode",
+        "blast",
+        "artifacts",
+        "schemas",
+    ]
+    for field in required_fields:
+        if field not in meta:
+            error(f"meta.json missing required field: {field}")
+
+    artifacts = meta.get("artifacts")
+    if isinstance(artifacts, dict):
+        for key, value in artifacts.items():
+            if value and (not isinstance(value, str) or not value.startswith("/")):
+                error(f"meta.json artifacts.{key} must be an absolute path when present")
+        root = artifacts.get("root")
+        if isinstance(root, str) and root and root != str(analysis_dir):
+            warn(f"meta.json artifacts.root '{root}' does not match analysis dir '{analysis_dir}'")
+    elif artifacts is not None:
+        error("meta.json artifacts must be an object")
+
+    schemas = meta.get("schemas")
+    if isinstance(schemas, dict):
+        for key, value in schemas.items():
+            if not value:
+                error(f"meta.json schemas.{key} is required")
+            elif not isinstance(value, str) or not value.startswith("/"):
+                error(f"meta.json schemas.{key} must be an absolute path")
+    elif schemas is not None:
+        error("meta.json schemas must be an object")
+
+    validation = meta.get("validation")
+    if validation is not None:
+        if not isinstance(validation, dict):
+            error("meta.json validation must be an object")
+        else:
+            attempts = validation.get("attempts")
+            if attempts is not None and not isinstance(attempts, int):
+                error("meta.json validation.attempts must be an integer")
+            passed = validation.get("passed")
+            if passed is not None and not isinstance(passed, bool):
+                error("meta.json validation.passed must be a boolean")
+            token = validation.get("token")
+            if token is not None and not isinstance(token, str):
+                error("meta.json validation.token must be a string")
 
     return issues
 
@@ -479,7 +570,7 @@ def main():
 
     # Derive project root from analysis dir path.
     # Expected: /kord/agents/<agent>/memory/projects/<project>/analysis/<analysis-id>/
-    # Project code may live in multiple locations depending on runtime wiring.
+    # Project code should resolve from one canonical shared-PVC repo root.
     project_root = None
     explicit_project_root = os.environ.get("AUGUR_PROJECT_ROOT", "").strip()
     if explicit_project_root:
@@ -491,15 +582,10 @@ def main():
         proj_idx = analysis_dir.parts.index("projects")
         if proj_idx + 1 < len(analysis_dir.parts):
             project_name = analysis_dir.parts[proj_idx + 1]
-            for candidate in (
-                Path("/kord/repos") / project_name,
-                Path("/kord/agents/shared/repos") / project_name,
-                Path("/kord/shared/repos") / project_name,
-                Path("/kord/projects") / project_name,
-            ):
-                if candidate.exists():
-                    project_root = candidate
-                    break
+            projects_root = Path(os.environ.get("PROJECTS_ROOT", "/kord/repos"))
+            candidate = projects_root / project_name
+            if candidate.exists():
+                project_root = candidate
 
     # --- Deterministic artifacts ---
     blast_path = analysis_dir / "blast.json"
@@ -546,6 +632,10 @@ def main():
 
     story_ids = set()
     if not DETERMINISTIC_ONLY:
+        journeys_dir = analysis_dir / "journeys"
+        if journeys_dir.exists():
+            all_issues.append({"level": "ERROR", "section": "structure", "message": f"Legacy journeys/ directory must not appear at {journeys_dir}. Use narratives.yaml instead."})
+
         # --- Stories ---
         stories_dir = analysis_dir / "stories"
 
@@ -610,7 +700,14 @@ def main():
             if narratives_doc is None:
                 all_issues.append({"level": "ERROR", "section": "narrative", "message": f"Failed to parse: {narratives_path.name}"})
             else:
-                narratives = narratives_doc.get("narratives", []) if isinstance(narratives_doc, dict) else []
+                if not isinstance(narratives_doc, dict):
+                    all_issues.append({"level": "ERROR", "section": "narrative", "message": "narratives.yaml must be a mapping with top-level version and narratives keys"})
+                    narratives = []
+                else:
+                    version = narratives_doc.get("version")
+                    if version != "1":
+                        all_issues.append({"level": "ERROR", "section": "narrative", "message": f"narratives.yaml version must be '1', got '{version}'"})
+                    narratives = narratives_doc.get("narratives", [])
                 if not isinstance(narratives, list):
                     all_issues.append({"level": "ERROR", "section": "narrative", "message": "narratives.yaml must contain a top-level 'narratives' list"})
                 else:
@@ -626,6 +723,17 @@ def main():
                         all_issues.extend(validate_narrative(narrative, story_ids))
                     if "getting-started" not in ids:
                         all_issues.append({"level": "ERROR", "section": "narrative", "message": "getting-started narrative is required — teaching-order path covering the main top-level components"})
+
+    meta_path = analysis_dir / "meta.json"
+    if meta_path.exists():
+        try:
+            meta = json.loads(meta_path.read_text())
+            if isinstance(meta, dict):
+                all_issues.extend(validate_meta(meta, analysis_dir))
+            else:
+                all_issues.append({"level": "ERROR", "section": "meta", "message": "meta.json must be a JSON object"})
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "meta", "message": f"JSON parse error: {e}"})
 
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]

@@ -1,0 +1,20 @@
+name: actix-web
+kind: framework
+language: rust
+framework_kind: api-server
+summary: Rust web framework with macro-based routes and explicit service configuration
+status: specialized
+scope: backend
+relationships:
+  implements:
+    - rest
+  uses:
+    - server-route-registration
+traits:
+  api_surface: true
+  macro_routes_native: true
+common_concepts: []
+common_failure_modes:
+  - macro-indirection
+  - service-config-sprawl
+  - handler-bloat

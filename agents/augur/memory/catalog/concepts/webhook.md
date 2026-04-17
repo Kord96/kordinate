@@ -5,7 +5,22 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [integration]
+abstraction:
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - subscription
+  - server-route-registration
+  - pub-sub
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Webhook
 
@@ -48,3 +63,15 @@ Look for event-driven HTTP callback delivery with authentication and at-least-on
 - Synchronous webhook dispatch blocking the event producer
 - No retry mechanism -- a single network failure permanently drops the event
 - Unbounded payload size allowing arbitrarily large deliveries
+
+### Relationship To Other Concepts
+
+- Related to [subscription](/concepts/subscription) when consumers register callback endpoints for specific event types.
+- Related to [server-route-registration](/concepts/server-route-registration) because receiving webhooks requires server-side endpoint registration and verification handlers.
+- Related to [pub-sub](/concepts/pub-sub) when webhooks are one delivery mechanism for published events.
+
+### Boundary
+
+Use `webhook` when the architecture centers on outbound event delivery over HTTP callbacks with registration, signing, and retry semantics.
+
+Do not use it for ordinary REST APIs, internal HTTP calls, or server-side routes that are not callback-style event delivery endpoints.

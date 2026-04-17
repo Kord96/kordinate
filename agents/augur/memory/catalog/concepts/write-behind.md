@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - cache-aside
+  - read-through
+  - message-queue
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Write-Behind
 
@@ -46,3 +61,14 @@ Look for cache as the primary write target with deferred or synchronous propagat
 - Unbounded write-behind buffer that grows until memory is exhausted
 - Flush errors silently dropped, leading to permanent data loss
 - Write-behind delay so long that reads from the backing store return stale data
+
+### Relationship To Other Concepts
+
+- Related to [cache-aside](/concepts/cache-aside) and [read-through](/concepts/read-through) as alternative cache coordination strategies with different write and read responsibilities.
+- Related to [message-queue](/concepts/message-queue) when deferred persistence is buffered and flushed asynchronously like queued work.
+
+### Boundary
+
+Use `write-behind` when writes are acknowledged or absorbed before the backing store is updated, with persistence deferred asynchronously.
+
+Do not use it for any buffered write. The key signal is cache- or intermediate-layer acceptance before durable store flush.

@@ -1,0 +1,23 @@
+framework: net-http
+manifest_packages: {}
+source_extensions:
+  - .go
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - import\s+"net/http"
+    - http\.HandleFunc\s*\(
+    - http\.ListenAndServe\s*\(
+  medium:
+    - http\.NewServeMux\s*\(
+    - mux\.Handle\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns:
+  - gin\.Default\s*\(
+  - chi\.NewRouter\s*\(
+  - echo\.New\s*\(
+  - fiber\.New\s*\(

@@ -1,0 +1,20 @@
+name: slim
+kind: framework
+language: php
+framework_kind: api-server
+summary: Minimal PHP framework with explicit route registration and middleware composition
+status: specialized
+scope: backend
+relationships:
+  implements:
+    - rest
+  uses:
+    - server-route-registration
+traits:
+  api_surface: true
+  middleware_native: true
+common_concepts: []
+common_failure_modes:
+  - route-handler-bloat
+  - middleware-ordering-surprises
+  - container-coupling

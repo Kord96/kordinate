@@ -2,6 +2,20 @@
 description: Hidden Side Effects anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - log-and-throw
+  - command
+  - query-object
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Hidden Side Effects
 
@@ -43,3 +57,15 @@ Unpredictable behavior and untestable code because callers cannot reason about w
 - Pass dependencies explicitly rather than reaching for globals: use dependency injection
 - Make @property accessors trivial -- never perform I/O or heavy computation behind a property
 - Document side effects in docstrings and type hints (e.g., `-> None` for functions that mutate in place)
+
+### Relationship To Other Concepts
+
+- Related to [log-and-throw](/concepts/log-and-throw) when functions or handlers perform surprising extra behavior in addition to their apparent responsibility.
+- Related to [command](/concepts/command) because command/query separation helps keep side-effecting work explicit.
+- Related to [query-object](/concepts/query-object) as a counterpoint where read-only operations are intentionally separated from mutating ones.
+
+### Boundary
+
+Use `hidden-side-effects` when code appears read-only or innocuous but performs mutation, I/O, caching, or external effects that are not made explicit by its interface or naming.
+
+Do not use it for ordinary side-effecting commands. The problem is surprise and concealment, not mutation itself.

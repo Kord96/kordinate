@@ -3,6 +3,18 @@ description: Hardcoded Credentials anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - secret-management
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Hardcoded Credentials
 
@@ -49,3 +61,13 @@ Credential exposure in version control, enabling unauthorized access once the re
 - Reference secrets in Kubernetes manifests as `secretKeyRef`, never as inline `value`
 
 See also: secret-management pattern
+
+### Relationship To Other Concepts
+
+- Related to [secret-management](/concepts/secret-management) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `hardcoded-credentials` when the important observation is this specific recurring architectural failure mode within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

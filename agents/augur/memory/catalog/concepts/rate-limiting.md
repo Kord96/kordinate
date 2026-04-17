@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [security, resilience]
+abstraction:
+- security
+- resilience
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - api-gateway
+  - backpressure
+  - circuit-breaker
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Rate Limiting/Throttling
 
@@ -47,3 +63,15 @@ Look for consistent enforcement at the API gateway or middleware layer with conf
 - No rate limit headers in responses (clients cannot adapt their request rate)
 - Applying the same limit to all endpoints regardless of cost or sensitivity
 - Rate limiting only by IP (breaks for clients behind NAT or shared proxies)
+
+### Relationship To Other Concepts
+
+- Related to [api-gateway](/concepts/api-gateway) because gateways often enforce ingress rate limits centrally.
+- Related to [backpressure](/concepts/backpressure) because both protect downstream capacity, though backpressure is usually flow-control while rate limiting is quota enforcement.
+- Related to [circuit-breaker](/concepts/circuit-breaker) when both are used to prevent overload and cascading failures.
+
+### Boundary
+
+Use `rate-limiting` when the system explicitly enforces quotas over time or tokens for requests, events, or client operations.
+
+Do not use it for generic retries, queue backlogs, or concurrency caps unless there is a real rate or quota policy.

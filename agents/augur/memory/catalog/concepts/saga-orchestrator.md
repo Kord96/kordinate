@@ -1,7 +1,23 @@
 ---
 description: Saga Orchestrator architectural pattern
 graphable: true
-abstraction: [messaging, integration]
+abstraction:
+- messaging
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - saga
+  - choreography
+  - workflow-engine
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Saga Orchestrator
 
@@ -43,3 +59,15 @@ Look for a central coordinator driving distributed transactions through explicit
 - Saga state kept only in memory -- a process crash loses the transaction progress
 - Non-idempotent steps that produce duplicates on retry
 - Orchestrator tightly coupled to step implementations instead of calling them through interfaces
+
+### Relationship To Other Concepts
+
+- Related to [saga](/concepts/saga) because an orchestrator is one implementation style for saga-based distributed transaction coordination.
+- Related to [choreography](/concepts/choreography) as the main decentralized alternative where no central coordinator drives the flow.
+- Related to [workflow-engine](/concepts/workflow-engine) when orchestrated multi-step progress is persisted and resumed like a workflow runtime.
+
+### Boundary
+
+Use `saga-orchestrator` when one central component explicitly coordinates a distributed multi-step transaction and its compensations.
+
+Do not use it for any workflow engine or event chain. The key signal is centralized coordination of saga steps.

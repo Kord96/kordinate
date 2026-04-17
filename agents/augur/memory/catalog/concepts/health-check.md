@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [lifecycle, observability]
+abstraction:
+- lifecycle
+- observability
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - graceful-degradation
+  - canary
+  - leader-election
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Health Check
 
@@ -47,3 +63,15 @@ Look for separate liveness and readiness probes with appropriate dependency heal
 - Health endpoint that performs expensive operations (heavy queries, full connection tests on every call)
 - No readiness probe (traffic routed to pods before they can handle requests)
 - Same endpoint and logic for both liveness and readiness (they serve different purposes)
+
+### Relationship To Other Concepts
+
+- Related to [graceful-degradation](/concepts/graceful-degradation) because health signals often determine whether a system should keep serving in degraded mode or be removed from traffic.
+- Related to [canary](/concepts/canary) because canary rollout controllers depend on clear health signals to promote or roll back.
+- Related to [leader-election](/concepts/leader-election) when readiness or liveness depends on current leadership or election state.
+
+### Boundary
+
+Use `health-check` when a service explicitly exposes machine-readable signals about liveness, readiness, or dependency health for orchestration or monitoring.
+
+Do not use it for ordinary status pages or logs. The defining property is an operational probe surface intended for automated systems.

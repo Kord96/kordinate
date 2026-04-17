@@ -2,7 +2,23 @@
 description: Serverless / FaaS architectural pattern
 type: pattern
 graphable: true
-abstraction: [architectural, deployment]
+abstraction:
+- architectural
+- deployment
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - event-driven
+  - scheduler
+  - service-manager
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Serverless / FaaS
 
@@ -45,3 +61,15 @@ Look for stateless, event-driven handlers with external state management and awa
 - Long-running functions approaching the execution timeout limit instead of decomposing into steps
 - Ignoring cold start latency for synchronous user-facing endpoints
 - Deploying monolithic handlers that bundle unrelated logic into a single function
+
+### Relationship To Other Concepts
+
+- Related to [event-driven](/concepts/event-driven) because serverless functions are often triggered by events rather than long-lived request servers.
+- Related to [scheduler](/concepts/scheduler) when functions are invoked on time-based triggers.
+- Related to [service-manager](/concepts/service-manager) as a contrast: serverless hides most service lifecycle ownership from the application team.
+
+### Boundary
+
+Use `serverless` when computation is packaged into platform-managed functions or services with ephemeral execution and platform-owned lifecycle concerns.
+
+Do not use it for any containerized or autoscaled service. The key signal is platform-managed function-style execution.

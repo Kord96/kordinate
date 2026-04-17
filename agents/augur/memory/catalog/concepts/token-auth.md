@@ -4,12 +4,27 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [security]
+abstraction:
+- security
 status: primary
 scope: backend
 relationships:
-  disambiguates: [session-auth, api-key-auth]
-  related_to: [oauth-oidc, route-guard, rbac]
+  disambiguates:
+  - session-auth
+  - api-key-auth
+  related_to:
+  - oauth-oidc
+  - route-guard
+  - rbac
+aliases: []
+disambiguates_from:
+- session-auth
+- api-key-auth
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Token-Based Authentication (JWT)
 
@@ -59,3 +74,9 @@ Look for stateless token validation with proper signing, claim verification, and
 - Storing JWTs in localStorage (vulnerable to XSS) instead of httpOnly cookies or memory
 - Long-lived access tokens with no refresh flow (hours or days without rotation)
 - Including sensitive data (PII, secrets) in token payload (JWTs are base64-encoded, not encrypted)
+
+### Boundary
+
+Use `token-auth` when the important observation is this specific architectural concern within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

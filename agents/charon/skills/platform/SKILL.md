@@ -42,7 +42,9 @@ Default environment is `dev` if not specified.
 
    If alfred is available, run alfred `/preflight` for additional validation against the source profile tree. If preflight fails, report and exit.
 
-3. **Apply** — execute `kubectl apply -k $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/ -n <env>`.
+3. **Apply** — execute:
+
+   `bash $KORDINATE_HOME/lib/scripts/apply-platform-manifests.sh <env> $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/`
 
 4. **Verify** — check rollout status for all platform deployments in the namespace. If any deployment fails to roll out, report clearly with pod logs.
 
@@ -69,7 +71,9 @@ Default environment is `dev` if not specified.
 
 2. **Patch** — update the KEDA scaling configuration in Alfred-owned source at `$KORDINATE_HOME/agents/alfred/profile/overlays/platform/<env>/scaling.yaml`, then refresh the runtime projection.
 
-3. **Apply** — re-apply the projection: `kubectl apply -k $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/ -n <env>`.
+3. **Apply** — re-apply the projection:
+
+   `bash $KORDINATE_HOME/lib/scripts/apply-platform-manifests.sh <env> $KORDINATE_HOME/shared/runtime/profile/overlays/platform/<env>/`
 
 4. **Verify** — confirm the ScaledObject reflects the new min/max values.
 
@@ -141,6 +145,7 @@ Read the detailed procedure at [create-agent.md](create-agent.md).
 - [agent-creation-profiles.yaml](agent-creation-profiles.yaml) — flavor-aware creation defaults and required specialist choices
 - [layered-image-rollout.md](layered-image-rollout.md) — first rollout procedure for `agent-base`, `agent-charon`, and `agent-augur`
 - `lib/scripts/build-agent-images.sh` — selective platform image builds with optional explicit tags
+- `lib/scripts/apply-platform-manifests.sh` — server-side apply helper for platform manifests and KEDA resources
 - `lib/scripts/roll-platform-image.py` — rollout helper that maps an image to the agent deployments that use it
 - [generic-backend-agents.md](generic-backend-agents.md) — generic backend-based consultation agents routed through the same platform path as specialized agents
 - [../../../../docs/bootstrap-image-policy.md](../../../../docs/bootstrap-image-policy.md) — bootstrap rule for prebuilt agent images and post-bootstrap Charon ownership

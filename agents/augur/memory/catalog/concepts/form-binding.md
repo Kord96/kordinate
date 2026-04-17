@@ -1,8 +1,25 @@
 ---
-description: Form Binding — two-way or controlled data binding between form inputs and state
+description: "Form Binding \u2014 two-way or controlled data binding between form\
+  \ inputs and state"
 type: pattern
 graphable: false
-abstraction: [frontend, data]
+abstraction:
+- frontend
+- data
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - input-validation
+  - component
+  - reactive-store
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Form Binding
 
@@ -50,3 +67,15 @@ Look for a structured connection between form inputs and application state, with
 - Two-way binding on complex objects causing unexpected mutations (especially in Vue/Angular)
 - No loading or disabled state on the submit button, allowing double submission
 - Mixing controlled and uncontrolled inputs in the same form
+
+### Relationship To Other Concepts
+
+- Related to [input-validation](/concepts/input-validation) because bound form state is often validated as fields change or submit.
+- Related to [component](/concepts/component) because binding behavior usually lives inside UI component trees.
+- Related to [reactive-store](/concepts/reactive-store) when form values synchronize with a broader client-side state store.
+
+### Boundary
+
+Use `form-binding` when form fields are intentionally synchronized with model or state values through a binding abstraction.
+
+Do not use it for any form handling. The key signal is explicit binding semantics between inputs and state/model values.

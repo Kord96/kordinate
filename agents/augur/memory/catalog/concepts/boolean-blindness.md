@@ -2,6 +2,20 @@
 description: Boolean Blindness anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - strategy
+  - command
+  - primitive-obsession
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Boolean Blindness
 
@@ -42,3 +56,15 @@ Unreadable call sites where the meaning of each `true`/`false` is invisible, lea
 - In languages that support it, require keyword-only arguments for booleans: `def create(*, strict: bool, verbose: bool)`
 - Split the function into separate methods if the booleans select fundamentally different behavior
 - As a minimum, always use named arguments at call sites: `create(strict=True, validate=False)`
+
+### Relationship To Other Concepts
+
+- Related to [strategy](/concepts/strategy) because replacing booleans with explicit strategy objects is a common remediation.
+- Related to [command](/concepts/command) when separate intent-specific commands are clearer than one boolean-driven method.
+- Related to [primitive-obsession](/concepts/primitive-obsession) because boolean blindness is one concrete form of overusing primitive parameters.
+
+### Boundary
+
+Use `boolean-blindness` when boolean flags obscure meaning, branch behavior, or intent at call sites and make APIs ambiguous.
+
+Do not use it for every boolean field. The key problem is hidden semantic meaning in parameters or interfaces.

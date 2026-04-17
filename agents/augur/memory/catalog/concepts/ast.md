@@ -3,7 +3,23 @@ description: Abstract Syntax Tree (AST) architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data, compiler]
+abstraction:
+- data
+- compiler
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - compiler
+  - visitor
+  - interpreter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Abstract Syntax Tree (AST)
 
@@ -46,3 +62,15 @@ Look for a well-typed tree representation of parsed source code with systematic 
 - Mutable AST nodes modified in place during analysis passes (hard to debug, prevents parallelism)
 - No source location on nodes, making downstream error reporting impossible
 - Visitor with default no-op methods that silently skip new node types after grammar changes
+
+### Relationship To Other Concepts
+
+- Related to [compiler](/concepts/compiler) because ASTs are a core intermediate representation in parsing, analysis, and code generation pipelines.
+- Related to [visitor](/concepts/visitor) because tree traversal and analysis often use visitor-style dispatch over AST node types.
+- Related to [interpreter](/concepts/interpreter) when AST nodes are executed or evaluated directly rather than compiled further.
+
+### Boundary
+
+Use `ast` when code or expressions are represented as a typed tree structure that becomes the main medium for parsing, analysis, transformation, or execution.
+
+Do not use it for any hierarchical data tree. The important signal is syntax-oriented structure with node kinds that correspond to language constructs.

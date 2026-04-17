@@ -21,6 +21,7 @@ frameworks/<name>/
 name: fastapi
 kind: framework
 language: python
+framework_kind: api-server | ui-app | full-stack | library | orm | worker | cli | platform
 summary: Async Python API framework with typed routing and validation
 status: primary | specialized | supporting | compatibility
 scope: backend | frontend | cross-cutting | platform
@@ -44,7 +45,7 @@ Detector policy and executable rules for frameworks live under `../../../detecto
 - `framework.md`
   Human-readable semantic contract for what the framework exposes architecturally.
 - `semantics.yaml`
-  Machine-friendly ontology and detection summary for traits, framework-authored concept edges, and common failure modes.
+  Machine-friendly ontology and detection summary for language, scope, framework kind, traits, framework-authored concept edges, and common failure modes.
 - `detectors/facts/frameworks/<name>/`
   Deterministic detection assets for proving the framework is present.
 
@@ -74,3 +75,4 @@ Detector policy and executable rules for frameworks live under `../../../detecto
 - Do not encode concept-to-concept hierarchy here.
 - Keep `framework.md` explanatory and concrete; keep `semantics.yaml` short and structured.
 - When in doubt, fewer explicit edges with better semantics are better than many loose associations.
+- Treat `scope` and `framework_kind` as operational routing hints for analysis. They should help Augur decide whether to expect UI components, API handlers, server routes, worker entrypoints, or platform surfaces.

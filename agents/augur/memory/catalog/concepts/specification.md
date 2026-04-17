@@ -3,7 +3,22 @@ description: Specification Pattern architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - strategy
+  - query-object
+  - ddd
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Specification Pattern
 
@@ -45,3 +60,15 @@ Look for reusable, composable business rule objects that can be combined and app
 - Monolithic specification classes that encode multiple unrelated business rules
 - Composing specifications but never testing the individual components in isolation
 - Using specifications for trivial checks where a simple boolean expression would be clearer
+
+### Relationship To Other Concepts
+
+- Related to [strategy](/concepts/strategy) because both encapsulate variation, though specification focuses on composable predicates or business rules.
+- Related to [query-object](/concepts/query-object) when specifications are translated into database or repository filtering logic.
+- Related to [ddd](/concepts/ddd) because specifications are a common tactical pattern for rich domain rule expression.
+
+### Boundary
+
+Use `specification` when business predicates or criteria are modeled as first-class composable objects instead of inline conditionals.
+
+Do not use it for any validation helper. The key signal is composable rule objects with semantic meaning in the domain or query layer.

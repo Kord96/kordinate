@@ -2,6 +2,20 @@
 description: Reinventing the Wheel anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - cargo-cult
+  - golden-hammer
+  - copy-paste-programming
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Reinventing the Wheel
 
@@ -43,3 +57,15 @@ Bugs in already-solved problems, ongoing maintenance burden, and missing edge ca
 - If a custom implementation is justified (performance, zero-dependency constraint), document the rationale and add comprehensive tests covering known edge cases
 - Add dependency review to the design phase: before writing a utility, check if a maintained solution exists
 - Create a "build vs. buy" decision log for infrastructure components so the rationale is preserved
+
+### Relationship To Other Concepts
+
+- Related to [cargo-cult](/concepts/cargo-cult) because teams sometimes rebuild familiar patterns without understanding the mature solutions they are replacing.
+- Related to [golden-hammer](/concepts/golden-hammer) when a favored homegrown approach is imposed instead of using established tooling.
+- Related to [copy-paste-programming](/concepts/copy-paste-programming) because bespoke replacements often begin as copied fragments of standard behavior that then diverge.
+
+### Boundary
+
+Use `reinventing-the-wheel` when custom code recreates standard library or well-established library functionality without a clear justification.
+
+Do not use it when a team has documented constraints that genuinely require a custom implementation.

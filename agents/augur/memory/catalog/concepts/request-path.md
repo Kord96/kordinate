@@ -1,11 +1,22 @@
 ---
-description: Request path flow note; prefer router or server-route-registration for the route surface itself
+description: Request path flow note; prefer router or server-route-registration for
+  the route surface itself
 type: flow-shape
-abstraction: [api, integration]
+abstraction:
+- api
+- integration
 status: supporting
 scope: backend
 relationships:
-  related_to: [server-route-registration, middleware]
+  related_to:
+  - router
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Request Path
 
@@ -33,3 +44,13 @@ Treat this as a supporting end-to-end flow note, not a primary routing concept.
 - **high** — clear layered handler chain: route → middleware → controller → service → repository → database, with DTOs at boundaries
 - **medium** — handler calls service which calls database, but without clean layering or DTOs
 - **low** — handler directly queries database with no service layer
+
+### Relationship To Other Concepts
+
+- Related to [router](/concepts/router) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `request-path` when the important observation is this specific flow or payload shape within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

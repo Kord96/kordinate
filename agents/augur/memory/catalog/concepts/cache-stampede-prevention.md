@@ -4,7 +4,24 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data, resilience, concurrency]
+abstraction:
+- data
+- resilience
+- concurrency
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - cache-aside
+  - backpressure
+  - bulkhead
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Cache Stampede Prevention
 
@@ -47,3 +64,15 @@ Look for coordination mechanisms that ensure only one caller recomputes a cache 
 - No timeout on the lock, causing permanent blocking if the holder crashes
 - Every caller independently recomputes on miss without coordination (the stampede itself)
 - Lock without retry or fallback, causing callers to fail instead of waiting
+
+### Relationship To Other Concepts
+
+- Related to [cache-aside](/concepts/cache-aside) because stampede prevention is usually applied around read-through or miss-population behavior.
+- Related to [backpressure](/concepts/backpressure) when callers are slowed or rejected to avoid overload during hot-key recomputation.
+- Related to [bulkhead](/concepts/bulkhead) when recomputation for one key or dependency is isolated from unrelated traffic.
+
+### Boundary
+
+Use `cache-stampede-prevention` when the design explicitly coordinates cache misses so many callers do not recompute the same expensive value at once.
+
+Do not use it for generic caching. The important signal is coordination around hot misses or expirations to prevent thundering herds.

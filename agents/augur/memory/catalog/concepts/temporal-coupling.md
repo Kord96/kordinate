@@ -2,6 +2,20 @@
 description: Temporal Coupling anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - workflow-state-machine
+  - builder
+  - service-manager
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Temporal Coupling
 
@@ -43,3 +57,15 @@ Subtle bugs arise when methods are called in the wrong order, and nothing catche
 - Combine steps that must happen together into a single method or factory
 - If multi-step setup is unavoidable, validate preconditions at the start of each method and fail fast with a clear message
 - Replace implicit state transitions with an explicit state machine that rejects invalid transitions
+
+### Relationship To Other Concepts
+
+- Related to [workflow-state-machine](/concepts/workflow-state-machine) because explicit state transitions are one way to make ordering constraints visible instead of implicit.
+- Related to [builder](/concepts/builder) when staged construction is used to enforce valid call sequences through types or phased APIs.
+- Related to [service-manager](/concepts/service-manager) because lifecycle APIs often suffer from hidden ordering requirements if startup and shutdown contracts are unclear.
+
+### Boundary
+
+Use `temporal-coupling` when correct behavior depends on undocumented or weakly enforced call ordering between operations.
+
+Do not use it for explicit protocols or state machines where the required ordering is first-class and enforced.

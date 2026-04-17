@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [resilience, concurrency]
+abstraction:
+- resilience
+- concurrency
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - rate-limiting
+  - bulkhead
+  - competing-consumers
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Backpressure
 
@@ -31,3 +47,15 @@ How to identify this pattern in code.
 ## Architecture
 
 Flow control mechanism for when a producer is faster than its consumer. Prevents memory exhaustion and queue overflow by signaling the producer to slow down or by shedding load. Common strategies include rate limiting, bounded queues with rejection, and reactive pull-based consumption.
+
+### Relationship To Other Concepts
+
+- Related to [rate-limiting](/concepts/rate-limiting) because both protect capacity, though backpressure is dynamic flow control while rate limiting is quota enforcement.
+- Related to [bulkhead](/concepts/bulkhead) because both reduce overload blast radius, but bulkheads partition resources while backpressure slows or rejects producers.
+- Related to [competing-consumers](/concepts/competing-consumers) when consumer throughput and queue depth determine how much upstream pressure must be applied.
+
+### Boundary
+
+Use `backpressure` when a producer is explicitly slowed, blocked, or forced to shed load because consumers or downstream systems cannot keep up.
+
+Do not use it for any queue or throughput issue unless the system actually feeds capacity pressure back toward the producer.

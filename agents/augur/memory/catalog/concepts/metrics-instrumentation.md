@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [observability]
+abstraction:
+- observability
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - distributed-tracing
+  - structured-logging
+  - health-check
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Metrics Instrumentation
 
@@ -47,3 +62,15 @@ Look for well-named metrics with appropriate types, consistent labels, and a scr
 - Using gauges where counters are appropriate (losing monotonicity breaks rate calculations)
 - Metrics created inside request handlers instead of registered once at module level
 - No histogram for latency measurements -- only averages with no percentile visibility
+
+### Relationship To Other Concepts
+
+- Related to [distributed-tracing](/concepts/distributed-tracing) because both are part of the observability stack, but metrics summarize behavior while traces reconstruct individual flows.
+- Related to [structured-logging](/concepts/structured-logging) because logs, metrics, and traces are often correlated to observe one system from different angles.
+- Related to [health-check](/concepts/health-check) when metrics drive automated health decisions or alerting thresholds.
+
+### Boundary
+
+Use `metrics-instrumentation` when the system emits quantitative counters, gauges, histograms, or summaries as a first-class observability surface.
+
+Do not use it for plain logging or one-off timing prints. The key signal is structured metric emission meant for scraping or aggregation.

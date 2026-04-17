@@ -4,6 +4,20 @@ type: anti-pattern
 testable: true
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - snapshot-testing
+  - test-pollution
+  - environment-parity-gap
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Flaky Tests
 
@@ -48,3 +62,15 @@ Eroded trust in CI, leading teams to ignore failures, disable tests, or merge de
 - Isolate test state: each test creates and tears down its own data, no shared mutables
 - Run tests in random order (`pytest-randomly`) to surface order dependencies
 - Track flaky tests with a quarantine system and fix or delete them within a sprint
+
+### Relationship To Other Concepts
+
+- Related to [snapshot-testing](/concepts/snapshot-testing) when brittle snapshots create nondeterministic or noisy failures.
+- Related to [test-pollution](/concepts/test-pollution) because leaked state between tests is a common cause of flakiness.
+- Related to [environment-parity-gap](/concepts/environment-parity-gap) when tests only fail under certain environments or CI conditions.
+
+### Boundary
+
+Use `flaky-tests` when tests fail intermittently without code changes due to nondeterminism, timing, isolation, or environment instability.
+
+Do not use it for tests that fail deterministically because of real regressions. The key issue is nondeterministic reliability.

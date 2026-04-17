@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from analysis_paths import write_json, write_latest_analysis_pointer
+from analysis_paths import write_analysis_indexes, write_json, write_latest_analysis_pointer
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +23,10 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def read_env(name: str) -> str:
+    return str((os.environ.get(name) or "")).strip()
+
+
 def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -33,13 +38,6 @@ def analysis_context(analysis_dir: Path) -> tuple[str, str]:
     except IndexError as exc:
         raise SystemExit(f"analysis directory is not under memory/projects/<project>/analysis/<id>: {analysis_dir}") from exc
     return project, analysis_id
-
-
-def parse_analysis_id(analysis_id: str) -> tuple[str, str]:
-    if "-" not in analysis_id:
-        return "", ""
-    commit_time, sha = analysis_id.split("-", 1)
-    return commit_time, sha
 
 
 def main() -> int:
@@ -61,10 +59,9 @@ def main() -> int:
     existing_meta = read_json(existing_meta_path) if existing_meta_path.exists() else {}
 
     project_slug, analysis_id = analysis_context(analysis_dir)
-    analysis_commit_time, analysis_sha = parse_analysis_id(analysis_id)
     project_name = str(atlas.get("project") or existing_meta.get("project") or project_slug)
-    sha = str(atlas.get("metadata", {}).get("analyzed_at_sha") or existing_meta.get("sha") or analysis_sha)
-    commit_time = str(blast.get("current_commit_time") or existing_meta.get("commit_time") or analysis_commit_time)
+    sha = str(atlas.get("metadata", {}).get("analyzed_at_sha") or existing_meta.get("sha") or blast.get("current_sha") or "")
+    commit_time = str(blast.get("current_commit_time") or existing_meta.get("commit_time") or "")
     base_sha = str(blast.get("previous_sha") or existing_meta.get("base_sha") or atlas.get("metadata", {}).get("base_sha") or "")
     base_commit_time = str(blast.get("previous_commit_time") or existing_meta.get("base_commit_time") or atlas.get("metadata", {}).get("base_commit_time") or "")
     analysis_mode = str(atlas.get("metadata", {}).get("analysis_mode") or existing_meta.get("analysis_mode") or blast.get("mode") or "")
@@ -106,6 +103,16 @@ def main() -> int:
             "narratives": str(NARRATIVES_SCHEMA),
             "meta": str(META_SCHEMA),
         },
+        "execution": {
+            "agent": read_env("AUGUR_AGENT_NAME"),
+            "specialization": read_env("AUGUR_AGENT_SPECIALIZATION"),
+            "provider": read_env("AUGUR_PROVIDER"),
+            "runtime": read_env("AUGUR_RUNTIME_KIND"),
+            "model": read_env("AUGUR_MODEL"),
+            "bundle_mode": read_env("AUGUR_BUNDLE_MODE"),
+            "agent_contract_version": read_env("AUGUR_AGENT_CONTRACT_VERSION"),
+            "runtime_profile_version": read_env("AUGUR_RUNTIME_PROFILE_VERSION"),
+        },
         "validation": {
             "passed": True,
             "attempts": max(args.validation_attempts, 1) if args.validation_token else max(args.validation_attempts, 0),
@@ -115,6 +122,7 @@ def main() -> int:
 
     write_json(existing_meta_path, meta)
     write_latest_analysis_pointer(project_slug, analysis_id, sha, commit_time)
+    write_analysis_indexes(project_slug)
 
     print(json.dumps(meta, indent=2))
     return 0

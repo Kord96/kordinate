@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [security, integration]
+abstraction:
+- security
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - tenant-isolation
+  - sharding
+  - multi-tenant
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Tenant-Aware Routing
 
@@ -47,3 +63,15 @@ Look for a clear routing layer that maps tenant identity to the correct backend,
 - Unbounded connection pools per tenant that scale with tenant count and exhaust database connections
 - Hardcoded tenant-to-shard mappings with no migration path for rebalancing
 - No validation of tenant routing -- requests silently route to a wrong or default tenant on lookup failure
+
+### Relationship To Other Concepts
+
+- Related to [tenant-isolation](/concepts/tenant-isolation) because correct routing is often the first step in preserving tenant boundaries.
+- Related to [sharding](/concepts/sharding) when tenant identity determines shard, cluster, or schema placement.
+- Related to [multi-tenant](/concepts/multi-tenant) because tenant routing is one common infrastructure concern in multi-tenant systems.
+
+### Boundary
+
+Use `tenant-routing` when incoming requests or work items are directed to tenant-specific infrastructure, schemas, shards, or contexts based on tenant identity.
+
+Do not use it for generic authorization or filtering. The key signal is request path or infrastructure routing by tenant.

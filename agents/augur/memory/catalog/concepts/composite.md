@@ -3,7 +3,22 @@ description: Composite architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - component
+  - tree
+  - visitor
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Composite
 
@@ -45,3 +60,15 @@ Look for a uniform interface applied to both individual objects and compositions
 - No depth limit on recursive operations, risking stack overflow on deep trees
 - Type-checking nodes to determine leaf vs composite instead of relying on polymorphism
 - Mutable shared state in the tree that causes unintended side effects during traversal
+
+### Relationship To Other Concepts
+
+- Related to [component](/concepts/component) when UI or domain trees are structured so leaf and container nodes share one abstraction.
+- Related to [tree](/concepts/tree) because composite is often used to model hierarchical structures uniformly.
+- Related to [visitor](/concepts/visitor) when operations need to traverse composite structures without bloating node interfaces.
+
+### Boundary
+
+Use `composite` when leaves and containers are intentionally exposed through one common interface so clients can treat a hierarchy uniformly.
+
+Do not use it for any tree or nested structure. The important signal is uniform treatment of both single objects and composed groups.

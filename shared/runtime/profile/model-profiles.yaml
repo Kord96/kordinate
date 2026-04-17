@@ -47,6 +47,13 @@ profiles:
     credential_ref: kordinate/fireworks/api-key
     notes: Fireworks-hosted DeepSeek V3.2 candidate for model comparison.
 
+  fireworks-qwen3p6-plus:
+    profile: openai
+    model: accounts/fireworks/models/qwen3p6-plus
+    base_url: https://api.fireworks.ai/inference/v1
+    credential_ref: kordinate/fireworks/api-key
+    notes: Fireworks-hosted Qwen3.6 Plus candidate for model comparison.
+
   gemini-3.1-pro-preview:
     profile: gemini
     model: gemini-3.1-pro-preview

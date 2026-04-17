@@ -5,12 +5,25 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [security]
+abstraction:
+- security
 status: primary
 scope: backend
 relationships:
-  related_to: [token-auth, session-auth, rbac]
-  disambiguates: [api-key-auth]
+  related_to:
+  - token-auth
+  - session-auth
+  - rbac
+  disambiguates:
+  - api-key-auth
+aliases: []
+disambiguates_from:
+- api-key-auth
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # OAuth2/OpenID Connect
 
@@ -59,3 +72,9 @@ Look for correct implementation of the OAuth2 authorization flow with proper tok
 - Skipping token signature verification or not validating issuer/audience claims
 - Storing tokens in localStorage (vulnerable to XSS) instead of httpOnly cookies
 - Hardcoding client secrets in source code or frontend bundles
+
+### Boundary
+
+Use `oauth-oidc` when the important observation is this specific architectural concern within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

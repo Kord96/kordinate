@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [data, ml]
+abstraction:
+- data
+- ml
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - feature-store
+  - model-registry
+  - experiment-framework
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Training Pipeline
 
@@ -47,3 +63,15 @@ Look for a structured pipeline with reproducible stages from raw data to validat
 - Hardcoded hyperparameters scattered throughout training code
 - No checkpointing, requiring full restart on any failure during long training runs
 - Training results not tracked, making it impossible to compare runs or reproduce outcomes
+
+### Relationship To Other Concepts
+
+- Related to [feature-store](/concepts/feature-store) because pipelines often source curated features from a shared feature layer.
+- Related to [model-registry](/concepts/model-registry) when trained artifacts are registered, versioned, and promoted after pipeline completion.
+- Related to [experiment-framework](/concepts/experiment-framework) when training runs are tracked and compared systematically.
+
+### Boundary
+
+Use `training-pipeline` when model training is organized as a reproducible staged pipeline rather than an ad hoc script or notebook workflow.
+
+Do not use it for any ML code. The key signal is orchestrated training workflow and artifact lifecycle.

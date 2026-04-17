@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [lifecycle, ml]
+abstraction:
+- lifecycle
+- ml
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - feature-store
+  - training-pipeline
+  - experiment-framework
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Model Registry
 
@@ -47,3 +63,15 @@ Look for a central catalog that versions, tracks, and governs model lifecycle fr
 - No recorded link between a model version and its training data or code
 - Promoting models to production without validation gates or metric checks
 - Storing models only on local filesystem with no central registry
+
+### Relationship To Other Concepts
+
+- Related to [feature-store](/concepts/feature-store) because models and features often need coordinated version lineage.
+- Related to [training-pipeline](/concepts/training-pipeline) when trained artifacts are promoted into the registry.
+- Related to [experiment-framework](/concepts/experiment-framework) when promotion decisions depend on tracked experiment outcomes.
+
+### Boundary
+
+Use `model-registry` when trained models are cataloged, versioned, promoted, and governed through an explicit registry or approval process.
+
+Do not use it for any model artifact folder. The key signal is a managed lifecycle registry for model versions.

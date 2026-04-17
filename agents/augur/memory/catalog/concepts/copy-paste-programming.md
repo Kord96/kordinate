@@ -2,6 +2,20 @@
 description: Copy-Paste Programming anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - cargo-cult
+  - fixture-builder
+  - shotgun-surgery
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Copy-Paste Programming
 
@@ -43,3 +57,15 @@ Bugs fixed in one copy but not others, leading to inconsistent behavior and a ma
 - Run clone detection tools (jscpd, PMD CPD, Simian) in CI to prevent new duplication from being merged
 - Apply the Rule of Three: tolerate minor duplication up to two occurrences, extract on the third
 - For duplicated test setup, use fixtures, factories, or shared test helpers
+
+### Relationship To Other Concepts
+
+- Related to [cargo-cult](/concepts/cargo-cult) when duplicated code is copied forward without understanding whether the original structure still fits.
+- Related to [fixture-builder](/concepts/fixture-builder) because duplicated test setup is often better replaced with shared fixture construction.
+- Related to [shotgun-surgery](/concepts/shotgun-surgery) because copy-pasted logic forces the same fix across many scattered copies.
+
+### Boundary
+
+Use `copy-paste-programming` when duplicated logic is maintained as separate copies instead of being factored behind one shared abstraction or helper.
+
+Do not use it for deliberate repetition of small literals or genuinely independent implementations.

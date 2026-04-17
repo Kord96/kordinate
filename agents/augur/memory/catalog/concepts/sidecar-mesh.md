@@ -1,7 +1,24 @@
 ---
-description: Sidecar mesh structure — services with co-located helper processes for cross-cutting concerns
+description: "Sidecar mesh structure \u2014 services with co-located helper processes\
+  \ for cross-cutting concerns"
 type: structure-shape
-abstraction: [infrastructure, deployment]
+abstraction:
+- infrastructure
+- deployment
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - sidecar
+  - service-mesh
+  - mtls
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Sidecar Mesh
 
@@ -24,3 +41,15 @@ abstraction: [infrastructure, deployment]
 - **high** — service mesh (Istio/Linkerd) with sidecar injection, mTLS, and traffic management policies
 - **medium** — sidecar containers for logging or monitoring but no service mesh control plane
 - **low** — multi-container pods but sidecars are for unrelated purposes (e.g., log shipping only)
+
+### Relationship To Other Concepts
+
+- Related to [sidecar](/concepts/sidecar) because sidecar-mesh is a fleet-wide topology built from repeated sidecar deployment.
+- Related to [service-mesh](/concepts/service-mesh) because service meshes are the most common reason to adopt this topology.
+- Related to [mtls](/concepts/mtls) when identity and encryption are offloaded into the mesh sidecars.
+
+### Boundary
+
+Use `sidecar-mesh` when the important observation is a repeated topology where service workloads are paired with co-located sidecars to provide mesh behavior.
+
+Do not use it for isolated sidecars or generic multi-container pods. The key signal is mesh-like repeated co-location across many services.

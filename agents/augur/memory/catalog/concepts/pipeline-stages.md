@@ -1,7 +1,24 @@
 ---
-description: Pipeline stages structure — components arranged as sequential processing stages
+description: "Pipeline stages structure \u2014 components arranged as sequential processing\
+  \ stages"
 type: structure-shape
-abstraction: [architectural, data]
+abstraction:
+- architectural
+- data
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - pipeline-filter
+  - data-pipeline
+  - mapreduce
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Pipeline Stages
 
@@ -23,3 +40,15 @@ abstraction: [architectural, data]
 - **high** — explicit pipeline class composing named stages with defined input/output contracts between stages
 - **medium** — sequential function calls where each output feeds the next, but without formal pipeline structure
 - **low** — code that processes data in steps but steps are not modular or reorderable
+
+### Relationship To Other Concepts
+
+- Related to [pipeline-filter](/concepts/pipeline-filter) because both decompose work into ordered transformation stages.
+- Related to [data-pipeline](/concepts/data-pipeline) when the stages move or transform data through a larger processing flow.
+- Related to [mapreduce](/concepts/mapreduce) as a specialized staged computation model with explicit distribution and reduction phases.
+
+### Boundary
+
+Use `pipeline-stages` when the system is organized as explicit sequential stages with well-defined handoffs between them.
+
+Do not use it for any multi-step function where stages are not treated as real architectural units.

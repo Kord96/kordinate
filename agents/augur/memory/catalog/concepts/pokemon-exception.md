@@ -2,6 +2,20 @@
 description: Pokemon Exception anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - swallowed-exception
+  - log-and-throw
+  - magic-numbers
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Pokemon Exception
 
@@ -43,3 +57,15 @@ Masks real errors, prevents clean shutdown on signals, and makes debugging nearl
 - Never catch `BaseException` in Python or `Throwable` in Java unless implementing a top-level error boundary
 - Use a top-level exception handler (middleware, main loop) for truly unexpected errors, not scattered catch-alls
 - Add linting rules (e.g., pylint `broad-except`, SonarQube rules) to flag overly broad catches in CI
+
+### Relationship To Other Concepts
+
+- Related to [swallowed-exception](/concepts/swallowed-exception) because both damage clarity around failure semantics, though pokemon exceptions usually throw broadly while swallowed exceptions disappear.
+- Related to [log-and-throw](/concepts/log-and-throw) when vague or catch-all exception handling also creates noisy observability.
+- Related to [magic-numbers](/concepts/magic-numbers) when broad exceptions are replaced with equally opaque sentinel codes instead of meaningful failure types.
+
+### Boundary
+
+Use `pokemon-exception` when code throws or catches overly generic exceptions in ways that blur distinct failure causes.
+
+Do not use it for one intentionally broad top-level catch boundary or language runtimes where broad exception handling is explicitly constrained.

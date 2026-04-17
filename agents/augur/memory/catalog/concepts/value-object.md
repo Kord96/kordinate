@@ -3,7 +3,21 @@ description: Value Object architectural pattern
 type: pattern
 testable: true
 graphable: false
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - ddd
+  - aggregate
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Value Object
 
@@ -47,3 +61,14 @@ Look for immutable objects that are compared by their field values rather than b
 - Value objects that grow to hold behavior unrelated to the value they represent
 
 See also: ddd
+
+### Relationship To Other Concepts
+
+- Related to [ddd](/concepts/ddd) because value objects are a core tactical DDD building block.
+- Related to [aggregate](/concepts/aggregate) because aggregates often compose immutable value objects to model constrained state.
+
+### Boundary
+
+Use `value-object` when the code models immutable domain values defined by their fields rather than by identity.
+
+Do not use it for any small DTO or helper struct. The important signal is value-based equality and domain meaning, not just a small immutable class.

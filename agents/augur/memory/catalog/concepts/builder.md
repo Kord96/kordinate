@@ -3,7 +3,22 @@ description: Builder architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - abstract-factory
+  - factory
+  - fixture-builder
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Builder
 
@@ -44,3 +59,14 @@ Look for separation between construction steps and the final product representat
 - No validation in `build()` -- produces invalid objects that fail later at runtime
 - Builder and product tightly coupled -- changing the product breaks the builder
 - God-builder with dozens of methods that should be split into multiple builders
+
+### Relationship To Other Concepts
+
+- Related to [abstract-factory](/concepts/abstract-factory) and [factory](/concepts/factory) because all three encapsulate object creation with different tradeoffs.
+- Related to [fixture-builder](/concepts/fixture-builder) when the builder idiom is specialized for tests or sample data creation rather than production object construction.
+
+### Boundary
+
+Use `builder` when object construction is intentionally staged or configured through a fluent or stepwise assembly API before producing the final result.
+
+Do not use it for any options object or helper factory. The important signal is deferred, structured construction of a complex product.

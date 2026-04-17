@@ -3,7 +3,22 @@ description: Facade architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - adapter
+  - gateway-backends
+  - anti-corruption-layer
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Facade
 
@@ -44,3 +59,15 @@ Look for clean simplification of complex subsystems without adding logic.
 - Single facade wrapping the entire application (becomes god object)
 - Facade that makes subsystem classes inaccessible (forced indirection)
 - Nested facades (facade wrapping facade wrapping subsystem)
+
+### Relationship To Other Concepts
+
+- Related to [adapter](/concepts/adapter) because both wrap other interfaces, though facade simplifies a subsystem while adapter translates one interface into another.
+- Related to [gateway-backends](/concepts/gateway-backends) when one entry layer presents a simpler surface over several backend components.
+- Related to [anti-corruption-layer](/concepts/anti-corruption-layer) when a simplified boundary also protects an internal model from external complexity.
+
+### Boundary
+
+Use `facade` when one simplified interface is intentionally placed in front of a more complex subsystem.
+
+Do not use it for any wrapper. The important signal is simplification of a complex subsystem surface, not interface translation or protocol mediation alone.

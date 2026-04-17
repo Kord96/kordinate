@@ -3,7 +3,22 @@ description: Strategy architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - factory
+  - specification
+  - bridge
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Strategy
 
@@ -44,3 +59,15 @@ Look for clean separation between strategy selection and strategy execution.
 - Context class containing fallback logic that bypasses the strategy
 - Strategies that depend on each other or share mutable state
 - Using strategy pattern when a simple function parameter would suffice (over-engineering)
+
+### Relationship To Other Concepts
+
+- Related to [factory](/concepts/factory) when the main choice is which strategy implementation to instantiate or inject.
+- Related to [specification](/concepts/specification) when decision logic is externalized into composable predicate-like objects rather than broader behavioral algorithms.
+- Related to [bridge](/concepts/bridge) because both use composition to vary behavior, though strategy swaps one algorithm while bridge decouples two variation axes.
+
+### Boundary
+
+Use `strategy` when one family of algorithms or policies is intentionally swappable behind a stable interface.
+
+Do not use it for any injected dependency. The key signal is interchangeable behavior selected at runtime or composition time.

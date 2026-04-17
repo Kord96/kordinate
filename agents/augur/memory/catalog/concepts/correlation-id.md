@@ -5,7 +5,21 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [observability, integration]
+abstraction:
+- observability
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - distributed-tracing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Correlation ID
 
@@ -45,3 +59,13 @@ Look for consistent ID propagation across all service boundaries with structured
 - Propagating IDs in HTTP headers but not in async message payloads (losing correlation at queue boundaries)
 
 See also: distributed-tracing
+
+### Relationship To Other Concepts
+
+- Related to [distributed-tracing](/concepts/distributed-tracing) because correlation IDs often provide the simpler cross-boundary linkage that full tracing later enriches with spans and timing.
+
+### Boundary
+
+Use `correlation-id` when one stable identifier is propagated across requests, logs, or messages to tie together work belonging to the same logical flow.
+
+Do not use it for any local request ID unless it is intentionally propagated across service or async boundaries.

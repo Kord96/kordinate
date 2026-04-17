@@ -15,7 +15,7 @@ $AGENT_HOME_DIR/memory/projects/<project>/analysis/<analysis-id>/meta.json
 ```json
 {
   "project": "<project-name>",
-  "analysis_id": "<commit-time>-<commit-sha>",
+  "analysis_id": "<analysis-run-timestamp>",
   "sha": "<analyzed commit SHA>",
   "commit_time": "<git commit unix timestamp as string>",
   "analysis_mode": "full | incremental | skip",
@@ -47,6 +47,16 @@ $AGENT_HOME_DIR/memory/projects/<project>/analysis/<analysis-id>/meta.json
     "narratives": "<absolute narratives schema path>",
     "meta": "<absolute meta schema path>"
   },
+  "execution": {
+    "agent": "<deployed agent name>",
+    "specialization": "<agent specialization>",
+    "provider": "<provider name>",
+    "runtime": "<runtime kind>",
+    "model": "<model name>",
+    "bundle_mode": "<selective | holistic>",
+    "agent_contract_version": "<contract version>",
+    "runtime_profile_version": "<runtime profile version>"
+  },
   "validation": {
     "passed": true,
     "attempts": 1,
@@ -57,9 +67,11 @@ $AGENT_HOME_DIR/memory/projects/<project>/analysis/<analysis-id>/meta.json
 
 ## Rules
 
-- `analysis_id` should default to `<commit-time>-<commit-sha>`.
+- `analysis_id` should identify the analysis run itself and should default to a sortable UTC timestamp such as `2026-04-16T20-21-02Z`.
+- If multiple concurrent runs need isolation, a short suffix may be appended, e.g. `2026-04-16T20-21-02Z--abc123`.
 - `sha` and `commit_time` describe the commit being analyzed, not the time the job started.
 - `base_sha` / `base_commit_time` describe the analysis used for drift comparison. They may be empty on a full first-run analysis.
 - `blast` is the durable summary of drift evaluation for this accepted analysis.
 - `artifacts` and `schemas` should contain absolute paths so daemon and downstream consumers can follow them directly.
+- `execution` records how the analysis was produced so runs can be compared across models, runtimes, and bundle strategies.
 - `validation.passed` must be `true` for any analysis referenced by `latest.json`.

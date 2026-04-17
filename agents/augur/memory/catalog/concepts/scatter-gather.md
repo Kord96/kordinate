@@ -1,7 +1,23 @@
 ---
-description: Scatter-gather flow — request dispatched to multiple services, responses aggregated
+description: "Scatter-gather flow \u2014 request dispatched to multiple services,\
+  \ responses aggregated"
 type: flow-shape
-abstraction: [integration]
+abstraction:
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - request-reply
+  - bff
+  - fan-out
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Scatter-Gather
 
@@ -24,3 +40,15 @@ abstraction: [integration]
 - **high** — explicit parallel dispatch to N services with structured aggregation, timeout handling, and partial result support
 - **medium** — parallel calls to multiple services but results merged ad-hoc without timeout or partial result handling
 - **low** — sequential calls to multiple services that could be parallelized but aren't
+
+### Relationship To Other Concepts
+
+- Related to [request-reply](/concepts/request-reply) because scatter-gather usually fans requests out and then awaits multiple replies.
+- Related to [bff](/concepts/bff) when one frontend-facing layer aggregates results from many downstream services.
+- Related to [fan-out](/concepts/fan-out) because the request side of scatter-gather explicitly widens into parallel downstream calls.
+
+### Boundary
+
+Use `scatter-gather` when one logical request is intentionally dispatched to multiple downstream targets in parallel and later aggregated.
+
+Do not use it for ordinary sequential aggregation. The defining property is parallel fan-out followed by coordinated gathering.

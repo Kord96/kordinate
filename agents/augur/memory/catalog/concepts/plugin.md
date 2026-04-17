@@ -3,11 +3,20 @@ description: Plugin architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
 status: primary
 scope: cross-cutting
 relationships:
-  related_to: [plugin-host]
+  related_to:
+  - plugin-host
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Plugin Architecture
 
@@ -54,3 +63,9 @@ Look for a stable plugin interface with discovery/registration and no core modif
 - Plugins importing core internals beyond the published API surface
 - No versioning on the plugin interface — core changes break all plugins silently
 - Plugin registration order creates hidden dependencies between plugins
+
+### Boundary
+
+Use `plugin` when optional extensions implement a published interface and are loaded into a host system without changing the host’s core code.
+
+Do not use it for ordinary dependency injection or strategy selection unless the extensions are truly pluggable units with an explicit host contract.

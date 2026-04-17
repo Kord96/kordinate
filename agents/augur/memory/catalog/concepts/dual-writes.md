@@ -4,6 +4,19 @@ type: anti-pattern
 observable: true
 distributed: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - outbox
+  - change-data-capture
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Dual Writes
 
@@ -48,3 +61,14 @@ Data inconsistency between stores when either write fails, leaving the system in
 - Add idempotency keys to consumers so that retries and duplicates are safe
 
 See also: outbox pattern, change-data-capture pattern
+
+### Relationship To Other Concepts
+
+- Related to [outbox](/concepts/outbox) because outbox is one of the main remedies for avoiding inconsistent dual-write failure modes.
+- Related to [change-data-capture](/concepts/change-data-capture) because CDC is another way to avoid publishing one change separately from the source-of-truth write.
+
+### Boundary
+
+Use `dual-writes` when one logical change is written to two systems separately without one durable coordination mechanism, creating inconsistency risk.
+
+Do not use it for any system that touches multiple stores. The key signal is a fragile split write path with no reliable atomicity or recovery strategy.

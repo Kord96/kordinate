@@ -1,12 +1,23 @@
 ---
 description: Specialized graph variant with typed nodes and edges carrying attributes
 type: domain-model
-abstraction: [data, graph]
+abstraction:
+- data
+- graph
 status: specialized
 scope: domain
 relationships:
-  is_a: [graph]
-  related_to: [search-index]
+  is_a:
+  - graph
+  related_to:
+  - search-index
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Property Graph
 
@@ -60,3 +71,14 @@ How to identify this pattern in code.
 ## Impact
 
 A property graph model fundamentally shapes query patterns and performance characteristics. Traversal-heavy workloads scale differently than relational joins, requiring specialized indexing, query profiling, and capacity planning around graph density and traversal depth.
+
+### Relationship To Other Concepts
+
+- Related to [search-index](/concepts/search-index) because this concept commonly appears alongside it or is clarified by contrast with it.
+- A specialized form of [graph](/concepts/graph) with additional constraints or specialization.
+
+### Boundary
+
+Use `property-graph` when the important observation is this specific domain modeling concept within a domain-modeling or product-domain concern.
+
+Do not promote it above a broader parent concept unless the specialization itself is what materially explains the design.

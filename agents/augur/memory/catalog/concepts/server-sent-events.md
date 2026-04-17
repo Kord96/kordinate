@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [infrastructure, integration]
+abstraction:
+- infrastructure
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - websocket
+  - long-polling
+  - event-driven
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Server-Sent Events (SSE)
 
@@ -48,3 +64,15 @@ Look for correct one-way server push with proper event framing and automatic rec
 - Buffering the entire response instead of streaming (defeats the purpose of SSE)
 - Using SSE for bidirectional communication instead of switching to WebSocket
 - No connection cleanup when clients disconnect silently
+
+### Relationship To Other Concepts
+
+- Related to [websocket](/concepts/websocket) as another real-time delivery transport, though SSE is one-way server-to-client over HTTP.
+- Related to [long-polling](/concepts/long-polling) because SSE is often adopted as a cleaner streaming alternative to repeated poll cycles.
+- Related to [event-driven](/concepts/event-driven) when server-side events are streamed directly to browsers or clients.
+
+### Boundary
+
+Use `server-sent-events` when the server streams a one-way sequence of events to clients over an HTTP connection using SSE semantics.
+
+Do not use it for any streaming response. The key signal is SSE event framing and client reconnection behavior.

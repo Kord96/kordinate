@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [observability, integration]
+abstraction:
+- observability
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - correlation-id
+  - metrics-instrumentation
+  - structured-logging
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Distributed Tracing
 
@@ -49,3 +65,15 @@ Look for consistent span creation, context propagation across service boundaries
 - Span-per-line instrumentation that creates thousands of spans per request with no useful structure
 - Hardcoding exporter endpoints instead of using environment-based OTLP configuration
 - Missing error recording on spans -- failures are invisible in trace views
+
+### Relationship To Other Concepts
+
+- Related to [correlation-id](/concepts/correlation-id) because trace context and correlation IDs both connect work across service boundaries, though tracing adds span structure and timing semantics.
+- Related to [metrics-instrumentation](/concepts/metrics-instrumentation) because traces are often part of the broader observability stack alongside metrics.
+- Related to [structured-logging](/concepts/structured-logging) when logs carry trace or span identifiers that align textual events with traces.
+
+### Boundary
+
+Use `distributed-tracing` when requests or operations are represented as propagated spans that can be reconstructed across service boundaries.
+
+Do not use it for plain request IDs or local timing metrics unless there is real trace context propagation and span structure.

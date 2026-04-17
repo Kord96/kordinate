@@ -3,7 +3,22 @@ description: GitOps architectural pattern
 type: pattern
 distributed: true
 graphable: true
-abstraction: [deployment]
+abstraction:
+- deployment
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - infrastructure-as-code
+  - immutable-infra
+  - config-management
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # GitOps
 
@@ -45,3 +60,15 @@ Look for a reconciliation loop that continuously converges actual cluster state 
 - Storing secrets in plaintext in the git repository
 - No sync status monitoring -- the reconciliation loop fails silently
 - Single environment overlay for all stages (no separation between staging and production)
+
+### Relationship To Other Concepts
+
+- Related to [infrastructure-as-code](/concepts/infrastructure-as-code) because GitOps usually applies declarative infra manifests from version control through reconciliation.
+- Related to [immutable-infra](/concepts/immutable-infra) when rollout artifacts are treated as immutable desired state rather than patched live.
+- Related to [config-management](/concepts/config-management) because GitOps repositories often become the source of truth for deployment configuration overlays.
+
+### Boundary
+
+Use `gitops` when Git is the declared source of truth for deployment state and an automated reconciler applies that state continuously.
+
+Do not use it for any infra repo or CI deploy pipeline. The defining feature is reconciliation from Git rather than one-shot imperative deployment.

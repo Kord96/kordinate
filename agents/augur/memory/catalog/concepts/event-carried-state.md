@@ -3,11 +3,24 @@ description: Fat-event payload variant within event-driven architecture
 type: flow-shape
 testable: true
 distributed: true
-abstraction: [messaging, data]
+abstraction:
+- messaging
+- data
 status: specialized
 scope: cross-cutting
 relationships:
-  part_of: [event-driven]
+  part_of:
+  - event-driven
+  related_to:
+  - event-notification
+  - change-data-capture
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Event-Carried State Transfer (Fat Events)
 
@@ -54,3 +67,15 @@ Look for events carrying complete entity state that enables consumers to operate
 - No schema versioning -- adding a field breaks all consumers
 - Consumers treating event data as authoritative when strong consistency is required
 - Including sensitive fields in fat events that propagate to services without need-to-know
+
+### Relationship To Other Concepts
+
+- Part of [event-driven](/concepts/event-driven) as one payload design choice within an event-driven system.
+- Related to [event-notification](/concepts/event-notification) as the contrasting thin-event variant.
+- Related to [change-data-capture](/concepts/change-data-capture) when downstream systems replicate state from streamed changes without callback reads.
+
+### Boundary
+
+Use `event-carried-state` when events intentionally carry enough state for downstream projection or replication without requesting more data from the source.
+
+Do not promote it to a separate architecture family. It is a payload-shape distinction inside event-driven systems.

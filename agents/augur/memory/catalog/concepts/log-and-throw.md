@@ -2,6 +2,20 @@
 description: Log and Throw anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - swallowed-exception
+  - structured-logging
+  - correlation-id
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Log and Throw
 
@@ -42,3 +56,15 @@ Log noise multiplies, error counts become meaningless, and operators waste time 
 - If intermediate layers need to add context, wrap the exception in a new one with additional information instead of logging
 - Use structured logging with correlation IDs so a single log entry at the boundary provides full traceability
 - Audit the codebase for catch-log-rethrow patterns and remove the redundant log statements
+
+### Relationship To Other Concepts
+
+- Related to [swallowed-exception](/concepts/swallowed-exception) because both distort error observability, though log-and-throw duplicates failure records instead of hiding them entirely.
+- Related to [structured-logging](/concepts/structured-logging) because the better alternative is usually one well-formed boundary log with enough context.
+- Related to [correlation-id](/concepts/correlation-id) because correlation makes single-point logging workable without repeating the same exception at every layer.
+
+### Boundary
+
+Use `log-and-throw` when a layer logs an exception and then rethrows it unchanged, creating redundant error noise up the stack.
+
+Do not use it when a layer adds real context by wrapping the exception or when it is the terminal handling boundary.

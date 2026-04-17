@@ -3,7 +3,23 @@ description: Tick-Based Simulation architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [lifecycle, realtime]
+abstraction:
+- lifecycle
+- realtime
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - game-loop
+  - entity-component-system
+  - spatial-partitioning
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Tick-Based Simulation
 
@@ -47,3 +63,15 @@ Look for deterministic discrete-time state progression with explicit tick orderi
 - Non-deterministic operations (random without seed, floating-point inconsistencies) inside tick updates
 - Coupling tick rate to frame rate, causing simulation speed to vary with performance
 - No mechanism to handle missed or late ticks in networked scenarios
+
+### Relationship To Other Concepts
+
+- Related to [game-loop](/concepts/game-loop) because many realtime systems execute one simulation tick per main-loop update step.
+- Related to [entity-component-system](/concepts/entity-component-system) because ECS worlds are often advanced in deterministic ticks.
+- Related to [spatial-partitioning](/concepts/spatial-partitioning) when tick updates repeatedly query nearby entities or regions.
+
+### Boundary
+
+Use `tick-simulation` when state advances in explicit discrete ticks that provide the canonical simulation timeline.
+
+Do not use it for generic schedulers or wall-clock-driven periodic jobs without simulation semantics.

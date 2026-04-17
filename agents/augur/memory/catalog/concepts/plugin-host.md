@@ -1,11 +1,22 @@
 ---
-description: Plugin host structure — core system with pluggable extensions via defined interfaces
+description: "Plugin host structure \u2014 core system with pluggable extensions via\
+  \ defined interfaces"
 type: structure-shape
-abstraction: [architectural, design]
+abstraction:
+- architectural
+- design
 status: specialized
 scope: cross-cutting
 relationships:
-  related_to: [plugin]
+  related_to:
+  - plugin
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Plugin Host
 
@@ -33,3 +44,13 @@ Use it when the codebase owns the extension surface itself: discovery, lifecycle
 - **high** — defined plugin interface with discovery mechanism, lifecycle management, and multiple third-party plugins
 - **medium** — extension points via interfaces/hooks but plugins are internal, not third-party
 - **low** — configurable behavior via strategy pattern or dependency injection but no formal plugin system
+
+### Relationship To Other Concepts
+
+- Related to [plugin](/concepts/plugin) because the host defines the extension points and lifecycle that plugins attach to.
+
+### Boundary
+
+Use `plugin-host` when the important observation is the core system that discovers, loads, and coordinates pluggable extensions.
+
+Do not promote it above a broader parent concept unless the specialization itself is what materially explains the design.

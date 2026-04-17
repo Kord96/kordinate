@@ -49,7 +49,7 @@ Request contract:
   "sender": "agent.master-workstation.replies",
   "correlation_id": "job-123",
   "prompt": "Deploy the api-gateway service to staging. Use the latest image tag from CI.",
-  "working_dir": "/kord/shared/repos/api-gateway",
+  "working_dir": "/kord/repos/api-gateway",
   "timeout_ms": 1800000,
   "reflect": true
 }
@@ -87,7 +87,7 @@ The response arrives on the reply topic as a result message:
 
 ### Examples
 
-Deploy a service: publish a request to `charon` with `prompt: "Deploy the api-gateway service to staging..."` and `working_dir: "/kord/shared/repos/api-gateway"`.
+Deploy a service: publish a request to `charon` with `prompt: "Deploy the api-gateway service to staging..."` and `working_dir: "/kord/repos/api-gateway"`.
 
 Set up monitoring: publish a request to `sauron` with `prompt: "Create Grafana dashboards for the payments service..."`.
 
@@ -98,7 +98,7 @@ Architecture review: publish a request to `augur` with the repo path in `working
 Agents share work through the filesystem. All agents mount the same persistent volumes.
 
 - **Project files**: Reference by pod-visible absolute path. Do not assume workstation-local paths such as `/kord/workstation/home/project/...` exist inside agent pods.
-- **Repo roots**: Prefer `/kord/shared/repos/<repo>` when sending a repository working directory to daemon-backed agents.
+- **Repo roots**: Prefer `/kord/repos/<repo>` when sending a repository working directory to daemon-backed agents.
 - **Reports and outputs**: Agents write results to their memory directories under `/kord/<agent>/memory/`. Read these paths to retrieve detailed artifacts.
 - **Repo context**: Pass the `repo` field with the absolute path so the agent checks out and works in the correct directory.
 - **Cross-agent handoffs**: When chaining work (e.g., augur reviews then charon deploys), include the prior agent's output in the next agent's prompt. Example: "Augur approved the design. Here is the review: [paste output]. Now deploy to staging."

@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [security, infrastructure]
+abstraction:
+- security
+- infrastructure
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - service-mesh
+  - secret-management
+  - sidecar-mesh
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Mutual TLS
 
@@ -49,3 +65,15 @@ Look for bidirectional certificate verification where both client and server aut
 - No certificate rotation -- long-lived certificates with manual renewal processes
 - Skipping client identity verification after handshake (mTLS authenticates but code never checks who)
 - Mixing mTLS and non-mTLS traffic on the same port without clear enforcement boundaries
+
+### Relationship To Other Concepts
+
+- Related to [service-mesh](/concepts/service-mesh) because meshes often operationalize mTLS for inter-service traffic.
+- Related to [secret-management](/concepts/secret-management) because certificates, private keys, and trust bundles require secure distribution and rotation.
+- Related to [sidecar-mesh](/concepts/sidecar-mesh) when mTLS is enforced by co-located proxies rather than in application code.
+
+### Boundary
+
+Use `mtls` when both client and server authenticate with certificates during TLS handshake and that mutual identity is a first-class part of the architecture.
+
+Do not use it for plain TLS or generic encryption at rest. The key signal is mutual certificate-based peer authentication.

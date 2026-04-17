@@ -1,0 +1,26 @@
+framework: koa
+manifest_packages:
+  package_json:
+    - koa
+    - "@koa/router"
+    - koa-router
+source_extensions:
+  - .js
+  - .jsx
+  - .ts
+  - .tsx
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - require\(['"]koa['"]\)
+    - import\s+Koa\b
+    - \bnew\s+Koa\s*\(
+  medium:
+    - \brouter\.(get|post|put|delete|patch|use)\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns:
+  - import\s+express\b

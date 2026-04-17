@@ -2,6 +2,20 @@
 description: Callback Hell anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - future-promise
+  - reactor
+  - mediator
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Callback Hell
 
@@ -42,3 +56,15 @@ Unreadable and error-prone async code where control flow, error handling, and re
 - Use promise/future combinators (`Promise.all`, `Promise.race`) for parallel operations instead of nesting
 - Centralize error handling with a single try/catch or `.catch()` at the top level of the async flow
 - For languages without async/await, adopt a control flow library (async.js, Reactor) that linearizes callback sequences
+
+### Relationship To Other Concepts
+
+- Related to [future-promise](/concepts/future-promise) because promises and async/await are common remediations for deeply nested callback chains.
+- Related to [reactor](/concepts/reactor) because callback-heavy event-loop systems often degrade into callback hell without better composition abstractions.
+- Related to [mediator](/concepts/mediator) when control flow coordination is centralized instead of nested directly across callbacks.
+
+### Boundary
+
+Use `callback-hell` when asynchronous control flow becomes deeply nested and tangled because callbacks are composed directly.
+
+Do not use it for any callback-based code. The key issue is harmful nesting and tangled async flow.

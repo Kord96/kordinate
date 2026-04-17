@@ -1,0 +1,22 @@
+framework: elysia
+manifest_packages:
+  package_json:
+    - elysia
+source_extensions:
+  - .js
+  - .jsx
+  - .ts
+  - .tsx
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - import\s+\{\s*Elysia\s*\}
+    - \bnew\s+Elysia\s*\(
+  medium:
+    - \bapp\.(get|post|put|delete|patch)\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []

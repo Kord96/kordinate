@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [infrastructure, integration]
+abstraction:
+- infrastructure
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - service-mesh
+  - api-gateway
+  - load-balancer
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Service Discovery
 
@@ -48,3 +64,15 @@ Look for services registering themselves on startup and consumers resolving endp
 - No health checking -- dead instances remain in the registry and receive traffic
 - Registration without deregistration -- registry fills with stale entries over time
 - Single point of failure in the discovery infrastructure with no fallback
+
+### Relationship To Other Concepts
+
+- Related to [service-mesh](/concepts/service-mesh) because meshes often rely on service discovery under the hood to route traffic correctly.
+- Related to [api-gateway](/concepts/api-gateway) when gateways route to dynamic backend instances discovered at runtime.
+- Related to [load-balancer](/concepts/load-balancer) because discovery often feeds the set of viable upstream targets to balance across.
+
+### Boundary
+
+Use `service-discovery` when services locate each other dynamically through a registry, DNS system, or platform control plane rather than fixed addresses.
+
+Do not use it for static endpoint configuration. The defining property is dynamic service lookup.

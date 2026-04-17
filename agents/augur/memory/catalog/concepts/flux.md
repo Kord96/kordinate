@@ -3,7 +3,24 @@ description: Flux/Redux (Unidirectional Data Flow) architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [architectural, frontend, data]
+abstraction:
+- architectural
+- frontend
+- data
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - reactive-store
+  - component
+  - prop-drilling
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Flux/Redux (Unidirectional Data Flow)
 
@@ -43,3 +60,15 @@ Look for a unidirectional cycle: view dispatches actions, reducers update the st
 - Putting API calls or async logic inside reducers
 - Single monolithic reducer instead of composing smaller reducers per domain
 - Every component connected to the global store instead of passing props from connected parents
+
+### Relationship To Other Concepts
+
+- Related to [reactive-store](/concepts/reactive-store) because many Flux-style systems implement central reactive stores.
+- Related to [component](/concepts/component) because Flux shapes how state and actions flow through UI components.
+- Related to [prop-drilling](/concepts/prop-drilling) because centralized unidirectional state flow is often introduced to reduce long prop chains.
+
+### Boundary
+
+Use `flux` when frontend state changes follow an explicit unidirectional flow through actions, stores, and view updates.
+
+Do not use it for any global state library. The key signal is action-driven unidirectional data flow.

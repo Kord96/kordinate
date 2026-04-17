@@ -5,11 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [architectural, messaging]
+abstraction:
+- architectural
+- messaging
 status: primary
 scope: cross-cutting
 relationships:
-  related_to: [pub-sub]
+  related_to:
+  - pub-sub
+  - choreography
+  - event-sourcing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Event-Driven Architecture
 
@@ -62,3 +74,15 @@ Use `pub-sub` separately when the delivery mechanism itself matters.
 - No event schema registry, leading to silent contract breakage between services
 
 See also: `pub-sub` for topic fan-out delivery semantics
+
+### Relationship To Other Concepts
+
+- Related to [pub-sub](/concepts/pub-sub) when events are distributed through topics or channels with fan-out semantics.
+- Related to [choreography](/concepts/choreography) when event reactions across services collectively drive multi-step behavior without a central controller.
+- Related to [event-sourcing](/concepts/event-sourcing) when events are not only communication artifacts but also the authoritative persistence model.
+
+### Boundary
+
+Use `event-driven` when facts or state changes are communicated primarily through events and downstream behavior is organized around reacting to them.
+
+Do not use it for any system that emits notifications. The important signal is that event flow materially shapes the architecture.

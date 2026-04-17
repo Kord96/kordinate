@@ -3,7 +3,22 @@ description: Prototype architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - builder
+  - factory
+  - fixture-builder
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Prototype
 
@@ -45,3 +60,14 @@ Look for pre-configured template objects that are cloned to create new instances
 - Clone method that skips initialization logic required by the class contract
 - Using prototype pattern when a simple constructor or factory would suffice
 - No prototype registry, requiring callers to manage their own template instances
+
+### Relationship To Other Concepts
+
+- Related to [builder](/concepts/builder) and [factory](/concepts/factory) because all three manage object creation with different tradeoffs.
+- Related to [fixture-builder](/concepts/fixture-builder) when reusable object templates are cloned and adjusted in tests.
+
+### Boundary
+
+Use `prototype` when new objects are created by cloning or copying an existing prototype instance rather than building from scratch.
+
+Do not use it for any copy constructor or serializer clone. The key signal is prototype-based creation as the architectural idiom.

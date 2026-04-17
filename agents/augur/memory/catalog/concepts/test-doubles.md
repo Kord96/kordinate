@@ -3,7 +3,22 @@ description: Test Doubles (Mock/Stub/Fake/Spy) architectural pattern
 type: pattern
 testable: true
 graphable: false
-abstraction: [testing]
+abstraction:
+- testing
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - fixture-builder
+  - property-testing
+  - snapshot-testing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Test Doubles (Mock/Stub/Fake/Spy)
 
@@ -46,3 +61,15 @@ Look for clear separation between the type of double (mock, stub, fake, spy) and
 - Asserting on internal call order rather than observable outcomes
 - Stubs that silently return success for every input, hiding real failure paths
 - Production code importing from test double modules
+
+### Relationship To Other Concepts
+
+- Related to [fixture-builder](/concepts/fixture-builder) because stable test data and dependency substitution often appear together in focused tests.
+- Related to [property-testing](/concepts/property-testing) when doubles help constrain one side of a system while generated inputs exercise another.
+- Related to [snapshot-testing](/concepts/snapshot-testing) because both are testing techniques that trade different forms of test isolation and reviewability.
+
+### Boundary
+
+Use `test-doubles` when tests replace real collaborators with mocks, stubs, fakes, or spies that mimic the same interface.
+
+Do not use it for every helper object in tests or for real in-memory implementations that are actually part of the production architecture.

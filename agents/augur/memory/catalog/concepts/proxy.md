@@ -3,7 +3,20 @@ description: Proxy architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - decorator
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Proxy
 
@@ -47,3 +60,13 @@ Look for the proxy providing transparent access control without leaking its pres
 - Proxy chains where multiple proxies wrap each other without clear purpose
 
 See also: decorator
+
+### Relationship To Other Concepts
+
+- Related to [decorator](/concepts/decorator) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `proxy` when the important observation is this specific architectural concern within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

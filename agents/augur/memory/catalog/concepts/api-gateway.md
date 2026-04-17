@@ -5,7 +5,24 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [integration, infrastructure, security]
+abstraction:
+- integration
+- infrastructure
+- security
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - bff
+  - rate-limiting
+  - server-route-registration
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # API Gateway
 
@@ -47,3 +64,15 @@ Look for the gateway being a thin routing/policy layer with no business logic.
 - Business logic creeping into the gateway (becomes a monolith bottleneck)
 - Gateway as single point of failure with no redundancy or health checks
 - Tight coupling between gateway routing rules and backend implementation details
+
+### Relationship To Other Concepts
+
+- Related to [bff](/concepts/bff) because both sit in front of backend services, but a gateway is usually shared ingress infrastructure rather than frontend-specific shaping.
+- Related to [rate-limiting](/concepts/rate-limiting) because gateways often enforce quota and throttling policies at ingress.
+- Related to [server-route-registration](/concepts/server-route-registration) because gateway rules ultimately expose or route traffic to backend handlers.
+
+### Boundary
+
+Use `api-gateway` when the key architectural role is centralized ingress routing and cross-cutting policy enforcement for downstream services.
+
+Do not use it for every reverse proxy or every backend API layer. If the logic mainly reshapes responses for one frontend or client family, prefer [bff](/concepts/bff).

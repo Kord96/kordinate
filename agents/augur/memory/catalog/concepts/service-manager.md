@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [lifecycle]
+abstraction:
+- lifecycle
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - health-check
+  - graceful-degradation
+  - scheduler
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Service Manager
 
@@ -47,3 +62,15 @@ Look for clean lifecycle phases: startup completes before serving, shutdown drai
 - Shutdown kills in-flight requests without draining (data loss)
 - Health check always returns healthy regardless of actual state
 - No distinction between liveness and readiness probes
+
+### Relationship To Other Concepts
+
+- Related to [health-check](/concepts/health-check) because service managers often expose or coordinate readiness and liveness state.
+- Related to [graceful-degradation](/concepts/graceful-degradation) when service lifecycle management includes partial readiness or controlled dependency loss behavior.
+- Related to [scheduler](/concepts/scheduler) when managed services include timed background jobs or lifecycle-triggered task execution.
+
+### Boundary
+
+Use `service-manager` when one component explicitly owns service startup, shutdown, dependency wiring, and readiness lifecycle.
+
+Do not use it for any application bootstrap file. The key signal is explicit lifecycle coordination for a running service.

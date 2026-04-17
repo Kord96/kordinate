@@ -15,7 +15,10 @@ This document describes what downstream consumers can depend on. For field-level
 $PROJECT_MEM/
   analysis/
     latest.json
-    <commit-time>-<commit-sha>/
+    index.json
+    by-sha/
+      <commit-sha>.json
+    <analysis-id>/
       meta.json
       blast.json
       facts/
@@ -100,12 +103,15 @@ Stable fields:
 - `blast`
 - `artifacts`
 - `schemas`
+- `execution`
 - `validation`
 
 ## What Consumers Can Assume
 
 1. `latest.json` points only to an accepted analysis with `validation.passed = true`.
-2. Deterministic artifacts use `blast.json` plus `facts/`.
-3. Semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
-4. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.
-5. New optional fields may appear, but existing stable fields do not change without a versioned schema change.
+2. `analysis/index.json` provides a per-project history of accepted analyses.
+3. `analysis/by-sha/<sha>.json` groups accepted analyses by analyzed commit.
+4. Deterministic artifacts use `blast.json` plus `facts/`.
+5. Semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
+6. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.
+7. New optional fields may appear, but existing stable fields do not change without a versioned schema change.

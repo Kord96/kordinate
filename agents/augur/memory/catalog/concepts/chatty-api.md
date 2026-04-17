@@ -2,6 +2,20 @@
 description: Chatty API anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - bff
+  - graphql
+  - batch-loader
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Chatty API
 
@@ -42,3 +56,15 @@ Latency multiplies with each additional call, creating fragile client logic tigh
 - Consider GraphQL or a query-based API that lets clients request exactly the data they need in one round-trip
 - Implement server-side view models or aggregation endpoints tailored to specific UI screens
 - Combine related resources into composite responses with embedded or sideloaded associations
+
+### Relationship To Other Concepts
+
+- Related to [bff](/concepts/bff) because a BFF often remedies chatty client/server interaction by composing one tailored response.
+- Related to [graphql](/concepts/graphql) because GraphQL is one common response-shaping alternative to overly chatty APIs.
+- Related to [batch-loader](/concepts/batch-loader) when server-side batching reduces downstream chattiness caused by nested or repeated fetches.
+
+### Boundary
+
+Use `chatty-api` when the failure mode is excessive round-trips or fine-grained endpoints that force clients to make many calls to complete one task.
+
+Do not use it for any large API surface. The key problem is interaction granularity, not endpoint count alone.

@@ -3,7 +3,20 @@ description: Decorator/Wrapper architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - proxy
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Decorator/Wrapper
 
@@ -47,3 +60,13 @@ Look for decorators preserving the wrapped object's interface and each decorator
 - Decorators with hidden side effects that change behavior in non-obvious ways when composed
 
 See also: proxy (controls access vs adds behavior)
+
+### Relationship To Other Concepts
+
+- Related to [proxy](/concepts/proxy) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `decorator` when the important observation is this specific architectural concern within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

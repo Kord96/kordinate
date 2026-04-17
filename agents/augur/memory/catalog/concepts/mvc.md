@@ -3,11 +3,25 @@ description: Model-View-Controller architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [architectural, frontend]
+abstraction:
+- architectural
+- frontend
 status: specialized
 scope: frontend
 relationships:
-  related_to: [layered, component]
+  related_to:
+  - layered
+  - component
+  disambiguates:
+  - mvvm
+aliases: []
+disambiguates_from:
+- mvvm
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Model-View-Controller
 
@@ -39,6 +53,7 @@ Look for strict separation between data (model), presentation (view), and input 
 - It often appears inside a `layered` application.
 - In component-based frontends, MVC may be absent or only partially visible.
 - Prefer `component` when the code is primarily organized as a UI component tree rather than controller/view classes.
+- Prefer `mvvm` instead when reactive ViewModel state is the dominant coordination mechanism rather than controller-driven request handling.
 
 ### Review Checklist
 
@@ -53,3 +68,9 @@ Look for strict separation between data (model), presentation (view), and input 
 - Views executing database queries or mutating model state
 - Models importing view or controller modules (circular dependency)
 - Skipping the controller and calling models directly from route definitions
+
+### Boundary
+
+Use `mvc` when the important observation is this specific architectural concern within a frontend, UI, or client-side architectural concern.
+
+Do not promote it above a broader parent concept unless the specialization itself is what materially explains the design.

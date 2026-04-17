@@ -3,7 +3,22 @@ description: Memento architectural pattern
 type: pattern
 testable: true
 graphable: false
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - command
+  - event-sourcing
+  - snapshot-testing
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Memento
 
@@ -45,3 +60,15 @@ Look for an originator that creates opaque state snapshots managed by a caretake
 - Unbounded memento history consuming excessive memory
 - Memento capturing references to external mutable objects instead of copying state
 - Restoring state without validating that the memento is compatible with the current version
+
+### Relationship To Other Concepts
+
+- Related to [command](/concepts/command) because undo or redo systems often pair commands with stored pre-change snapshots.
+- Related to [event-sourcing](/concepts/event-sourcing) as an alternative history strategy, though memento stores snapshots rather than replayable events.
+- Related to [snapshot-testing](/concepts/snapshot-testing) because both rely on comparing or restoring saved state, though one is runtime behavior and the other is verification.
+
+### Boundary
+
+Use `memento` when an object captures opaque snapshots of its internal state for later restoration.
+
+Do not use it for generic persistence, serialization, or event logs without an explicit restore-oriented caretaker pattern.

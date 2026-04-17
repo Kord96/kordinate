@@ -1,7 +1,24 @@
 ---
-description: Fan-out flow — one event triggers parallel processing across multiple consumers
+description: "Fan-out flow \u2014 one event triggers parallel processing across multiple\
+  \ consumers"
 type: flow-shape
-abstraction: [messaging, integration]
+abstraction:
+- messaging
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - pub-sub
+  - scatter-gather
+  - webhook
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Fan-Out
 
@@ -23,3 +40,15 @@ abstraction: [messaging, integration]
 - **high** — explicit pub/sub with multiple independent consumer groups processing the same event
 - **medium** — one event handler dispatching to multiple functions sequentially (fan-out but not parallel)
 - **low** — multiple modules importing the same event type but unclear if they process the same instance
+
+### Relationship To Other Concepts
+
+- Related to [pub-sub](/concepts/pub-sub) because publish-subscribe is one common mechanism for one-to-many fan-out.
+- Related to [scatter-gather](/concepts/scatter-gather) because scatter phases often begin as fan-out before responses re-converge.
+- Related to [webhook](/concepts/webhook) when one event source triggers multiple outbound callbacks.
+
+### Boundary
+
+Use `fan-out` when one upstream event, command, or stage intentionally branches work to many downstream paths.
+
+Do not use it for simple loops or independent callers that happen to invoke the same service.

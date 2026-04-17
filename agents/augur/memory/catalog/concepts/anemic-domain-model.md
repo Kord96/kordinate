@@ -2,6 +2,18 @@
 description: Anemic Domain Model anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - ddd
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Anemic Domain Model
 
@@ -44,3 +56,13 @@ Business rules are scattered across service classes, making invariants impossibl
 - Apply the "Tell, Don't Ask" principle: tell objects to perform actions rather than extracting data and computing externally
 
 See also: ddd pattern (remediation)
+
+### Relationship To Other Concepts
+
+- Related to [ddd](/concepts/ddd) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `anemic-domain-model` when the important observation is this specific recurring architectural failure mode within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

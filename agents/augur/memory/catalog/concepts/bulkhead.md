@@ -5,7 +5,22 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [resilience]
+abstraction:
+- resilience
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - circuit-breaker
+  - connection-pooling
+  - backpressure
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Bulkhead
 
@@ -45,3 +60,15 @@ Look for isolated resource pools per dependency — one failing dependency must 
 - Single shared connection/thread pool across all dependencies
 - No pool size limits — one slow dependency consumes all available resources
 - Bulkhead without monitoring — pool exhaustion goes unnoticed until outage
+
+### Relationship To Other Concepts
+
+- Related to [circuit-breaker](/concepts/circuit-breaker) because both isolate dependency failures, but bulkheads partition capacity while breakers stop calls.
+- Related to [connection-pooling](/concepts/connection-pooling) because dedicated pools are one common bulkhead implementation.
+- Related to [backpressure](/concepts/backpressure) when saturated partitions push load shedding or slowing back toward callers.
+
+### Boundary
+
+Use `bulkhead` when capacity is intentionally partitioned so one failing or overloaded dependency cannot consume all shared resources.
+
+Do not use it for every pool or concurrency limit unless the partitioning is specifically intended to contain blast radius between workloads or dependencies.

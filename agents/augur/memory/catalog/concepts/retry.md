@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [resilience, integration]
+abstraction:
+- resilience
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - circuit-breaker
+  - timeout
+  - dead-letter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Retry with Backoff
 
@@ -48,3 +64,15 @@ Look for bounded retries with exponential backoff, jitter, and a dead-letter pat
 - Retrying non-idempotent operations without deduplication
 - No max retry limit — stuck requests consume resources indefinitely
 - Silent discard of failed operations (no dead-letter, no alert)
+
+### Relationship To Other Concepts
+
+- Related to [circuit-breaker](/concepts/circuit-breaker) because retries and breakers are often paired, though careless retries can worsen dependency stress.
+- Related to [timeout](/concepts/timeout) because retries only make sense with bounded attempt duration.
+- Related to [dead-letter](/concepts/dead-letter) when failed work is retried a fixed number of times before being quarantined.
+
+### Boundary
+
+Use `retry` when failed operations are intentionally attempted again according to explicit policy such as backoff, jitter, and maximum attempts.
+
+Do not use it for generic loops or polling. The key signal is resilience-oriented reattempt policy around failure.

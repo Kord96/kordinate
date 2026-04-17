@@ -4,12 +4,28 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [security]
+abstraction:
+- security
 status: primary
 scope: backend
 relationships:
-  disambiguates: [token-auth, oauth-oidc, api-key-auth]
-  related_to: [route-guard, rbac]
+  disambiguates:
+  - token-auth
+  - oauth-oidc
+  - api-key-auth
+  related_to:
+  - route-guard
+  - rbac
+aliases: []
+disambiguates_from:
+- token-auth
+- oauth-oidc
+- api-key-auth
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Session-Based Authentication
 
@@ -60,3 +76,9 @@ Look for server-side session state management with secure cookie transport and C
 - Using in-memory session store in production (lost on restart, no horizontal scaling)
 - Missing `HttpOnly`/`Secure` flags on session cookies (vulnerable to XSS and MITM)
 - No session regeneration on privilege change (session fixation vulnerability)
+
+### Boundary
+
+Use `session-auth` when the important observation is this specific architectural concern within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

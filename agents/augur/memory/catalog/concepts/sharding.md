@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [data, infrastructure]
+abstraction:
+- data
+- infrastructure
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - tenant-routing
+  - service-discovery
+  - key-value-model
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Sharding
 
@@ -47,3 +63,15 @@ Look for data distributed across multiple storage nodes with a deterministic rou
 - Cross-shard joins treated as normal queries (hidden N+1 across shards)
 - No plan for resharding when shard count needs to change
 - Application logic assuming data locality across shard boundaries
+
+### Relationship To Other Concepts
+
+- Related to [tenant-routing](/concepts/tenant-routing) when tenant identity determines which shard or partition owns the request.
+- Related to [service-discovery](/concepts/service-discovery) when clients or routers must locate the correct shard endpoint dynamically.
+- Related to [key-value-model](/concepts/key-value-model) because shard keys and partition routing are often central in distributed key-based storage systems.
+
+### Boundary
+
+Use `sharding` when data or workload is intentionally partitioned across multiple storage or processing shards by a routing key.
+
+Do not use it for simple replication or partitioned tables without meaningful shard routing semantics.

@@ -3,7 +3,22 @@ description: Observer/Event Emitter architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, messaging]
+abstraction:
+- design
+- messaging
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - pub-sub
+  - event-driven
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Observer
 
@@ -47,3 +62,14 @@ Look for correct lifecycle management of subscriptions and defined event contrac
 - Synchronous observer chain blocking the emitter when async would be appropriate
 
 See also: pub-sub (inter-process variant)
+
+### Relationship To Other Concepts
+
+- Related to [pub-sub](/concepts/pub-sub) because both decouple producers from consumers, but observer is usually in-process and object-oriented.
+- Related to [event-driven](/concepts/event-driven) when in-process events are part of a broader event-driven design.
+
+### Boundary
+
+Use `observer` when one in-process subject or emitter maintains listeners and notifies them on events or state changes.
+
+Do not use it for broker-backed topic distribution, work queues, or ordinary callback parameters unless there is a clear observer registration model.

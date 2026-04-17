@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [api, integration]
+abstraction:
+- api
+- integration
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - graphql
+  - pagination
+  - server-route-registration
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # REST API
 
@@ -32,6 +48,13 @@ How to identify this pattern in code.
 
 Look for resource-oriented URL design with correct HTTP method semantics and meaningful status codes.
 
+### Relationship To Other Concepts
+
+- `rest` is the API style: resource-oriented URLs, HTTP semantics, and status-code discipline.
+- Use `server-route-registration` for the mechanics of exposing handlers.
+- Use `pagination` for list traversal strategy.
+- Prefer `graphql` when clients query graph-shaped data through a schema rather than fixed resource endpoints.
+
 ### Review Checklist
 
 - URLs represent resources (nouns), not actions (verbs)
@@ -47,3 +70,13 @@ Look for resource-oriented URL design with correct HTTP method semantics and mea
 - Returning 200 OK for error conditions with error details only in the response body
 - Deeply nested resource URLs beyond two levels (`/a/1/b/2/c/3/d/4`)
 - No pagination on list endpoints that can return unbounded results
+
+### Boundary
+
+Do not use `rest` for any JSON-over-HTTP service. Prefer it only when resource semantics and HTTP method discipline are clear architectural choices.
+
+### Relationship To Other Concepts
+
+- Related to [graphql](/concepts/graphql) as an alternative API style where clients shape graph queries instead of navigating resource-oriented endpoints.
+- Related to [pagination](/concepts/pagination) because list and collection resources require explicit paging semantics.
+- Related to [server-route-registration](/concepts/server-route-registration) because RESTful services are exposed through concrete server route declarations.

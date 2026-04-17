@@ -11,12 +11,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 BUNDLED_CONCEPT_QUESTIONS = ROOT / ".generated" / "bundles" / "detectors" / "concept-evidence" / "questions.json"
+CONCEPT_DIR = ROOT / "memory" / "catalog" / "concepts"
+FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 SEMANTIC_REVIEW_CONCEPTS = {
     "active-record",
     "aggregate",
@@ -63,6 +68,28 @@ AUTO_CONFIRM_FACT_CONCEPTS = {
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def parse_frontmatter(text: str) -> dict[str, Any]:
+    match = FRONTMATTER_RE.match(text)
+    if not match:
+        return {}
+    return yaml.safe_load(match.group(1)) or {}
+
+
+def concept_category(concept_id: str) -> str:
+    path = CONCEPT_DIR / f"{concept_id}.md"
+    if not path.exists():
+        return "framework"
+    frontmatter = parse_frontmatter(path.read_text(encoding="utf-8"))
+    abstraction = frontmatter.get("abstraction") or []
+    if isinstance(abstraction, list):
+        for entry in abstraction:
+            value = str(entry).strip()
+            if value:
+                return value
+    concept_type = str(frontmatter.get("type") or "").strip()
+    return concept_type or "framework"
 
 
 def write_json(path: Path, data: dict[str, Any]) -> None:
@@ -228,23 +255,23 @@ def infer_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         ))
 
     framework_facts = grouped.get("framework", [])
-    framework_map = {
-        "fastapi": ("input-validation", "security"),
-        "django": ("input-validation", "security"),
-        "nestjs": ("dependency-injection", "creational"),
-    }
     for fact in framework_facts:
-        framework = fact.get("raw_evidence", {}).get("framework")
-        if framework not in framework_map:
-            continue
-        concept_id, category = framework_map[framework]
-        patterns.append(build_pattern(
-            concept_id,
-            category,
-            "medium",
-            [fact],
-            f"Inferred from framework context `{framework}`.",
-        ))
+        raw = fact.get("raw_evidence", {}) or {}
+        framework = str(raw.get("framework") or "")
+        relationships = raw.get("relationships") if isinstance(raw.get("relationships"), dict) else {}
+        for relation, confidence in (("implements", "high"), ("supports", "medium")):
+            concepts = relationships.get(relation) if isinstance(relationships.get(relation), list) else []
+            for concept_id in concepts:
+                concept_name = str(concept_id or "").strip()
+                if not concept_name:
+                    continue
+                patterns.append(build_pattern(
+                    concept_name,
+                    concept_category(concept_name),
+                    confidence,
+                    [fact],
+                    f"Inferred from framework semantics `{framework}` relation `{relation}`.",
+                ))
 
     model_facts = grouped.get("model", [])
     model_by_tech: dict[str, list[dict[str, Any]]] = defaultdict(list)

@@ -3,6 +3,20 @@ description: Sync-in-Async anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - future-promise
+  - busy-waiting
+  - reactor
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Sync-in-Async
 
@@ -46,3 +60,15 @@ Blocks the event loop, defeating the concurrency benefits of async and causing a
 - Use `aiofiles` for file operations in async code
 - Use async database drivers (`asyncpg`, `motor`, `aiosqlite`) instead of synchronous ones
 - Wrap unavoidable blocking calls in `asyncio.to_thread()` or `loop.run_in_executor()`
+
+### Relationship To Other Concepts
+
+- Related to [future-promise](/concepts/future-promise) because blocking on futures inside async flows is a common sync-in-async failure mode.
+- Related to [busy-waiting](/concepts/busy-waiting) when sync waits are emulated by polling loops inside asynchronous code.
+- Related to [reactor](/concepts/reactor) because blocking operations inside event-loop systems undermine the whole readiness-driven model.
+
+### Boundary
+
+Use `sync-in-async` when blocking synchronous work or waits are performed inside an asynchronous execution context, stalling concurrency.
+
+Do not use it for async wrappers around unavoidable CPU work that is intentionally isolated onto worker threads or executors.

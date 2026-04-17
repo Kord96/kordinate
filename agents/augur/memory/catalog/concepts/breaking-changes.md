@@ -2,6 +2,20 @@
 description: Breaking Changes anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - contract-testing
+  - rest
+  - grpc
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Breaking Changes
 
@@ -43,3 +57,14 @@ Downstream failures and broken integrations every time the API changes, eroding 
 - Use additive-only changes within a version: new fields are optional, old fields remain
 - Publish a machine-readable API schema (OpenAPI, Protobuf) and run contract tests in CI
 - Notify consumers proactively through changelogs, migration guides, or deprecation headers in responses
+
+### Relationship To Other Concepts
+
+- Related to [contract-testing](/concepts/contract-testing) because executable contracts are one of the main protections against introducing breaking changes unnoticed.
+- Related to [rest](/concepts/rest) and [grpc](/concepts/grpc) because API boundary evolution often makes breaking changes visible first in those interface styles.
+
+### Boundary
+
+Use `breaking-changes` when the failure mode is incompatible interface evolution that forces consumers to update or break unexpectedly.
+
+Do not use it for any version bump or internal refactor. The key issue is externally or cross-boundary incompatible change.

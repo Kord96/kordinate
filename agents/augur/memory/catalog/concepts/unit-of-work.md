@@ -3,7 +3,23 @@ description: Unit of Work architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, data]
+abstraction:
+- design
+- data
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - repository
+  - aggregate
+  - data-mapper
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Unit of Work
 
@@ -45,3 +61,15 @@ Look for a single transactional boundary that coordinates writes across multiple
 - Committing inside individual repository methods instead of at the UoW boundary
 - Long-lived units of work that span multiple user interactions (session leak)
 - Catching exceptions inside the UoW and continuing after partial failure
+
+### Relationship To Other Concepts
+
+- Related to [repository](/concepts/repository) when multiple repositories share one transactional boundary.
+- Related to [aggregate](/concepts/aggregate) because units of work often commit one or more aggregate changes atomically.
+- Related to [data-mapper](/concepts/data-mapper) when object state changes are tracked and flushed through an explicit persistence mapping layer.
+
+### Boundary
+
+Use `unit-of-work` when the architecture explicitly coordinates multiple write operations through one transactional commit or rollback boundary.
+
+Do not use it for every transaction block or ORM session unless the code clearly treats that scope as the orchestrating write boundary for a use case.

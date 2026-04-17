@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [concurrency, architectural]
+abstraction:
+- concurrency
+- architectural
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - worker-pool
+  - pub-sub
+  - state-machine
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Actor Model
 
@@ -45,3 +61,15 @@ Look for isolated actors communicating exclusively through asynchronous messages
 - Synchronous blocking calls between actors (defeats the concurrency model)
 - Unbounded mailboxes that grow without limit under load
 - Single god-actor that handles all message types instead of decomposing responsibility
+
+### Relationship To Other Concepts
+
+- Related to [worker-pool](/concepts/worker-pool) because both distribute work, though actor systems encapsulate state and mailbox behavior per actor rather than sharing generic tasks across workers.
+- Related to [pub-sub](/concepts/pub-sub) because actors communicate by message passing, even though actor routing and ownership are usually more structured than topic fan-out.
+- Related to [state-machine](/concepts/state-machine) when actor behavior changes across explicit states or message-handling modes.
+
+### Boundary
+
+Use `actor-model` when concurrency is organized around isolated actors with mailboxes, private state, and asynchronous message passing.
+
+Do not use it for every async worker or queue consumer. The defining property is encapsulated stateful actors communicating only by messages.

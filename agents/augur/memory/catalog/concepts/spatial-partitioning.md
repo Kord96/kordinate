@@ -3,7 +3,23 @@ description: Spatial Partitioning architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data, realtime]
+abstraction:
+- data
+- realtime
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - game-loop
+  - tick-simulation
+  - entity-component-system
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Spatial Partitioning
 
@@ -46,3 +62,15 @@ Look for a spatial data structure that accelerates range or proximity queries ov
 - Using a single flat list with O(n^2) pairwise distance checks instead of spatial queries
 - Tree with no depth limit, causing stack overflow on clustered data
 - Mixing broad-phase and narrow-phase logic in the same structure
+
+### Relationship To Other Concepts
+
+- Related to [game-loop](/concepts/game-loop) because spatial partitioning is often used to accelerate per-frame or per-tick neighborhood queries.
+- Related to [tick-simulation](/concepts/tick-simulation) when partition indexes are updated alongside discrete simulation steps.
+- Related to [entity-component-system](/concepts/entity-component-system) because ECS-based simulations often pair data-oriented entities with spatial partition structures for lookup efficiency.
+
+### Boundary
+
+Use `spatial-partitioning` when objects are organized into spatial indexes or regions to accelerate locality-based queries like collision, proximity, or visibility.
+
+Do not use it for generic sharding, hashing, or any non-spatial partition of data.

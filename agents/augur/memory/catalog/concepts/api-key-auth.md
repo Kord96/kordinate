@@ -4,12 +4,27 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [security]
+abstraction:
+- security
 status: primary
 scope: backend
 relationships:
-  disambiguates: [token-auth, oauth-oidc, session-auth]
-  related_to: [rate-limiting]
+  disambiguates:
+  - token-auth
+  - oauth-oidc
+  - session-auth
+  related_to:
+  - rate-limiting
+aliases: []
+disambiguates_from:
+- token-auth
+- oauth-oidc
+- session-auth
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # API Key Authentication
 
@@ -58,3 +73,9 @@ Look for API key lifecycle management with secure storage, tenant isolation, and
 - Storing keys in plaintext in the database (compromised DB exposes all keys)
 - Using API keys as the sole authentication for sensitive operations (keys lack identity binding, prefer OAuth for user context)
 - Passing keys in URL query parameters (logged in access logs, browser history, and referrer headers)
+
+### Boundary
+
+Use `api-key-auth` when the important observation is this specific architectural concern within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

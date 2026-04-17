@@ -2,6 +2,20 @@
 description: Leaky Abstraction anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - adapter
+  - hexagonal
+  - data-mapper
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Leaky Abstraction
 
@@ -42,3 +56,15 @@ The abstraction provides no real isolation, so changes to the underlying impleme
 - Separate domain models from persistence models: map between them at the adapter layer
 - Apply the Interface Segregation Principle: expose only what callers need, not everything the implementation can do
 - Test the abstraction boundary: verify that callers work with any conforming implementation, not just the current one
+
+### Relationship To Other Concepts
+
+- Related to [adapter](/concepts/adapter) because poor adapters often let underlying implementation details leak through supposedly stable interfaces.
+- Related to [hexagonal](/concepts/hexagonal) because ports-and-adapters architectures try to prevent infrastructure details from leaking into the core.
+- Related to [data-mapper](/concepts/data-mapper) when mapping layers are used specifically to keep persistence concerns out of domain-facing abstractions.
+
+### Boundary
+
+Use `leaky-abstraction` when an abstraction still forces callers to understand underlying implementation details in order to use it correctly.
+
+Do not use it for abstractions that are merely thin; the issue is hidden detail escaping across the boundary.

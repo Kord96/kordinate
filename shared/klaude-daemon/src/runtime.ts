@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { spawn, spawnSync } from 'node:child_process'
 import { createWriteStream } from 'node:fs'
 import path from 'node:path'
-import { mkdir, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rename, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import Anthropic from '@anthropic-ai/sdk'
 import { query } from '@anthropic-ai/claude-agent-sdk'
 import { GoogleGenAI, Type } from '@google/genai'
@@ -73,12 +73,33 @@ type CodexUsageSnapshot = {
   output_tokens: number
 }
 
-type GeminiSdkToolName = 'bash' | 'read_file' | 'write_file' | 'list_dir' | 'pass_show' | 'pass_insert'
+type GeminiSdkToolName = 'bash' | 'read_file' | 'write_file' | 'list_dir' | 'read_run_file' | 'list_run_artifacts' | 'pass_show' | 'pass_insert'
 
 type GeminiSdkToolCall = {
   id: string
   name: GeminiSdkToolName
   arguments: Record<string, unknown>
+}
+
+type RunArtifactContext = {
+  runDir: string
+  files: Map<string, string>
+  factFiles: Set<string>
+}
+
+type RunArtifactSnapshot = {
+  absolutePath: string
+  existed: boolean
+  size: number
+  content?: Buffer
+}
+
+function renderFsToolError(prefix: string, error: unknown): string {
+  const code = typeof (error as { code?: unknown }).code === 'string'
+    ? String((error as { code?: string }).code ?? '')
+    : ''
+  const detail = error instanceof Error ? error.message : String(error)
+  return code ? `${prefix}\n${code}: ${detail}` : `${prefix}\n${detail}`
 }
 
 async function reportProgress(progress: ProgressReporter | undefined, event: {
@@ -784,10 +805,21 @@ async function ensureClaudeSkillRegistryFallback(runtimeHome: string): Promise<v
     // continue with fallback seeding
   }
 
+  const specialization = (() => {
+    const raw = process.env.AGENT_CONTRACT_JSON
+    if (!raw) return process.env.AGENT_PROFILE ?? ''
+    try {
+      const parsed = JSON.parse(raw) as { specialization?: unknown }
+      return typeof parsed.specialization === 'string' ? parsed.specialization : (process.env.AGENT_PROFILE ?? '')
+    } catch {
+      return process.env.AGENT_PROFILE ?? ''
+    }
+  })()
+
   const skillSources = [
     path.join(process.env.KORDINATE_HOME ?? '/app', 'shared', 'skills'),
-    process.env.AGENT_PROFILE
-      ? path.join(process.env.KORDINATE_HOME ?? '/app', 'agents', process.env.AGENT_PROFILE, 'skills')
+    specialization
+      ? path.join(process.env.KORDINATE_HOME ?? '/app', 'agents', specialization, 'skills')
       : '',
   ].filter(Boolean)
 
@@ -826,6 +858,102 @@ function resolveTaskWorkingDirectory(request: RuntimeRequest, profile: { working
     ?? profile.workingDirectory
     ?? profile.homeDirectory
     ?? process.cwd()
+}
+
+async function loadRunArtifactContext(runDir?: string): Promise<RunArtifactContext | undefined> {
+  if (!runDir?.trim()) return undefined
+  const normalizedRunDir = path.resolve(runDir.trim())
+  const files = new Map<string, string>()
+  const register = (relativePath: string | undefined): void => {
+    if (!relativePath) return
+    const trimmed = relativePath.trim().replace(/^\.?\//, '')
+    if (!trimmed) return
+    files.set(trimmed, path.join(normalizedRunDir, trimmed))
+  }
+
+  register('blast.json')
+  register('atlas.json')
+  register('narratives.yaml')
+  register('meta.json')
+  register('facts/index.json')
+  register('facts/startup.json')
+
+  try {
+    const raw = await readFile(path.join(normalizedRunDir, 'facts', 'index.json'), 'utf8')
+    const parsed = JSON.parse(raw) as {
+      index?: {
+        domains?: Array<{ file?: unknown }>
+      }
+    }
+    for (const domain of parsed.index?.domains ?? []) {
+      if (typeof domain?.file === 'string') register(domain.file)
+    }
+  } catch {
+    // ignore missing or malformed facts index; callers can still use guaranteed files
+  }
+
+  try {
+    const raw = await readFile(path.join(normalizedRunDir, 'facts', 'startup.json'), 'utf8')
+    const parsed = JSON.parse(raw) as {
+      startup_files?: unknown[]
+      large_domains?: Array<{ file?: unknown }>
+      domain_counts?: Array<{ file?: unknown }>
+    }
+    for (const item of parsed.startup_files ?? []) {
+      if (typeof item === 'string') register(item)
+    }
+    for (const item of parsed.large_domains ?? []) {
+      if (item && typeof item === 'object' && typeof item.file === 'string') register(item.file)
+    }
+    for (const item of parsed.domain_counts ?? []) {
+      if (item && typeof item === 'object' && typeof item.file === 'string') register(item.file)
+    }
+  } catch {
+    // ignore missing or malformed startup file
+  }
+
+  return {
+    runDir: normalizedRunDir,
+    files,
+    factFiles: new Set(Array.from(files.keys()).filter(key => key.startsWith('facts/'))),
+  }
+}
+
+function normalizeRunArtifactReference(input: string, artifactContext?: RunArtifactContext): string {
+  if (!artifactContext) return input
+  const trimmed = input.trim().replace(/^\.?\//, '')
+  if (!trimmed) return input
+  const direct = artifactContext.files.get(trimmed)
+  if (direct) return direct
+
+  if (trimmed === 'facts' || trimmed.startsWith('facts/')) {
+    return path.join(artifactContext.runDir, trimmed)
+  }
+  if (['blast.json', 'atlas.json', 'narratives.yaml', 'meta.json'].includes(trimmed)) {
+    return path.join(artifactContext.runDir, trimmed)
+  }
+  return input
+}
+
+function undeclaredFactReferences(command: string, artifactContext?: RunArtifactContext): string[] {
+  if (!artifactContext) return []
+  const matches = Array.from(command.matchAll(/(^|[\s"'`])((?:\.\/)?facts\/[A-Za-z0-9._-]+\.json)\b/g))
+    .map(match => String(match[2] ?? '').replace(/^\.?\//, ''))
+  const unique = Array.from(new Set(matches))
+  return unique.filter(reference => !artifactContext.factFiles.has(reference))
+}
+
+function rewriteCommandRunArtifactPaths(command: string, artifactContext?: RunArtifactContext): string {
+  if (!artifactContext) return command
+  let rewritten = command
+  const entries = Array.from(artifactContext.files.entries())
+    .sort((a, b) => b[0].length - a[0].length)
+  for (const [relativePath, absolutePath] of entries) {
+    const escapedRelative = relativePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`(^|[^A-Za-z0-9_./-])(?:\\.\\/)?${escapedRelative}(?=$|[^A-Za-z0-9_./-])`, 'g')
+    rewritten = rewritten.replace(pattern, (_match, prefix: string) => `${prefix}${absolutePath}`)
+  }
+  return rewritten
 }
 
 function shellSingleQuote(value: string): string {
@@ -886,6 +1014,75 @@ async function runBashCommand(options: {
       }))
     })
   })
+}
+
+function protectedRunArtifactPaths(artifactContext?: RunArtifactContext): Array<{ relativePath: string; absolutePath: string }> {
+  if (!artifactContext) return []
+  return Array.from(artifactContext.files.entries())
+    .filter(([relativePath]) => (
+      relativePath === 'atlas.json'
+      || relativePath === 'narratives.yaml'
+      || relativePath.startsWith('stories/')
+    ))
+    .map(([relativePath, absolutePath]) => ({ relativePath, absolutePath }))
+}
+
+async function snapshotProtectedRunArtifacts(artifactContext?: RunArtifactContext): Promise<Map<string, RunArtifactSnapshot>> {
+  const snapshots = new Map<string, RunArtifactSnapshot>()
+  for (const { absolutePath } of protectedRunArtifactPaths(artifactContext)) {
+    try {
+      const info = await stat(absolutePath)
+      const content = info.isFile() ? await readFile(absolutePath) : undefined
+      snapshots.set(absolutePath, {
+        absolutePath,
+        existed: true,
+        size: info.size,
+        content,
+      })
+    } catch {
+      snapshots.set(absolutePath, {
+        absolutePath,
+        existed: false,
+        size: 0,
+      })
+    }
+  }
+  return snapshots
+}
+
+async function restoreProtectedRunArtifacts(snapshots: Map<string, RunArtifactSnapshot>): Promise<void> {
+  for (const snapshot of snapshots.values()) {
+    if (!snapshot.existed) continue
+    await mkdir(path.dirname(snapshot.absolutePath), { recursive: true })
+    if (snapshot.content) {
+      await writeFile(snapshot.absolutePath, snapshot.content)
+    } else {
+      await writeFile(snapshot.absolutePath, Buffer.alloc(0))
+    }
+  }
+}
+
+async function ensureProtectedRunArtifactsIntact(
+  snapshots: Map<string, RunArtifactSnapshot>,
+): Promise<string[]> {
+  const corrupted: string[] = []
+  for (const snapshot of snapshots.values()) {
+    if (!snapshot.existed || snapshot.size <= 0) continue
+    try {
+      const info = await stat(snapshot.absolutePath)
+      if (info.size === 0) corrupted.push(snapshot.absolutePath)
+    } catch {
+      corrupted.push(snapshot.absolutePath)
+    }
+  }
+  return corrupted
+}
+
+async function writeFileAtomic(absolutePath: string, content: string): Promise<void> {
+  await mkdir(path.dirname(absolutePath), { recursive: true })
+  const tempPath = `${absolutePath}.${randomUUID()}.tmp`
+  await writeFile(tempPath, content, 'utf8')
+  await rename(tempPath, absolutePath)
 }
 
 function passEnv(): Record<string, string> {
@@ -962,6 +1159,25 @@ function geminiSdkFunctionDeclarations(): Array<Record<string, unknown>> {
       },
     },
     {
+      name: 'read_run_file',
+      description: 'Read a prepared analysis run artifact by relative path, such as facts/index.json or atlas.json.',
+      parameters: {
+        type: Type.OBJECT,
+        properties: {
+          path: { type: Type.STRING, description: 'Run-artifact path relative to the prepared run directory.' },
+        },
+        required: ['path'],
+      },
+    },
+    {
+      name: 'list_run_artifacts',
+      description: 'List the prepared run artifacts currently available for this analysis run.',
+      parameters: {
+        type: Type.OBJECT,
+        properties: {},
+      },
+    },
+    {
       name: 'pass_show',
       description: 'Read a secret from the shared pass store.',
       parameters: {
@@ -987,39 +1203,103 @@ function geminiSdkFunctionDeclarations(): Array<Record<string, unknown>> {
   ]
 }
 
-async function executeGeminiSdkToolCall(call: GeminiSdkToolCall, cwd: string, env?: Record<string, string>): Promise<string> {
+async function executeGeminiSdkToolCall(
+  call: GeminiSdkToolCall,
+  cwd: string,
+  env?: Record<string, string>,
+  artifactContext?: RunArtifactContext,
+): Promise<string> {
   switch (call.name) {
     case 'bash': {
-      const command = String(call.arguments.command ?? '')
-      const { stdout, stderr } = await runBashCommand({ command, cwd, env, timeoutMs: 10000 })
-      return stderr ? `${stdout}${stdout && !stdout.endsWith('\n') ? '\n' : ''}${stderr}`.trimEnd() : stdout.trimEnd()
+      const originalCommand = String(call.arguments.command ?? '')
+      const undeclaredFacts = undeclaredFactReferences(originalCommand, artifactContext)
+      if (undeclaredFacts.length > 0) {
+        throw new Error(`Run artifact(s) not declared in facts/index.json: ${undeclaredFacts.join(', ')}`)
+      }
+      const command = rewriteCommandRunArtifactPaths(originalCommand, artifactContext)
+      const protectedSnapshots = await snapshotProtectedRunArtifacts(artifactContext)
+      try {
+        const { stdout, stderr } = await runBashCommand({ command, cwd, env, timeoutMs: 10000 })
+        const corrupted = await ensureProtectedRunArtifactsIntact(protectedSnapshots)
+        if (corrupted.length > 0) {
+          await restoreProtectedRunArtifacts(protectedSnapshots)
+          return `bash failed\nProtected run artifact write left empty or missing file(s): ${corrupted.join(', ')}`
+        }
+        return stderr ? `${stdout}${stdout && !stdout.endsWith('\n') ? '\n' : ''}${stderr}`.trimEnd() : stdout.trimEnd()
+      } catch (error) {
+        await restoreProtectedRunArtifacts(protectedSnapshots)
+        const stdout = typeof (error as { stdout?: unknown }).stdout === 'string'
+          ? String((error as { stdout?: string }).stdout ?? '')
+          : ''
+        const stderr = typeof (error as { stderr?: unknown }).stderr === 'string'
+          ? String((error as { stderr?: string }).stderr ?? '')
+          : ''
+        const exitCode = typeof (error as { exitCode?: unknown }).exitCode === 'number'
+          ? Number((error as { exitCode?: number }).exitCode)
+          : undefined
+        const summary = error instanceof Error ? error.message : String(error)
+        const rendered = `${stdout}${stdout && stderr && !stdout.endsWith('\n') ? '\n' : ''}${stderr}`.trimEnd()
+        const prefix = exitCode !== undefined ? `bash exited ${exitCode}` : 'bash failed'
+        return rendered.length > 0 ? `${prefix}\n${rendered}` : `${prefix}\n${summary}`
+      }
     }
     case 'read_file': {
       const target = String(call.arguments.path ?? '')
-      return await readFile(path.isAbsolute(target) ? target : path.join(cwd, target), 'utf8')
+      const normalizedTarget = normalizeRunArtifactReference(target, artifactContext)
+      try {
+        return await readFile(path.isAbsolute(normalizedTarget) ? normalizedTarget : path.join(cwd, normalizedTarget), 'utf8')
+      } catch (error) {
+        return renderFsToolError('read_file failed', error)
+      }
     }
     case 'write_file': {
       const target = String(call.arguments.path ?? '')
       const content = String(call.arguments.content ?? '')
-      const absolute = path.isAbsolute(target) ? target : path.join(cwd, target)
-      await mkdir(path.dirname(absolute), { recursive: true })
-      await writeFile(absolute, content, 'utf8')
+      const normalizedTarget = normalizeRunArtifactReference(target, artifactContext)
+      const absolute = path.isAbsolute(normalizedTarget) ? normalizedTarget : path.join(cwd, normalizedTarget)
+      await writeFileAtomic(absolute, content)
       return 'written'
     }
     case 'list_dir': {
       const target = String(call.arguments.path ?? '')
-      const absolute = path.isAbsolute(target) ? target : path.join(cwd, target)
-      const entries = await readdir(absolute, { withFileTypes: true })
-      const payload = await Promise.all(entries.map(async entry => {
-        const full = path.join(absolute, entry.name)
-        const info = await stat(full)
-        return {
-          name: entry.name,
-          type: entry.isDirectory() ? 'dir' : entry.isFile() ? 'file' : 'other',
-          size: info.size,
-        }
-      }))
-      return JSON.stringify(payload)
+      const normalizedTarget = normalizeRunArtifactReference(target, artifactContext)
+      const absolute = path.isAbsolute(normalizedTarget) ? normalizedTarget : path.join(cwd, normalizedTarget)
+      try {
+        const entries = await readdir(absolute, { withFileTypes: true })
+        const payload = await Promise.all(entries.map(async entry => {
+          const full = path.join(absolute, entry.name)
+          const info = await stat(full)
+          return {
+            name: entry.name,
+            type: entry.isDirectory() ? 'dir' : entry.isFile() ? 'file' : 'other',
+            size: info.size,
+          }
+        }))
+        return JSON.stringify(payload)
+      } catch (error) {
+        return renderFsToolError('list_dir failed', error)
+      }
+    }
+    case 'read_run_file': {
+      const target = String(call.arguments.path ?? '').replace(/^\.?\//, '')
+      if (!artifactContext) {
+        throw new Error('No prepared run artifact context is available for this request')
+      }
+      const absolute = artifactContext.files.get(target) ?? path.join(artifactContext.runDir, target)
+      try {
+        return await readFile(absolute, 'utf8')
+      } catch (error) {
+        return renderFsToolError(`read_run_file failed for ${target}`, error)
+      }
+    }
+    case 'list_run_artifacts': {
+      if (!artifactContext) {
+        throw new Error('No prepared run artifact context is available for this request')
+      }
+      return JSON.stringify({
+        run_dir: artifactContext.runDir,
+        files: Array.from(artifactContext.files.keys()).sort(),
+      }, null, 2)
     }
     case 'pass_show':
       return await passShow(String(call.arguments.key_path ?? ''), cwd)
@@ -1027,6 +1307,7 @@ async function executeGeminiSdkToolCall(call: GeminiSdkToolCall, cwd: string, en
       await passInsert(String(call.arguments.key_path ?? ''), String(call.arguments.value ?? ''), cwd)
       return 'stored'
   }
+  throw new Error(`Unsupported Gemini tool call: ${String(call.name)}`)
 }
 
 async function loadGeminiSessionHistory(runtimeHome: string, sessionId: string): Promise<Array<Record<string, unknown>>> {
@@ -1651,23 +1932,29 @@ export class GeminiSdkAdapter implements ProviderSessionAdapter {
 
     const sessionId = session.providerSessionId ?? randomUUID()
     const nextSession = nextSessionState(session, sessionId)
-      const runtimeHome = resolveRuntimeHome(this.homeDirectory)
-      const cwd = resolveTaskWorkingDirectory(request, {
-        homeDirectory: this.homeDirectory,
-        workingDirectory: this.workingDirectory,
-      })
-      const toolEnv = {
-        AGENT_HOME_DIR: runtimeHome,
-        KORDINATE_HOME: process.env.KORDINATE_HOME ?? '/app',
-        ...(typeof request.agent_params?.run_dir === 'string' && request.agent_params.run_dir.trim()
-          ? {
-              RUN: request.agent_params.run_dir.trim(),
-              ANALYSIS: path.dirname(request.agent_params.run_dir.trim()),
-              PROJECT_MEM: path.dirname(path.dirname(request.agent_params.run_dir.trim())),
-            }
-          : {}),
-      }
-      const debugDir = path.join(runtimeHome, '.daemon-logs')
+    const runtimeHome = resolveRuntimeHome(this.homeDirectory)
+    const cwd = resolveTaskWorkingDirectory(request, {
+      homeDirectory: this.homeDirectory,
+      workingDirectory: this.workingDirectory,
+    })
+    const runDir = typeof request.agent_params?.run_dir === 'string' && request.agent_params.run_dir.trim()
+      ? request.agent_params.run_dir.trim()
+      : undefined
+    const artifactContext = await loadRunArtifactContext(runDir)
+    const toolEnv = {
+      AGENT_HOME_DIR: runtimeHome,
+      KORDINATE_HOME: process.env.KORDINATE_HOME ?? '/app',
+      ROOT: request.working_dir ?? this.workingDirectory ?? this.homeDirectory ?? process.cwd(),
+      REPO_ROOT: request.working_dir ?? this.workingDirectory ?? this.homeDirectory ?? process.cwd(),
+      ...(runDir
+        ? {
+            RUN: runDir,
+            ANALYSIS: path.dirname(runDir),
+            PROJECT_MEM: path.dirname(path.dirname(runDir)),
+          }
+        : {}),
+    }
+    const debugDir = path.join(runtimeHome, '.daemon-logs')
 
     try {
       await mkdir(debugDir, { recursive: true })
@@ -1719,6 +2006,7 @@ export class GeminiSdkAdapter implements ProviderSessionAdapter {
         structured_log_path: structuredLogPath,
         payload: {
           cwd,
+          run_dir: runDir ?? null,
           prompt_preview: summarizeText(promptText, 200),
           prompt_cache_key: request.promptPlan?.cacheKey,
           cached_content: null,
@@ -1787,7 +2075,7 @@ export class GeminiSdkAdapter implements ProviderSessionAdapter {
             arguments: functionCall.args ?? {},
           }
           await writeEvent({ type: 'tool_use', id: call.id, name: call.name, arguments: call.arguments })
-          const output = await executeGeminiSdkToolCall(call, cwd, toolEnv)
+          const output = await executeGeminiSdkToolCall(call, cwd, toolEnv, artifactContext)
           await writeEvent({ type: 'tool_result', id: call.id, name: call.name, output: summarizeText(output, 1200) })
           history.push({
             role: 'user',

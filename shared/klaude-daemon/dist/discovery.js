@@ -2,10 +2,10 @@ export function buildDiscoveryRecord(input) {
     const now = new Date().toISOString();
     return {
         name: input.agent,
-        capabilities: input.agentProfile.capabilities ?? [],
+        capabilities: input.agentContract.capabilities ?? [],
         backend_provider: input.config.executionProfile.provider,
         backend_model: input.config.executionProfile.model,
-        supported_agent_params: input.agentProfile.supportedAgentParams ?? [],
+        supported_agent_params: input.agentContract.supportedAgentParams ?? [],
         active: true,
         specialization: input.specialization,
         runtime: input.config.executionProfile.runtime,

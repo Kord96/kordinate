@@ -1,16 +1,27 @@
 framework: fastapi
-signals:
+manifest_packages:
+  pyproject:
+    - fastapi
+  requirements:
+    - fastapi
+source_extensions:
+  - .py
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
   strong:
-    - "from fastapi import FastAPI"
-    - "app = FastAPI()"
-    - "from fastapi import APIRouter"
+    - "from\\s+fastapi\\s+import"
+    - "import\\s+fastapi"
+    - "\\bFastAPI\\s*\\("
+    - "\\bAPIRouter\\s*\\("
   medium:
-    - "@app.get("
-    - "@app.post("
-    - "@router.get("
-    - "@router.post("
-    - "Depends("
-    - "BaseModel"
-negative_signals:
-  - "from flask import Flask"
-  - "from django.urls import path"
+    - "@\\w+\\.(get|post|put|delete|patch|options|head)\\s*\\("
+    - "\\bDepends\\s*\\("
+    - "\\bBaseModel\\b"
+  weak: []
+negative_path_patterns: []
+negative_source_patterns:
+  - "from\\s+flask\\s+import"
+  - "from\\s+django\\.urls\\s+import"

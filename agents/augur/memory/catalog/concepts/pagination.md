@@ -3,7 +3,23 @@ description: Pagination architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data, api]
+abstraction:
+- data
+- api
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - graphql
+  - rest
+  - search-index
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Pagination
 
@@ -31,6 +47,12 @@ How to identify this pattern in code.
 
 Look for the right pagination strategy for the data size and access pattern, with stable ordering guarantees.
 
+### Relationship To Other Concepts
+
+- `pagination` is the traversal contract for large result sets.
+- It commonly appears inside `rest`, `graphql`, and `search-index` flows.
+- Prefer those concepts when the main concern is the API style or search subsystem rather than result slicing mechanics.
+
 ### Review Checklist
 
 - Pagination strategy matches the use case: offset for small datasets, cursor/keyset for large or real-time data
@@ -46,3 +68,7 @@ Look for the right pagination strategy for the data size and access pattern, wit
 - No stable sort order, causing records to shift between pages as data changes
 - Exposing raw database IDs or internal state as cursor values that clients can manipulate
 - Missing maximum page size limit, allowing a single request to fetch the entire dataset
+
+### Boundary
+
+Do not use `pagination` for every endpoint with `limit`. Prefer it when result-windowing strategy, cursor design, or stable traversal are meaningful architectural choices.

@@ -3,6 +3,20 @@ description: Busy Waiting anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - long-polling
+  - backpressure
+  - polling-flow
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Busy Waiting
 
@@ -44,3 +58,14 @@ Wasted CPU cycles, delayed response times (up to the sleep interval), and batter
 - For file system changes, use watchers (`inotify`, `fswatch`, `watchdog`) instead of polling loops
 - If polling is unavoidable, use exponential backoff with jitter to reduce load and improve responsiveness
 - For inter-service communication, prefer webhooks or pub/sub over periodic API polling
+
+### Relationship To Other Concepts
+
+- Related to [long-polling](/concepts/long-polling) and [polling-flow](/concepts/polling-flow) because both involve waiting loops, though busy-waiting wastes CPU instead of blocking efficiently.
+- Related to [backpressure](/concepts/backpressure) as a healthier alternative to tight loops that hammer unavailable resources.
+
+### Boundary
+
+Use `busy-waiting` when code repeatedly checks a condition in a tight loop instead of blocking, sleeping meaningfully, or reacting to a signal.
+
+Do not use it for all polling. The key problem is wasteful spinning rather than event-driven or bounded waiting.

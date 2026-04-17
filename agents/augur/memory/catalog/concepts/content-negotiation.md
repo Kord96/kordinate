@@ -3,7 +3,22 @@ description: Content/Protocol Negotiation architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [api]
+abstraction:
+- api
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - rest
+  - graphql
+  - server-route-registration
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Content/Protocol Negotiation
 
@@ -47,3 +62,15 @@ Look for correct format dispatch based on client preferences with proper error r
 - Missing `Vary` header causing CDN or proxy caches to serve wrong formats
 - Mixing version negotiation strategies across endpoints (some URL-based, some header-based)
 - Supporting content types that are never tested or documented
+
+### Relationship To Other Concepts
+
+- Related to [rest](/concepts/rest) because HTTP content negotiation is a classic part of RESTful representation handling.
+- Related to [graphql](/concepts/graphql) as a contrast: GraphQL usually avoids media-type variation in favor of schema-driven query shape.
+- Related to [server-route-registration](/concepts/server-route-registration) because negotiated representations are exposed through concrete server endpoints.
+
+### Boundary
+
+Use `content-negotiation` when clients and servers explicitly negotiate representation format, version, or media type through HTTP semantics.
+
+Do not use it for any serialization format. The key signal is negotiated representation choice at the API boundary.

@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [api, architectural]
+abstraction:
+- api
+- architectural
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - api-gateway
+  - component
+  - rest
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Backend for Frontend
 
@@ -46,3 +62,15 @@ Look for a dedicated API aggregation layer per frontend with clear separation of
 - Single BFF serving all frontends (defeats the purpose, becomes a generic API gateway)
 - BFF-to-BFF calls (BFFs should only call downstream services, never each other)
 - Frontend teams blocked by a shared BFF team (BFF should be frontend-team owned)
+
+### Relationship To Other Concepts
+
+- Related to [api-gateway](/concepts/api-gateway) because both broker frontend traffic, but a BFF is optimized for one frontend or client experience rather than shared ingress infrastructure.
+- Related to [component](/concepts/component) because BFFs often exist to serve distinct UI surfaces or applications.
+- Related to [rest](/concepts/rest) because many BFFs expose resource-oriented HTTP APIs while aggregating downstream calls.
+
+### Boundary
+
+Use `bff` when a backend layer exists specifically to serve one frontend or client experience with tailored aggregation and response shaping.
+
+Do not use it for generic API layers, shared ingress proxies, or ordinary microservices that are not organized around a frontend boundary.

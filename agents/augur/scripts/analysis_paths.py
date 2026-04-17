@@ -4,11 +4,13 @@ from __future__ import annotations
 import json
 import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
-ANALYSIS_ID_RE = re.compile(r"^\d+-[0-9a-f]{7,40}$")
+ANALYSIS_ID_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z(?:--[A-Za-z0-9_-]+)?$")
+LEGACY_ANALYSIS_ID_RE = re.compile(r"^\d+-[0-9a-f]{7,40}(?:-[A-Za-z0-9_-]+)?$")
 
 
 def agent_home_dir(explicit: str | Path | None = None) -> Path:
@@ -40,23 +42,34 @@ def latest_analysis_pointer_path(project: str, agent_home: str | Path | None = N
     return project_analysis_dir(project, agent_home) / "latest.json"
 
 
-def analysis_id(commit_time: str | int | None, sha: str) -> str:
-    timestamp = str(commit_time or "0").strip() or "0"
-    sha_key = (sha or "workspace").strip()[:40] or "workspace"
-    return f"{timestamp}-{sha_key}"
+def _sanitize_suffix(value: str | None) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return ""
+    safe = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in raw)
+    safe = safe.strip("-_")
+    return safe
 
 
 def analysis_dir(project: str, analysis_key: str, agent_home: str | Path | None = None) -> Path:
     return project_analysis_dir(project, agent_home) / analysis_key
 
 
+def analysis_timestamp() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H-%M-%SZ")
+
+
+def analysis_id(timestamp: str | None = None, suffix: str | None = None) -> str:
+    base = (timestamp or "").strip() or analysis_timestamp()
+    safe_suffix = _sanitize_suffix(suffix)
+    return f"{base}--{safe_suffix}" if safe_suffix else base
+
+
 def analysis_dir_for_commit(project: str, sha: str, commit_time: str | int | None = None, agent_home: str | Path | None = None) -> Path:
-    if commit_time is None:
-        existing = find_analysis_dir_for_sha(project, sha, agent_home)
-        if existing is not None:
-            return existing
-        return analysis_dir(project, (sha or "workspace").strip()[:40] or "workspace", agent_home)
-    return analysis_dir(project, analysis_id(commit_time, sha), agent_home)
+    existing = find_analysis_dir_for_sha(project, sha, agent_home)
+    if existing is not None:
+        return existing
+    return analysis_dir(project, analysis_id(), agent_home)
 
 
 def analysis_meta_path(project: str, analysis_key: str, agent_home: str | Path | None = None) -> Path:
@@ -98,21 +111,15 @@ def find_analysis_dir_for_sha(project: str, sha: str, agent_home: str | Path | N
     sha_key = (sha or "").strip()[:40]
     if not sha_key:
         return None
-    root = project_analysis_dir(project, agent_home)
-    if not root.exists():
-        return None
-
-    direct = root / sha_key
-    if direct.exists():
-        return direct
-
-    pattern = re.compile(rf"^\d+-{re.escape(sha_key)}$")
-    matches = sorted(
-        [path for path in root.iterdir() if path.is_dir() and pattern.match(path.name)],
-        key=lambda path: path.name,
-        reverse=True,
-    )
-    return matches[0] if matches else None
+    matches: list[tuple[str, Path]] = []
+    for path, meta in iter_analysis_meta(project, agent_home):
+        analyzed_sha = str(meta.get("sha") or "").strip()[:40]
+        if analyzed_sha != sha_key:
+            continue
+        sort_key = str(meta.get("analyzed_at") or path.name)
+        matches.append((sort_key, path))
+    matches.sort(key=lambda item: item[0], reverse=True)
+    return matches[0][1] if matches else None
 
 
 def iter_analysis_dirs(project: str, agent_home: str | Path | None = None) -> list[Path]:
@@ -122,7 +129,7 @@ def iter_analysis_dirs(project: str, agent_home: str | Path | None = None) -> li
     return sorted(
         [
             path for path in root.iterdir()
-            if path.is_dir() and ANALYSIS_ID_RE.match(path.name)
+            if path.is_dir() and (ANALYSIS_ID_RE.match(path.name) or LEGACY_ANALYSIS_ID_RE.match(path.name))
         ],
         key=lambda path: path.name,
         reverse=True,
@@ -139,3 +146,59 @@ def iter_analysis_meta(project: str, agent_home: str | Path | None = None) -> li
         if isinstance(payload, dict):
             records.append((path, payload))
     return records
+
+
+def analysis_index_path(project: str, agent_home: str | Path | None = None) -> Path:
+    return project_analysis_dir(project, agent_home) / "index.json"
+
+
+def analysis_by_sha_dir(project: str, agent_home: str | Path | None = None) -> Path:
+    return project_analysis_dir(project, agent_home) / "by-sha"
+
+
+def write_analysis_indexes(project: str, agent_home: str | Path | None = None) -> None:
+    records = iter_analysis_meta(project, agent_home)
+    summaries: list[dict[str, Any]] = []
+    by_sha: dict[str, list[dict[str, Any]]] = {}
+
+    for path, meta in records:
+        summary = {
+            "analysis_id": str(meta.get("analysis_id") or path.name),
+            "analysis_dir": str(path),
+            "project": str(meta.get("project") or project),
+            "sha": str(meta.get("sha") or ""),
+            "commit_time": str(meta.get("commit_time") or ""),
+            "base_sha": str(meta.get("base_sha") or ""),
+            "base_commit_time": str(meta.get("base_commit_time") or ""),
+            "analysis_mode": str(meta.get("analysis_mode") or ""),
+            "analyzed_at": str(meta.get("analyzed_at") or ""),
+            "execution": meta.get("execution") or {},
+            "validation": meta.get("validation") or {},
+        }
+        summaries.append(summary)
+        sha = summary["sha"]
+        if sha:
+            by_sha.setdefault(sha, []).append(summary)
+
+    write_json(
+        analysis_index_path(project, agent_home),
+        {
+            "project": project,
+            "analyses": summaries,
+        },
+    )
+    by_sha_root = analysis_by_sha_dir(project, agent_home)
+    if by_sha_root.exists():
+        for child in by_sha_root.iterdir():
+            if child.is_file():
+                child.unlink()
+    by_sha_root.mkdir(parents=True, exist_ok=True)
+    for sha, items in by_sha.items():
+        write_json(
+            by_sha_root / f"{sha}.json",
+            {
+                "project": project,
+                "sha": sha,
+                "analyses": items,
+            },
+        )

@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [messaging, resilience]
+abstraction:
+- messaging
+- resilience
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - retry
+  - claim-check
+  - competing-consumers
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Dead Letter Queue
 
@@ -47,3 +63,15 @@ Look for a secondary destination that captures messages that cannot be processed
 - DLQ messages silently accumulating with no alerting or review process
 - Replaying DLQ messages without fixing the underlying cause (re-poisoning the queue)
 - Losing original message metadata during dead-lettering (cannot diagnose failures)
+
+### Relationship To Other Concepts
+
+- Related to [retry](/concepts/retry) because messages typically reach a dead-letter queue only after retry policy is exhausted.
+- Related to [claim-check](/concepts/claim-check) when large failed payloads are represented indirectly and still need durable error handling.
+- Related to [competing-consumers](/concepts/competing-consumers) when worker fleets can poison shared queues and need a safe failure sink.
+
+### Boundary
+
+Use `dead-letter` when failed messages are intentionally moved aside after repeated failure so the main queue or stream can continue processing.
+
+Do not use it for generic error logging or retry counters unless failed work is actually redirected into a separate failure channel or queue.

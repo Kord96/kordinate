@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [security, data]
+abstraction:
+- security
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - tenant-routing
+  - multi-tenant
+  - rbac
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Tenant Isolation
 
@@ -48,3 +64,15 @@ Look for defense-in-depth tenant boundaries: middleware sets context, queries fi
 - Trusting `X-Tenant-ID` header without validating it against the authenticated identity
 - Queries that JOIN across tenants or aggregate without tenant scoping
 - Missing tenant context in async workers -- background jobs running with no tenant or wrong tenant
+
+### Relationship To Other Concepts
+
+- Related to [tenant-routing](/concepts/tenant-routing) when requests must first reach the correct tenant boundary before isolation can be enforced.
+- Related to [multi-tenant](/concepts/multi-tenant) because tenant isolation is one of the main architectural concerns inside multi-tenant systems.
+- Related to [rbac](/concepts/rbac) when access rules differ by tenant scope and role membership inside a tenant.
+
+### Boundary
+
+Use `tenant-isolation` when the architecture explicitly prevents one tenant’s data, traffic, or privileges from leaking into another tenant’s boundary.
+
+Do not use it for any tenant-aware code. The key signal is isolation enforcement, not mere tenant tagging.

@@ -5,7 +5,24 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [messaging, data, resilience]
+abstraction:
+- messaging
+- data
+- resilience
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - change-data-capture
+  - event-driven
+  - competing-consumers
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Outbox
 
@@ -47,3 +64,15 @@ Look for events persisted to a database table atomically with state changes, the
 - No tracking of published status -- events are re-sent on every poll cycle
 - Outbox table grows unbounded because published rows are never cleaned up
 - Publisher and business logic share the same process with no isolation
+
+### Relationship To Other Concepts
+
+- Related to [change-data-capture](/concepts/change-data-capture) because outbox tables are often exported through CDC rather than polled directly.
+- Related to [event-driven](/concepts/event-driven) because outbox is a reliability mechanism for event-driven delivery.
+- Related to [competing-consumers](/concepts/competing-consumers) when multiple workers drain pending outbox records.
+
+### Boundary
+
+Use `outbox` when the architecture explicitly stages integration events in durable storage as part of the same transaction as the business write.
+
+Do not use it for generic background jobs or in-memory event queues unless the defining guarantee is transactional event persistence before publication.

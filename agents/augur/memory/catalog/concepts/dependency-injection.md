@@ -3,7 +3,22 @@ description: Dependency Injection/IoC architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, architectural]
+abstraction:
+- design
+- architectural
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - hexagonal
+  - layered
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Dependency Injection
 
@@ -30,6 +45,11 @@ How to identify this pattern in code.
 
 Look for inversion of control: high-level modules define interfaces, low-level modules implement them, and a container wires them together.
 
+### Relationship To Other Concepts
+
+- `dependency-injection` is the composition mechanism: who constructs collaborators and how bindings are supplied.
+- It often appears inside `layered` and `hexagonal` systems but does not by itself define the architecture shape.
+
 ### Review Checklist
 
 - Dependencies are injected, not constructed internally (no `new ConcreteClass()` inside business logic)
@@ -45,3 +65,7 @@ Look for inversion of control: high-level modules define interfaces, low-level m
 - Over-injection: dozens of constructor parameters indicating a god class
 - Registering concrete classes directly instead of binding interface to implementation
 - Runtime resolution scattered throughout business logic instead of at composition root
+
+### Boundary
+
+Do not use `dependency-injection` for any parameter passing. Prefer it only when construction and binding are intentionally inverted away from business code.

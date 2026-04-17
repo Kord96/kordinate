@@ -1,6 +1,7 @@
 name: fastapi
 kind: framework
 language: python
+framework_kind: api-server
 summary: Async Python API framework with typed routing and validation
 status: primary
 scope: backend

@@ -1,8 +1,25 @@
 ---
-description: Hydration — transferring server-rendered state to the client for interactive rendering
+description: "Hydration \u2014 transferring server-rendered state to the client for\
+  \ interactive rendering"
 type: pattern
 graphable: true
-abstraction: [frontend, data]
+abstraction:
+- frontend
+- data
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - server-prefetch
+  - suspense-boundary
+  - lazy-loading
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Hydration
 
@@ -50,3 +67,15 @@ Look for a two-phase rendering process: server generates HTML with embedded stat
 - Client components that immediately refetch data already available in hydrated state
 - Server render depending on browser-only APIs (window, document) causing mismatch or crash
 - No hydration boundary around client-only components, causing server render to fail or diverge
+
+### Relationship To Other Concepts
+
+- Related to [server-prefetch](/concepts/server-prefetch) because hydration commonly resumes client work from data already fetched on the server.
+- Related to [suspense-boundary](/concepts/suspense-boundary) when client and server rendering boundaries determine how and where hydration proceeds.
+- Related to [lazy-loading](/concepts/lazy-loading) because deferred chunks and client-only islands complicate hydration boundaries and timing.
+
+### Boundary
+
+Use `hydration` when server-rendered markup is resumed on the client by attaching behavior and restoring serialized state.
+
+Do not use it for any client bootstrapping or server render without the explicit resume and attach step.

@@ -3,7 +3,22 @@ description: Soft Delete architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - registry-model
+  - audit-logging
+  - workflow-state-machine
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Soft Delete
 
@@ -46,3 +61,15 @@ Look for consistent application of soft delete scopes across all queries and cle
 - No purge strategy, causing tables to grow unbounded with deleted records degrading query performance
 - Unique constraints that break when re-creating a record with the same natural key as a soft-deleted one
 - Soft-deleting a parent while leaving orphaned child records in an active state
+
+### Relationship To Other Concepts
+
+- Related to [registry-model](/concepts/registry-model) because record registries often preserve deleted entries as inactive lifecycle states.
+- Related to [audit-logging](/concepts/audit-logging) when deletion history must remain visible and recoverable.
+- Related to [workflow-state-machine](/concepts/workflow-state-machine) because soft deletion is often modeled as an explicit terminal or archived state transition.
+
+### Boundary
+
+Use `soft-delete` when records remain stored but are marked inactive, deleted, or archived so they disappear from normal reads without being physically removed.
+
+Do not use it for ordinary archival tables or status fields that do not actually replace deletion semantics.

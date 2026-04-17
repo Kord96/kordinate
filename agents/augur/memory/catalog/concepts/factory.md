@@ -3,7 +3,22 @@ description: Factory Method architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - abstract-factory
+  - builder
+  - strategy
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Factory
 
@@ -43,3 +58,15 @@ Look for correct abstraction: callers depend on the factory interface, never on 
 - Giant switch/match that must be edited for every new type (violation of open/closed)
 - Factory with side effects beyond object creation (network calls, disk I/O)
 - Caller immediately casting the factory result to a concrete type
+
+### Relationship To Other Concepts
+
+- Related to [abstract-factory](/concepts/abstract-factory) as the broader family-based variation of factory creation.
+- Related to [builder](/concepts/builder) because both abstract object construction, though builders stage creation while factories usually return the object directly.
+- Related to [strategy](/concepts/strategy) when a factory chooses which interchangeable implementation to instantiate.
+
+### Boundary
+
+Use `factory` when object creation is intentionally hidden behind a creation method or object that chooses the concrete product.
+
+Do not use it for plain constructors or dependency injection wiring. The key signal is encapsulated creation choice.

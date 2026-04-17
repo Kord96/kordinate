@@ -59,7 +59,7 @@ let kubernetesCaPromise: Promise<Buffer> | undefined
 function canonicalizeWorkingDir(workingDir?: string): string | undefined {
   if (!workingDir) return workingDir
 
-  if (workingDir.startsWith('/kord/shared/repos/')) {
+  if (workingDir.startsWith('/kord/repos/')) {
     return workingDir
   }
 
@@ -72,7 +72,7 @@ function canonicalizeWorkingDir(workingDir?: string): string | undefined {
   const rest = slashIndex === -1 ? '' : suffix.slice(slashIndex)
   if (!repo) return workingDir
 
-  return `/kord/shared/repos/${repo}${rest}`
+  return `/kord/repos/${repo}${rest}`
 }
 
 function resolveTimeoutMs(agent: string, body: {

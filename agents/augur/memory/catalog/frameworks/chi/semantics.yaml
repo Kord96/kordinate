@@ -1,0 +1,22 @@
+name: chi
+kind: framework
+language: go
+framework_kind: api-server
+summary: Composable Go router centered on middleware and explicit route trees
+status: specialized
+scope: backend
+relationships:
+  implements:
+    - rest
+  supports:
+    - middleware
+  uses:
+    - server-route-registration
+traits:
+  api_surface: true
+  middleware_native: true
+common_concepts: []
+common_failure_modes:
+  - router-sprawl
+  - middleware-ordering-surprises
+  - implicit-subrouter-boundaries

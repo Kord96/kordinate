@@ -2,7 +2,23 @@
 description: Catalog and inventory pattern for product management and stock tracking
 type: pattern
 category: domain-model
-abstraction: [data, commerce]
+abstraction:
+- data
+- commerce
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - search-index
+  - rule-engine
+  - subscription
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Catalog
 
@@ -31,6 +47,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `catalog` is the commerce-domain structure: products, variants, inventory, pricing, and grouping.
+- Use `search-index` for retrieval and faceting infrastructure over the catalog.
+- Use `rule-engine` when promotions, pricing, or eligibility logic is externalized into explicit rules.
+- Use `subscription` when the same catalog supports recurring billing rather than one-time purchase only.
+
 ### When to use
 - E-commerce platforms with product listings, variants (size, color), and inventory management
 - Marketplace applications with multi-seller catalogs and unified search
@@ -45,6 +68,10 @@ How to identify this pattern in code.
 - [search-index](/concepts/search-index) — product catalogs need full-text search with faceted filtering
 - [rule-engine](/concepts/rule-engine) — pricing rules and promotions often use rule-based evaluation
 - [subscription](/concepts/subscription) — subscription commerce combines catalog with recurring billing
+
+### Boundary
+
+Do not use `catalog` for any generic list of items. Prefer it only when product identity, variants, pricing, and availability are core architectural concerns.
 
 ## Impact
 

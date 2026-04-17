@@ -4,7 +4,23 @@ type: pattern
 observable: true
 distributed: true
 graphable: true
-abstraction: [infrastructure, integration]
+abstraction:
+- infrastructure
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - service-discovery
+  - mtls
+  - retry
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Service Mesh
 
@@ -46,3 +62,15 @@ Look for transparent network-level service communication management via sidecar 
 - Duplicate retry/timeout logic in both the mesh and the application (compounding retries)
 - No resource limits on sidecar proxies (Envoy consuming excessive CPU/memory)
 - Adding a mesh to a system with only a few services (operational overhead exceeds benefit)
+
+### Relationship To Other Concepts
+
+- Related to [service-discovery](/concepts/service-discovery) because mesh data planes typically rely on dynamic service identity and routing metadata.
+- Related to [mtls](/concepts/mtls) because mTLS is one of the most common security capabilities moved into a service mesh.
+- Related to [retry](/concepts/retry) when the mesh centrally applies traffic policies such as retries and timeouts.
+
+### Boundary
+
+Use `service-mesh` when cross-service networking concerns like mTLS, retries, routing, and observability are offloaded into a dedicated sidecar or data-plane layer.
+
+Do not use it for any service-to-service communication stack. The key signal is an explicit mesh control/data plane managing inter-service traffic.

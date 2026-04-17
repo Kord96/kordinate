@@ -2,7 +2,23 @@
 description: Tensor and matrix computation pattern for ML and numerical workloads
 type: pattern
 category: domain-model
-abstraction: [data, compute]
+abstraction:
+- data
+- compute
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - feature-store
+  - model-registry
+  - training-pipeline
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Tensor
 
@@ -49,3 +65,15 @@ How to identify this pattern in code.
 ## Impact
 
 Tensor workloads have fundamentally different resource profiles than typical services — they require GPU scheduling, batch-oriented scaling, and memory management for large model weights. Monitoring must track inference latency, GPU utilization, and memory pressure to prevent OOM failures.
+
+### Relationship To Other Concepts
+
+- Related to [feature-store](/concepts/feature-store) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [model-registry](/concepts/model-registry) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [training-pipeline](/concepts/training-pipeline) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `tensor` when the important observation is this specific architectural concern within a domain-modeling or product-domain concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

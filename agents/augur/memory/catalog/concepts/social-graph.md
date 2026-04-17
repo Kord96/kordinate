@@ -2,12 +2,24 @@
 description: Specialized graph application for user relationships and activity feeds
 type: domain-model
 category: domain-model
-abstraction: [data, social]
+abstraction:
+- data
+- social
 status: specialized
 scope: domain
 relationships:
-  is_a: [graph]
-  related_to: [pub-sub, cache-aside]
+  is_a:
+  - graph
+  related_to:
+  - pub-sub
+  - cache-aside
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Social Graph
 
@@ -61,3 +73,15 @@ How to identify this pattern in code.
 ## Impact
 
 Social graph operations (fan-out, timeline assembly, mutual friend computation) are among the most scale-sensitive patterns in application development. Feed generation strategy (fan-out on write vs. fan-out on read) is a fundamental architectural decision that affects latency, storage, and infrastructure costs.
+
+### Relationship To Other Concepts
+
+- Related to [pub-sub](/concepts/pub-sub) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [cache-aside](/concepts/cache-aside) because this concept commonly appears alongside it or is clarified by contrast with it.
+- A specialized form of [graph](/concepts/graph) with additional constraints or specialization.
+
+### Boundary
+
+Use `social-graph` when the important observation is this specific domain modeling concept within a domain-modeling or product-domain concern.
+
+Do not promote it above a broader parent concept unless the specialization itself is what materially explains the design.

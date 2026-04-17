@@ -2,6 +2,20 @@
 description: Stringly Typed anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - primitive-obsession
+  - magic-numbers
+  - input-validation
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Stringly Typed
 
@@ -42,3 +56,15 @@ No compile-time safety; typos in string values cause silent runtime bugs that sl
 - Introduce a validation layer at system boundaries that converts incoming strings to typed values immediately
 - Add linting rules that flag raw string comparisons against known domain values
 - For languages without enums, define a frozen set or constant map as the single source of truth
+
+### Relationship To Other Concepts
+
+- Related to [primitive-obsession](/concepts/primitive-obsession) because stringly typed designs often encode rich domain concepts as raw primitives.
+- Related to [magic-numbers](/concepts/magic-numbers) because hidden semantics in strings mirror the same problem as hidden semantics in unexplained literals.
+- Related to [input-validation](/concepts/input-validation) because strong schema validation is one partial defense against string-based implicit typing.
+
+### Boundary
+
+Use `stringly-typed` when strings act as the de facto type system for identifiers, commands, states, or structured values that deserve stronger semantics.
+
+Do not use it for ordinary textual data that is naturally just text.

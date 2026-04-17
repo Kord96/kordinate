@@ -1,0 +1,22 @@
+name: express
+kind: framework
+language: typescript
+framework_kind: api-server
+summary: Minimal Node.js web framework with middleware chaining and explicit route registration
+status: primary
+scope: backend
+relationships:
+  implements:
+    - rest
+  uses:
+    - server-route-registration
+  related_to:
+    - middleware
+traits:
+  api_surface: true
+  middleware_native: true
+common_concepts: []
+common_failure_modes:
+  - business-logic-in-routes
+  - middleware-ordering-surprises
+  - untyped-request-contracts

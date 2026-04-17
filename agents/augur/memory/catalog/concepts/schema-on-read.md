@@ -3,6 +3,20 @@ description: Schema-on-Read anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - input-validation
+  - stringly-typed
+  - insecure-deserialization
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Schema-on-Read
 
@@ -46,3 +60,15 @@ Runtime KeyError exceptions, no type safety at boundaries, and schema drift as p
 - Use JSON Schema or OpenAPI specifications to document and enforce the expected shape
 - Add migration scripts or versioning when the JSON schema evolves
 - Replace string-key access with typed attribute access through validated models
+
+### Relationship To Other Concepts
+
+- Related to [input-validation](/concepts/input-validation) because schema-on-read problems are often mitigated by validating payloads when they cross boundaries.
+- Related to [stringly-typed](/concepts/stringly-typed) when untyped JSON or dict access becomes the only effective schema.
+- Related to [insecure-deserialization](/concepts/insecure-deserialization) because unvalidated dynamic payload interpretation increases safety and correctness risks at read time.
+
+### Boundary
+
+Use `schema-on-read` when structure is deferred until consumption time, leaving many readers to reinterpret loosely typed data independently.
+
+Do not use it for all flexible schemas or document stores; the issue is repeated late binding with weak shared validation.

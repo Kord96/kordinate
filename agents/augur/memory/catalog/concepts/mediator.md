@@ -3,7 +3,23 @@ description: Mediator architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, integration]
+abstraction:
+- design
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - observer
+  - command
+  - workflow-engine
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Mediator
 
@@ -45,3 +61,15 @@ Look for reduced coupling: components know the mediator, not each other.
 - Components bypassing the mediator for "convenience" (breaking the pattern)
 - Mediator with implicit ordering dependencies between handlers
 - Untyped message passing where handler registration is stringly typed
+
+### Relationship To Other Concepts
+
+- Related to [observer](/concepts/observer) because both decouple participants, though a mediator centralizes collaboration rules instead of broadcasting events.
+- Related to [command](/concepts/command) when commands are routed through one coordinator that chooses the appropriate handler.
+- Related to [workflow-engine](/concepts/workflow-engine) when a central component coordinates step interactions without every participant knowing each other directly.
+
+### Boundary
+
+Use `mediator` when interaction between many components is centralized through one coordinator rather than encoded directly between peers.
+
+Do not use it for any controller or service hub. The key signal is explicit decoupling of many participants through a mediator.

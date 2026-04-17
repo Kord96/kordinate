@@ -3,6 +3,20 @@ description: Unbounded Growth anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - lru-cache
+  - memory-leak
+  - metric-cardinality-explosion
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Unbounded Growth
 
@@ -46,3 +60,15 @@ Memory exhaustion and OOM crashes in long-running processes as collections grow 
 - Use `collections.deque(maxlen=N)` instead of unbounded lists for rolling buffers
 - Implement backpressure or size limits on in-memory queues
 - Add memory monitoring and alerts for long-running processes to catch growth before OOM
+
+### Relationship To Other Concepts
+
+- Related to [lru-cache](/concepts/lru-cache) because bounded eviction policies are a common antidote to uncontrolled in-memory growth.
+- Related to [memory-leak](/concepts/memory-leak) because unbounded structures often manifest operationally like leaks even when references are still intentional.
+- Related to [metric-cardinality-explosion](/concepts/metric-cardinality-explosion) as one observability-specific case of unbounded state growth.
+
+### Boundary
+
+Use `unbounded-growth` when data structures or buffers grow without meaningful size, TTL, or backpressure limits over the life of the process.
+
+Do not use it for large but bounded workloads or memory use that scales within an intentional capacity model.

@@ -3,7 +3,22 @@ description: Test Fixture / Data Builder architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [testing]
+abstraction:
+- testing
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - builder
+  - property-testing
+  - test-doubles
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Test Fixture / Data Builder
 
@@ -45,3 +60,15 @@ Look for centralized, composable test data construction that keeps tests focused
 - Factories with too many required parameters, forcing callers to specify irrelevant fields
 - Builders that silently create side effects (database writes, API calls) when only an in-memory object is needed
 - Over-reliance on random data without seeding, causing flaky tests that pass or fail non-deterministically
+
+### Relationship To Other Concepts
+
+- Related to [builder](/concepts/builder) because fixture builders specialize the builder idiom for test data.
+- Related to [property-testing](/concepts/property-testing) when reusable fixtures are combined with generated input variation.
+- Related to [test-doubles](/concepts/test-doubles) because fixtures often complement mocks or stubs in test setup.
+
+### Boundary
+
+Use `fixture-builder` when tests create readable, reusable sample objects through a builder tailored for fixture data.
+
+Do not use it for any test helper. The key signal is builder-style fixture construction.

@@ -5,7 +5,24 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [data, resilience, messaging]
+abstraction:
+- data
+- resilience
+- messaging
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - inbox
+  - retry
+  - dead-letter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Idempotent Consumer
 
@@ -64,3 +81,15 @@ Key review points for the inbox variant:
 - Treating duplicates as errors instead of silently returning the original result
 - Inbox insert committed before business logic completes (message marked as processed but work not done)
 - Relying solely on the broker's exactly-once semantics instead of application-level idempotency
+
+### Relationship To Other Concepts
+
+- Related to [inbox](/concepts/inbox) because inbox tables are a common implementation for tracking already-processed messages.
+- Related to [retry](/concepts/retry) because idempotent consumers make retried delivery safe.
+- Related to [dead-letter](/concepts/dead-letter) when failed messages still need quarantine after idempotency protections are applied.
+
+### Boundary
+
+Use `idempotent-consumer` when a message consumer is explicitly designed to handle duplicate delivery without duplicating side effects.
+
+Do not use it for any consumer with a unique key somewhere. The key signal is architectural duplicate-safety in message handling.

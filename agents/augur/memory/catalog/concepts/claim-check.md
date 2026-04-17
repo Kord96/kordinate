@@ -4,7 +4,23 @@ type: pattern
 testable: true
 distributed: true
 graphable: true
-abstraction: [integration, messaging]
+abstraction:
+- integration
+- messaging
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - message-queue
+  - webhook
+  - dead-letter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Claim Check
 
@@ -46,3 +62,15 @@ Look for payload offloading to external storage with reference-based message pas
 - Consumer assumes all messages are inline and crashes on references
 - Reference points to storage the consumer cannot access (permission mismatch)
 - No fallback for storage unavailability -- producer fails entirely instead of degrading
+
+### Relationship To Other Concepts
+
+- Related to [message-queue](/concepts/message-queue) because claim-check is often used to keep queue payloads small by storing large bodies externally.
+- Related to [webhook](/concepts/webhook) when callbacks or events carry references to externally retrievable payloads instead of inlining them.
+- Related to [dead-letter](/concepts/dead-letter) when failed reference resolution or payload retrieval requires quarantine and retry handling.
+
+### Boundary
+
+Use `claim-check` when messages carry a pointer to externally stored payload data instead of embedding the full payload inline.
+
+Do not use it for any ID field or storage reference. The key signal is intentionally offloading large payloads from the message body.

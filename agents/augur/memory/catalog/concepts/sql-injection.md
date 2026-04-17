@@ -3,6 +3,20 @@ description: SQL Injection anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - input-validation
+  - repository
+  - insecure-deserialization
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # SQL Injection
 
@@ -46,3 +60,15 @@ Database compromise through attacker-controlled query manipulation, enabling dat
 - Validate and sanitize all user input at the boundary (allowlist, not denylist)
 - Run static analysis tools (Bandit, Semgrep) with SQL injection rules enabled
 - Apply principle of least privilege to database accounts used by the application
+
+### Relationship To Other Concepts
+
+- Related to [input-validation](/concepts/input-validation) because validation and parameterization are foundational defenses at the query boundary.
+- Related to [repository](/concepts/repository) because repository or query layers often centralize safe parameterized access patterns.
+- Related to [insecure-deserialization](/concepts/insecure-deserialization) as another boundary vulnerability where untrusted input controls dangerous interpretation or execution paths.
+
+### Boundary
+
+Use `sql-injection` when untrusted input is able to alter SQL structure or semantics due to unsafe query construction.
+
+Do not use it for generic database errors, slow queries, or any user input path that still uses safe parameterized statements.

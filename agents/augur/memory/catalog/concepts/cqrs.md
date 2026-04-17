@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [architectural, data]
+abstraction:
+- architectural
+- data
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - event-sourcing
+  - search-index
+  - change-data-capture
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # CQRS
 
@@ -45,3 +61,15 @@ Look for strict separation between write and read paths with an explicit sync me
 - Read path sneaking writes back into the write model
 - No clear sync mechanism — read model silently drifts from write model
 - Applying CQRS where a single model would suffice (unnecessary complexity)
+
+### Relationship To Other Concepts
+
+- Related to [event-sourcing](/concepts/event-sourcing) when the write model records events that later feed projections.
+- Related to [search-index](/concepts/search-index) when separate read models are optimized for query-heavy access.
+- Related to [change-data-capture](/concepts/change-data-capture) when read-side projections are driven from persistence changes instead of application-level events.
+
+### Boundary
+
+Use `cqrs` when commands and queries are intentionally separated into different models, handlers, or storage paths.
+
+Do not use it for ordinary service layering, caching, or read replicas unless the codebase clearly models separate write and read responsibilities.

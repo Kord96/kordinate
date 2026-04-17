@@ -2,6 +2,20 @@
 description: Spaghetti Code anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - deep-nesting
+  - train-wreck
+  - god-object
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Spaghetti Code
 
@@ -43,3 +57,15 @@ Untraceable control flow makes the code impossible to debug, test, or safely mod
 - Break long parameter lists into parameter objects or configuration structs
 - Apply "compose small functions" principle: each function does one thing at one level of abstraction
 - Introduce intermediate variables with descriptive names to document intent at each step
+
+### Relationship To Other Concepts
+
+- Related to [deep-nesting](/concepts/deep-nesting) because excessive indentation and control-flow tangling are common local symptoms of spaghetti code.
+- Related to [train-wreck](/concepts/train-wreck) when long chained traversals add to tangled readability problems.
+- Related to [god-object](/concepts/god-object) because responsibility concentration often produces sprawling, tangled code paths.
+
+### Boundary
+
+Use `spaghetti-code` when overall control flow and responsibility boundaries are so tangled that the code becomes hard to follow or safely change.
+
+Do not use it for any large function or messy style issue in isolation; the issue is pervasive entanglement.

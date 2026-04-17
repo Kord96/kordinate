@@ -4,11 +4,24 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [design, lifecycle]
+abstraction:
+- design
+- lifecycle
 status: primary
 scope: cross-cutting
 relationships:
-  related_to: [workflow-engine]
+  related_to:
+  - workflow-engine
+  disambiguates:
+  - workflow-engine
+aliases: []
+disambiguates_from:
+- workflow-engine
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # State Machine
 
@@ -37,6 +50,11 @@ How to identify this pattern in code.
 
 Look for a complete and well-defined transition table with no implicit state changes.
 
+### Relationship To Other Concepts
+
+- `state-machine` is the transition-model concept: states, events, guards, and legal transitions.
+- Prefer `workflow-engine` when the code orchestrates long-running steps, retries, or distributed work rather than just modeling state.
+
 ### Review Checklist
 
 - All valid transitions are explicitly defined (no implicit state changes via direct assignment)
@@ -52,3 +70,12 @@ Look for a complete and well-defined transition table with no implicit state cha
 - Missing transitions causing the machine to get stuck in unexpected states
 - Business logic embedded in transition guards (guards should only evaluate conditions)
 - No protection against concurrent transitions (race between two events)
+
+### Boundary
+
+Do not use `state-machine` for any enum status field. Prefer it only when transitions and guards are explicit architectural elements.
+
+### Relationship To Other Concepts
+
+- Related to [workflow-engine](/concepts/workflow-engine) because workflows often use state machines, though workflow engines add orchestration, persistence, and distributed coordination concerns beyond local transitions.
+- Disambiguate from [workflow-engine](/concepts/workflow-engine) when the code models explicit transitions but not a broader orchestrated workflow runtime.

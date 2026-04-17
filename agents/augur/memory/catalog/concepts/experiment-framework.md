@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [deployment, ml]
+abstraction:
+- deployment
+- ml
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - feature-flag
+  - metrics-instrumentation
+  - model-registry
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # A/B Experiment Framework
 
@@ -47,3 +63,15 @@ Look for a system that assigns users to experiment variants, tracks per-variant 
 - Tracking only aggregate metrics with no per-variant breakdown
 - No sample size planning, ending experiments before reaching significance
 - Leaving concluded experiment code paths in production indefinitely
+
+### Relationship To Other Concepts
+
+- Related to [feature-flag](/concepts/feature-flag) because many experiment systems use flag-based variant assignment as one delivery mechanism.
+- Related to [metrics-instrumentation](/concepts/metrics-instrumentation) because experiments only become useful when outcomes are measured consistently.
+- Related to [model-registry](/concepts/model-registry) when experiments compare model variants or route traffic across model versions.
+
+### Boundary
+
+Use `experiment-framework` when the system has explicit infrastructure for assigning variants, collecting outcomes, and evaluating experiment results.
+
+Do not use it for ad hoc feature toggles or one-off A/B tests without a broader experiment lifecycle.

@@ -1,12 +1,27 @@
 ---
-description: Middleware — request/response pipeline interceptors for cross-cutting concerns
+description: "Middleware \u2014 request/response pipeline interceptors for cross-cutting\
+  \ concerns"
 type: pattern
 graphable: true
-abstraction: [integration, lifecycle]
+abstraction:
+- integration
+- lifecycle
 status: primary
 scope: cross-cutting
 relationships:
-  related_to: [layered, rest, graphql, server-route-registration, request-path]
+  related_to:
+  - layered
+  - rest
+  - graphql
+  - server-route-registration
+  - request-path
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Middleware
 
@@ -60,3 +75,9 @@ Look for a composable pipeline of handlers that each process a request or action
 - God middleware that handles auth, logging, validation, and transformation in a single function
 - Middleware that modifies the request/response object in ways that downstream handlers do not expect
 - Applying middleware globally when it is only needed on specific routes or endpoints
+
+### Boundary
+
+Use `middleware` when request or response handling is organized as an intercepting pipeline of cross-cutting steps around a downstream handler.
+
+Do not use it for any helper called before a handler. The important signal is a composable interception chain that wraps request handling.

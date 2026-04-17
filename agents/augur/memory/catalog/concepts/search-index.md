@@ -2,7 +2,23 @@
 description: Search and inverted index pattern for full-text retrieval
 type: pattern
 category: domain-model
-abstraction: [data, search]
+abstraction:
+- data
+- search
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - change-data-capture
+  - cqrs
+  - pagination
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Search Index
 
@@ -31,6 +47,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `search-index` is the retrieval subsystem: indexing, analyzers, scoring, and query execution.
+- Use `cqrs` when the architectural point is separate read/write models more broadly.
+- Use `change-data-capture` when the important concern is how the index stays synchronized with the source of truth.
+- Use `pagination` for result traversal mechanics, not index construction itself.
+
 ### When to use
 - Full-text search across large document collections with relevance ranking
 - Faceted navigation and filtering (e-commerce, catalogs, content platforms)
@@ -45,6 +68,10 @@ How to identify this pattern in code.
 - [cqrs](/concepts/cqrs) — search index often serves as the read model in a CQRS architecture
 - [change-data-capture](/concepts/change-data-capture) — CDC feeds keep search indices in sync with the primary store
 - [pagination](/concepts/pagination) — search results require cursor or offset-based pagination
+
+### Boundary
+
+Do not use `search-index` for basic SQL filtering or ordinary keyed lookup tables. Prefer it only when full-text retrieval, ranking, or faceting is architecturally central.
 
 ## Impact
 

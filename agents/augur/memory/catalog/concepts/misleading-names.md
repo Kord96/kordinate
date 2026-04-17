@@ -2,6 +2,20 @@
 description: Misleading Names anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - inconsistent-naming
+  - hidden-side-effects
+  - leaky-abstraction
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Misleading Names
 
@@ -43,3 +57,15 @@ Readers assume wrong behavior from the name, leading to unintended side effects,
 - Enforce naming conventions in code review checklists: getters must be pure, `is*` must return boolean
 - Add linting rules that flag `get*` methods containing write operations
 - Document side effects in docstrings when renaming is not immediately feasible
+
+### Relationship To Other Concepts
+
+- Related to [inconsistent-naming](/concepts/inconsistent-naming) because misleading names often coexist with broader naming drift.
+- Related to [hidden-side-effects](/concepts/hidden-side-effects) when a harmless-sounding name conceals mutation or external work.
+- Related to [leaky-abstraction](/concepts/leaky-abstraction) when inaccurate names expose or disguise the wrong boundary semantics.
+
+### Boundary
+
+Use `misleading-names` when a symbol’s name actively creates the wrong expectation about behavior, return shape, or responsibility.
+
+Do not use it for names that are merely verbose, stylistically awkward, or inconsistent with local convention.

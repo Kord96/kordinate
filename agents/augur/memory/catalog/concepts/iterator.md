@@ -3,7 +3,22 @@ description: Iterator architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - composite
+  - visitor
+  - stream-to-store
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Iterator
 
@@ -44,3 +59,15 @@ Look for lazy evaluation and separation of traversal logic from the underlying c
 - Iterator that mutates the underlying collection during traversal
 - Missing `StopIteration` / end signal causing infinite loops
 - Custom iterator reimplementing what standard library itertools already provides
+
+### Relationship To Other Concepts
+
+- Related to [composite](/concepts/composite) when iterators traverse hierarchical object structures uniformly.
+- Related to [visitor](/concepts/visitor) when iteration and traversal are separated from the operations applied to elements.
+- Related to [stream-to-store](/concepts/stream-to-store) when iterator-like pull semantics feed larger streaming pipelines.
+
+### Boundary
+
+Use `iterator` when traversal over a collection or sequence is intentionally abstracted behind a standard next/has-next style protocol.
+
+Do not use it for any loop or generator. The key signal is an explicit iteration interface over an underlying structure.

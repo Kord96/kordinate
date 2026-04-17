@@ -3,11 +3,24 @@ description: Thin-event payload variant within event-driven architecture
 type: flow-shape
 testable: true
 distributed: true
-abstraction: [messaging, integration]
+abstraction:
+- messaging
+- integration
 status: specialized
 scope: cross-cutting
 relationships:
-  part_of: [event-driven]
+  part_of:
+  - event-driven
+  related_to:
+  - event-carried-state
+  - webhook
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Event Notification (Thin Events)
 
@@ -52,3 +65,15 @@ Look for notification-only events that trigger consumers to fetch data on demand
 - Source API not designed for the read amplification caused by thin events
 - No versioning -- consumers break when the callback API changes
 - Thin events used when consumers always need full data (unnecessary round trip)
+
+### Relationship To Other Concepts
+
+- Part of [event-driven](/concepts/event-driven) as one payload design choice within an event-driven system.
+- Related to [event-carried-state](/concepts/event-carried-state) as the contrasting fat-event variant.
+- Related to [webhook](/concepts/webhook) when notifications are delivered outward as minimal callback payloads that require later fetches.
+
+### Boundary
+
+Use `event-notification` when events are intentionally thin and consumers are expected to fetch more state from the source afterward.
+
+Do not promote it to a top-level architecture family. It is a payload-shape distinction within event-driven systems, not a separate architectural style.

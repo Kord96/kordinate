@@ -1,7 +1,24 @@
 ---
-description: Cell-based structure — independent cells that can scale, deploy, and fail independently
+description: "Cell-based structure \u2014 independent cells that can scale, deploy,\
+  \ and fail independently"
 type: structure-shape
-abstraction: [architectural, deployment]
+abstraction:
+- architectural
+- deployment
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - sharding
+  - tenant-isolation
+  - canary
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Cell-Based
 
@@ -23,3 +40,15 @@ abstraction: [architectural, deployment]
 - **high** — explicit cell architecture with independent data stores, cell routing, and independent deployment
 - **medium** — multi-region deployment with region-specific resources but shared control plane
 - **low** — sharded database with application-level routing but shared application tier
+
+### Relationship To Other Concepts
+
+- Related to [sharding](/concepts/sharding) because cell-based systems often partition tenants or traffic into independently operated slices.
+- Related to [tenant-isolation](/concepts/tenant-isolation) because cells are one operational way to contain blast radius across customer or regional boundaries.
+- Related to [canary](/concepts/canary) because independent cells make staged rollout and failure containment easier.
+
+### Boundary
+
+Use `cell-based` when the system is intentionally partitioned into mostly self-sufficient cells that can route, scale, deploy, and fail independently.
+
+Do not use it for ordinary horizontal scaling or regional replicas that still depend on one shared control or data plane.

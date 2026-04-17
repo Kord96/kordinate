@@ -1,11 +1,23 @@
 ---
-description: Layered structure — horizontal layers with dependency flowing downward
+description: "Layered structure \u2014 horizontal layers with dependency flowing downward"
 type: structure-shape
-abstraction: [architectural]
+abstraction:
+- architectural
 status: primary
 scope: backend
 relationships:
-  related_to: [mvc, mvvm, middleware]
+  related_to:
+  - mvc
+  - mvvm
+  - middleware
+  preferred_over: []
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Layered
 
@@ -33,3 +45,16 @@ relationships:
 - `layered` describes horizontal dependency structure.
 - `mvc` and `mvvm` describe presentation/application coordination patterns that may live within one or more layers.
 - `middleware` often implements a cross-cutting request pipeline around or before the layered core, but it is not itself the layering model.
+- Prefer `layered` only when downward dependency direction across named layers is visible. A feature-oriented or plugin-oriented codebase should use those concepts instead.
+
+### Relationship To Other Concepts
+
+- Related to [mvc](/concepts/mvc) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [mvvm](/concepts/mvvm) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [middleware](/concepts/middleware) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `layered` when the important observation is this specific structural topology within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

@@ -5,7 +5,22 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [infrastructure, integration]
+abstraction:
+- infrastructure
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - conversation-thread
+  - pub-sub
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # WebSocket
 
@@ -34,6 +49,12 @@ How to identify this pattern in code.
 
 Look for correct connection lifecycle management and message framing over persistent bidirectional channels.
 
+### Relationship To Other Concepts
+
+- `websocket` is the transport and connection-management concept.
+- Use `conversation-thread` when the main concern is messaging domain structure.
+- Use `pub-sub` when the main concern is brokered fan-out rather than client socket lifecycle.
+
 ### Review Checklist
 
 - Connection lifecycle is complete: open, message, error, close handlers all defined
@@ -49,3 +70,7 @@ Look for correct connection lifecycle management and message framing over persis
 - Sending unbounded messages without flow control or rate limiting
 - Performing authentication only via query params in the `ws://` URL (leaks credentials in logs)
 - Using WebSocket where SSE or simple polling would suffice (over-engineering)
+
+### Boundary
+
+Do not use `websocket` for every live-update feature. Prefer it only when full-duplex persistent transport is architecturally important.

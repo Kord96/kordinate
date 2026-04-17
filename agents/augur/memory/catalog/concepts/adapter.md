@@ -3,7 +3,23 @@ description: Adapter architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design, integration]
+abstraction:
+- design
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - anti-corruption-layer
+  - hexagonal
+  - gateway-backends
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Adapter
 
@@ -42,3 +58,15 @@ Adapter translates one interface to match another. Look for clean separation bet
 - Leaky adapter that exposes adaptee types or exceptions to callers (defeats the purpose)
 - Adapter with business logic -- it should only translate, not make decisions
 - No adapter at all -- third-party types used directly throughout the codebase making vendor migration painful
+
+### Relationship To Other Concepts
+
+- Related to [anti-corruption-layer](/concepts/anti-corruption-layer) because adapters are a common implementation mechanism for isolating external systems from internal models.
+- Related to [hexagonal](/concepts/hexagonal) because adapters often implement ports on the outside of a hexagonal boundary.
+- Related to [gateway-backends](/concepts/gateway-backends) when an adapter hides upstream protocol or schema details behind a cleaner service-facing interface.
+
+### Boundary
+
+Use `adapter` when the important observation is translation between one interface and another so the caller does not depend directly on the adaptee’s surface.
+
+Do not use it for every wrapper class. A wrapper becomes an adapter when interface translation or compatibility is the main architectural purpose.

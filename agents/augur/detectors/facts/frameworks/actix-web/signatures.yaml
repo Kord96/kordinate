@@ -1,0 +1,19 @@
+framework: actix-web
+manifest_packages:
+  cargo:
+    - actix_web
+source_extensions:
+  - .rs
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - web::resource\s*\(
+    - "#\\[(get|post|put|delete|patch)\\("
+  medium:
+    - App::new\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []

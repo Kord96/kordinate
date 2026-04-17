@@ -2,6 +2,20 @@
 description: Premature Optimization anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - golden-hammer
+  - microservices
+  - lru-cache
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Premature Optimization
 
@@ -42,3 +56,15 @@ Unnecessary complexity added without proven need, increasing maintenance cost wh
 - Remove caching layers, denormalized tables, or custom data structures that lack supporting performance data
 - Document the performance requirement that justifies each optimization with concrete numbers
 - Use standard library data structures and serialization formats unless benchmarks prove them insufficient
+
+### Relationship To Other Concepts
+
+- Related to [golden-hammer](/concepts/golden-hammer) because premature optimization often comes from overapplying one favored performance tactic.
+- Related to [microservices](/concepts/microservices) when teams split systems too early for imagined scale rather than proven operational need.
+- Related to [lru-cache](/concepts/lru-cache) when complex caching is introduced before latency or throughput data justifies it.
+
+### Boundary
+
+Use `premature-optimization` when complexity is introduced mainly for anticipated performance needs that have not been demonstrated by measurement.
+
+Do not use it for well-justified performance engineering against real bottlenecks.

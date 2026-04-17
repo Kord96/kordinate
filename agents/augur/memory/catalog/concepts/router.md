@@ -1,12 +1,23 @@
 ---
-description: Router — frontend URL-based navigation and view switching
+description: "Router \u2014 frontend URL-based navigation and view switching"
 type: pattern
 graphable: true
-abstraction: [frontend, integration]
+abstraction:
+- frontend
+- integration
 status: primary
 scope: frontend
 relationships:
-  related_to: [server-route-registration, route-guard]
+  related_to:
+  - server-route-registration
+  - route-guard
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Router
 
@@ -61,3 +72,14 @@ Look for a declarative mapping between URL paths and component trees, with suppo
 - Using string concatenation to build URLs instead of typed route helpers or path utilities
 - Nested routes that re-fetch parent data because layout boundaries are not configured
 - Catch-all routes that silently swallow navigation errors instead of showing meaningful feedback
+
+### Relationship To Other Concepts
+
+- Related to [server-route-registration](/concepts/server-route-registration) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [route-guard](/concepts/route-guard) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `router` when the important observation is this specific architectural concern within a frontend, UI, or client-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

@@ -196,6 +196,7 @@ def framework_record(path: Path) -> tuple[dict, list[dict]]:
         "label": title,
         "description": frontmatter.get("description", semantics.get("summary", "")),
         "language": semantics.get("language"),
+        "framework_kind": semantics.get("framework_kind"),
         "traits": semantics.get("traits", {}),
         "path": str((path / "framework.md").relative_to(ROOT)),
     }

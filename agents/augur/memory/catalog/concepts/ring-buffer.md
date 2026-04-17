@@ -3,7 +3,23 @@ description: Ring Buffer architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data, concurrency]
+abstraction:
+- data
+- concurrency
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - stream-to-store
+  - worker-pool
+  - backpressure
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Ring Buffer
 
@@ -47,3 +63,15 @@ Look for correct bounded buffer semantics with wrap-around indexing and clear fu
 - No distinction between full and empty states when head equals tail
 - Using a ring buffer where an unbounded queue is needed (silent data loss)
 - Locking on every read/write in a hot path where a lock-free design is required
+
+### Relationship To Other Concepts
+
+- Related to [stream-to-store](/concepts/stream-to-store) because bounded circular buffers are common in streaming ingestion and staging paths.
+- Related to [worker-pool](/concepts/worker-pool) when buffers decouple producers from pooled workers.
+- Related to [backpressure](/concepts/backpressure) because ring buffers often act as bounded queues that force explicit overload behavior.
+
+### Boundary
+
+Use `ring-buffer` when data moves through a fixed-capacity circular buffer with wraparound indexing and bounded memory semantics.
+
+Do not use it for any queue, deque, or cache that lacks explicit circular-buffer behavior.

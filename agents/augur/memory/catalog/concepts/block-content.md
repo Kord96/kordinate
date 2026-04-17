@@ -2,7 +2,23 @@
 description: Block-based content model for structured rich text editing
 type: pattern
 category: domain-model
-abstraction: [data, content]
+abstraction:
+- data
+- content
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - component
+  - search-index
+  - versioned-document
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Block Content
 
@@ -31,6 +47,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `block-content` is the content-domain model itself: typed blocks, hierarchy, serialization, and editing semantics.
+- Use `component` for the rendering tree, not for the persisted content structure.
+- Use `versioned-document` when document history or collaboration lineage is the main concern.
+- Use `search-index` when the important concern is flattened retrieval or faceting over block content.
+
 ### When to use
 - Content management systems where editors need structured, reusable content blocks
 - Collaborative editing platforms requiring granular change tracking per block
@@ -45,6 +68,10 @@ How to identify this pattern in code.
 - [versioned-document](/concepts/versioned-document) — block content benefits from per-block version tracking
 - [component](/concepts/component) — content blocks map to rendering components in the frontend
 - [search-index](/concepts/search-index) — block content must be flattened for full-text indexing
+
+### Boundary
+
+Prefer `block-content` only when the code models content as typed, nested blocks. A WYSIWYG editor storing a single HTML or Markdown blob is not enough.
 
 ## Impact
 

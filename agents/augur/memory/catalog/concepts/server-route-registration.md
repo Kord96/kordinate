@@ -2,12 +2,28 @@
 description: Backend route declaration and exposure for HTTP or RPC handlers
 type: pattern
 graphable: true
-abstraction: [api, integration]
+abstraction:
+- api
+- integration
 status: primary
 scope: backend
 relationships:
-  disambiguates: [router]
-  related_to: [request-path, middleware, rest, graphql, grpc]
+  disambiguates:
+  - router
+  related_to:
+  - request-path
+  - middleware
+  - rest
+  - graphql
+  - grpc
+aliases: []
+disambiguates_from:
+- router
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Server Route Registration
 
@@ -48,6 +64,12 @@ Use this concept when the code defines the public server surface itself: which h
 
 ### Relationship To Other Concepts
 
-- Prefer [router](/concepts/router) for frontend navigation routing.
-- Prefer `server-route-registration` when the code is wiring backend HTTP or RPC handlers.
-- Use [request-path](/concepts/request-path) when the important question is the end-to-end path after the route has already been matched.
+- Disambiguates from [router](/concepts/router), which should remain a frontend navigation concept.
+- Related to [middleware](/concepts/middleware) when per-route or shared request interception is attached at registration time.
+- Related to [rest](/concepts/rest), [graphql](/concepts/graphql), and [grpc](/concepts/grpc) because route or service registration is how those APIs are exposed on the server side.
+
+### Boundary
+
+Use `server-route-registration` when the important signal is backend declaration of HTTP or RPC handlers and exposure of server endpoints.
+
+Do not use it for client-side URL navigation. If the main concern is view switching or frontend navigation, use [router](/concepts/router).

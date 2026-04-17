@@ -1,7 +1,24 @@
 ---
-description: Failure cascade flow — propagation of failure through dependent components
+description: "Failure cascade flow \u2014 propagation of failure through dependent\
+  \ components"
 type: flow-shape
-abstraction: [resilience, integration]
+abstraction:
+- resilience
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - circuit-breaker
+  - bulkhead
+  - graceful-degradation
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Failure Cascade
 
@@ -23,3 +40,13 @@ abstraction: [resilience, integration]
 - **high** — documented or observable chain where component failure propagates through multiple dependents with no isolation
 - **medium** — synchronous dependency chain without circuit breakers, but failure hasn't been observed yet
 - **low** — dependency chain exists but has some resilience patterns (retries, timeouts) that may or may not prevent cascading
+
+### Relationship To Other Concepts
+
+- Related to [circuit-breaker](/concepts/circuit-breaker), [bulkhead](/concepts/bulkhead), and [graceful-degradation](/concepts/graceful-degradation) because those patterns are common mitigations against cascading failure.
+
+### Boundary
+
+Use `failure-cascade` when the architecture allows one component failure to propagate through dependent components and amplify into a wider outage.
+
+Do not use it for isolated failures or single-service outages. The defining property is propagation across dependencies.

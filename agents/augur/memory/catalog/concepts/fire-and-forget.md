@@ -4,6 +4,18 @@ type: anti-pattern
 observable: true
 distributed: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - outbox
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Fire and Forget
 
@@ -48,3 +60,13 @@ Silent message loss leading to inconsistent state between services, with no visi
 - Add end-to-end message delivery monitoring that reconciles producer and consumer counts and alerts on divergence
 
 See also: outbox pattern
+
+### Relationship To Other Concepts
+
+- Related to [outbox](/concepts/outbox) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `fire-and-forget` when the important observation is this specific recurring architectural failure mode within a cross-cutting architectural concern that can span multiple layers or services.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [resilience, lifecycle]
+abstraction:
+- resilience
+- lifecycle
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - circuit-breaker
+  - fallback
+  - health-check
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Graceful Degradation
 
@@ -47,3 +63,15 @@ Look for intentional fallback paths that keep the system usable when dependencie
 - Silent degradation where clients receive stale data without any indication
 - Fallback logic that itself depends on the failing service
 - No testing of degraded paths -- fallback code rots and fails when actually needed
+
+### Relationship To Other Concepts
+
+- Related to [circuit-breaker](/concepts/circuit-breaker) because breakers often trigger or protect degraded modes.
+- Related to [fallback](/concepts/fallback) because fallback behavior is one of the common mechanisms used to degrade gracefully.
+- Related to [health-check](/concepts/health-check) when degraded states are surfaced explicitly for operators or traffic controllers.
+
+### Boundary
+
+Use `graceful-degradation` when the system intentionally preserves partial service or reduced capability instead of failing completely when a dependency or feature path is unavailable.
+
+Do not use it for silent breakage or generic exception handling. The key signal is deliberate partial-service design.

@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [deployment, design]
+abstraction:
+- deployment
+- design
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - blue-green
+  - canary
+  - config-management
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Feature Flag/Toggle
 
@@ -46,3 +62,14 @@ Look for code paths gated by externally managed toggles with clean separation be
 - Nested feature flags creating combinatorial explosion of code paths
 - Using feature flags for configuration that should be in application config
 - No default behavior when the flag service is unreachable
+
+### Relationship To Other Concepts
+
+- Related to [blue-green](/concepts/blue-green) and [canary](/concepts/canary) because all three are release-control mechanisms, though feature flags gate behavior independently from deployment topology or traffic shifting.
+- Related to [config-management](/concepts/config-management) because flags are often managed as dynamic configuration, though they carry distinct lifecycle and cleanup concerns.
+
+### Boundary
+
+Use `feature-flag` when runtime behavior is intentionally gated behind named toggles that can be enabled selectively by environment, cohort, or rollout policy.
+
+Do not use it for every configuration value. The important signal is controlled conditional behavior with rollout semantics and eventual cleanup expectations.

@@ -1,0 +1,19 @@
+name: sveltekit
+kind: framework
+language: typescript
+framework_kind: full-stack
+summary: Svelte full-stack framework with file-based routing and colocated server endpoints
+status: primary
+scope: frontend
+relationships:
+  uses:
+    - server-route-registration
+traits:
+  ui_surface: true
+  file_routing_native: true
+  server_rendering_native: true
+common_concepts: []
+common_failure_modes:
+  - blurred-client-server-boundaries
+  - endpoint-and-page-coupling
+  - load-function-sprawl

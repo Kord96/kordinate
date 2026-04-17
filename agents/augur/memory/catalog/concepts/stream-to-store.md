@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [data, integration]
+abstraction:
+- data
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - data-pipeline
+  - message-queue
+  - materialized-view
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Stream-to-Store
 
@@ -47,3 +63,15 @@ Look for correct offset management — commits only after successful flush.
 - Auto-commit enabled — offsets advance regardless of flush success
 - Unbounded buffer with no size limit (memory exhaustion on slow stores)
 - No dead-letter handling for permanently unprocessable messages
+
+### Relationship To Other Concepts
+
+- Related to [data-pipeline](/concepts/data-pipeline) because stream-to-store is one continuous ingestion form of data pipeline.
+- Related to [message-queue](/concepts/message-queue) when streams or broker records are the source being drained into storage.
+- Related to [materialized-view](/concepts/materialized-view) when the store acts as a continuously updated projection optimized for queries.
+
+### Boundary
+
+Use `stream-to-store` when a continuous stream of records is consumed and persisted into a store or projection as an architectural pipeline.
+
+Do not use it for any ETL or batch write path. The key signal is continuous streamed ingestion into storage.

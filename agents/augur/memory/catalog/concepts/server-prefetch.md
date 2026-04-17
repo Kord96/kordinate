@@ -1,8 +1,24 @@
 ---
-description: Server Prefetch — fetching data on the server before client rendering
+description: "Server Prefetch \u2014 fetching data on the server before client rendering"
 type: pattern
 graphable: true
-abstraction: [frontend, data]
+abstraction:
+- frontend
+- data
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - hydration
+  - lazy-loading
+  - suspense-boundary
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Server Prefetch
 
@@ -49,3 +65,15 @@ Look for data fetching that runs on the server during the request lifecycle, wit
 - No error boundary around hydration, causing full-page crashes on deserialization failure
 - Using server prefetch for user-specific data on statically generated pages (cache poisoning)
 - Mismatched cache keys between server and client causing hydration misses
+
+### Relationship To Other Concepts
+
+- Related to [hydration](/concepts/hydration) because server-prefetched data is often serialized into the response and resumed on the client.
+- Related to [lazy-loading](/concepts/lazy-loading) because prefetching and deferred loading are complementary strategies for shaping perceived performance.
+- Related to [suspense-boundary](/concepts/suspense-boundary) when loading boundaries coordinate server-fetched and client-resumed data dependencies.
+
+### Boundary
+
+Use `server-prefetch` when the server intentionally loads data ahead of client render and passes it forward to avoid an immediate duplicate client fetch.
+
+Do not use it for generic SSR or any backend API call that is not specifically preparing client render state.

@@ -1,7 +1,24 @@
 ---
-description: Data pipeline flow — linear transformation stages from source to sink
+description: "Data pipeline flow \u2014 linear transformation stages from source to\
+  \ sink"
 type: flow-shape
-abstraction: [data, integration]
+abstraction:
+- data
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - batch-processing
+  - etl
+  - stream-to-store
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Data Pipeline
 
@@ -24,3 +41,15 @@ abstraction: [data, integration]
 - **high** — explicit pipeline framework (Airflow, dbt, Spark) with defined stages and dependencies
 - **medium** — sequential data transformations with clear source → sink but no pipeline framework
 - **low** — ad-hoc scripts that read, transform, and write data without pipeline structure
+
+### Relationship To Other Concepts
+
+- Related to [batch-processing](/concepts/batch-processing) when the pipeline advances in scheduled chunks rather than continuously.
+- Related to [etl](/concepts/etl) because many data pipelines implement extract-transform-load stages explicitly.
+- Related to [stream-to-store](/concepts/stream-to-store) when one pipeline mode ingests streams continuously into storage or projections.
+
+### Boundary
+
+Use `data-pipeline` when data moves through a deliberate series of transformation stages from one or more sources toward one or more sinks.
+
+Do not use it for any multi-step function. The important signal is staged data movement as an architectural flow.

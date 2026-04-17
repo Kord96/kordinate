@@ -3,7 +3,23 @@ description: Intermediate Representation (IR) architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data, compiler]
+abstraction:
+- data
+- compiler
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - ast
+  - lexer-parser
+  - visitor
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Intermediate Representation (IR)
 
@@ -47,3 +63,15 @@ Look for a structured intermediate form that enables optimization and analysis b
 - Optimization passes that mutate shared IR state without proper invalidation of analysis results
 - No type system on the IR, allowing ill-typed instructions to reach code generation
 - Monolithic lowering pass that converts AST to final output with no intermediate form
+
+### Relationship To Other Concepts
+
+- Related to [ast](/concepts/ast) because IR typically sits downstream of parsing and lowers richer syntax trees into a more regular form.
+- Related to [lexer-parser](/concepts/lexer-parser) because parsing usually precedes IR generation in compiler-like pipelines.
+- Related to [visitor](/concepts/visitor) when traversals or transforms are implemented as passes over AST or IR structures.
+
+### Boundary
+
+Use `intermediate-representation` when the system deliberately lowers source structures into a separate transformable form between parsing and final output.
+
+Do not use it for any DTO, serialized record, or generic internal data model.

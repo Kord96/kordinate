@@ -1,8 +1,24 @@
 ---
-description: Reactive Store — client-side state container with reactive subscriptions
+description: "Reactive Store \u2014 client-side state container with reactive subscriptions"
 type: pattern
 graphable: true
-abstraction: [frontend, data]
+abstraction:
+- frontend
+- data
+status: primary
+scope: frontend
+relationships:
+  related_to:
+  - flux
+  - component
+  - suspense-boundary
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Reactive Store
 
@@ -51,3 +67,15 @@ Look for a centralized state container that components subscribe to reactively, 
 - Duplicating derived data in the store instead of computing it with selectors
 - Mixing UI state (modal open, tab index) and domain state (user, cart) in the same store slice
 - No devtools integration, making state changes opaque during development
+
+### Relationship To Other Concepts
+
+- Related to [flux](/concepts/flux) because many reactive stores implement unidirectional update flow and centralized state ideas.
+- Related to [component](/concepts/component) because reactive stores usually feed UI trees and trigger component re-rendering or subscription updates.
+- Related to [suspense-boundary](/concepts/suspense-boundary) when reactive state coordinates async readiness or data availability in the UI.
+
+### Boundary
+
+Use `reactive-store` when client-side state is held in a store that notifies subscribers reactively as state changes.
+
+Do not use it for any state variable or context provider. The key signal is a dedicated reactive state container abstraction.

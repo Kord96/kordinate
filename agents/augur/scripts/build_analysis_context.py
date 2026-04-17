@@ -57,11 +57,9 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
-                "Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.",
-                "Use hot-files.json and fact source_files to rank what code to inspect next.",
+                "Use those facts to choose where to investigate in the repo, then widen into code as needed.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
                 "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
-                "Available tools are Read, Edit, and Bash. Use Bash with find, rg, jq, or python for discovery or filtering; do not assume Glob or Grep tools exist.",
             ]
         )
     else:
@@ -69,15 +67,9 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
-                "Expand into repo code only through fact-selected files, hot files, architecture entrypoints, or concrete validation gaps.",
-                "Use hot-files.json and fact source_files to rank what code to inspect next.",
-                "Do not read large domains like concept-evidence.json, external-clients.json, config.json, or import-graph.json in full before narrowing them by component, concept, or hotspot.",
-                "Before atlas.json exists, only inspect those large domains through filtered queries keyed by component_ids, source_files, concept ids, or hotspot paths.",
-                "Before reading any domain-specific fact file, confirm that facts/index.json lists that exact file for this run; if it is not listed, treat it as absent instead of guessing paths like routes.json or dispatch-bindings.json.",
-                "Do not begin by listing the repo root or reading repo metadata files.",
-                "Follow the already-loaded Augur skill, mode guide, and canonical schema files instead of guessing alternate paths or formats.",
+                "Use those facts to choose where to investigate in the repo, then widen into code as needed.",
+                "Use the run manifest for available fact files instead of guessing optional paths.",
                 "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
-                "Available tools are Read, Edit, and Bash. Use Bash with find, rg, jq, or python for discovery or filtering; do not assume Glob or Grep tools exist.",
             ]
         )
 

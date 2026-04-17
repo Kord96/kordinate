@@ -3,6 +3,20 @@ description: Race Condition anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - read-write-lock
+  - deadlock
+  - optimistic-locking
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Race Condition
 
@@ -43,3 +57,15 @@ Intermittent, hard-to-reproduce bugs that corrupt data and erode trust in the sy
 - Replace check-then-act with atomic upsert operations (`INSERT ... ON CONFLICT`, `putIfAbsent`)
 - Use concurrent-safe data structures (ConcurrentHashMap, sync.Map) instead of locking around standard collections
 - Add race detector tools to CI (Go race detector, ThreadSanitizer) to catch races before production
+
+### Relationship To Other Concepts
+
+- Related to [read-write-lock](/concepts/read-write-lock) because lock discipline is one way to prevent unsafe concurrent interleavings.
+- Related to [deadlock](/concepts/deadlock) as another concurrency failure mode, though races corrupt behavior through timing rather than circular waiting.
+- Related to [optimistic-locking](/concepts/optimistic-locking) because compare-and-swap or version checks are common race mitigations at storage boundaries.
+
+### Boundary
+
+Use `race-condition` when correctness depends on timing between concurrent actors and the code does not adequately synchronize access or ordering.
+
+Do not use it for all nondeterminism, load issues, or sequential logic bugs.

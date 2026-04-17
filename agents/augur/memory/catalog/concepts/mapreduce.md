@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [data, concurrency]
+abstraction:
+- data
+- concurrency
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - data-pipeline
+  - fan-out
+  - fan-in
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # MapReduce
 
@@ -48,3 +64,15 @@ Look for correct data partitioning, idempotent map functions, and an associative
 - All data funneled to a single reducer (defeats parallelism)
 - No combiner when one is possible (unnecessary shuffle volume)
 - Reduce logic that is not associative, producing different results depending on partition grouping
+
+### Relationship To Other Concepts
+
+- Related to [data-pipeline](/concepts/data-pipeline) because MapReduce is a specialized staged data-processing architecture.
+- Related to [fan-out](/concepts/fan-out) because map phases distribute work across partitions or workers.
+- Related to [fan-in](/concepts/fan-in) because reduce phases converge partitioned outputs into aggregated results.
+
+### Boundary
+
+Use `mapreduce` when computation is deliberately structured into distributed map and reduce phases over partitioned data.
+
+Do not use it for ordinary local `map()` plus `reduce()` function composition with no distributed or staged execution architecture.

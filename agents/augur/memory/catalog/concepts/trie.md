@@ -3,7 +3,22 @@ description: Trie (Prefix Tree) architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - search-index
+  - key-value-model
+  - lexer-parser
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Trie (Prefix Tree)
 
@@ -47,3 +62,15 @@ Look for correct prefix-based operations with efficient shared-prefix storage.
 - Missing terminal markers -- `search("app")` incorrectly returns true when only `"apple"` was inserted
 - Using a standard trie for large alphabets without compression (excessive memory waste)
 - Implementing deletion by simply unsetting the terminal flag without pruning orphaned branches
+
+### Relationship To Other Concepts
+
+- Related to [search-index](/concepts/search-index) because tries are often used as efficient prefix indexes for autocomplete or term lookup.
+- Related to [key-value-model](/concepts/key-value-model) because trie structures can act as a specialized key lookup model optimized for shared prefixes.
+- Related to [lexer-parser](/concepts/lexer-parser) when prefix trees are used for keyword recognition or token matching.
+
+### Boundary
+
+Use `trie` when keys are organized in a prefix tree so lookups and prefix queries share common path structure.
+
+Do not use it for generic trees, maps, or any text index that does not rely on explicit prefix sharing.

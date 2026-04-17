@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [data, integration]
+abstraction:
+- data
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - event-sourcing
+  - search-index
+  - cqrs
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Change Data Capture (CDC)
 
@@ -48,3 +64,15 @@ Look for database change streams being captured and published as events to downs
 - No schema evolution strategy, causing downstream deserialization failures on ALTER TABLE
 - Ignoring connector offset management, leading to duplicate or lost events on restart
 - Capturing all tables indiscriminately instead of targeting specific tables that need change events
+
+### Relationship To Other Concepts
+
+- Related to [event-sourcing](/concepts/event-sourcing) because both create downstream event streams, but CDC derives them from database changes rather than domain events.
+- Related to [search-index](/concepts/search-index) when CDC feeds indexing or denormalized search projections.
+- Related to [cqrs](/concepts/cqrs) when CDC is the mechanism that keeps read models synchronized with a write store.
+
+### Boundary
+
+Use `change-data-capture` when the system explicitly tails database changes or outbox-like persistence changes and republishes them downstream.
+
+Do not use it for generic event publishing, webhook delivery, or ordinary domain events unless the defining mechanism is database change capture.

@@ -1,12 +1,24 @@
 ---
-description: Generic graph model covering dependency graphs, DAGs, and general graph algorithms
+description: Generic graph model covering dependency graphs, DAGs, and general graph
+  algorithms
 type: pattern
 category: domain-model
-abstraction: [data, algorithmic]
+abstraction:
+- data
+- algorithmic
 status: primary
 scope: domain
 relationships:
-  related_to: [workflow-engine, pipeline-filter]
+  related_to:
+  - workflow-engine
+  - pipeline-filter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Graph
 
@@ -62,3 +74,14 @@ Treat `graph` as the primary concept for graph-shaped domain models and graph al
 ## Impact
 
 Graph algorithms determine execution order, dependency resolution, and reachability in systems that model relationships. Cycle detection failures in DAGs cause runtime hangs, and inefficient traversal algorithms become bottlenecks as graph size grows. Testing must verify graph invariants (acyclicity for DAGs, connectivity requirements) on every mutation.
+
+### Relationship To Other Concepts
+
+- Related to [workflow-engine](/concepts/workflow-engine) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [pipeline-filter](/concepts/pipeline-filter) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `graph` when the important observation is this specific architectural concern within a domain-modeling or product-domain concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

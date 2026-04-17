@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [integration, architectural]
+abstraction:
+- integration
+- architectural
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - saga
+  - event-driven
+  - orchestration
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Choreography
 
@@ -47,3 +63,15 @@ Look for clear event contracts and no hidden coupling between services.
 - Event ping-pong — two services triggering each other in a loop
 - No observability — impossible to reconstruct what happened from logs alone
 - Choreography used where a saga/orchestrator would be clearer (too many steps)
+
+### Relationship To Other Concepts
+
+- Related to [saga](/concepts/saga) because sagas can be implemented through choreography rather than a central coordinator.
+- Related to [event-driven](/concepts/event-driven) because choreography usually relies on event-based reactions between participating services.
+- Related to [orchestration](/concepts/orchestration) as the main alternative where a central coordinator controls workflow progress.
+
+### Boundary
+
+Use `choreography` when a multi-step cross-service flow emerges from peers reacting to events without one central controller.
+
+Do not use it for any event-driven system. The defining feature is decentralized workflow coordination.

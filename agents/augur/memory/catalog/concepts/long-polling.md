@@ -4,7 +4,22 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [integration]
+abstraction:
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - server-sent-events
+  - polling-flow
+  - websocket
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Long Polling
 
@@ -47,3 +62,14 @@ Look for correct request lifecycle with timeout handling and efficient re-reques
 - Fixed-interval polling disguised as long polling (missing the hold-until-data-available behavior)
 - No backoff on errors -- client floods server with retries during outages
 - Using long polling when WebSocket or SSE is available and supported by the client
+
+### Relationship To Other Concepts
+
+- Related to [server-sent-events](/concepts/server-sent-events) and [websocket](/concepts/websocket) as alternative realtime delivery mechanisms.
+- Related to [polling-flow](/concepts/polling-flow) because long polling is a more efficient variant of poll-based interaction.
+
+### Boundary
+
+Use `long-polling` when clients hold a request open until data is available or a timeout occurs, then immediately reissue the request.
+
+Do not use it for ordinary short-interval polling. The key signal is open-held request semantics.

@@ -2,6 +2,20 @@
 description: Train Wreck anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - leaky-abstraction
+  - deep-nesting
+  - tight-coupling
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Train Wreck
 
@@ -42,3 +56,15 @@ Tight coupling to the entire object structure, making the code fragile to any ch
 - Pass the needed value directly rather than passing the root object and letting the callee navigate
 - Use null-safe navigation operators (`?.` in Kotlin/C#, `&.` in Ruby) as a stopgap, not a solution
 - Flatten the data structure if the deep nesting does not represent a genuine domain relationship
+
+### Relationship To Other Concepts
+
+- Related to [leaky-abstraction](/concepts/leaky-abstraction) because long chains often expose too much of an object graph’s internals.
+- Related to [deep-nesting](/concepts/deep-nesting) as another readability smell where control or data access becomes hard to follow.
+- Related to [tight-coupling](/concepts/tight-coupling) because chaining through many objects couples callers to intermediate structure.
+
+### Boundary
+
+Use `train-wreck` when code reaches through multiple collaborators in one chain instead of asking a nearer object for the needed behavior.
+
+Do not use it for fluent APIs that intentionally chain methods on the same conceptual object.

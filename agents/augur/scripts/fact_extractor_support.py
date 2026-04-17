@@ -24,6 +24,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
+import yaml
+
 from facts import (
     extract_auth_surfaces,
     extract_boundaries,
@@ -61,6 +63,8 @@ from facts import (
 MAX_FILE_BYTES = 100 * 1024
 ROOT = Path(__file__).resolve().parents[1]
 FACT_DETECTORS = ROOT / "detectors" / "facts"
+FRAMEWORK_DETECTORS = FACT_DETECTORS / "frameworks"
+FRAMEWORK_CATALOG = ROOT / "memory" / "catalog" / "frameworks"
 AST_GREP_BIN = shutil.which("ast-grep")
 REPO_PROFILE_SCRIPT = ROOT.parent.parent / "shared" / "tools" / "repo_profile" / "detect_repo_profile.py"
 JOERN_BATCH_EXPORTER = ROOT.parent.parent / "shared" / "tools" / "joern" / "export_augur_facts.py"
@@ -137,125 +141,116 @@ EXCLUDE_DIRS = {
     ".vscode",
 }
 
-FRAMEWORK_PATTERNS = [
-    (
-        "fastapi",
-        [
-            r"from\s+fastapi\s+import",
-            r"import\s+fastapi",
-            r"\bFastAPI\s*\(",
-            r"\bAPIRouter\s*\(",
-            r"@\w+\.(get|post|put|delete|patch|options|head)\s*\(",
-        ],
-    ),
-    (
-        "flask",
-        [
-            r"from\s+flask\s+import",
-            r"import\s+flask",
-            r"\bFlask\s*\(",
-            r"@\w+\.route\s*\(",
-        ],
-    ),
-    (
-        "express",
-        [
-            r"require\(['\"]express['\"]\)",
-            r"import\s+express\b",
-            r"\bexpress\s*\(",
-            r"\bapp\.(get|post|put|delete|patch|use)\s*\(",
-            r"\brouter\.(get|post|put|delete|patch|use)\s*\(",
-        ],
-    ),
-    (
-        "koa",
-        [
-            r"require\(['\"]koa['\"]\)",
-            r"import\s+Koa\b",
-            r"\bnew\s+Koa\s*\(",
-            r"\brouter\.(get|post|put|delete|patch|use)\s*\(",
-        ],
-    ),
-    (
-        "fastify",
-        [
-            r"require\(['\"]fastify['\"]\)",
-            r"import\s+fastify\b",
-            r"\bfastify\s*\(",
-            r"\bfastify\.(get|post|put|delete|patch|route)\s*\(",
-        ],
-    ),
-    (
-        "nestjs",
-        [
-            r"@Controller\b",
-            r"@Get\s*\(",
-            r"@Post\s*\(",
-            r"@Put\s*\(",
-            r"@Delete\s*\(",
-            r"@Patch\s*\(",
-        ],
-    ),
-    (
-        "nextjs",
-        [
-            r"(^|/)(app|pages)/api/",
-            r"export\s+(async\s+)?function\s+(GET|POST|PUT|DELETE|PATCH)\b",
-            r"export\s+\{\s*(GET|POST|PUT|DELETE|PATCH)\s*\}",
-        ],
-    ),
-    (
-        "sveltekit",
-        [
-            r"(^|/)src/routes/",
-            r"\+server\.(ts|js|mjs|cjs)$",
-            r"export\s+(async\s+)?function\s+(GET|POST|PUT|DELETE|PATCH)\b",
-        ],
-    ),
-    (
-        "django",
-        [
-            r"from\s+django\.urls\s+import",
-            r"urlpatterns\s*=",
-            r"from\s+django\s+import",
-            r"django\.setup\s*\(",
-        ],
-    ),
-    (
-        "gin",
-        [
-            r"gin\.Default\s*\(",
-            r"gin\.New\s*\(",
-            r"\brouter\.(GET|POST|PUT|DELETE|PATCH)\s*\(",
-        ],
-    ),
-    (
-        "chi",
-        [
-            r"chi\.NewRouter\s*\(",
-            r"\br\.(Get|Post|Put|Delete|Patch)\s*\(",
-        ],
-    ),
-    (
-        "spring",
-        [
-            r"@RestController\b",
-            r"@SpringBootApplication\b",
-            r"@GetMapping\s*\(",
-            r"@PostMapping\s*\(",
-            r"@RequestMapping\s*\(",
-        ],
-    ),
-    (
-        "rails",
-        [
-            r"Rails\.application\.routes\.draw\b",
-            r"^\s*resources\s+:\w+",
-            r"^\s*namespace\s+:\w+",
-            r"^\s*scope\s+['\"]/",
-        ],
-    ),
-]
+def load_yaml(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return {}
+
+
+@dataclass(frozen=True)
+class FrameworkRule:
+    name: str
+    manifest_packages: dict[str, tuple[str, ...]]
+    source_extensions: tuple[str, ...]
+    path_patterns: dict[str, tuple[str, ...]]
+    source_patterns: dict[str, tuple[str, ...]]
+    negative_path_patterns: tuple[str, ...]
+    negative_source_patterns: tuple[str, ...]
+    semantic_metadata: dict[str, Any]
+
+
+MANIFEST_FILES: dict[str, str] = {
+    "package_json": "package.json",
+    "pyproject": "pyproject.toml",
+    "requirements": "requirements.txt",
+    "csproj": "*.csproj",
+    "gemfile": "Gemfile",
+    "composer": "composer.json",
+    "cargo": "Cargo.toml",
+    "pom": "pom.xml",
+    "go_mod": "go.mod",
+    "package_swift": "Package.swift",
+    "mix_exs": "mix.exs",
+}
+
+
+def _tuple_strings(values: Any) -> tuple[str, ...]:
+    if not isinstance(values, list):
+        return ()
+    items = [str(value).strip() for value in values if str(value).strip()]
+    return tuple(items)
+
+
+def _pattern_groups(values: Any) -> dict[str, tuple[str, ...]]:
+    if not isinstance(values, dict):
+        return {"strong": (), "medium": (), "weak": ()}
+    return {
+        "strong": _tuple_strings(values.get("strong")),
+        "medium": _tuple_strings(values.get("medium")),
+        "weak": _tuple_strings(values.get("weak")),
+    }
+
+
+def _semantic_framework_metadata(name: str) -> dict[str, Any]:
+    semantics_path = FRAMEWORK_CATALOG / name / "semantics.yaml"
+    semantics = load_yaml(semantics_path)
+    relationships = semantics.get("relationships") if isinstance(semantics.get("relationships"), dict) else {}
+    common_concepts = _tuple_strings(semantics.get("common_concepts"))
+    implemented = _tuple_strings(relationships.get("implements"))
+    supported = _tuple_strings(relationships.get("supports"))
+    related = _tuple_strings(relationships.get("related_to"))
+    used = _tuple_strings(relationships.get("uses"))
+    concepts = tuple(dict.fromkeys([*implemented, *supported, *common_concepts]))
+    return {
+        "language": str(semantics.get("language") or "").strip(),
+        "scope": str(semantics.get("scope") or "").strip(),
+        "framework_kind": str(semantics.get("framework_kind") or "").strip(),
+        "status": str(semantics.get("status") or "").strip(),
+        "traits": semantics.get("traits") if isinstance(semantics.get("traits"), dict) else {},
+        "relationships": {
+            "implements": list(implemented),
+            "supports": list(supported),
+            "related_to": list(related),
+            "uses": list(used),
+        },
+        "common_concepts": list(common_concepts),
+        "common_failure_modes": list(_tuple_strings(semantics.get("common_failure_modes"))),
+        "concepts": list(concepts),
+    }
+
+
+@functools.lru_cache(maxsize=1)
+def load_framework_rules() -> tuple[FrameworkRule, ...]:
+    rules: list[FrameworkRule] = []
+    if not FRAMEWORK_DETECTORS.exists():
+        return ()
+    for entry in sorted(p for p in FRAMEWORK_DETECTORS.iterdir() if p.is_dir()):
+        signatures = load_yaml(entry / "signatures.yaml")
+        name = str(signatures.get("framework") or entry.name).strip()
+        if not name:
+            continue
+        manifests = signatures.get("manifest_packages") if isinstance(signatures.get("manifest_packages"), dict) else {}
+        manifest_packages = {
+            manifest: _tuple_strings(values)
+            for manifest, values in manifests.items()
+            if manifest in MANIFEST_FILES and _tuple_strings(values)
+        }
+        rules.append(
+            FrameworkRule(
+                name=name,
+                manifest_packages=manifest_packages,
+                source_extensions=_tuple_strings(signatures.get("source_extensions")),
+                path_patterns=_pattern_groups(signatures.get("path_patterns")),
+                source_patterns=_pattern_groups(signatures.get("source_patterns")),
+                negative_path_patterns=_tuple_strings(signatures.get("negative_path_patterns")),
+                negative_source_patterns=_tuple_strings(signatures.get("negative_source_patterns")),
+                semantic_metadata=_semantic_framework_metadata(name),
+            )
+        )
+    return tuple(rules)
 
 CLIENT_PATTERNS = [
     (
@@ -898,149 +893,142 @@ def load_repo_profile(root: Path) -> dict[str, Any]:
         return {}
 
 
-def parse_manifest_frameworks(root: Path) -> dict[str, list[str]]:
-    frameworks: dict[str, list[str]] = defaultdict(list)
+def _load_json_file(path: Path) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
-    def add(name: str, evidence: str) -> None:
-        frameworks[name].append(evidence)
 
-    package_json = root / "package.json"
-    if package_json.exists():
-        try:
-            data = json.loads(package_json.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-        for section in ("dependencies", "devDependencies", "peerDependencies"):
-            deps = data.get(section, {}) if isinstance(data, dict) else {}
-            if not isinstance(deps, dict):
+def _find_package_json_dependencies(path: Path, packages: tuple[str, ...]) -> list[str]:
+    data = _load_json_file(path)
+    matches: list[str] = []
+    if not isinstance(data, dict):
+        return matches
+    target = {item.lower() for item in packages}
+    for section in ("dependencies", "devDependencies", "peerDependencies", "optionalDependencies"):
+        deps = data.get(section, {})
+        if not isinstance(deps, dict):
+            continue
+        for dep in deps:
+            if dep.lower() in target:
+                matches.append(f"{path.name}:{section}:{dep}")
+    scripts = data.get("scripts", {})
+    if isinstance(scripts, dict):
+        script_blob = " ".join(str(value) for value in scripts.values()).lower()
+        for dep in packages:
+            if dep.lower() in script_blob:
+                matches.append(f"{path.name}:scripts:{dep}")
+    return matches
+
+
+def _find_composer_dependencies(path: Path, packages: tuple[str, ...]) -> list[str]:
+    data = _load_json_file(path)
+    matches: list[str] = []
+    if not isinstance(data, dict):
+        return matches
+    target = {item.lower() for item in packages}
+    for section in ("require", "require-dev"):
+        deps = data.get(section, {})
+        if not isinstance(deps, dict):
+            continue
+        for dep in deps:
+            if dep.lower() in target:
+                matches.append(f"{path.name}:{section}:{dep}")
+    return matches
+
+
+def _find_text_manifest_matches(path: Path, packages: tuple[str, ...]) -> list[str]:
+    text = read_text(path) or ""
+    haystack = text.lower()
+    matches: list[str] = []
+    for package in packages:
+        if package.lower() in haystack:
+            matches.append(path.name)
+    return matches
+
+
+def parse_manifest_frameworks(root: Path) -> dict[str, list[tuple[str, str]]]:
+    frameworks: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    for rule in load_framework_rules():
+        for manifest_name, packages in rule.manifest_packages.items():
+            manifest_rel = MANIFEST_FILES.get(manifest_name)
+            if not manifest_rel or not packages:
                 continue
-            for dep in deps:
-                lower = dep.lower()
-                if lower == "fastapi":
-                    add("fastapi", f"package.json:{section}")
-                if lower == "express":
-                    add("express", f"package.json:{section}")
-                if lower == "koa":
-                    add("koa", f"package.json:{section}")
-                if lower == "fastify":
-                    add("fastify", f"package.json:{section}")
-                if lower.startswith("@nestjs/") or lower == "nestjs":
-                    add("nestj", f"package.json:{section}")
-                if lower == "next":
-                    add("nextjs", f"package.json:{section}")
-                if lower == "sveltekit":
-                    add("sveltekit", f"package.json:{section}")
-                if lower == "hono":
-                    add("hono", f"package.json:{section}")
-                if lower == "elysia":
-                    add("elysia", f"package.json:{section}")
-        if "scripts" in data and isinstance(data["scripts"], dict):
-            scripts = " ".join(str(v) for v in data["scripts"].values())
-            if "next" in scripts:
-                add("nextjs", "package.json:scripts")
-
-    pyproject = root / "pyproject.toml"
-    if pyproject.exists():
-        text = read_text(pyproject) or ""
-        if re.search(r"\bfastapi\b", text, re.I):
-            add("fastapi", "pyproject.toml")
-        if re.search(r"\bflask\b", text, re.I):
-            add("flask", "pyproject.toml")
-        if re.search(r"\bdjango\b", text, re.I):
-            add("django", "pyproject.toml")
-        if re.search(r"\baiohttp\b", text, re.I):
-            add("aiohttp", "pyproject.toml")
-
-    requirements = root / "requirements.txt"
-    if requirements.exists():
-        text = read_text(requirements) or ""
-        for name in ("fastapi", "flask", "django", "starlette", "aiohttp"):
-            if re.search(rf"^\s*{re.escape(name)}(?:[<>=!~].*)?$", text, re.M | re.I):
-                add(name, "requirements.txt")
-
-    gemfile = root / "Gemfile"
-    if gemfile.exists():
-        text = read_text(gemfile) or ""
-        if re.search(r"\brails\b", text, re.I):
-            add("rails", "Gemfile")
-        if re.search(r"\bsinatra\b", text, re.I):
-            add("sinatra", "Gemfile")
-
-    composer = root / "composer.json"
-    if composer.exists():
-        try:
-            data = json.loads(composer.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-        for section in ("require", "require-dev"):
-            deps = data.get(section, {}) if isinstance(data, dict) else {}
-            if not isinstance(deps, dict):
-                continue
-            for dep in deps:
-                if "laravel/framework" in dep:
-                    add("laravel", "composer.json")
-                if "symfony/framework-bundle" in dep:
-                    add("symfony", "composer.json")
-                if "slim/slim" in dep:
-                    add("slim", "composer.json")
-
-    cargo = root / "Cargo.toml"
-    if cargo.exists():
-        text = read_text(cargo) or ""
-        if re.search(r"\baxum\b", text, re.I):
-            add("axum", "Cargo.toml")
-        if re.search(r"\bactix_web\b", text, re.I):
-            add("actix-web", "Cargo.toml")
-
-    pom = root / "pom.xml"
-    if pom.exists():
-        text = read_text(pom) or ""
-        if re.search(r"\bspring-boot\b|\bspringframework\b", text, re.I):
-            add("spring", "pom.xml")
-        if re.search(r"\bquarkus\b", text, re.I):
-            add("quarkus", "pom.xml")
-
-    go_mod = root / "go.mod"
-    if go_mod.exists():
-        text = read_text(go_mod) or ""
-        if "github.com/gin-gonic/gin" in text:
-            add("gin", "go.mod")
-        if "github.com/go-chi/chi" in text:
-            add("chi", "go.mod")
-        if "github.com/labstack/echo" in text:
-            add("echo", "go.mod")
-        if "github.com/gofiber/fiber" in text:
-            add("fiber", "go.mod")
-
+            candidate_paths = list(root.glob(manifest_rel)) if "*" in manifest_rel else [root / manifest_rel]
+            for path in candidate_paths:
+                if not path.exists():
+                    continue
+                if manifest_name == "package_json":
+                    matches = _find_package_json_dependencies(path, packages)
+                elif manifest_name == "composer":
+                    matches = _find_composer_dependencies(path, packages)
+                else:
+                    matches = _find_text_manifest_matches(path, packages)
+                for source in matches:
+                    frameworks[rule.name].append((source, "strong"))
     return frameworks
 
 
+def _match_signal_group(patterns: tuple[str, ...], haystack: str) -> bool:
+    return any(re.search(pattern, haystack, re.M) for pattern in patterns)
+
+
 def detect_frameworks(files: Iterable[Path], root: Path) -> dict[str, dict[str, Any]]:
-    evidence: dict[str, list[str]] = defaultdict(list)
+    evidence: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    negative_evidence: dict[str, list[str]] = defaultdict(list)
+    rules = load_framework_rules()
 
     for file in files:
         if not is_framework_signal_file(file, root):
             continue
-        text = read_text(file)
-        if text is None:
-            continue
-        if file.suffix.lower() == ".py":
-            for framework in detect_python_framework_signals(text):
-                evidence[framework].append(f"{file.relative_to(root)}")
-            continue
-        for framework, patterns in FRAMEWORK_PATTERNS:
-            if any(re.search(pattern, text, re.M) for pattern in patterns):
-                evidence[framework].append(f"{file.relative_to(root)}")
+        rel = str(file.relative_to(root))
+        rel_lower = rel.lower()
+        text = read_text(file) or ""
+        suffix = file.suffix.lower()
+        for rule in rules:
+            if rule.source_extensions and suffix not in rule.source_extensions and suffix:
+                continue
+            matched = False
+            for strength in ("strong", "medium", "weak"):
+                if _match_signal_group(rule.path_patterns.get(strength, ()), rel_lower):
+                    evidence[rule.name].append((rel, strength))
+                    matched = True
+                    break
+                if text and _match_signal_group(rule.source_patterns.get(strength, ()), text):
+                    evidence[rule.name].append((rel, strength))
+                    matched = True
+                    break
+            if matched:
+                continue
+            if text and _match_signal_group(rule.negative_source_patterns, text):
+                negative_evidence[rule.name].append(rel)
+            elif _match_signal_group(rule.negative_path_patterns, rel_lower):
+                negative_evidence[rule.name].append(rel)
 
     manifest_evidence = parse_manifest_frameworks(root)
     for name, sources in manifest_evidence.items():
         evidence[name].extend(sources)
 
     result: dict[str, dict[str, Any]] = {}
+    rules_by_name = {rule.name: rule for rule in rules}
     for name in sorted(evidence):
-        sources = sorted(set(evidence[name]))
-        manifest_like = any(src.endswith(("package.json", "go.mod", "Cargo.toml", "pom.xml", "Gemfile", "composer.json", "pyproject.toml", "requirements.txt")) for src in sources)
-        confidence = "high" if manifest_like or len(sources) >= 2 else "medium"
+        weighted_sources = evidence[name]
+        sources = sorted({source for source, _ in weighted_sources})
+        strengths = {strength for _, strength in weighted_sources}
+        manifest_like = any(":" in source or source.endswith(tuple(MANIFEST_FILES.values())) for source in sources)
+        if "strong" in strengths or manifest_like or len(sources) >= 2:
+            confidence = "high"
+            detector_strength = 5
+        elif "medium" in strengths:
+            confidence = "medium"
+            detector_strength = 4
+        else:
+            confidence = "low"
+            detector_strength = 3
+        rule = rules_by_name.get(name)
+        metadata = rule.semantic_metadata if rule else {}
+        detector_class = "manifest" if manifest_like else "signature"
         result[name] = {
             "id": stable_id("framework", name, *sources),
             "kind": "framework",
@@ -1051,17 +1039,26 @@ def detect_frameworks(files: Iterable[Path], root: Path) -> dict[str, dict[str, 
             "source_files": sources,
             "detector": {
                 "id": f"{name}-framework-detector",
-                "class": "manifest" if any(src.endswith(("package.json", "go.mod", "Cargo.toml", "pom.xml", "Gemfile", "composer.json")) for src in sources) else "signature",
-                "strength": 5 if confidence == "high" else 3,
+                "class": detector_class,
+                "strength": detector_strength,
                 "rule": None,
                 "bundle": "detectors:frameworks",
             },
             "raw_evidence": {
                 "framework": name,
+                "language": metadata.get("language", ""),
+                "scope": metadata.get("scope", ""),
+                "framework_kind": metadata.get("framework_kind", ""),
+                "status": metadata.get("status", ""),
+                "traits": metadata.get("traits", {}),
+                "relationships": metadata.get("relationships", {}),
+                "common_concepts": metadata.get("common_concepts", []),
+                "common_failure_modes": metadata.get("common_failure_modes", []),
+                "concepts": metadata.get("concepts", []),
                 "signals": sources,
-                "negative_signals": [],
+                "negative_signals": sorted(set(negative_evidence.get(name, []))),
             },
-            "negative_evidence": [],
+            "negative_evidence": sorted(set(negative_evidence.get(name, []))),
             "contradictions": [],
             "relationships": {
                 "component_ids": [],
@@ -1113,50 +1110,6 @@ def extract_python_imports(text: str) -> list[str]:
             if module:
                 imports.append(module)
     return [module for module in imports if not _is_stdlib_module(module)]
-
-
-def detect_python_framework_signals(text: str) -> set[str]:
-    try:
-        tree = ast.parse(text)
-    except SyntaxError:
-        return set()
-
-    frameworks: set[str] = set()
-    imported_modules: set[str] = set()
-
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                imported_modules.add(alias.name)
-        elif isinstance(node, ast.ImportFrom):
-            module = node.module or ""
-            if module:
-                imported_modules.add(module)
-        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            for deco in node.decorator_list:
-                if isinstance(deco, ast.Call) and isinstance(deco.func, ast.Attribute):
-                    if deco.func.attr.lower() in {"get", "post", "put", "delete", "patch", "route"}:
-                        frameworks.add("fastapi")
-                elif isinstance(deco, ast.Attribute) and deco.attr.lower() in {"get", "post", "put", "delete", "patch", "route"}:
-                    frameworks.add("fastapi")
-        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-            if node.func.id == "FastAPI":
-                frameworks.add("fastapi")
-            elif node.func.id == "Flask":
-                frameworks.add("flask")
-
-    imported_text = " ".join(sorted(imported_modules)).lower()
-    if "fastapi" in imported_text:
-        frameworks.add("fastapi")
-    if "flask" in imported_text:
-        frameworks.add("flask")
-    if "django" in imported_text:
-        frameworks.add("django")
-    if "starlette" in imported_text:
-        frameworks.add("starlette")
-    if "aiohttp" in imported_text:
-        frameworks.add("aiohttp")
-    return frameworks
 
 
 def _is_stdlib_module(module: str) -> bool:

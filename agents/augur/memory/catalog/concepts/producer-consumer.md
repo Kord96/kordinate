@@ -4,7 +4,23 @@ type: pattern
 testable: true
 observable: true
 graphable: true
-abstraction: [concurrency, messaging]
+abstraction:
+- concurrency
+- messaging
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - competing-consumers
+  - backpressure
+  - message-queue
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Producer-Consumer
 
@@ -48,3 +64,15 @@ Look for a shared buffer decoupling the rate of production from the rate of cons
 - Producer and consumer tightly coupled (direct function calls instead of queue)
 - No shutdown mechanism -- threads/processes left dangling on exit
 - Swallowing exceptions in the consumer loop, losing failed items permanently
+
+### Relationship To Other Concepts
+
+- Related to [competing-consumers](/concepts/competing-consumers) when multiple consumers draw work from the same source concurrently.
+- Related to [backpressure](/concepts/backpressure) because producer-consumer systems often need flow control when consumers lag.
+- Related to [message-queue](/concepts/message-queue) when the queue abstraction is externalized rather than in-process.
+
+### Boundary
+
+Use `producer-consumer` when producers and consumers are decoupled through an explicit queue, channel, or buffer boundary.
+
+Do not use it for any asynchronous workflow. The key signal is decoupled production and consumption with a handoff buffer.

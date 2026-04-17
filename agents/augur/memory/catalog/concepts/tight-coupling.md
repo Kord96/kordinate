@@ -2,6 +2,20 @@
 description: Tight Coupling anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - dependency-injection
+  - hexagonal
+  - leaky-abstraction
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Tight Coupling
 
@@ -42,3 +56,15 @@ Cannot test, swap, or evolve components independently because every piece is wir
 - Use a composition root or lightweight DI container to wire dependencies at application startup
 - Isolate infrastructure behind adapter interfaces (ports and adapters / hexagonal architecture)
 - Write tests that verify coupling: if a unit test needs more than 2-3 test doubles, the unit is too coupled
+
+### Relationship To Other Concepts
+
+- Related to [dependency-injection](/concepts/dependency-injection) because injected boundaries are one common remedy for tight coupling.
+- Related to [hexagonal](/concepts/hexagonal) because ports-and-adapters architectures exist partly to reduce direct dependence on infrastructure details.
+- Related to [leaky-abstraction](/concepts/leaky-abstraction) when coupling persists because abstractions fail to hide implementation details.
+
+### Boundary
+
+Use `tight-coupling` when modules or classes depend so directly on each other’s concrete details that they cannot evolve, test, or swap independently.
+
+Do not use it for every direct dependency; the issue is rigidity and lack of meaningful isolation.

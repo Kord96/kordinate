@@ -3,7 +3,23 @@ description: Immutable Infrastructure architectural pattern
 type: pattern
 distributed: true
 graphable: true
-abstraction: [deployment, infrastructure]
+abstraction:
+- deployment
+- infrastructure
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - infrastructure-as-code
+  - gitops
+  - blue-green
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Immutable Infrastructure
 
@@ -44,3 +60,15 @@ Look for a build-once-deploy-everywhere pipeline where running instances are nev
 - SSH access to production instances for ad-hoc patching or configuration changes
 - Baking environment-specific secrets or configuration into the image itself
 - In-place updates via `kubectl exec` or remote script execution on running containers
+
+### Relationship To Other Concepts
+
+- Related to [infrastructure-as-code](/concepts/infrastructure-as-code) because immutable infrastructure is often provisioned and replaced through declarative definitions.
+- Related to [gitops](/concepts/gitops) when immutable deployable artifacts are reconciled from version-controlled desired state.
+- Related to [blue-green](/concepts/blue-green) because swapping environments is easier when infrastructure units are replaced instead of mutated.
+
+### Boundary
+
+Use `immutable-infra` when servers, images, or deployable units are replaced wholesale rather than modified in place after creation.
+
+Do not use it for any containerized deployment. The key signal is operational discipline against in-place mutation.

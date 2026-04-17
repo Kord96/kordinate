@@ -2,7 +2,23 @@
 description: Time-series data pattern for temporal metrics and event streams
 type: pattern
 category: domain-model
-abstraction: [data, temporal]
+abstraction:
+- data
+- temporal
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - metrics-instrumentation
+  - materialized-view
+  - stream-to-store
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Time Series
 
@@ -49,3 +65,15 @@ How to identify this pattern in code.
 ## Impact
 
 Time-series data drives monitoring, alerting, and capacity planning. Retention policies and downsampling directly affect storage costs and query performance, so missing configurations silently degrade both operational visibility and infrastructure budgets.
+
+### Relationship To Other Concepts
+
+- Related to [metrics-instrumentation](/concepts/metrics-instrumentation) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [materialized-view](/concepts/materialized-view) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [stream-to-store](/concepts/stream-to-store) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `time-series` when the important observation is this specific architectural concern within a domain-modeling or product-domain concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

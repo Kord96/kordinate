@@ -3,7 +3,22 @@ description: Flyweight architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - object-pool
+  - value-object
+  - prototype
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Flyweight
 
@@ -47,3 +62,15 @@ Look for a factory that manages shared immutable instances, separating intrinsic
 - Storing extrinsic state on the flyweight, defeating the sharing benefit
 - Flyweight pool growing unbounded without eviction (memory leak disguised as optimization)
 - Applying the pattern where object count is small (premature optimization)
+
+### Relationship To Other Concepts
+
+- Related to [object-pool](/concepts/object-pool) because both reduce allocation cost, though flyweight shares intrinsic state while pooling reuses full instances over time.
+- Related to [value-object](/concepts/value-object) because immutable sharable value state is often a good fit for flyweight designs.
+- Related to [prototype](/concepts/prototype) because both can reduce creation cost, though prototype clones complete objects while flyweight shares stable internals.
+
+### Boundary
+
+Use `flyweight` when many logical objects intentionally share intrinsic state to reduce memory footprint.
+
+Do not use it for generic caching, pooling, or any immutable value reuse without the explicit extrinsic/intrinsic split.

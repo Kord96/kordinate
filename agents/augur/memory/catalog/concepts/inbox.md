@@ -1,7 +1,24 @@
 ---
 description: Inbox architectural pattern
 graphable: true
-abstraction: [messaging, data, resilience]
+abstraction:
+- messaging
+- data
+- resilience
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - idempotent-consumer
+  - outbox
+  - dead-letter
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Inbox
 
@@ -42,3 +59,15 @@ Look for idempotent message processing using a persistent deduplication table ke
 - Inbox insert committed before business logic completes (message marked as processed but work not done)
 - No TTL or cleanup -- inbox table grows indefinitely
 - Relying solely on the broker's exactly-once semantics instead of application-level idempotency
+
+### Relationship To Other Concepts
+
+- Related to [idempotent-consumer](/concepts/idempotent-consumer) because inbox tables are one concrete mechanism for deduplicating received messages.
+- Related to [outbox](/concepts/outbox) as the inbound complement to reliable outbound message publication.
+- Related to [dead-letter](/concepts/dead-letter) when messages still fail after dedup-aware handling and need quarantine.
+
+### Boundary
+
+Use `inbox` when a persistent table or store records received message IDs so processing can be made idempotent.
+
+Do not use it for any message log or ordinary queue consumer state.

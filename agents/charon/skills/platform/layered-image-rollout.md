@@ -26,7 +26,11 @@ Ensure `agent-base` carries the shared `klaude-daemon` binary and that specialis
 1. Build and verify `agent-base`
 2. Build and verify specialist images that derive from it
 3. Regenerate platform manifests if the runtime contract changed
-4. Deploy with `/platform deploy <env>`
+4. Deploy with `/platform deploy <env>` or:
+
+```bash
+bash lib/scripts/apply-platform-manifests.sh <env> shared/runtime/profile/overlays/platform/<env>
+```
 
 ## Local Docker Path
 

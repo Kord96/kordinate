@@ -3,7 +3,22 @@ description: Template Method architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [design]
+abstraction:
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - strategy
+  - visitor
+  - factory
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Template Method
 
@@ -45,3 +60,15 @@ Look for invariant algorithm structure in the base class with variation points i
 - Too many abstract methods forcing subclasses to implement everything (defeats the template)
 - Hook methods with hidden ordering dependencies not documented in the base class
 - Using inheritance for code reuse when composition (strategy) would be cleaner
+
+### Relationship To Other Concepts
+
+- Related to [strategy](/concepts/strategy) because strategy is a common alternative when algorithm variation should come from composition rather than inheritance.
+- Related to [visitor](/concepts/visitor) because both can separate algorithm structure from specific operations, though template method relies on subclass hooks.
+- Related to [factory](/concepts/factory) when object creation steps are fixed structurally but specific substeps vary.
+
+### Boundary
+
+Use `template-method` when a base class defines the stable skeleton of an algorithm and subclasses fill in selected hook steps.
+
+Do not use it for any inheritance hierarchy with override methods unless the invariant algorithm template is truly central.

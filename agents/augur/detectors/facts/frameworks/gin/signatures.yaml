@@ -1,0 +1,19 @@
+framework: gin
+manifest_packages:
+  go_mod:
+    - github.com/gin-gonic/gin
+source_extensions:
+  - .go
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+    - gin\.Default\s*\(
+    - gin\.New\s*\(
+  medium:
+    - \brouter\.(GET|POST|PUT|DELETE|PATCH)\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []

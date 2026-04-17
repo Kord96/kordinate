@@ -12,6 +12,37 @@ import yaml
 
 
 SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron"}
+DEFAULT_REFLECTION_PROMPT = "\n".join([
+    "Based on the completed task, return strict JSON only with exactly these keys:",
+    '{"project":"...","general":"..."}',
+    "project: lessons specific to the current project/repo/context.",
+    "general: lessons that transfer to any project.",
+    "Use strings only. If there is no strong lesson for a key, return an empty string.",
+])
+DEFAULT_RUNTIME_PROFILES = {
+    "gemini-sdk": {
+        "kind": "gemini-sdk",
+        "toolGuidance": [
+            "Use `Read` to open files when a path is known.",
+            "Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.",
+            "Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.",
+        ],
+        "runArtifactGuidance": [
+            "Use the prepared run artifact tools for generated analysis artifacts when available.",
+            "Treat facts/index.json as the authoritative inventory for optional fact files in this run.",
+        ],
+    },
+    "claude-agent-sdk": {"kind": "claude-agent-sdk", "toolGuidance": []},
+    "openclaude-harness": {
+        "kind": "openclaude-harness",
+        "toolGuidance": [
+            "Use `Read` to open files when a path is known.",
+            "Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.",
+            "Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.",
+        ],
+    },
+    "codex-sdk": {"kind": "codex-sdk", "toolGuidance": []},
+}
 
 
 def infer_supported_agent_params(agent: dict) -> list[str]:
@@ -84,6 +115,65 @@ def build_discovery_record(agent: dict, generated_at: str) -> dict:
     }
 
 
+def build_agent_contract(spec: dict, agent: dict) -> dict:
+    spec_version = str(spec.get("version", "1"))
+    name = agent["name"]
+    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
+    identity = parse_identity(agent)
+    contract = {
+        "version": f"agent-spec-v{spec_version}",
+        "name": name,
+        "specialization": flavor,
+        "description": identity["description"],
+        "capabilities": identity["capabilities"],
+        "defaultReflectionPrompt": DEFAULT_REFLECTION_PROMPT,
+        "supportedAgentParams": infer_supported_agent_params(agent),
+        "requiresWorkingDirectory": flavor == "augur",
+    }
+
+    bundle_refs = {
+        "memory": creation.get("memory_bundle"),
+        "skill": creation.get("skill_bundle"),
+        "runtime": creation.get("runtime_bundle"),
+    }
+    if any(bundle_refs.values()):
+        contract["bundleRefs"] = bundle_refs
+
+    if flavor == "augur":
+        contract["promptPrefix"] = "You are Augur. Favor design-level reasoning and architecture trade-offs."
+        contract["defaultReflectionPrompt"] = "\n".join([
+            'Return strict JSON with exactly {"project":"...","general":"..."}.',
+            "For project, focus on design decisions, bundle strategy, and architecture-specific lessons.",
+            "For general, focus on transferable architecture and review lessons.",
+        ])
+        contract["workflow"] = {
+            "analysisContextScript": "/app/agents/augur/scripts/build_analysis_context.py",
+            "promptContextScript": "/app/agents/augur/scripts/build_prompt_context.py",
+            "repairPromptScript": "/app/agents/augur/scripts/build_validation_repair_prompt.py",
+        }
+        contract["validation"] = {
+            "required": True,
+            "validatorScript": "/app/agents/augur/skills/analyze/scripts/validate_output.py",
+            "finalizeScript": "/app/agents/augur/scripts/finalize_analysis.py",
+        }
+
+    return contract
+
+
+def resolve_runtime_profile(spec: dict, agent: dict) -> dict:
+    spec_version = str(spec.get("version", "1"))
+    runtime_kind = str(agent.get("runtime", {}).get("daemon", {}).get("kind", ""))
+    authored_profiles = spec.get("runtime_profiles", {}) if isinstance(spec.get("runtime_profiles"), dict) else {}
+    profile = dict(DEFAULT_RUNTIME_PROFILES.get(runtime_kind, {"kind": runtime_kind, "toolGuidance": []}))
+    authored = authored_profiles.get(runtime_kind)
+    if isinstance(authored, dict):
+        profile.update(authored)
+    profile["kind"] = runtime_kind
+    profile.setdefault("version", f"runtime-profile-v{spec_version}")
+    return profile
+
+
 def image_ref(agent: dict) -> str:
     customization = agent["image"]["customization"]
     if customization in (None, "none"):
@@ -91,7 +181,7 @@ def image_ref(agent: dict) -> str:
     return f"REGISTRY/{customization}:latest"
 
 
-def emit_env_lines(agent: dict) -> list[str]:
+def emit_env_lines(spec: dict, agent: dict) -> list[str]:
     name = agent["name"]
     flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
     agent_home_dir = agent["runtime"]["state"]["agent_home_dir"]
@@ -99,10 +189,14 @@ def emit_env_lines(agent: dict) -> list[str]:
     daemon = agent.get("runtime", {}).get("daemon", {})
     backend = daemon.get("backend", {}) if isinstance(daemon.get("backend"), dict) else {}
     creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
+    agent_contract_json = json.dumps(build_agent_contract(spec, agent), separators=(",", ":"))
+    runtime_profile_json = json.dumps(resolve_runtime_profile(spec, agent), separators=(",", ":"))
 
     env = [
         ("AGENT_NAME", name),
         ("AGENT_PROFILE", flavor),
+        ("AGENT_CONTRACT_JSON", agent_contract_json),
+        ("RUNTIME_PROFILE_JSON", runtime_profile_json),
         ("AGENT_HOME_DIR", agent_home_dir),
         ("AGENT_STATE_DIR", state_dir),
         ("DAEMON_WORKING_DIRECTORY", agent_home_dir),
@@ -113,7 +207,7 @@ def emit_env_lines(agent: dict) -> list[str]:
         ("KAFKA_HEARTBEAT_INTERVAL_MS", "3000"),
         ("HOME", "/home/node"),
         ("KORDINATE_HOME", "/app"),
-        ("PROJECTS_ROOT", "/kord/shared/repos"),
+        ("PROJECTS_ROOT", "/kord/repos"),
         ("DISCOVERY_SERVER_URL", "http://kord-api:9091"),
         ("DAEMON_HEALTH_URL", f"http://agent-{name}:9090/health"),
     ]
@@ -292,7 +386,7 @@ def yaml_block(text: str, spaces: int = 14) -> str:
     return textwrap.indent(text, " " * spaces)
 
 
-def emit_agent(agent: dict) -> tuple[str, str, str]:
+def emit_agent(spec: dict, agent: dict) -> tuple[str, str, str]:
     name = agent["name"]
     image = image_ref(agent)
     minr = agent["deploy"]["replicas"]["min"]
@@ -302,7 +396,7 @@ def emit_agent(agent: dict) -> tuple[str, str, str]:
     req_cpu = agent["deploy"]["resources"]["requests"]["cpu"]
     req_mem = agent["deploy"]["resources"]["requests"]["memory"]
     lim_mem = agent["deploy"]["resources"]["limits"]["memory"]
-    env_lines = "\n".join(emit_env_lines(agent))
+    env_lines = "\n".join(emit_env_lines(spec, agent))
     init_script = yaml_block(build_init_script(agent))
     exec_script = yaml_block(build_exec_script(agent))
     pod_security = "\n".join(pod_security_lines(agent))
@@ -481,7 +575,7 @@ def main() -> int:
     ]
 
     for agent in agents:
-        dep, so, topic = emit_agent(agent)
+        dep, so, topic = emit_agent(spec, agent)
         agents_parts.append(dep)
         keda_parts.append(so)
         kafka_parts.append(topic)

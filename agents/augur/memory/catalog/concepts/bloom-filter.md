@@ -3,7 +3,22 @@ description: Bloom Filter architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - search-index
+  - cache-aside
+  - sharding
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Bloom Filter
 
@@ -47,3 +62,15 @@ Look for correct probabilistic semantics where false positives are acceptable bu
 - Undersizing the filter for the dataset, causing unacceptable false positive rates
 - Attempting to remove elements from a standard (non-counting) Bloom filter
 - Using a Bloom filter where exact membership is required (correctness over performance)
+
+### Relationship To Other Concepts
+
+- Related to [search-index](/concepts/search-index) because Bloom filters are often used to cheaply avoid expensive downstream lookups before index or storage access.
+- Related to [cache-aside](/concepts/cache-aside) when approximate membership helps skip cache-miss amplification or pointless cache checks.
+- Related to [sharding](/concepts/sharding) when approximate membership or routing hints reduce unnecessary shard probes.
+
+### Boundary
+
+Use `bloom-filter` when the system uses probabilistic set membership to cheaply reject definitely-absent items before doing more expensive work.
+
+Do not use it for any hashing or bitset structure. The important signal is probabilistic membership with false positives but no false negatives.

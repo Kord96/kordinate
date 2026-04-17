@@ -3,7 +3,23 @@ description: Input Validation architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [security, api]
+abstraction:
+- security
+- api
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - cors
+  - insecure-deserialization
+  - route-guard
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Input Validation
 
@@ -47,3 +63,14 @@ Look for validation enforced at system boundaries with reject-early semantics.
 - Trusting client-side validation as the only check
 - Generic "invalid input" errors with no indication of which field or why
 - String concatenation for SQL or shell commands instead of parameterization
+
+### Relationship To Other Concepts
+
+- Related to [insecure-deserialization](/concepts/insecure-deserialization) because validation is one defensive layer against unsafe payload interpretation.
+- Related to [cors](/concepts/cors) and [route-guard](/concepts/route-guard) as adjacent boundary defenses, though validation focuses on payload correctness rather than origin or authorization.
+
+### Boundary
+
+Use `input-validation` when the system explicitly checks external input for shape, type, range, and semantic validity before acting on it.
+
+Do not use it for authorization, escaping, or content negotiation. The key signal is validating incoming data correctness and safety.

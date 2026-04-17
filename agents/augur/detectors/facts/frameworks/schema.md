@@ -35,11 +35,28 @@ policy:
 
 ```yaml
 framework: <name>
-signals:
+manifest_packages:
+  package_json: []
+  pyproject: []
+  requirements: []
+  gemfile: []
+  composer: []
+  cargo: []
+  pom: []
+  go_mod: []
+  package_swift: []
+  mix_exs: []
+source_extensions: []
+path_patterns:
   strong: []
   medium: []
   weak: []
-negative_signals: []
+source_patterns:
+  strong: []
+  medium: []
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []
 ```
 
 ## Runtime role

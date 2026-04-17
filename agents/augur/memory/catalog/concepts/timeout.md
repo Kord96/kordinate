@@ -5,7 +5,22 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [resilience, integration]
+abstraction:
+- resilience
+- integration
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - circuit-breaker
+  - retry
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: rich
+examples: []
 ---
 # Timeout
 
@@ -50,3 +65,14 @@ Look for explicit timeout enforcement on every external call with deadline propa
 - Deadline not propagated to downstream services -- child call outlives parent deadline
 
 See also: circuit-breaker, retry (often combined)
+
+### Relationship To Other Concepts
+
+- Related to [circuit-breaker](/concepts/circuit-breaker) because this concept commonly appears alongside it or is clarified by contrast with it.
+- Related to [retry](/concepts/retry) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `timeout` when the important observation is this specific architectural concern within a cross-cutting architectural concern that can span multiple layers or services.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

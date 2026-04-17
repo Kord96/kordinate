@@ -3,7 +3,22 @@ description: Batch Loader (N+1 Prevention) architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [data]
+abstraction:
+- data
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - n-plus-one
+  - graphql
+  - cache-aside
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Batch Loader (N+1 Prevention)
 
@@ -48,3 +63,15 @@ Look for systematic batching of data fetches to eliminate per-item queries, espe
 - No maximum batch size, generating SQL queries with thousands of IDs in the IN clause
 
 See also: n-plus-one anti-pattern
+
+### Relationship To Other Concepts
+
+- Related to [n-plus-one](/concepts/n-plus-one) as the main remediation pattern for repeated per-item fetches.
+- Related to [graphql](/concepts/graphql) because batch loaders are especially common inside resolver graphs where nested fetches would otherwise explode query counts.
+- Related to [cache-aside](/concepts/cache-aside) when per-request batching also memoizes or deduplicates repeated reads.
+
+### Boundary
+
+Use `batch-loader` when many individual lookups are intentionally collapsed into one batched fetch with key-to-result remapping.
+
+Do not use it for any bulk query. The important signal is demand-driven batching specifically to avoid repeated N+1-style access.

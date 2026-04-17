@@ -2,6 +2,20 @@
 description: Prop Drilling anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: frontend
+relationships:
+  related_to:
+  - component
+  - reactive-store
+  - flux
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Prop Drilling
 
@@ -43,3 +57,15 @@ Fragile component hierarchy where adding, removing, or renaming a prop requires 
 - Apply the composition pattern: pass children as props or slots so intermediate components do not need to know about leaf component data
 - Restructure the component tree to flatten unnecessary nesting and reduce the depth data must travel
 - Use the render props or compound component pattern to co-locate data requirements with the components that use them
+
+### Relationship To Other Concepts
+
+- Related to [component](/concepts/component) because prop drilling is a symptom of data flowing awkwardly through component hierarchies.
+- Related to [reactive-store](/concepts/reactive-store) because shared client state stores are a common way to avoid passing props through many intermediate layers.
+- Related to [flux](/concepts/flux) because unidirectional state architectures are often introduced to reduce brittle prop tunneling.
+
+### Boundary
+
+Use `prop-drilling` when intermediate UI components exist mainly to pass data they do not use down the tree.
+
+Do not use it for ordinary parent-to-child props over one or two levels where the hierarchy remains clear and local.

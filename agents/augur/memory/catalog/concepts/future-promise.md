@@ -3,7 +3,23 @@ description: Future/Promise architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [concurrency, design]
+abstraction:
+- concurrency
+- design
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - callback-hell
+  - request-reply
+  - reactor
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Future/Promise
 
@@ -43,3 +59,15 @@ Look for async result containers that decouple task submission from result retri
 - Swallowing rejections/exceptions with empty `.catch()` handlers
 - Creating futures without ever awaiting or observing their result (fire-and-forget with no error handling)
 - Mixing callback and promise styles in the same flow, losing error propagation
+
+### Relationship To Other Concepts
+
+- Related to [callback-hell](/concepts/callback-hell) because futures and promises are a common abstraction for flattening nested async callbacks.
+- Related to [request-reply](/concepts/request-reply) when asynchronous requests resolve later into a promised response.
+- Related to [reactor](/concepts/reactor) because event-loop systems frequently expose readiness outcomes through future-like abstractions.
+
+### Boundary
+
+Use `future-promise` when asynchronous work returns a deferred handle that will eventually resolve to a value or error.
+
+Do not use it for synchronous wrappers, generic callbacks, or queue-based work without a promised completion handle.

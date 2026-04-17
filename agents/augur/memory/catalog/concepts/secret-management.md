@@ -3,7 +3,23 @@ description: Secret Management architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [security, infrastructure]
+abstraction:
+- security
+- infrastructure
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - config-management
+  - mtls
+  - secret-rotation
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Secret Management
 
@@ -47,3 +63,15 @@ Look for secrets never committed to version control, accessed through a dedicate
 - Shared secrets across environments (production credentials in staging)
 - No rotation -- secrets unchanged since initial setup with no process to rotate them
 - Secrets passed as command-line arguments (visible in process listings and shell history)
+
+### Relationship To Other Concepts
+
+- Related to [config-management](/concepts/config-management) because secrets are often injected through the same runtime configuration channels but require stricter handling.
+- Related to [mtls](/concepts/mtls) when certificate and key material must be distributed and rotated securely.
+- Related to [secret-rotation](/concepts/secret-rotation) when credential lifecycle and expiry are first-class operational concerns.
+
+### Boundary
+
+Use `secret-management` when the system explicitly stores, injects, rotates, or scopes sensitive credentials through dedicated mechanisms.
+
+Do not use it for ordinary configuration. The key signal is secure handling of secrets as a separate architectural concern.

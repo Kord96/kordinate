@@ -6,9 +6,9 @@ import { access, readdir, readFile, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { Kafka } from 'kafkajs';
 import { createAgentWorkflowHooks } from './agent-workflows.js';
+import { buildPromptPlan, loadInjectedAgentContract, loadInjectedRuntimeProfile } from './contracts.js';
 import { CompletedRequestStore } from './completed-request-store.js';
 import { loadDaemonConfig } from './config.js';
-import { buildPromptPlanFromProfile, loadAgentProfile } from './agent-profile.js';
 import { buildDiscoveryRecord, publishDiscoveryRegistration } from './discovery.js';
 import { log } from './log.js';
 import { buildProgressMessage, buildReflectionEvent, buildResponseMessage, getOrCreateSession, isRequestMessage, updateSessionAfterRequest } from './protocol.js';
@@ -19,9 +19,9 @@ if (!agentName) {
     throw new Error('AGENT_NAME required');
 }
 const AGENT_NAME = agentName;
-const AGENT_PROFILE = process.env.AGENT_PROFILE ?? AGENT_NAME;
-const agentProfile = loadAgentProfile(AGENT_PROFILE);
 const daemonConfig = loadDaemonConfig();
+const agentContract = loadInjectedAgentContract(AGENT_NAME);
+const runtimeProfile = loadInjectedRuntimeProfile();
 const kafka = new Kafka({
     clientId: `klaude-daemon-${AGENT_NAME}`,
     brokers: daemonConfig.kafkaBrokers,
@@ -49,8 +49,7 @@ const healthServer = createServer((_req, res) => {
 });
 const agentWorkflowHooks = createAgentWorkflowHooks({
     agentName: AGENT_NAME,
-    agentProfileName: AGENT_PROFILE,
-    agentProfile,
+    agentContract,
     daemonConfig,
     publishProgress,
     buildArtifactsMetadata,
@@ -114,7 +113,7 @@ async function publishResponse(message, response) {
 async function publishReflection(message, reflection) {
     const payload = buildReflectionEvent({
         agentName: AGENT_NAME,
-        agentProfile: AGENT_PROFILE,
+        agentProfile: agentContract.specialization,
         backendProvider: daemonConfig.executionProfile.provider,
         backendRuntime: daemonConfig.executionProfile.runtime,
         backendModel: daemonConfig.executionProfile.model,
@@ -155,7 +154,7 @@ function buildTimingMetadata(input) {
     };
 }
 function validateRequestContract(message) {
-    if (agentProfile.requiresWorkingDirectory && !message.working_dir) {
+    if (agentContract.requiresWorkingDirectory && !message.working_dir) {
         return 'working_dir is required for this agent';
     }
     return undefined;
@@ -166,7 +165,7 @@ function buildRuntimePromptRequest(session, message, overrides) {
         prompt: overrides?.prompt ?? message.prompt,
         raw_prompt: overrides?.rawPrompt ?? message.raw_prompt ?? message.prompt,
     };
-    const promptPlan = buildPromptPlanFromProfile(agentProfile, promptMessage);
+    const promptPlan = buildPromptPlan(agentContract, runtimeProfile, promptMessage);
     const prompt = session.promptCacheKey && session.promptCacheKey === promptPlan.cacheKey
         ? promptPlan.dynamicPrompt
         : promptPlan.fullPrompt;
@@ -176,7 +175,7 @@ function buildRuntimePromptRequest(session, message, overrides) {
         promptPlan,
         working_dir: promptMessage.working_dir,
         timeout_ms: promptMessage.timeout_ms,
-        reflect: overrides?.reflect ?? (agentProfile.validation?.required ? false : promptMessage.reflect),
+        reflect: overrides?.reflect ?? (agentContract.validation?.required ? false : promptMessage.reflect),
         reflection_prompt: promptMessage.reflection_prompt,
         agent_params: promptMessage.agent_params,
         progress: event => publishProgress(message, event),
@@ -288,10 +287,10 @@ async function resolveValidationTargetDir(message) {
         return undefined;
     const projectRoot = join(homeDir, 'memory', 'projects', basename(workingDir));
     const analysisRoot = join(projectRoot, 'analysis');
-    const validatorScript = agentProfile.validation?.validatorScript ?? '';
+    const validatorScript = agentContract.validation?.validatorScript ?? '';
     const isAugurAnalyzeValidator = validatorScript.endsWith('/skills/analyze/scripts/validate_output.py')
         && validatorScript.includes('/agents/augur/');
-    if (isAugurAnalyzeValidator || AGENT_PROFILE === 'augur') {
+    if (isAugurAnalyzeValidator || agentContract.specialization === 'augur') {
         const sha = await runCommand('git', gitArgsForRepo(workingDir, 'rev-parse', 'HEAD'));
         const commitTime = sha ? await runCommand('git', gitArgsForRepo(workingDir, 'show', '-s', '--format=%ct', sha)) : undefined;
         if (sha && commitTime) {
@@ -335,8 +334,11 @@ async function runValidatorScript(validatorScript, targetDir, manageLock, extraE
         });
     });
 }
-async function runFinalizeScript(finalizeScript, targetDir, token, attempts) {
-    const env = { ...process.env };
+async function runFinalizeScript(finalizeScript, targetDir, token, attempts, extraEnv) {
+    const env = {
+        ...process.env,
+        ...(extraEnv ?? {}),
+    };
     return await new Promise((resolve) => {
         const child = spawn('python3', [finalizeScript, targetDir, '--validation-token', token, '--validation-attempts', String(attempts)], {
             cwd: daemonConfig.executionProfile.homeDirectory ?? process.cwd(),
@@ -394,6 +396,20 @@ function buildArtifactsMetadata(targetDir, finalizePayload) {
         schemas,
     };
 }
+function resolvedBundleMode(message) {
+    const raw = typeof message.agent_params?.bundle_mode === 'string'
+        ? message.agent_params.bundle_mode.trim().toLowerCase()
+        : '';
+    if (!raw)
+        return 'selective';
+    if (raw.includes('holistic')
+        || raw.includes('full-bundle')
+        || raw === 'full'
+        || raw === 'opus-full') {
+        return 'holistic';
+    }
+    return 'selective';
+}
 async function hashValidatedDirectory(root) {
     const hash = createHash('sha256');
     async function walk(dir, relativePrefix = '') {
@@ -436,7 +452,7 @@ async function clearValidationLock(targetDir) {
     await rm(join(targetDir, '.validate-lock'), { force: true });
 }
 async function maybeRunValidationLoop(session, message, result) {
-    const validation = agentProfile.validation;
+    const validation = agentContract.validation;
     if (!validation?.required)
         return { session, result };
     if (result.status !== 'success')
@@ -499,7 +515,16 @@ async function maybeRunValidationLoop(session, message, result) {
             const token = await hashValidatedDirectory(targetDir);
             let finalizePayload;
             if (validation.finalizeScript && await pathExists(validation.finalizeScript)) {
-                const finalized = await runFinalizeScript(validation.finalizeScript, targetDir, token, attempt);
+                const finalized = await runFinalizeScript(validation.finalizeScript, targetDir, token, attempt, {
+                    AUGUR_AGENT_NAME: AGENT_NAME,
+                    AUGUR_AGENT_SPECIALIZATION: agentContract.specialization,
+                    AUGUR_AGENT_CONTRACT_VERSION: agentContract.version ?? '',
+                    AUGUR_RUNTIME_PROFILE_VERSION: runtimeProfile.version ?? '',
+                    AUGUR_RUNTIME_KIND: daemonConfig.executionProfile.runtime,
+                    AUGUR_PROVIDER: daemonConfig.executionProfile.provider,
+                    AUGUR_MODEL: daemonConfig.executionProfile.model,
+                    AUGUR_BUNDLE_MODE: resolvedBundleMode(message),
+                });
                 if (finalized.ok) {
                     finalizePayload = finalized.payload;
                 }
@@ -678,8 +703,8 @@ async function main() {
     });
     log('daemon_start', {
         agent: AGENT_NAME,
-        agent_profile_name: AGENT_PROFILE,
-        agent_profile: agentProfile,
+        agent_contract: agentContract,
+        runtime_profile: runtimeProfile,
         execution_profile: redactExecutionProfile(daemonConfig.executionProfile),
         brokers: daemonConfig.kafkaBrokers,
         kafka_consumer_group_id: consumerGroupId,
@@ -695,8 +720,8 @@ async function main() {
     await consumer.subscribe({ topic: AGENT_NAME, fromBeginning: false });
     const discoveryRecord = buildDiscoveryRecord({
         agent: AGENT_NAME,
-        specialization: AGENT_PROFILE,
-        agentProfile,
+        specialization: agentContract.specialization,
+        agentContract,
         config: daemonConfig,
         healthUrl,
     });

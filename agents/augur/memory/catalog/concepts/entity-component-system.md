@@ -3,7 +3,23 @@ description: Entity-Component-System (ECS) architectural pattern
 type: pattern
 testable: true
 graphable: true
-abstraction: [architectural, realtime]
+abstraction:
+- architectural
+- realtime
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - component
+  - game-loop
+  - tick-simulation
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Entity-Component-System (ECS)
 
@@ -46,3 +62,15 @@ Look for strict separation of identity (entities), data (components), and behavi
 - Systems that store state between ticks instead of reading from components
 - Entity IDs used as indices into a single monolithic struct (god object)
 - Inheritance hierarchies for entities instead of composition via components
+
+### Relationship To Other Concepts
+
+- Related to [component](/concepts/component) because ECS decomposes behavior around componentized data, though ECS components are data-only rather than UI or service modules.
+- Related to [game-loop](/concepts/game-loop) because ECS systems are often executed as ordered stages inside a realtime loop.
+- Related to [tick-simulation](/concepts/tick-simulation) because ECS frequently advances world state in discrete update ticks.
+
+### Boundary
+
+Use `entity-component-system` when entities, components, and systems are explicitly separated so behavior iterates over data-oriented component sets.
+
+Do not use it for any composition-heavy object model or plugin system.

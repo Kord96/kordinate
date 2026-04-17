@@ -2,7 +2,23 @@
 description: Rule engine pattern for declarative business logic evaluation
 type: pattern
 category: domain-model
-abstraction: [design, logic]
+abstraction:
+- design
+- logic
+status: primary
+scope: backend
+relationships:
+  related_to:
+  - feature-flag
+  - specification
+  - strategy
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Rule Engine
 
@@ -31,6 +47,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `rule-engine` is for declarative policy evaluation with externalized rules, ordering, and execution context.
+- Use `specification` when the main concern is composable predicates, not a full execution engine.
+- Use `strategy` when behavior is chosen from a small fixed set of implementations rather than a rule set.
+- Use `feature-flag` when the concern is controlled rollout or gating, not general business decisioning.
+
 ### When to use
 - Complex business logic that changes frequently and should be managed by non-developers
 - Decision-heavy domains (insurance underwriting, loan approval, pricing engines) with many conditional paths
@@ -45,6 +68,10 @@ How to identify this pattern in code.
 - [strategy](/concepts/strategy) — rules often delegate to strategy implementations for their actions
 - [specification](/concepts/specification) — specification pattern formalizes the condition side of rules
 - [feature-flag](/concepts/feature-flag) — rule engines sometimes subsume feature flag logic
+
+### Boundary
+
+Do not use `rule-engine` for ordinary configuration switches or a handful of if/else branches. Prefer it only when rules are first-class artifacts that are evaluated by an engine.
 
 ## Impact
 

@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [messaging, infrastructure]
+abstraction:
+- messaging
+- infrastructure
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - dead-letter
+  - competing-consumers
+  - claim-check
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Message Queue
 
@@ -48,3 +64,15 @@ Look for point-to-point message delivery with explicit acknowledgment ensuring e
 - Unbounded retries without a dead-letter destination (infinite retry loops)
 - Large payloads in the message body instead of a reference to external storage
 - No visibility timeout tuning, causing duplicate processing under load
+
+### Relationship To Other Concepts
+
+- Related to [dead-letter](/concepts/dead-letter) because queues often need a failure sink for poison or repeatedly failing messages.
+- Related to [competing-consumers](/concepts/competing-consumers) when multiple workers share one queue and each message is processed by only one worker.
+- Related to [claim-check](/concepts/claim-check) when large payloads are replaced by references to external storage.
+
+### Boundary
+
+Use `message-queue` when work or messages are decoupled through queued delivery with acknowledgment, redelivery, or visibility semantics.
+
+Do not use it for pub-sub topics or in-process event emitters unless queue semantics are the core behavior.

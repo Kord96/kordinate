@@ -3,6 +3,20 @@ description: Long Transactions anti-pattern
 type: anti-pattern
 observable: true
 graphable: false
+status: supporting
+scope: cross-cutting
+relationships:
+  related_to:
+  - unit-of-work
+  - outbox
+  - distributed-lock
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Long Transactions
 
@@ -44,3 +58,15 @@ Connection pool exhaustion, deadlocks, and blocked queries that cascade into app
 - Use the outbox pattern for operations that need both a database write and a message publish
 - Set statement and idle-in-transaction timeouts at the database level (`idle_in_transaction_session_timeout`)
 - Monitor transaction duration and alert on transactions exceeding a threshold (e.g., 5 seconds)
+
+### Relationship To Other Concepts
+
+- Related to [unit-of-work](/concepts/unit-of-work) because poorly scoped units of work often lead to transactions held open too long.
+- Related to [outbox](/concepts/outbox) because outbox is a common remedy for moving external publication out of the transaction boundary.
+- Related to [distributed-lock](/concepts/distributed-lock) when long-running transactions and locks combine to amplify contention and failure impact.
+
+### Boundary
+
+Use `long-transactions` when transaction scope is held open long enough to increase lock contention, failure blast radius, or latency significantly.
+
+Do not use it for any nontrivial transaction. The key issue is harmful duration, especially around waits or external calls.

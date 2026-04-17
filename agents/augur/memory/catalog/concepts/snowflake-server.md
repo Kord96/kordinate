@@ -2,6 +2,18 @@
 description: Snowflake Server anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - infrastructure-as-code
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Snowflake Server
 
@@ -46,3 +58,13 @@ Unreproducible environments that cannot be rebuilt, audited, or scaled, turning 
 - Implement configuration drift detection that alerts when a server diverges from its declared state
 
 See also: infrastructure-as-code, immutable-infra patterns
+
+### Relationship To Other Concepts
+
+- Related to [infrastructure-as-code](/concepts/infrastructure-as-code) because this concept commonly appears alongside it or is clarified by contrast with it.
+
+### Boundary
+
+Use `snowflake-server` when the important observation is this specific recurring architectural failure mode within a backend service, storage, or server-side architectural concern.
+
+Do not use it just because a few signatures match; the surrounding responsibilities and architectural role should line up too.

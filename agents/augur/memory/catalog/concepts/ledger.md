@@ -2,7 +2,23 @@
 description: Double-entry ledger pattern for financial data integrity
 type: pattern
 category: domain-model
-abstraction: [data, financial]
+abstraction:
+- data
+- financial
+status: primary
+scope: domain
+relationships:
+  related_to:
+  - audit-logging
+  - event-sourcing
+  - saga
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Ledger
 
@@ -31,6 +47,13 @@ How to identify this pattern in code.
 
 ## Architecture
 
+### Relationship To Other Concepts
+
+- `ledger` is the financial system-of-record: immutable postings, account balances, and reconciliation invariants.
+- Use `audit-logging` for operational traceability when balance invariants are not the central concern.
+- Use `event-sourcing` for generic append-only business history; not every event stream is a financial ledger.
+- Use `saga` when multi-step transfers or settlements need orchestration around ledger posting.
+
 ### When to use
 - Financial systems requiring auditability and provable correctness
 - Any domain where money moves between accounts and balances must reconcile
@@ -45,6 +68,10 @@ How to identify this pattern in code.
 - [event-sourcing](/concepts/event-sourcing) — ledger entries are naturally append-only events
 - [audit-logging](/concepts/audit-logging) — financial records require audit trails
 - [saga](/concepts/saga) — multi-account transfers may need saga coordination
+
+### Boundary
+
+Do not use `ledger` for any append-only transaction table. Prefer it only when debit/credit balancing, account integrity, and reconciliation are architectural requirements.
 
 ## Impact
 

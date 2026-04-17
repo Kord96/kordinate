@@ -3,6 +3,20 @@ description: Test Pollution anti-pattern
 type: anti-pattern
 testable: true
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - flaky-tests
+  - singleton
+  - test-doubles
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: none
+examples: []
 ---
 # Test Pollution
 
@@ -46,3 +60,15 @@ Test order dependencies and intermittent failures, making the test suite unrelia
 - Use `unittest.mock.patch` or `monkeypatch` (pytest) which auto-restore on test exit
 - Reset database state between tests with transactions (rollback after each test) or truncation
 - Run tests in random order (`pytest-randomly`) to detect pollution early
+
+### Relationship To Other Concepts
+
+- Related to [flaky-tests](/concepts/flaky-tests) because polluted shared state is one of the most common sources of nondeterministic failures.
+- Related to [singleton](/concepts/singleton) when global shared instances leak state across tests.
+- Related to [test-doubles](/concepts/test-doubles) because poorly reset mocks, stubs, or fakes often leave residue between tests.
+
+### Boundary
+
+Use `test-pollution` when one test contaminates global, shared, or persistent state in a way that changes later tests.
+
+Do not use it for any flaky test unless cross-test contamination is actually the cause.

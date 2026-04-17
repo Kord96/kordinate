@@ -5,7 +5,23 @@ testable: true
 observable: true
 distributed: true
 graphable: true
-abstraction: [concurrency, resilience]
+abstraction:
+- concurrency
+- resilience
+status: primary
+scope: cross-cutting
+relationships:
+  related_to:
+  - leader-election
+  - optimistic-locking
+  - idempotent-consumer
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Distributed Lock
 
@@ -47,3 +63,15 @@ Look for correct lock lifecycle management with TTL, fencing, and proper handlin
 - Releasing a lock without verifying ownership (may release another process's lock)
 - Using in-process locks (mutex/semaphore) in a distributed multi-instance deployment
 - Redlock without sufficient independent Redis instances (minimum 5 for safety guarantees)
+
+### Relationship To Other Concepts
+
+- Related to [leader-election](/concepts/leader-election) because both coordinate exclusive rights across multiple nodes, though leader election is longer-lived and role-oriented.
+- Related to [optimistic-locking](/concepts/optimistic-locking) as a contrasting concurrency strategy that avoids central lock ownership.
+- Related to [idempotent-consumer](/concepts/idempotent-consumer) because some workloads can avoid distributed locks entirely by making duplicate work safe.
+
+### Boundary
+
+Use `distributed-lock` when multiple nodes coordinate exclusive access to a shared resource through a shared lock service or store.
+
+Do not use it for in-process mutexes, ordinary transaction locking, or generic concurrency control without cross-node coordination.

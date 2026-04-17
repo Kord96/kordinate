@@ -57,6 +57,12 @@ backends:
     model: accounts/fireworks/models/deepseek-v3p2
     base_url: https://api.fireworks.ai/inference/v1
     api_key_env: FIREWORKS_API_KEY
+  fireworks-qwen3p6-plus:
+    profile: openai
+    provider: openai
+    model: accounts/fireworks/models/qwen3p6-plus
+    base_url: https://api.fireworks.ai/inference/v1
+    api_key_env: FIREWORKS_API_KEY
 selection_sets:
   augur-comparison:
     selection: first
@@ -65,6 +71,7 @@ selection_sets:
       - gpt-5.4
       - gemini-3.1-pro-preview
       - fireworks-glm-5
+      - fireworks-qwen3p6-plus
       - anthropic-opus
   cheap-ops:
     selection: first

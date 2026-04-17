@@ -1,11 +1,11 @@
-import type { AgentProfile } from './types.js'
+import type { AgentContract } from './types.js'
 import type { DaemonConfig } from './config.js'
 import type { AgentDiscoveryRecord } from './types.js'
 
 export function buildDiscoveryRecord(input: {
   agent: string
   specialization: string
-  agentProfile: AgentProfile
+  agentContract: AgentContract
   config: DaemonConfig
   healthUrl?: string
 }): AgentDiscoveryRecord {
@@ -13,10 +13,10 @@ export function buildDiscoveryRecord(input: {
 
   return {
     name: input.agent,
-    capabilities: input.agentProfile.capabilities ?? [],
+    capabilities: input.agentContract.capabilities ?? [],
     backend_provider: input.config.executionProfile.provider,
     backend_model: input.config.executionProfile.model,
-    supported_agent_params: input.agentProfile.supportedAgentParams ?? [],
+    supported_agent_params: input.agentContract.supportedAgentParams ?? [],
     active: true,
     specialization: input.specialization,
     runtime: input.config.executionProfile.runtime,

@@ -2,6 +2,20 @@
 description: Big Ball of Mud anti-pattern
 type: anti-pattern
 graphable: false
+status: supporting
+scope: backend
+relationships:
+  related_to:
+  - layered
+  - hexagonal
+  - distributed-monolith
+aliases: []
+disambiguates_from: []
+preferred_over: []
+implies: []
+anti_signals: []
+detector_coverage: partial
+examples: []
 ---
 # Big Ball of Mud
 
@@ -43,3 +57,14 @@ No discernible architecture makes it impossible to reason about the system, pred
 - Move database access behind repository interfaces so queries are not scattered
 - Introduce an architectural linter (e.g., import-linter for Python, ArchUnit for Java) to enforce layering
 - Start with one bounded context: refactor it into a clean structure as a model for the rest
+
+### Relationship To Other Concepts
+
+- Related to [layered](/concepts/layered) and [hexagonal](/concepts/hexagonal) as structural counterpoints that impose boundaries a big ball of mud lacks.
+- Related to [distributed-monolith](/concepts/distributed-monolith) because both describe harmful coupling, though one is usually within one codebase and the other across nominal services.
+
+### Boundary
+
+Use `big-ball-of-mud` when the codebase has collapsed architectural boundaries and devolved into entangled, ad hoc structure with little modular discipline.
+
+Do not use it for any legacy codebase or any large monolith. The label should be reserved for materially unstructured entanglement.
