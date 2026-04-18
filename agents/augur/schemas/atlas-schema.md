@@ -75,7 +75,7 @@ These legacy fields must not appear:
 - `flows[].steps[].component` must reference a real component id.
 - `flows[].steps[].to`, when present, must reference a real component, state, or external dependency id.
 - `flows[].actors[]` must reference real actor ids when `actors` is present.
-- `grounded_in` is expected on flows, state entries, and attached health failure modes.
+- `grounded_in` is expected on flows, state entries, attached health failure modes, and propagation scenarios.
 - when a state entry is grounded in a file that appears in `facts/state-seeds.json`, prefer exact structs, enums, maps, config variants, or storage selector names from that seed over abstract storage paraphrases
 - `tensions` are grounded architecture-level contradictions or trade-offs, not generic debt backlogs.
 - use the canonical path rules from `augur-output-contract.md` for `modules`, `grounded_in`, and concept evidence file references
@@ -160,6 +160,49 @@ These legacy fields must not appear:
     "abstraction": ["<abstraction-name>"],
     "patterns": ["<pattern-name>"],
     "health": {
+      "signals": ["<shared signal or metric>"],
+      "local": {
+        "failure_modes": [
+          {
+            "id": "<kebab-case>",
+            "trigger": "<what goes wrong inside this component>",
+            "impact": "<what users or operators experience>",
+            "signals": ["<metric or symptom>"],
+            "gaps": ["<missing guardrail>"],
+            "recovery": ["<recovery step>"],
+            "severity": "critical | high | medium | low",
+            "grounded_in": ["<file:line>"]
+          }
+        ]
+      },
+      "integration": {
+        "failure_modes": [
+          {
+            "id": "<kebab-case>",
+            "at": ["<component-id | state-id | external-dependency-id>"],
+            "trigger": "<what breaks at the boundary>",
+            "impact": "<what this seam failure causes locally>",
+            "signals": ["<boundary-level signal>"],
+            "gaps": ["<missing integration guardrail>"],
+            "recovery": ["<fallback or repair step>"],
+            "severity": "critical | high | medium | low",
+            "grounded_in": ["<file:line>"]
+          }
+        ]
+      },
+      "propagation": {
+        "scenarios": [
+          {
+            "id": "<kebab-case>",
+            "source_failure_modes": ["<failure-mode-id>"],
+            "affects": ["<component-id | flow-id | state-id | external-dependency-id>"],
+            "degraded_mode": "<what still works and what becomes stale, partial, blocked, or delayed>",
+            "user_visible_impact": ["<what downstream users or operators see>"],
+            "containment": ["<how the blast radius is limited or recovered>"],
+            "grounded_in": ["<file:line>"]
+          }
+        ]
+      },
       "failure_modes": [
         {
           "id": "<kebab-case>",
@@ -184,6 +227,12 @@ Hierarchy rules:
 - every child id in `children` must reference a real component
 - top-level components should be real architecture slices, not synthetic presentation buckets
 - every entry in `components[].modules` must resolve to a real repo file or directory
+- prefer layered health modeling:
+  - `health.local` for failures internal to this unit
+  - `health.integration` for failures at seams with dependencies, stores, or callers
+  - `health.propagation` for downstream degraded modes or blast radius
+- `health.failure_modes` may appear as a compatibility mirror, but the layered sections are the preferred source of truth
+- if a high-severity integration failure is present, either model a propagation scenario or make containment explicit
 
 ### `flows`
 
@@ -198,6 +247,16 @@ Hierarchy rules:
     "actors": ["<actor-id>"],
     "grounded_in": ["<file:line>"],
     "health": {
+      "signals": ["<shared flow signal>"],
+      "local": {
+        "failure_modes": []
+      },
+      "integration": {
+        "failure_modes": []
+      },
+      "propagation": {
+        "scenarios": []
+      },
       "failure_modes": [
         {
           "id": "<kebab-case>",
@@ -292,6 +351,16 @@ State modeling rules:
     "purpose": "<why needed>",
     "criticality": "critical | important | optional",
     "health": {
+      "signals": ["<shared dependency signal>"],
+      "local": {
+        "failure_modes": []
+      },
+      "integration": {
+        "failure_modes": []
+      },
+      "propagation": {
+        "scenarios": []
+      },
       "failure_modes": [
         {
           "id": "<kebab-case>",
@@ -402,6 +471,17 @@ Concept rules:
   }
 ]
 ```
+
+## Health Modeling Rules
+
+- use `health.local.failure_modes` for failures inside one unit
+- use `health.integration.failure_modes` for failures at a boundary, seam, or dependency edge
+- use `health.propagation.scenarios` for downstream degraded modes, stale results, blocked work, or wider blast radius
+- keep `health.signals` for shared or summary-level observability signals that apply across more than one failure mode
+- do not model a pure seam failure only as `local`
+- do not use `propagation` to repeat the same local symptom; propagation should describe what else degrades because of the local or integration failure
+- prefer `affects` ids that resolve to real components, flows, state entries, or external dependencies
+- if a failure is truly contained, say so in `containment` instead of implying a wider cascade
 
 Use `tensions` only for grounded architecture-level contradictions or trade-offs.
 Do not turn every bug, TODO, or cleanup item into a tension.

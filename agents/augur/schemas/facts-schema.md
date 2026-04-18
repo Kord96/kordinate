@@ -218,6 +218,15 @@ Expected `raw_evidence` keys:
 - `circuit_breaker`
 - `fallback`
 
+### Health Candidates
+
+Derived health candidates are planning aids, not observation domains. They summarize where the semantic phase should look for:
+- `local_candidates`
+- `integration_candidates`
+- `propagation_candidates`
+
+Use them to pressure health coverage, boundary reasoning, and cascade modeling in `atlas.json`. Do not treat them as final health truth without direct code grounding.
+
 ### Registrations / Handlers / Dispatch / Boundaries
 
 Capture structural runtime wiring that often reveals architecture before higher-level concepts can be inferred.

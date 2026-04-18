@@ -138,6 +138,14 @@
       "how_to_use": "Use to challenge which roots, child stories, and flow-bearing stories are worth selecting for getting-started and other teaching paths.",
       "what_not_to_infer": "Narrative seeds are selection constraints, not final narrative truth."
     },
+    "health-candidates": {
+      "kind": "planning-aid",
+      "file": "facts/health-candidates.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic layered health candidates for local failures, boundary failures, and propagation scenarios.",
+      "how_to_use": "Use to pressure health coverage and cascade reasoning before finalizing atlas health blocks.",
+      "what_not_to_infer": "Health candidates are repair constraints and coverage hints, not final semantic truth."
+    },
     "symbols-seed": {
       "kind": "planning-aid",
       "file": "facts/symbols-seed.json",

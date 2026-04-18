@@ -116,6 +116,7 @@ def main() -> int:
             "facts/concept-evidence.json",
             "facts/component-seeds.json",
             "facts/narrative-seeds.json",
+            "facts/health-candidates.json",
             "facts/symbols-seed.json",
             "facts/state-seeds.json"
         ],

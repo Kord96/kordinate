@@ -56,6 +56,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - If `story-seeds.json` is present, use it as an advisory checklist for child-story decomposition, not as a replacement for actual architectural judgment.
 - If `narrative-seeds.json` is present, use it as an advisory ranking layer for `getting-started` and other teaching paths: prefer the smallest set of stories that teaches system shape plus the operating model.
 - If `control-hotspots.json` or `state-access-summary.json` are present, use them as evidence for which flows or state/dependency boundaries deserve to appear in onboarding narratives, not as content to dump literally.
+- If `health-candidates.json` is present, use it to pressure atlas health coverage and make sure important local failures, dependency seams, and propagation scenarios are modeled distinctly.
 - If `symbols-seed.json` is present, use it as an advisory exact-name inventory for high-signal files before finalizing observations, summaries, and flow steps.
 - If `state-seeds.json` is present, use it as an advisory exact-name inventory for state entries grounded in state or operations files.
 - Use strong architectural evidence when naming components, responsibilities, and flows.

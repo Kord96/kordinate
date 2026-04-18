@@ -49,6 +49,7 @@ The deterministic phase is already done. Work from the prepared run directory an
    - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for getting-started and other teaching paths before finalizing `narratives.yaml`
    - if `facts/symbols-seed.json` is present in this run, use it as an advisory exact-name dictionary for high-signal files before writing observations, summaries, or flow steps
    - if `facts/state-seeds.json` is present in this run, use it as an advisory exact-name dictionary for state entries grounded in state or operations files
+   - if `facts/health-candidates.json` is present in this run, use it as advisory coverage and contradiction pressure for atlas health: distinguish local failures, boundary failures, and downstream propagation instead of collapsing them into one flat list
    - if `facts/concept-evidence.json` is present, explicitly resolve each materially relevant concept candidate as accepted, tentative, or rejected from repo code and attached semantic questions before finalizing `atlas.json.concepts`
    - if `facts/frameworks.json` is present, explicitly resolve each materially relevant framework as accepted, tentative, or rejected from repo code before using framework-specific semantics to interpret the atlas
    - if present, answer any attached semantic questions before accepting a concept that changes component boundaries, flow interpretation, monitoring expectations, or gaps
@@ -70,6 +71,11 @@ The deterministic phase is already done. Work from the prepared run directory an
    - prefer one mechanism per claim instead of compressing several stages into one abstract sentence unless the code presents them together
    - when `facts/symbols-seed.json` exposes exact hooks, parsers, commands, registries, options, classes, or stage names for the cited files, prefer those exact names in grounded claims
    - when `facts/state-seeds.json` exposes exact structs, enums, maps, config variants, or storage selectors for the cited state files, prefer those exact names in state descriptions and keep one concrete mechanism per claim
+   - when writing atlas health, prefer the layered model from `atlas-schema.md`:
+     - `health.local` for failures inside one unit
+     - `health.integration` for failures at seams with dependencies, stores, or callers
+     - `health.propagation` for downstream degraded modes, stale results, blocked work, or wider blast radius
+   - use `facts/health-candidates.json` as a ranking and contradiction aid for health coverage, but do not treat it as final truth without code grounding
 
 4. Produce `$RUN/atlas.json`.
    - read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` before writing

@@ -65,11 +65,11 @@ import json
 import os
 import re
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime, UTC
 import hashlib
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 try:
     import yaml
@@ -327,35 +327,258 @@ def validate_health(
     health: dict | None,
     section: str,
     item_id: str,
+    *,
+    valid_node_ids: set[str] | None = None,
+    candidate_local: list[dict] | None = None,
+    candidate_integration: list[dict] | None = None,
+    candidate_propagation: list[dict] | None = None,
     project_root: Path | None = None,
     analysis_dir: Path | None = None,
 ) -> list[dict]:
     issues = []
     if not isinstance(health, dict):
+        if candidate_local:
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-local-missing",
+                "message": f"'{item_id}' has no local health block even though deterministic evidence suggests local failure coverage matters",
+                "conflict_type": "fact_vs_semantic",
+                "related_entities": [item_id],
+                "evidence_refs": [str(ref) for candidate in candidate_local for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+            })
+        if candidate_integration:
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-integration-missing",
+                "message": f"'{item_id}' has no integration health block even though deterministic evidence suggests an important boundary or dependency seam",
+                "conflict_type": "fact_vs_semantic",
+                "related_entities": [item_id],
+                "evidence_refs": [str(ref) for candidate in candidate_integration for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+            })
+        if candidate_propagation:
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-propagation-missing",
+                "message": f"'{item_id}' has no health block even though deterministic evidence suggests a meaningful downstream degraded mode or cascade",
+                "conflict_type": "fact_vs_semantic",
+                "related_entities": [item_id],
+                "evidence_refs": [str(ref) for candidate in candidate_propagation for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+            })
         return issues
-    failure_modes = health.get("failure_modes") or []
-    if not isinstance(failure_modes, list):
-        issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' health.failure_modes must be a list"})
+
+    def list_of_strings(value: Any) -> list[str]:
+        if not isinstance(value, list):
+            return []
+        return [str(item) for item in value if str(item or "").strip()]
+
+    top_signals = health.get("signals")
+    if top_signals is not None and not isinstance(top_signals, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.signals must be a list"})
+    top_gaps = health.get("gaps")
+    if top_gaps is not None and not isinstance(top_gaps, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.gaps must be a list"})
+
+    valid_node_ids = valid_node_ids or set()
+    local_block = health.get("local") if isinstance(health.get("local"), dict) else {}
+    integration_block = health.get("integration") if isinstance(health.get("integration"), dict) else {}
+    propagation_block = health.get("propagation") if isinstance(health.get("propagation"), dict) else {}
+    legacy_failure_modes = health.get("failure_modes") or []
+    if legacy_failure_modes and not isinstance(legacy_failure_modes, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.failure_modes must be a list"})
         return issues
+
+    local_failure_modes = local_block.get("failure_modes") or []
+    integration_failure_modes = integration_block.get("failure_modes") or []
+    propagation_scenarios = propagation_block.get("scenarios") or []
+
+    if local_failure_modes and not isinstance(local_failure_modes, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.local.failure_modes must be a list"})
+        local_failure_modes = []
+    if integration_failure_modes and not isinstance(integration_failure_modes, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.integration.failure_modes must be a list"})
+        integration_failure_modes = []
+    if propagation_scenarios and not isinstance(propagation_scenarios, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.propagation.scenarios must be a list"})
+        propagation_scenarios = []
+
+    failure_modes = []
+    layered_present = bool(local_failure_modes or integration_failure_modes)
+    if isinstance(legacy_failure_modes, list) and not layered_present:
+        failure_modes.extend(("legacy", item) for item in legacy_failure_modes)
+    if isinstance(local_failure_modes, list):
+        failure_modes.extend(("local", item) for item in local_failure_modes)
+    if isinstance(integration_failure_modes, list):
+        failure_modes.extend(("integration", item) for item in integration_failure_modes)
+
     seen_ids: set[str] = set()
-    for failure_mode in failure_modes:
+    local_ids: set[str] = set()
+    integration_ids: set[str] = set()
+    for scope, failure_mode in failure_modes:
         if not isinstance(failure_mode, dict):
-            issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' health.failure_modes contains a non-object entry"})
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health {scope} failure_modes contains a non-object entry"})
             continue
         failure_id = str(failure_mode.get("id") or "")
         if not failure_id:
-            issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' health failure mode is missing id"})
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health {scope} failure mode is missing id"})
             continue
         if not kebab_case(failure_id):
-            issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' health failure mode id not kebab-case: '{failure_id}'"})
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health failure mode id not kebab-case: '{failure_id}'"})
         if failure_id in seen_ids:
-            issues.append({"level": "ERROR", "section": section, "message": f"'{item_id}' has duplicate health failure mode id '{failure_id}'"})
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' has duplicate health failure mode id '{failure_id}'"})
         seen_ids.add(failure_id)
+        if scope == "local":
+            local_ids.add(failure_id)
+        if scope == "integration":
+            integration_ids.add(failure_id)
         grounded = failure_mode.get("grounded_in") or []
         if not grounded:
-            issues.append({"level": "WARNING", "section": section, "message": f"'{item_id}' health failure mode '{failure_id}' has no grounded_in"})
+            issues.append({"level": "WARNING", "section": section, "kind": "health-boundary-ungrounded" if scope == "integration" else "health-model", "message": f"'{item_id}' health failure mode '{failure_id}' has no grounded_in"})
         elif project_root or analysis_dir:
             issues.extend(check_grounded_in(grounded, project_root, analysis_dir, section, f"{item_id}/{failure_id}"))
+        if scope == "integration":
+            at = list_of_strings(failure_mode.get("at"))
+            if not at:
+                issues.append({
+                    "level": "WARNING",
+                    "section": section,
+                    "kind": "health-boundary-ungrounded",
+                    "message": f"'{item_id}' integration health failure mode '{failure_id}' does not identify the boundary ids in `at`",
+                    "related_entities": [item_id],
+                })
+            else:
+                for ref in at:
+                    if valid_node_ids and ref not in valid_node_ids:
+                        issues.append({
+                            "level": "ERROR",
+                            "section": section,
+                            "kind": "health-boundary-ungrounded",
+                            "message": f"'{item_id}' integration health failure mode '{failure_id}' references unknown boundary id '{ref}'",
+                            "related_entities": [item_id, ref],
+                        })
+        if scope == "local" and failure_mode.get("at"):
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-model",
+                "message": f"'{item_id}' local health failure mode '{failure_id}' should not use `at`; move seam failures into health.integration",
+                "related_entities": [item_id, failure_id],
+            })
+
+    seen_propagation_ids: set[str] = set()
+    propagation_count = 0
+    for scenario in propagation_scenarios:
+        if not isinstance(scenario, dict):
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.propagation.scenarios contains a non-object entry"})
+            continue
+        propagation_count += 1
+        scenario_id = str(scenario.get("id") or "")
+        if not scenario_id:
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' propagation scenario is missing id"})
+            continue
+        if not kebab_case(scenario_id):
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' propagation scenario id not kebab-case: '{scenario_id}'"})
+        if scenario_id in seen_propagation_ids:
+            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' has duplicate propagation scenario id '{scenario_id}'"})
+        seen_propagation_ids.add(scenario_id)
+        affects = list_of_strings(scenario.get("affects"))
+        if not affects:
+            issues.append({
+                "level": "ERROR",
+                "section": section,
+                "kind": "health-propagation-ungrounded",
+                "message": f"'{item_id}' propagation scenario '{scenario_id}' must list `affects` ids",
+                "related_entities": [item_id, scenario_id],
+            })
+        else:
+            for ref in affects:
+                if valid_node_ids and ref not in valid_node_ids:
+                    issues.append({
+                        "level": "ERROR",
+                        "section": section,
+                        "kind": "health-propagation-ungrounded",
+                        "message": f"'{item_id}' propagation scenario '{scenario_id}' references unknown affected id '{ref}'",
+                        "related_entities": [item_id, ref],
+                    })
+        grounded = scenario.get("grounded_in") or []
+        if not grounded:
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-propagation-ungrounded",
+                "message": f"'{item_id}' propagation scenario '{scenario_id}' has no grounded_in",
+                "related_entities": [item_id, scenario_id],
+            })
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in(grounded, project_root, analysis_dir, section, f"{item_id}/{scenario_id}"))
+        source_failure_modes = set(list_of_strings(scenario.get("source_failure_modes")))
+        if source_failure_modes and not source_failure_modes.intersection(local_ids | integration_ids | seen_ids):
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-propagation-ungrounded",
+                "message": f"'{item_id}' propagation scenario '{scenario_id}' references source failure modes that do not resolve inside this health block",
+                "related_entities": [item_id, scenario_id],
+            })
+        if not str(scenario.get("degraded_mode") or "").strip():
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-containment-unclear",
+                "message": f"'{item_id}' propagation scenario '{scenario_id}' is missing degraded_mode",
+                "related_entities": [item_id, scenario_id],
+            })
+        if not list_of_strings(scenario.get("containment")):
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-containment-unclear",
+                "message": f"'{item_id}' propagation scenario '{scenario_id}' should state containment or recovery limits",
+                "related_entities": [item_id, scenario_id],
+            })
+
+    if candidate_local and not (local_failure_modes or legacy_failure_modes):
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-local-missing",
+            "message": f"'{item_id}' has no local failure coverage even though deterministic health candidates suggest it has meaningful internal failure modes",
+            "conflict_type": "fact_vs_semantic",
+            "related_entities": [item_id],
+            "evidence_refs": [str(ref) for candidate in candidate_local for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+        })
+    if candidate_integration and not integration_failure_modes:
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-integration-missing",
+            "message": f"'{item_id}' has no boundary or dependency health coverage even though deterministic health candidates suggest an important seam",
+            "conflict_type": "fact_vs_semantic",
+            "related_entities": [item_id],
+            "evidence_refs": [str(ref) for candidate in candidate_integration for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+        })
+    if candidate_propagation and propagation_count == 0:
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-propagation-missing",
+            "message": f"'{item_id}' does not model downstream degraded modes even though deterministic evidence suggests a meaningful cascade path",
+            "conflict_type": "fact_vs_semantic",
+            "related_entities": [item_id, *[str(candidate.get('source') or '') for candidate in candidate_propagation[:2] if candidate.get('source')]],
+            "evidence_refs": [str(ref) for candidate in candidate_propagation for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+        })
+    if integration_failure_modes and not propagation_count and candidate_propagation:
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-cascade-incomplete",
+            "message": f"'{item_id}' models boundary failures but does not explain whether the impact propagates or is contained",
+            "conflict_type": "cross_artifact",
+            "related_entities": [item_id],
+            "evidence_refs": [str(ref) for candidate in candidate_propagation for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+        })
     return issues
 
 
@@ -365,6 +588,7 @@ def validate_atlas(
     analysis_dir: Path | None = None,
     concept_evidence_payload: dict | None = None,
     frameworks_payload: dict | None = None,
+    health_candidates_payload: dict | None = None,
 ) -> list[dict]:
     issues = []
 
@@ -455,8 +679,6 @@ def validate_atlas(
                 if child in parent_of and parent_of[child] != cid:
                     error(f"Component '{child}' has conflicting parents '{parent_of[child]}' and '{cid}'", "components")
                 parent_of[child] = cid
-        issues.extend(validate_health(component.get("health"), "components", cid or "<component>", project_root, analysis_dir))
-
     if component_ids and not parent_of and len(component_ids) >= 4:
         error("Component hierarchy is fully flat. Use parent/child structure for real nested subsystems.", "components")
 
@@ -486,7 +708,23 @@ def validate_atlas(
     actor_ids = {a.get("id") for a in atlas.get("actors", [])}
     ext_dep_ids = {e.get("id") for e in atlas.get("external_dependencies", [])}
     state_ids = {s.get("id") for s in atlas.get("state", [])}
+    flow_ids = {f.get("id") for f in atlas.get("flows", [])}
     all_node_ids = component_ids | actor_ids | ext_dep_ids | state_ids
+    all_health_target_ids = all_node_ids | flow_ids
+
+    local_candidates_by_component: dict[str, list[dict]] = defaultdict(list)
+    integration_candidates_by_source: dict[str, list[dict]] = defaultdict(list)
+    propagation_candidates_by_source: dict[str, list[dict]] = defaultdict(list)
+    if isinstance(health_candidates_payload, dict):
+        for candidate in health_candidates_payload.get("local_candidates") or []:
+            if isinstance(candidate, dict) and candidate.get("component"):
+                local_candidates_by_component[str(candidate.get("component"))].append(candidate)
+        for candidate in health_candidates_payload.get("integration_candidates") or []:
+            if isinstance(candidate, dict) and candidate.get("source"):
+                integration_candidates_by_source[str(candidate.get("source"))].append(candidate)
+        for candidate in health_candidates_payload.get("propagation_candidates") or []:
+            if isinstance(candidate, dict) and candidate.get("source"):
+                propagation_candidates_by_source[str(candidate.get("source"))].append(candidate)
 
     # depends_on
     def check_deps(comps):
@@ -499,6 +737,21 @@ def validate_atlas(
 
     for component in components:
         cid = str(component.get("id") or "?")
+        component_children = [str(child) for child in (component.get("children") or []) if child]
+        is_aggregate = bool(component_children)
+        issues.extend(
+            validate_health(
+                component.get("health"),
+                "components",
+                cid or "<component>",
+                valid_node_ids=all_health_target_ids,
+                candidate_local=[] if is_aggregate else local_candidates_by_component.get(cid, []),
+                candidate_integration=[] if is_aggregate else integration_candidates_by_source.get(cid, []),
+                candidate_propagation=[] if is_aggregate else propagation_candidates_by_source.get(cid, []),
+                project_root=project_root,
+                analysis_dir=analysis_dir,
+            )
+        )
         modules = component.get("modules") or []
         if modules and (project_root or analysis_dir):
             issues.extend(check_existing_paths(modules, project_root, analysis_dir, "components", cid, label="module"))
@@ -545,7 +798,19 @@ def validate_atlas(
                 "flows",
                 fid,
             ))
-        issues.extend(validate_health(f.get("health"), "flows", fid or "<flow>", project_root, analysis_dir))
+        issues.extend(
+            validate_health(
+                f.get("health"),
+                "flows",
+                fid or "<flow>",
+                valid_node_ids=all_health_target_ids,
+                candidate_local=[],
+                candidate_integration=[],
+                candidate_propagation=[],
+                project_root=project_root,
+                analysis_dir=analysis_dir,
+            )
+        )
         for metric in f.get("business_metrics", []):
             if not isinstance(metric, dict):
                 error(f"Flow '{fid}' business_metrics contains a non-object entry", "flows")
@@ -849,7 +1114,19 @@ def validate_atlas(
     # External dependency health
     for dependency in atlas.get("external_dependencies", []):
         did = dependency.get("id", "")
-        issues.extend(validate_health(dependency.get("health"), "external_dependencies", did or "<dependency>", project_root, analysis_dir))
+        issues.extend(
+            validate_health(
+                dependency.get("health"),
+                "external_dependencies",
+                did or "<dependency>",
+                valid_node_ids=all_health_target_ids,
+                candidate_local=[],
+                candidate_integration=[],
+                candidate_propagation=propagation_candidates_by_source.get(did, []),
+                project_root=project_root,
+                analysis_dir=analysis_dir,
+            )
+        )
 
     concept_ids = {p.get("id") for p in concepts.get("detected_patterns", []) if p.get("id")}
     concept_ids |= {ap.get("id") for ap in concepts.get("detected_anti_patterns", []) if ap.get("id")}
@@ -1707,6 +1984,8 @@ def issue_family(issue: dict) -> str:
         return "provenance"
     if kind in {"grounding"}:
         return "grounding"
+    if kind in {"health-local-missing", "health-integration-missing", "health-propagation-missing", "health-boundary-ungrounded", "health-propagation-ungrounded", "health-cascade-incomplete", "health-containment-unclear", "health-model"}:
+        return "health-model"
     if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "teaching-structure"
     if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "framework-resolution"}:
@@ -1729,6 +2008,14 @@ def is_semantic_conflict(issue: dict) -> bool:
         "flow-model",
         "concept-evidence",
         "framework-resolution",
+        "health-local-missing",
+        "health-integration-missing",
+        "health-propagation-missing",
+        "health-boundary-ungrounded",
+        "health-propagation-ungrounded",
+        "health-cascade-incomplete",
+        "health-containment-unclear",
+        "health-model",
     }
 
 
@@ -1749,6 +2036,14 @@ def issue_conflict_type(issue: dict) -> str | None:
         "flow-model": "cross_artifact",
         "concept-evidence": "fact_vs_semantic",
         "framework-resolution": "fact_vs_semantic",
+        "health-local-missing": "fact_vs_semantic",
+        "health-integration-missing": "fact_vs_semantic",
+        "health-propagation-missing": "fact_vs_semantic",
+        "health-boundary-ungrounded": "cross_artifact",
+        "health-propagation-ungrounded": "cross_artifact",
+        "health-cascade-incomplete": "shape_tension",
+        "health-containment-unclear": "shape_tension",
+        "health-model": "cross_artifact",
     }
     return mapping.get(kind)
 
@@ -1757,9 +2052,9 @@ def issue_priority(issue: dict) -> str:
     if str(issue.get("level") or "") == "ERROR":
         return "high"
     kind = classify_issue_kind(issue)
-    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "path-provenance", "concept-evidence"}:
+    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "path-provenance", "concept-evidence", "health-boundary-ungrounded", "health-propagation-ungrounded", "health-model"}:
         return "high"
-    if kind in {"framework-resolution"}:
+    if kind in {"framework-resolution", "health-local-missing", "health-integration-missing", "health-propagation-missing", "health-cascade-incomplete", "health-containment-unclear"}:
         return "medium"
     if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "medium"
@@ -1779,6 +2074,14 @@ def recommended_artifacts(issue: dict) -> list[str]:
         "story-quality": ["facts/story-seeds.json", "facts/component-seeds.json"],
         "component-model": ["facts/component-seeds.json", "facts/story-seeds.json"],
         "flow-model": ["facts/symbols-seed.json", "facts/component-seeds.json"],
+        "health-local-missing": ["facts/health-candidates.json", "facts/symbols-seed.json"],
+        "health-integration-missing": ["facts/health-candidates.json", "facts/state-access-summary.json"],
+        "health-propagation-missing": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json"],
+        "health-boundary-ungrounded": ["facts/health-candidates.json", "facts/state-access-summary.json", "facts/symbols-seed.json"],
+        "health-propagation-ungrounded": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json"],
+        "health-cascade-incomplete": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json", "atlas.json"],
+        "health-containment-unclear": ["facts/health-candidates.json", "atlas.json"],
+        "health-model": ["facts/health-candidates.json", "atlas.json"],
         "concept-evidence": ["facts/concept-evidence.json"],
         "framework-resolution": ["facts/frameworks.json"],
         "path-provenance": ["facts/index.json", "facts/startup.json"],
@@ -2007,6 +2310,14 @@ def suggested_resolution(issue: dict) -> str:
         "state-truthfulness": "Widen the state label or persistence mode so it matches the configured backend reality.",
         "concept-evidence": "Repair the concept evidence files or component references so provenance is valid.",
         "framework-resolution": "Reconcile the resolved framework summary with deterministic framework evidence and repo code.",
+        "health-local-missing": "Add a local health block only where deterministic evidence and code grounding justify internal failure coverage.",
+        "health-integration-missing": "Model the important seam failure explicitly in health.integration and name the boundary ids in `at`.",
+        "health-propagation-missing": "Add a propagation scenario or state clear containment so downstream degraded mode is explicit.",
+        "health-boundary-ungrounded": "Ground the boundary failure in code and identify the dependency, state, or caller ids involved in the seam.",
+        "health-propagation-ungrounded": "Ground the cascade claim in code and point `affects` at real atlas ids that degrade downstream.",
+        "health-cascade-incomplete": "Explain whether the boundary failure propagates downstream or is contained locally.",
+        "health-containment-unclear": "State what remains available, stale, delayed, or blocked and how the blast radius is limited.",
+        "health-model": "Reshape the health block so local, integration, and propagation concerns are separated cleanly.",
         "component-model": "Refine the component graph so ids, parents, dependencies, and module paths are truthful.",
         "flow-model": "Tighten the flow description, references, or grounding so it matches the implementation path.",
         "story-quality": "Narrow the story to a clearer concern and ground it with more precise evidence.",
@@ -2146,6 +2457,14 @@ def main():
         except json.JSONDecodeError as e:
             all_issues.append({"level": "ERROR", "section": "narrative-seeds", "message": f"JSON parse error: {e}"})
 
+    health_candidates_path = facts_dir / "health-candidates.json"
+    health_candidates_payload = {}
+    if health_candidates_path.exists():
+        try:
+            health_candidates_payload = json.loads(health_candidates_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "health-candidates", "message": f"JSON parse error: {e}"})
+
     control_hotspots_path = facts_dir / "control-hotspots.json"
     control_hotspots_payload = {}
     if control_hotspots_path.exists():
@@ -2182,6 +2501,7 @@ def main():
                     analysis_dir,
                     concepts_payload,
                     frameworks_payload,
+                    health_candidates_payload,
                 )
                 all_issues.extend(issues)
             except json.JSONDecodeError as e:

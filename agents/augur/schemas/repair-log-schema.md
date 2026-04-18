@@ -156,6 +156,10 @@ Use the issue family and kind to decide which deterministic artifacts to consult
   - `facts/symbols-seed.json`
 - state grounding, state truthfulness
   - `facts/state-seeds.json`
+- health coverage, boundary health, propagation, containment
+  - `facts/health-candidates.json`
+  - `facts/state-access-summary.json`
+  - `facts/control-hotspots.json`
 - story-decomposition, narrative-selection, teaching-structure
   - `facts/story-seeds.json`
   - `facts/component-seeds.json`

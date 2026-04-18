@@ -278,7 +278,22 @@ def normalize_health_block(target: dict[str, Any]) -> None:
     health = target.get("health")
     if not isinstance(health, dict):
         return
-    health["failure_modes"] = merge_failure_modes(health.get("failure_modes") or [])
+    legacy_failure_modes = merge_failure_modes(health.get("failure_modes") or [])
+    local = health.get("local") if isinstance(health.get("local"), dict) else {}
+    integration = health.get("integration") if isinstance(health.get("integration"), dict) else {}
+    propagation = health.get("propagation") if isinstance(health.get("propagation"), dict) else {}
+    local_failure_modes = merge_failure_modes(local.get("failure_modes") or [])
+    integration_failure_modes = merge_failure_modes(integration.get("failure_modes") or [])
+    propagation_scenarios = [item for item in (propagation.get("scenarios") or []) if isinstance(item, dict)]
+
+    if legacy_failure_modes and not local_failure_modes and not integration_failure_modes:
+        local_failure_modes = legacy_failure_modes
+
+    health["local"] = {"failure_modes": local_failure_modes}
+    health["integration"] = {"failure_modes": integration_failure_modes}
+    health["propagation"] = {"scenarios": propagation_scenarios}
+    health["failure_modes"] = merge_failure_modes(local_failure_modes + integration_failure_modes)
+    health["signals"] = unique_strings([str(v) for v in health.get("signals") or [] if v])
     health["gaps"] = unique_strings([str(v) for v in health.get("gaps") or [] if v])
 
 
@@ -1840,7 +1855,8 @@ def append_concept_health(
 ) -> None:
     health = target.setdefault("health", {})
     existing_gaps = health.get("gaps") or []
-    existing_failure_modes = health.get("failure_modes") or []
+    local = health.setdefault("local", {})
+    existing_failure_modes = local.get("failure_modes") or health.get("failure_modes") or []
     health["gaps"] = unique_strings(existing_gaps + [str(item) for item in monitoring.get("gaps") or [] if item] + missing_gaps)
 
     failure_mode_id = f"{target.get('id', 'entity')}-{slugify(concept_id)}-runtime"
@@ -1862,7 +1878,8 @@ def append_concept_health(
                     "grounded_in": grounded_in,
                 }
             )
-    health["failure_modes"] = merge_failure_modes(existing_failure_modes)
+    local["failure_modes"] = merge_failure_modes(existing_failure_modes)
+    health["failure_modes"] = merge_failure_modes(local["failure_modes"] + list((health.get("integration") or {}).get("failure_modes") or []))
 
 
 def attach_concept_monitoring(
