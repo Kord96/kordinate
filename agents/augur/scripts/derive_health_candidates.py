@@ -55,6 +55,40 @@ def stable_id(*parts: str) -> str:
     return normalized[:96] or "candidate"
 
 
+def useful_external_target(raw_target: str, raw_technology: str) -> str:
+    target = str(raw_target or "").strip()
+    technology = str(raw_technology or "").strip()
+    banned_exact = {"requests", "aiohttp", "httpx", "urllib3", "urllib", "fetch", "axios"}
+    meaningful_technologies = {
+        "redis",
+        "messaging",
+        "kafka",
+        "grpc",
+        "amqp",
+        "rabbitmq",
+        "s3",
+        "postgres",
+        "mysql",
+        "mongodb",
+        "http",
+        "https",
+        "websocket",
+    }
+    candidate = target or technology
+    lowered = candidate.lower()
+    if not candidate:
+        return ""
+    if lowered in banned_exact:
+        return ""
+    if any(token in candidate for token in ("(", ")", "{", "}", "\"", "'", "cfg.", ".replace(")):
+        return ""
+    if target:
+        return target
+    if technology.lower() in meaningful_technologies:
+        return technology
+    return ""
+
+
 def top_component_ids(facts: list[dict[str, Any]]) -> list[str]:
     ordered: list[str] = []
     seen: set[str] = set()
@@ -217,7 +251,7 @@ def integration_candidates(
 
     for fact in external_clients:
         raw = fact.get("raw_evidence") or {}
-        technology = str(raw.get("target") or raw.get("technology") or "").strip()
+        technology = useful_external_target(str(raw.get("target") or ""), str(raw.get("technology") or ""))
         if not technology:
             continue
         for source in top_component_ids([fact]):
@@ -333,7 +367,7 @@ def propagation_candidates(
     external_buckets: dict[str, dict[str, Any]] = {}
     for fact in external_clients:
         raw = fact.get("raw_evidence") or {}
-        target = str(raw.get("target") or raw.get("technology") or "").strip()
+        target = useful_external_target(str(raw.get("target") or ""), str(raw.get("technology") or ""))
         components = top_component_ids([fact])
         if not target or not components:
             continue
