@@ -41,6 +41,8 @@ Every semantic atlas must contain exactly these required top-level fields:
   "state",
   "external_dependencies",
   "failure_scenarios",
+  "monitoring",
+  "gaps",
   "concepts",
   "tensions"
 ]
@@ -97,10 +99,11 @@ These legacy fields must not appear:
   "state": [],
   "external_dependencies": [],
   "failure_scenarios": [],
+  "monitoring": [],
+  "gaps": [],
   "concepts": {
     "detected_patterns": [],
-    "detected_anti_patterns": [],
-    "gaps": []
+    "detected_anti_patterns": []
   },
   "tensions": []
 }
@@ -167,51 +170,8 @@ These legacy fields must not appear:
     "patterns": ["<pattern-name>"],
     "health": {
       "criteria": ["<healthy when ...>"],
-      "signals": ["<shared signal or metric>"],
-      "related_failure_scenarios": ["<failure-scenario-id>"],
-      "local": {
-        "failure_modes": [
-          {
-            "id": "<kebab-case>",
-            "trigger": "<what goes wrong inside this component>",
-            "impact": "<what users or operators experience>",
-            "signals": ["<metric or symptom>"],
-            "gaps": ["<missing guardrail>"],
-            "recovery": ["<recovery step>"],
-            "severity": "critical | high | medium | low",
-            "grounded_in": ["<file:line>"]
-          }
-        ]
-      },
-      "integration": {
-        "failure_modes": [
-          {
-            "id": "<kebab-case>",
-            "at": ["<component-id | state-id | external-dependency-id>"],
-            "trigger": "<what breaks at the boundary>",
-            "impact": "<what this seam failure causes locally>",
-            "signals": ["<boundary-level signal>"],
-            "gaps": ["<missing integration guardrail>"],
-            "recovery": ["<fallback or repair step>"],
-            "severity": "critical | high | medium | low",
-            "grounded_in": ["<file:line>"]
-          }
-        ]
-      },
-      "propagation": {
-        "scenarios": [
-          {
-            "id": "<kebab-case>",
-            "source_failure_modes": ["<failure-mode-id>"],
-            "affects": ["<component-id | flow-id | state-id | external-dependency-id>"],
-            "degraded_mode": "<what still works and what becomes stale, partial, blocked, or delayed>",
-            "user_visible_impact": ["<what downstream users or operators see>"],
-            "containment": ["<how the blast radius is limited or recovered>"],
-            "grounded_in": ["<file:line>"]
-          }
-        ]
-      },
-      "gaps": ["<missing signal or resilience control>"]
+      "triggers_failure_scenarios": ["<failure-scenario-id>"],
+      "participates_in_failure_scenarios": ["<failure-scenario-id>"]
     }
   }
 ]
@@ -223,13 +183,11 @@ Hierarchy rules:
 - every child id in `children` must reference a real component
 - top-level components should be real architecture slices, not synthetic presentation buckets
 - every entry in `components[].modules` must resolve to a real repo file or directory
-- prefer layered health modeling:
-  - `health.criteria` for the concrete conditions that make this unit healthy
-  - `health.local` for failures internal to this unit
-  - `health.integration` for failures at seams with dependencies, stores, or callers
-  - `health.propagation` for downstream degraded modes or blast radius
-  - `health.related_failure_scenarios` for shared cross-unit cascades modeled at the top level
-- if a high-severity integration failure is present, either model a propagation scenario or make containment explicit
+- keep `health` focused on the success contract:
+  - `health.criteria` says what healthy operation looks like
+  - `health.triggers_failure_scenarios` points at shared scenarios this unit can start
+  - `health.participates_in_failure_scenarios` points at shared scenarios this unit is part of
+- do not put observability signals, local failure catalogs, or gap lists inside `health`
 
 ### `flows`
 
@@ -246,18 +204,8 @@ Hierarchy rules:
     "grounded_in": ["<file:line>"],
     "health": {
       "criteria": ["<healthy when ...>"],
-      "signals": ["<shared flow signal>"],
-      "related_failure_scenarios": ["<failure-scenario-id>"],
-      "local": {
-        "failure_modes": []
-      },
-      "integration": {
-        "failure_modes": []
-      },
-      "propagation": {
-        "scenarios": []
-      },
-      "gaps": ["<missing flow health visibility>"]
+      "triggers_failure_scenarios": ["<failure-scenario-id>"],
+      "participates_in_failure_scenarios": ["<failure-scenario-id>"]
     },
     "steps": [
       {
@@ -337,21 +285,12 @@ State modeling rules:
     "technology": "<specific if known>",
     "components": ["<component-id>"],
     "purpose": "<why needed>",
+    "summary": "<2-4 sentences explaining what capability this dependency provides here, which paths rely on it, and why the system uses it>",
     "criticality": "critical | important | optional",
     "health": {
       "criteria": ["<healthy when ...>"],
-      "signals": ["<shared dependency signal>"],
-      "related_failure_scenarios": ["<failure-scenario-id>"],
-      "local": {
-        "failure_modes": []
-      },
-      "integration": {
-        "failure_modes": []
-      },
-      "propagation": {
-        "scenarios": []
-      },
-      "gaps": ["<missing protection or signal>"]
+      "triggers_failure_scenarios": ["<failure-scenario-id>"],
+      "participates_in_failure_scenarios": ["<failure-scenario-id>"]
     }
   }
 ]
@@ -375,10 +314,7 @@ State modeling rules:
       }
     ],
     "degraded_mode": "<what still works and what becomes stale, partial, blocked, or delayed>",
-    "user_visible_impact": ["<operator or user symptom>"],
-    "signals": ["<shared signal or alert>"],
     "mitigations": ["<shared mitigation or containment>"],
-    "gaps": ["<missing visibility, guardrail, or control>"],
     "grounded_in": ["<file:line>"]
   }
 ]
@@ -389,9 +325,51 @@ Failure-scenario rules:
 - prefer one shared failure scenario over repeating the same cascade text in several unit health blocks
 - every `starts_at`, `involves`, and `chain.{from,to}` id must resolve to a real component, flow, state entry, or external dependency
 - `chain` should describe propagation order, not just restate the same local symptom
-- include `degraded_mode` and at least one of `signals`, `mitigations`, or `gaps`
+- include `degraded_mode` and any shared mitigations that matter to the blast radius
 - `grounded_in` is required because shared failure scenarios are easy to overgeneralize
-- units that participate in a shared cascade should reference it via `health.related_failure_scenarios` when that relationship materially helps understanding
+- units that participate in a shared cascade should reference it via `health.triggers_failure_scenarios` or `health.participates_in_failure_scenarios` when that relationship materially helps understanding
+
+### `monitoring`
+
+```json
+"monitoring": [
+  {
+    "id": "<kebab-case>",
+    "name": "<Human Readable Monitoring Name>",
+    "kind": "signal | metric | alert | dashboard | trace",
+    "summary": "<what this monitor tells an operator about system behavior>",
+    "covers": ["<component-id | flow-id | external-dependency-id | failure-scenario-id>"],
+    "signals": ["<metric, signal, alert, or trace name>"],
+    "grounded_in": ["<file:line>"]
+  }
+]
+```
+
+Monitoring rules:
+- `covers` should point to the real components, flows, dependencies, or failure scenarios this monitor speaks for
+- prefer monitoring grounded in code, config, dashboards, metric names, traces, or alert wiring
+- use this section for observability, not for declaring healthy behavior; keep success conditions under unit `health.criteria`
+
+### `gaps`
+
+```json
+"gaps": [
+  {
+    "id": "<kebab-case>",
+    "kind": "monitoring | resilience | concept | anti-pattern | architecture | security | dependency | state",
+    "title": "<Human Readable Gap Title>",
+    "summary": "<what is missing or weak>",
+    "affects": ["<component-id | flow-id | state-id | external-dependency-id | failure-scenario-id | concept-id>"],
+    "recommendation": "<what would close the gap>",
+    "grounded_in": ["<file:line>"]
+  }
+]
+```
+
+Gap rules:
+- use `gaps` for deficiencies of any kind, including missing monitoring, resilience holes, concept gaps, and grounded anti-patterns
+- `affects` should point at the architecture entities or concepts touched by the gap
+- do not hide important missing observability or resilience notes inside unit-local fields when they are better represented as cross-cutting atlas gaps
 
 ### `concepts`
 
@@ -438,19 +416,6 @@ Failure-scenario rules:
         "detector_class": "ast | semgrep | signature | regex | manifest | question | inference",
         "note": "<one sentence>",
         "questions_asked": ["<question id>"]
-      }
-    }
-  ],
-  "gaps": [
-    {
-      "id": "<pattern-name>",
-      "relevance": "<why it's expected>",
-      "recommendation": "<what to do>",
-      "components": ["<component-id>"],
-      "grounded_in": ["<file:line>"],
-      "evidence": {
-        "files": ["<path>"],
-        "note": "<one sentence>"
       }
     }
   ]

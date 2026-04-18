@@ -87,7 +87,7 @@ def main() -> int:
                 "Treat facts/concept-evidence.json as candidate guidance: use detector backing, contradictions, and semantic questions to resolve concepts before they affect atlas concepts, monitoring, or gaps.",
                 "Use facts/component-seeds.json when present to choose representative files for each provisional root slice before finalizing the atlas or stories.",
                 "Use facts/narrative-seeds.json when present to challenge system-overview and other narrative selections before finalizing narratives.",
-                "Use facts/health-candidates.json when present to challenge local, integration, and propagation health coverage before finalizing atlas health blocks.",
+                "Use facts/health-candidates.json when present to challenge unit health criteria, shared failure-scenario links, top-level monitoring coverage, and top-level gaps before finalizing the atlas.",
                 "Use facts/failure-scenario-candidates.json when present to challenge whether repeated multi-unit cascades should become a top-level failure_scenarios entry.",
                 "Perform a root challenge pass before finalizing roots: reject provisional roots anchored mainly in test/, docs/, examples/, or client-only paths.",
                 "If the repo has strong engine, storage, or runtime slices, do not spend a full top-level root on bootstrap alone; keep bootstrap as a child unless it is truly the dominant system concern.",

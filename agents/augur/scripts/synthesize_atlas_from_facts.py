@@ -60,6 +60,16 @@ def write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=False) + "\n", encoding="utf-8")
 
 
+def load_optional_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        payload = read_json(path)
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
 def slugify(value: str) -> str:
     cleaned = []
     last_dash = False
@@ -274,24 +284,292 @@ def merge_failure_modes(failure_modes: list[dict[str, Any]]) -> list[dict[str, A
     return list(merged.values())
 
 
-def normalize_health_block(target: dict[str, Any]) -> None:
+def titleize_slug(value: str) -> str:
+    return " ".join(part.capitalize() for part in re.split(r"[-_]+", value or "") if part)
+
+
+def classify_gap_kind(text: str) -> str:
+    lowered = str(text or "").lower()
+    if any(token in lowered for token in ("monitor", "signal", "metric", "alert", "trace", "visibility", "observability")):
+        return "monitoring"
+    if any(token in lowered for token in ("retry", "timeout", "circuit", "fallback", "contain", "resilien", "backpressure", "queue", "lag")):
+        return "resilience"
+    if any(token in lowered for token in ("schema", "store", "state", "cache", "snapshot")):
+        return "state"
+    if any(token in lowered for token in ("dependency", "client", "api", "broker", "external")):
+        return "dependency"
+    return "architecture"
+
+
+def build_failure_scenarios_from_candidates(facts_root: Path) -> list[dict[str, Any]]:
+    payload = load_optional_json(facts_root / "failure-scenario-candidates.json")
+    scenarios: list[dict[str, Any]] = []
+    for candidate in payload.get("candidates") or []:
+        if not isinstance(candidate, dict):
+            continue
+        candidate_id = str(candidate.get("id") or "").strip()
+        if not candidate_id:
+            continue
+        starts_at = unique_strings([str(item) for item in (candidate.get("starts_at") or []) if item])
+        involves = unique_strings([str(item) for item in (candidate.get("involves") or []) if item])
+        chain = [
+            {
+                "from": str(step.get("from") or ""),
+                "to": str(step.get("to") or ""),
+                "effect": str(step.get("effect") or "").strip(),
+            }
+            for step in (candidate.get("chain") or [])
+            if isinstance(step, dict) and str(step.get("from") or "").strip() and str(step.get("to") or "").strip() and str(step.get("effect") or "").strip()
+        ]
+        scenarios.append(
+            {
+                "id": candidate_id,
+                "name": titleize_slug(candidate_id),
+                "scope": str(candidate.get("scope") or "cascading"),
+                "starts_at": starts_at,
+                "involves": involves,
+                "chain": chain,
+                "degraded_mode": str(candidate.get("degraded_mode_hint") or "").strip()
+                or "Shared system behavior becomes delayed, stale, partial, or unavailable across the involved units.",
+                "mitigations": unique_strings(
+                    [str(item) for item in (candidate.get("mitigation_hints") or []) if item]
+                    + ([str(candidate.get("containment_hint"))] if str(candidate.get("containment_hint") or "").strip() else [])
+                ),
+                "grounded_in": unique_strings([source_line(str(ref)) for ref in (candidate.get("evidence_refs") or []) if ref]),
+            }
+        )
+    return scenarios
+
+
+def collect_monitoring_from_health(
+    target: dict[str, Any],
+    target_kind: str,
+    monitoring_entries: list[dict[str, Any]],
+) -> None:
     health = target.get("health")
     if not isinstance(health, dict):
         return
-    legacy_failure_modes = merge_failure_modes(health.get("failure_modes") or [])
-    local = health.get("local") if isinstance(health.get("local"), dict) else {}
-    integration = health.get("integration") if isinstance(health.get("integration"), dict) else {}
-    propagation = health.get("propagation") if isinstance(health.get("propagation"), dict) else {}
-    local_failure_modes = merge_failure_modes((local.get("failure_modes") or []) + legacy_failure_modes)
-    integration_failure_modes = merge_failure_modes(integration.get("failure_modes") or [])
-    propagation_scenarios = [item for item in (propagation.get("scenarios") or []) if isinstance(item, dict)]
+    target_id = str(target.get("id") or "").strip()
+    if not target_id:
+        return
+    signals = unique_strings([str(item) for item in (health.get("signals") or []) if item])
+    if not signals:
+        return
+    name = str(target.get("name") or titleize_slug(target_id))
+    grounded: list[str] = []
+    for ref in target.get("grounded_in") or []:
+        grounded.append(source_line(str(ref)))
+    for block_name in ("local", "integration"):
+        block = health.get(block_name) if isinstance(health.get(block_name), dict) else {}
+        for failure_mode in block.get("failure_modes") or []:
+            if isinstance(failure_mode, dict):
+                grounded.extend(source_line(str(ref)) for ref in (failure_mode.get("grounded_in") or []) if ref)
+    monitoring_entries.append(
+        {
+            "id": f"{target_id}-health-monitoring",
+            "name": f"{name} health monitoring",
+            "kind": "signal",
+            "summary": f"Tracks whether {name} still satisfies its healthy-operation criteria and exposes early degradation symptoms.",
+            "covers": [target_id],
+            "signals": signals,
+            "grounded_in": unique_strings(grounded),
+        }
+    )
 
-    health["local"] = {"failure_modes": local_failure_modes}
-    health["integration"] = {"failure_modes": integration_failure_modes}
-    health["propagation"] = {"scenarios": propagation_scenarios}
-    health["signals"] = unique_strings([str(v) for v in health.get("signals") or [] if v])
-    health["gaps"] = unique_strings([str(v) for v in health.get("gaps") or [] if v])
-    health.pop("failure_modes", None)
+
+def collect_unit_gaps(
+    target: dict[str, Any],
+    gaps: list[dict[str, Any]],
+) -> None:
+    health = target.get("health")
+    if not isinstance(health, dict):
+        return
+    target_id = str(target.get("id") or "").strip()
+    if not target_id:
+        return
+    grounded: list[str] = [source_line(str(ref)) for ref in (target.get("grounded_in") or []) if ref]
+    collected = [str(item) for item in (health.get("gaps") or []) if str(item or "").strip()]
+    for block_name in ("local", "integration"):
+        block = health.get(block_name) if isinstance(health.get(block_name), dict) else {}
+        for failure_mode in block.get("failure_modes") or []:
+            if not isinstance(failure_mode, dict):
+                continue
+            collected.extend(str(item) for item in (failure_mode.get("gaps") or []) if str(item or "").strip())
+            grounded.extend(source_line(str(ref)) for ref in (failure_mode.get("grounded_in") or []) if ref)
+    for scenario in ((health.get("propagation") or {}).get("scenarios") or []):
+        if not isinstance(scenario, dict):
+            continue
+        collected.extend(str(item) for item in (scenario.get("gaps") or []) if str(item or "").strip())
+        grounded.extend(source_line(str(ref)) for ref in (scenario.get("grounded_in") or []) if ref)
+
+    for idx, text in enumerate(unique_strings(collected), start=1):
+        gaps.append(
+            {
+                "id": f"{target_id}-{slugify(text)[:48] or idx}-gap",
+                "kind": classify_gap_kind(text),
+                "title": f"{titleize_slug(target_id)} gap",
+                "summary": text,
+                "affects": [target_id],
+                "recommendation": "Add the missing control, monitoring, or resilience mechanism described by this gap.",
+                "grounded_in": unique_strings(grounded),
+            }
+        )
+
+
+def collect_flow_business_monitoring(flows: list[dict[str, Any]], monitoring_entries: list[dict[str, Any]]) -> None:
+    for flow in flows:
+        flow_id = str(flow.get("id") or "").strip()
+        if not flow_id:
+            continue
+        for metric in flow.get("business_metrics") or []:
+            if not isinstance(metric, dict) or not metric.get("name"):
+                continue
+            metric_name = str(metric.get("name") or "").strip()
+            if not metric_name:
+                continue
+            monitoring_entries.append(
+                {
+                    "id": f"{flow_id}-{slugify(metric_name)}-monitoring",
+                    "name": metric_name,
+                    "kind": "metric",
+                    "summary": str(metric.get("description") or f"Tracks business-visible outcomes for {flow.get('name') or flow_id}.").strip(),
+                    "covers": [flow_id],
+                    "signals": [metric_name],
+                    "grounded_in": unique_strings([source_line(str(ref)) for ref in (metric.get("grounded_in") or []) if ref]),
+                }
+            )
+
+
+def collect_failure_scenario_monitoring_and_gaps(
+    failure_scenarios: list[dict[str, Any]],
+    candidate_payload: dict[str, Any],
+    monitoring_entries: list[dict[str, Any]],
+    gaps: list[dict[str, Any]],
+) -> None:
+    candidates = {
+        str(candidate.get("id") or ""): candidate
+        for candidate in (candidate_payload.get("candidates") or [])
+        if isinstance(candidate, dict) and candidate.get("id")
+    }
+    for scenario in failure_scenarios:
+        scenario_id = str(scenario.get("id") or "").strip()
+        if not scenario_id:
+            continue
+        candidate = candidates.get(scenario_id) or {}
+        signal_hints = unique_strings([str(item) for item in (candidate.get("signal_hints") or []) if item])
+        grounded = unique_strings([source_line(str(ref)) for ref in (scenario.get("grounded_in") or []) if ref])
+        if signal_hints:
+            monitoring_entries.append(
+                {
+                    "id": f"{scenario_id}-monitoring",
+                    "name": f"{titleize_slug(scenario_id)} monitoring",
+                    "kind": "alert",
+                    "summary": f"Signals that reveal whether the shared failure scenario {titleize_slug(scenario_id)} is beginning or actively degrading the system.",
+                    "covers": [scenario_id],
+                    "signals": signal_hints,
+                    "grounded_in": grounded,
+                }
+            )
+        for idx, text in enumerate(unique_strings([str(item) for item in (candidate.get("gaps") or []) if item]), start=1):
+            gaps.append(
+                {
+                    "id": f"{scenario_id}-{slugify(text)[:48] or idx}-gap",
+                    "kind": classify_gap_kind(text),
+                    "title": f"{titleize_slug(scenario_id)} gap",
+                    "summary": text,
+                    "affects": unique_strings([scenario_id] + [str(item) for item in (scenario.get("involves") or []) if item]),
+                    "recommendation": "Add the missing monitoring, guardrail, or containment needed for this shared failure scenario.",
+                    "grounded_in": grounded,
+                }
+            )
+
+
+def migrate_observability_contract(output: dict[str, Any], facts_root: Path) -> None:
+    failure_scenarios = build_failure_scenarios_from_candidates(facts_root)
+    scenario_starts: dict[str, list[str]] = {}
+    scenario_involves: dict[str, list[str]] = {}
+    for scenario in failure_scenarios:
+        sid = str(scenario.get("id") or "")
+        for entity in scenario.get("starts_at") or []:
+            scenario_starts.setdefault(str(entity), []).append(sid)
+        for entity in scenario.get("involves") or []:
+            scenario_involves.setdefault(str(entity), []).append(sid)
+
+    monitoring_entries: list[dict[str, Any]] = []
+    gaps: list[dict[str, Any]] = []
+    failure_scenario_candidates_payload = load_optional_json(facts_root / "failure-scenario-candidates.json")
+
+    for section_name in ("components", "flows", "external_dependencies"):
+        for item in output.get(section_name) or []:
+            if not isinstance(item, dict):
+                continue
+            item_id = str(item.get("id") or "").strip()
+            if not item_id:
+                continue
+            health = item.get("health") if isinstance(item.get("health"), dict) else {}
+            collect_monitoring_from_health(item, section_name.rstrip("s"), monitoring_entries)
+            collect_unit_gaps(item, gaps)
+            item["health"] = {
+                "criteria": unique_strings([str(v) for v in (health.get("criteria") or []) if v]),
+                "triggers_failure_scenarios": unique_strings(scenario_starts.get(item_id, [])),
+                "participates_in_failure_scenarios": unique_strings(
+                    [sid for sid in scenario_involves.get(item_id, []) if sid not in set(scenario_starts.get(item_id, []))]
+                ),
+            }
+
+    collect_flow_business_monitoring([item for item in (output.get("flows") or []) if isinstance(item, dict)], monitoring_entries)
+    collect_failure_scenario_monitoring_and_gaps(failure_scenarios, failure_scenario_candidates_payload, monitoring_entries, gaps)
+
+    concepts = output.get("concepts") if isinstance(output.get("concepts"), dict) else {}
+    concept_gap_entries = concepts.pop("gaps", []) if isinstance(concepts.get("gaps"), list) else []
+    for gap in concept_gap_entries:
+        if not isinstance(gap, dict):
+            continue
+        gap_id = str(gap.get("id") or "").strip()
+        relevance = str(gap.get("relevance") or "").strip()
+        recommendation = str(gap.get("recommendation") or "").strip()
+        grounded = unique_strings([source_line(str(ref)) for ref in (gap.get("grounded_in") or []) if ref])
+        evidence = gap.get("evidence") or {}
+        grounded.extend(source_line(str(ref)) for ref in (evidence.get("files") or []) if ref)
+        gaps.append(
+            {
+                "id": gap_id or f"concept-gap-{len(gaps) + 1}",
+                "kind": "concept",
+                "title": titleize_slug(gap_id or "concept-gap"),
+                "summary": relevance or "Expected concept support is missing or weak in the current architecture.",
+                "affects": unique_strings([str(item) for item in (gap.get("components") or []) if item] + ([gap_id] if gap_id else [])),
+                "recommendation": recommendation or "Add the missing concept support or architectural treatment suggested by this gap.",
+                "grounded_in": unique_strings(grounded),
+            }
+        )
+
+    for anti_pattern in concepts.get("detected_anti_patterns") or []:
+        if not isinstance(anti_pattern, dict):
+            continue
+        anti_id = str(anti_pattern.get("id") or "").strip()
+        summary = str(anti_pattern.get("summary") or "").strip()
+        why = str(anti_pattern.get("why_it_matters") or "").strip()
+        grounded = unique_strings([source_line(str(ref)) for ref in (anti_pattern.get("grounded_in") or []) if ref])
+        gaps.append(
+            {
+                "id": f"{anti_id}-anti-pattern-gap" if anti_id else f"anti-pattern-gap-{len(gaps) + 1}",
+                "kind": "anti-pattern",
+                "title": titleize_slug(anti_id or "anti-pattern"),
+                "summary": summary or why or "A grounded anti-pattern materially weakens the current architecture.",
+                "affects": unique_strings(
+                    [str(item) for item in (anti_pattern.get("components") or []) if item]
+                    + [str(item) for item in (anti_pattern.get("flows") or []) if item]
+                    + [str(item) for item in (anti_pattern.get("state") or []) if item]
+                    + ([anti_id] if anti_id else [])
+                ),
+                "recommendation": why or "Address the anti-pattern or explain the intentional trade-off that keeps it in place.",
+                "grounded_in": grounded,
+            }
+        )
+
+    output["failure_scenarios"] = failure_scenarios
+    output["monitoring"] = list({entry["id"]: {**entry, "signals": unique_strings(entry.get("signals") or []), "covers": unique_strings(entry.get("covers") or []), "grounded_in": unique_strings(entry.get("grounded_in") or [])} for entry in monitoring_entries if isinstance(entry, dict) and entry.get("id")}.values())
+    output["gaps"] = list({entry["id"]: {**entry, "affects": unique_strings(entry.get("affects") or []), "grounded_in": unique_strings(entry.get("grounded_in") or [])} for entry in gaps if isinstance(entry, dict) and entry.get("id")}.values())
 
 
 def coerce_bool(value: Any) -> bool:
@@ -897,6 +1175,7 @@ def build_external_dependencies(facts: list[dict[str, Any]], joern: dict[str, An
                 "technology": technology,
                 "components": [str(item) for item in fact.get("relationships", {}).get("component_ids") or [] if item],
                 "purpose": str(raw.get("purpose") or fact.get("summary") or "dependency"),
+                "summary": "",
                 "criticality": str(raw.get("criticality") or "important"),
                 "resilience": resilience,
                 "health": {
@@ -943,6 +1222,13 @@ def build_external_dependencies(facts: list[dict[str, Any]], joern: dict[str, An
             if grounded and dependency.get("health", {}).get("local", {}).get("failure_modes"):
                 for item in dependency["health"]["local"]["failure_modes"]:
                     item["grounded_in"] = unique_strings(list(item.get("grounded_in") or []) + sorted(grounded))
+        component_text = ", ".join(dependency["components"][:3]) if dependency["components"] else "core runtime paths"
+        purpose = str(dependency.get("purpose") or "").strip().rstrip(".")
+        role = technology if technology and technology != "unknown" else concept.replace("-", " ")
+        dependency["summary"] = (
+            f"{name} provides a {role} capability that {component_text} relies on. "
+            f"It matters here because {purpose.lower() if purpose else 'important application paths depend on it'}."
+        )
         dependencies.append(dependency)
 
     return dependencies
@@ -1610,8 +1896,6 @@ def build_flows(
         seen.add(flow_id)
         flows.append(flow)
 
-    for flow in flows:
-        normalize_health_block(flow)
     return flows[:40]
 
 
@@ -1996,12 +2280,6 @@ def build_output(
             monitoring_index,
             repo_root,
         )
-        for component in components:
-            normalize_health_block(component)
-        for dependency in external_dependencies:
-            normalize_health_block(dependency)
-        for flow in flows:
-            normalize_health_block(flow)
     if not purpose:
         purpose = f"{project} system synthesized from extracted facts." if project else "System synthesized from extracted facts."
 
@@ -2043,7 +2321,6 @@ def build_output(
     concepts = {
         "detected_patterns": [],
         "detected_anti_patterns": [],
-        "gaps": [],
     }
 
     output: dict[str, Any] = {
@@ -2056,6 +2333,8 @@ def build_output(
         "state": state,
         "external_dependencies": external_dependencies,
         "failure_scenarios": [],
+        "monitoring": [],
+        "gaps": [],
         "concepts": concepts,
         "tensions": [],
         "metadata": metadata,
@@ -2070,6 +2349,8 @@ def build_output(
         output["events"] = events
     if module_graph and not seed_mode:
         output["module_graph"] = module_graph
+    if not seed_mode:
+        migrate_observability_contract(output, facts_root)
     return output
 
 

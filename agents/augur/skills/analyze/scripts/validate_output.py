@@ -81,7 +81,7 @@ KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 REQUIRED_ATLAS_FIELDS = [
     "version", "generated", "project", "purpose",
     "components", "flows", "state",
-    "external_dependencies", "failure_scenarios", "concepts", "tensions"
+    "external_dependencies", "failure_scenarios", "monitoring", "gaps", "concepts", "tensions"
 ]
 
 CANONICAL_NARRATIVE_IDS = {
@@ -338,96 +338,60 @@ def validate_health(
     section: str,
     item_id: str,
     *,
-    valid_node_ids: set[str] | None = None,
     valid_failure_scenario_ids: set[str] | None = None,
-    aggregate_component: bool = False,
-    candidate_local: list[dict] | None = None,
-    candidate_integration: list[dict] | None = None,
-    candidate_propagation: list[dict] | None = None,
     candidate_failure_scenarios: list[dict] | None = None,
+    starts_failure_scenarios: set[str] | None = None,
+    involves_failure_scenarios: set[str] | None = None,
     project_root: Path | None = None,
     analysis_dir: Path | None = None,
 ) -> list[dict]:
     issues = []
     if not isinstance(health, dict):
-        if candidate_local:
+        if candidate_failure_scenarios:
             issues.append({
                 "level": "WARNING",
                 "section": section,
-                "kind": "health-local-missing",
-                "message": f"'{item_id}' has no local health block even though deterministic evidence suggests local failure coverage matters",
+                "kind": "health-scenario-link-missing",
+                "message": f"'{item_id}' has no health block even though deterministic evidence suggests it participates in a shared failure scenario",
                 "conflict_type": "fact_vs_semantic",
-                "related_entities": [item_id],
-                "evidence_refs": [str(ref) for candidate in candidate_local for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
-            })
-        if candidate_integration:
-            issues.append({
-                "level": "WARNING",
-                "section": section,
-                "kind": "health-integration-missing",
-                "message": f"'{item_id}' has no integration health block even though deterministic evidence suggests an important boundary or dependency seam",
-                "conflict_type": "fact_vs_semantic",
-                "related_entities": [item_id],
-                "evidence_refs": [str(ref) for candidate in candidate_integration for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
-            })
-        if candidate_propagation:
-            issues.append({
-                "level": "WARNING",
-                "section": section,
-                "kind": "health-propagation-missing",
-                "message": f"'{item_id}' has no health block even though deterministic evidence suggests a meaningful downstream degraded mode or cascade",
-                "conflict_type": "fact_vs_semantic",
-                "related_entities": [item_id],
-                "evidence_refs": [str(ref) for candidate in candidate_propagation for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+                "related_entities": [item_id, *[str(candidate.get('id') or '') for candidate in candidate_failure_scenarios[:2]]],
+                "evidence_refs": [str(ref) for candidate in candidate_failure_scenarios for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
             })
         return issues
 
-    def list_of_strings(value: Any) -> list[str]:
-        if not isinstance(value, list):
-            return []
-        return [str(item) for item in value if str(item or "").strip()]
-
-    top_signals = health.get("signals")
-    if top_signals is not None and not isinstance(top_signals, list):
-        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.signals must be a list"})
     criteria = health.get("criteria")
     if criteria is not None and not isinstance(criteria, list):
         issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.criteria must be a list"})
         criteria = []
-    top_gaps = health.get("gaps")
-    if top_gaps is not None and not isinstance(top_gaps, list):
-        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.gaps must be a list"})
-    related_failure_scenarios = health.get("related_failure_scenarios")
-    if related_failure_scenarios is not None and not isinstance(related_failure_scenarios, list):
-        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.related_failure_scenarios must be a list"})
-        related_failure_scenarios = []
+    triggers_failure_scenarios = health.get("triggers_failure_scenarios")
+    if triggers_failure_scenarios is not None and not isinstance(triggers_failure_scenarios, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.triggers_failure_scenarios must be a list"})
+        triggers_failure_scenarios = []
+    participates_in_failure_scenarios = health.get("participates_in_failure_scenarios")
+    if participates_in_failure_scenarios is not None and not isinstance(participates_in_failure_scenarios, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.participates_in_failure_scenarios must be a list"})
+        participates_in_failure_scenarios = []
     valid_failure_scenario_ids = valid_failure_scenario_ids or set()
-    for scenario_id in [str(item) for item in (related_failure_scenarios or []) if str(item or "").strip()]:
+    trigger_ids = [str(item) for item in (triggers_failure_scenarios or []) if str(item or "").strip()]
+    participant_ids = [str(item) for item in (participates_in_failure_scenarios or []) if str(item or "").strip()]
+    for scenario_id in trigger_ids + participant_ids:
         if valid_failure_scenario_ids and scenario_id not in valid_failure_scenario_ids:
             issues.append({
                 "level": "ERROR",
                 "section": section,
                 "kind": "health-model",
-                "message": f"'{item_id}' health.related_failure_scenarios references unknown failure scenario '{scenario_id}'",
+                "message": f"'{item_id}' health references unknown failure scenario '{scenario_id}'",
                 "related_entities": [item_id, scenario_id],
             })
-
-    valid_node_ids = valid_node_ids or set()
-    local_block = health.get("local") if isinstance(health.get("local"), dict) else {}
-    integration_block = health.get("integration") if isinstance(health.get("integration"), dict) else {}
-    propagation_block = health.get("propagation") if isinstance(health.get("propagation"), dict) else {}
-    if "failure_modes" in health:
-        issues.append({
-            "level": "ERROR",
-            "section": section,
-            "kind": "health-model",
-            "message": f"'{item_id}' uses deprecated health.failure_modes; move failures into health.local or health.integration",
-            "related_entities": [item_id],
-        })
-
-    local_failure_modes = local_block.get("failure_modes") or []
-    integration_failure_modes = integration_block.get("failure_modes") or []
-    propagation_scenarios = propagation_block.get("scenarios") or []
+    for deprecated_field in ("signals", "related_failure_scenarios", "local", "integration", "propagation", "gaps", "failure_modes"):
+        if deprecated_field in health:
+            issues.append({
+                "level": "ERROR",
+                "section": section,
+                "kind": "health-model",
+                "message": f"'{item_id}' health.{deprecated_field} is deprecated in atlas v4; move monitoring, failure, and gap content to the top-level sections",
+                "related_entities": [item_id],
+            })
     criteria_values = [str(item) for item in (criteria or []) if str(item or "").strip()]
     if not criteria_values:
         issues.append({
@@ -445,205 +409,55 @@ def validate_health(
             "message": f"'{item_id}' health.criteria is too long; keep it to roughly 1-4 concrete conditions",
             "related_entities": [item_id],
         })
-
-    if local_failure_modes and not isinstance(local_failure_modes, list):
-        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.local.failure_modes must be a list"})
-        local_failure_modes = []
-    if integration_failure_modes and not isinstance(integration_failure_modes, list):
-        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.integration.failure_modes must be a list"})
-        integration_failure_modes = []
-    if propagation_scenarios and not isinstance(propagation_scenarios, list):
-        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.propagation.scenarios must be a list"})
-        propagation_scenarios = []
-
-    failure_modes = []
-    if isinstance(local_failure_modes, list):
-        failure_modes.extend(("local", item) for item in local_failure_modes)
-    if isinstance(integration_failure_modes, list):
-        failure_modes.extend(("integration", item) for item in integration_failure_modes)
-
-    seen_ids: set[str] = set()
-    local_ids: set[str] = set()
-    integration_ids: set[str] = set()
-    for scope, failure_mode in failure_modes:
-        if not isinstance(failure_mode, dict):
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health {scope} failure_modes contains a non-object entry"})
-            continue
-        failure_id = str(failure_mode.get("id") or "")
-        if not failure_id:
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health {scope} failure mode is missing id"})
-            continue
-        if not kebab_case(failure_id):
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health failure mode id not kebab-case: '{failure_id}'"})
-        if failure_id in seen_ids:
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' has duplicate health failure mode id '{failure_id}'"})
-        seen_ids.add(failure_id)
-        if scope == "local":
-            local_ids.add(failure_id)
-        if scope == "integration":
-            integration_ids.add(failure_id)
-        grounded = failure_mode.get("grounded_in") or []
-        if not grounded:
-            issues.append({"level": "WARNING", "section": section, "kind": "health-boundary-ungrounded" if scope == "integration" else "health-model", "message": f"'{item_id}' health failure mode '{failure_id}' has no grounded_in"})
-        elif project_root or analysis_dir:
-            issues.extend(check_grounded_in(grounded, project_root, analysis_dir, section, f"{item_id}/{failure_id}"))
-        if scope == "integration":
-            at = list_of_strings(failure_mode.get("at"))
-            if not at:
-                issues.append({
-                    "level": "WARNING",
-                    "section": section,
-                    "kind": "health-boundary-ungrounded",
-                    "message": f"'{item_id}' integration health failure mode '{failure_id}' does not identify the boundary ids in `at`",
-                    "related_entities": [item_id],
-                })
-            else:
-                for ref in at:
-                    if valid_node_ids and ref not in valid_node_ids:
-                        issues.append({
-                            "level": "ERROR",
-                            "section": section,
-                            "kind": "health-boundary-ungrounded",
-                            "message": f"'{item_id}' integration health failure mode '{failure_id}' references unknown boundary id '{ref}'",
-                            "related_entities": [item_id, ref],
-                        })
-        if scope == "local" and failure_mode.get("at"):
-            issues.append({
-                "level": "WARNING",
-                "section": section,
-                "kind": "health-model",
-                "message": f"'{item_id}' local health failure mode '{failure_id}' should not use `at`; move seam failures into health.integration",
-                "related_entities": [item_id, failure_id],
-            })
-
-    if aggregate_component and local_failure_modes:
-        issues.append({
-            "level": "WARNING",
-            "section": section,
-            "kind": "health-ownership-unclear",
-            "message": f"'{item_id}' is an aggregate component with local failure modes; make sure these are parent-level capability failures, not child-level duplicates",
-            "related_entities": [item_id],
-        })
-
-    seen_propagation_ids: set[str] = set()
-    propagation_count = 0
-    for scenario in propagation_scenarios:
-        if not isinstance(scenario, dict):
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.propagation.scenarios contains a non-object entry"})
-            continue
-        propagation_count += 1
-        scenario_id = str(scenario.get("id") or "")
-        if not scenario_id:
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' propagation scenario is missing id"})
-            continue
-        if not kebab_case(scenario_id):
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' propagation scenario id not kebab-case: '{scenario_id}'"})
-        if scenario_id in seen_propagation_ids:
-            issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' has duplicate propagation scenario id '{scenario_id}'"})
-        seen_propagation_ids.add(scenario_id)
-        affects = list_of_strings(scenario.get("affects"))
-        if not affects:
-            issues.append({
-                "level": "ERROR",
-                "section": section,
-                "kind": "health-propagation-ungrounded",
-                "message": f"'{item_id}' propagation scenario '{scenario_id}' must list `affects` ids",
-                "related_entities": [item_id, scenario_id],
-            })
-        else:
-            for ref in affects:
-                if valid_node_ids and ref not in valid_node_ids:
-                    issues.append({
-                        "level": "ERROR",
-                        "section": section,
-                        "kind": "health-propagation-ungrounded",
-                        "message": f"'{item_id}' propagation scenario '{scenario_id}' references unknown affected id '{ref}'",
-                        "related_entities": [item_id, ref],
-                    })
-        grounded = scenario.get("grounded_in") or []
-        if not grounded:
-            issues.append({
-                "level": "WARNING",
-                "section": section,
-                "kind": "health-propagation-ungrounded",
-                "message": f"'{item_id}' propagation scenario '{scenario_id}' has no grounded_in",
-                "related_entities": [item_id, scenario_id],
-            })
-        elif project_root or analysis_dir:
-            issues.extend(check_grounded_in(grounded, project_root, analysis_dir, section, f"{item_id}/{scenario_id}"))
-        source_failure_modes = set(list_of_strings(scenario.get("source_failure_modes")))
-        if source_failure_modes and not source_failure_modes.intersection(local_ids | integration_ids | seen_ids):
-            issues.append({
-                "level": "WARNING",
-                "section": section,
-                "kind": "health-propagation-ungrounded",
-                "message": f"'{item_id}' propagation scenario '{scenario_id}' references source failure modes that do not resolve inside this health block",
-                "related_entities": [item_id, scenario_id],
-            })
-        if not str(scenario.get("degraded_mode") or "").strip():
-            issues.append({
-                "level": "WARNING",
-                "section": section,
-                "kind": "health-containment-unclear",
-                "message": f"'{item_id}' propagation scenario '{scenario_id}' is missing degraded_mode",
-                "related_entities": [item_id, scenario_id],
-            })
-        if not list_of_strings(scenario.get("containment")):
-            issues.append({
-                "level": "WARNING",
-                "section": section,
-                "kind": "health-containment-unclear",
-                "message": f"'{item_id}' propagation scenario '{scenario_id}' should state containment or recovery limits",
-                "related_entities": [item_id, scenario_id],
-            })
-
-    if candidate_local and not local_failure_modes:
-        issues.append({
-            "level": "WARNING",
-            "section": section,
-            "kind": "health-local-missing",
-            "message": f"'{item_id}' has no local failure coverage even though deterministic health candidates suggest it has meaningful internal failure modes",
-            "conflict_type": "fact_vs_semantic",
-            "related_entities": [item_id],
-            "evidence_refs": [str(ref) for candidate in candidate_local for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
-        })
-    if candidate_integration and not integration_failure_modes:
-        issues.append({
-            "level": "WARNING",
-            "section": section,
-            "kind": "health-integration-missing",
-            "message": f"'{item_id}' has no boundary or dependency health coverage even though deterministic health candidates suggest an important seam",
-            "conflict_type": "fact_vs_semantic",
-            "related_entities": [item_id],
-            "evidence_refs": [str(ref) for candidate in candidate_integration for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
-        })
-    if candidate_propagation and propagation_count == 0:
-        issues.append({
-            "level": "WARNING",
-            "section": section,
-            "kind": "health-propagation-missing",
-            "message": f"'{item_id}' does not model downstream degraded modes even though deterministic evidence suggests a meaningful cascade path",
-            "conflict_type": "fact_vs_semantic",
-            "related_entities": [item_id, *[str(candidate.get('source') or '') for candidate in candidate_propagation[:2] if candidate.get('source')]],
-            "evidence_refs": [str(ref) for candidate in candidate_propagation for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
-        })
-    if integration_failure_modes and not propagation_count and candidate_propagation:
-        issues.append({
-            "level": "WARNING",
-            "section": section,
-            "kind": "health-cascade-incomplete",
-            "message": f"'{item_id}' models boundary failures but does not explain whether the impact propagates or is contained",
-            "conflict_type": "cross_artifact",
-            "related_entities": [item_id],
-            "evidence_refs": [str(ref) for candidate in candidate_propagation for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
-        })
     candidate_failure_scenarios = candidate_failure_scenarios or []
-    if candidate_failure_scenarios and not (related_failure_scenarios or []):
+    starts_failure_scenarios = starts_failure_scenarios or set()
+    involves_failure_scenarios = involves_failure_scenarios or set()
+
+    for scenario_id in trigger_ids:
+        if starts_failure_scenarios and scenario_id not in starts_failure_scenarios:
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-scenario-link-invalid",
+                "message": f"'{item_id}' claims it triggers failure scenario '{scenario_id}', but that scenario does not start at this unit",
+                "conflict_type": "cross_artifact",
+                "related_entities": [item_id, scenario_id],
+            })
+    for scenario_id in participant_ids:
+        if involves_failure_scenarios and scenario_id not in involves_failure_scenarios:
+            issues.append({
+                "level": "WARNING",
+                "section": section,
+                "kind": "health-scenario-link-invalid",
+                "message": f"'{item_id}' claims it participates in failure scenario '{scenario_id}', but that scenario does not involve this unit",
+                "conflict_type": "cross_artifact",
+                "related_entities": [item_id, scenario_id],
+            })
+    if starts_failure_scenarios and not set(trigger_ids).intersection(starts_failure_scenarios):
         issues.append({
             "level": "WARNING",
             "section": section,
-            "kind": "health-shared-scenario-missing",
-            "message": f"'{item_id}' participates in a likely shared failure scenario but does not reference it via health.related_failure_scenarios",
+            "kind": "health-scenario-link-missing",
+            "message": f"'{item_id}' can trigger a shared failure scenario but health.triggers_failure_scenarios does not record it",
+            "conflict_type": "cross_artifact",
+            "related_entities": [item_id, *sorted(starts_failure_scenarios)[:2]],
+        })
+    missing_participation = involves_failure_scenarios.difference(starts_failure_scenarios).difference(set(participant_ids))
+    if missing_participation:
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-scenario-link-missing",
+            "message": f"'{item_id}' participates in shared failure scenarios but health.participates_in_failure_scenarios does not record them",
+            "conflict_type": "cross_artifact",
+            "related_entities": [item_id, *sorted(missing_participation)[:2]],
+        })
+    if candidate_failure_scenarios and not (trigger_ids or participant_ids):
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-scenario-link-missing",
+            "message": f"'{item_id}' participates in a likely shared failure scenario but does not reference it from health",
             "conflict_type": "fact_vs_semantic",
             "related_entities": [item_id, *[str(candidate.get('id') or '') for candidate in candidate_failure_scenarios[:2]]],
             "evidence_refs": [str(ref) for candidate in candidate_failure_scenarios for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
@@ -692,6 +506,10 @@ def validate_atlas(
             warnings.append(f"State '{sid}' may need persistence 'mixed' because the technology describes multiple backend modes")
         return warnings
 
+    def usefulness_tokens_present(text: str, tokens: set[str]) -> bool:
+        lowered = text.lower()
+        return any(token in lowered for token in tokens)
+
     def read_fact_domain(name: str) -> list[dict]:
         if not analysis_dir:
             return []
@@ -713,6 +531,22 @@ def validate_atlas(
         "events": bool(event_facts),
         "domain_model": bool(model_facts),
     }
+    monitoring_cover_ids: dict[str, list[str]] = defaultdict(list)
+    for entry in atlas.get("monitoring", []) or []:
+        if not isinstance(entry, dict) or not entry.get("id"):
+            continue
+        for ref in entry.get("covers") or []:
+            ref_str = str(ref or "").strip()
+            if ref_str:
+                monitoring_cover_ids[ref_str].append(str(entry.get("id")))
+    gap_affect_ids: dict[str, list[str]] = defaultdict(list)
+    for gap in atlas.get("gaps", []) or []:
+        if not isinstance(gap, dict) or not gap.get("id"):
+            continue
+        for ref in gap.get("affects") or []:
+            ref_str = str(ref or "").strip()
+            if ref_str:
+                gap_affect_ids[ref_str].append(str(gap.get("id")))
 
     # Required fields
     for field in REQUIRED_ATLAS_FIELDS:
@@ -809,8 +643,20 @@ def validate_atlas(
         for item in failure_scenarios
         if isinstance(item, dict) and item.get("id")
     }
+    failure_scenarios_by_start: dict[str, set[str]] = defaultdict(set)
+    failure_scenarios_by_involved: dict[str, set[str]] = defaultdict(set)
+    for scenario in failure_scenarios:
+        if not isinstance(scenario, dict):
+            continue
+        scenario_id = str(scenario.get("id") or "").strip()
+        if not scenario_id:
+            continue
+        for ref in [str(item) for item in (scenario.get("starts_at") or []) if str(item or "").strip()]:
+            failure_scenarios_by_start[ref].add(scenario_id)
+        for ref in [str(item) for item in (scenario.get("involves") or []) if str(item or "").strip()]:
+            failure_scenarios_by_involved[ref].add(scenario_id)
     all_node_ids = component_ids | actor_ids | ext_dep_ids | state_ids
-    all_health_target_ids = all_node_ids | flow_ids
+    all_health_target_ids = all_node_ids | flow_ids | failure_scenario_ids
 
     local_candidates_by_component: dict[str, list[dict]] = defaultdict(list)
     integration_candidates_by_source: dict[str, list[dict]] = defaultdict(list)
@@ -905,22 +751,18 @@ def validate_atlas(
                 component.get("health"),
                 "components",
                 cid or "<component>",
-                valid_node_ids=all_health_target_ids,
                 valid_failure_scenario_ids=failure_scenario_ids,
-                aggregate_component=is_aggregate,
-                candidate_local=[] if is_aggregate else local_candidates_by_component.get(cid, []),
-                candidate_integration=[] if is_aggregate else integration_candidates_by_source.get(cid, []),
-                candidate_propagation=[] if is_aggregate else propagation_candidates_by_source.get(cid, []),
                 candidate_failure_scenarios=failure_scenario_candidates_by_entity.get(cid, []),
+                starts_failure_scenarios=failure_scenarios_by_start.get(cid, set()),
+                involves_failure_scenarios=failure_scenarios_by_involved.get(cid, set()),
                 project_root=project_root,
                 analysis_dir=analysis_dir,
             )
         )
         health = component.get("health") if isinstance(component.get("health"), dict) else {}
         criteria_values = [str(item) for item in ((health.get("criteria") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
-        integration_failure_modes = ((health.get("integration") or {}).get("failure_modes") or []) if isinstance(health, dict) else []
-        related_failure_scenarios = [str(item) for item in ((health.get("related_failure_scenarios") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
-        propagation_scenarios = ((health.get("propagation") or {}).get("scenarios") or []) if isinstance(health, dict) else []
+        trigger_refs = [str(item) for item in ((health.get("triggers_failure_scenarios") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
+        participant_refs = [str(item) for item in ((health.get("participates_in_failure_scenarios") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
 
         if criteria_values and not any(any(token in criterion.lower() for token in ("serve", "load", "render", "return", "refresh", "persist", "update", "publish", "schedule", "sync", "accept", "respond", "hydrate", "compute", "classify", "route", "store")) for criterion in criteria_values):
             issues.append({
@@ -938,28 +780,36 @@ def validate_atlas(
                 "message": f"Aggregate component '{cid}' health.criteria should describe the parent capability it owns, not only leaf mechanics",
                 "related_entities": [cid],
             })
-        if dependency_targets:
-            covered_targets: set[str] = set()
-            for failure_mode in integration_failure_modes:
-                if isinstance(failure_mode, dict):
-                    covered_targets.update(str(item) for item in (failure_mode.get("at") or []) if str(item or "").strip())
-            if not covered_targets.intersection(dependency_targets) and not related_failure_scenarios:
-                issues.append({
-                    "level": "WARNING",
-                    "section": "components",
-                    "kind": "health-integration-missing",
-                    "message": f"Component '{cid}' depends on {', '.join(dependency_targets[:3])} but its health does not model those seams or link a shared failure scenario",
-                    "related_entities": [cid, *dependency_targets[:2]],
-                    "conflict_type": "cross_artifact",
-                })
-        if dependency_targets and integration_failure_modes and not propagation_scenarios and not related_failure_scenarios and not is_aggregate:
+        if dependency_targets and not (trigger_refs or participant_refs):
             issues.append({
                 "level": "WARNING",
                 "section": "components",
-                "kind": "health-cascade-incomplete",
-                "message": f"Component '{cid}' models dependency failures but does not say whether downstream capability is degraded, contained, or linked to a shared failure scenario",
+                "kind": "health-scenario-link-missing",
+                "message": f"Component '{cid}' depends on {', '.join(dependency_targets[:3])} but health does not link any shared failure scenario that explains how those seams degrade capability",
+                "related_entities": [cid, *dependency_targets[:2]],
+                "conflict_type": "cross_artifact",
+            })
+        candidate_health_signals = local_candidates_by_component.get(cid, []) + integration_candidates_by_source.get(cid, [])
+        candidate_health_gaps = [candidate for candidate in candidate_health_signals if candidate.get("gaps")]
+        if candidate_health_signals and not monitoring_cover_ids.get(cid):
+            issues.append({
+                "level": "WARNING",
+                "section": "monitoring",
+                "kind": "monitoring-model",
+                "message": f"Component '{cid}' has deterministic health signals but no top-level monitoring entry covers it",
                 "related_entities": [cid],
-                "conflict_type": "shape_tension",
+                "evidence_refs": [str(ref) for candidate in candidate_health_signals for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+                "conflict_type": "fact_vs_semantic",
+            })
+        if candidate_health_gaps and not gap_affect_ids.get(cid):
+            issues.append({
+                "level": "WARNING",
+                "section": "gaps",
+                "kind": "gaps-model",
+                "message": f"Component '{cid}' has deterministic health or resilience gaps but no top-level gap entry affects it",
+                "related_entities": [cid],
+                "evidence_refs": [str(ref) for candidate in candidate_health_gaps for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+                "conflict_type": "fact_vs_semantic",
             })
         if component_modules and (project_root or analysis_dir):
             issues.extend(check_existing_paths(component_modules, project_root, analysis_dir, "components", cid, label="module"))
@@ -1026,12 +876,10 @@ def validate_atlas(
                 f.get("health"),
                 "flows",
                 fid or "<flow>",
-                valid_node_ids=all_health_target_ids,
                 valid_failure_scenario_ids=failure_scenario_ids,
-                candidate_local=[],
-                candidate_integration=[],
-                candidate_propagation=[],
                 candidate_failure_scenarios=failure_scenario_candidates_by_entity.get(fid, []),
+                starts_failure_scenarios=failure_scenarios_by_start.get(fid, set()),
+                involves_failure_scenarios=failure_scenarios_by_involved.get(fid, set()),
                 project_root=project_root,
                 analysis_dir=analysis_dir,
             )
@@ -1092,10 +940,21 @@ def validate_atlas(
         criteria_values = [str(item) for item in ((health.get("criteria") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
         if criteria_values and not any(any(token in criterion.lower() for token in ("complete", "persist", "render", "redirect", "emit", "write", "load", "return", "update", "show", "store", "deliver")) for criterion in criteria_values):
             warn(f"Flow '{fid}' health.criteria should include at least one concrete success or completion condition", "flows")
-        if boundary_crossings > 1 and not ((health.get("integration") or {}).get("failure_modes") or []):
-            warn(f"Flow '{fid}' crosses multiple boundaries but has no integration health coverage", "flows")
+        scenario_refs = [str(item) for item in ((health.get("triggers_failure_scenarios") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
+        scenario_refs += [str(item) for item in ((health.get("participates_in_failure_scenarios") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
+        if boundary_crossings > 1 and not scenario_refs:
+            warn(f"Flow '{fid}' crosses multiple boundaries but health does not link a shared failure scenario for that operating path", "flows")
         if output_like_steps > 0 and not criteria_values:
             warn(f"Flow '{fid}' should state what successful completion looks like in health.criteria", "flows")
+        if fid and f.get("business_metrics") and not monitoring_cover_ids.get(fid):
+            issues.append({
+                "level": "WARNING",
+                "section": "monitoring",
+                "kind": "monitoring-model",
+                "message": f"Flow '{fid}' has business metrics but no top-level monitoring entry covers it",
+                "related_entities": [fid],
+                "conflict_type": "cross_artifact",
+            })
 
     # State
     for s in atlas.get("state", []):
@@ -1334,26 +1193,6 @@ def validate_atlas(
         validate_concept_entry(p, "pattern")
     for ap in concepts.get("detected_anti_patterns", []):
         validate_concept_entry(ap, "anti-pattern")
-    for gap in concepts.get("gaps", []):
-        gid = str(gap.get("id") or "?")
-        for comp in gap.get("components", []):
-            if comp not in all_node_ids:
-                error(f"Gap '{gid}' references unknown component '{comp}'", "concepts")
-        grounded_refs = gap.get("grounded_in") or []
-        if grounded_refs and (project_root or analysis_dir):
-            issues.extend(check_grounded_in(grounded_refs, project_root, analysis_dir, "concepts", gid))
-            issues.extend(verify_grounding_quality(
-                grounded_refs,
-                " ".join(str(part) for part in (gap.get("relevance"), gap.get("recommendation")) if part),
-                project_root,
-                analysis_dir,
-                "concepts",
-                gid,
-            ))
-        evidence = gap.get("evidence") or {}
-        files = evidence.get("files") or []
-        if files and (project_root or analysis_dir):
-            issues.extend(check_existing_paths(files, project_root, analysis_dir, "concepts", gid, label="evidence file"))
 
     metadata = atlas.get("metadata") or {}
     if metadata and not isinstance(metadata, dict):
@@ -1481,21 +1320,122 @@ def validate_atlas(
     # External dependency health
     for dependency in atlas.get("external_dependencies", []):
         did = dependency.get("id", "")
+        purpose = str(dependency.get("purpose") or "").strip()
+        summary = str(dependency.get("summary") or "").strip()
+        if not purpose:
+            issues.append({
+                "level": "WARNING",
+                "section": "external_dependencies",
+                "kind": "dependency-model",
+                "message": f"External dependency '{did}' is missing purpose; explain what capability it provides here",
+                "related_entities": [did],
+            })
+        elif len(purpose.split()) < 4:
+            issues.append({
+                "level": "WARNING",
+                "section": "external_dependencies",
+                "kind": "dependency-model",
+                "message": f"External dependency '{did}' purpose is too thin; say why the system needs it, not just what it is",
+                "related_entities": [did],
+            })
+        if not summary:
+            issues.append({
+                "level": "WARNING",
+                "section": "external_dependencies",
+                "kind": "dependency-model",
+                "message": f"External dependency '{did}' is missing summary; add a 2-4 sentence explanation of what it provides and what relies on it",
+                "related_entities": [did],
+            })
+        else:
+            summary_words = len(summary.split())
+            if summary_words < 12:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "external_dependencies",
+                    "kind": "dependency-model",
+                    "message": f"External dependency '{did}' summary is too thin for drilldown; explain the capability it provides and why it matters",
+                    "related_entities": [did],
+                })
+            elif summary_words > 90:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "external_dependencies",
+                    "kind": "dependency-model",
+                    "message": f"External dependency '{did}' summary is too long; keep it to roughly 2-4 sentences",
+                    "related_entities": [did],
+                })
+            detail_tokens = {"provides", "used", "relies", "depends", "backs", "stores", "publishes", "serves", "carries", "queues", "persists", "enables"}
+            if not usefulness_tokens_present(summary, detail_tokens):
+                issues.append({
+                    "level": "WARNING",
+                    "section": "external_dependencies",
+                    "kind": "dependency-model",
+                    "message": f"External dependency '{did}' summary should explain what capability it provides and which paths rely on it",
+                    "related_entities": [did],
+                })
         issues.extend(
             validate_health(
                 dependency.get("health"),
                 "external_dependencies",
                 did or "<dependency>",
-                valid_node_ids=all_health_target_ids,
                 valid_failure_scenario_ids=failure_scenario_ids,
-                candidate_local=[],
-                candidate_integration=[],
-                candidate_propagation=propagation_candidates_by_source.get(did, []),
                 candidate_failure_scenarios=failure_scenario_candidates_by_entity.get(did, []),
+                starts_failure_scenarios=failure_scenarios_by_start.get(did, set()),
+                involves_failure_scenarios=failure_scenarios_by_involved.get(did, set()),
                 project_root=project_root,
                 analysis_dir=analysis_dir,
             )
         )
+        if failure_scenario_candidates_by_entity.get(did, []) and not monitoring_cover_ids.get(did):
+            issues.append({
+                "level": "WARNING",
+                "section": "monitoring",
+                "kind": "monitoring-model",
+                "message": f"External dependency '{did}' participates in likely shared failure scenarios but no top-level monitoring entry covers it",
+                "related_entities": [did],
+                "evidence_refs": [str(ref) for candidate in failure_scenario_candidates_by_entity.get(did, []) for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+                "conflict_type": "fact_vs_semantic",
+            })
+
+    monitoring_entries = atlas.get("monitoring", [])
+    if not isinstance(monitoring_entries, list):
+        error("monitoring must be a list", "monitoring")
+        monitoring_entries = []
+    seen_monitoring_ids: set[str] = set()
+    for entry in monitoring_entries:
+        if not isinstance(entry, dict):
+            error("monitoring contains a non-object entry", "monitoring")
+            continue
+        mid = str(entry.get("id") or "").strip()
+        if not mid:
+            error("monitoring entry is missing id", "monitoring")
+            continue
+        if not kebab_case(mid):
+            error(f"Monitoring id not kebab-case: '{mid}'", "monitoring")
+        if mid in seen_monitoring_ids:
+            error(f"Duplicate monitoring id '{mid}'", "monitoring")
+        seen_monitoring_ids.add(mid)
+        if not str(entry.get("name") or "").strip():
+            warn(f"Monitoring entry '{mid}' is missing name", "monitoring")
+        kind = str(entry.get("kind") or "").strip()
+        if kind and kind not in {"signal", "metric", "alert", "dashboard", "trace"}:
+            error(f"Monitoring entry '{mid}' has invalid kind '{kind}'", "monitoring")
+        if not str(entry.get("summary") or "").strip():
+            warn(f"Monitoring entry '{mid}' is missing summary", "monitoring")
+        covers = [str(item) for item in (entry.get("covers") or []) if str(item or "").strip()]
+        if not covers:
+            warn(f"Monitoring entry '{mid}' should list covers ids", "monitoring")
+        for ref in covers:
+            if ref not in all_health_target_ids:
+                error(f"Monitoring entry '{mid}' references unknown cover id '{ref}'", "monitoring")
+        signals = entry.get("signals")
+        if signals is not None and not isinstance(signals, list):
+            error(f"Monitoring entry '{mid}' signals must be a list", "monitoring")
+        grounded = entry.get("grounded_in") or []
+        if not grounded:
+            warn(f"Monitoring entry '{mid}' has no grounded_in", "monitoring")
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in(grounded, project_root, analysis_dir, "monitoring", mid))
 
     # Shared failure scenarios
     seen_failure_scenario_ids: set[str] = set()
@@ -1567,8 +1507,8 @@ def validate_atlas(
             warn(f"Failure scenario '{sid}' involves ids not touched by the chain: {', '.join(uncovered_involves[:3])}", "failure_scenarios")
         if not str(scenario.get("degraded_mode") or "").strip():
             warn(f"Failure scenario '{sid}' is missing degraded_mode", "failure_scenarios")
-        if not any(isinstance(scenario.get(field), list) and scenario.get(field) for field in ("signals", "mitigations", "gaps")):
-            warn(f"Failure scenario '{sid}' should include signals, mitigations, or gaps", "failure_scenarios")
+        if not any(isinstance(scenario.get(field), list) and scenario.get(field) for field in ("mitigations",)):
+            warn(f"Failure scenario '{sid}' should include mitigations or containment guidance", "failure_scenarios")
         grounded = scenario.get("grounded_in") or []
         if not grounded:
             warn(f"Failure scenario '{sid}' has no grounded_in", "failure_scenarios")
@@ -1598,9 +1538,45 @@ def validate_atlas(
 
     concept_ids = {p.get("id") for p in concepts.get("detected_patterns", []) if p.get("id")}
     concept_ids |= {ap.get("id") for ap in concepts.get("detected_anti_patterns", []) if ap.get("id")}
-    concept_ids |= {gap.get("id") for gap in concepts.get("gaps", []) if gap.get("id")}
     tension_ids = {t.get("id") for t in atlas.get("tensions", []) if t.get("id")}
-    all_entity_ids = all_node_ids | flow_ids | event_ids | concept_ids | tension_ids | failure_scenario_ids
+    gap_entries = atlas.get("gaps", [])
+    if not isinstance(gap_entries, list):
+        error("gaps must be a list", "gaps")
+        gap_entries = []
+    seen_gap_ids: set[str] = set()
+    valid_gap_target_ids = all_health_target_ids | concept_ids
+    for gap in gap_entries:
+        if not isinstance(gap, dict):
+            error("gaps contains a non-object entry", "gaps")
+            continue
+        gid = str(gap.get("id") or "").strip()
+        if not gid:
+            error("gaps entry is missing id", "gaps")
+            continue
+        if not kebab_case(gid):
+            error(f"Gap id not kebab-case: '{gid}'", "gaps")
+        if gid in seen_gap_ids:
+            error(f"Duplicate gap id '{gid}'", "gaps")
+        seen_gap_ids.add(gid)
+        if not str(gap.get("kind") or "").strip():
+            warn(f"Gap '{gid}' is missing kind", "gaps")
+        if not str(gap.get("title") or "").strip():
+            warn(f"Gap '{gid}' is missing title", "gaps")
+        if not str(gap.get("summary") or "").strip():
+            warn(f"Gap '{gid}' is missing summary", "gaps")
+        affects = [str(item) for item in (gap.get("affects") or []) if str(item or "").strip()]
+        if not affects:
+            warn(f"Gap '{gid}' should list affects ids", "gaps")
+        for ref in affects:
+            if ref not in valid_gap_target_ids:
+                error(f"Gap '{gid}' references unknown affect id '{ref}'", "gaps")
+        if not str(gap.get("recommendation") or "").strip():
+            warn(f"Gap '{gid}' is missing recommendation", "gaps")
+        grounded = gap.get("grounded_in") or []
+        if grounded and (project_root or analysis_dir):
+            issues.extend(check_grounded_in(grounded, project_root, analysis_dir, "gaps", gid))
+
+    all_entity_ids = all_node_ids | flow_ids | event_ids | concept_ids | tension_ids | failure_scenario_ids | seen_gap_ids
 
     return issues, all_node_ids, all_entity_ids
 
@@ -2641,11 +2617,11 @@ def issue_family(issue: dict) -> str:
         return "provenance"
     if kind in {"grounding"}:
         return "grounding"
-    if kind in {"health-local-missing", "health-integration-missing", "health-propagation-missing", "health-boundary-ungrounded", "health-propagation-ungrounded", "health-cascade-incomplete", "health-containment-unclear", "health-criteria-missing", "health-shared-scenario-missing", "health-ownership-unclear", "failure-scenario-missing", "health-model"}:
+    if kind in {"health-criteria-missing", "health-scenario-link-missing", "health-scenario-link-invalid", "health-ownership-unclear", "failure-scenario-missing", "health-model", "monitoring-model", "gaps-model"}:
         return "health-model"
     if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "teaching-structure"
-    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "framework-resolution", "actors-model", "events-model", "domain-model"}:
+    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "framework-resolution", "actors-model", "events-model", "domain-model", "dependency-model"}:
         return "semantic-consistency"
     if str(issue.get("section") or "") == "structure":
         return "artifact-structure"
@@ -2665,21 +2641,18 @@ def is_semantic_conflict(issue: dict) -> bool:
         "flow-model",
         "concept-evidence",
         "framework-resolution",
-        "health-local-missing",
-        "health-integration-missing",
-        "health-propagation-missing",
-        "health-boundary-ungrounded",
-        "health-propagation-ungrounded",
-        "health-cascade-incomplete",
-        "health-containment-unclear",
         "health-criteria-missing",
-        "health-shared-scenario-missing",
+        "health-scenario-link-missing",
+        "health-scenario-link-invalid",
         "health-ownership-unclear",
         "failure-scenario-missing",
         "health-model",
+        "monitoring-model",
+        "gaps-model",
         "actors-model",
         "events-model",
         "domain-model",
+        "dependency-model",
     }
 
 
@@ -2700,21 +2673,18 @@ def issue_conflict_type(issue: dict) -> str | None:
         "flow-model": "cross_artifact",
         "concept-evidence": "fact_vs_semantic",
         "framework-resolution": "fact_vs_semantic",
-        "health-local-missing": "fact_vs_semantic",
-        "health-integration-missing": "fact_vs_semantic",
-        "health-propagation-missing": "fact_vs_semantic",
-        "health-boundary-ungrounded": "cross_artifact",
-        "health-propagation-ungrounded": "cross_artifact",
-        "health-cascade-incomplete": "shape_tension",
-        "health-containment-unclear": "shape_tension",
         "health-criteria-missing": "cross_artifact",
-        "health-shared-scenario-missing": "fact_vs_semantic",
+        "health-scenario-link-missing": "fact_vs_semantic",
+        "health-scenario-link-invalid": "cross_artifact",
         "health-ownership-unclear": "shape_tension",
         "failure-scenario-missing": "fact_vs_semantic",
         "health-model": "cross_artifact",
+        "monitoring-model": "cross_artifact",
+        "gaps-model": "cross_artifact",
         "actors-model": "fact_vs_semantic",
         "events-model": "fact_vs_semantic",
         "domain-model": "fact_vs_semantic",
+        "dependency-model": "cross_artifact",
     }
     return mapping.get(kind)
 
@@ -2723,9 +2693,9 @@ def issue_priority(issue: dict) -> str:
     if str(issue.get("level") or "") == "ERROR":
         return "high"
     kind = classify_issue_kind(issue)
-    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "path-provenance", "concept-evidence", "health-boundary-ungrounded", "health-propagation-ungrounded", "health-model"}:
+    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "path-provenance", "concept-evidence", "health-model", "dependency-model", "monitoring-model", "gaps-model", "health-scenario-link-invalid"}:
         return "high"
-    if kind in {"framework-resolution", "health-local-missing", "health-integration-missing", "health-propagation-missing", "health-cascade-incomplete", "health-containment-unclear", "health-criteria-missing", "health-shared-scenario-missing", "health-ownership-unclear", "failure-scenario-missing", "actors-model", "events-model", "domain-model"}:
+    if kind in {"framework-resolution", "health-criteria-missing", "health-scenario-link-missing", "health-ownership-unclear", "failure-scenario-missing", "actors-model", "events-model", "domain-model"}:
         return "medium"
     if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "medium"
@@ -2745,21 +2715,18 @@ def recommended_artifacts(issue: dict) -> list[str]:
         "story-quality": ["facts/story-seeds.json", "facts/component-seeds.json"],
         "component-model": ["facts/component-seeds.json", "facts/story-seeds.json"],
         "flow-model": ["facts/symbols-seed.json", "facts/component-seeds.json"],
-        "health-local-missing": ["facts/health-candidates.json", "facts/symbols-seed.json"],
-        "health-integration-missing": ["facts/health-candidates.json", "facts/state-access-summary.json"],
-        "health-propagation-missing": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json"],
-        "health-boundary-ungrounded": ["facts/health-candidates.json", "facts/state-access-summary.json", "facts/symbols-seed.json"],
-        "health-propagation-ungrounded": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json"],
-        "health-cascade-incomplete": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json", "atlas.json"],
-        "health-containment-unclear": ["facts/health-candidates.json", "atlas.json"],
         "health-criteria-missing": ["facts/health-candidates.json", "atlas.json"],
-        "health-shared-scenario-missing": ["facts/failure-scenario-candidates.json", "atlas.json"],
+        "health-scenario-link-missing": ["facts/failure-scenario-candidates.json", "atlas.json"],
+        "health-scenario-link-invalid": ["atlas.json", "facts/failure-scenario-candidates.json"],
         "health-ownership-unclear": ["facts/component-seeds.json", "atlas.json"],
         "failure-scenario-missing": ["facts/failure-scenario-candidates.json", "facts/health-candidates.json", "atlas.json"],
         "health-model": ["facts/health-candidates.json", "atlas.json"],
+        "monitoring-model": ["facts/health-candidates.json", "facts/failure-scenario-candidates.json", "atlas.json"],
+        "gaps-model": ["facts/health-candidates.json", "facts/failure-scenario-candidates.json", "facts/concept-evidence.json", "atlas.json"],
         "actors-model": ["facts/routes.json", "facts/jobs.json", "facts/events.json", "atlas.json"],
         "events-model": ["facts/events.json", "atlas.json"],
         "domain-model": ["facts/models.json", "atlas.json"],
+        "dependency-model": ["facts/external-clients.json", "atlas.json"],
         "concept-evidence": ["facts/concept-evidence.json"],
         "framework-resolution": ["facts/frameworks.json"],
         "path-provenance": ["facts/index.json", "facts/startup.json"],
@@ -2988,23 +2955,20 @@ def suggested_resolution(issue: dict) -> str:
         "state-truthfulness": "Widen the state label or persistence mode so it matches the configured backend reality.",
         "concept-evidence": "Repair the concept evidence files or component references so provenance is valid.",
         "framework-resolution": "Reconcile the resolved framework summary with deterministic framework evidence and repo code.",
-        "health-local-missing": "Add a local health block only where deterministic evidence and code grounding justify internal failure coverage.",
-        "health-integration-missing": "Model the important seam failure explicitly in health.integration and name the boundary ids in `at`.",
-        "health-propagation-missing": "Add a propagation scenario or state clear containment so downstream degraded mode is explicit.",
         "health-criteria-missing": "Add 1-3 concrete health.criteria statements that say what healthy operation looks like for this unit or flow.",
-        "health-shared-scenario-missing": "If this unit participates in a broader cascade, reference the shared failure scenario instead of repeating the same blast-radius prose locally.",
+        "health-scenario-link-missing": "Link this unit to the shared failure scenarios it can trigger or participates in, rather than hiding that relationship elsewhere.",
+        "health-scenario-link-invalid": "Fix the scenario refs so they only point at shared failure scenarios that actually start at or involve this unit.",
         "health-ownership-unclear": "Move child-local failures down to the specific child component unless this is truly a parent-level capability health condition.",
-        "health-boundary-ungrounded": "Ground the boundary failure in code and identify the dependency, state, or caller ids involved in the seam.",
-        "health-propagation-ungrounded": "Ground the cascade claim in code and point `affects` at real atlas ids that degrade downstream.",
-        "health-cascade-incomplete": "Explain whether the boundary failure propagates downstream or is contained locally.",
-        "health-containment-unclear": "State what remains available, stale, delayed, or blocked and how the blast radius is limited.",
         "failure-scenario-missing": "Add a top-level failure_scenarios entry when deterministic evidence suggests a real multi-unit cascade.",
-        "health-model": "Reshape the health block so local, integration, and propagation concerns are separated cleanly.",
+        "health-model": "Reshape the health block so it contains only criteria plus shared failure-scenario refs.",
+        "monitoring-model": "Move observability details into top-level monitoring entries grounded in the components, flows, dependencies, or failure scenarios they cover.",
+        "gaps-model": "Move missing monitoring, resilience, concept, or anti-pattern deficiencies into the top-level gaps list with clear affected ids and recommendations.",
         "component-model": "Refine the component graph so ids, parents, dependencies, and module paths are truthful.",
         "flow-model": "Tighten the flow description, references, or grounding so it matches the implementation path.",
         "actors-model": "Add grounded actors only when the repo shows real callers, schedulers, or event sources worth naming.",
         "events-model": "Add only the event boundaries that are grounded in facts and useful to understanding the architecture.",
         "domain-model": "Add a grounded domain model only if the repo exposes stable business entities, schemas, or bounded contexts worth naming.",
+        "dependency-model": "Explain what this dependency provides to the system, which components or flows rely on it, and why it matters here.",
         "story-quality": "Narrow the story to a clearer concern and ground it with more precise evidence.",
         "general": "Re-read the referenced code and adjust the artifact until the validator no longer reports the issue.",
     }

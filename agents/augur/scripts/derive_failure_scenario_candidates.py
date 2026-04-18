@@ -219,8 +219,8 @@ def main() -> int:
         "candidates": build_candidates(health_candidates_payload, concept_payload, monitoring_index, component_seed_ids),
         "selection_rules": [
             "Use these candidates for cross-unit failure chains, not for purely local failures.",
-            "Prefer a shared failure_scenario when the same cascade would otherwise be repeated across several unit health blocks.",
-            "Keep unit-local health in health.local and seam failures in health.integration even when a shared failure scenario exists.",
+            "Prefer a shared failure_scenario when the same cascade would otherwise be repeated across several unit descriptions.",
+            "Keep unit health focused on criteria plus shared-scenario links even when a shared failure scenario exists.",
         ],
     }
 
