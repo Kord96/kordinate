@@ -95,8 +95,8 @@ def refresh_fact_manifests(
         domain_records.append(("component-seeds", "facts/component-seeds.json", component_count))
     if narrative_seeds_path.exists():
         narrative_payload = load_json(narrative_seeds_path)
-        getting_started = narrative_payload.get("getting_started") or {}
-        narrative_count = int(len(getting_started.get("preferred_root_components") or []))
+        system_overview = narrative_payload.get("system_overview") or {}
+        narrative_count = int(len(system_overview.get("preferred_root_components") or []))
         domain_records.append(("narrative-seeds", "facts/narrative-seeds.json", narrative_count))
     if health_candidates_path.exists():
         health_payload = load_json(health_candidates_path)

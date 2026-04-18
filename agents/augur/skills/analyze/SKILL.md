@@ -46,7 +46,7 @@ The deterministic phase is already done. Work from the prepared run directory an
    - when a concept candidate is materially relevant and remains ambiguous after reviewing `facts/concept-evidence.json`, read only the corresponding concept file at `$KORDINATE_HOME/agents/augur/memory/catalog/concepts/<concept>.md`
    - when you need the detector's intended threshold, semantic questions, or monitoring expectations for a materially relevant concept candidate, read `$KORDINATE_HOME/agents/augur/detectors/facts/concept-evidence/<concept>/meta.yaml`
    - if `facts/story-seeds.json` is present in this run, use it as an advisory planning aid before writing stories or narratives
-   - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for getting-started and other teaching paths before finalizing `narratives.yaml`
+   - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for system-overview and other teaching paths before finalizing `narratives.yaml`
    - if `facts/symbols-seed.json` is present in this run, use it as an advisory exact-name dictionary for high-signal files before writing observations, summaries, or flow steps
    - if `facts/state-seeds.json` is present in this run, use it as an advisory exact-name dictionary for state entries grounded in state or operations files
    - if `facts/health-candidates.json` is present in this run, use it as advisory coverage and contradiction pressure for atlas health: distinguish local failures, boundary failures, and downstream propagation instead of collapsing them into one flat list
@@ -89,6 +89,9 @@ The deterministic phase is already done. Work from the prepared run directory an
      - compact resolved `frameworks`
      - `technologies`
    - keep `metadata.frameworks` limited to materially relevant accepted or tentative frameworks; do not mirror every detected framework fact
+   - keep component and flow `description` fields compact, but add `summary` when a click-through reader needs more than a one-line label
+   - write component `summary` as the ownership/dependency explanation, not a prose copy of the title
+   - write flow `summary` as the operating-path explanation, not a repeat of the trigger
 
 5. Produce `$RUN/stories/*.yaml`.
    - read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` before writing
@@ -96,14 +99,14 @@ The deterministic phase is already done. Work from the prepared run directory an
 
 6. Produce `$RUN/narratives.yaml`.
    - read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` before writing
-   - treat `getting-started` as the canonical repo overview narrative used downstream; the id is historical, but the content should explain the repo's architecture rather than read like a startup guide
-   - write `getting-started.description` as a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
-   - prefer `Overview` or `Repo Overview` as the human-facing title for `getting-started`
+   - treat `system-overview` as the canonical repo overview narrative used downstream
+   - write `system-overview.description` as a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
+   - prefer `Overview` or `Repo Overview` as the human-facing title for `system-overview`
    - write each narrative as a teaching sequence, not just an ordered list: include explicit `teaches` goals and make sure each selected story clearly serves those goals
    - include `throughline` for each narrative: one short paragraph explaining why these stories belong together in this order
    - usually emit 2-4 total narratives for one repo; every extra narrative should earn its place through a distinct audience or cross-cutting teaching purpose
    - make the bridge text between adjacent stories explain why the next story follows from the previous one, not just that it comes next
-   - use `facts/narrative-seeds.json` when present to rank which roots, child stories, and flow-bearing stories deserve inclusion, especially for `getting-started`
+   - use `facts/narrative-seeds.json` when present to rank which roots, child stories, and flow-bearing stories deserve inclusion, especially for `system-overview`
 
 7. Validate in a loop.
    - run:

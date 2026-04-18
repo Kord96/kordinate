@@ -185,7 +185,7 @@ def main() -> int:
     payload = {
         "version": 1,
         "goal": "Advisory narrative-planning seeds derived from deterministic facts.",
-        "getting_started": {
+        "system_overview": {
             "recommended_story_budget": {
                 "min": 2,
                 "target": 3,
@@ -201,7 +201,7 @@ def main() -> int:
             "selection_rules": [
                 "Use the smallest set of stories that teaches system shape plus the operating model.",
                 "Prefer a child story over a root story when the child better explains a defining flow, state boundary, or external dependency boundary.",
-                "Avoid cataloging every top-level component in getting-started; choose the roots and children that best establish the first mental model.",
+                "Avoid cataloging every top-level component in system-overview; choose the roots and children that best establish the first mental model.",
                 "Treat control hotspots and state/boundary summaries as ranking hints for selection, not as a script to restate literally.",
             ],
             "starter_files": starter_files,
@@ -209,7 +209,7 @@ def main() -> int:
             "questions": [
                 "Which provisional roots are central enough to anchor the first mental model of the system?",
                 "Which selected story best explains how the system actually moves, not just how it is partitioned?",
-                "Which child story should replace a root story in getting-started because it teaches the architecture more clearly?",
+                "Which child story should replace a root story in system-overview because it teaches the architecture more clearly?",
             ],
         },
     }

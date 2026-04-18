@@ -90,7 +90,7 @@ Stable constraints:
 Secondary cross-cutting reading paths over the story tree. YAML. See [narratives-schema.md](narratives-schema.md).
 
 Stable constraints:
-- `getting-started` narrative is required when semantic outputs are present
+- `system-overview` narrative is required when semantic outputs are present
 - every narrative story id exists in `stories/`
 - each narrative contains `3-8` stories
 - narratives may pull from any level of the story tree

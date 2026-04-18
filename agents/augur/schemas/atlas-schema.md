@@ -18,7 +18,10 @@ Apply these rules to atlas prose fields such as `purpose`, `description`, and `s
 - state facts about the system, not facts about the document
 - name concrete components, stores, protocols, and files when known
 - keep prose short and direct
-- prefer one sentence when one sentence is enough
+- keep `description` compact enough to work as a label or card blurb
+- use `summary` for click-through or drilldown detail when a component or flow needs more explanation
+- prefer one sentence when one sentence is enough for `description`
+- let `summary` carry the 2-4 sentence architectural explanation when the field exists
 - prefer concrete mechanism names from code when they are available, especially for flows, stores, registries, hooks, and lifecycle stages
 - prefer one mechanism per sentence unless the implementation clearly binds them together
 - avoid filler such as "this section describes" or "there is a potential issue"
@@ -152,6 +155,7 @@ These legacy fields must not appear:
     "id": "<kebab-case>",
     "name": "<Human Readable Name>",
     "description": "<one sentence>",
+    "summary": "<2-4 sentences explaining ownership, dependencies, and why this component matters>",
     "type": "service | library | worker | api | frontend | cli | scheduler | store | gateway | broker",
     "parent": "<component-id or null>",
     "children": ["<component-id>"],
@@ -230,6 +234,7 @@ Hierarchy rules:
     "type": "data | control | event | state | resource",
     "name": "<Human Readable Flow Name>",
     "description": "<one sentence>",
+    "summary": "<2-4 sentences explaining what starts the flow, which boundaries it crosses, and why it matters>",
     "trigger": "<what starts it>",
     "actors": ["<actor-id>"],
     "grounded_in": ["<file:line>"],

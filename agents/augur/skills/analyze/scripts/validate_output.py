@@ -40,7 +40,7 @@ Checks:
     Phase 2 (narratives):
         - narratives.yaml exists
         - top-level version is "1"
-        - getting-started narrative exists
+        - system-overview narrative exists
         - Each narrative references existing story IDs
         - Narrative length is 3-8 stories
 
@@ -1522,27 +1522,27 @@ def detect_cross_artifact_conflicts(
                 if component:
                     state_access_by_component.setdefault(component, []).append(fact)
 
-    getting_started_seed = (
-        (narrative_seeds_payload or {}).get("getting_started") or {}
+    system_overview_seed = (
+        (narrative_seeds_payload or {}).get("system_overview") or {}
         if isinstance(narrative_seeds_payload, dict)
         else {}
     )
     preferred_roots = [
-        item for item in (getting_started_seed.get("preferred_root_components") or [])
+        item for item in (system_overview_seed.get("preferred_root_components") or [])
         if isinstance(item, dict)
     ]
     preferred_flow_hotspots = [
-        item for item in (getting_started_seed.get("preferred_flow_hotspots") or [])
+        item for item in (system_overview_seed.get("preferred_flow_hotspots") or [])
         if isinstance(item, dict)
     ]
     preferred_boundary_targets = [
-        item for item in (getting_started_seed.get("preferred_state_or_boundary_targets") or [])
+        item for item in (system_overview_seed.get("preferred_state_or_boundary_targets") or [])
         if isinstance(item, dict)
     ]
     preferred_root_ids = [str(item.get("id") or "") for item in preferred_roots if item.get("id")]
-    require_flow_story = bool(getting_started_seed.get("require_flow_story"))
-    require_state_or_boundary_story = bool(getting_started_seed.get("require_state_or_boundary_story"))
-    prefer_child_stories = bool(getting_started_seed.get("prefer_child_stories"))
+    require_flow_story = bool(system_overview_seed.get("require_flow_story"))
+    require_state_or_boundary_story = bool(system_overview_seed.get("require_state_or_boundary_story"))
+    prefer_child_stories = bool(system_overview_seed.get("prefer_child_stories"))
 
     def text_tokens(value: str) -> set[str]:
         return {
@@ -1729,7 +1729,7 @@ def detect_cross_artifact_conflicts(
                 }
             )
 
-        if nid == "getting-started" and description:
+        if nid == "system-overview" and description:
             top_level_components = [
                 component
                 for component in components.values()
@@ -1742,7 +1742,7 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-overview",
-                        "message": "getting-started description is too short to serve as the repo overview; use roughly 3-4 sentences",
+                        "message": "system-overview description is too short to serve as the repo overview; use roughly 3-4 sentences",
                         "conflict_type": "cross_artifact",
                         "related_entities": [nid],
                         "evidence_refs": [],
@@ -1764,14 +1764,14 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-overview",
-                        "message": "getting-started description does not name enough of the main top-level slices to function as a useful repo overview",
+                        "message": "system-overview description does not name enough of the main top-level slices to function as a useful repo overview",
                         "conflict_type": "cross_artifact",
                         "related_entities": [nid, *[str(component.get('id')) for component in top_level_components]],
                         "evidence_refs": [],
                     }
                 )
 
-        if nid == "getting-started":
+        if nid == "system-overview":
             selected_roots = {story_root(story_id) for story_id in referenced_story_ids if story_id in all_stories}
             if preferred_root_ids:
                 expected_root_count = min(2, len(preferred_root_ids))
@@ -1789,7 +1789,7 @@ def detect_cross_artifact_conflicts(
                             "level": "WARNING",
                             "section": "narrative",
                             "kind": "narrative-selection",
-                        "message": f"getting-started omits preferred repo-overview roots suggested by deterministic evidence: {', '.join(missing[:2])}",
+                        "message": f"system-overview omits preferred repo-overview roots suggested by deterministic evidence: {', '.join(missing[:2])}",
                             "conflict_type": "fact_vs_semantic",
                             "related_entities": [nid, *missing],
                             "evidence_refs": evidence_refs[:3],
@@ -1816,7 +1816,7 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-selection",
-                        "message": "getting-started does not include a clearly flow-bearing story even though deterministic signals suggest the repo overview should teach the operating model through a real flow",
+                        "message": "system-overview does not include a clearly flow-bearing story even though deterministic signals suggest the repo overview should teach the operating model through a real flow",
                         "conflict_type": "fact_vs_semantic",
                         "related_entities": [nid, *referenced_story_ids],
                         "evidence_refs": hotspot_refs[:3],
@@ -1839,7 +1839,7 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-selection",
-                        "message": "getting-started avoids the strongest deterministic control hotspots, so the repo overview may miss the repo's defining operating path",
+                        "message": "system-overview avoids the strongest deterministic control hotspots, so the repo overview may miss the repo's defining operating path",
                         "conflict_type": "fact_vs_semantic",
                         "related_entities": [nid, *sorted(hotspot_components)[:3]],
                         "evidence_refs": hotspot_refs[:3],
@@ -1869,7 +1869,7 @@ def detect_cross_artifact_conflicts(
                             "level": "WARNING",
                             "section": "narrative",
                             "kind": "narrative-selection",
-                        "message": "getting-started does not include a story that clearly teaches a state or dependency boundary even though deterministic evidence suggests one is central to the repo overview",
+                        "message": "system-overview does not include a story that clearly teaches a state or dependency boundary even though deterministic evidence suggests one is central to the repo overview",
                             "conflict_type": "fact_vs_semantic",
                             "related_entities": [nid, *referenced_story_ids],
                             "evidence_refs": boundary_refs[:3],
@@ -1893,7 +1893,7 @@ def detect_cross_artifact_conflicts(
                             "level": "WARNING",
                             "section": "narrative",
                             "kind": "narrative-selection",
-                        "message": "getting-started avoids the strongest deterministic state or boundary targets, so the repo overview may miss an important system boundary",
+                        "message": "system-overview avoids the strongest deterministic state or boundary targets, so the repo overview may miss an important system boundary",
                             "conflict_type": "fact_vs_semantic",
                             "related_entities": [nid, *sorted(boundary_components)[:3]],
                             "evidence_refs": boundary_refs[:3],
@@ -1908,7 +1908,7 @@ def detect_cross_artifact_conflicts(
                             "level": "WARNING",
                             "section": "narrative",
                             "kind": "narrative-selection",
-                            "message": "getting-started stays root-only even though deterministic narrative seeds suggest a child story would teach the architecture more clearly",
+                            "message": "system-overview stays root-only even though deterministic narrative seeds suggest a child story would teach the architecture more clearly",
                             "conflict_type": "fact_vs_semantic",
                             "related_entities": [nid, *referenced_story_ids],
                             "evidence_refs": [],
@@ -2789,8 +2789,8 @@ def main():
                                 "evidence_refs": story_seed_refs[:3],
                                 "conflict_type": "fact_vs_semantic" if story_seed_refs else None,
                             })
-                    if "getting-started" not in ids:
-                        all_issues.append({"level": "ERROR", "section": "narrative", "message": "getting-started narrative is required — teaching-order path covering the main top-level components"})
+                    if "system-overview" not in ids:
+                        all_issues.append({"level": "ERROR", "section": "narrative", "message": "system-overview narrative is required — default repo overview path covering the main top-level components"})
 
         if atlas and all_stories and isinstance(narratives, list):
             all_issues.extend(

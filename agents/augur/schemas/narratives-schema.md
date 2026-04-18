@@ -52,29 +52,27 @@ narratives:
 - for cross-cutting narratives, mix root and child stories when that yields a clearer teaching sequence than repeating roots only
 - prefer the smallest story that teaches the next architectural step clearly; avoid repeating a root story when a child story is the real explanation
 - each per-story bridge description should justify the transition from the previous story into the next concern; do not use filler such as "next" or "then" without naming the reason
-- use `facts/narrative-seeds.json` when present as a ranking aid for which roots, child stories, and flow-bearing stories deserve inclusion, especially in `getting-started`
+- use `facts/narrative-seeds.json` when present as a ranking aid for which roots, child stories, and flow-bearing stories deserve inclusion, especially in `system-overview`
 
 ## Required Narrative
 
-Include a narrative with exact id `getting-started` that serves as the default repository overview.
+Include a narrative with exact id `system-overview` that serves as the default repository overview.
 
-The id is historical. Treat this narrative as the canonical repo overview path, not as a literal onboarding or setup guide.
+`system-overview` should usually be titled `Overview` or `Repo Overview` unless a more specific repo-wide overview title is clearly better.
 
-`getting-started` should usually be titled `Overview` or `Repo Overview` unless a more specific repo-wide overview title is clearly better.
+`system-overview` should normally move from one orienting root into the most explanatory child stories and defining cross-component flows before returning to later roots. Do not keep it root-only when child stories carry the real architecture.
 
-`getting-started` should normally move from one orienting root into the most explanatory child stories and defining cross-component flows before returning to later roots. Do not keep it root-only when child stories carry the real architecture.
+`system-overview.description` is the canonical "how it works" overview used by downstream readers. It should be a compact synopsis of the repo's architectural shape, usually 3-4 sentences, and should name the dominant top-level components, major execution path, or cross-cutting subsystem boundaries explicitly.
 
-`getting-started.description` is the canonical "how it works" overview used by downstream readers. It should be a compact synopsis of the repo's architectural shape, usually 3-4 sentences, and should name the dominant top-level components, major execution path, or cross-cutting subsystem boundaries explicitly.
-
-`getting-started.teaches` should name the core architectural lessons that the included stories collectively deliver about the repository. The stories chosen for the narrative should clearly serve those goals rather than acting as a loose inventory.
+`system-overview.teaches` should name the core architectural lessons that the included stories collectively deliver about the repository. The stories chosen for the narrative should clearly serve those goals rather than acting as a loose inventory.
 
 `throughline` should explain why the chosen stories form one coherent overview in this order. It is not another summary; it is the teaching arc.
 
-Use component hierarchy, defining flows, important state boundaries, and major tensions as selection signals for `getting-started`, not as content to dump. Prefer the few stories that best establish repo shape and operating model over broader component coverage.
+Use component hierarchy, defining flows, important state boundaries, and major tensions as selection signals for `system-overview`, not as content to dump. Prefer the few stories that best establish repo shape and operating model over broader component coverage.
 
-Do not write `getting-started` in a procedural "how to begin using the repo" tone. It should describe how the repo is organized and how its main architecture operates.
+Do not write `system-overview` in a procedural "how to begin using the repo" tone. It should describe how the repo is organized and how its main architecture operates.
 
-Do not rename this required narrative to variants such as `narrative-getting-started`.
+Do not rename this required narrative to variants such as `narrative-system-overview`.
 
 ## When To Create A Narrative
 
