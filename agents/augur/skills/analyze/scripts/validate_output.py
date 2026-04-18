@@ -740,6 +740,42 @@ def validate_atlas(
         cid = str(component.get("id") or "?")
         component_children = [str(child) for child in (component.get("children") or []) if child]
         is_aggregate = bool(component_children)
+        description = str(component.get("description") or "").strip()
+        summary = str(component.get("summary") or "").strip()
+        if not description:
+            issues.append({
+                "level": "WARNING",
+                "section": "components",
+                "kind": "component-model",
+                "message": f"Component '{cid}' is missing description",
+                "related_entities": [cid],
+            })
+        if not summary:
+            issues.append({
+                "level": "WARNING",
+                "section": "components",
+                "kind": "component-model",
+                "message": f"Component '{cid}' is missing summary; add a 2-4 sentence architectural explanation for drilldown views",
+                "related_entities": [cid],
+            })
+        else:
+            summary_words = len(summary.split())
+            if summary_words < 12:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "components",
+                    "kind": "component-model",
+                    "message": f"Component '{cid}' summary is too thin for drilldown; explain ownership, dependency shape, and why it matters",
+                    "related_entities": [cid],
+                })
+            elif summary_words > 90:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "components",
+                    "kind": "component-model",
+                    "message": f"Component '{cid}' summary is too long; keep it to roughly 2-4 sentences",
+                    "related_entities": [cid],
+                })
         issues.extend(
             validate_health(
                 component.get("health"),
@@ -787,6 +823,18 @@ def validate_atlas(
     # Flows
     for f in atlas.get("flows", []):
         fid = f.get("id", "")
+        description = str(f.get("description") or "").strip()
+        summary = str(f.get("summary") or "").strip()
+        if not description:
+            warn(f"Flow '{fid}' is missing description", "flows")
+        if not summary:
+            warn(f"Flow '{fid}' is missing summary; add a 2-4 sentence explanation of the operating path", "flows")
+        else:
+            summary_words = len(summary.split())
+            if summary_words < 12:
+                warn(f"Flow '{fid}' summary is too thin for drilldown; explain the boundary crossings and why the path matters", "flows")
+            elif summary_words > 90:
+                warn(f"Flow '{fid}' summary is too long; keep it to roughly 2-4 sentences", "flows")
         if not f.get("grounded_in"):
             warn(f"Flow '{fid}' has no grounded_in", "flows")
         elif project_root or analysis_dir:
@@ -1306,7 +1354,6 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
         error(f"Narrative '{jid}' missing required field: title")
     if "description" not in narrative:
         error(f"Narrative '{jid}' missing required field: description")
-    title = str(narrative.get("title") or "").strip()
 
     stories = narrative.get("stories", [])
     teaches = narrative.get("teaches")
@@ -1332,13 +1379,6 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
                 "kind": "narrative-overview",
                 "message": f"Narrative '{jid}' description is too long for the overview slot; keep it to roughly 2-4 sentences",
             })
-    if jid == "getting-started" and title.lower() == "getting started":
-        issues.append({
-            "level": "WARNING",
-            "section": "narrative",
-            "kind": "narrative-overview",
-            "message": "getting-started title still reads like onboarding; prefer a repo-overview title such as 'Overview'",
-        })
     if teaches is None:
         issues.append({
             "level": "WARNING",
