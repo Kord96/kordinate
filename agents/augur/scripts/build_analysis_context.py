@@ -31,12 +31,13 @@ def main() -> int:
     component_seeds_path = facts_dir / "component-seeds.json"
     narrative_seeds_path = facts_dir / "narrative-seeds.json"
     health_candidates_path = facts_dir / "health-candidates.json"
+    failure_scenario_candidates_path = facts_dir / "failure-scenario-candidates.json"
     symbols_seed_path = facts_dir / "symbols-seed.json"
     state_seeds_path = facts_dir / "state-seeds.json"
     facts_guide_path = facts_dir / "facts-guide.json"
 
     starter_files: list[str] = [str(blast_path), str(startup_path)]
-    for optional in (facts_guide_path, concept_evidence_path, story_seeds_path, component_seeds_path, narrative_seeds_path, health_candidates_path, symbols_seed_path, state_seeds_path):
+    for optional in (facts_guide_path, concept_evidence_path, story_seeds_path, component_seeds_path, narrative_seeds_path, health_candidates_path, failure_scenario_candidates_path, symbols_seed_path, state_seeds_path):
         if optional.exists():
             starter_files.append(str(optional))
     try:
@@ -87,6 +88,7 @@ def main() -> int:
                 "Use facts/component-seeds.json when present to choose representative files for each provisional root slice before finalizing the atlas or stories.",
                 "Use facts/narrative-seeds.json when present to challenge system-overview and other narrative selections before finalizing narratives.",
                 "Use facts/health-candidates.json when present to challenge local, integration, and propagation health coverage before finalizing atlas health blocks.",
+                "Use facts/failure-scenario-candidates.json when present to challenge whether repeated multi-unit cascades should become a top-level failure_scenarios entry.",
                 "Perform a root challenge pass before finalizing roots: reject provisional roots anchored mainly in test/, docs/, examples/, or client-only paths.",
                 "If the repo has strong engine, storage, or runtime slices, do not spend a full top-level root on bootstrap alone; keep bootstrap as a child unless it is truly the dominant system concern.",
                 "On large repos, require at least one top-level root anchored in deeper runtime or storage internals when deterministic seeds provide one.",
@@ -115,6 +117,7 @@ def main() -> int:
         "component_seeds_path": str(component_seeds_path),
         "narrative_seeds_path": str(narrative_seeds_path),
         "health_candidates_path": str(health_candidates_path),
+        "failure_scenario_candidates_path": str(failure_scenario_candidates_path),
         "symbols_seed_path": str(symbols_seed_path),
         "state_seeds_path": str(state_seeds_path),
         "atlas_path": str(atlas_path),

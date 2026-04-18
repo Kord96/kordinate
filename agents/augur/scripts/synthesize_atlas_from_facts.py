@@ -2055,6 +2055,7 @@ def build_output(
         "flows": flows,
         "state": state,
         "external_dependencies": external_dependencies,
+        "failure_scenarios": [],
         "concepts": concepts,
         "tensions": [],
         "metadata": metadata,

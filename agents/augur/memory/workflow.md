@@ -24,7 +24,7 @@ The atlas is the primary output consumed by all agents (charon, sauron, alfred).
 - Hierarchical components and their connections
 - Flows, state, and outside dependencies
 - Confirmed concepts and grounded architecture tensions
-- Optional grounded sections such as actors, events, module graph, security, and API surface
+- Conditionally grounded sections such as actors, events, and domain_model when repo evidence clearly supports them
 
 See `agents/augur/schemas/atlas-schema.md` for the full atlas schema.
 

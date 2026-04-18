@@ -40,12 +40,13 @@ Every semantic atlas must contain exactly these required top-level fields:
   "flows",
   "state",
   "external_dependencies",
+  "failure_scenarios",
   "concepts",
   "tensions"
 ]
 ```
 
-These fields are optional and should appear only when grounded:
+These fields are conditional and should appear whenever deterministic or semantic evidence clearly supports them:
 - `domain_model`
 - `actors`
 - `events`
@@ -95,6 +96,7 @@ These legacy fields must not appear:
   "flows": [],
   "state": [],
   "external_dependencies": [],
+  "failure_scenarios": [],
   "concepts": {
     "detected_patterns": [],
     "detected_anti_patterns": [],
@@ -112,7 +114,7 @@ These legacy fields must not appear:
 "purpose": "<one short sentence, max 15 words>"
 ```
 
-### `domain_model` (optional)
+### `domain_model` (conditional)
 
 ```json
 "domain_model": {
@@ -135,7 +137,7 @@ These legacy fields must not appear:
 }
 ```
 
-### `actors` (optional)
+### `actors` (conditional)
 
 ```json
 "actors": [
@@ -164,7 +166,9 @@ These legacy fields must not appear:
     "abstraction": ["<abstraction-name>"],
     "patterns": ["<pattern-name>"],
     "health": {
+      "criteria": ["<healthy when ...>"],
       "signals": ["<shared signal or metric>"],
+      "related_failure_scenarios": ["<failure-scenario-id>"],
       "local": {
         "failure_modes": [
           {
@@ -220,9 +224,11 @@ Hierarchy rules:
 - top-level components should be real architecture slices, not synthetic presentation buckets
 - every entry in `components[].modules` must resolve to a real repo file or directory
 - prefer layered health modeling:
+  - `health.criteria` for the concrete conditions that make this unit healthy
   - `health.local` for failures internal to this unit
   - `health.integration` for failures at seams with dependencies, stores, or callers
   - `health.propagation` for downstream degraded modes or blast radius
+  - `health.related_failure_scenarios` for shared cross-unit cascades modeled at the top level
 - if a high-severity integration failure is present, either model a propagation scenario or make containment explicit
 
 ### `flows`
@@ -239,7 +245,9 @@ Hierarchy rules:
     "actors": ["<actor-id>"],
     "grounded_in": ["<file:line>"],
     "health": {
+      "criteria": ["<healthy when ...>"],
       "signals": ["<shared flow signal>"],
+      "related_failure_scenarios": ["<failure-scenario-id>"],
       "local": {
         "failure_modes": []
       },
@@ -303,7 +311,7 @@ State modeling rules:
 - if persistence varies by backend selection, use `mixed` or explain the variability clearly in `technology`
 - do not label configurable durable state as purely `ephemeral`, or configurable SQL/NoSQL state as purely `relational-db`, unless the repo truly requires one mode
 
-### `events` (optional)
+### `events` (conditional)
 
 ```json
 "events": [
@@ -331,7 +339,9 @@ State modeling rules:
     "purpose": "<why needed>",
     "criticality": "critical | important | optional",
     "health": {
+      "criteria": ["<healthy when ...>"],
       "signals": ["<shared dependency signal>"],
+      "related_failure_scenarios": ["<failure-scenario-id>"],
       "local": {
         "failure_modes": []
       },
@@ -346,6 +356,42 @@ State modeling rules:
   }
 ]
 ```
+
+### `failure_scenarios`
+
+```json
+"failure_scenarios": [
+  {
+    "id": "<kebab-case>",
+    "name": "<Human Readable Failure Scenario Name>",
+    "scope": "integration | cascading",
+    "starts_at": ["<component-id | flow-id | state-id | external-dependency-id>"],
+    "involves": ["<component-id | flow-id | state-id | external-dependency-id>"],
+    "chain": [
+      {
+        "from": "<component-id | flow-id | state-id | external-dependency-id>",
+        "to": "<component-id | flow-id | state-id | external-dependency-id>",
+        "effect": "<what degrades next>"
+      }
+    ],
+    "degraded_mode": "<what still works and what becomes stale, partial, blocked, or delayed>",
+    "user_visible_impact": ["<operator or user symptom>"],
+    "signals": ["<shared signal or alert>"],
+    "mitigations": ["<shared mitigation or containment>"],
+    "gaps": ["<missing visibility, guardrail, or control>"],
+    "grounded_in": ["<file:line>"]
+  }
+]
+```
+
+Failure-scenario rules:
+- use `failure_scenarios` for multi-unit failures that span components, flows, state, or external dependencies
+- prefer one shared failure scenario over repeating the same cascade text in several unit health blocks
+- every `starts_at`, `involves`, and `chain.{from,to}` id must resolve to a real component, flow, state entry, or external dependency
+- `chain` should describe propagation order, not just restate the same local symptom
+- include `degraded_mode` and at least one of `signals`, `mitigations`, or `gaps`
+- `grounded_in` is required because shared failure scenarios are easy to overgeneralize
+- units that participate in a shared cascade should reference it via `health.related_failure_scenarios` when that relationship materially helps understanding
 
 ### `concepts`
 
@@ -442,14 +488,24 @@ Concept rules:
 
 ## Health Modeling Rules
 
+- use `health.criteria` to say what healthy operation looks like before describing how it fails
 - use `health.local.failure_modes` for failures inside one unit
 - use `health.integration.failure_modes` for failures at a boundary, seam, or dependency edge
 - use `health.propagation.scenarios` for downstream degraded modes, stale results, blocked work, or wider blast radius
+- use `failure_scenarios` for shared cascades or boundary failures that need one canonical chain, mitigation, or monitoring record across multiple units
 - keep `health.signals` for shared or summary-level observability signals that apply across more than one failure mode
 - do not model a pure seam failure only as `local`
 - do not use `propagation` to repeat the same local symptom; propagation should describe what else degrades because of the local or integration failure
 - prefer `affects` ids that resolve to real components, flows, state entries, or external dependencies
 - if a failure is truly contained, say so in `containment` instead of implying a wider cascade
+
+## Conditional Section Rules
+
+- keep `actors`, `events`, and `domain_model` out when the repo does not support them
+- include `actors` when deterministic evidence shows real callers, schedulers, or event sources worth naming
+- include `events` when deterministic facts show publish/consume or cron-like event boundaries worth modeling
+- include `domain_model` when the repo exposes stable business entities, schemas, or bounded contexts that materially help explain the architecture
+- do not satisfy these sections with empty scaffolding or generic filler; if present, they must be grounded and useful
 
 Use `tensions` only for grounded architecture-level contradictions or trade-offs.
 Do not turn every bug, TODO, or cleanup item into a tension.

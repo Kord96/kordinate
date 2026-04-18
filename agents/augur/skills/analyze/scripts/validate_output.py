@@ -81,7 +81,7 @@ KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 REQUIRED_ATLAS_FIELDS = [
     "version", "generated", "project", "purpose",
     "components", "flows", "state",
-    "external_dependencies", "concepts", "tensions"
+    "external_dependencies", "failure_scenarios", "concepts", "tensions"
 ]
 
 CANONICAL_NARRATIVE_IDS = {
@@ -339,9 +339,12 @@ def validate_health(
     item_id: str,
     *,
     valid_node_ids: set[str] | None = None,
+    valid_failure_scenario_ids: set[str] | None = None,
+    aggregate_component: bool = False,
     candidate_local: list[dict] | None = None,
     candidate_integration: list[dict] | None = None,
     candidate_propagation: list[dict] | None = None,
+    candidate_failure_scenarios: list[dict] | None = None,
     project_root: Path | None = None,
     analysis_dir: Path | None = None,
 ) -> list[dict]:
@@ -387,9 +390,27 @@ def validate_health(
     top_signals = health.get("signals")
     if top_signals is not None and not isinstance(top_signals, list):
         issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.signals must be a list"})
+    criteria = health.get("criteria")
+    if criteria is not None and not isinstance(criteria, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.criteria must be a list"})
+        criteria = []
     top_gaps = health.get("gaps")
     if top_gaps is not None and not isinstance(top_gaps, list):
         issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.gaps must be a list"})
+    related_failure_scenarios = health.get("related_failure_scenarios")
+    if related_failure_scenarios is not None and not isinstance(related_failure_scenarios, list):
+        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.related_failure_scenarios must be a list"})
+        related_failure_scenarios = []
+    valid_failure_scenario_ids = valid_failure_scenario_ids or set()
+    for scenario_id in [str(item) for item in (related_failure_scenarios or []) if str(item or "").strip()]:
+        if valid_failure_scenario_ids and scenario_id not in valid_failure_scenario_ids:
+            issues.append({
+                "level": "ERROR",
+                "section": section,
+                "kind": "health-model",
+                "message": f"'{item_id}' health.related_failure_scenarios references unknown failure scenario '{scenario_id}'",
+                "related_entities": [item_id, scenario_id],
+            })
 
     valid_node_ids = valid_node_ids or set()
     local_block = health.get("local") if isinstance(health.get("local"), dict) else {}
@@ -407,6 +428,23 @@ def validate_health(
     local_failure_modes = local_block.get("failure_modes") or []
     integration_failure_modes = integration_block.get("failure_modes") or []
     propagation_scenarios = propagation_block.get("scenarios") or []
+    criteria_values = [str(item) for item in (criteria or []) if str(item or "").strip()]
+    if not criteria_values:
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-criteria-missing",
+            "message": f"'{item_id}' health is missing criteria; say what healthy operation looks like before describing failure",
+            "related_entities": [item_id],
+        })
+    elif len(criteria_values) > 4:
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-model",
+            "message": f"'{item_id}' health.criteria is too long; keep it to roughly 1-4 concrete conditions",
+            "related_entities": [item_id],
+        })
 
     if local_failure_modes and not isinstance(local_failure_modes, list):
         issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.local.failure_modes must be a list"})
@@ -477,6 +515,15 @@ def validate_health(
                 "message": f"'{item_id}' local health failure mode '{failure_id}' should not use `at`; move seam failures into health.integration",
                 "related_entities": [item_id, failure_id],
             })
+
+    if aggregate_component and local_failure_modes:
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-ownership-unclear",
+            "message": f"'{item_id}' is an aggregate component with local failure modes; make sure these are parent-level capability failures, not child-level duplicates",
+            "related_entities": [item_id],
+        })
 
     seen_propagation_ids: set[str] = set()
     propagation_count = 0
@@ -590,6 +637,17 @@ def validate_health(
             "related_entities": [item_id],
             "evidence_refs": [str(ref) for candidate in candidate_propagation for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
         })
+    candidate_failure_scenarios = candidate_failure_scenarios or []
+    if candidate_failure_scenarios and not (related_failure_scenarios or []):
+        issues.append({
+            "level": "WARNING",
+            "section": section,
+            "kind": "health-shared-scenario-missing",
+            "message": f"'{item_id}' participates in a likely shared failure scenario but does not reference it via health.related_failure_scenarios",
+            "conflict_type": "fact_vs_semantic",
+            "related_entities": [item_id, *[str(candidate.get('id') or '') for candidate in candidate_failure_scenarios[:2]]],
+            "evidence_refs": [str(ref) for candidate in candidate_failure_scenarios for ref in (candidate.get("evidence_refs") or [])[:1]][:3],
+        })
     return issues
 
 
@@ -633,6 +691,28 @@ def validate_atlas(
         if persistence in {"persistent", "ephemeral"} and mentions_redis and mentions_memory and (mentions_database or mentions_sql or mentions_nosql):
             warnings.append(f"State '{sid}' may need persistence 'mixed' because the technology describes multiple backend modes")
         return warnings
+
+    def read_fact_domain(name: str) -> list[dict]:
+        if not analysis_dir:
+            return []
+        path = analysis_dir / "facts" / f"{name}.json"
+        if not path.exists():
+            return []
+        try:
+            payload = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            return []
+        return [item for item in (payload.get("facts") or []) if isinstance(item, dict)]
+
+    route_facts = read_fact_domain("routes")
+    job_facts = read_fact_domain("jobs")
+    event_facts = read_fact_domain("events")
+    model_facts = read_fact_domain("models")
+    optional_expectations = {
+        "actors": bool(route_facts or job_facts or event_facts),
+        "events": bool(event_facts),
+        "domain_model": bool(model_facts),
+    }
 
     # Required fields
     for field in REQUIRED_ATLAS_FIELDS:
@@ -720,12 +800,22 @@ def validate_atlas(
     ext_dep_ids = {e.get("id") for e in atlas.get("external_dependencies", [])}
     state_ids = {s.get("id") for s in atlas.get("state", [])}
     flow_ids = {f.get("id") for f in atlas.get("flows", [])}
+    failure_scenarios = atlas.get("failure_scenarios", [])
+    if not isinstance(failure_scenarios, list):
+        error("failure_scenarios must be a list", "failure_scenarios")
+        failure_scenarios = []
+    failure_scenario_ids = {
+        str(item.get("id"))
+        for item in failure_scenarios
+        if isinstance(item, dict) and item.get("id")
+    }
     all_node_ids = component_ids | actor_ids | ext_dep_ids | state_ids
     all_health_target_ids = all_node_ids | flow_ids
 
     local_candidates_by_component: dict[str, list[dict]] = defaultdict(list)
     integration_candidates_by_source: dict[str, list[dict]] = defaultdict(list)
     propagation_candidates_by_source: dict[str, list[dict]] = defaultdict(list)
+    failure_scenario_candidates_by_entity: dict[str, list[dict]] = defaultdict(list)
     if isinstance(health_candidates_payload, dict):
         for candidate in health_candidates_payload.get("local_candidates") or []:
             if isinstance(candidate, dict) and candidate.get("component"):
@@ -736,6 +826,20 @@ def validate_atlas(
         for candidate in health_candidates_payload.get("propagation_candidates") or []:
             if isinstance(candidate, dict) and candidate.get("source"):
                 propagation_candidates_by_source[str(candidate.get("source"))].append(candidate)
+
+    failure_scenario_candidates_payload = {}
+    failure_scenario_candidates_path = analysis_dir / "facts" / "failure-scenario-candidates.json"
+    if failure_scenario_candidates_path.exists():
+        try:
+            failure_scenario_candidates_payload = json.loads(failure_scenario_candidates_path.read_text())
+        except json.JSONDecodeError as e:
+            issues.append({"level": "ERROR", "section": "failure-scenario-candidates", "message": f"JSON parse error: {e}"})
+    if isinstance(failure_scenario_candidates_payload, dict):
+        for candidate in failure_scenario_candidates_payload.get("candidates") or []:
+            if not isinstance(candidate, dict):
+                continue
+            for entity in [str(item) for item in (candidate.get("starts_at") or []) + (candidate.get("involves") or []) if str(item or "").strip()]:
+                failure_scenario_candidates_by_entity[entity].append(candidate)
 
     # depends_on
     def check_deps(comps):
@@ -750,6 +854,8 @@ def validate_atlas(
         cid = str(component.get("id") or "?")
         component_children = [str(child) for child in (component.get("children") or []) if child]
         is_aggregate = bool(component_children)
+        component_modules = [str(item) for item in (component.get("modules") or []) if item]
+        dependency_targets = [str(item) for item in (component.get("depends_on") or []) if item]
         description = str(component.get("description") or "").strip()
         summary = str(component.get("summary") or "").strip()
         if not description:
@@ -786,22 +892,77 @@ def validate_atlas(
                     "message": f"Component '{cid}' summary is too long; keep it to roughly 2-4 sentences",
                     "related_entities": [cid],
                 })
+        if not component_modules and not component_children:
+            issues.append({
+                "level": "WARNING",
+                "section": "components",
+                "kind": "component-model",
+                "message": f"Component '{cid}' has neither modules nor children; ground it in code ownership or collapse it into a parent",
+                "related_entities": [cid],
+            })
         issues.extend(
             validate_health(
                 component.get("health"),
                 "components",
                 cid or "<component>",
                 valid_node_ids=all_health_target_ids,
+                valid_failure_scenario_ids=failure_scenario_ids,
+                aggregate_component=is_aggregate,
                 candidate_local=[] if is_aggregate else local_candidates_by_component.get(cid, []),
                 candidate_integration=[] if is_aggregate else integration_candidates_by_source.get(cid, []),
                 candidate_propagation=[] if is_aggregate else propagation_candidates_by_source.get(cid, []),
+                candidate_failure_scenarios=failure_scenario_candidates_by_entity.get(cid, []),
                 project_root=project_root,
                 analysis_dir=analysis_dir,
             )
         )
-        modules = component.get("modules") or []
-        if modules and (project_root or analysis_dir):
-            issues.extend(check_existing_paths(modules, project_root, analysis_dir, "components", cid, label="module"))
+        health = component.get("health") if isinstance(component.get("health"), dict) else {}
+        criteria_values = [str(item) for item in ((health.get("criteria") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
+        integration_failure_modes = ((health.get("integration") or {}).get("failure_modes") or []) if isinstance(health, dict) else []
+        related_failure_scenarios = [str(item) for item in ((health.get("related_failure_scenarios") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
+        propagation_scenarios = ((health.get("propagation") or {}).get("scenarios") or []) if isinstance(health, dict) else []
+
+        if criteria_values and not any(any(token in criterion.lower() for token in ("serve", "load", "render", "return", "refresh", "persist", "update", "publish", "schedule", "sync", "accept", "respond", "hydrate", "compute", "classify", "route", "store")) for criterion in criteria_values):
+            issues.append({
+                "level": "WARNING",
+                "section": "components",
+                "kind": "health-criteria-missing",
+                "message": f"Component '{cid}' health.criteria should describe concrete capability success, not only generic uptime",
+                "related_entities": [cid],
+            })
+        if is_aggregate and criteria_values and not any(any(token in criterion.lower() for token in ("child", "subcomponent", "surface", "path", "capability", "slice", "pipeline", "service", "experience")) for criterion in criteria_values):
+            issues.append({
+                "level": "WARNING",
+                "section": "components",
+                "kind": "health-ownership-unclear",
+                "message": f"Aggregate component '{cid}' health.criteria should describe the parent capability it owns, not only leaf mechanics",
+                "related_entities": [cid],
+            })
+        if dependency_targets:
+            covered_targets: set[str] = set()
+            for failure_mode in integration_failure_modes:
+                if isinstance(failure_mode, dict):
+                    covered_targets.update(str(item) for item in (failure_mode.get("at") or []) if str(item or "").strip())
+            if not covered_targets.intersection(dependency_targets) and not related_failure_scenarios:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "components",
+                    "kind": "health-integration-missing",
+                    "message": f"Component '{cid}' depends on {', '.join(dependency_targets[:3])} but its health does not model those seams or link a shared failure scenario",
+                    "related_entities": [cid, *dependency_targets[:2]],
+                    "conflict_type": "cross_artifact",
+                })
+        if dependency_targets and integration_failure_modes and not propagation_scenarios and not related_failure_scenarios and not is_aggregate:
+            issues.append({
+                "level": "WARNING",
+                "section": "components",
+                "kind": "health-cascade-incomplete",
+                "message": f"Component '{cid}' models dependency failures but does not say whether downstream capability is degraded, contained, or linked to a shared failure scenario",
+                "related_entities": [cid],
+                "conflict_type": "shape_tension",
+            })
+        if component_modules and (project_root or analysis_dir):
+            issues.extend(check_existing_paths(component_modules, project_root, analysis_dir, "components", cid, label="module"))
 
     depends_on_graph: dict[str, set[str]] = {
         str(component.get("id")): set(component.get("depends_on", []) or [])
@@ -835,6 +996,7 @@ def validate_atlas(
         fid = f.get("id", "")
         description = str(f.get("description") or "").strip()
         summary = str(f.get("summary") or "").strip()
+        trigger = str(f.get("trigger") or "").strip()
         if not description:
             warn(f"Flow '{fid}' is missing description", "flows")
         if not summary:
@@ -845,6 +1007,8 @@ def validate_atlas(
                 warn(f"Flow '{fid}' summary is too thin for drilldown; explain the boundary crossings and why the path matters", "flows")
             elif summary_words > 90:
                 warn(f"Flow '{fid}' summary is too long; keep it to roughly 2-4 sentences", "flows")
+        if not trigger:
+            warn(f"Flow '{fid}' is missing trigger; say what starts the path", "flows")
         if not f.get("grounded_in"):
             warn(f"Flow '{fid}' has no grounded_in", "flows")
         elif project_root or analysis_dir:
@@ -863,9 +1027,11 @@ def validate_atlas(
                 "flows",
                 fid or "<flow>",
                 valid_node_ids=all_health_target_ids,
+                valid_failure_scenario_ids=failure_scenario_ids,
                 candidate_local=[],
                 candidate_integration=[],
                 candidate_propagation=[],
+                candidate_failure_scenarios=failure_scenario_candidates_by_entity.get(fid, []),
                 project_root=project_root,
                 analysis_dir=analysis_dir,
             )
@@ -893,11 +1059,43 @@ def validate_atlas(
                     "flows",
                     f"{fid}/{metric.get('name', '?')}",
                 ))
-        for step in f.get("steps", []):
+        steps = f.get("steps") or []
+        if not isinstance(steps, list):
+            error(f"Flow '{fid}' steps must be a list", "flows")
+            steps = []
+        if len(steps) < 2:
+            warn(f"Flow '{fid}' should usually have at least 2 steps so the operating path is visible", "flows")
+        boundary_crossings = 0
+        output_like_steps = 0
+        for idx, step in enumerate(steps, start=1):
+            if not isinstance(step, dict):
+                error(f"Flow '{fid}' step {idx} must be an object", "flows")
+                continue
+            if not str(step.get("component") or "").strip():
+                error(f"Flow '{fid}' step {idx} is missing component", "flows")
+            if not str(step.get("action") or "").strip():
+                error(f"Flow '{fid}' step {idx} is missing action", "flows")
             for key in ("component", "to"):
                 ref = step.get(key, "")
                 if ref and ref not in all_node_ids:
                     error(f"Flow '{fid}' step {key} references unknown '{ref}'", "flows")
+            source = str(step.get("component") or "").strip()
+            target = str(step.get("to") or "").strip()
+            if target and target != source:
+                boundary_crossings += 1
+            step_text = " ".join(str(step.get(key) or "") for key in ("action", "data", "transform", "to_state", "operation")).lower()
+            if any(token in step_text for token in ("return", "render", "persist", "write", "store", "emit", "redirect", "deliver", "update", "clear", "set", "complete")):
+                output_like_steps += 1
+        if len(steps) >= 2 and boundary_crossings == 0:
+            warn(f"Flow '{fid}' does not clearly cross a boundary or state handoff; tighten the path or split it into a more meaningful operating flow", "flows")
+        health = f.get("health") if isinstance(f.get("health"), dict) else {}
+        criteria_values = [str(item) for item in ((health.get("criteria") or []) if isinstance(health, dict) else []) if str(item or "").strip()]
+        if criteria_values and not any(any(token in criterion.lower() for token in ("complete", "persist", "render", "redirect", "emit", "write", "load", "return", "update", "show", "store", "deliver")) for criterion in criteria_values):
+            warn(f"Flow '{fid}' health.criteria should include at least one concrete success or completion condition", "flows")
+        if boundary_crossings > 1 and not ((health.get("integration") or {}).get("failure_modes") or []):
+            warn(f"Flow '{fid}' crosses multiple boundaries but has no integration health coverage", "flows")
+        if output_like_steps > 0 and not criteria_values:
+            warn(f"Flow '{fid}' should state what successful completion looks like in health.criteria", "flows")
 
     # State
     for s in atlas.get("state", []):
@@ -936,6 +1134,116 @@ def validate_atlas(
                 error(f"State '{sid}' writer references unknown '{w}'", "state")
         for message in state_semantic_warnings(s):
             warn(message, "state")
+
+    # Conditional actors
+    actors = atlas.get("actors", []) or []
+    if optional_expectations["actors"] and not actors:
+        issues.append({
+            "level": "WARNING",
+            "section": "actors",
+            "kind": "actors-model",
+            "message": "Deterministic route/job/event facts suggest the repo has meaningful actors, but atlas.actors is missing",
+            "conflict_type": "fact_vs_semantic",
+            "evidence_refs": [*(str(f.get("source_files", [""])[0]) for f in route_facts[:1]), *(str(f.get("source_files", [""])[0]) for f in job_facts[:1]), *(str(f.get("source_files", [""])[0]) for f in event_facts[:1])][:3],
+        })
+    for actor in actors:
+        if not isinstance(actor, dict):
+            error("actors contains a non-object entry", "actors")
+            continue
+        aid = str(actor.get("id") or "")
+        if not aid:
+            error("actors entry is missing id", "actors")
+            continue
+        if not kebab_case(aid):
+            error(f"Actor id not kebab-case: '{aid}'", "actors")
+        actor_type = str(actor.get("type") or "").strip()
+        if actor_type and actor_type not in {"user", "service", "cron", "cli", "data-source", "external"}:
+            error(f"Actor '{aid}' has invalid type '{actor_type}'", "actors")
+        if not str(actor.get("description") or "").strip():
+            warn(f"Actor '{aid}' is missing description", "actors")
+
+    # Conditional events
+    events = atlas.get("events", []) or []
+    if optional_expectations["events"] and not events:
+        issues.append({
+            "level": "WARNING",
+            "section": "events",
+            "kind": "events-model",
+            "message": "Deterministic event facts suggest the repo has meaningful event boundaries, but atlas.events is missing",
+            "conflict_type": "fact_vs_semantic",
+            "evidence_refs": [str(item) for fact in event_facts for item in (fact.get("source_files") or [])[:1]][:3],
+        })
+    for event in events:
+        if not isinstance(event, dict):
+            error("events contains a non-object entry", "events")
+            continue
+        eid = str(event.get("id") or "")
+        if not eid:
+            error("events entry is missing id", "events")
+            continue
+        if not kebab_case(eid):
+            error(f"Event id not kebab-case: '{eid}'", "events")
+        event_type = str(event.get("type") or "").strip()
+        if event_type and event_type not in {"topic", "signal", "webhook", "cron", "pubsub"}:
+            error(f"Event '{eid}' has invalid type '{event_type}'", "events")
+        if not str(event.get("name") or "").strip():
+            warn(f"Event '{eid}' is missing name", "events")
+        producer = str(event.get("producer") or "").strip()
+        if producer and producer not in all_node_ids:
+            error(f"Event '{eid}' producer references unknown '{producer}'", "events")
+        consumers = event.get("consumers") or []
+        if not isinstance(consumers, list):
+            error(f"Event '{eid}' consumers must be a list", "events")
+            consumers = []
+        for consumer in consumers:
+            ref = str(consumer or "").strip()
+            if ref and ref not in all_node_ids:
+                error(f"Event '{eid}' consumer references unknown '{ref}'", "events")
+        if not str(event.get("data") or "").strip():
+            warn(f"Event '{eid}' is missing data summary", "events")
+
+    # Conditional domain model
+    domain_model = atlas.get("domain_model") or {}
+    if optional_expectations["domain_model"] and not domain_model:
+        issues.append({
+            "level": "WARNING",
+            "section": "domain_model",
+            "kind": "domain-model",
+            "message": "Deterministic model facts suggest the repo has a meaningful domain model, but atlas.domain_model is missing",
+            "conflict_type": "fact_vs_semantic",
+            "evidence_refs": [str(item) for fact in model_facts for item in (fact.get("source_files") or [])[:1]][:3],
+        })
+    if domain_model:
+        if not isinstance(domain_model, dict):
+            error("domain_model must be an object", "domain_model")
+        else:
+            if not str(domain_model.get("primary") or "").strip():
+                warn("domain_model.primary is missing or empty", "domain_model")
+            if not str(domain_model.get("description") or "").strip():
+                warn("domain_model.description is missing or empty", "domain_model")
+            entities = domain_model.get("entities") or []
+            relationships = domain_model.get("relationships") or []
+            bounded_contexts = domain_model.get("bounded_contexts") or []
+            if not entities and not relationships and not bounded_contexts:
+                warn("domain_model is present but empty; either ground it with real entities or omit it", "domain_model")
+            if bounded_contexts and not isinstance(bounded_contexts, list):
+                error("domain_model.bounded_contexts must be a list", "domain_model")
+                bounded_contexts = []
+            for context in bounded_contexts:
+                if not isinstance(context, dict):
+                    error("domain_model.bounded_contexts contains a non-object entry", "domain_model")
+                    continue
+                cid = str(context.get("id") or "")
+                if not cid:
+                    error("domain_model bounded context is missing id", "domain_model")
+                    continue
+                if not str(context.get("name") or "").strip():
+                    warn(f"Bounded context '{cid}' is missing name", "domain_model")
+                if not str(context.get("description") or "").strip():
+                    warn(f"Bounded context '{cid}' is missing description", "domain_model")
+                modules = context.get("modules") or []
+                if modules and (project_root or analysis_dir):
+                    issues.extend(check_existing_paths(modules, project_root, analysis_dir, "domain_model", cid, label="module"))
 
     flow_ids = {f.get("id") for f in atlas.get("flows", []) if f.get("id")}
     state_ids = {s.get("id") for s in atlas.get("state", []) if s.get("id")}
@@ -1179,19 +1487,120 @@ def validate_atlas(
                 "external_dependencies",
                 did or "<dependency>",
                 valid_node_ids=all_health_target_ids,
+                valid_failure_scenario_ids=failure_scenario_ids,
                 candidate_local=[],
                 candidate_integration=[],
                 candidate_propagation=propagation_candidates_by_source.get(did, []),
+                candidate_failure_scenarios=failure_scenario_candidates_by_entity.get(did, []),
                 project_root=project_root,
                 analysis_dir=analysis_dir,
             )
         )
 
+    # Shared failure scenarios
+    seen_failure_scenario_ids: set[str] = set()
+    for scenario in failure_scenarios:
+        if not isinstance(scenario, dict):
+            error("failure_scenarios contains a non-object entry", "failure_scenarios")
+            continue
+        sid = str(scenario.get("id") or "")
+        if not sid:
+            error("failure_scenarios entry is missing id", "failure_scenarios")
+            continue
+        if not kebab_case(sid):
+            error(f"Failure scenario id not kebab-case: '{sid}'", "failure_scenarios")
+        if sid in seen_failure_scenario_ids:
+            error(f"Duplicate failure scenario id '{sid}'", "failure_scenarios")
+        seen_failure_scenario_ids.add(sid)
+        if not str(scenario.get("name") or "").strip():
+            warn(f"Failure scenario '{sid}' is missing name", "failure_scenarios")
+        scope = str(scenario.get("scope") or "").strip()
+        if scope not in {"integration", "cascading"}:
+            error(f"Failure scenario '{sid}' has invalid scope '{scope}'", "failure_scenarios")
+        starts_at = [str(item) for item in (scenario.get("starts_at") or []) if str(item or "").strip()]
+        involves = [str(item) for item in (scenario.get("involves") or []) if str(item or "").strip()]
+        if not starts_at:
+            error(f"Failure scenario '{sid}' must list starts_at ids", "failure_scenarios")
+        if not involves:
+            error(f"Failure scenario '{sid}' must list involves ids", "failure_scenarios")
+        for ref in starts_at + involves:
+            if ref not in all_health_target_ids:
+                error(f"Failure scenario '{sid}' references unknown id '{ref}'", "failure_scenarios")
+        chain = scenario.get("chain") or []
+        if not isinstance(chain, list):
+            error(f"Failure scenario '{sid}' chain must be a list", "failure_scenarios")
+            chain = []
+        chain_nodes: set[str] = set()
+        for step in chain:
+            if not isinstance(step, dict):
+                error(f"Failure scenario '{sid}' chain contains a non-object entry", "failure_scenarios")
+                continue
+            from_id = str(step.get("from") or "")
+            to_id = str(step.get("to") or "")
+            effect = str(step.get("effect") or "").strip()
+            if not from_id or not to_id or not effect:
+                error(f"Failure scenario '{sid}' chain steps must include from, to, and effect", "failure_scenarios")
+                continue
+            chain_nodes.add(from_id)
+            chain_nodes.add(to_id)
+            if from_id not in all_health_target_ids:
+                error(f"Failure scenario '{sid}' chain references unknown from id '{from_id}'", "failure_scenarios")
+            if to_id not in all_health_target_ids:
+                error(f"Failure scenario '{sid}' chain references unknown to id '{to_id}'", "failure_scenarios")
+            if from_id in component_ids and to_id in component_ids:
+                from_component = next((component for component in components if component.get("id") == from_id), {})
+                to_component = next((component for component in components if component.get("id") == to_id), {})
+                from_parent = str(from_component.get("parent") or "")
+                to_parent = str(to_component.get("parent") or "")
+                if (
+                    to_id not in (from_component.get("depends_on") or [])
+                    and from_id not in (to_component.get("depends_on") or [])
+                    and from_parent != to_id
+                    and to_parent != from_id
+                    and (from_parent != to_parent or not from_parent)
+                ):
+                    warn(f"Failure scenario '{sid}' chain edge '{from_id}' -> '{to_id}' is not reflected in component depends_on or hierarchy; confirm the propagation path explicitly", "failure_scenarios")
+        if len(involves) >= 2 and not chain:
+            warn(f"Failure scenario '{sid}' should include a chain when it spans multiple units", "failure_scenarios")
+        uncovered_involves = [ref for ref in involves if ref not in chain_nodes and ref not in starts_at]
+        if uncovered_involves:
+            warn(f"Failure scenario '{sid}' involves ids not touched by the chain: {', '.join(uncovered_involves[:3])}", "failure_scenarios")
+        if not str(scenario.get("degraded_mode") or "").strip():
+            warn(f"Failure scenario '{sid}' is missing degraded_mode", "failure_scenarios")
+        if not any(isinstance(scenario.get(field), list) and scenario.get(field) for field in ("signals", "mitigations", "gaps")):
+            warn(f"Failure scenario '{sid}' should include signals, mitigations, or gaps", "failure_scenarios")
+        grounded = scenario.get("grounded_in") or []
+        if not grounded:
+            warn(f"Failure scenario '{sid}' has no grounded_in", "failure_scenarios")
+        elif project_root or analysis_dir:
+            issues.extend(check_grounded_in(grounded, project_root, analysis_dir, "failure_scenarios", sid))
+
+    if isinstance(failure_scenario_candidates_payload, dict):
+        present_ids = seen_failure_scenario_ids
+        for candidate in failure_scenario_candidates_payload.get("candidates") or []:
+            if not isinstance(candidate, dict):
+                continue
+            candidate_id = str(candidate.get("id") or "")
+            if not candidate_id or candidate_id in present_ids:
+                continue
+            involves = [str(item) for item in (candidate.get("involves") or []) if str(item or "").strip()]
+            if len(involves) < 2:
+                continue
+            issues.append({
+                "level": "WARNING",
+                "section": "failure_scenarios",
+                "kind": "failure-scenario-missing",
+                "message": f"Shared failure candidate '{candidate_id}' is not modeled in atlas.failure_scenarios",
+                "conflict_type": "fact_vs_semantic",
+                "related_entities": [candidate_id, *involves[:3]],
+                "evidence_refs": [str(ref) for ref in (candidate.get("evidence_refs") or [])[:3]],
+            })
+
     concept_ids = {p.get("id") for p in concepts.get("detected_patterns", []) if p.get("id")}
     concept_ids |= {ap.get("id") for ap in concepts.get("detected_anti_patterns", []) if ap.get("id")}
     concept_ids |= {gap.get("id") for gap in concepts.get("gaps", []) if gap.get("id")}
     tension_ids = {t.get("id") for t in atlas.get("tensions", []) if t.get("id")}
-    all_entity_ids = all_node_ids | flow_ids | event_ids | concept_ids | tension_ids
+    all_entity_ids = all_node_ids | flow_ids | event_ids | concept_ids | tension_ids | failure_scenario_ids
 
     return issues, all_node_ids, all_entity_ids
 
@@ -2232,11 +2641,11 @@ def issue_family(issue: dict) -> str:
         return "provenance"
     if kind in {"grounding"}:
         return "grounding"
-    if kind in {"health-local-missing", "health-integration-missing", "health-propagation-missing", "health-boundary-ungrounded", "health-propagation-ungrounded", "health-cascade-incomplete", "health-containment-unclear", "health-model"}:
+    if kind in {"health-local-missing", "health-integration-missing", "health-propagation-missing", "health-boundary-ungrounded", "health-propagation-ungrounded", "health-cascade-incomplete", "health-containment-unclear", "health-criteria-missing", "health-shared-scenario-missing", "health-ownership-unclear", "failure-scenario-missing", "health-model"}:
         return "health-model"
     if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "teaching-structure"
-    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "framework-resolution"}:
+    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "framework-resolution", "actors-model", "events-model", "domain-model"}:
         return "semantic-consistency"
     if str(issue.get("section") or "") == "structure":
         return "artifact-structure"
@@ -2263,7 +2672,14 @@ def is_semantic_conflict(issue: dict) -> bool:
         "health-propagation-ungrounded",
         "health-cascade-incomplete",
         "health-containment-unclear",
+        "health-criteria-missing",
+        "health-shared-scenario-missing",
+        "health-ownership-unclear",
+        "failure-scenario-missing",
         "health-model",
+        "actors-model",
+        "events-model",
+        "domain-model",
     }
 
 
@@ -2291,7 +2707,14 @@ def issue_conflict_type(issue: dict) -> str | None:
         "health-propagation-ungrounded": "cross_artifact",
         "health-cascade-incomplete": "shape_tension",
         "health-containment-unclear": "shape_tension",
+        "health-criteria-missing": "cross_artifact",
+        "health-shared-scenario-missing": "fact_vs_semantic",
+        "health-ownership-unclear": "shape_tension",
+        "failure-scenario-missing": "fact_vs_semantic",
         "health-model": "cross_artifact",
+        "actors-model": "fact_vs_semantic",
+        "events-model": "fact_vs_semantic",
+        "domain-model": "fact_vs_semantic",
     }
     return mapping.get(kind)
 
@@ -2302,7 +2725,7 @@ def issue_priority(issue: dict) -> str:
     kind = classify_issue_kind(issue)
     if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "path-provenance", "concept-evidence", "health-boundary-ungrounded", "health-propagation-ungrounded", "health-model"}:
         return "high"
-    if kind in {"framework-resolution", "health-local-missing", "health-integration-missing", "health-propagation-missing", "health-cascade-incomplete", "health-containment-unclear"}:
+    if kind in {"framework-resolution", "health-local-missing", "health-integration-missing", "health-propagation-missing", "health-cascade-incomplete", "health-containment-unclear", "health-criteria-missing", "health-shared-scenario-missing", "health-ownership-unclear", "failure-scenario-missing", "actors-model", "events-model", "domain-model"}:
         return "medium"
     if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "medium"
@@ -2329,7 +2752,14 @@ def recommended_artifacts(issue: dict) -> list[str]:
         "health-propagation-ungrounded": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json"],
         "health-cascade-incomplete": ["facts/health-candidates.json", "facts/control-hotspots.json", "facts/state-access-summary.json", "atlas.json"],
         "health-containment-unclear": ["facts/health-candidates.json", "atlas.json"],
+        "health-criteria-missing": ["facts/health-candidates.json", "atlas.json"],
+        "health-shared-scenario-missing": ["facts/failure-scenario-candidates.json", "atlas.json"],
+        "health-ownership-unclear": ["facts/component-seeds.json", "atlas.json"],
+        "failure-scenario-missing": ["facts/failure-scenario-candidates.json", "facts/health-candidates.json", "atlas.json"],
         "health-model": ["facts/health-candidates.json", "atlas.json"],
+        "actors-model": ["facts/routes.json", "facts/jobs.json", "facts/events.json", "atlas.json"],
+        "events-model": ["facts/events.json", "atlas.json"],
+        "domain-model": ["facts/models.json", "atlas.json"],
         "concept-evidence": ["facts/concept-evidence.json"],
         "framework-resolution": ["facts/frameworks.json"],
         "path-provenance": ["facts/index.json", "facts/startup.json"],
@@ -2561,13 +2991,20 @@ def suggested_resolution(issue: dict) -> str:
         "health-local-missing": "Add a local health block only where deterministic evidence and code grounding justify internal failure coverage.",
         "health-integration-missing": "Model the important seam failure explicitly in health.integration and name the boundary ids in `at`.",
         "health-propagation-missing": "Add a propagation scenario or state clear containment so downstream degraded mode is explicit.",
+        "health-criteria-missing": "Add 1-3 concrete health.criteria statements that say what healthy operation looks like for this unit or flow.",
+        "health-shared-scenario-missing": "If this unit participates in a broader cascade, reference the shared failure scenario instead of repeating the same blast-radius prose locally.",
+        "health-ownership-unclear": "Move child-local failures down to the specific child component unless this is truly a parent-level capability health condition.",
         "health-boundary-ungrounded": "Ground the boundary failure in code and identify the dependency, state, or caller ids involved in the seam.",
         "health-propagation-ungrounded": "Ground the cascade claim in code and point `affects` at real atlas ids that degrade downstream.",
         "health-cascade-incomplete": "Explain whether the boundary failure propagates downstream or is contained locally.",
         "health-containment-unclear": "State what remains available, stale, delayed, or blocked and how the blast radius is limited.",
+        "failure-scenario-missing": "Add a top-level failure_scenarios entry when deterministic evidence suggests a real multi-unit cascade.",
         "health-model": "Reshape the health block so local, integration, and propagation concerns are separated cleanly.",
         "component-model": "Refine the component graph so ids, parents, dependencies, and module paths are truthful.",
         "flow-model": "Tighten the flow description, references, or grounding so it matches the implementation path.",
+        "actors-model": "Add grounded actors only when the repo shows real callers, schedulers, or event sources worth naming.",
+        "events-model": "Add only the event boundaries that are grounded in facts and useful to understanding the architecture.",
+        "domain-model": "Add a grounded domain model only if the repo exposes stable business entities, schemas, or bounded contexts worth naming.",
         "story-quality": "Narrow the story to a clearer concern and ground it with more precise evidence.",
         "general": "Re-read the referenced code and adjust the artifact until the validator no longer reports the issue.",
     }
