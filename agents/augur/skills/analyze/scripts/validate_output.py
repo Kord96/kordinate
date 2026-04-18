@@ -1095,6 +1095,11 @@ def detect_cross_artifact_conflicts(
         for component in (atlas.get("components") or [])
         if isinstance(component, dict) and component.get("id")
     }
+    state_ids = {
+        str(state.get("id"))
+        for state in (atlas.get("state") or [])
+        if isinstance(state, dict) and state.get("id")
+    }
     depends_on = {
         cid: set(str(dep) for dep in (component.get("depends_on") or []) if dep)
         for cid, component in components.items()
