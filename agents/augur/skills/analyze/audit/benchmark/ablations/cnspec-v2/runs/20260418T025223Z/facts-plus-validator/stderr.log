@@ -1,0 +1,38 @@
+2026-04-18T03:04:05.181771Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /tmp/augur-ablation/cnspec-v2/facts-plus-validator/stories/onboarding-automation-integration.yaml:
+  - id: "getting-started"
+    title: "Getting Started"
+    description: "Follow the main runtime slices from command entrypoints into execution, output, and onboarding."
+    audience: ["engineer", "maintainer"]
+    stories:
+      - id: "apps-cnspec"
+        description: "Start with the command layer because every major workflow enters through the root CLI."
+      - id: "policy-runtime"
+        description: "Next read the scan runtime, since the command surface mostly delegates into LocalScanner and bundle execution."
+      - id: "cli-reporting"
+        description: "Then see how scan output becomes advisory rows and SBOM artifacts."
+      - id: "onboarding-automation"
+        description: "Finish with onboarding to understand the separate Terraform-driven integration path."
+2026-04-18T03:04:26.049058Z ERROR codex_core::tools::router: error=apply_patch verification failed: Failed to find expected lines in /tmp/augur-ablation/cnspec-v2/facts-plus-validator/stories/policy-runtime-result-storage.yaml:
+structures:
+  - id: "result-storage-structure"
+    title: "Store Variants"
+    type: "data lineage"
+    nodes:
+      - id: "scan-results-store"
+        children: []
+        observation_ids: ["sqlite-wrapper", "sqlite-metadata", "inmemory-writer"]
+      - id: "scan-data-store"
+        children: []
+        observation_ids: ["sqlite-metadata"]
+      - id: "inmemory-results-cache"
+        children: []
+        observation_ids: ["inmemory-writer"]
+    edges:
+      - from: "scan-results-store"
+        to: "scan-data-store"
+        label: "writes"
+        type: "writes"
+      - from: "scan-results-store"
+        to: "inmemory-results-cache"
+        label: "writes"
+        type: "writes"

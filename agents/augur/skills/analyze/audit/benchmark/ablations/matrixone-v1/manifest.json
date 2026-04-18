@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "name": "matrixone-v1",
+  "repo": {
+    "slug": "matrixorigin--matrixone",
+    "repo_root": "/kord/shared/repos/matrixorigin--matrixone",
+    "commit": "68390b227551e2189ed6a071dab92f8983436088"
+  },
+  "reference_run": {
+    "run_dir": "/kord/agents/augur-local-codex/memory/projects/matrixorigin--matrixone/analysis/68390b227551e2189ed6a071dab92f8983436088/2026-04-18T00-56-38Z",
+    "pack_json": "/kord/agents/augur-local-codex/memory/projects/matrixorigin--matrixone/analysis/68390b227551e2189ed6a071dab92f8983436088/2026-04-18T00-56-38Z/local-codex-pack/PACK.json"
+  },
+  "conditions": [
+    {
+      "id": "bare-model",
+      "prompt_file": "prompts/bare-model.md",
+      "uses_deterministic_facts": false,
+      "uses_augur_skill": false,
+      "uses_semantic_memory": false
+    },
+    {
+      "id": "skill-no-facts",
+      "prompt_file": "prompts/skill-no-facts.md",
+      "uses_deterministic_facts": false,
+      "uses_augur_skill": true,
+      "uses_semantic_memory": false
+    },
+    {
+      "id": "facts-no-memory",
+      "prompt_file": "prompts/facts-no-memory.md",
+      "uses_deterministic_facts": true,
+      "uses_augur_skill": false,
+      "uses_semantic_memory": false
+    },
+    {
+      "id": "current-policy",
+      "prompt_file": "prompts/current-policy.md",
+      "uses_deterministic_facts": true,
+      "uses_augur_skill": true,
+      "uses_semantic_memory": true
+    }
+  ]
+}

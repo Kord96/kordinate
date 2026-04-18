@@ -45,7 +45,7 @@ examples: []
 - `layered` describes horizontal dependency structure.
 - `mvc` and `mvvm` describe presentation/application coordination patterns that may live within one or more layers.
 - `middleware` often implements a cross-cutting request pipeline around or before the layered core, but it is not itself the layering model.
-- Prefer `layered` only when downward dependency direction across named layers is visible. A feature-oriented or plugin-oriented codebase should use those concepts instead.
+- Prefer `layered` only when downward dependency direction across named layers is visible. Clean-architecture and onion-style systems may still fit here when the main visible signal is concentric or downward dependency discipline rather than a separate first-class topology.
 
 ### Relationship To Other Concepts
 

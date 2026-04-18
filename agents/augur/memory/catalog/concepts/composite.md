@@ -10,7 +10,7 @@ scope: backend
 relationships:
   related_to:
   - component
-  - tree
+  - graph
   - visitor
 aliases: []
 disambiguates_from: []
@@ -64,7 +64,7 @@ Look for a uniform interface applied to both individual objects and compositions
 ### Relationship To Other Concepts
 
 - Related to [component](/concepts/component) when UI or domain trees are structured so leaf and container nodes share one abstraction.
-- Related to [tree](/concepts/tree) because composite is often used to model hierarchical structures uniformly.
+- Related to [graph](/concepts/graph) as a contrast: composite is specifically about uniform treatment of hierarchical parent-child structures rather than general graph connectivity.
 - Related to [visitor](/concepts/visitor) when operations need to traverse composite structures without bloating node interfaces.
 
 ### Boundary

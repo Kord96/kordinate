@@ -52,6 +52,10 @@ monitoring:
       description: Latency distribution for repository operations that cross a persistence boundary.
     - name: repository.slow_query.rate
       description: Rate of repository calls crossing slow-query or saturation thresholds.
-  business_metrics: []
+  business_metrics:
+    - name: repository.write.success.rate
+      description: Fraction of repository-backed writes that complete successfully on the primary persistence path.
+    - name: repository.read.freshness
+      description: Freshness or staleness of reads when repository calls depend on caches, replicas, or asynchronous projections.
   gaps:
     - If repository calls are not visible separately from application logic, persistence regressions are hard to isolate.

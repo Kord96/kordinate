@@ -11,7 +11,7 @@ relationships:
   related_to:
   - ast
   - composite
-  - interpreter
+  - command
 aliases: []
 disambiguates_from: []
 preferred_over: []
@@ -66,7 +66,7 @@ Look for correct double dispatch and separation of algorithm from data structure
 
 - Related to [ast](/concepts/ast) because AST traversal is one of the most common concrete uses of the visitor pattern.
 - Related to [composite](/concepts/composite) when operations need to traverse composite object trees without putting every operation on the node types.
-- Related to [interpreter](/concepts/interpreter) when visiting node types produces evaluation or execution behavior.
+- Related to [command](/concepts/command) as a contrast: visitors separate operations from the structure being traversed, while command objects package one executable action directly.
 
 ### Boundary
 

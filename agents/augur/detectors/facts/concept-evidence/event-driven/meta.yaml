@@ -1,0 +1,64 @@
+concept: event-driven
+detectors:
+  ast_grep:
+    enabled: false
+    detector_strength: 1
+  semgrep:
+    enabled: false
+    detector_strength: 1
+  signatures:
+    enabled: false
+    detector_strength: 1
+  questions:
+    enabled: true
+    detector_strength: 5
+    ask_when:
+      - broad_match
+      - architecture_level_concept
+      - conflicting_evidence
+policy:
+  auto_confirm:
+    allowed: false
+    min_detector_strength: 5
+    min_match_confidence: 5
+    requires_no_contradiction: true
+  unresolved_state: candidate
+  negative_rule_result_means: neutral
+  broad_match_requires_questions: true
+questions:
+  threshold: 6
+  entries:
+    - id: event-driven-explicit-event-contracts
+      prompt: Are named events or event payloads explicit integration boundaries rather than incidental callbacks or notifications?
+      weight: 3
+      signals:
+        - event
+        - topic
+        - publish
+        - subscribe
+    - id: event-driven-decoupled-consumers
+      prompt: Do producers and consumers operate as decoupled stages with queue, topic, or asynchronous delivery semantics?
+      weight: 3
+      signals:
+        - queue
+        - consumer
+        - handler
+        - lag
+monitoring:
+  applies_to:
+    - component
+    - flow
+  health_signals:
+    - name: event.consumer.lag
+      description: Delay or backlog between published events and consumer processing.
+    - name: event.dead_letter.rate
+      description: Rate of events routed to dead-letter or failure handling paths.
+    - name: event.publish_to_consume.latency
+      description: End-to-end latency from event publication to successful consumption.
+  business_metrics:
+    - name: event.completion.rate
+      description: Fraction of published business events that result in successful downstream completion.
+    - name: event.throughput.by_type
+      description: Volume of published and consumed events grouped by event type or topic.
+  gaps:
+    - Without lag and completion visibility, asynchronous business work can fail or stall without an obvious user-facing signal.

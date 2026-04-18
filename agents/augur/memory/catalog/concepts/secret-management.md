@@ -68,7 +68,7 @@ Look for secrets never committed to version control, accessed through a dedicate
 
 - Related to [config-management](/concepts/config-management) because secrets are often injected through the same runtime configuration channels but require stricter handling.
 - Related to [mtls](/concepts/mtls) when certificate and key material must be distributed and rotated securely.
-- Related to [secret-rotation](/concepts/secret-rotation) when credential lifecycle and expiry are first-class operational concerns.
+- Related to [immutable-infra](/concepts/immutable-infra) when secret rollout and replacement are coordinated through deployment automation rather than manual host mutation.
 
 ### Boundary
 

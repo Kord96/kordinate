@@ -1,0 +1,26 @@
+{
+  "started_at": "2026-04-18T02:52:23Z",
+  "repo_root": "/kord/shared/repos/mondoohq--cnspec",
+  "prompt_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/cnspec-v2/prompts/schemas-only.md",
+  "model": "gpt-5.4",
+  "command": [
+    "codex",
+    "exec",
+    "--dangerously-bypass-approvals-and-sandbox",
+    "-C",
+    "/kord/shared/repos/mondoohq--cnspec",
+    "--output-last-message",
+    "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/cnspec-v2/runs/20260418T025223Z/schemas-only/final-message.txt",
+    "--json",
+    "-",
+    "-m",
+    "gpt-5.4"
+  ],
+  "status": "ok",
+  "stdout_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/cnspec-v2/runs/20260418T025223Z/schemas-only/stdout.jsonl",
+  "stderr_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/cnspec-v2/runs/20260418T025223Z/schemas-only/stderr.log",
+  "final_message_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/cnspec-v2/runs/20260418T025223Z/schemas-only/final-message.txt",
+  "completed_at": "2026-04-18T03:05:27Z",
+  "returncode": 0,
+  "elapsed_ms": 783977
+}

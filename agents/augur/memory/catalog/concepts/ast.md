@@ -10,9 +10,9 @@ status: primary
 scope: domain
 relationships:
   related_to:
-  - compiler
+  - intermediate-representation
   - visitor
-  - interpreter
+  - command
 aliases: []
 disambiguates_from: []
 preferred_over: []
@@ -65,9 +65,9 @@ Look for a well-typed tree representation of parsed source code with systematic 
 
 ### Relationship To Other Concepts
 
-- Related to [compiler](/concepts/compiler) because ASTs are a core intermediate representation in parsing, analysis, and code generation pipelines.
+- Related to [intermediate-representation](/concepts/intermediate-representation) because ASTs are one of the core typed representations used in parsing, analysis, and transformation pipelines.
 - Related to [visitor](/concepts/visitor) because tree traversal and analysis often use visitor-style dispatch over AST node types.
-- Related to [interpreter](/concepts/interpreter) when AST nodes are executed or evaluated directly rather than compiled further.
+- Related to [command](/concepts/command) only as a loose contrast: ASTs model syntax structure, while command-style objects usually model executable operations directly.
 
 ### Boundary
 

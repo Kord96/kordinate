@@ -29,6 +29,7 @@ SEMANTIC_REVIEW_CONCEPTS = {
     "data-mapper",
     "ddd",
     "dependency-injection",
+    "event-driven",
     "event-sourcing",
     "hexagonal",
     "layered",
@@ -37,33 +38,47 @@ SEMANTIC_REVIEW_CONCEPTS = {
     "outbox",
     "plugin",
     "repository",
+    "rest",
     "saga",
     "saga-orchestrator",
+    "scheduler",
     "service-mesh",
+    "service-manager",
+    "state-machine",
     "unit-of-work",
     "workflow-engine",
 }
 AUTO_CONFIRM_FACT_CONCEPTS = {
     "api-key-auth",
     "circuit-breaker",
-    "event-driven",
     "graphql",
     "grpc",
     "health-check",
     "input-validation",
     "oauth-oidc",
     "rbac",
-    "rest",
     "retry",
     "realtime",
     "route-guard",
     "router",
-    "scheduler",
     "session-auth",
     "structured-logging",
     "timeout",
     "token-auth",
 }
+DETECTOR_BACKING = {
+    "repository": "strong",
+    "rest": "strong",
+    "workflow-engine": "partial",
+    "plugin": "partial",
+    "scheduler": "partial",
+    "service-manager": "weak",
+    "state-machine": "weak",
+    "event-driven": "weak",
+    "command-dispatch": "weak",
+}
+CONFIDENCE_ORDER = {"low": 0, "medium": 1, "high": 2}
+CONFIDENCE_BY_SCORE = {0: "low", 1: "medium", 2: "high"}
 FRAMEWORK_PHASE2_HINTS = {
     "react": {
         "inspect_concepts": ["component", "form-binding", "hydration", "error-boundary", "suspense-boundary"],
@@ -197,6 +212,46 @@ def concept_detector_verdict(concept_id: str, confidence: str) -> str:
     return "candidate"
 
 
+def detector_backing(concept_id: str) -> str:
+    if concept_id in DETECTOR_BACKING:
+        return DETECTOR_BACKING[concept_id]
+    detector_dir = ROOT / "detectors" / "facts" / "concept-evidence" / concept_id
+    if detector_dir.exists():
+        files = {path.name for path in detector_dir.iterdir() if path.is_file()}
+        if {"meta.yaml", "signatures.yaml"} <= files:
+            return "strong"
+        if files:
+            return "partial"
+    return "weak"
+
+
+def cap_confidence(confidence: str, maximum: str) -> str:
+    capped = min(CONFIDENCE_ORDER.get(confidence, 0), CONFIDENCE_ORDER.get(maximum, 0))
+    return CONFIDENCE_BY_SCORE[capped]
+
+
+def adjusted_pattern_confidence(concept_id: str, confidence: str, facts: list[dict[str, Any]]) -> str:
+    adjusted = confidence
+    if concept_id in {"event-driven", "scheduler"}:
+        adjusted = cap_confidence(adjusted, "medium")
+    if concept_id in {"service-manager", "state-machine"}:
+        adjusted = cap_confidence(adjusted, "low")
+    if concept_id == "workflow-engine":
+        concrete_framework = any(
+            fact.get("kind") == "framework"
+            or str(fact.get("raw_evidence", {}).get("registration_type") or "") in {"workflow-registration", "activity-registration"}
+            for fact in facts
+        )
+        adjusted = cap_confidence(adjusted, "high" if concrete_framework else "medium")
+    if concept_id == "rest":
+        route_count = sum(1 for fact in facts if fact.get("kind") == "route")
+        adjusted = cap_confidence(adjusted, "medium" if route_count >= 2 else "low")
+    if concept_id == "repository":
+        boundary_count = sum(1 for fact in facts if fact.get("kind") == "boundary")
+        adjusted = cap_confidence(adjusted, "high" if boundary_count >= 2 else "medium")
+    return adjusted
+
+
 def contradiction_summary(concept_id: str, facts: list[dict[str, Any]]) -> list[str]:
     contradictions: list[str] = []
     if concept_id in {"timeout", "retry"}:
@@ -222,6 +277,7 @@ def build_pattern(
     note: str,
 ) -> dict[str, Any]:
     components = sorted({component for fact in facts for component in fact_components(fact)})
+    confidence = adjusted_pattern_confidence(concept_id, confidence, facts)
     evidence = make_evidence(concept_id, facts, note)
     grounded_in = evidence["files"]
     fact_evidence = evidence["fact_ids"]
@@ -230,6 +286,7 @@ def build_pattern(
         "id": concept_id,
         "category": category,
         "confidence": confidence,
+        "detector_backing": detector_backing(concept_id),
         "components": components,
         "evidence": evidence,
         "grounded_in": grounded_in,
@@ -625,6 +682,7 @@ def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any], fr
         "supporting_components": evidence.get("components") or [],
         "decision_mode": pattern.get("decision_mode") or "fact-inference",
         "semantic_review_required": bool(pattern.get("semantic_review_required")),
+        "detector_backing": pattern.get("detector_backing") or detector_backing(concept_id),
         "semantic_questions": question_payload,
         "framework_heuristics": {
             "suggested_by_frameworks": heuristic_frameworks,
@@ -656,7 +714,11 @@ def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any], fr
         "detector": {
             "id": f"concept-evidence-{pattern.get('id')}",
             "class": "inference",
-            "strength": 3,
+            "strength": {
+                "strong": 5,
+                "partial": 3,
+                "weak": 2,
+            }.get(str(pattern.get("detector_backing") or detector_backing(concept_id)), 3),
             "rule": None,
             "bundle": "detectors:concept-evidence",
         },

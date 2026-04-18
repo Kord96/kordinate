@@ -65,7 +65,7 @@ Look for tests that assert universal properties (invariants) over generated inpu
 
 - Related to [fixture-builder](/concepts/fixture-builder) as another testing aid, though property testing generates inputs from properties rather than hand-assembling cases.
 - Related to [result-type](/concepts/result-type) when functions expose invariants that property tests can exercise across success and failure shapes.
-- Related to [fuzz-testing](/concepts/fuzz-testing) because both generate inputs, though property testing asserts domain invariants rather than only crashing behavior.
+- Related to [snapshot-testing](/concepts/snapshot-testing) as a contrast: property testing explores input spaces through invariants rather than locking expected outputs into stored examples.
 
 ### Boundary
 

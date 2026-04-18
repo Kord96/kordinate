@@ -808,6 +808,20 @@ function rewriteCommandRunArtifactPaths(command, artifactContext) {
 function shellSingleQuote(value) {
     return `'${value.replace(/'/g, `'\"'\"'`)}'`;
 }
+function shellCandidates() {
+    const candidates = [
+        process.env.SHELL,
+        '/bin/bash',
+        '/usr/bin/bash',
+        '/bin/sh',
+        '/usr/bin/sh',
+    ];
+    return Array.from(new Set(candidates.filter((value) => typeof value === 'string' && value.trim().length > 0)));
+}
+function shellCommandArgs(shellPath, command) {
+    const shellName = path.basename(shellPath);
+    return shellName === 'sh' ? ['-c', command] : ['-lc', command];
+}
 function withGitSafeDirectoryEnv(baseEnv, repoPath) {
     const normalized = Object.fromEntries(Object.entries(baseEnv).filter((entry) => typeof entry[1] === 'string'));
     if (!repoPath?.trim())
@@ -822,41 +836,55 @@ function withGitSafeDirectoryEnv(baseEnv, repoPath) {
     };
 }
 async function runBashCommand(options) {
-    return await new Promise((resolve, reject) => {
-        const child = spawn('/bin/bash', ['-lc', options.command], {
-            cwd: options.cwd,
-            env: withGitSafeDirectoryEnv({
-                ...process.env,
-                ...(options.env ?? {}),
-            }, options.cwd),
-            stdio: ['ignore', 'pipe', 'pipe'],
-        });
-        let stdout = '';
-        let stderr = '';
-        const timeoutHandle = options.timeoutMs
-            ? setTimeout(() => child.kill('SIGKILL'), options.timeoutMs)
-            : undefined;
-        child.stdout.on('data', chunk => { stdout += chunk.toString(); });
-        child.stderr.on('data', chunk => { stderr += chunk.toString(); });
-        child.on('error', error => {
-            if (timeoutHandle)
-                clearTimeout(timeoutHandle);
-            reject(Object.assign(error, { stdout, stderr }));
-        });
-        child.on('close', code => {
-            if (timeoutHandle)
-                clearTimeout(timeoutHandle);
-            if (code === 0) {
-                resolve({ stdout, stderr });
-                return;
-            }
-            reject(Object.assign(new Error(stderr.trim() || stdout.trim() || `command failed with exit ${code}`), {
-                stdout,
-                stderr,
-                exitCode: code ?? undefined,
-            }));
-        });
-    });
+    let lastError;
+    for (const shellPath of shellCandidates()) {
+        try {
+            return await new Promise((resolve, reject) => {
+                const child = spawn(shellPath, shellCommandArgs(shellPath, options.command), {
+                    cwd: options.cwd,
+                    env: withGitSafeDirectoryEnv({
+                        ...process.env,
+                        ...(options.env ?? {}),
+                    }, options.cwd),
+                    stdio: ['ignore', 'pipe', 'pipe'],
+                });
+                let stdout = '';
+                let stderr = '';
+                const timeoutHandle = options.timeoutMs
+                    ? setTimeout(() => child.kill('SIGKILL'), options.timeoutMs)
+                    : undefined;
+                child.stdout.on('data', chunk => { stdout += chunk.toString(); });
+                child.stderr.on('data', chunk => { stderr += chunk.toString(); });
+                child.on('error', error => {
+                    if (timeoutHandle)
+                        clearTimeout(timeoutHandle);
+                    reject(Object.assign(error, { stdout, stderr, shellPath }));
+                });
+                child.on('close', code => {
+                    if (timeoutHandle)
+                        clearTimeout(timeoutHandle);
+                    if (code === 0) {
+                        resolve({ stdout, stderr });
+                        return;
+                    }
+                    reject(Object.assign(new Error(stderr.trim() || stdout.trim() || `command failed with exit ${code}`), {
+                        stdout,
+                        stderr,
+                        exitCode: code ?? undefined,
+                        shellPath,
+                    }));
+                });
+            });
+        }
+        catch (error) {
+            lastError = error;
+            const code = typeof error === 'object' && error && 'code' in error ? String(error.code ?? '') : '';
+            if (code === 'ENOENT')
+                continue;
+            throw error;
+        }
+    }
+    throw lastError instanceof Error ? lastError : new Error('no usable shell found for bash command execution');
 }
 function protectedRunArtifactPaths(artifactContext) {
     if (!artifactContext)

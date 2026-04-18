@@ -2,14 +2,22 @@
 
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { spawnSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+const packageRoot = join(__dirname, '..')
 const distPath = join(__dirname, '..', 'dist', 'index.js')
 
 if (!existsSync(distPath)) {
-  console.error('klaude-daemon: dist/index.js not found. Build the package first with `npm run build`.')
-  process.exit(1)
+  const build = spawnSync('npm', ['run', 'build'], {
+    cwd: packageRoot,
+    stdio: 'inherit',
+  })
+  if (build.status !== 0 || !existsSync(distPath)) {
+    console.error('klaude-daemon: dist/index.js not found after `npm run build`.')
+    process.exit(build.status ?? 1)
+  }
 }
 
 await import(pathToFileURL(distPath).href)

@@ -2,7 +2,7 @@ schema: agent-index/v1
 agent: augur
 description: Static Augur bundle manifest for architecture analysis preload
 usage:
-  preload: included in generated AGENT.md and intended to be cache-friendly static context
+  preload: included in generated AGENT.md and intended to support Augur `/analyze` only, not generic consultation
   ondemand: not included in the generated bundle; read only when needed
   runtime: mutable or generated at runtime; never compiled into the static bundle
 entries:

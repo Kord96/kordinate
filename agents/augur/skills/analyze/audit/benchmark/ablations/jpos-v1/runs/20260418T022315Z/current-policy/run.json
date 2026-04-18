@@ -1,0 +1,26 @@
+{
+  "started_at": "2026-04-18T02:23:15Z",
+  "repo_root": "/kord/shared/repos/jpos--jPOS",
+  "prompt_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/jpos-v1/prompts/current-policy.md",
+  "model": "gpt-5.4",
+  "command": [
+    "codex",
+    "exec",
+    "--dangerously-bypass-approvals-and-sandbox",
+    "-C",
+    "/kord/shared/repos/jpos--jPOS",
+    "--output-last-message",
+    "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/jpos-v1/runs/20260418T022315Z/current-policy/final-message.txt",
+    "--json",
+    "-",
+    "-m",
+    "gpt-5.4"
+  ],
+  "status": "ok",
+  "stdout_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/jpos-v1/runs/20260418T022315Z/current-policy/stdout.jsonl",
+  "stderr_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/jpos-v1/runs/20260418T022315Z/current-policy/stderr.log",
+  "final_message_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/jpos-v1/runs/20260418T022315Z/current-policy/final-message.txt",
+  "completed_at": "2026-04-18T02:35:52Z",
+  "returncode": 0,
+  "elapsed_ms": 756829
+}

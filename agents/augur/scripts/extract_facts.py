@@ -83,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
 
         startup_domains = [
             domain
-            for domain in ("frameworks", "boundaries", "routes", "dispatch-bindings", "hot-files")
+            for domain in ("frameworks", "boundaries", "routes", "dispatch-bindings", "hot-files", "control-hotspots", "state-access-summary")
             if domain in domains
         ]
         startup_payload = {
@@ -100,7 +100,7 @@ def main(argv: list[str] | None = None) -> int:
                     "count": domain.get("count"),
                 }
                 for domain in (index_payload.get("index", {}) or {}).get("domains", [])
-                if str(domain.get("name") or "") in {"concept-evidence", "external-clients", "config", "import-graph"}
+                if str(domain.get("name") or "") in {"concept-evidence", "external-clients", "config", "import-graph", "call-edges", "data-touches", "execution-slices"}
             ],
             "domain_counts": [
                 {

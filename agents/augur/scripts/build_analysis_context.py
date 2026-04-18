@@ -26,8 +26,17 @@ def main() -> int:
     startup_path = facts_dir / "startup.json"
     blast_path = run_dir / "blast.json"
     atlas_path = run_dir / "atlas.json"
+    concept_evidence_path = facts_dir / "concept-evidence.json"
+    story_seeds_path = facts_dir / "story-seeds.json"
+    component_seeds_path = facts_dir / "component-seeds.json"
+    symbols_seed_path = facts_dir / "symbols-seed.json"
+    state_seeds_path = facts_dir / "state-seeds.json"
+    facts_guide_path = facts_dir / "facts-guide.json"
 
     starter_files: list[str] = [str(blast_path), str(startup_path)]
+    for optional in (facts_guide_path, concept_evidence_path, story_seeds_path, component_seeds_path, symbols_seed_path, state_seeds_path):
+        if optional.exists():
+            starter_files.append(str(optional))
     try:
         startup = json.loads(startup_path.read_text(encoding="utf-8"))
         startup_files = startup.get("startup_files") or []
@@ -57,7 +66,9 @@ def main() -> int:
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
                 "Use those facts to form initial hypotheses, then move into repo code before doing more fact reduction.",
-                "Use larger supporting domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.",
+                "Use larger supporting domains only when they help resolve ambiguity, answer semantic questions, or resolve materially relevant concept candidates.",
+                "Use facts/symbols-seed.json when present to prefer exact mechanism names from high-signal files over abstract paraphrases in observations and summaries.",
+                "Use facts/state-seeds.json when present to tighten state claims around exact structs, enums, maps, config variants, or storage selectors in the grounded files.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
                 "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
             ]
@@ -68,7 +79,17 @@ def main() -> int:
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
                 "Use those facts to form initial architectural hypotheses, then move into repo code before doing more fact reduction.",
-                "Use larger supporting domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.",
+                "Use larger supporting domains only when they help resolve ambiguity, answer semantic questions, or resolve materially relevant concept candidates.",
+                "After you identify provisional top-level components, perform a mandatory breadth pass in repo code for each root slice.",
+                "Treat facts/concept-evidence.json as candidate guidance: use detector backing, contradictions, and semantic questions to resolve concepts before they affect atlas concepts, monitoring, or gaps.",
+                "Use facts/component-seeds.json when present to choose representative files for each provisional root slice before finalizing the atlas or stories.",
+                "Perform a root challenge pass before finalizing roots: reject provisional roots anchored mainly in test/, docs/, examples/, or client-only paths.",
+                "If the repo has strong engine, storage, or runtime slices, do not spend a full top-level root on bootstrap alone; keep bootstrap as a child unless it is truly the dominant system concern.",
+                "On large repos, require at least one top-level root anchored in deeper runtime or storage internals when deterministic seeds provide one.",
+                "Use facts/symbols-seed.json when present to prefer exact mechanism names from high-signal files over abstract paraphrases in summaries, observations, and flows.",
+                "Use facts/state-seeds.json when present to tighten state claims around exact structs, enums, maps, config variants, or storage selectors in the grounded files.",
+                "For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file before finalizing stories.",
+                "Use facts to prioritize where to start, not to cap how broadly you read in full mode.",
                 "Use the run manifest for available fact files instead of guessing optional paths.",
                 "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
             ]
@@ -84,6 +105,12 @@ def main() -> int:
         "facts_dir": str(facts_dir),
         "startup_path": str(startup_path),
         "blast_path": str(blast_path),
+        "facts_guide_path": str(facts_guide_path),
+        "concept_evidence_path": str(concept_evidence_path),
+        "story_seeds_path": str(story_seeds_path),
+        "component_seeds_path": str(component_seeds_path),
+        "symbols_seed_path": str(symbols_seed_path),
+        "state_seeds_path": str(state_seeds_path),
         "atlas_path": str(atlas_path),
         "latest_path": str(analysis_dir.parent / "latest.json"),
         "starter_files": starter_files,

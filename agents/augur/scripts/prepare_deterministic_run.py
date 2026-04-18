@@ -56,28 +56,59 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
-def refresh_fact_manifests(facts_dir: Path, concept_evidence_path: Path) -> None:
-    if not concept_evidence_path.exists():
-        return
+def upsert_domain_record(domains: list[dict], name: str, file: str, count: int) -> list[dict]:
+    updated = [
+        domain for domain in domains
+        if str(domain.get("name") or "") != name
+    ]
+    updated.append({
+        "name": name,
+        "file": file,
+        "count": count,
+    })
+    updated.sort(key=lambda item: str(item.get("name") or ""))
+    return updated
 
-    concept_payload = load_json(concept_evidence_path)
-    concept_count = int(concept_payload.get("count") or len(concept_payload.get("facts") or []))
+
+def refresh_fact_manifests(
+    facts_dir: Path,
+    concept_evidence_path: Path,
+    story_seeds_path: Path,
+    component_seeds_path: Path,
+    symbols_seed_path: Path,
+    state_seeds_path: Path,
+) -> None:
+    domain_records: list[tuple[str, str, int]] = []
+    if concept_evidence_path.exists():
+        concept_payload = load_json(concept_evidence_path)
+        concept_count = int(concept_payload.get("count") or len(concept_payload.get("facts") or []))
+        domain_records.append(("concept-evidence", "facts/concept-evidence.json", concept_count))
+    if story_seeds_path.exists():
+        story_payload = load_json(story_seeds_path)
+        story_count = int(len(story_payload.get("candidate_concern_classes") or []))
+        domain_records.append(("story-seeds", "facts/story-seeds.json", story_count))
+    if component_seeds_path.exists():
+        component_payload = load_json(component_seeds_path)
+        component_count = int(len(component_payload.get("candidate_components") or []))
+        domain_records.append(("component-seeds", "facts/component-seeds.json", component_count))
+    if symbols_seed_path.exists():
+        symbols_payload = load_json(symbols_seed_path)
+        symbols_count = int(len(symbols_payload.get("files") or []))
+        domain_records.append(("symbols-seed", "facts/symbols-seed.json", symbols_count))
+    if state_seeds_path.exists():
+        state_payload = load_json(state_seeds_path)
+        state_count = int(len(state_payload.get("files") or []))
+        domain_records.append(("state-seeds", "facts/state-seeds.json", state_count))
+    if not domain_records:
+        return
 
     index_path = facts_dir / "index.json"
     if index_path.exists():
         index_payload = load_json(index_path)
         index = index_payload.setdefault("index", {})
         domains = index.setdefault("domains", [])
-        domains = [
-            domain for domain in domains
-            if str(domain.get("name") or "") != "concept-evidence"
-        ]
-        domains.append({
-            "name": "concept-evidence",
-            "file": "facts/concept-evidence.json",
-            "count": concept_count,
-        })
-        domains.sort(key=lambda item: str(item.get("name") or ""))
+        for name, file, count in domain_records:
+            domains = upsert_domain_record(domains, name, file, count)
         index["domains"] = domains
         write_json(index_path, index_payload)
 
@@ -85,29 +116,13 @@ def refresh_fact_manifests(facts_dir: Path, concept_evidence_path: Path) -> None
     if startup_path.exists():
         startup_payload = load_json(startup_path)
         large_domains = startup_payload.get("large_domains") or []
-        large_domains = [
-            domain for domain in large_domains
-            if str(domain.get("name") or "") != "concept-evidence"
-        ]
-        large_domains.append({
-            "name": "concept-evidence",
-            "file": "facts/concept-evidence.json",
-            "count": concept_count,
-        })
-        large_domains.sort(key=lambda item: str(item.get("name") or ""))
+        for name, file, count in domain_records:
+            large_domains = upsert_domain_record(large_domains, name, file, count)
         startup_payload["large_domains"] = large_domains
 
         domain_counts = startup_payload.get("domain_counts") or []
-        domain_counts = [
-            domain for domain in domain_counts
-            if str(domain.get("name") or "") != "concept-evidence"
-        ]
-        domain_counts.append({
-            "name": "concept-evidence",
-            "file": "facts/concept-evidence.json",
-            "count": concept_count,
-        })
-        domain_counts.sort(key=lambda item: str(item.get("name") or ""))
+        for name, file, count in domain_records:
+            domain_counts = upsert_domain_record(domain_counts, name, file, count)
         startup_payload["domain_counts"] = domain_counts
         write_json(startup_path, startup_payload)
 
@@ -118,6 +133,11 @@ def main() -> int:
     run_dir = Path(args.run_dir).resolve()
     facts_dir = run_dir / "facts"
     concept_evidence_path = facts_dir / "concept-evidence.json"
+    story_seeds_path = facts_dir / "story-seeds.json"
+    component_seeds_path = facts_dir / "component-seeds.json"
+    symbols_seed_path = facts_dir / "symbols-seed.json"
+    state_seeds_path = facts_dir / "state-seeds.json"
+    facts_guide_path = facts_dir / "facts-guide.json"
     blast_path = run_dir / "blast.json"
 
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -143,7 +163,49 @@ def main() -> int:
         "--output",
         str(concept_evidence_path),
     ])
-    refresh_fact_manifests(facts_dir, concept_evidence_path)
+    run_cmd([
+        "python3",
+        str(ROOT / "scripts" / "derive_story_seeds.py"),
+        str(facts_dir),
+        "--output",
+        str(story_seeds_path),
+    ])
+    run_cmd([
+        "python3",
+        str(ROOT / "scripts" / "derive_component_seeds.py"),
+        str(facts_dir),
+        "--output",
+        str(component_seeds_path),
+    ])
+    run_cmd([
+        "python3",
+        str(ROOT / "scripts" / "derive_symbols_seed.py"),
+        str(facts_dir),
+        "--output",
+        str(symbols_seed_path),
+    ])
+    run_cmd([
+        "python3",
+        str(ROOT / "scripts" / "derive_state_seeds.py"),
+        str(facts_dir),
+        "--output",
+        str(state_seeds_path),
+    ])
+    refresh_fact_manifests(
+        facts_dir,
+        concept_evidence_path,
+        story_seeds_path,
+        component_seeds_path,
+        symbols_seed_path,
+        state_seeds_path,
+    )
+    run_cmd([
+        "python3",
+        str(ROOT / "scripts" / "build_facts_guide.py"),
+        str(facts_dir),
+        "--output",
+        str(facts_guide_path),
+    ])
 
     blast_cmd = [
         "python3",
@@ -167,6 +229,11 @@ def main() -> int:
         "run_dir": str(run_dir),
         "facts_dir": str(facts_dir),
         "concept_evidence": str(concept_evidence_path),
+        "story_seeds": str(story_seeds_path),
+        "component_seeds": str(component_seeds_path),
+        "symbols_seed": str(symbols_seed_path),
+        "state_seeds": str(state_seeds_path),
+        "facts_guide": str(facts_guide_path),
         "blast": str(blast_path),
         "analysis_mode": args.analysis_mode,
     }

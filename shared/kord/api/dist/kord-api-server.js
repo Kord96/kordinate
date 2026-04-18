@@ -7,6 +7,7 @@ import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-reg
 import { log } from './log.js';
 import { applyFailureToRequestRecord, applyResponseToRequestRecord, createRequestRecord } from './request-model.js';
 import { buildFinalTranscriptEvent, buildTranscriptEventFromGateway, buildTranscriptEventFromProgress, coalesceTranscriptEvent, summarizeValue } from './request-transcript.js';
+import { canonicalizeWorkingDir } from './working-dir.js';
 const host = process.env.KORD_API_HOST ?? '0.0.0.0';
 const port = Number.parseInt(process.env.KORD_API_PORT ?? '9091', 10);
 const statePath = process.env.DISCOVERY_STATE_PATH ?? '.daemon-state/discovery-agents.json';
@@ -42,23 +43,6 @@ let ready = false;
 let kubernetesNamespacePromise;
 let kubernetesTokenPromise;
 let kubernetesCaPromise;
-function canonicalizeWorkingDir(workingDir) {
-    if (!workingDir)
-        return workingDir;
-    if (workingDir.startsWith('/kord/repos/')) {
-        return workingDir;
-    }
-    const workstationPrefix = '/kord/workstation/home/project/';
-    if (!workingDir.startsWith(workstationPrefix))
-        return workingDir;
-    const suffix = workingDir.slice(workstationPrefix.length);
-    const slashIndex = suffix.indexOf('/');
-    const repo = slashIndex === -1 ? suffix : suffix.slice(0, slashIndex);
-    const rest = slashIndex === -1 ? '' : suffix.slice(slashIndex);
-    if (!repo)
-        return workingDir;
-    return `/kord/repos/${repo}${rest}`;
-}
 function resolveTimeoutMs(agent, body) {
     if (typeof body.timeout_ms === 'number')
         return body.timeout_ms;

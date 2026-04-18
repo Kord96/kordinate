@@ -13,16 +13,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build Augur prompt context fragments")
-    parser.add_argument("--bundle-mode", default="selective", help="bundle mode such as selective, holistic, or full-bundle")
+    parser.add_argument("--bundle-mode", default="evidence-driven", help="Bundle mode such as evidence-driven or auto")
     parser.add_argument("--analysis-mode", default="", help="analysis mode such as full or incremental")
     return parser.parse_args()
 
 
-def resolve_bundle_mode(raw: str) -> str:
-    value = str(raw or "selective").strip().lower()
-    if any(token in value for token in ("holistic", "full-bundle")) or value in {"full", "opus-full"}:
-        return "holistic"
-    return "selective"
+def resolve_bundle_mode(raw: str, analysis_mode: str = "") -> str:
+    _ = analysis_mode
+    value = str(raw or "evidence-driven").strip().lower()
+    if value in {"", "auto", "default"}:
+        return "evidence-driven"
+    return "evidence-driven"
 
 
 def read_text(path: Path) -> str:
@@ -30,13 +31,16 @@ def read_text(path: Path) -> str:
 
 
 def build_bundle_prefix(mode: str) -> str:
-    manifest_path = ROOT / ".generated" / "bundles" / "runtime" / f"analyze-{mode}-v1.json"
+    _ = mode
+    manifest_path = ROOT / ".generated" / "bundles" / "runtime" / "analyze-selective-v1.json"
     if not manifest_path.exists():
         return ""
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     parts: list[str] = []
     for layer in manifest.get("composition_order") or ["skill_bundle", "memory_bundle", "detector_plan"]:
         if layer == "repo_context":
+            continue
+        if layer == "memory_bundle":
             continue
         relative = manifest.get(layer)
         if not isinstance(relative, str) or not relative.strip():
@@ -67,10 +71,21 @@ def build_mode_guide(analysis_mode: str) -> str:
     return f"## {title}\n\n{text}\n\n" if text else ""
 
 
+def build_bundle_mode_guide(bundle_mode: str) -> str:
+    mode = resolve_bundle_mode(bundle_mode, "")
+    path = ROOT / "skills" / "analyze" / "bundle-modes" / f"{mode}.md"
+    if not path.exists():
+        return ""
+    title = "Bundle Mode Guide"
+    text = read_text(path)
+    return f"## {title}\n\n{text}\n\n" if text else ""
+
+
 def main() -> int:
     args = parse_args()
     payload = {
-        "bundle_prefix": build_bundle_prefix(resolve_bundle_mode(args.bundle_mode)),
+        "bundle_prefix": build_bundle_prefix(resolve_bundle_mode(args.bundle_mode, args.analysis_mode)),
+        "bundle_mode_guide": build_bundle_mode_guide(resolve_bundle_mode(args.bundle_mode, args.analysis_mode)),
         "mode_guide": build_mode_guide(args.analysis_mode),
     }
     print(json.dumps(payload))

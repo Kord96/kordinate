@@ -12,6 +12,11 @@ Facts are not final semantic conclusions. A fact records a normalized observatio
 
 For `concept-evidence`, deterministic output should include any run-specific semantic questions needed to confirm or reject an ambiguous candidate concept during Phase 2.
 
+For planning-aid artifacts such as `component-seeds`, `story-seeds`, `symbols-seed`, and `state-seeds`, the contract is:
+- use them to steer reading, naming, and repair
+- do not treat them as final architecture truth
+- prefer direct repo evidence when a seed conflicts with grounded code
+
 ## Output Layout
 
 The canonical deterministic output is a `facts/` directory containing domain files plus an index:
@@ -38,13 +43,39 @@ $MEM/
     data-touches.json
     execution-slices.json
     concept-evidence.json
+    story-seeds.json
+    component-seeds.json
+    symbols-seed.json
+    state-seeds.json
+    facts-guide.json
+    state-access-summary.json
+    control-hotspots.json
 ```
 
 `index.json` is the canonical manifest. Domain files may be omitted when empty.
 
-Each domain file is a JSON object containing metadata plus a top-level `facts` array. Consumers should query `file.facts`, not treat the whole domain file as a bare array.
+Observation-domain files are JSON objects containing metadata plus a top-level `facts` array. Consumers should query `file.facts`, not treat the whole domain file as a bare array.
+
+Manifest, guide, planning-aid, and derived-structure artifacts under `facts/` may use specialized JSON shapes instead of a `facts` array. They are still deterministic normalized outputs, but they are not observation-domain files.
 
 Some benchmark and legacy tooling may still materialize a consolidated `facts.json` payload, but the directory layout above is the source-of-truth contract for Augur analysis.
+
+## Artifact Kinds
+
+Use these categories when interpreting files under `facts/`:
+
+- `observation-domain`
+  - normalized detector or inference observations with a top-level `facts` array
+- `manifest`
+  - run-level inventory files such as `index.json` and `startup.json`
+- `guide`
+  - interpretation aids such as `facts-guide.json`
+- `planning-aid`
+  - deterministic advisory artifacts such as `story-seeds.json`, `component-seeds.json`, `symbols-seed.json`, or `state-seeds.json`
+- `derived-structure`
+  - deterministic summaries synthesized from lower-level facts, such as `control-hotspots.json` or `state-access-summary.json`
+
+Do not assume every file under `facts/` uses the same JSON shape.
 
 ## Schema
 
@@ -76,7 +107,7 @@ Some benchmark and legacy tooling may still materialize a consolidated `facts.js
   "facts": [
     {
       "id": "<stable fact id>",
-      "kind": "framework | route | graphql-operation | grpc-service | websocket-channel | model | state-store | middleware | registration | handler | dispatch-binding | boundary | external-client | config-source | import-edge | hot-file | job | event | auth-surface | call-edge | data-touch | execution-slice | concept-candidate | concept-gap",
+      "kind": "framework | route | graphql-operation | grpc-service | websocket-channel | model | state-store | middleware | registration | handler | dispatch-binding | boundary | external-client | config-source | import-edge | hot-file | job | event | auth-surface | call-edge | data-touch | execution-slice | state-access-summary | control-hotspot | concept-candidate | concept-gap",
       "domain": "<domain file name>",
       "summary": "<one sentence describing the observation>",
       "confidence": "high | medium | low",
@@ -272,6 +303,14 @@ Expected `raw_evidence` keys:
 ### Concept Evidence
 
 Capture deterministic concept candidates plus any run-specific semantic questions that Phase 2 must answer before confirming the concept in `atlas.json`.
+
+Phase 2 should resolve each materially relevant candidate as accepted, tentative, or rejected from:
+- detector backing
+- contradictions
+- semantic questions
+- direct repo evidence
+
+Do not let `concept-evidence` become a detector-led concept list. It is a candidate-resolution input.
 
 Expected `raw_evidence` keys:
 - `concept_id`

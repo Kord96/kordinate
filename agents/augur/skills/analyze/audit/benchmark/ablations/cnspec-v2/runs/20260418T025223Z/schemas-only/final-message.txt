@@ -1,0 +1,21 @@
+Generated in `/tmp/augur-ablation/cnspec-v2/schemas-only`:
+
+`atlas.json`  
+`narratives.yaml`  
+`stories/cli-app.yaml`  
+`stories/scan-engine.yaml`  
+`stories/scan-execution-path.yaml`  
+`stories/upstream-sync-and-upload.yaml`  
+`stories/policy-services.yaml`  
+`stories/bundle-resolution.yaml`  
+`stories/resolved-policy-lifecycle.yaml`  
+`stories/content-bundles.yaml`  
+`stories/default-policy-selection.yaml`  
+`stories/sbom-query-pack-story.yaml`  
+`stories/report-surface.yaml`  
+`stories/output-target-routing.yaml`  
+`stories/vulnerability-analysis.yaml`
+
+Brief quality self-assessment: the set is strongly repo-grounded and schema-shaped, with 14 atlas components, 3 flows, 4 state entries, 6 external dependencies, 13 stories, and 3 narratives. I did a lightweight sanity check on file layout and JSON parsing, but I did not run any Augur validator or repair loop, so there may still be schema-edge issues a stricter validator would catch.
+
+Augur artifacts consulted beyond the three allowed schemas: none.

@@ -24,6 +24,7 @@ type BundleLayer = {
 
 type AugurPromptContext = {
   bundle_prefix?: string
+  bundle_mode_guide?: string
   mode_guide?: string
 }
 
@@ -66,11 +67,19 @@ function resolveRepoBundleFile(agentName: string, dir: string, selection?: strin
   return undefined
 }
 
-function loadRepoBundlePrefix(contract: AgentContract): string {
+function applyBundleModeSelection(selection: string | undefined, bundleMode: 'selective' | 'holistic', dir: string): string | undefined {
+  if (!selection) return selection
+  if (dir !== 'memory' && dir !== 'runtime') return selection
+  return selection
+    .replace('analyze-selective-', `analyze-${bundleMode}-`)
+    .replace('analyze-holistic-', `analyze-${bundleMode}-`)
+}
+
+function loadRepoBundlePrefix(contract: AgentContract, bundleMode: 'selective' | 'holistic'): string {
   const layers: BundleLayer[] = [
     { label: 'Skill Bundle', dir: 'skill', selection: contract.bundleRefs?.skill },
-    { label: 'Memory Bundle', dir: 'memory', selection: contract.bundleRefs?.memory },
-    { label: 'Runtime Bundle', dir: 'runtime', selection: contract.bundleRefs?.runtime },
+    { label: 'Memory Bundle', dir: 'memory', selection: applyBundleModeSelection(contract.bundleRefs?.memory, bundleMode, 'memory') },
+    { label: 'Runtime Bundle', dir: 'runtime', selection: applyBundleModeSelection(contract.bundleRefs?.runtime, bundleMode, 'runtime') },
   ]
   const parts = layers.flatMap(layer => {
     const path = resolveRepoBundleFile(contract.specialization, layer.dir, layer.selection)
@@ -81,13 +90,25 @@ function loadRepoBundlePrefix(contract: AgentContract): string {
 }
 
 function resolveBundleMode(message: RequestMessage): 'selective' | 'holistic' {
-  const raw = String(message.agent_params?.bundle_mode ?? 'selective').toLowerCase()
+  const analysisMode = typeof message.agent_params?.analysis_mode === 'string'
+    ? message.agent_params.analysis_mode.trim().toLowerCase()
+    : ''
+  const raw = String(message.agent_params?.bundle_mode ?? 'auto').toLowerCase()
   if (
     raw.includes('holistic')
     || raw.includes('full-bundle')
     || raw === 'full'
     || raw === 'opus-full'
   ) {
+    return 'holistic'
+  }
+  if (raw && raw !== 'auto' && raw !== 'default') {
+    return 'selective'
+  }
+  if (analysisMode === 'incremental') {
+    return 'selective'
+  }
+  if (analysisMode === 'full') {
     return 'holistic'
   }
   return 'selective'
@@ -214,13 +235,15 @@ export function buildPromptPlan(agentContract: AgentContract, runtimeProfile: Ru
     : ''
   const runtimeContext = renderRuntimeContext(message, runtimeProfile)
   const startupGuidance = renderStartupGuidance(message.agent_params)
+  const resolvedBundleMode = resolveBundleMode(message)
   const promptContext = loadPromptContext(agentContract, message)
-  const bundlePrefix = promptContext?.bundle_prefix ?? loadRepoBundlePrefix(agentContract)
+  const bundlePrefix = promptContext?.bundle_prefix ?? loadRepoBundlePrefix(agentContract, resolvedBundleMode)
+  const bundleModeGuide = promptContext?.bundle_mode_guide ?? ''
   const modeGuide = promptContext?.mode_guide ?? ''
   const cacheablePrefix = agentContract.promptPrefix || bundlePrefix
     ? `${agentContract.promptPrefix ? `${agentContract.promptPrefix}\n\n` : ''}${bundlePrefix}`
     : ''
-  const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${modeGuide}${message.prompt}`
+  const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${bundleModeGuide}${modeGuide}${message.prompt}`
   const fullPrompt = cacheablePrefix
     ? `${cacheablePrefix}${dynamicPrompt}`
     : dynamicPrompt

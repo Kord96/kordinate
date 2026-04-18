@@ -849,6 +849,150 @@ def extract_joern_execution_slice_facts(root: Path, repo_profile: dict[str, Any]
     return facts, detector_run
 
 
+def derive_joern_state_access_summary_facts(data_touch_facts: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    grouped: dict[tuple[str, str], dict[str, Any]] = {}
+    for fact in data_touch_facts:
+        raw = fact.get("raw_evidence") or {}
+        target_name = str(raw.get("target_name") or raw.get("target_full_name") or "").strip()
+        if not target_name:
+            continue
+        owner_components = [str(item) for item in fact.get("relationships", {}).get("component_ids") or [] if item]
+        if not owner_components:
+            continue
+        touch_kind = str(raw.get("touch_kind") or "read").strip().lower()
+        key = (target_name, touch_kind)
+        bucket = grouped.setdefault(
+            key,
+            {
+                "target_name": target_name,
+                "target_full_name": str(raw.get("target_full_name") or ""),
+                "touch_kind": touch_kind,
+                "components": set(),
+                "source_files": set(),
+                "count": 0,
+            },
+        )
+        bucket["count"] += 1
+        bucket["components"].update(owner_components)
+        bucket["source_files"].update(str(item) for item in fact.get("source_files", []) if item)
+
+    facts: list[dict[str, Any]] = []
+    for idx, ((_target_name, touch_kind), bucket) in enumerate(sorted(grouped.items())):
+        components = sorted(bucket["components"])
+        source_files = sorted(bucket["source_files"])
+        facts.append(
+            {
+                "id": stable_id("state-access-summary", bucket["target_name"], touch_kind, str(idx)),
+                "kind": "state-access-summary",
+                "domain": "state-access-summary",
+                "summary": f"Components {' ,'.join(components)} {touch_kind} {bucket['target_name']}",
+                "confidence": "high" if bucket["count"] >= 2 else "medium",
+                "framework_context": [],
+                "source_files": source_files,
+                "detector": {
+                    "id": "joern-state-access-summarizer",
+                    "class": "inference",
+                    "strength": 4,
+                    "rule": "group-joern-data-touches",
+                    "bundle": "detectors:facts",
+                },
+                "raw_evidence": {
+                    "target_name": bucket["target_name"],
+                    "target_full_name": bucket["target_full_name"],
+                    "touch_kind": touch_kind,
+                    "components": components,
+                    "touch_count": bucket["count"],
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": {
+                    "component_ids": components,
+                    "depends_on_fact_ids": [],
+                    "related_fact_ids": [],
+                },
+            }
+        )
+    detector_run = {
+        "id": "joern-state-access-summarizer",
+        "domain": "state-access-summary",
+        "class": "inference",
+        "framework_context": [],
+        "status": "success" if facts else "partial",
+    }
+    return facts, detector_run
+
+
+def derive_joern_control_hotspot_facts(execution_slice_facts: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    grouped: dict[tuple[str, str], dict[str, Any]] = {}
+    for fact in execution_slice_facts:
+        raw = fact.get("raw_evidence") or {}
+        slice_file = str(raw.get("slice_file") or "").strip()
+        if not slice_file:
+            continue
+        component_ids = [str(item) for item in fact.get("relationships", {}).get("component_ids") or infer_component_ids(slice_file) if item]
+        component = component_ids[0] if component_ids else "unknown"
+        key = (component, slice_file)
+        bucket = grouped.setdefault(
+            key,
+            {
+                "component": component,
+                "slice_file": slice_file,
+                "slice_names": set(),
+                "source_files": set(),
+                "slice_count": 0,
+                "step_count": 0,
+            },
+        )
+        bucket["slice_count"] += 1
+        bucket["slice_names"].add(str(raw.get("slice_name") or raw.get("slice_full_name") or "runtime-path"))
+        bucket["source_files"].update(str(item) for item in fact.get("source_files", []) if item)
+        bucket["step_count"] += len(raw.get("steps") or [])
+
+    facts: list[dict[str, Any]] = []
+    for idx, ((_component, _slice_file), bucket) in enumerate(sorted(grouped.items())):
+        avg_steps = round(bucket["step_count"] / max(bucket["slice_count"], 1), 2)
+        facts.append(
+            {
+                "id": stable_id("control-hotspot", bucket["component"], bucket["slice_file"], str(idx)),
+                "kind": "control-hotspot",
+                "domain": "control-hotspots",
+                "summary": f"{bucket['slice_file']} is a control hotspot for {bucket['component']} with {bucket['slice_count']} slices",
+                "confidence": "high" if bucket["slice_count"] >= 2 else "medium",
+                "framework_context": [],
+                "source_files": sorted(bucket["source_files"]),
+                "detector": {
+                    "id": "joern-control-hotspot-summarizer",
+                    "class": "inference",
+                    "strength": 4,
+                    "rule": "group-joern-execution-slices",
+                    "bundle": "detectors:facts",
+                },
+                "raw_evidence": {
+                    "component": bucket["component"],
+                    "slice_file": bucket["slice_file"],
+                    "slice_count": bucket["slice_count"],
+                    "average_steps": avg_steps,
+                    "slice_names": sorted(bucket["slice_names"]),
+                },
+                "negative_evidence": [],
+                "contradictions": [],
+                "relationships": {
+                    "component_ids": [bucket["component"]] if bucket["component"] != "unknown" else [],
+                    "depends_on_fact_ids": [],
+                    "related_fact_ids": [],
+                },
+            }
+        )
+    detector_run = {
+        "id": "joern-control-hotspot-summarizer",
+        "domain": "control-hotspots",
+        "class": "inference",
+        "framework_context": [],
+        "status": "success" if facts else "partial",
+    }
+    return facts, detector_run
+
+
 def infer_languages(files: Iterable[Path]) -> list[str]:
     langs: set[str] = set()
     for path in files:
@@ -3098,6 +3242,16 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
     if joern_execution_slices:
         facts.extend(joern_execution_slices)
     detectors_run.append(joern_execution_slice_detector_run)
+
+    state_access_summary_facts, state_access_summary_detector_run = derive_joern_state_access_summary_facts(joern_data_touches)
+    if state_access_summary_facts:
+        facts.extend(state_access_summary_facts)
+    detectors_run.append(state_access_summary_detector_run)
+
+    control_hotspot_facts, control_hotspot_detector_run = derive_joern_control_hotspot_facts(joern_execution_slices)
+    if control_hotspot_facts:
+        facts.extend(control_hotspot_facts)
+    detectors_run.append(control_hotspot_detector_run)
 
     hot_scores = file_hotness_scores(facts, root)
     hot_files: list[dict[str, Any]] = []

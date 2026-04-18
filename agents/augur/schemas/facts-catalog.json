@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "description": "Canonical interpretation catalog for deterministic Augur fact artifacts.",
+  "artifacts": {
+    "index": {
+      "kind": "manifest",
+      "file": "facts/index.json",
+      "priority": "startup",
+      "meaning": "Canonical manifest for deterministic artifacts produced in this run.",
+      "how_to_use": "Use it to discover which fact artifacts exist before opening optional files.",
+      "what_not_to_infer": "Do not treat domain presence or count alone as architecture truth."
+    },
+    "startup": {
+      "kind": "manifest",
+      "file": "facts/startup.json",
+      "priority": "startup",
+      "meaning": "Prioritized startup subset of the deterministic artifacts for semantic orientation.",
+      "how_to_use": "Read this before broad repo exploration to get the recommended first-pass files.",
+      "what_not_to_infer": "Do not treat startup priority as a complete description of the repo."
+    },
+    "frameworks": {
+      "kind": "observation-domain",
+      "file": "facts/frameworks.json",
+      "priority": "startup",
+      "meaning": "Normalized framework and runtime context observations.",
+      "how_to_use": "Use to understand stack and framework-shaped boundaries before naming components.",
+      "what_not_to_infer": "Framework detection does not by itself prove architecture patterns."
+    },
+    "routes": {
+      "kind": "observation-domain",
+      "file": "facts/routes.json",
+      "priority": "early-guidance",
+      "meaning": "Normalized API entrypoint observations.",
+      "how_to_use": "Use to identify request-facing surfaces, actors, and candidate flows.",
+      "what_not_to_infer": "Routes alone do not define component hierarchy."
+    },
+    "handlers": {
+      "kind": "observation-domain",
+      "file": "facts/handlers.json",
+      "priority": "early-guidance",
+      "meaning": "Normalized handler and entry callback observations.",
+      "how_to_use": "Use to map transports and request/control entrypoints into code.",
+      "what_not_to_infer": "Handler names alone are weak evidence for component ownership."
+    },
+    "dispatch-bindings": {
+      "kind": "observation-domain",
+      "file": "facts/dispatch-bindings.json",
+      "priority": "early-guidance",
+      "meaning": "Normalized runtime wiring and producer/consumer bindings.",
+      "how_to_use": "Use to spot routing, queue, event, and runtime registration boundaries.",
+      "what_not_to_infer": "A binding does not always correspond to a top-level component."
+    },
+    "boundaries": {
+      "kind": "observation-domain",
+      "file": "facts/boundaries.json",
+      "priority": "early-guidance",
+      "meaning": "Normalized boundary/interface observations.",
+      "how_to_use": "Use to identify ports, adapters, repositories, service seams, and storage boundaries.",
+      "what_not_to_infer": "Boundary labels do not by themselves confirm higher-level concepts."
+    },
+    "external-clients": {
+      "kind": "observation-domain",
+      "file": "facts/external-clients.json",
+      "priority": "targeted-disambiguation",
+      "meaning": "Normalized outbound dependency observations.",
+      "how_to_use": "Use to model external dependencies, resilience surfaces, and dependency boundaries.",
+      "what_not_to_infer": "A library import is not the same as a real runtime dependency."
+    },
+    "config": {
+      "kind": "observation-domain",
+      "file": "facts/config.json",
+      "priority": "targeted-disambiguation",
+      "meaning": "Normalized configuration source observations.",
+      "how_to_use": "Use to understand configuration flow, state sources, and mode variability.",
+      "what_not_to_infer": "Configuration presence does not automatically make it a first-class component."
+    },
+    "hot-files": {
+      "kind": "observation-domain",
+      "file": "facts/hot-files.json",
+      "priority": "startup",
+      "meaning": "Weighted centrality-style file ranking from deterministic signals.",
+      "how_to_use": "Use to prioritize early repo reads and breadth-pass candidates.",
+      "what_not_to_infer": "Hotness is a read-priority hint, not architecture truth."
+    },
+    "call-edges": {
+      "kind": "observation-domain",
+      "file": "facts/call-edges.json",
+      "priority": "targeted-disambiguation",
+      "meaning": "Joern-derived normalized call-edge observations.",
+      "how_to_use": "Use to support dependency direction and boundary-crossing analysis.",
+      "what_not_to_infer": "Raw function calls do not directly equal runtime architecture."
+    },
+    "data-touches": {
+      "kind": "observation-domain",
+      "file": "facts/data-touches.json",
+      "priority": "targeted-disambiguation",
+      "meaning": "Joern-derived normalized data access observations.",
+      "how_to_use": "Use to enrich store readers/writers, state boundaries, and config reload paths.",
+      "what_not_to_infer": "One touch does not by itself define state ownership."
+    },
+    "execution-slices": {
+      "kind": "observation-domain",
+      "file": "facts/execution-slices.json",
+      "priority": "targeted-disambiguation",
+      "meaning": "Joern-derived runtime-path observations.",
+      "how_to_use": "Use to discover candidate flows and important execution paths.",
+      "what_not_to_infer": "Slices are structural path hints, not final named flows."
+    },
+    "concept-evidence": {
+      "kind": "planning-aid",
+      "file": "facts/concept-evidence.json",
+      "priority": "targeted-disambiguation",
+      "meaning": "Deterministic candidate concept evidence plus run-specific semantic questions.",
+      "how_to_use": "Use to resolve concept candidates as accepted, tentative, or rejected from detector backing, contradictions, semantic questions, and repo code.",
+      "what_not_to_infer": "Candidate concepts are not final architecture truth."
+    },
+    "story-seeds": {
+      "kind": "planning-aid",
+      "file": "facts/story-seeds.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic child-story planning suggestions derived from available fact domains.",
+      "how_to_use": "Use to draft candidate child concerns before writing stories and narratives.",
+      "what_not_to_infer": "Seeds are advisory and should not force decorative story structure."
+    },
+    "component-seeds": {
+      "kind": "planning-aid",
+      "file": "facts/component-seeds.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic representative component slices and reading candidates derived from hot files and structural facts.",
+      "how_to_use": "Use to choose representative entry, flow, and state or operations files for each provisional top-level component in full mode.",
+      "what_not_to_infer": "Seeds are advisory and should not force final component boundaries without repo reading."
+    },
+    "symbols-seed": {
+      "kind": "planning-aid",
+      "file": "facts/symbols-seed.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic exact-symbol inventory for high-signal files and component slices.",
+      "how_to_use": "Use to prefer exact mechanism names from code when writing findings, summaries, and flow steps.",
+      "what_not_to_infer": "The symbol seed is a targeted name dictionary, not a complete repo-wide symbol index."
+    },
+    "state-seeds": {
+      "kind": "planning-aid",
+      "file": "facts/state-seeds.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic exact-name seeds for state entries grounded in state or operations files.",
+      "how_to_use": "Use to tighten state claims around exact structs, enums, maps, config variants, and storage selectors from the grounded files.",
+      "what_not_to_infer": "The state seeds guide naming and focus for state claims; they do not define the final storage model by themselves."
+    },
+    "facts-guide": {
+      "kind": "guide",
+      "file": "facts/facts-guide.json",
+      "priority": "startup",
+      "meaning": "Run-specific interpretation guide for the deterministic artifacts present in this run.",
+      "how_to_use": "Read this early to understand how to interpret the fact files that exist for this project.",
+      "what_not_to_infer": "The guide explains usage; it does not replace direct code reading."
+    },
+    "state-access-summary": {
+      "kind": "derived-structure",
+      "file": "facts/state-access-summary.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic summary of component-to-store read/write access derived from normalized facts.",
+      "how_to_use": "Use to identify state boundaries, likely ownership, and candidate child stories around storage.",
+      "what_not_to_infer": "Access does not by itself prove source-of-truth status or persistence semantics."
+    },
+    "control-hotspots": {
+      "kind": "derived-structure",
+      "file": "facts/control-hotspots.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic summary of high-importance control paths and execution chokepoints derived from Joern slices.",
+      "how_to_use": "Use to prioritize full-mode breadth reads and candidate flow stories.",
+      "what_not_to_infer": "Hotspots are structural attention signals, not final component or flow names."
+    }
+  }
+}

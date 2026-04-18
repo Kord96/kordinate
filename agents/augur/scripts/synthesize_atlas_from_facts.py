@@ -25,6 +25,7 @@ from collections import Counter
 from datetime import date
 from pathlib import Path
 from typing import Any
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -95,6 +96,117 @@ def unique_strings(values: list[str]) -> list[str]:
         if value and value not in seen:
             seen[value] = None
     return list(seen.keys())
+
+
+OBSERVABILITY_KEYWORDS = {
+    "metric", "metrics", "counter", "histogram", "gauge", "summary",
+    "observe", "record", "telemetry", "prometheus", "statsd", "datadog",
+    "otel", "opentelemetry", "trace", "tracing", "span", "meter",
+}
+
+
+def metric_tokens(name: str) -> list[str]:
+    tokens = [token.lower() for token in re.split(r"[^A-Za-z0-9]+", name or "") if token]
+    return [token for token in tokens if len(token) >= 3]
+
+
+def monitoring_evidence_paths(
+    repo_root: Path | None,
+    pattern: dict[str, Any],
+    component_map: dict[str, dict[str, Any]],
+) -> list[Path]:
+    candidates: list[Path] = []
+    if not repo_root or not repo_root.exists():
+        return candidates
+
+    seen: set[Path] = set()
+
+    def add_path(raw: str) -> None:
+        base = source_path(raw)
+        path = Path(base)
+        resolved = path if path.is_absolute() else (repo_root / base)
+        if not resolved.exists() or resolved in seen:
+            return
+        seen.add(resolved)
+        candidates.append(resolved)
+
+    for ref in pattern.get("grounded_in") or []:
+        add_path(str(ref))
+    evidence = pattern.get("evidence") or {}
+    for ref in evidence.get("files") or []:
+        add_path(str(ref))
+    for component_id in pattern.get("components") or []:
+        component = component_map.get(str(component_id))
+        if not component:
+            continue
+        for module in component.get("modules") or []:
+            add_path(str(module))
+
+    expanded: list[Path] = []
+    for path in candidates[:12]:
+        if path.is_dir():
+            for child in sorted(path.rglob("*")):
+                if child.is_file() and child.suffix.lower() in LANGUAGE_BY_SUFFIX:
+                    expanded.append(child)
+                    if len(expanded) >= 30:
+                        break
+        elif path.is_file():
+            expanded.append(path)
+        if len(expanded) >= 30:
+            break
+    return expanded[:30]
+
+
+def file_has_metric_evidence(path: Path, metric_name: str) -> bool:
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore").lower()
+    except OSError:
+        return False
+    tokens = metric_tokens(metric_name)
+    if not tokens:
+        return False
+    if metric_name.lower() in text:
+        return True
+    if not any(keyword in text for keyword in OBSERVABILITY_KEYWORDS):
+        return False
+    token_hits = sum(1 for token in tokens if token in text)
+    return token_hits >= max(2, min(3, len(tokens)))
+
+
+def evaluate_monitoring_expectations(
+    repo_root: Path | None,
+    pattern: dict[str, Any],
+    monitoring: dict[str, Any],
+    component_map: dict[str, dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]], list[str]]:
+    evidence_files = monitoring_evidence_paths(repo_root, pattern, component_map)
+    observed_signals: list[str] = []
+    observed_metrics: list[dict[str, Any]] = []
+    missing_gaps: list[str] = []
+
+    for item in monitoring.get("health_signals") or []:
+        if not isinstance(item, dict) or not item.get("name"):
+            continue
+        name = str(item["name"])
+        if any(file_has_metric_evidence(path, name) for path in evidence_files):
+            observed_signals.append(name)
+        else:
+            missing_gaps.append(
+                f"No clear repo evidence of monitoring for expected signal `{name}` implied by concept `{pattern.get('id')}`."
+            )
+
+    for item in monitoring.get("business_metrics") or []:
+        if not isinstance(item, dict) or not item.get("name"):
+            continue
+        name = str(item["name"])
+        if any(file_has_metric_evidence(path, name) for path in evidence_files):
+            observed_metrics.append(item)
+        else:
+            missing_gaps.append(
+                f"No clear repo evidence of monitoring for expected business metric `{name}` implied by concept `{pattern.get('id')}`."
+            )
+
+    return observed_signals, observed_metrics, missing_gaps
 
 
 def normalize_symbol(value: str) -> str:
@@ -391,13 +503,23 @@ def load_detected_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "id": concept_id,
             "category": str(raw.get("category") or "unknown"),
             "confidence": str(item.get("confidence") or "low"),
+            "decision_mode": str(raw.get("decision_mode") or "fact-inference"),
+            "semantic_review_required": bool(raw.get("semantic_review_required")),
+            "detector_backing": str(raw.get("detector_backing") or "weak"),
+            "summary": str(raw.get("note") or f"{concept_id} is suggested by deterministic fact evidence in this repo."),
+            "why_it_matters": str(raw.get("note") or "This concept materially shapes the architecture or integration boundaries."),
             "components": item.get("relationships", {}).get("component_ids") if isinstance(item.get("relationships"), dict) else [],
+            "flows": [],
+            "state": [],
+            "grounded_in": [f"{path}:1" for path in (item.get("source_files") or [])[:3]],
             "evidence": {
                 "fact_ids": raw.get("supporting_fact_ids") or item.get("relationships", {}).get("depends_on_fact_ids") if isinstance(item.get("relationships"), dict) else [],
                 "files": item.get("source_files") or [],
                 "components": raw.get("supporting_components") or [],
                 "method": raw.get("inference_method") or "inferred-from-facts",
+                "detector_class": raw.get("detector_class") or "inference",
                 "note": raw.get("note") or "",
+                "questions_asked": raw.get("questions_asked") or [],
             },
         })
     return patterns
@@ -512,8 +634,10 @@ def build_frameworks(facts: list[dict[str, Any]]) -> tuple[list[dict[str, Any]],
         frameworks.append(
             {
                 "name": name,
+                "language": language,
                 "scope": str(raw.get("scope") or ""),
                 "framework_kind": str(raw.get("framework_kind") or ""),
+                "status": str(raw.get("status") or ""),
                 "concepts": concepts,
             }
         )
@@ -1631,8 +1755,31 @@ def build_stack(facts: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "languages": languages,
         "frameworks": frameworks,
-        "runtime": runtime,
+        "stack_summary": runtime,
     }
+
+
+def derive_technologies(
+    facts: list[dict[str, Any]],
+    state: list[dict[str, Any]],
+    external_dependencies: list[dict[str, Any]],
+) -> list[str]:
+    values: list[str] = []
+    for fact in facts:
+        raw = fact.get("raw_evidence") or {}
+        tech = str(raw.get("technology") or "").strip()
+        if tech:
+            values.append(tech)
+    for entry in state:
+        tech = str(entry.get("technology") or "").strip()
+        if tech:
+            values.append(tech)
+    for dep in external_dependencies:
+        tech = str(dep.get("technology") or "").strip()
+        if tech:
+            values.append(tech)
+    normalized = unique_strings([value for value in values if value])
+    return normalized[:16]
 
 
 def selected_patterns(patterns: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1643,6 +1790,26 @@ def selected_patterns(patterns: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if verdict_value in {"confirmed", "candidate"} or not verdict_value:
             selected.append(pattern)
     return selected
+
+
+def concept_monitoring_eligible(pattern: dict[str, Any]) -> bool:
+    verdict = pattern.get("verdict") or {}
+    verdict_value = str(verdict.get("verdict") or "").strip().lower()
+    if verdict_value == "confirmed":
+        return True
+    detector_backing = str(pattern.get("detector_backing") or "weak").strip().lower()
+    confidence = str(pattern.get("confidence") or "low").strip().lower()
+    decision_mode = str(pattern.get("decision_mode") or "fact-inference").strip().lower()
+    semantic_review_required = bool(pattern.get("semantic_review_required"))
+    if detector_backing == "weak":
+        return False
+    if decision_mode == "semantic-review" and semantic_review_required:
+        return detector_backing == "strong" and confidence == "high"
+    if detector_backing == "strong" and confidence in {"medium", "high"}:
+        return True
+    if detector_backing == "partial" and confidence == "high":
+        return True
+    return False
 
 
 def pattern_grounding(pattern: dict[str, Any]) -> list[str]:
@@ -1668,16 +1835,20 @@ def append_concept_health(
     concept_id: str,
     monitoring: dict[str, Any],
     grounded_in: list[str],
+    observed_signals: list[str],
+    missing_gaps: list[str],
 ) -> None:
     health = target.setdefault("health", {})
     existing_gaps = health.get("gaps") or []
     existing_failure_modes = health.get("failure_modes") or []
-    health["gaps"] = unique_strings(existing_gaps + [str(item) for item in monitoring.get("gaps") or [] if item])
+    health["gaps"] = unique_strings(existing_gaps + [str(item) for item in monitoring.get("gaps") or [] if item] + missing_gaps)
 
     failure_mode_id = f"{target.get('id', 'entity')}-{slugify(concept_id)}-runtime"
     if not any(isinstance(item, dict) and item.get("id") == failure_mode_id for item in existing_failure_modes):
-        signals = monitoring_signal_names(monitoring)
+        signals = observed_signals
         gaps = [str(item) for item in monitoring.get("gaps") or [] if item]
+        if missing_gaps:
+            gaps = unique_strings(gaps + missing_gaps)
         if signals or gaps:
             existing_failure_modes.append(
                 {
@@ -1700,6 +1871,7 @@ def attach_concept_monitoring(
     flows: list[dict[str, Any]],
     patterns: list[dict[str, Any]],
     monitoring_index: dict[str, dict[str, Any]],
+    repo_root: Path | None,
 ) -> None:
     component_map = {component.get("id"): component for component in components if component.get("id")}
 
@@ -1708,22 +1880,30 @@ def attach_concept_monitoring(
         monitoring = monitoring_index.get(concept_id)
         if not monitoring:
             continue
+        if not concept_monitoring_eligible(pattern):
+            continue
         applies_to = {str(item) for item in monitoring.get("applies_to") or [] if item}
         component_ids = [str(item) for item in pattern.get("components") or [] if item]
         grounded_in = pattern_grounding(pattern)
+        observed_signals, observed_metrics, missing_gaps = evaluate_monitoring_expectations(
+            repo_root,
+            pattern,
+            monitoring,
+            component_map,
+        )
 
         if "component" in applies_to:
             for component_id in component_ids:
                 component = component_map.get(component_id)
                 if component:
-                    append_concept_health(component, "component", concept_id, monitoring, grounded_in)
+                    append_concept_health(component, "component", concept_id, monitoring, grounded_in, observed_signals, missing_gaps)
 
         if "dependency" in applies_to and component_ids:
             component_set = set(component_ids)
             for dependency in external_dependencies:
                 dependency_components = {str(item) for item in dependency.get("components") or [] if item}
                 if dependency_components & component_set:
-                    append_concept_health(dependency, "external-dependency", concept_id, monitoring, grounded_in)
+                    append_concept_health(dependency, "external-dependency", concept_id, monitoring, grounded_in, observed_signals, missing_gaps)
 
         if "flow" in applies_to:
             for flow in flows:
@@ -1733,9 +1913,9 @@ def attach_concept_monitoring(
                     if isinstance(step, dict) and step.get("component")
                 }
                 if flow_components & set(component_ids):
-                    append_concept_health(flow, "flow", concept_id, monitoring, grounded_in)
+                    append_concept_health(flow, "flow", concept_id, monitoring, grounded_in, observed_signals, missing_gaps)
                     flow.setdefault("business_metrics", [])
-                    for metric in monitoring.get("business_metrics") or []:
+                    for metric in observed_metrics:
                         if not isinstance(metric, dict) or not metric.get("name"):
                             continue
                         candidate = {
@@ -1762,6 +1942,7 @@ def build_output(
     joern = build_joern_indexes(facts)
     detected_patterns = load_detected_patterns(facts)
     monitoring_index = load_monitoring_index()
+    repo_root = Path(str(index.get("root") or "")).resolve() if isinstance(index, dict) and index.get("root") else None
 
     components, root_components = build_components_and_groups(facts, joern)
     if seed_mode:
@@ -1792,6 +1973,7 @@ def build_output(
             flows,
             detected_patterns,
             monitoring_index,
+            repo_root,
         )
         for component in components:
             normalize_health_block(component)
@@ -1802,6 +1984,7 @@ def build_output(
     if not purpose:
         purpose = f"{project} system synthesized from extracted facts." if project else "System synthesized from extracted facts."
 
+    stack = build_stack(facts)
     metadata = {
         "story_ids": [],
         "analyzed_at_sha": index.get("metadata", {}).get("analyzed_at_sha", "") if isinstance(index, dict) else "",
@@ -1820,6 +2003,20 @@ def build_output(
         "concept_count": len(detected_patterns),
         "facts_domains": unique_strings([fact.get("domain", "") for fact in facts if fact.get("domain")]),
         "seed_mode": seed_mode,
+        "stack_summary": stack.get("stack_summary", ""),
+        "languages": stack.get("languages", []),
+        "frameworks": [
+            {
+                "name": str(item.get("name") or ""),
+                "language": str(item.get("language") or ""),
+                "framework_kind": str(item.get("framework_kind") or ""),
+                "scope": str(item.get("scope") or ""),
+                "status": "accepted",
+            }
+            for item in (stack.get("frameworks") or [])
+            if isinstance(item, dict) and item.get("name")
+        ],
+        "technologies": derive_technologies(facts, state, external_dependencies),
     }
 
     concepts = {

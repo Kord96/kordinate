@@ -115,6 +115,7 @@ export interface AgentContract {
   specialization: string
   description?: string
   capabilities: string[]
+  acceptedRequestPrefixes?: string[]
   promptPrefix?: string
   defaultReflectionPrompt?: string
   supportedAgentParams: string[]

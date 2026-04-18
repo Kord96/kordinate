@@ -5,7 +5,7 @@ import { constants as fsConstants } from 'node:fs'
 import { access, mkdir, readdir, readFile, rm } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { Kafka } from 'kafkajs'
-import { createAgentWorkflowHooks } from './agent-workflows.js'
+import { createAgentWorkflowHooks } from './workflows/index.js'
 import { buildPromptPlan, loadInjectedAgentContract, loadInjectedRuntimeProfile } from './contracts.js'
 import { CompletedRequestStore } from './completed-request-store.js'
 import { loadDaemonConfig } from './config.js'
@@ -183,6 +183,15 @@ function buildTimingMetadata(input: {
 function validateRequestContract(message: RequestMessage): string | undefined {
   if (agentContract.requiresWorkingDirectory && !message.working_dir) {
     return 'working_dir is required for this agent'
+  }
+  const acceptedPrefixes = Array.isArray(agentContract.acceptedRequestPrefixes)
+    ? agentContract.acceptedRequestPrefixes.filter(prefix => typeof prefix === 'string' && prefix.trim().length > 0)
+    : []
+  if (acceptedPrefixes.length > 0) {
+    const text = requestCommandText(message).trim()
+    if (!acceptedPrefixes.some(prefix => text.startsWith(prefix))) {
+      return `request does not match an accepted agent skill/command (${acceptedPrefixes.join(', ')})`
+    }
   }
   return undefined
 }

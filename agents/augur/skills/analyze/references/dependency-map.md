@@ -4,14 +4,14 @@ Use this reference when refining component relationships, `external_dependencies
 
 ## Internal Relationships
 
-Use `depends_on` only for internal component-to-component relationships:
+Use `depends_on` only for internal component-to-component relationships, following the canonical meaning in `atlas-schema.md`:
 
 - imports
 - direct calls
 - event consumption
 - state access across component boundaries
 
-Do not use `depends_on` for incidental shared utilities.
+Do not use `depends_on` for incidental shared utilities, containment, hosting, or mere adjacency.
 
 ## External Dependencies
 

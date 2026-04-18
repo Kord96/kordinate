@@ -74,6 +74,7 @@ agents:
 
   - name: augur-opus
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur
@@ -369,6 +370,7 @@ agents:
 
   - name: augur-gemini-31-pro
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur
@@ -411,6 +413,7 @@ agents:
 
   - name: augur-gemini-25-pro
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur
@@ -456,6 +459,7 @@ agents:
 
   - name: augur-gemini-25-flash
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur
@@ -501,6 +505,7 @@ agents:
 
   - name: augur-deepseek-reasoner
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur
@@ -543,6 +548,7 @@ agents:
 
   - name: augur-qwen3p6-plus
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur
@@ -588,6 +594,7 @@ agents:
 
   - name: augur-glm5
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur
@@ -630,6 +637,7 @@ agents:
 
   - name: augur-gpt54
     flavor: augur
+    accepted_request_prefixes: ["/analyze"]
     image:
       base: agent-base
       customization: agent-augur

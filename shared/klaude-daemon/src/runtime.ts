@@ -960,6 +960,24 @@ function shellSingleQuote(value: string): string {
   return `'${value.replace(/'/g, `'\"'\"'`)}'`
 }
 
+function shellCandidates(): string[] {
+  const candidates = [
+    process.env.SHELL,
+    '/bin/bash',
+    '/usr/bin/bash',
+    '/bin/sh',
+    '/usr/bin/sh',
+  ]
+  return Array.from(new Set(
+    candidates.filter((value): value is string => typeof value === 'string' && value.trim().length > 0),
+  ))
+}
+
+function shellCommandArgs(shellPath: string, command: string): string[] {
+  const shellName = path.basename(shellPath)
+  return shellName === 'sh' ? ['-c', command] : ['-lc', command]
+}
+
 function withGitSafeDirectoryEnv(baseEnv: Record<string, string | undefined>, repoPath?: string): Record<string, string> {
   const normalized = Object.fromEntries(
     Object.entries(baseEnv).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
@@ -980,40 +998,52 @@ async function runBashCommand(options: {
   env?: Record<string, string>
   timeoutMs?: number
 }): Promise<{ stdout: string; stderr: string }> {
-  return await new Promise((resolve, reject) => {
-    const child = spawn('/bin/bash', ['-lc', options.command], {
-      cwd: options.cwd,
-      env: withGitSafeDirectoryEnv({
-        ...process.env,
-        ...(options.env ?? {}),
-      }, options.cwd),
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-    let stdout = ''
-    let stderr = ''
-    const timeoutHandle = options.timeoutMs
-      ? setTimeout(() => child.kill('SIGKILL'), options.timeoutMs)
-      : undefined
+  let lastError: unknown
+  for (const shellPath of shellCandidates()) {
+    try {
+      return await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        const child = spawn(shellPath, shellCommandArgs(shellPath, options.command), {
+          cwd: options.cwd,
+          env: withGitSafeDirectoryEnv({
+            ...process.env,
+            ...(options.env ?? {}),
+          }, options.cwd),
+          stdio: ['ignore', 'pipe', 'pipe'],
+        })
+        let stdout = ''
+        let stderr = ''
+        const timeoutHandle = options.timeoutMs
+          ? setTimeout(() => child.kill('SIGKILL'), options.timeoutMs)
+          : undefined
 
-    child.stdout.on('data', chunk => { stdout += chunk.toString() })
-    child.stderr.on('data', chunk => { stderr += chunk.toString() })
-    child.on('error', error => {
-      if (timeoutHandle) clearTimeout(timeoutHandle)
-      reject(Object.assign(error, { stdout, stderr }))
-    })
-    child.on('close', code => {
-      if (timeoutHandle) clearTimeout(timeoutHandle)
-      if (code === 0) {
-        resolve({ stdout, stderr })
-        return
-      }
-      reject(Object.assign(new Error(stderr.trim() || stdout.trim() || `command failed with exit ${code}`), {
-        stdout,
-        stderr,
-        exitCode: code ?? undefined,
-      }))
-    })
-  })
+        child.stdout.on('data', chunk => { stdout += chunk.toString() })
+        child.stderr.on('data', chunk => { stderr += chunk.toString() })
+        child.on('error', error => {
+          if (timeoutHandle) clearTimeout(timeoutHandle)
+          reject(Object.assign(error, { stdout, stderr, shellPath }))
+        })
+        child.on('close', code => {
+          if (timeoutHandle) clearTimeout(timeoutHandle)
+          if (code === 0) {
+            resolve({ stdout, stderr })
+            return
+          }
+          reject(Object.assign(new Error(stderr.trim() || stdout.trim() || `command failed with exit ${code}`), {
+            stdout,
+            stderr,
+            exitCode: code ?? undefined,
+            shellPath,
+          }))
+        })
+      })
+    } catch (error) {
+      lastError = error
+      const code = typeof error === 'object' && error && 'code' in error ? String((error as { code?: unknown }).code ?? '') : ''
+      if (code === 'ENOENT') continue
+      throw error
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('no usable shell found for bash command execution')
 }
 
 function protectedRunArtifactPaths(artifactContext?: RunArtifactContext): Array<{ relativePath: string; absolutePath: string }> {

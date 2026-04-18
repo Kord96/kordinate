@@ -64,7 +64,7 @@ OOM crashes in production, gradual performance degradation, and unpredictable re
 
 - Related to [cache-aside](/concepts/cache-aside) when unbounded caches or missed eviction become one of the main leak sources.
 - Related to [event-driven](/concepts/event-driven) when listeners or subscriptions are retained indefinitely and accumulate over time.
-- Related to [memory-boundary](/concepts/memory-boundary) when memory usage should stay within explicit limits but the system silently grows past them.
+- Related to [bulkhead](/concepts/bulkhead) when memory budgets and isolation boundaries are used to contain one component's resource growth.
 
 ### Boundary
 

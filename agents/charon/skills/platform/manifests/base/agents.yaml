@@ -8,6 +8,8 @@ metadata:
   name: agent-generic-opus
   labels: { app: kord-agent, agent: generic-opus }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: generic-opus }
   template:
@@ -45,6 +47,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-opus" }
             - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-opus\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"claude-agent-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-opus" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-opus" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-opus" }
@@ -57,7 +61,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-opus:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
@@ -154,6 +158,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-opus" }
             - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-opus\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"claude-agent-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-opus" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-opus" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-opus" }
@@ -166,7 +172,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-opus:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
@@ -230,6 +236,8 @@ metadata:
   name: agent-generic-gemini-31-pro
   labels: { app: kord-agent, agent: generic-gemini-31-pro }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: generic-gemini-31-pro }
   template:
@@ -267,6 +275,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-gemini-31-pro" }
             - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gemini-31-pro\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\",\"Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-31-pro" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-31-pro" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-31-pro" }
@@ -279,7 +289,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-31-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -338,6 +348,8 @@ metadata:
   name: agent-generic-gemini-25-pro
   labels: { app: kord-agent, agent: generic-gemini-25-pro }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: generic-gemini-25-pro }
   template:
@@ -375,6 +387,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-gemini-25-pro" }
             - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gemini-25-pro\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\",\"Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-25-pro" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-25-pro" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-25-pro" }
@@ -387,7 +401,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -446,6 +460,8 @@ metadata:
   name: agent-generic-gemini-25-flash
   labels: { app: kord-agent, agent: generic-gemini-25-flash }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: generic-gemini-25-flash }
   template:
@@ -483,6 +499,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-gemini-25-flash" }
             - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gemini-25-flash\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\",\"Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-25-flash" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-25-flash" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-25-flash" }
@@ -495,7 +513,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-flash:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -554,6 +572,8 @@ metadata:
   name: agent-generic-deepseek-reasoner
   labels: { app: kord-agent, agent: generic-deepseek-reasoner }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: generic-deepseek-reasoner }
   template:
@@ -591,6 +611,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-deepseek-reasoner" }
             - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-deepseek-reasoner\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\",\"Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-deepseek-reasoner" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-deepseek-reasoner" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-deepseek-reasoner" }
@@ -603,7 +625,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-deepseek-reasoner:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -662,6 +684,8 @@ metadata:
   name: agent-generic-glm5
   labels: { app: kord-agent, agent: generic-glm5 }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: generic-glm5 }
   template:
@@ -699,6 +723,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-glm5" }
             - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-glm5\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-glm5" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-glm5" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-glm5" }
@@ -711,7 +737,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-glm5:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
@@ -770,6 +796,8 @@ metadata:
   name: agent-generic-gpt54
   labels: { app: kord-agent, agent: generic-gpt54 }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: generic-gpt54 }
   template:
@@ -811,6 +839,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "generic-gpt54" }
             - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gpt54\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gpt54" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gpt54" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gpt54" }
@@ -823,7 +853,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gpt54:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -923,6 +953,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-gemini-31-pro" }
             - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gemini-31-pro\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\",\"Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-31-pro" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-31-pro" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-31-pro" }
@@ -935,7 +967,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-31-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -1039,6 +1071,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-gemini-25-pro" }
             - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gemini-25-pro\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"bundleRefs\":{\"memory\":\"analyze-selective-v1\",\"skill\":null,\"runtime\":\"analyze-selective-v1\"},\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\",\"Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-25-pro" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-25-pro" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-25-pro" }
@@ -1051,7 +1085,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -1157,6 +1191,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-gemini-25-flash" }
             - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gemini-25-flash\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"bundleRefs\":{\"memory\":\"analyze-selective-v1\",\"skill\":null,\"runtime\":\"analyze-selective-v1\"},\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\",\"Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-25-flash" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-25-flash" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-25-flash" }
@@ -1169,7 +1205,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-flash:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -1275,6 +1311,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-deepseek-reasoner" }
             - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-deepseek-reasoner\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-deepseek-reasoner" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-deepseek-reasoner" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-deepseek-reasoner" }
@@ -1287,7 +1325,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-deepseek-reasoner:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
@@ -1349,6 +1387,126 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: agent-augur-qwen3p6-plus
+  labels: { app: kord-agent, agent: augur-qwen3p6-plus }
+spec:
+  selector:
+    matchLabels: { app: kord-agent, agent: augur-qwen3p6-plus }
+  template:
+    metadata:
+      labels: { app: kord-agent, agent: augur-qwen3p6-plus }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+    spec:
+
+      serviceAccountName: kord
+      initContainers:
+        - name: setup
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              bash /app/scripts/setup-agent-dir.sh augur-qwen3p6-plus
+              AGENT_MEMORY_BUNDLE=analyze-selective-v1 AGENT_RUNTIME_BUNDLE=analyze-selective-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-qwen3p6-plus
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+
+            - { name: docker-sock, mountPath: /var/run/docker.sock }
+      containers:
+        - name: agent
+          image: REGISTRY/agent-augur:latest
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              exec klaude-daemon
+          env:
+            - { name: AGENT_NAME, value: "augur-qwen3p6-plus" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-qwen3p6-plus\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"bundleRefs\":{\"memory\":\"analyze-selective-v1\",\"skill\":null,\"runtime\":\"analyze-selective-v1\"},\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-qwen3p6-plus" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-qwen3p6-plus" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-qwen3p6-plus" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-qwen3p6-plus/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-qwen3p6-plus/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-qwen3p6-plus:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "fireworks" }
+            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/qwen3p6-plus" }
+            - { name: DAEMON_BACKEND, value: "fireworks" }
+            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "analyze-selective-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "analyze-selective-v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fireworks-api
+                  key: api-key
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { memory: 4Gi }
+          ports:
+            - { containerPort: 9090, name: status }
+          readinessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 9090 }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          volumeMounts:
+            - { name: runtime, mountPath: /kord }
+
+            - { name: docker-sock, mountPath: /var/run/docker.sock }
+      volumes:
+        - name: runtime
+          persistentVolumeClaim: { claimName: agent-runtime }
+
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-augur-qwen3p6-plus
+  labels: { app: kord-agent, agent: augur-qwen3p6-plus }
+spec:
+  selector:
+    app: kord-agent
+    agent: augur-qwen3p6-plus
+  ports:
+    - name: health
+      port: 9090
+      targetPort: 9090
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: agent-augur-glm5
   labels: { app: kord-agent, agent: augur-glm5 }
 spec:
@@ -1391,6 +1549,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-glm5" }
             - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-glm5\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-glm5" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-glm5" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-glm5" }
@@ -1403,7 +1563,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-glm5:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
@@ -1468,6 +1628,8 @@ metadata:
   name: agent-augur-gpt54
   labels: { app: kord-agent, agent: augur-gpt54 }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: augur-gpt54 }
   template:
@@ -1511,6 +1673,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "augur-gpt54" }
             - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gpt54\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gpt54" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gpt54" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gpt54" }
@@ -1523,7 +1687,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gpt54:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -1668,6 +1832,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "charon-gpt53-codex" }
             - { name: AGENT_PROFILE, value: "charon" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"charon-gpt53-codex\",\"specialization\":\"charon\",\"description\":\"Platform operator for deployments, rollouts, migrations, scaling, and Kubernetes incident response\",\"capabilities\":[\"Can bootstrap a cluster from scratch via /bootstrap\",\"Can add a worker node to the cluster via /add-node\",\"Can roll a service forward between environments via /roll\",\"Can roll a service backward (revert) via /roll\",\"Can migrate workloads between locations via /migrate\",\"Can read cluster state via kubectl\",\"The deployed `charon-gpt53-codex` pod bootstraps `bubblewrap`, `kubectl`, and an in-cluster kubeconfig at startup so Codex shell commands can reach the Kubernetes API\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false,\"bundleRefs\":{\"memory\":\"platform-core-v1\",\"skill\":\"platform-ops-v1\",\"runtime\":\"ops-default-v1\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/charon-gpt53-codex" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/charon-gpt53-codex" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/charon-gpt53-codex" }
@@ -1680,7 +1846,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-charon-gpt53-codex:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -1789,6 +1955,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "sauron-gpt53-codex" }
             - { name: AGENT_PROFILE, value: "sauron" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"sauron-gpt53-codex\",\"specialization\":\"sauron\",\"description\":\"Monitoring and observability \\u2014 scans for signals, diagnoses issues, designs monitoring systems\",\"capabilities\":[\"Can scan a project for observability signals and map them to architecture via `/monitor`\",\"Can diagnose live production issues by tracing symptoms through the observability catalog via `/monitor --diagnose`\",\"Can implement a complete monitoring system from augur's monitoring-spec.yaml via `/design-monitoring` \\u2014 Grafana dashboards, Prometheus alerts, metric validation\",\"Can validate that a running service emits all metrics specified in augur's monitoring-spec\",\"Can read and write Grafana dashboards, deploy alert rules as ConfigMaps\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/sauron-gpt53-codex" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/sauron-gpt53-codex" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/sauron-gpt53-codex" }
@@ -1801,7 +1969,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron-gpt53-codex:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -1862,6 +2030,8 @@ metadata:
   name: agent-alfred-deepseek-chat
   labels: { app: kord-agent, agent: alfred-deepseek-chat }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: alfred-deepseek-chat }
   template:
@@ -1900,6 +2070,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "alfred-deepseek-chat" }
             - { name: AGENT_PROFILE, value: "alfred" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"alfred-deepseek-chat\",\"specialization\":\"alfred\",\"description\":\"Profile, config, credentials, and overlay management \\u2014 keeps the environment consistent and ready\",\"capabilities\":[\"Can validate Alfred-owned profile source and its runtime projection via /config\",\"Can list and audit pass store entries via /keys\",\"Can validate and diff kustomize overlays via /overlay\",\"Can run preflight checks for deployment readiness via /preflight\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false,\"bundleRefs\":{\"memory\":\"operate-direct-v1\",\"skill\":\"get-store-core-v1\",\"runtime\":\"direct-action-v1\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Use `Read` to open files when a path is known.\",\"Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.\",\"Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.\"],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/alfred-deepseek-chat" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/alfred-deepseek-chat" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/alfred-deepseek-chat" }
@@ -1912,7 +2084,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-alfred-deepseek-chat:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
@@ -1976,6 +2148,8 @@ metadata:
   name: agent-alfred-gpt-oss-20b
   labels: { app: kord-agent, agent: alfred-gpt-oss-20b }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: alfred-gpt-oss-20b }
   template:
@@ -2014,6 +2188,8 @@ spec:
           env:
             - { name: AGENT_NAME, value: "alfred-gpt-oss-20b" }
             - { name: AGENT_PROFILE, value: "alfred" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"alfred-gpt-oss-20b\",\"specialization\":\"alfred\",\"description\":\"Profile, config, credentials, and overlay management \\u2014 keeps the environment consistent and ready\",\"capabilities\":[\"Can validate Alfred-owned profile source and its runtime projection via /config\",\"Can list and audit pass store entries via /keys\",\"Can validate and diff kustomize overlays via /overlay\",\"Can run preflight checks for deployment readiness via /preflight\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false,\"bundleRefs\":{\"memory\":\"operate-direct-v1\",\"skill\":\"get-store-core-v1\",\"runtime\":\"direct-action-v1\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"simple-harness\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
             - { name: AGENT_HOME_DIR, value: "/kord/agents/alfred-gpt-oss-20b" }
             - { name: AGENT_STATE_DIR, value: "/kord/agents/alfred-gpt-oss-20b" }
             - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/alfred-gpt-oss-20b" }
@@ -2026,7 +2202,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-alfred-gpt-oss-20b:9090/health" }
             - { name: DAEMON_RUNTIME, value: "simple-harness" }

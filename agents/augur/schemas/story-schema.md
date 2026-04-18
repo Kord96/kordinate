@@ -11,6 +11,8 @@ Apply these rules to story summaries, findings, and rationale:
 - state facts about the system, not facts about the document
 - name concrete components, dependencies, and flows
 - keep summaries concise and grounded
+- prefer exact mechanism names from code when they exist, such as hook names, lifecycle stage names, parser names, registry names, or option names
+- prefer one mechanism per sentence unless the code clearly binds multiple mechanisms into one stage
 - use `**bold**` atlas references only when they resolve to real atlas ids such as components, state entries, dependencies, flows, events, concepts, or tensions
 - prefer active phrasing and direct relationships
 - avoid filler such as "this story covers" or "the following section"
@@ -26,9 +28,9 @@ Apply these rules to story summaries, findings, and rationale:
 - root story ids should normally match the top-level component ids they explain
 - child story ids should stay story-specific, but `parent` must always reference a real story id
 - before you cite a repo file in `anchor`, `evidence.file`, or `grounded_in`, confirm the path actually exists in the repo or analysis run; do not guess filenames such as `agents/augur/agent.yaml`
-- `evidence.file` and `grounded_in` may point to either:
-  - project-relative repo files such as `shared/klaude-daemon/src/index.ts`
-  - analysis-relative run artifacts such as `facts/startup.json`
+- use the canonical path rules from `augur-output-contract.md`
+- treat stories as resolved teaching structure, not as arbitrary file-group summaries
+- when `facts/component-seeds.json` and `facts/story-seeds.json` are present, use them to challenge root choice and child-story decomposition before writing
 
 ## Story Schema
 
@@ -117,7 +119,7 @@ Stories form a tree that mirrors the component hierarchy.
 
 | Rule | Value |
 |------|-------|
-| Root stories | 3-5 (one per top-level component) |
+| Root stories | usually 3-5, matching top-level components when that shape is natural |
 | Max depth | 2 |
 | Children per root | 2-5 |
 | Cross-boundary references | Allowed when the concern crosses component boundaries |
@@ -140,6 +142,28 @@ Child stories have `parent: "<root-story-id>"`.
 - a child story should focus on fewer nodes than its parent
 - a child story may include nodes outside the parent subtree when needed to explain a real interaction
 - if a concern spans multiple top-level components equally, attach it to the most relevant root and use `tags` to aid narrative assembly
+- avoid roots with exactly one child unless that child clearly adds distinct explanatory value; otherwise merge it back or create another real concern-focused child
+
+## Concern Selection
+
+Prefer child stories that explain one distinct concern class:
+- a major request, control, or event flow
+- a state or configuration boundary
+- an external dependency or integration boundary
+- an important failure path or operations surface
+- a major design decision or trade-off
+
+Avoid child stories that merely rename a directory, restate the root summary, or split the parent by arbitrary file groups.
+Avoid child stories that exist only to satisfy count heuristics. A child should teach one distinct concern the parent cannot explain as clearly on its own.
+
+## Grounding Style
+
+- observations and summaries should sound like the code they cite, not like generic architectural paraphrases
+- when grounded code exposes concrete identifiers, prefer those identifiers or their exact stage names over abstract substitutes
+- when `facts/symbols-seed.json` is available for the cited file, prefer exact identifiers from that inventory over nearby paraphrases
+- if multiple `grounded_in` lines support one observation, keep the finding focused enough that the same mechanism is visible across those lines
+- if one claim requires several unrelated mechanisms to explain, split it into multiple observations
+- when a story still reads like a local code inventory after grounding, it is usually the wrong story boundary
 
 ## Verbosity Rules
 

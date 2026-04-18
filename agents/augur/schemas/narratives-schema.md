@@ -38,10 +38,15 @@ narratives:
 - order stories in teaching order, foundational to dependent
 - create narratives for cross-cutting concerns and audience-specific reading paths
 - do not create a narrative when tree navigation alone is enough
+- when child stories carry the real explanatory detail, prefer them over repeating only root stories
+- for cross-cutting narratives, mix root and child stories when that yields a clearer teaching sequence than repeating roots only
+- prefer the smallest story that teaches the next architectural step clearly; avoid repeating a root story when a child story is the real explanation
 
 ## Required Narrative
 
 Include a narrative with exact id `getting-started` that provides a teaching-order path covering the main top-level components.
+
+`getting-started` should normally move from one orientation root into the most explanatory child stories before returning to later roots. Do not keep it root-only when child stories carry the real architecture.
 
 Do not rename this required narrative to variants such as `narrative-getting-started`.
 

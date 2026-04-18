@@ -57,7 +57,7 @@ $AGENT_HOME_DIR/memory/projects/<project>/analysis/<sha>/<analysis-id>/meta.json
     "provider": "<provider name>",
     "runtime": "<runtime kind>",
     "model": "<model name>",
-    "bundle_mode": "<selective | holistic>",
+    "bundle_mode": "<evidence-driven>",
     "agent_contract_version": "<contract version>",
     "runtime_profile_version": "<runtime profile version>"
   },

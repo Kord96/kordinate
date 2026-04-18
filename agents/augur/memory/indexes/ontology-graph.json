@@ -175,6 +175,11 @@
       "label": "ml"
     },
     {
+      "id": "abstraction:networking",
+      "kind": "abstraction",
+      "label": "networking"
+    },
+    {
       "id": "abstraction:observability",
       "kind": "abstraction",
       "label": "observability"
@@ -361,6 +366,21 @@
       "path": "memory/catalog/concepts/ast.md"
     },
     {
+      "id": "concept:at-least-once-delivery",
+      "kind": "concept",
+      "slug": "at-least-once-delivery",
+      "label": "At-Least-Once Delivery",
+      "description": "At-Least-Once Delivery architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "messaging",
+        "resilience"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/at-least-once-delivery.md"
+    },
+    {
       "id": "concept:audit-logging",
       "kind": "concept",
       "slug": "audit-logging",
@@ -500,6 +520,21 @@
       "status": "supporting",
       "scope": "backend",
       "path": "memory/catalog/concepts/boolean-blindness.md"
+    },
+    {
+      "id": "concept:bounded-context",
+      "kind": "concept",
+      "slug": "bounded-context",
+      "label": "Bounded Context",
+      "description": "Bounded Context architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "architectural",
+        "design"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/bounded-context.md"
     },
     {
       "id": "concept:breaking-changes",
@@ -908,6 +943,21 @@
       "path": "memory/catalog/concepts/contract-testing.md"
     },
     {
+      "id": "concept:control-plane",
+      "kind": "concept",
+      "slug": "control-plane",
+      "label": "Control Plane",
+      "description": "Control Plane architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "infrastructure",
+        "architectural"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/control-plane.md"
+    },
+    {
       "id": "concept:conversation-thread",
       "kind": "concept",
       "slug": "conversation-thread",
@@ -1010,6 +1060,21 @@
       "path": "memory/catalog/concepts/data-pipeline.md"
     },
     {
+      "id": "concept:data-plane",
+      "kind": "concept",
+      "slug": "data-plane",
+      "label": "Data Plane",
+      "description": "Data Plane architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "infrastructure",
+        "networking"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/data-plane.md"
+    },
+    {
       "id": "concept:database-migration",
       "kind": "concept",
       "slug": "database-migration",
@@ -1023,6 +1088,21 @@
       "status": "primary",
       "scope": "domain",
       "path": "memory/catalog/concepts/database-migration.md"
+    },
+    {
+      "id": "concept:database-per-service",
+      "kind": "concept",
+      "slug": "database-per-service",
+      "label": "Database-Per-Service",
+      "description": "Database-per-Service architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "data",
+        "architectural"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/database-per-service.md"
     },
     {
       "id": "concept:ddd",
@@ -1305,6 +1385,37 @@
       "path": "memory/catalog/concepts/event-sourcing.md"
     },
     {
+      "id": "concept:eventual-consistency",
+      "kind": "concept",
+      "slug": "eventual-consistency",
+      "label": "Eventual Consistency",
+      "description": "Eventual Consistency architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "data",
+        "integration",
+        "resilience"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/eventual-consistency.md"
+    },
+    {
+      "id": "concept:exactly-once-semantics",
+      "kind": "concept",
+      "slug": "exactly-once-semantics",
+      "label": "Exactly-Once Semantics",
+      "description": "Exactly-Once Semantics architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "messaging",
+        "data"
+      ],
+      "status": "supporting",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/exactly-once-semantics.md"
+    },
+    {
       "id": "concept:experiment-framework",
       "kind": "concept",
       "slug": "experiment-framework",
@@ -1361,6 +1472,20 @@
       "status": "primary",
       "scope": "cross-cutting",
       "path": "memory/catalog/concepts/failure-cascade.md"
+    },
+    {
+      "id": "concept:fallback",
+      "kind": "concept",
+      "slug": "fallback",
+      "label": "Fallback",
+      "description": "Fallback architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "resilience"
+      ],
+      "status": "supporting",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/fallback.md"
     },
     {
       "id": "concept:fan-in",
@@ -2007,6 +2132,21 @@
       "path": "memory/catalog/concepts/lexer-parser.md"
     },
     {
+      "id": "concept:load-balancer",
+      "kind": "concept",
+      "slug": "load-balancer",
+      "label": "Load Balancer",
+      "description": "Load Balancer architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "infrastructure",
+        "networking"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/load-balancer.md"
+    },
+    {
       "id": "concept:log-and-throw",
       "kind": "concept",
       "slug": "log-and-throw",
@@ -2469,6 +2609,21 @@
       "path": "memory/catalog/concepts/optimistic-update.md"
     },
     {
+      "id": "concept:orchestration",
+      "kind": "concept",
+      "slug": "orchestration",
+      "label": "Orchestration",
+      "description": "Orchestration architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "integration",
+        "architectural"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/orchestration.md"
+    },
+    {
       "id": "concept:outbox",
       "kind": "concept",
       "slug": "outbox",
@@ -2719,6 +2874,21 @@
       "status": "primary",
       "scope": "cross-cutting",
       "path": "memory/catalog/concepts/pub-sub.md"
+    },
+    {
+      "id": "concept:query-object",
+      "kind": "concept",
+      "slug": "query-object",
+      "label": "Query Object",
+      "description": "Query Object architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "design",
+        "data"
+      ],
+      "status": "primary",
+      "scope": "backend",
+      "path": "memory/catalog/concepts/query-object.md"
     },
     {
       "id": "concept:race-condition",
@@ -3081,6 +3251,21 @@
       "path": "memory/catalog/concepts/schema-on-read.md"
     },
     {
+      "id": "concept:schema-registry",
+      "kind": "concept",
+      "slug": "schema-registry",
+      "label": "Schema Registry",
+      "description": "Schema Registry architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "data",
+        "integration"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/schema-registry.md"
+    },
+    {
       "id": "concept:search-index",
       "kind": "concept",
       "slug": "search-index",
@@ -3254,6 +3439,21 @@
       "status": "primary",
       "scope": "domain",
       "path": "memory/catalog/concepts/sharding.md"
+    },
+    {
+      "id": "concept:shared-database",
+      "kind": "concept",
+      "slug": "shared-database",
+      "label": "Shared Database",
+      "description": "Shared Database architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "data",
+        "integration"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/shared-database.md"
     },
     {
       "id": "concept:shotgun-surgery",
@@ -3493,6 +3693,22 @@
       "status": "primary",
       "scope": "backend",
       "path": "memory/catalog/concepts/strategy.md"
+    },
+    {
+      "id": "concept:stream-processing",
+      "kind": "concept",
+      "slug": "stream-processing",
+      "label": "Stream Processing",
+      "description": "Stream Processing architectural pattern",
+      "concept_type": "pattern",
+      "abstractions": [
+        "data",
+        "messaging",
+        "realtime"
+      ],
+      "status": "primary",
+      "scope": "cross-cutting",
+      "path": "memory/catalog/concepts/stream-processing.md"
     },
     {
       "id": "concept:stream-to-store",
@@ -4860,6 +5076,18 @@
       "authored": false
     },
     {
+      "source": "concept:at-least-once-delivery",
+      "target": "abstraction:messaging",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:at-least-once-delivery",
+      "target": "abstraction:resilience",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
       "source": "concept:audit-logging",
       "target": "abstraction:observability",
       "relation": "has_abstraction",
@@ -4934,6 +5162,18 @@
     {
       "source": "concept:blue-green",
       "target": "abstraction:deployment",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:bounded-context",
+      "target": "abstraction:architectural",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:bounded-context",
+      "target": "abstraction:design",
       "relation": "has_abstraction",
       "authored": false
     },
@@ -5154,6 +5394,18 @@
       "authored": false
     },
     {
+      "source": "concept:control-plane",
+      "target": "abstraction:architectural",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:control-plane",
+      "target": "abstraction:infrastructure",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
       "source": "concept:conversation-thread",
       "target": "abstraction:communication",
       "relation": "has_abstraction",
@@ -5226,6 +5478,18 @@
       "authored": false
     },
     {
+      "source": "concept:data-plane",
+      "target": "abstraction:infrastructure",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:data-plane",
+      "target": "abstraction:networking",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
       "source": "concept:database-migration",
       "target": "abstraction:data",
       "relation": "has_abstraction",
@@ -5234,6 +5498,18 @@
     {
       "source": "concept:database-migration",
       "target": "abstraction:lifecycle",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:database-per-service",
+      "target": "abstraction:architectural",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:database-per-service",
+      "target": "abstraction:data",
       "relation": "has_abstraction",
       "authored": false
     },
@@ -5394,6 +5670,36 @@
       "authored": false
     },
     {
+      "source": "concept:eventual-consistency",
+      "target": "abstraction:data",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:eventual-consistency",
+      "target": "abstraction:integration",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:eventual-consistency",
+      "target": "abstraction:resilience",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:exactly-once-semantics",
+      "target": "abstraction:data",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:exactly-once-semantics",
+      "target": "abstraction:messaging",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
       "source": "concept:experiment-framework",
       "target": "abstraction:deployment",
       "relation": "has_abstraction",
@@ -5425,6 +5731,12 @@
     },
     {
       "source": "concept:failure-cascade",
+      "target": "abstraction:resilience",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:fallback",
       "target": "abstraction:resilience",
       "relation": "has_abstraction",
       "authored": false
@@ -5790,6 +6102,18 @@
       "authored": false
     },
     {
+      "source": "concept:load-balancer",
+      "target": "abstraction:infrastructure",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:load-balancer",
+      "target": "abstraction:networking",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
       "source": "concept:long-polling",
       "target": "abstraction:integration",
       "relation": "has_abstraction",
@@ -6042,6 +6366,18 @@
       "authored": false
     },
     {
+      "source": "concept:orchestration",
+      "target": "abstraction:architectural",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:orchestration",
+      "target": "abstraction:integration",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
       "source": "concept:outbox",
       "target": "abstraction:data",
       "relation": "has_abstraction",
@@ -6176,6 +6512,18 @@
     {
       "source": "concept:pub-sub",
       "target": "abstraction:messaging",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:query-object",
+      "target": "abstraction:data",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:query-object",
+      "target": "abstraction:design",
       "relation": "has_abstraction",
       "authored": false
     },
@@ -6408,6 +6756,18 @@
       "authored": false
     },
     {
+      "source": "concept:schema-registry",
+      "target": "abstraction:data",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:schema-registry",
+      "target": "abstraction:integration",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
       "source": "concept:search-index",
       "target": "abstraction:data",
       "relation": "has_abstraction",
@@ -6524,6 +6884,18 @@
     {
       "source": "concept:sharding",
       "target": "abstraction:infrastructure",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:shared-database",
+      "target": "abstraction:data",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:shared-database",
+      "target": "abstraction:integration",
       "relation": "has_abstraction",
       "authored": false
     },
@@ -6656,6 +7028,24 @@
     {
       "source": "concept:strategy",
       "target": "abstraction:design",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:stream-processing",
+      "target": "abstraction:data",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:stream-processing",
+      "target": "abstraction:messaging",
+      "relation": "has_abstraction",
+      "authored": false
+    },
+    {
+      "source": "concept:stream-processing",
+      "target": "abstraction:realtime",
       "relation": "has_abstraction",
       "authored": false
     },
@@ -6984,6 +7374,12 @@
       "authored": false
     },
     {
+      "source": "concept:at-least-once-delivery",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
       "source": "concept:audit-logging",
       "target": "type:pattern",
       "relation": "has_type",
@@ -7040,6 +7436,12 @@
     {
       "source": "concept:boolean-blindness",
       "target": "type:anti-pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
+      "source": "concept:bounded-context",
+      "target": "type:pattern",
       "relation": "has_type",
       "authored": false
     },
@@ -7218,6 +7620,12 @@
       "authored": false
     },
     {
+      "source": "concept:control-plane",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
       "source": "concept:conversation-thread",
       "target": "type:pattern",
       "relation": "has_type",
@@ -7260,7 +7668,19 @@
       "authored": false
     },
     {
+      "source": "concept:data-plane",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
       "source": "concept:database-migration",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
+      "source": "concept:database-per-service",
       "target": "type:pattern",
       "relation": "has_type",
       "authored": false
@@ -7386,6 +7806,18 @@
       "authored": false
     },
     {
+      "source": "concept:eventual-consistency",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
+      "source": "concept:exactly-once-semantics",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
       "source": "concept:experiment-framework",
       "target": "type:pattern",
       "relation": "has_type",
@@ -7406,6 +7838,12 @@
     {
       "source": "concept:failure-cascade",
       "target": "type:flow-shape",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
+      "source": "concept:fallback",
+      "target": "type:pattern",
       "relation": "has_type",
       "authored": false
     },
@@ -7686,6 +8124,12 @@
       "authored": false
     },
     {
+      "source": "concept:load-balancer",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
       "source": "concept:log-and-throw",
       "target": "type:anti-pattern",
       "relation": "has_type",
@@ -7884,6 +8328,12 @@
       "authored": false
     },
     {
+      "source": "concept:orchestration",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
       "source": "concept:outbox",
       "target": "type:pattern",
       "relation": "has_type",
@@ -7987,6 +8437,12 @@
     },
     {
       "source": "concept:pub-sub",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
+      "source": "concept:query-object",
       "target": "type:pattern",
       "relation": "has_type",
       "authored": false
@@ -8142,6 +8598,12 @@
       "authored": false
     },
     {
+      "source": "concept:schema-registry",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
       "source": "concept:search-index",
       "target": "type:pattern",
       "relation": "has_type",
@@ -8209,6 +8671,12 @@
     },
     {
       "source": "concept:sharding",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
+      "source": "concept:shared-database",
       "target": "type:pattern",
       "relation": "has_type",
       "authored": false
@@ -8311,6 +8779,12 @@
     },
     {
       "source": "concept:strategy",
+      "target": "type:pattern",
+      "relation": "has_type",
+      "authored": false
+    },
+    {
+      "source": "concept:stream-processing",
       "target": "type:pattern",
       "relation": "has_type",
       "authored": false
@@ -8784,8 +9258,26 @@
       "authored": true
     },
     {
+      "source": "concept:memory-leak",
+      "target": "concept:bulkhead",
+      "relation": "references",
+      "authored": false
+    },
+    {
+      "source": "concept:property-testing",
+      "target": "concept:snapshot-testing",
+      "relation": "references",
+      "authored": false
+    },
+    {
       "source": "concept:request-path",
       "target": "concept:server-route-registration",
+      "relation": "references",
+      "authored": false
+    },
+    {
+      "source": "concept:secret-management",
+      "target": "concept:immutable-infra",
       "relation": "references",
       "authored": false
     },
@@ -8923,19 +9415,37 @@
     },
     {
       "source": "concept:ast",
-      "target": "concept:compiler",
+      "target": "concept:command",
       "relation": "related_to",
       "authored": true
     },
     {
       "source": "concept:ast",
-      "target": "concept:interpreter",
+      "target": "concept:intermediate-representation",
       "relation": "related_to",
       "authored": true
     },
     {
       "source": "concept:ast",
       "target": "concept:visitor",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:at-least-once-delivery",
+      "target": "concept:exactly-once-semantics",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:at-least-once-delivery",
+      "target": "concept:idempotent-consumer",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:at-least-once-delivery",
+      "target": "concept:message-queue",
       "relation": "related_to",
       "authored": true
     },
@@ -9116,6 +9626,24 @@
     {
       "source": "concept:boolean-blindness",
       "target": "concept:strategy",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:bounded-context",
+      "target": "concept:anti-corruption-layer",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:bounded-context",
+      "target": "concept:database-per-service",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:bounded-context",
+      "target": "concept:ddd",
       "relation": "related_to",
       "authored": true
     },
@@ -9517,7 +10045,7 @@
     },
     {
       "source": "concept:composite",
-      "target": "concept:tree",
+      "target": "concept:graph",
       "relation": "related_to",
       "authored": true
     },
@@ -9602,6 +10130,24 @@
     {
       "source": "concept:contract-testing",
       "target": "concept:rest",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:control-plane",
+      "target": "concept:data-plane",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:control-plane",
+      "target": "concept:service-discovery",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:control-plane",
+      "target": "concept:service-mesh",
       "relation": "related_to",
       "authored": true
     },
@@ -9714,6 +10260,24 @@
       "authored": true
     },
     {
+      "source": "concept:data-plane",
+      "target": "concept:control-plane",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:data-plane",
+      "target": "concept:service-mesh",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:data-plane",
+      "target": "concept:sidecar",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
       "source": "concept:database-migration",
       "target": "concept:config-management",
       "relation": "related_to",
@@ -9728,6 +10292,24 @@
     {
       "source": "concept:database-migration",
       "target": "concept:schema-registry",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:database-per-service",
+      "target": "concept:bounded-context",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:database-per-service",
+      "target": "concept:microservices",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:database-per-service",
+      "target": "concept:shared-database",
       "relation": "related_to",
       "authored": true
     },
@@ -10056,6 +10638,42 @@
       "authored": true
     },
     {
+      "source": "concept:eventual-consistency",
+      "target": "concept:cqrs",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:eventual-consistency",
+      "target": "concept:dual-writes",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:eventual-consistency",
+      "target": "concept:optimistic-update",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:exactly-once-semantics",
+      "target": "concept:at-least-once-delivery",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:exactly-once-semantics",
+      "target": "concept:idempotent-consumer",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:exactly-once-semantics",
+      "target": "concept:outbox",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
       "source": "concept:experiment-framework",
       "target": "concept:feature-flag",
       "relation": "related_to",
@@ -10123,6 +10741,24 @@
     },
     {
       "source": "concept:failure-cascade",
+      "target": "concept:graceful-degradation",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:fallback",
+      "target": "concept:cache-aside",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:fallback",
+      "target": "concept:circuit-breaker",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:fallback",
       "target": "concept:graceful-degradation",
       "relation": "related_to",
       "authored": true
@@ -10902,6 +11538,24 @@
       "authored": true
     },
     {
+      "source": "concept:load-balancer",
+      "target": "concept:api-gateway",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:load-balancer",
+      "target": "concept:rate-limiting",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:load-balancer",
+      "target": "concept:service-discovery",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
       "source": "concept:log-and-throw",
       "target": "concept:correlation-id",
       "relation": "related_to",
@@ -11466,6 +12120,24 @@
       "authored": true
     },
     {
+      "source": "concept:orchestration",
+      "target": "concept:choreography",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:orchestration",
+      "target": "concept:saga-orchestrator",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:orchestration",
+      "target": "concept:workflow-engine",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
       "source": "concept:outbox",
       "target": "concept:change-data-capture",
       "relation": "related_to",
@@ -11738,6 +12410,24 @@
     {
       "source": "concept:pub-sub",
       "target": "concept:webhook",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:query-object",
+      "target": "concept:cqrs",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:query-object",
+      "target": "concept:repository",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:query-object",
+      "target": "concept:specification",
       "relation": "related_to",
       "authored": true
     },
@@ -12180,6 +12870,24 @@
       "authored": true
     },
     {
+      "source": "concept:schema-registry",
+      "target": "concept:database-migration",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:schema-registry",
+      "target": "concept:event-driven",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:schema-registry",
+      "target": "concept:schema-on-read",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
       "source": "concept:search-index",
       "target": "concept:change-data-capture",
       "relation": "related_to",
@@ -12398,6 +13106,24 @@
     {
       "source": "concept:sharding",
       "target": "concept:tenant-routing",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:shared-database",
+      "target": "concept:database-per-service",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:shared-database",
+      "target": "concept:distributed-monolith",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:shared-database",
+      "target": "concept:microservices",
       "relation": "related_to",
       "authored": true
     },
@@ -12674,6 +13400,24 @@
     {
       "source": "concept:strategy",
       "target": "concept:specification",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:stream-processing",
+      "target": "concept:batch-processing",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:stream-processing",
+      "target": "concept:stream-to-store",
+      "relation": "related_to",
+      "authored": true
+    },
+    {
+      "source": "concept:stream-processing",
+      "target": "concept:streaming-flow",
       "relation": "related_to",
       "authored": true
     },
@@ -13159,13 +13903,13 @@
     },
     {
       "source": "concept:visitor",
-      "target": "concept:composite",
+      "target": "concept:command",
       "relation": "related_to",
       "authored": true
     },
     {
       "source": "concept:visitor",
-      "target": "concept:interpreter",
+      "target": "concept:composite",
       "relation": "related_to",
       "authored": true
     },
@@ -13909,9 +14653,9 @@
     }
   ],
   "maintenance": {
-    "authored_edge_count": 874,
-    "inferred_edge_count": 668,
-    "low_confidence_reference_count": 5,
+    "authored_edge_count": 916,
+    "inferred_edge_count": 714,
+    "low_confidence_reference_count": 8,
     "low_confidence_references": [
       {
         "source": "framework:django",
@@ -13938,8 +14682,26 @@
         "reason": "inferred-only edge without an authored relationship"
       },
       {
+        "source": "concept:memory-leak",
+        "target": "concept:bulkhead",
+        "relation": "references",
+        "reason": "inferred-only edge without an authored relationship"
+      },
+      {
+        "source": "concept:property-testing",
+        "target": "concept:snapshot-testing",
+        "relation": "references",
+        "reason": "inferred-only edge without an authored relationship"
+      },
+      {
         "source": "concept:request-path",
         "target": "concept:server-route-registration",
+        "relation": "references",
+        "reason": "inferred-only edge without an authored relationship"
+      },
+      {
+        "source": "concept:secret-management",
+        "target": "concept:immutable-infra",
         "relation": "references",
         "reason": "inferred-only edge without an authored relationship"
       }

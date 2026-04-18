@@ -66,7 +66,7 @@ Stable constraints:
 - required top-level sections match `atlas-schema.md`
 - component ids are kebab-case and unique
 - components form a hierarchy
-- top-level components should number `3-5`
+- top-level component shape should follow the preferred ranges in `atlas-schema.md`; treat them as heuristics, not rigid molds
 - all cross-references resolve
 - `components[].depends_on` references only component ids
 - outside systems live in `external_dependencies` or `state`
@@ -83,7 +83,7 @@ Stable constraints:
 - story ids are unique and kebab-case
 - summary is required
 - story node references resolve to atlas ids
-- observation evidence uses project-relative paths
+- story evidence and grounding use the path rules below
 
 ## narratives.yaml
 
@@ -94,6 +94,31 @@ Stable constraints:
 - every narrative story id exists in `stories/`
 - each narrative contains `3-8` stories
 - narratives may pull from any level of the story tree
+
+## Path Resolution Contract
+
+All semantic artifacts should use one of these path forms when citing files:
+
+- repo-relative paths rooted at the analyzed project, such as `pkg/server/watch.go`
+- analysis-relative paths rooted at the run directory, such as `facts/startup.json`
+- absolute paths only when the runtime already emitted absolute deterministic references and they resolve correctly
+
+Do not:
+- concatenate multiple absolute paths
+- guess package-local paths that do not exist
+- mix repo-relative and analysis-relative semantics within one reference string
+
+Validators and repair loops should treat these rules as the canonical path contract for semantic outputs.
+
+## repair-log.json
+
+`repair-log.json` is a validator-owned lifecycle record for one run.
+
+Stable constraints:
+- one entry is appended per validation attempt
+- the last iteration is the current final quality state
+- issue ids stay stable for the same validator finding shape across iterations
+- resolved issues remain recorded under `resolved_issues`
 
 ## meta.json
 

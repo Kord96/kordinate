@@ -33,9 +33,9 @@ Keep `depends_on` for real internal component relationships only.
 
 ## Hierarchy
 
-- prefer 3-5 top-level components
 - use top-level components for the main architecture slices
 - group by runtime boundary or architectural concern, not by folder naming
 - represent nesting with `parent`
 - keep `children` only when you can state it consistently
 - keep the hierarchy shallow and meaningful
+- use the preferred shape heuristics from `atlas-schema.md`; do not force a repo into an artificial count target

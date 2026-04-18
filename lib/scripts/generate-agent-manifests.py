@@ -132,6 +132,16 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
         "requiresWorkingDirectory": flavor == "augur",
     }
 
+    accepted_prefixes = agent.get("accepted_request_prefixes")
+    if isinstance(accepted_prefixes, list):
+        normalized_prefixes = [
+            str(prefix).strip()
+            for prefix in accepted_prefixes
+            if isinstance(prefix, str) and str(prefix).strip()
+        ]
+        if normalized_prefixes:
+            contract["acceptedRequestPrefixes"] = normalized_prefixes
+
     bundle_refs = {
         "memory": creation.get("memory_bundle"),
         "skill": creation.get("skill_bundle"),

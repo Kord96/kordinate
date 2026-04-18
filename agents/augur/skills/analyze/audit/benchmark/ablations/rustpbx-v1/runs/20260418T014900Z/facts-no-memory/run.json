@@ -1,0 +1,24 @@
+{
+  "started_at": "2026-04-18T01:49:00Z",
+  "repo_root": "/kord/shared/repos/restsend--rustpbx",
+  "prompt_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/rustpbx-v1/prompts/facts-no-memory.md",
+  "model": "gpt-5.4",
+  "command": [
+    "codex",
+    "exec",
+    "--dangerously-bypass-approvals-and-sandbox",
+    "-C",
+    "/kord/shared/repos/restsend--rustpbx",
+    "--output-last-message",
+    "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/rustpbx-v1/runs/20260418T014900Z/facts-no-memory/final-message.txt",
+    "--json",
+    "-",
+    "-m",
+    "gpt-5.4"
+  ],
+  "status": "dry-run",
+  "stdout_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/rustpbx-v1/runs/20260418T014900Z/facts-no-memory/stdout.jsonl",
+  "stderr_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/rustpbx-v1/runs/20260418T014900Z/facts-no-memory/stderr.log",
+  "final_message_path": "/kord/workstation/home/project/kordinate/agents/augur/skills/analyze/audit/benchmark/ablations/rustpbx-v1/runs/20260418T014900Z/facts-no-memory/final-message.txt",
+  "completed_at": "2026-04-18T01:49:00Z"
+}
