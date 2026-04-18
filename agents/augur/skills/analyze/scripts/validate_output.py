@@ -1551,11 +1551,33 @@ def detect_cross_artifact_conflicts(
         str(item.get("id") or "")
         for item in recommended_narrative_records
     }
+    recommended_narrative_by_id = {
+        str(item.get("id") or ""): item
+        for item in recommended_narrative_records
+    }
     optional_recommended_ids = {
         narrative_id
         for narrative_id in recommended_narrative_ids
         if narrative_id and narrative_id != "system-overview"
     }
+    optional_recommended_records = [
+        item
+        for item in recommended_narrative_records
+        if str(item.get("id") or "") in optional_recommended_ids
+    ]
+    optional_recommended_records.sort(
+        key=lambda item: (
+            -int(item.get("score") or 0),
+            int(item.get("priority_rank") or 999),
+            str(item.get("id") or ""),
+        )
+    )
+    optional_budget = (
+        (narrative_seeds_payload or {}).get("optional_narrative_budget") or {}
+        if isinstance(narrative_seeds_payload, dict)
+        else {}
+    )
+    preferred_optional_target = int(optional_budget.get("target") or 0)
     preferred_roots = [
         item for item in (system_overview_seed.get("preferred_root_components") or [])
         if isinstance(item, dict)
@@ -1572,6 +1594,11 @@ def detect_cross_artifact_conflicts(
     require_flow_story = bool(system_overview_seed.get("require_flow_story"))
     require_state_or_boundary_story = bool(system_overview_seed.get("require_state_or_boundary_story"))
     prefer_child_stories = bool(system_overview_seed.get("prefer_child_stories"))
+    present_ids = {
+        str(narrative.get("id") or "")
+        for narrative in narratives
+        if isinstance(narrative, dict)
+    }
 
     def text_tokens(value: str) -> set[str]:
         return {
@@ -1627,10 +1654,7 @@ def detect_cross_artifact_conflicts(
             if story_id:
                 referenced_story_ids.append(story_id)
         referenced_set = set(referenced_story_ids)
-        recommended_record = next(
-            (item for item in recommended_narrative_records if str(item.get("id") or "") == nid),
-            None,
-        )
+        recommended_record = recommended_narrative_by_id.get(nid)
         if nid != "system-overview" and nid in CANONICAL_NARRATIVE_IDS and recommended_record is None:
             issues.append(
                 {
@@ -1643,6 +1667,34 @@ def detect_cross_artifact_conflicts(
                     "evidence_refs": [],
                 }
             )
+        if nid != "system-overview" and nid in CANONICAL_NARRATIVE_IDS and recommended_record is not None:
+            present_optional_ids = {
+                story_nid
+                for story_nid in present_ids
+                if story_nid and story_nid != "system-overview"
+            }
+            stronger_missing = [
+                item
+                for item in optional_recommended_records
+                if str(item.get("id") or "") not in present_optional_ids
+                and int(item.get("score") or 0) >= int(recommended_record.get("score") or 0) + 10
+            ]
+            if stronger_missing:
+                stronger = stronger_missing[0]
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-selection",
+                        "message": (
+                            f"Narrative '{nid}' is weaker than the stronger deterministic optional narrative "
+                            f"'{str(stronger.get('id') or '')}', which is missing from the repo's selected teaching paths"
+                        ),
+                        "conflict_type": "fact_vs_semantic",
+                        "related_entities": [nid, str(stronger.get("id") or "")],
+                        "evidence_refs": [],
+                    }
+                )
         missing_child_coverage: list[str] = []
         for story_id in referenced_story_ids:
             child_ids = child_story_ids_by_parent.get(story_id) or []
@@ -1990,15 +2042,32 @@ def detect_cross_artifact_conflicts(
                         }
                     )
 
-    present_ids = {
-        str(narrative.get("id") or "")
-        for narrative in narratives
-        if isinstance(narrative, dict)
-    }
     present_optional_recommended = sorted(optional_recommended_ids & present_ids)
+    if preferred_optional_target > 0 and len(present_optional_recommended) < preferred_optional_target and optional_recommended_records:
+        missing_ranked = [
+            item
+            for item in optional_recommended_records
+            if str(item.get("id") or "") not in present_ids
+        ]
+        if missing_ranked:
+            preferred_missing = [str(item.get("id") or "") for item in missing_ranked[:preferred_optional_target]]
+            issues.append(
+                {
+                    "level": "WARNING",
+                    "section": "narrative",
+                    "kind": "narrative-selection",
+                    "message": (
+                        "Deterministic narrative seeds suggest the repo is missing one of its strongest optional "
+                        f"teaching paths: {', '.join(preferred_missing)}"
+                    ),
+                    "conflict_type": "fact_vs_semantic",
+                    "related_entities": preferred_missing,
+                    "evidence_refs": [],
+                }
+            )
     if optional_recommended_ids and not present_optional_recommended:
-        exemplar_id = sorted(optional_recommended_ids)[0]
-        record = next((item for item in recommended_narrative_records if str(item.get("id") or "") == exemplar_id), None)
+        record = optional_recommended_records[0] if optional_recommended_records else None
+        exemplar_id = str((record or {}).get("id") or (sorted(optional_recommended_ids)[0] if optional_recommended_ids else ""))
         evidence_refs: list[str] = []
         evidence = (record or {}).get("evidence") or {}
         if isinstance(evidence, dict):

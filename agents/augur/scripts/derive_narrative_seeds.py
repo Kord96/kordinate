@@ -201,6 +201,7 @@ def main() -> int:
         {
             "id": "system-overview",
             "required": True,
+            "score": 100,
             "reason": "Every repo needs one canonical narrative that explains what the system does and how its main architecture achieves that outcome.",
             "evidence": {
                 "preferred_root_components": [item.get("id") for item in candidate_roots(component_payload)],
@@ -210,11 +211,18 @@ def main() -> int:
         }
     ]
 
-    def add_recommended_narrative(narrative_id: str, reason: str, evidence: dict[str, Any]) -> None:
+    def add_recommended_narrative(
+        narrative_id: str,
+        *,
+        score: int,
+        reason: str,
+        evidence: dict[str, Any],
+    ) -> None:
         recommended_narratives.append(
             {
                 "id": narrative_id,
                 "required": False,
+                "score": int(score),
                 "reason": reason,
                 "evidence": evidence,
             }
@@ -224,8 +232,13 @@ def main() -> int:
     if preferred_flow_hotspots or len(runtime_domains) >= 3:
         add_recommended_narrative(
             "runtime-paths",
-            "Deterministic control, request, scheduler, or event evidence suggests the repo benefits from a narrative focused on how execution actually moves.",
-            {
+            score=(
+                26
+                + min(18, 6 * len(preferred_flow_hotspots))
+                + min(20, 5 * len(runtime_domains))
+            ),
+            reason="Deterministic control, request, scheduler, or event evidence suggests the repo benefits from a narrative focused on how execution actually moves.",
+            evidence={
                 "flow_hotspots": [item.get("component") for item in preferred_flow_hotspots],
                 "domains": sorted(runtime_domains),
             },
@@ -234,8 +247,13 @@ def main() -> int:
     if preferred_state_or_boundary_targets or "state-access-summary" in present_domains:
         add_recommended_narrative(
             "state-and-data",
-            "Deterministic state-access evidence suggests persistence or data boundaries deserve their own teaching path.",
-            {
+            score=(
+                32
+                + min(18, 6 * len(preferred_state_or_boundary_targets))
+                + (12 if "state-access-summary" in present_domains else 0)
+            ),
+            reason="Deterministic state-access evidence suggests persistence or data boundaries deserve their own teaching path.",
+            evidence={
                 "targets": [item.get("target_name") for item in preferred_state_or_boundary_targets],
                 "domains": sorted({"state-access-summary"} & present_domains),
             },
@@ -246,29 +264,48 @@ def main() -> int:
     ):
         add_recommended_narrative(
             "integrations",
-            "External-client or boundary evidence suggests the repo has important dependency seams or protocol handoffs worth isolating.",
-            {
+            score=(
+                28
+                + (12 if "external-clients" in present_domains else 0)
+                + (10 if "dependency-or-operations-boundary" in preferred_concern_classes else 0)
+                + min(12, 4 * len(preferred_state_or_boundary_targets))
+            ),
+            reason="External-client or boundary evidence suggests the repo has important dependency seams or protocol handoffs worth isolating.",
+            evidence={
                 "domains": sorted({"external-clients"} & present_domains),
                 "concern_classes": [item for item in preferred_concern_classes if item == "dependency-or-operations-boundary"],
             },
         )
 
-    if any((health_candidates_payload.get(key) or []) for key in ("local_candidates", "integration_candidates", "propagation_candidates")):
+    local_candidate_count = len(health_candidates_payload.get("local_candidates") or [])
+    integration_candidate_count = len(health_candidates_payload.get("integration_candidates") or [])
+    propagation_candidate_count = len(health_candidates_payload.get("propagation_candidates") or [])
+    if any(
+        (health_candidates_payload.get(key) or [])
+        for key in ("local_candidates", "integration_candidates", "propagation_candidates")
+    ):
         add_recommended_narrative(
             "operations-and-failure",
-            "Layered health candidates suggest a narrative focused on degraded modes, seams, and observability.",
-            {
-                "local_candidates": len(health_candidates_payload.get("local_candidates") or []),
-                "integration_candidates": len(health_candidates_payload.get("integration_candidates") or []),
-                "propagation_candidates": len(health_candidates_payload.get("propagation_candidates") or []),
+            score=(
+                34
+                + min(8, 2 * local_candidate_count)
+                + min(22, integration_candidate_count)
+                + min(18, 6 * propagation_candidate_count)
+            ),
+            reason="Layered health candidates suggest a narrative focused on degraded modes, seams, and observability.",
+            evidence={
+                "local_candidates": local_candidate_count,
+                "integration_candidates": integration_candidate_count,
+                "propagation_candidates": propagation_candidate_count,
             },
         )
 
     if accepted_concepts & {"plugin-system", "command-dispatch", "service-manager"}:
         add_recommended_narrative(
             "extensibility",
-            "Dispatch or extensibility evidence suggests the repo exposes meaningful composition or extension seams.",
-            {
+            score=40 + min(18, 6 * len(accepted_concepts & {"plugin-system", "command-dispatch", "service-manager"})),
+            reason="Dispatch or extensibility evidence suggests the repo exposes meaningful composition or extension seams.",
+            evidence={
                 "concepts": sorted(accepted_concepts & {"plugin-system", "command-dispatch", "service-manager"}),
             },
         )
@@ -276,16 +313,41 @@ def main() -> int:
     if accepted_concepts & {"oauth-oidc", "token-auth", "session-auth", "rbac"}:
         add_recommended_narrative(
             "security-and-access",
-            "Security-related concept evidence suggests identity, token, or access-control flows are important enough to deserve a separate teaching path.",
-            {
+            score=42 + min(18, 6 * len(accepted_concepts & {"oauth-oidc", "token-auth", "session-auth", "rbac"})),
+            reason="Security-related concept evidence suggests identity, token, or access-control flows are important enough to deserve a separate teaching path.",
+            evidence={
                 "concepts": sorted(accepted_concepts & {"oauth-oidc", "token-auth", "session-auth", "rbac"}),
             },
         )
+
+    recommended_narratives.sort(
+        key=lambda item: (
+            -int(item.get("score") or 0),
+            0 if bool(item.get("required")) else 1,
+            str(item.get("id") or ""),
+        )
+    )
+    for index, item in enumerate(recommended_narratives, start=1):
+        item["priority_rank"] = index
+
+    optional_recommended = [item for item in recommended_narratives if not bool(item.get("required"))]
+    preferred_optional_count = 0
+    if optional_recommended:
+        strongest_score = int(optional_recommended[0].get("score") or 0)
+        preferred_optional_count = 1
+        if len(optional_recommended) > 1:
+            runner_up_score = int(optional_recommended[1].get("score") or 0)
+            if strongest_score >= 55 and runner_up_score >= 55 and strongest_score - runner_up_score <= 8:
+                preferred_optional_count = 2
 
     payload = {
         "version": 1,
         "goal": "Advisory narrative-planning seeds derived from deterministic facts.",
         "recommended_narratives": recommended_narratives,
+        "optional_narrative_budget": {
+            "target": preferred_optional_count,
+            "max": max(preferred_optional_count, 1 if optional_recommended else 0),
+        },
         "system_overview": {
             "recommended_story_budget": {
                 "min": 2,

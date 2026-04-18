@@ -47,6 +47,7 @@ The deterministic phase is already done. Work from the prepared run directory an
    - when you need the detector's intended threshold, semantic questions, or monitoring expectations for a materially relevant concept candidate, read `$KORDINATE_HOME/agents/augur/detectors/facts/concept-evidence/<concept>/meta.yaml`
    - if `facts/story-seeds.json` is present in this run, use it as an advisory planning aid before writing stories or narratives
    - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for system-overview and other teaching paths before finalizing `narratives.yaml`
+   - when optional narratives are recommended, prefer the strongest-ranked canonical narrative types instead of keeping a weaker optional path just because it is also allowed
    - if `facts/symbols-seed.json` is present in this run, use it as an advisory exact-name dictionary for high-signal files before writing observations, summaries, or flow steps
    - if `facts/state-seeds.json` is present in this run, use it as an advisory exact-name dictionary for state entries grounded in state or operations files
    - if `facts/health-candidates.json` is present in this run, use it as advisory coverage and contradiction pressure for atlas health: distinguish local failures, boundary failures, and downstream propagation instead of collapsing them into one flat list

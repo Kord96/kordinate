@@ -53,6 +53,7 @@ narratives:
 - prefer the smallest story that teaches the next architectural step clearly; avoid repeating a root story when a child story is the real explanation
 - each per-story bridge description should justify the transition from the previous story into the next concern; do not use filler such as "next" or "then" without naming the reason
 - use `facts/narrative-seeds.json` when present as a ranking aid for which roots, child stories, and flow-bearing stories deserve inclusion, especially in `system-overview`
+- for optional narratives, prefer the highest-ranked canonical narratives from `recommended_narratives`; do not keep a weaker optional narrative while omitting a clearly stronger one unless repo evidence in the final atlas justifies that tradeoff
 
 ## Canonical Narrative Palette
 

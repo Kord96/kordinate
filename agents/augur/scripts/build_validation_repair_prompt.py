@@ -43,6 +43,7 @@ def main() -> int:
         "Do not keep a broad concept label just because a detector suggested it. Prefer accepted, well-grounded concepts over a longer pattern list.",
         "When decomposition or narrative-selection issues remain, use `facts/component-seeds.json` and `facts/story-seeds.json` when present to challenge root choice and draft more concern-focused children before editing stories.",
         "When system-overview or other narrative-selection issues remain, use `facts/narrative-seeds.json` when present to challenge which roots, child stories, flow-bearing stories, and boundary stories actually deserve inclusion in the repo overview.",
+        "If optional narratives are disputed, use `recommended_narratives` ranking to decide whether a weaker optional narrative should be replaced by a stronger evidence-backed canonical narrative type.",
         "When narrative-type issues remain, use `facts/narrative-seeds.json` to decide whether a narrative should be kept, renamed to a canonical palette id, merged away, or replaced by a stronger evidence-backed narrative type.",
         "When the repo overview lacks a strong operating model, use `facts/control-hotspots.json` when present to prefer a story that teaches a defining control, request, or execution path.",
         "When the repo overview lacks a real state or dependency boundary, use `facts/state-access-summary.json` when present to prefer a story that explains a concrete storage, state, or external-boundary interaction.",

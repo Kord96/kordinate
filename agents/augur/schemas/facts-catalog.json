@@ -135,7 +135,7 @@
       "file": "facts/narrative-seeds.json",
       "priority": "early-guidance",
       "meaning": "Deterministic ranking hints for system-overview and narrative selection.",
-      "how_to_use": "Use to challenge which roots, child stories, and flow-bearing stories are worth selecting for system-overview and other teaching paths, and to decide which optional canonical narrative ids are actually justified.",
+      "how_to_use": "Use to challenge which roots, child stories, and flow-bearing stories are worth selecting for system-overview and other teaching paths, and to decide which optional canonical narrative ids are actually justified and strongest for this repo.",
       "what_not_to_infer": "Narrative seeds are selection constraints, not final narrative truth."
     },
     "health-candidates": {
