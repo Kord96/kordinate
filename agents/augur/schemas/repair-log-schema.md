@@ -57,6 +57,7 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
           "sections": ["story"],
           "issue_ids": ["<stable short id>"],
           "messages": ["<representative issue message>"],
+          "recommended_artifacts": ["facts/concept-evidence.json"],
           "suggested_resolution": "<short repair hint>"
         }
       },
@@ -87,6 +88,9 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
           "related_issue_ids": [
             "<optional linked issue ids>"
           ],
+          "recommended_artifacts": [
+            "<deterministic artifacts to consult first>"
+          ],
           "status": "open | unchanged | regressed",
           "first_seen_iteration": 1,
           "last_seen_iteration": 1,
@@ -113,6 +117,9 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
           "related_issue_ids": [
             "<optional linked issue ids>"
           ],
+          "recommended_artifacts": [
+            "<deterministic artifacts to consult first>"
+          ],
           "status": "resolved",
           "first_seen_iteration": 1,
           "last_seen_iteration": 2,
@@ -134,6 +141,7 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
 - issues marked `is_semantic_conflict: true` are contradiction-like problems that should be reconciled within the current run
 - `conflict_type` distinguishes broad contradiction classes without requiring a separate contradiction artifact
 - `related_entities` and `evidence_refs` help reconcile cross-artifact disagreements directly from the repair log
+- `recommended_artifacts` points the repair loop at the highest-value deterministic artifacts for that issue or repair target
 - `repair_targets` groups repeated low-level issues, especially grounding warnings, into claim-level repair buckets
 - `quality_gate` records whether the run is clean enough to stop after structural validation
 - a missing issue from the prior open set should move into `resolved_issues`
@@ -151,6 +159,9 @@ Use the issue family and kind to decide which deterministic artifacts to consult
 - story-decomposition, narrative-selection, teaching-structure
   - `facts/story-seeds.json`
   - `facts/component-seeds.json`
+  - `facts/narrative-seeds.json`
+  - `facts/control-hotspots.json`
+  - `facts/state-access-summary.json`
 - concept-evidence, fact-vs-semantic, concept quality
   - `facts/concept-evidence.json`
 - root-shape, atlas-story tension, component-model

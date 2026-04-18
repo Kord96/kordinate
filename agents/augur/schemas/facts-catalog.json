@@ -130,6 +130,14 @@
       "how_to_use": "Use to choose representative entry, flow, and state or operations files for each provisional top-level component in full mode.",
       "what_not_to_infer": "Seeds are advisory and should not force final component boundaries without repo reading."
     },
+    "narrative-seeds": {
+      "kind": "planning-aid",
+      "file": "facts/narrative-seeds.json",
+      "priority": "early-guidance",
+      "meaning": "Deterministic ranking hints for getting-started and narrative selection.",
+      "how_to_use": "Use to challenge which roots, child stories, and flow-bearing stories are worth selecting for getting-started and other teaching paths.",
+      "what_not_to_infer": "Narrative seeds are selection constraints, not final narrative truth."
+    },
     "symbols-seed": {
       "kind": "planning-aid",
       "file": "facts/symbols-seed.json",

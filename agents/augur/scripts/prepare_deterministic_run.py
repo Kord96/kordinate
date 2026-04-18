@@ -75,6 +75,7 @@ def refresh_fact_manifests(
     concept_evidence_path: Path,
     story_seeds_path: Path,
     component_seeds_path: Path,
+    narrative_seeds_path: Path,
     symbols_seed_path: Path,
     state_seeds_path: Path,
 ) -> None:
@@ -91,6 +92,11 @@ def refresh_fact_manifests(
         component_payload = load_json(component_seeds_path)
         component_count = int(len(component_payload.get("candidate_components") or []))
         domain_records.append(("component-seeds", "facts/component-seeds.json", component_count))
+    if narrative_seeds_path.exists():
+        narrative_payload = load_json(narrative_seeds_path)
+        getting_started = narrative_payload.get("getting_started") or {}
+        narrative_count = int(len(getting_started.get("preferred_root_components") or []))
+        domain_records.append(("narrative-seeds", "facts/narrative-seeds.json", narrative_count))
     if symbols_seed_path.exists():
         symbols_payload = load_json(symbols_seed_path)
         symbols_count = int(len(symbols_payload.get("files") or []))
@@ -135,6 +141,7 @@ def main() -> int:
     concept_evidence_path = facts_dir / "concept-evidence.json"
     story_seeds_path = facts_dir / "story-seeds.json"
     component_seeds_path = facts_dir / "component-seeds.json"
+    narrative_seeds_path = facts_dir / "narrative-seeds.json"
     symbols_seed_path = facts_dir / "symbols-seed.json"
     state_seeds_path = facts_dir / "state-seeds.json"
     facts_guide_path = facts_dir / "facts-guide.json"
@@ -179,6 +186,13 @@ def main() -> int:
     ])
     run_cmd([
         "python3",
+        str(ROOT / "scripts" / "derive_narrative_seeds.py"),
+        str(facts_dir),
+        "--output",
+        str(narrative_seeds_path),
+    ])
+    run_cmd([
+        "python3",
         str(ROOT / "scripts" / "derive_symbols_seed.py"),
         str(facts_dir),
         "--output",
@@ -196,6 +210,7 @@ def main() -> int:
         concept_evidence_path,
         story_seeds_path,
         component_seeds_path,
+        narrative_seeds_path,
         symbols_seed_path,
         state_seeds_path,
     )
@@ -231,6 +246,7 @@ def main() -> int:
         "concept_evidence": str(concept_evidence_path),
         "story_seeds": str(story_seeds_path),
         "component_seeds": str(component_seeds_path),
+        "narrative_seeds": str(narrative_seeds_path),
         "symbols_seed": str(symbols_seed_path),
         "state_seeds": str(state_seeds_path),
         "facts_guide": str(facts_guide_path),

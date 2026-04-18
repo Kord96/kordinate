@@ -29,12 +29,13 @@ def main() -> int:
     concept_evidence_path = facts_dir / "concept-evidence.json"
     story_seeds_path = facts_dir / "story-seeds.json"
     component_seeds_path = facts_dir / "component-seeds.json"
+    narrative_seeds_path = facts_dir / "narrative-seeds.json"
     symbols_seed_path = facts_dir / "symbols-seed.json"
     state_seeds_path = facts_dir / "state-seeds.json"
     facts_guide_path = facts_dir / "facts-guide.json"
 
     starter_files: list[str] = [str(blast_path), str(startup_path)]
-    for optional in (facts_guide_path, concept_evidence_path, story_seeds_path, component_seeds_path, symbols_seed_path, state_seeds_path):
+    for optional in (facts_guide_path, concept_evidence_path, story_seeds_path, component_seeds_path, narrative_seeds_path, symbols_seed_path, state_seeds_path):
         if optional.exists():
             starter_files.append(str(optional))
     try:
@@ -70,7 +71,7 @@ def main() -> int:
                 "Use facts/symbols-seed.json when present to prefer exact mechanism names from high-signal files over abstract paraphrases in observations and summaries.",
                 "Use facts/state-seeds.json when present to tighten state claims around exact structs, enums, maps, config variants, or storage selectors in the grounded files.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
-                "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
+                "When you need schemas, use the exact canonical files under $KORDINATE_HOME/agents/augur/schemas/.",
             ]
         )
     else:
@@ -83,6 +84,7 @@ def main() -> int:
                 "After you identify provisional top-level components, perform a mandatory breadth pass in repo code for each root slice.",
                 "Treat facts/concept-evidence.json as candidate guidance: use detector backing, contradictions, and semantic questions to resolve concepts before they affect atlas concepts, monitoring, or gaps.",
                 "Use facts/component-seeds.json when present to choose representative files for each provisional root slice before finalizing the atlas or stories.",
+                "Use facts/narrative-seeds.json when present to challenge getting-started and other narrative selections before finalizing narratives.",
                 "Perform a root challenge pass before finalizing roots: reject provisional roots anchored mainly in test/, docs/, examples/, or client-only paths.",
                 "If the repo has strong engine, storage, or runtime slices, do not spend a full top-level root on bootstrap alone; keep bootstrap as a child unless it is truly the dominant system concern.",
                 "On large repos, require at least one top-level root anchored in deeper runtime or storage internals when deterministic seeds provide one.",
@@ -91,7 +93,7 @@ def main() -> int:
                 "For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file before finalizing stories.",
                 "Use facts to prioritize where to start, not to cap how broadly you read in full mode.",
                 "Use the run manifest for available fact files instead of guessing optional paths.",
-                "When you need schemas, use the exact canonical files under /app/agents/augur/schemas/.",
+                "When you need schemas, use the exact canonical files under $KORDINATE_HOME/agents/augur/schemas/.",
             ]
         )
 
@@ -109,6 +111,7 @@ def main() -> int:
         "concept_evidence_path": str(concept_evidence_path),
         "story_seeds_path": str(story_seeds_path),
         "component_seeds_path": str(component_seeds_path),
+        "narrative_seeds_path": str(narrative_seeds_path),
         "symbols_seed_path": str(symbols_seed_path),
         "state_seeds_path": str(state_seeds_path),
         "atlas_path": str(atlas_path),

@@ -13,9 +13,9 @@ Incremental mode means the semantic pass should start from the accepted prior se
 5. If `frameworks.json` is present and framework interpretation is relevant to the changed slice, resolve those framework candidates before letting framework semantics change the updated atlas or stories.
 6. When needed, read the accepted base analysis referenced by `base_analysis_dir`.
 7. Read only the repo files needed to verify the changed slice and its architectural impact.
-8. Just before writing or rewriting `$RUN/atlas.json`, read `/app/agents/augur/schemas/atlas-schema.md` and follow it exactly.
-9. Just before writing `stories/*.yaml`, read `/app/agents/augur/schemas/story-schema.md` and follow it exactly.
-10. Just before writing `narratives.yaml`, read `/app/agents/augur/schemas/narratives-schema.md` and follow it exactly.
+8. Just before writing or rewriting `$RUN/atlas.json`, read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` and follow it exactly.
+9. Just before writing `stories/*.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` and follow it exactly.
+10. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
 11. Update outputs under `$RUN`, preserving unaffected structure where possible.
 
 ## Incremental-Mode Expectations
@@ -29,6 +29,8 @@ Incremental mode means the semantic pass should start from the accepted prior se
 - Prefer runtime wiring, registrations, entrypoints, and inter-component communication over validators, helpers, identity docs, or support scripts when deciding whether architecture has materially changed.
 - Treat concept-evidence as candidate guidance, not as a final concept list. Only accepted concepts should materially change atlas concepts, monitoring expectations, or gaps.
 - Treat framework evidence as candidate guidance, not as a final framework list. Only accepted frameworks should materially change atlas naming, flow interpretation, or framework-driven concept activation.
+- If `narrative-seeds.json` is present, use it to challenge whether the changed slice should alter the onboarding path or another teaching path; prefer swapping or pruning stories over expanding the narrative.
+- If `control-hotspots.json` or `state-access-summary.json` are present and touched by the changed slice, use them as evidence for operating-model or boundary-story selection rather than restating them directly.
 - If a changed-slice framework candidate remains ambiguous, read only the specific framework catalog files for that framework instead of widening framework context broadly.
 - If a changed-slice concept candidate remains ambiguous, read only the specific concept file and detector `meta.yaml` for that concept instead of widening concept context broadly.
 - The available tools in this runtime are `Read`, `Edit`, and `Bash`. Use `Bash` with `find`, `rg`, `jq`, or `python` for discovery or filtering instead of assuming `Glob` or `Grep` tools exist.

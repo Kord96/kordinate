@@ -105,6 +105,13 @@ def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _portable_analysis_ref(analysis_root: Path, analysis_path: Path) -> str:
+    try:
+        return str(analysis_path.resolve().relative_to(analysis_root.resolve()))
+    except Exception:
+        return str(analysis_path.resolve())
+
+
 def read_latest_analysis_pointer(project: str, agent_home: str | Path | None = None) -> dict[str, Any] | None:
     pointer = latest_analysis_pointer_path(project, agent_home)
     if not pointer.exists():
@@ -115,10 +122,11 @@ def read_latest_analysis_pointer(project: str, agent_home: str | Path | None = N
 
 def write_latest_analysis_pointer(project: str, analysis_key: str, sha: str, commit_time: str | int | None = None, agent_home: str | Path | None = None, analysis_path: Path | None = None) -> Path:
     sha_key = normalize_sha_key(sha)
+    analysis_root = project_analysis_dir(project, agent_home)
     resolved_analysis_path = analysis_path.resolve() if analysis_path is not None else analysis_dir(project, sha_key, analysis_key, agent_home)
     payload = {
         "analysis_id": analysis_key,
-        "analysis_dir": str(resolved_analysis_path),
+        "analysis_dir": _portable_analysis_ref(analysis_root, resolved_analysis_path),
         "sha": sha_key if sha_key != "unknown" else "",
         "commit_time": str(commit_time or ""),
     }
@@ -193,6 +201,7 @@ def sha_analysis_index_path(project: str, sha: str, agent_home: str | Path | Non
 
 def write_analysis_indexes(project: str, agent_home: str | Path | None = None) -> None:
     records = iter_analysis_meta(project, agent_home)
+    analysis_root = project_analysis_dir(project, agent_home)
     summaries: list[dict[str, Any]] = []
     by_sha: dict[str, list[dict[str, Any]]] = {}
 
@@ -200,7 +209,7 @@ def write_analysis_indexes(project: str, agent_home: str | Path | None = None) -
         sha_key = normalize_sha_key(str(meta.get("sha") or ""))
         summary = {
             "analysis_id": str(meta.get("analysis_id") or path.name),
-            "analysis_dir": str(path),
+            "analysis_dir": _portable_analysis_ref(analysis_root, path),
             "project": str(meta.get("project") or project),
             "sha": "" if sha_key == "unknown" else sha_key,
             "commit_time": str(meta.get("commit_time") or ""),

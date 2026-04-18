@@ -406,7 +406,7 @@ Concept rules:
 Use `tensions` only for grounded architecture-level contradictions or trade-offs.
 Do not turn every bug, TODO, or cleanup item into a tension.
 
-### `metadata` (optional)
+### `metadata`
 
 ```json
 "metadata": {
@@ -430,6 +430,8 @@ Do not turn every bug, TODO, or cleanup item into a tension.
 ```
 
 Metadata rules:
+- include `metadata` in normal full and incremental outputs; omit it only if the run truly has no deterministic stack evidence to summarize
+- `stack_summary`, `languages`, `frameworks`, and `technologies` form a compact resolved stack summary and should normally be present when deterministic facts are available
 - keep `metadata.frameworks` compact and operational; it is part of a resolved stack summary, not a second architecture map
 - list only frameworks that materially influence interpretation of components, flows, or concepts
 - `languages` and `technologies` should summarize the stack, not enumerate every incidental library

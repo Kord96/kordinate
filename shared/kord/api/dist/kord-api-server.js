@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { request as httpsRequest } from 'node:https';
 import { createServer } from 'node:http';
 import { Kafka, Partitioners } from 'kafkajs';
+import { loadAugurAnalysisDetails, loadAugurBase, loadAugurProjectSummary, loadAugurReflections, resolveAugurProjectNames, listAugurAnalysisSummaries } from './augur-base.js';
 import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-registry.js';
 import { log } from './log.js';
 import { applyFailureToRequestRecord, applyResponseToRequestRecord, createRequestRecord } from './request-model.js';
@@ -24,6 +25,7 @@ const kubernetesNamespacePath = process.env.KUBERNETES_NAMESPACE_PATH ?? '/var/r
 const kubernetesTokenPath = process.env.KUBERNETES_TOKEN_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/token';
 const kubernetesCaPath = process.env.KUBERNETES_CA_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
 const agentSpecPath = process.env.AGENT_SPEC_PATH ?? '/app/agents/charon/skills/platform/agent-spec.yaml';
+const augurProjectsRoot = process.env.AUGUR_MEMORY_PROJECTS_ROOT ?? '/kord/agents/augur-local-codex/memory/projects';
 const allowedApiKeys = new Set([
     ...(process.env.KORD_API_KEYS ?? '').split(','),
     process.env.KORD_API_KEY ?? '',
@@ -703,6 +705,62 @@ const server = createServer(async (req, res) => {
                 include_bundles: url.searchParams.get('include_bundles') === '1',
             });
             json(res, 200, payload);
+            return;
+        }
+        if (req.method === 'GET' && url.pathname === '/augur/projects') {
+            const projectNames = await resolveAugurProjectNames(augurProjectsRoot);
+            const summaries = [];
+            for (const project of projectNames) {
+                try {
+                    const summary = await loadAugurProjectSummary(augurProjectsRoot, project);
+                    if (summary)
+                        summaries.push(summary);
+                }
+                catch (error) {
+                    log('augur_project_skipped', {
+                        project,
+                        reason: error instanceof Error ? error.message : String(error),
+                    });
+                }
+            }
+            json(res, 200, { projects: summaries });
+            return;
+        }
+        if (req.method === 'GET' && url.pathname.startsWith('/augur/projects/')) {
+            const parts = url.pathname.split('/').filter(Boolean).map(part => decodeURIComponent(part));
+            if (parts.length === 4 && parts[0] === 'augur' && parts[1] === 'projects' && parts[3] === 'analyses') {
+                const analyses = await listAugurAnalysisSummaries(augurProjectsRoot, parts[2]);
+                json(res, 200, { project: parts[2], analyses });
+                return;
+            }
+            if (parts.length === 5 && parts[0] === 'augur' && parts[1] === 'projects' && parts[3] === 'analyses') {
+                const payload = await loadAugurAnalysisDetails(augurProjectsRoot, parts[2], parts[4]);
+                if (!payload) {
+                    json(res, 404, { error: 'analysis not found' });
+                    return;
+                }
+                json(res, 200, payload);
+                return;
+            }
+            if (parts.length === 6 && parts[0] === 'augur' && parts[1] === 'projects' && parts[3] === 'analyses' && parts[5] === 'base') {
+                const payload = await loadAugurBase(augurProjectsRoot, parts[2], parts[4]);
+                if (!payload) {
+                    json(res, 404, { error: 'analysis not found' });
+                    return;
+                }
+                json(res, 200, payload);
+                return;
+            }
+            if (parts.length === 6 && parts[0] === 'augur' && parts[1] === 'projects' && parts[3] === 'analyses' && parts[5] === 'reflections') {
+                const reflections = await loadAugurReflections(augurProjectsRoot, parts[2], parts[4]);
+                if (reflections === null) {
+                    json(res, 404, { error: 'analysis not found' });
+                    return;
+                }
+                json(res, 200, { project: parts[2], analysis_id: parts[4], reflections });
+                return;
+            }
+            json(res, 404, { error: 'not found' });
             return;
         }
         if (req.method === 'GET' && url.pathname.startsWith('/agents/')) {

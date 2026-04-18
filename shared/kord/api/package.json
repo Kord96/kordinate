@@ -12,9 +12,11 @@
     "test": "npm run build && node --test dist/**/*.test.js"
   },
   "dependencies": {
+    "js-yaml": "^4.1.0",
     "kafkajs": "^2.2.4"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.0",
     "typescript": "^5.9.3"
   }

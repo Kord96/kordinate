@@ -31,6 +31,25 @@ def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def relative_to_run_root(analysis_dir: Path, path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(analysis_dir.resolve()))
+    except Exception:
+        return str(path.resolve())
+
+
+def latest_repair_iteration(analysis_dir: Path) -> dict[str, Any]:
+    repair_log_path = analysis_dir / "repair-log.json"
+    if not repair_log_path.exists():
+        return {}
+    payload = read_json(repair_log_path)
+    iterations = payload.get("iterations") or []
+    if not isinstance(iterations, list) or not iterations:
+        return {}
+    latest = iterations[-1]
+    return latest if isinstance(latest, dict) else {}
+
+
 def analysis_context(analysis_dir: Path) -> tuple[str, str, Path]:
     analysis_id = analysis_dir.name
     if analysis_dir.parent.name == "analysis":
@@ -59,8 +78,16 @@ def main() -> int:
     atlas = read_json(atlas_path)
     blast_path = analysis_dir / "blast.json"
     blast = read_json(blast_path) if blast_path.exists() else {}
+    latest_repair = latest_repair_iteration(analysis_dir)
     existing_meta_path = analysis_dir / "meta.json"
     existing_meta = read_json(existing_meta_path) if existing_meta_path.exists() else {}
+
+    latest_status = str(latest_repair.get("status") or "")
+    validation_passed = latest_status == "valid"
+    if latest_status and not validation_passed:
+        raise SystemExit(f"cannot finalize analysis with repair-log status '{latest_status}'")
+    if not latest_status and not existing_meta.get("validation", {}).get("passed"):
+        raise SystemExit("cannot finalize analysis without a valid repair-log.json or an already-passed meta.json")
 
     project_slug, analysis_id, agent_home = analysis_context(analysis_dir)
     project_name = str(atlas.get("project") or existing_meta.get("project") or project_slug)
@@ -103,16 +130,16 @@ def main() -> int:
             "affected_concepts": blast.get("affected_concepts", []),
         },
         "artifacts": {
-            "root": str(analysis_dir),
-            "atlas": str(atlas_path),
-            "facts_index": str(facts_index) if facts_index.exists() else "",
-            "stories_dir": str(stories_dir) if stories_dir.exists() else "",
-            "narratives": str(narratives_path) if narratives_path.exists() else "",
-            "blast": str(blast_path) if blast_path.exists() else "",
-            "overlays_dir": str(overlays_dir),
-            "overlays_index": str(overlays_index),
-            "reflections_dir": str(reflections_dir),
-            "reflections_index": str(reflections_index),
+            "root": ".",
+            "atlas": relative_to_run_root(analysis_dir, atlas_path),
+            "facts_index": relative_to_run_root(analysis_dir, facts_index) if facts_index.exists() else "",
+            "stories_dir": relative_to_run_root(analysis_dir, stories_dir) if stories_dir.exists() else "",
+            "narratives": relative_to_run_root(analysis_dir, narratives_path) if narratives_path.exists() else "",
+            "blast": relative_to_run_root(analysis_dir, blast_path) if blast_path.exists() else "",
+            "overlays_dir": relative_to_run_root(analysis_dir, overlays_dir),
+            "overlays_index": relative_to_run_root(analysis_dir, overlays_index),
+            "reflections_dir": relative_to_run_root(analysis_dir, reflections_dir),
+            "reflections_index": relative_to_run_root(analysis_dir, reflections_index),
         },
         "schemas": {
             "facts": str(FACTS_SCHEMA),
@@ -132,9 +159,9 @@ def main() -> int:
             "runtime_profile_version": read_env("AUGUR_RUNTIME_PROFILE_VERSION"),
         },
         "validation": {
-            "passed": True,
-            "attempts": max(args.validation_attempts, 1) if args.validation_token else max(args.validation_attempts, 0),
-            "token": args.validation_token,
+            "passed": validation_passed or bool(existing_meta.get("validation", {}).get("passed")),
+            "attempts": int(latest_repair.get("iteration") or args.validation_attempts or existing_meta.get("validation", {}).get("attempts") or 0),
+            "token": str(args.validation_token or existing_meta.get("validation", {}).get("token") or ""),
         },
     }
 

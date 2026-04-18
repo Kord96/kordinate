@@ -33,7 +33,7 @@ The deterministic phase is already done. Work from the prepared run directory an
    - use `facts/facts-guide.json` when present as the run-specific interpretation guide for deterministic artifacts in this run
    - treat each domain file in `facts/` as a JSON object with metadata and a top-level `facts` array
    - do not force every file under `facts/` into the domain-file shape; manifest, guide, planning-aid, and derived-structure artifacts may use specialized JSON layouts
-   - if you encounter an unfamiliar deterministic artifact shape, read `/app/agents/augur/schemas/facts-schema.md` and `/app/agents/augur/schemas/facts-catalog.json` before interpreting it
+   - if you encounter an unfamiliar deterministic artifact shape, read `$KORDINATE_HOME/agents/augur/schemas/facts-schema.md` and `$KORDINATE_HOME/agents/augur/schemas/facts-catalog.json` before interpreting it
    - use the bundle-mode guidance as concept-resolution methodology, not as a cue to preload a broad semantic concept bundle
    - use the deterministic phase in three tiers:
      - startup orientation: `blast.json`, `facts/startup.json`, `facts/index.json`, and the small high-signal startup fact files
@@ -42,10 +42,11 @@ The deterministic phase is already done. Work from the prepared run directory an
    - after startup orientation, move into repo code before doing more fact reduction
    - if `facts/concept-evidence.json` is present in this run, use it as the primary trigger for concept work: inspect candidate concepts, detector backing, contradictions, and attached semantic questions before letting concepts affect the atlas
    - if `facts/frameworks.json` is present in this run, use it as candidate guidance for framework interpretation: resolve materially relevant frameworks from repo code before letting them change component naming, flow interpretation, or concept activation
-   - when a framework remains materially relevant and ambiguous after reviewing `facts/frameworks.json`, read only the corresponding framework files at `/app/agents/augur/memory/catalog/frameworks/<framework>/framework.md` and `/app/agents/augur/memory/catalog/frameworks/<framework>/semantics.yaml`
-   - when a concept candidate is materially relevant and remains ambiguous after reviewing `facts/concept-evidence.json`, read only the corresponding concept file at `/app/agents/augur/memory/catalog/concepts/<concept>.md`
-   - when you need the detector's intended threshold, semantic questions, or monitoring expectations for a materially relevant concept candidate, read `/app/agents/augur/detectors/facts/concept-evidence/<concept>/meta.yaml`
+   - when a framework remains materially relevant and ambiguous after reviewing `facts/frameworks.json`, read only the corresponding framework files at `$KORDINATE_HOME/agents/augur/memory/catalog/frameworks/<framework>/framework.md` and `$KORDINATE_HOME/agents/augur/memory/catalog/frameworks/<framework>/semantics.yaml`
+   - when a concept candidate is materially relevant and remains ambiguous after reviewing `facts/concept-evidence.json`, read only the corresponding concept file at `$KORDINATE_HOME/agents/augur/memory/catalog/concepts/<concept>.md`
+   - when you need the detector's intended threshold, semantic questions, or monitoring expectations for a materially relevant concept candidate, read `$KORDINATE_HOME/agents/augur/detectors/facts/concept-evidence/<concept>/meta.yaml`
    - if `facts/story-seeds.json` is present in this run, use it as an advisory planning aid before writing stories or narratives
+   - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for getting-started and other teaching paths before finalizing `narratives.yaml`
    - if `facts/symbols-seed.json` is present in this run, use it as an advisory exact-name dictionary for high-signal files before writing observations, summaries, or flow steps
    - if `facts/state-seeds.json` is present in this run, use it as an advisory exact-name dictionary for state entries grounded in state or operations files
    - if `facts/concept-evidence.json` is present, explicitly resolve each materially relevant concept candidate as accepted, tentative, or rejected from repo code and attached semantic questions before finalizing `atlas.json.concepts`
@@ -71,14 +72,30 @@ The deterministic phase is already done. Work from the prepared run directory an
    - when `facts/state-seeds.json` exposes exact structs, enums, maps, config variants, or storage selectors for the cited state files, prefer those exact names in state descriptions and keep one concrete mechanism per claim
 
 4. Produce `$RUN/atlas.json`.
-   - read `/app/agents/augur/schemas/atlas-schema.md` before writing
+   - read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` before writing
+   - include `metadata` as part of the normal atlas contract
+   - when deterministic facts are present, populate at least:
+     - `analysis_mode`
+     - `story_ids`
+     - `affected_components`
+     - `stack_summary`
+     - `languages`
+     - compact resolved `frameworks`
+     - `technologies`
+   - keep `metadata.frameworks` limited to materially relevant accepted or tentative frameworks; do not mirror every detected framework fact
 
 5. Produce `$RUN/stories/*.yaml`.
-   - read `/app/agents/augur/schemas/story-schema.md` before writing
+   - read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` before writing
    - keep every story grounded in inspected evidence
 
 6. Produce `$RUN/narratives.yaml`.
-   - read `/app/agents/augur/schemas/narratives-schema.md` before writing
+   - read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` before writing
+   - treat `getting-started.description` as the canonical "how it works" overview used downstream; make it a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
+   - write each narrative as a teaching sequence, not just an ordered list: include explicit `teaches` goals and make sure each selected story clearly serves those goals
+   - include `throughline` for each narrative: one short paragraph explaining why these stories belong together in this order
+   - usually emit 2-4 total narratives for one repo; every extra narrative should earn its place through a distinct audience or cross-cutting teaching purpose
+   - make the bridge text between adjacent stories explain why the next story follows from the previous one, not just that it comes next
+   - use `facts/narrative-seeds.json` when present to rank which roots, child stories, and flow-bearing stories deserve inclusion, especially for `getting-started`
 
 7. Validate in a loop.
    - run:
@@ -92,9 +109,27 @@ python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py $
    - use `repair_targets` in the latest iteration to prioritize grouped fixes before chasing individual line-level grounding warnings
    - if validation returns `INVALID` or `NEEDS_REFINEMENT`:
      - read only the schema for the failing artifact
-     - read `/app/agents/augur/schemas/repair-log-schema.md` if you need the repair-log contract
+     - read `$KORDINATE_HOME/agents/augur/schemas/repair-log-schema.md` if you need the repair-log contract
      - use the latest `repair-log.json` iteration to prioritize open or regressed issues before making edits
      - fix files in place
      - run the validator again
    - only stop when the latest `repair-log.json` iteration status is `valid`
    - continue until validation passes cleanly or the request times out
+
+8. Finalize the accepted run.
+   - once the latest `repair-log.json` iteration status is `valid`, write the canonical accepted-run metadata by running:
+
+```bash
+python3 $KORDINATE_HOME/agents/augur/scripts/finalize_analysis.py $RUN
+```
+
+   - this must produce `$RUN/meta.json` and update the project-level latest pointers for accepted analyses
+   - after finalizing, rerun:
+
+```bash
+python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py $RUN
+```
+
+   - only finish when:
+     - the latest `repair-log.json` iteration status is still `valid`
+     - and `$RUN/meta.json` exists and validates cleanly

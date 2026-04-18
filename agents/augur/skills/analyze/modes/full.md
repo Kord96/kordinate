@@ -25,9 +25,16 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
    - reject provisional roots anchored mainly in tests, docs, examples, or client-only paths
    - if strong engine, storage, runtime, or coordination slices exist, do not let bootstrap absorb a full top-level root unless it is genuinely the dominant system concern
    - on large repos, make sure at least one top-level root is anchored in deeper runtime or storage internals when deterministic seeds provide one
-11. Just before writing or rewriting `$RUN/atlas.json`, read `/app/agents/augur/schemas/atlas-schema.md` and follow it exactly.
-12. Just before writing `stories/*.yaml`, read `/app/agents/augur/schemas/story-schema.md` and follow it exactly.
-13. Just before writing `narratives.yaml`, read `/app/agents/augur/schemas/narratives-schema.md` and follow it exactly.
+11. Just before writing or rewriting `$RUN/atlas.json`, read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` and follow it exactly.
+   - Emit `metadata` as part of the atlas, not as an optional afterthought.
+   - Use deterministic stack evidence to summarize `stack_summary`, `languages`, compact resolved `frameworks`, and `technologies`.
+12. Just before writing `stories/*.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` and follow it exactly.
+13. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
+    - Write `getting-started.description` as a compact "how it works" synopsis, not a label: usually 3-4 sentences naming the main slices, dominant flow, and why the sequence teaches the architecture.
+    - Treat each narrative as a coherent lesson plan with explicit `teaches` goals; the selected stories should collectively deliver those goals rather than act as a loose component inventory.
+    - Add `throughline` to explain why the chosen stories form one coherent lesson in that order.
+    - Prefer 2-4 total narratives unless the repo has clearly distinct audiences or cross-cutting review paths.
+    - Make each adjacent story transition defensible: the per-story bridge text should explain the architectural reason for moving to that next story.
 14. Generate `stories/*.yaml` and `narratives.yaml` from the refined atlas.
 15. Re-read repo files or supporting fact domains only when needed to resolve ambiguity, verify architecture boundaries, or address concrete validation findings.
 
@@ -47,6 +54,8 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - If a concept candidate still matters after that first pass, read only the specific concept file and detector `meta.yaml` for that concept instead of broad concept preload.
 - Keep `atlas.json.concepts` compact and grounded: prefer a few high-signal concepts with repo-specific summaries over a long generic pattern list.
 - If `story-seeds.json` is present, use it as an advisory checklist for child-story decomposition, not as a replacement for actual architectural judgment.
+- If `narrative-seeds.json` is present, use it as an advisory ranking layer for `getting-started` and other teaching paths: prefer the smallest set of stories that teaches system shape plus the operating model.
+- If `control-hotspots.json` or `state-access-summary.json` are present, use them as evidence for which flows or state/dependency boundaries deserve to appear in onboarding narratives, not as content to dump literally.
 - If `symbols-seed.json` is present, use it as an advisory exact-name inventory for high-signal files before finalizing observations, summaries, and flow steps.
 - If `state-seeds.json` is present, use it as an advisory exact-name inventory for state entries grounded in state or operations files.
 - Use strong architectural evidence when naming components, responsibilities, and flows.

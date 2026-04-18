@@ -93,6 +93,18 @@ def kebab_case(s: str) -> bool:
     return bool(KEBAB_RE.match(s))
 
 
+def normalize_rel_path(path: str) -> str:
+    return str(path or "").split(":", 1)[0].strip()
+
+
+def path_matches_prefix(path: str, prefix: str) -> bool:
+    left = normalize_rel_path(path).rstrip("/")
+    right = normalize_rel_path(prefix).rstrip("/")
+    if not left or not right:
+        return False
+    return left == right or left.startswith(right + "/") or right.startswith(left + "/")
+
+
 def check_grounded_in(
     refs: list,
     project_root: Path | None,
@@ -352,6 +364,7 @@ def validate_atlas(
     project_root: Path | None = None,
     analysis_dir: Path | None = None,
     concept_evidence_payload: dict | None = None,
+    frameworks_payload: dict | None = None,
 ) -> list[dict]:
     issues = []
 
@@ -710,6 +723,123 @@ def validate_atlas(
         if files and (project_root or analysis_dir):
             issues.extend(check_existing_paths(files, project_root, analysis_dir, "concepts", gid, label="evidence file"))
 
+    metadata = atlas.get("metadata") or {}
+    if metadata and not isinstance(metadata, dict):
+        error("metadata must be an object", "metadata")
+        metadata = {}
+
+    framework_facts: dict[str, dict[str, Any]] = {}
+    if isinstance(frameworks_payload, dict):
+        for fact in frameworks_payload.get("facts") or []:
+            if not isinstance(fact, dict) or fact.get("kind") != "framework":
+                continue
+            raw = fact.get("raw_evidence") or {}
+            name = str(raw.get("framework") or raw.get("name") or "").strip()
+            if not name:
+                continue
+            framework_facts[name] = fact
+
+    if not metadata:
+        issues.append({
+            "level": "WARNING",
+            "section": "metadata",
+            "kind": "metadata",
+            "message": "atlas.json is missing metadata; emit the resolved stack summary and run metadata when deterministic facts are available",
+            "related_entities": [],
+            "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+            "conflict_type": "fact_vs_semantic",
+        })
+    if metadata:
+        stack_summary = str(metadata.get("stack_summary") or "").strip()
+        if not stack_summary:
+            issues.append({
+                "level": "WARNING",
+                "section": "metadata",
+                "kind": "metadata",
+                "message": "metadata.stack_summary is missing or empty",
+                "related_entities": [],
+                "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+                "conflict_type": "fact_vs_semantic",
+            })
+        languages = metadata.get("languages") or []
+        if languages and not isinstance(languages, list):
+            error("metadata.languages must be a list", "metadata")
+        elif not languages:
+            issues.append({
+                "level": "WARNING",
+                "section": "metadata",
+                "kind": "metadata",
+                "message": "metadata.languages is missing or empty",
+                "related_entities": [],
+                "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+                "conflict_type": "fact_vs_semantic",
+            })
+
+        technologies = metadata.get("technologies") or []
+        if technologies and not isinstance(technologies, list):
+            error("metadata.technologies must be a list", "metadata")
+        elif not technologies:
+            issues.append({
+                "level": "WARNING",
+                "section": "metadata",
+                "kind": "metadata",
+                "message": "metadata.technologies is missing or empty",
+                "related_entities": [],
+                "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+                "conflict_type": "fact_vs_semantic",
+            })
+
+        frameworks_meta = metadata.get("frameworks") or []
+        if frameworks_meta and not isinstance(frameworks_meta, list):
+            error("metadata.frameworks must be a list", "metadata")
+            frameworks_meta = []
+
+        framework_names_in_meta: set[str] = set()
+        for item in frameworks_meta:
+            if not isinstance(item, dict):
+                error("metadata.frameworks contains a non-object entry", "metadata")
+                continue
+            name = str(item.get("name") or "").strip()
+            if not name:
+                error("metadata.frameworks entry is missing name", "metadata")
+                continue
+            framework_names_in_meta.add(name)
+            if not item.get("status"):
+                issues.append({
+                    "level": "WARNING",
+                    "section": "metadata",
+                    "kind": "framework-resolution",
+                    "message": f"metadata.frameworks entry '{name}' is missing resolution status",
+                    "related_entities": [name],
+                    "evidence_refs": [],
+                    "conflict_type": "fact_vs_semantic",
+                })
+            if framework_facts and name not in framework_facts:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "metadata",
+                    "kind": "framework-resolution",
+                    "message": f"metadata.frameworks includes '{name}' but deterministic framework facts do not support it in this run",
+                    "related_entities": [name],
+                    "evidence_refs": [],
+                    "conflict_type": "fact_vs_semantic",
+                })
+
+        for name, fact in framework_facts.items():
+            confidence = str(fact.get("confidence") or "").lower()
+            if confidence not in {"medium", "high"}:
+                continue
+            if name not in framework_names_in_meta:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "metadata",
+                    "kind": "framework-resolution",
+                    "message": f"Deterministic framework evidence suggests '{name}' but metadata.frameworks does not record a resolved entry",
+                    "related_entities": [name],
+                    "evidence_refs": list(fact.get("source_files") or [])[:3],
+                    "conflict_type": "fact_vs_semantic",
+                })
+
     # Tensions
     for tension in atlas.get("tensions", []):
         for comp in tension.get("components", []):
@@ -873,10 +1003,70 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
         error(f"Narrative '{jid}' missing required field: description")
 
     stories = narrative.get("stories", [])
+    teaches = narrative.get("teaches")
+    throughline = str(narrative.get("throughline") or "").strip()
+    description = str(narrative.get("description") or "").strip()
+    sentence_count = len([part for part in re.split(r"(?<=[.!?])\s+", description) if part.strip()]) if description else 0
     if len(stories) < 3:
         warn(f"Narrative '{jid}' has {len(stories)} stories (minimum 3)")
     elif len(stories) > 8:
         warn(f"Narrative '{jid}' has {len(stories)} stories (maximum 8)")
+    if description:
+        if sentence_count < 2:
+            issues.append({
+                "level": "WARNING",
+                "section": "narrative",
+                "kind": "narrative-overview",
+                "message": f"Narrative '{jid}' description is too thin; write a compact 2-4 sentence overview instead of a one-liner",
+            })
+        elif sentence_count > 5:
+            issues.append({
+                "level": "WARNING",
+                "section": "narrative",
+                "kind": "narrative-overview",
+                "message": f"Narrative '{jid}' description is too long for the overview slot; keep it to roughly 2-4 sentences",
+            })
+    if teaches is None:
+        issues.append({
+            "level": "WARNING",
+            "section": "narrative",
+            "kind": "narrative-coherence",
+            "message": f"Narrative '{jid}' is missing `teaches`; define 2-4 explicit learning goals for the sequence",
+        })
+    elif not isinstance(teaches, list):
+        error(f"Narrative '{jid}' teaches must be a list when present")
+    else:
+        cleaned_goals = [goal for goal in teaches if isinstance(goal, str) and goal.strip()]
+        if len(cleaned_goals) < 2:
+            issues.append({
+                "level": "WARNING",
+                "section": "narrative",
+                "kind": "narrative-coherence",
+                "message": f"Narrative '{jid}' should define at least 2 teaching goals in `teaches`",
+            })
+        elif len(cleaned_goals) > 4:
+            issues.append({
+                "level": "WARNING",
+                "section": "narrative",
+                "kind": "narrative-coherence",
+                "message": f"Narrative '{jid}' has too many teaching goals; keep `teaches` to roughly 2-4 items",
+            })
+    if not throughline:
+        issues.append({
+            "level": "WARNING",
+            "section": "narrative",
+            "kind": "narrative-coherence",
+            "message": f"Narrative '{jid}' is missing `throughline`; explain why these stories belong together in this order",
+        })
+    else:
+        throughline_sentences = len([part for part in re.split(r"(?<=[.!?])\s+", throughline) if part.strip()])
+        if throughline_sentences > 3:
+            issues.append({
+                "level": "WARNING",
+                "section": "narrative",
+                "kind": "narrative-coherence",
+                "message": f"Narrative '{jid}' throughline is too long; keep it to one short paragraph",
+            })
 
     for entry in stories:
         if isinstance(entry, dict):
@@ -895,6 +1085,9 @@ def detect_cross_artifact_conflicts(
     atlas: dict,
     all_stories: dict[str, dict],
     narratives: list[dict],
+    narrative_seeds_payload: dict | None = None,
+    control_hotspots_payload: dict | None = None,
+    state_access_summary_payload: dict | None = None,
 ) -> list[dict]:
     issues: list[dict] = []
     components = {
@@ -911,6 +1104,94 @@ def detect_cross_artifact_conflicts(
         parent = str(story.get("parent") or "")
         if parent:
             child_story_ids_by_parent.setdefault(parent, []).append(sid)
+
+    def story_root(story_id: str) -> str:
+        current = all_stories.get(story_id) or {}
+        seen: set[str] = set()
+        current_id = story_id
+        while current.get("parent") and current_id not in seen:
+            seen.add(current_id)
+            current_id = str(current.get("parent") or "")
+            current = all_stories.get(current_id) or {}
+        return current_id or story_id
+
+    def story_component_ids(story: dict) -> set[str]:
+        ids: set[str] = set()
+        for struct in story.get("structures") or []:
+            for node in struct.get("nodes") or []:
+                nid = str(node.get("id") or "") if isinstance(node, dict) else str(node or "")
+                if nid in components:
+                    ids.add(nid)
+        for flow in story.get("flows") or []:
+            for step in flow.get("steps") or []:
+                if not isinstance(step, dict):
+                    continue
+                component = str(step.get("node") or step.get("component") or "")
+                target = str(step.get("to") or "")
+                if component in components:
+                    ids.add(component)
+                if target in components:
+                    ids.add(target)
+        for obs in story.get("observations") or []:
+            if isinstance(obs, dict):
+                component = str(obs.get("component") or "")
+                if component in components:
+                    ids.add(component)
+        return ids
+
+    root_to_story_ids: dict[str, list[str]] = {}
+    for sid in all_stories:
+        root_to_story_ids.setdefault(story_root(sid), []).append(sid)
+
+    control_hotspots_by_component: dict[str, list[dict]] = {}
+    if isinstance(control_hotspots_payload, dict):
+        for fact in control_hotspots_payload.get("facts") or []:
+            if not isinstance(fact, dict):
+                continue
+            raw = fact.get("raw_evidence") or {}
+            component = str(raw.get("component") or "")
+            if component:
+                control_hotspots_by_component.setdefault(component, []).append(fact)
+
+    state_access_by_component: dict[str, list[dict]] = {}
+    if isinstance(state_access_summary_payload, dict):
+        for fact in state_access_summary_payload.get("facts") or []:
+            if not isinstance(fact, dict):
+                continue
+            raw = fact.get("raw_evidence") or {}
+            for component in raw.get("components") or []:
+                component = str(component or "")
+                if component:
+                    state_access_by_component.setdefault(component, []).append(fact)
+
+    getting_started_seed = (
+        (narrative_seeds_payload or {}).get("getting_started") or {}
+        if isinstance(narrative_seeds_payload, dict)
+        else {}
+    )
+    preferred_roots = [
+        item for item in (getting_started_seed.get("preferred_root_components") or [])
+        if isinstance(item, dict)
+    ]
+    preferred_flow_hotspots = [
+        item for item in (getting_started_seed.get("preferred_flow_hotspots") or [])
+        if isinstance(item, dict)
+    ]
+    preferred_boundary_targets = [
+        item for item in (getting_started_seed.get("preferred_state_or_boundary_targets") or [])
+        if isinstance(item, dict)
+    ]
+    preferred_root_ids = [str(item.get("id") or "") for item in preferred_roots if item.get("id")]
+    require_flow_story = bool(getting_started_seed.get("require_flow_story"))
+    require_state_or_boundary_story = bool(getting_started_seed.get("require_state_or_boundary_story"))
+    prefer_child_stories = bool(getting_started_seed.get("prefer_child_stories"))
+
+    def text_tokens(value: str) -> set[str]:
+        return {
+            token
+            for token in re.findall(r"[a-z0-9]+", value.lower())
+            if len(token) > 3 and token not in {"this", "that", "with", "from", "into", "through", "their", "about", "because", "where", "which", "story", "next", "then"}
+        }
 
     for sid, story in all_stories.items():
         for structure in story.get("structures") or []:
@@ -931,6 +1212,7 @@ def detect_cross_artifact_conflicts(
                         {
                             "level": "WARNING",
                             "section": "components",
+                            "kind": "component-model",
                             "message": (
                                 f"Story '{sid}' implies '{source}' -> '{target}' via a '{edge_type}' edge, "
                                 f"but atlas depends_on points the opposite direction"
@@ -945,6 +1227,9 @@ def detect_cross_artifact_conflicts(
         if not isinstance(narrative, dict):
             continue
         nid = str(narrative.get("id") or "")
+        description = str(narrative.get("description") or "").strip()
+        teaches = narrative.get("teaches") if isinstance(narrative.get("teaches"), list) else []
+        throughline = str(narrative.get("throughline") or "").strip()
         story_entries = narrative.get("stories") or []
         referenced_story_ids = []
         for entry in story_entries:
@@ -967,6 +1252,7 @@ def detect_cross_artifact_conflicts(
                 {
                     "level": "WARNING",
                     "section": "narrative",
+                    "kind": "narrative-selection",
                     "message": (
                         f"Narrative '{nid}' uses root stories {', '.join(sorted(missing_child_coverage))} "
                         "without any of their more specific child stories"
@@ -976,6 +1262,300 @@ def detect_cross_artifact_conflicts(
                     "evidence_refs": [],
                 }
             )
+
+        if teaches:
+            story_teaching_text = [
+                " ".join(
+                    str(part)
+                    for part in (
+                        (all_stories.get(story_id) or {}).get("teaches"),
+                        (all_stories.get(story_id) or {}).get("title"),
+                        (all_stories.get(story_id) or {}).get("summary"),
+                    )
+                    if part
+                )
+                for story_id in referenced_story_ids
+                if story_id in all_stories
+            ]
+            story_tokens = set().union(*(text_tokens(text) for text in story_teaching_text)) if story_teaching_text else set()
+            uncovered_goals = []
+            for goal in teaches:
+                if not isinstance(goal, str) or not goal.strip():
+                    continue
+                goal_tokens = text_tokens(goal)
+                if goal_tokens and len(goal_tokens & story_tokens) == 0:
+                    uncovered_goals.append(goal)
+            if uncovered_goals:
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-coherence",
+                        "message": f"Narrative '{nid}' includes teaching goals that are not clearly served by the selected stories: {', '.join(uncovered_goals[:2])}",
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid, *referenced_story_ids],
+                        "evidence_refs": [],
+                    }
+                )
+
+        if throughline:
+            throughline_tokens = text_tokens(throughline)
+            story_focus_tokens = set()
+            for story_id in referenced_story_ids:
+                story = all_stories.get(story_id) or {}
+                story_focus_tokens |= text_tokens(" ".join(str(part) for part in (story.get("teaches"), story.get("title")) if part))
+            if throughline_tokens and story_focus_tokens and len(throughline_tokens & story_focus_tokens) == 0:
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-coherence",
+                        "message": f"Narrative '{nid}' throughline does not clearly connect to the selected stories",
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid, *referenced_story_ids],
+                        "evidence_refs": [],
+                    }
+                )
+
+            story_without_goal_support = []
+            goal_tokens = [text_tokens(goal) for goal in teaches if isinstance(goal, str) and goal.strip()]
+            for story_id in referenced_story_ids:
+                story = all_stories.get(story_id) or {}
+                story_text = " ".join(
+                    str(part)
+                    for part in (story.get("teaches"), story.get("title"), story.get("summary"))
+                    if part
+                )
+                story_tokens = text_tokens(story_text)
+                if goal_tokens and story_tokens and not any(story_tokens & goal for goal in goal_tokens):
+                    story_without_goal_support.append(story_id)
+            if story_without_goal_support:
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-coherence",
+                        "message": f"Narrative '{nid}' includes stories that do not clearly support its teaching goals: {', '.join(story_without_goal_support[:2])}",
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid, *story_without_goal_support],
+                        "evidence_refs": [],
+                    }
+                )
+
+        transition_failures = []
+        for index, entry in enumerate(story_entries):
+            if index == 0 or not isinstance(entry, dict):
+                continue
+            bridge_text = str(entry.get("description") or "").strip()
+            current_story_id = str(entry.get("id") or "")
+            previous_entry = story_entries[index - 1]
+            previous_story_id = str(previous_entry.get("id") if isinstance(previous_entry, dict) else previous_entry or "")
+            previous_story = all_stories.get(previous_story_id) or {}
+            current_story = all_stories.get(current_story_id) or {}
+            transition_tokens = text_tokens(bridge_text)
+            previous_tokens = text_tokens(" ".join(str(part) for part in (previous_story.get("teaches"), previous_story.get("title")) if part))
+            current_tokens = text_tokens(" ".join(str(part) for part in (current_story.get("teaches"), current_story.get("title")) if part))
+            if bridge_text and transition_tokens and (transition_tokens & previous_tokens) and (transition_tokens & current_tokens):
+                continue
+            transition_failures.append(current_story_id or f"story-{index+1}")
+        if transition_failures:
+            issues.append(
+                {
+                    "level": "WARNING",
+                    "section": "narrative",
+                    "kind": "narrative-coherence",
+                    "message": f"Narrative '{nid}' has weak adjacent-story transitions; bridge text does not clearly connect the sequence around: {', '.join(transition_failures[:2])}",
+                    "conflict_type": "cross_artifact",
+                    "related_entities": [nid, *transition_failures],
+                    "evidence_refs": [],
+                }
+            )
+
+        if nid == "getting-started" and description:
+            top_level_components = [
+                component
+                for component in components.values()
+                if not component.get("parent") and not component.get("belongs_to")
+            ]
+            sentence_count = len([part for part in re.split(r"(?<=[.!?])\s+", description) if part.strip()])
+            if sentence_count < 3:
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-overview",
+                        "message": "getting-started description is too short to serve as the architecture overview; use roughly 3-4 sentences",
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid],
+                        "evidence_refs": [],
+                    }
+                )
+            lowered = description.lower()
+            covered = 0
+            for component in top_level_components:
+                candidates = {
+                    str(component.get("id") or "").lower(),
+                    str(component.get("name") or "").lower(),
+                }
+                if any(candidate and candidate in lowered for candidate in candidates):
+                    covered += 1
+            expected_mentions = min(2, len(top_level_components))
+            if expected_mentions and covered < expected_mentions:
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-overview",
+                        "message": "getting-started description does not name enough of the main top-level slices to function as a useful architecture overview",
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid, *[str(component.get('id')) for component in top_level_components]],
+                        "evidence_refs": [],
+                    }
+                )
+
+        if nid == "getting-started":
+            selected_roots = {story_root(story_id) for story_id in referenced_story_ids if story_id in all_stories}
+            if preferred_root_ids:
+                expected_root_count = min(2, len(preferred_root_ids))
+                covered_preferred = [root_id for root_id in preferred_root_ids if root_id in selected_roots]
+                if len(covered_preferred) < expected_root_count:
+                    missing = [root_id for root_id in preferred_root_ids[:expected_root_count] if root_id not in covered_preferred]
+                    evidence_refs = []
+                    for item in preferred_roots[:expected_root_count]:
+                        for ref in item.get("representative_files") or []:
+                            ref = str(ref)
+                            if ref and ref not in evidence_refs:
+                                evidence_refs.append(ref)
+                    issues.append(
+                        {
+                            "level": "WARNING",
+                            "section": "narrative",
+                            "kind": "narrative-selection",
+                            "message": f"getting-started omits preferred introductory roots suggested by deterministic evidence: {', '.join(missing[:2])}",
+                            "conflict_type": "fact_vs_semantic",
+                            "related_entities": [nid, *missing],
+                            "evidence_refs": evidence_refs[:3],
+                        }
+                    )
+
+            selected_stories = [all_stories.get(story_id) or {} for story_id in referenced_story_ids if story_id in all_stories]
+            selected_component_ids = set().union(*(story_component_ids(story) for story in selected_stories)) if selected_stories else set()
+            flow_story_ids = [
+                story_id
+                for story_id in referenced_story_ids
+                if isinstance(all_stories.get(story_id), dict) and (all_stories.get(story_id) or {}).get("flows")
+            ]
+            if require_flow_story and not flow_story_ids:
+                hotspot_refs: list[str] = []
+                for root_id in selected_roots or preferred_root_ids:
+                    for fact in control_hotspots_by_component.get(root_id, []):
+                        for source in fact.get("source_files") or []:
+                            source = str(source)
+                            if source and source not in hotspot_refs:
+                                hotspot_refs.append(source)
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-selection",
+                        "message": "getting-started does not include a clearly flow-bearing story even though deterministic signals suggest the operating model should be taught through a real flow",
+                        "conflict_type": "fact_vs_semantic",
+                        "related_entities": [nid, *referenced_story_ids],
+                        "evidence_refs": hotspot_refs[:3],
+                    }
+                )
+            hotspot_components = {
+                str(item.get("component") or "")
+                for item in preferred_flow_hotspots
+                if str(item.get("component") or "")
+            }
+            if hotspot_components and selected_component_ids and selected_component_ids.isdisjoint(hotspot_components):
+                hotspot_refs: list[str] = []
+                for item in preferred_flow_hotspots[:3]:
+                    for ref in item.get("source_files") or []:
+                        ref = str(ref)
+                        if ref and ref not in hotspot_refs:
+                            hotspot_refs.append(ref)
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-selection",
+                        "message": "getting-started avoids the strongest deterministic control hotspots, so the introductory path may miss the repo's defining operating path",
+                        "conflict_type": "fact_vs_semantic",
+                        "related_entities": [nid, *sorted(hotspot_components)[:3]],
+                        "evidence_refs": hotspot_refs[:3],
+                    }
+                )
+
+            if require_state_or_boundary_story:
+                has_state_or_boundary_story = False
+                for story in selected_stories:
+                    component_ids = story_component_ids(story)
+                    if any(component in state_access_by_component for component in component_ids):
+                        has_state_or_boundary_story = True
+                        break
+                    if any(str(step.get("to") or "") in state_ids for flow in story.get("flows") or [] for step in flow.get("steps") or [] if isinstance(step, dict)):
+                        has_state_or_boundary_story = True
+                        break
+                if not has_state_or_boundary_story:
+                    boundary_refs: list[str] = []
+                    for root_id in selected_roots or preferred_root_ids:
+                        for fact in state_access_by_component.get(root_id, []):
+                            for source in fact.get("source_files") or []:
+                                source = str(source)
+                                if source and source not in boundary_refs:
+                                    boundary_refs.append(source)
+                    issues.append(
+                        {
+                            "level": "WARNING",
+                            "section": "narrative",
+                            "kind": "narrative-selection",
+                            "message": "getting-started does not include a story that clearly teaches a state or dependency boundary even though deterministic evidence suggests one is central",
+                            "conflict_type": "fact_vs_semantic",
+                            "related_entities": [nid, *referenced_story_ids],
+                            "evidence_refs": boundary_refs[:3],
+                        }
+                    )
+                boundary_components = {
+                    component
+                    for item in preferred_boundary_targets
+                    for component in (item.get("components") or [])
+                    if component
+                }
+                if boundary_components and selected_component_ids and selected_component_ids.isdisjoint(boundary_components):
+                    boundary_refs: list[str] = []
+                    for item in preferred_boundary_targets[:3]:
+                        for ref in item.get("source_files") or []:
+                            ref = str(ref)
+                            if ref and ref not in boundary_refs:
+                                boundary_refs.append(ref)
+                    issues.append(
+                        {
+                            "level": "WARNING",
+                            "section": "narrative",
+                            "kind": "narrative-selection",
+                            "message": "getting-started avoids the strongest deterministic state or boundary targets, so the introductory path may miss an important system boundary",
+                            "conflict_type": "fact_vs_semantic",
+                            "related_entities": [nid, *sorted(boundary_components)[:3]],
+                            "evidence_refs": boundary_refs[:3],
+                        }
+                    )
+
+            if prefer_child_stories and referenced_story_ids:
+                selected_child_story_ids = [story_id for story_id in referenced_story_ids if (all_stories.get(story_id) or {}).get("parent")]
+                if not selected_child_story_ids and child_story_ids_by_parent:
+                    issues.append(
+                        {
+                            "level": "WARNING",
+                            "section": "narrative",
+                            "kind": "narrative-selection",
+                            "message": "getting-started stays root-only even though deterministic narrative seeds suggest a child story would teach the architecture more clearly",
+                            "conflict_type": "fact_vs_semantic",
+                            "related_entities": [nid, *referenced_story_ids],
+                            "evidence_refs": [],
+                        }
+                    )
 
     return issues
 
@@ -1005,12 +1585,18 @@ def validate_meta(meta: dict, analysis_dir: Path) -> list[dict]:
 
     artifacts = meta.get("artifacts")
     if isinstance(artifacts, dict):
+        def resolve_artifact_ref(value: str) -> Path:
+            candidate = Path(value)
+            return candidate if candidate.is_absolute() else (analysis_dir / candidate)
+
         for key, value in artifacts.items():
-            if value and (not isinstance(value, str) or not value.startswith("/")):
-                error(f"meta.json artifacts.{key} must be an absolute path when present")
+            if value and not isinstance(value, str):
+                error(f"meta.json artifacts.{key} must be a string path when present")
         root = artifacts.get("root")
-        if isinstance(root, str) and root and root != str(analysis_dir):
-            warn(f"meta.json artifacts.root '{root}' does not match analysis dir '{analysis_dir}'")
+        if isinstance(root, str) and root:
+            resolved_root = resolve_artifact_ref(root)
+            if resolved_root != analysis_dir:
+                warn(f"meta.json artifacts.root '{root}' does not match analysis dir '{analysis_dir}'")
     elif artifacts is not None:
         error("meta.json artifacts must be an object")
 
@@ -1043,6 +1629,9 @@ def validate_meta(meta: dict, analysis_dir: Path) -> list[dict]:
 
 
 def classify_issue_kind(issue: dict) -> str:
+    explicit_kind = str(issue.get("kind") or "").strip().lower()
+    if explicit_kind:
+        return explicit_kind
     section = str(issue.get("section") or "").lower()
     message = str(issue.get("message") or "").lower()
     if "non-existent path" in message or "non-existent file" in message:
@@ -1053,6 +1642,10 @@ def classify_issue_kind(issue: dict) -> str:
         return "story-decomposition"
     if "narrative" in section and "root stories" in message:
         return "narrative-selection"
+    if section == "narrative" and "overview" in message:
+        return "narrative-overview"
+    if section == "narrative" and ("teaching goals" in message or "served by the selected stories" in message or "missing `teaches`" in message):
+        return "narrative-coherence"
     if "cycle" in message:
         return "graph-cycle"
     if section == "state" and ("too narrow" in message or "persistence" in message):
@@ -1109,9 +1702,9 @@ def issue_family(issue: dict) -> str:
         return "provenance"
     if kind in {"grounding"}:
         return "grounding"
-    if kind in {"story-decomposition", "narrative-selection", "story-quality"}:
+    if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "teaching-structure"
-    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model"}:
+    if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "framework-resolution"}:
         return "semantic-consistency"
     if str(issue.get("section") or "") == "structure":
         return "artifact-structure"
@@ -1124,9 +1717,13 @@ def is_semantic_conflict(issue: dict) -> bool:
         "state-truthfulness",
         "story-decomposition",
         "narrative-selection",
+        "narrative-overview",
+        "narrative-coherence",
+        "narrative-count",
         "component-model",
         "flow-model",
         "concept-evidence",
+        "framework-resolution",
     }
 
 
@@ -1140,9 +1737,13 @@ def issue_conflict_type(issue: dict) -> str | None:
         "state-truthfulness": "fact_vs_semantic",
         "story-decomposition": "shape_tension",
         "narrative-selection": "cross_artifact",
+        "narrative-overview": "cross_artifact",
+        "narrative-coherence": "cross_artifact",
+        "narrative-count": "shape_tension",
         "component-model": "cross_artifact",
         "flow-model": "cross_artifact",
         "concept-evidence": "fact_vs_semantic",
+        "framework-resolution": "fact_vs_semantic",
     }
     return mapping.get(kind)
 
@@ -1153,9 +1754,31 @@ def issue_priority(issue: dict) -> str:
     kind = classify_issue_kind(issue)
     if kind in {"graph-cycle", "state-truthfulness", "component-model", "flow-model", "path-provenance", "concept-evidence"}:
         return "high"
-    if kind in {"story-decomposition", "narrative-selection", "story-quality"}:
+    if kind in {"framework-resolution"}:
+        return "medium"
+    if kind in {"story-decomposition", "narrative-selection", "narrative-overview", "narrative-coherence", "narrative-count", "story-quality"}:
         return "medium"
     return "low"
+
+
+def recommended_artifacts(issue: dict) -> list[str]:
+    kind = classify_issue_kind(issue)
+    mapping = {
+        "grounding": ["facts/symbols-seed.json"],
+        "state-truthfulness": ["facts/state-seeds.json"],
+        "story-decomposition": ["facts/story-seeds.json", "facts/component-seeds.json", "facts/narrative-seeds.json", "facts/state-access-summary.json"],
+        "narrative-selection": ["facts/story-seeds.json", "facts/component-seeds.json", "facts/narrative-seeds.json", "facts/control-hotspots.json", "facts/state-access-summary.json", "atlas.json"],
+        "narrative-overview": ["facts/story-seeds.json", "facts/component-seeds.json", "facts/narrative-seeds.json", "facts/control-hotspots.json", "atlas.json"],
+        "narrative-coherence": ["facts/story-seeds.json", "facts/component-seeds.json", "facts/narrative-seeds.json", "narratives.yaml", "atlas.json"],
+        "narrative-count": ["facts/narrative-seeds.json", "narratives.yaml", "atlas.json"],
+        "story-quality": ["facts/story-seeds.json", "facts/component-seeds.json"],
+        "component-model": ["facts/component-seeds.json", "facts/story-seeds.json"],
+        "flow-model": ["facts/symbols-seed.json", "facts/component-seeds.json"],
+        "concept-evidence": ["facts/concept-evidence.json"],
+        "framework-resolution": ["facts/frameworks.json"],
+        "path-provenance": ["facts/index.json", "facts/startup.json"],
+    }
+    return mapping.get(kind, [])
 
 
 def build_repair_targets(issues: list[dict]) -> list[dict]:
@@ -1212,6 +1835,7 @@ def build_repair_targets(issues: list[dict]) -> list[dict]:
                 "sections": sorted(section for section in item["sections"] if section),
                 "issue_ids": item["issue_ids"],
                 "messages": item["messages"],
+                "recommended_artifacts": sorted({artifact for issue in issues if stable_issue_id(issue) in item["issue_ids"] for artifact in recommended_artifacts(issue)}),
                 "suggested_resolution": item["suggested_resolution"],
             }
         )
@@ -1275,6 +1899,7 @@ def append_repair_log(path: Path, analysis_dir: Path, valid: bool, issues: list[
                 "related_entities": list(issue.get("related_entities") or []),
                 "evidence_refs": list(issue.get("evidence_refs") or []),
                 "related_issue_ids": list(issue.get("related_issue_ids") or []),
+                "recommended_artifacts": recommended_artifacts(issue),
                 "status": status,
                 "first_seen_iteration": first_seen,
                 "last_seen_iteration": len(iterations) + 1,
@@ -1300,6 +1925,7 @@ def append_repair_log(path: Path, analysis_dir: Path, valid: bool, issues: list[
                 "related_entities": list(prior.get("related_entities") or []),
                 "evidence_refs": list(prior.get("evidence_refs") or []),
                 "related_issue_ids": list(prior.get("related_issue_ids") or []),
+                "recommended_artifacts": list(prior.get("recommended_artifacts") or []),
                 "status": "resolved",
                 "first_seen_iteration": prior.get("first_seen_iteration"),
                 "last_seen_iteration": len(iterations) + 1,
@@ -1367,11 +1993,15 @@ def suggested_resolution(issue: dict) -> str:
     suggestions = {
         "path-provenance": "Correct the referenced repo or run path so it points to a real file or directory.",
         "grounding": "Tighten the claim so it uses code-shaped terms from the grounded snippet.",
-        "story-decomposition": "Split the root into distinct concern-focused child stories or merge the weak child back.",
-        "narrative-selection": "Use the more specific child stories when they carry the real explanatory detail.",
+        "story-decomposition": "Split the root into distinct concern-focused child stories or merge the weak child back, using deterministic story and narrative seeds as ranking hints.",
+        "narrative-selection": "Swap in the smallest set of more explanatory stories, especially child, flow-bearing, or boundary stories suggested by deterministic narrative seeds.",
+        "narrative-overview": "Rewrite the overview as a compact architectural synopsis that teaches system shape plus the operating model instead of cataloging components.",
+        "narrative-coherence": "Rewrite the teaching goals, throughline, and story order so the narrative reads like one coherent lesson anchored in atlas structure and deterministic narrative seeds.",
+        "narrative-count": "Reduce or add narratives until the repo has a small set of clearly distinct teaching paths rather than one overloaded path or many redundant ones.",
         "graph-cycle": "Revisit dependency direction and remove cyclic component relationships.",
         "state-truthfulness": "Widen the state label or persistence mode so it matches the configured backend reality.",
         "concept-evidence": "Repair the concept evidence files or component references so provenance is valid.",
+        "framework-resolution": "Reconcile the resolved framework summary with deterministic framework evidence and repo code.",
         "component-model": "Refine the component graph so ids, parents, dependencies, and module paths are truthful.",
         "flow-model": "Tighten the flow description, references, or grounding so it matches the implementation path.",
         "story-quality": "Narrow the story to a clearer concern and ground it with more precise evidence.",
@@ -1467,6 +2097,66 @@ def main():
         except json.JSONDecodeError as e:
             all_issues.append({"level": "ERROR", "section": "concept-evidence", "message": f"JSON parse error: {e}"})
 
+    frameworks_path = facts_dir / "frameworks.json"
+    frameworks_payload = {}
+    if frameworks_path.exists():
+        try:
+            frameworks_payload = json.loads(frameworks_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "frameworks", "message": f"JSON parse error: {e}"})
+
+    component_seeds_path = facts_dir / "component-seeds.json"
+    component_seeds_payload = {}
+    if component_seeds_path.exists():
+        try:
+            component_seeds_payload = json.loads(component_seeds_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "component-seeds", "message": f"JSON parse error: {e}"})
+
+    story_seeds_path = facts_dir / "story-seeds.json"
+    story_seeds_payload = {}
+    if story_seeds_path.exists():
+        try:
+            story_seeds_payload = json.loads(story_seeds_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "story-seeds", "message": f"JSON parse error: {e}"})
+    story_seed_refs: list[str] = []
+    if story_seeds_payload:
+        raw_story_seed_refs = [
+            *[str(item) for item in (story_seeds_payload.get("starter_files") or []) if item],
+            *[str(item) for item in (story_seeds_payload.get("hot_files") or []) if item],
+        ]
+        seen_story_seed_refs: set[str] = set()
+        for ref in raw_story_seed_refs:
+            normalized = normalize_rel_path(ref)
+            if normalized and normalized not in seen_story_seed_refs:
+                seen_story_seed_refs.add(normalized)
+                story_seed_refs.append(normalized)
+
+    narrative_seeds_path = facts_dir / "narrative-seeds.json"
+    narrative_seeds_payload = {}
+    if narrative_seeds_path.exists():
+        try:
+            narrative_seeds_payload = json.loads(narrative_seeds_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "narrative-seeds", "message": f"JSON parse error: {e}"})
+
+    control_hotspots_path = facts_dir / "control-hotspots.json"
+    control_hotspots_payload = {}
+    if control_hotspots_path.exists():
+        try:
+            control_hotspots_payload = json.loads(control_hotspots_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "control-hotspots", "message": f"JSON parse error: {e}"})
+
+    state_access_summary_path = facts_dir / "state-access-summary.json"
+    state_access_summary_payload = {}
+    if state_access_summary_path.exists():
+        try:
+            state_access_summary_payload = json.loads(state_access_summary_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "state-access-summary", "message": f"JSON parse error: {e}"})
+
     atlas_node_ids = set()
     atlas_entity_ids = set()
     atlas = {}
@@ -1481,10 +2171,54 @@ def main():
         else:
             try:
                 atlas = json.loads(atlas_path.read_text())
-                issues, atlas_node_ids, atlas_entity_ids = validate_atlas(atlas, project_root, analysis_dir, concepts_payload)
+                issues, atlas_node_ids, atlas_entity_ids = validate_atlas(
+                    atlas,
+                    project_root,
+                    analysis_dir,
+                    concepts_payload,
+                    frameworks_payload,
+                )
                 all_issues.extend(issues)
             except json.JSONDecodeError as e:
                 all_issues.append({"level": "ERROR", "section": "atlas", "message": f"JSON parse error: {e}"})
+
+        if atlas and component_seeds_payload:
+            top_level_components = [
+                component for component in (atlas.get("components") or [])
+                if isinstance(component, dict) and not component.get("parent")
+            ]
+            for seed in component_seeds_payload.get("candidate_components") or []:
+                if not isinstance(seed, dict):
+                    continue
+                root_likelihood = int(seed.get("root_likelihood") or 0)
+                if root_likelihood < 6:
+                    continue
+                representative_files = [str(item) for item in (seed.get("representative_files") or []) if item]
+                if not representative_files:
+                    continue
+                seed_id = str(seed.get("id") or "")
+                group = str(seed.get("group") or seed_id or "seed")
+                matched = False
+                for component in top_level_components:
+                    component_id = str(component.get("id") or "")
+                    component_name = str(component.get("name") or "")
+                    modules = [str(item) for item in (component.get("modules") or []) if item]
+                    if seed_id and seed_id in {component_id, component_name.lower().replace(" ", "-")}:
+                        matched = True
+                        break
+                    if any(path_matches_prefix(module, candidate) for module in modules for candidate in representative_files):
+                        matched = True
+                        break
+                if not matched:
+                    all_issues.append({
+                        "level": "WARNING",
+                        "section": "components",
+                        "kind": "component-model",
+                        "message": f"Strong deterministic component seed '{group}' is not clearly represented by a top-level component",
+                        "related_entities": [seed_id] if seed_id else [],
+                        "evidence_refs": representative_files[:3],
+                        "conflict_type": "fact_vs_semantic",
+                    })
 
     story_ids = set()
     all_stories: dict[str, dict] = {}
@@ -1557,11 +2291,24 @@ def main():
                     all_issues.append({"level": "ERROR", "section": "story",
                         "message": f"Story '{parent_id}' has {count} children (max 5). Consolidate child stories."})
                 elif count < 2:
-                    all_issues.append({"level": "WARNING", "section": "story",
-                        "message": f"Story '{parent_id}' has {count} child (preferred 2+). Add another distinct concern or merge the child back into the parent."})
+                    all_issues.append({
+                        "level": "WARNING",
+                        "section": "story",
+                        "kind": "story-decomposition",
+                        "message": f"Story '{parent_id}' has {count} child (preferred 2+). Add another distinct concern or merge the child back into the parent.",
+                        "related_entities": [parent_id],
+                        "evidence_refs": story_seed_refs[:3],
+                    })
                 if count < 2 and component_signal_counts.get(parent_id, 0) >= 4:
-                    all_issues.append({"level": "WARNING", "section": "story",
-                        "message": f"Story '{parent_id}' looks under-decomposed for a root with multiple flows/state/dependencies. Draft more concern-focused children before finalizing."})
+                    all_issues.append({
+                        "level": "WARNING",
+                        "section": "story",
+                        "kind": "story-decomposition",
+                        "message": f"Story '{parent_id}' looks under-decomposed for a root with multiple flows/state/dependencies. Draft more concern-focused children before finalizing.",
+                        "related_entities": [parent_id],
+                        "evidence_refs": story_seed_refs[:3],
+                        "conflict_type": "fact_vs_semantic" if story_seed_refs else None,
+                    })
 
             root_story_count = sum(1 for story in all_stories.values() if not story.get("parent"))
             if root_story_count < 3:
@@ -1572,8 +2319,15 @@ def main():
                     "message": f"Too many root stories: {root_story_count} (maximum 5, one per top-level component)"})
 
             if all_stories and not children_count and len(all_stories) >= 4:
-                all_issues.append({"level": "ERROR", "section": "story",
-                    "message": "Story tree is fully flat. Add child stories when root stories contain distinct nested concerns."})
+                all_issues.append({
+                    "level": "ERROR",
+                    "section": "story",
+                    "kind": "story-decomposition",
+                    "message": "Story tree is fully flat. Add child stories when root stories contain distinct nested concerns.",
+                    "related_entities": sorted(all_stories.keys()),
+                    "evidence_refs": story_seed_refs[:3],
+                    "conflict_type": "fact_vs_semantic" if story_seed_refs else None,
+                })
 
         # --- Narratives ---
         narratives_path = analysis_dir / "narratives.yaml"
@@ -1597,6 +2351,20 @@ def main():
                 else:
                     ids = set()
                     child_story_ids = {sid for sid, story in all_stories.items() if story.get("parent")}
+                    if len(narratives) < 2:
+                        all_issues.append({
+                            "level": "WARNING",
+                            "section": "narrative",
+                            "kind": "narrative-count",
+                            "message": "Only one narrative is present; most repos should provide at least one additional audience or cross-cutting reading path",
+                        })
+                    elif len(narratives) > 4:
+                        all_issues.append({
+                            "level": "WARNING",
+                            "section": "narrative",
+                            "kind": "narrative-count",
+                            "message": f"{len(narratives)} narratives are present; usually keep a repo to 2-4 non-redundant narratives",
+                        })
                     for narrative in narratives:
                         if not isinstance(narrative, dict):
                             all_issues.append({"level": "ERROR", "section": "narrative", "message": "narratives.yaml contains a non-object narrative entry"})
@@ -1611,13 +2379,29 @@ def main():
                             for entry in (narrative.get("stories", []) or [])
                         }
                         if child_story_ids and narrative_story_ids and narrative_story_ids.isdisjoint(child_story_ids):
-                            all_issues.append({"level": "WARNING", "section": "narrative",
-                                "message": f"Narrative '{nid}' uses only root stories even though child stories exist. Prefer more specific child stories when they carry the real explanatory detail."})
+                            all_issues.append({
+                                "level": "WARNING",
+                                "section": "narrative",
+                                "kind": "narrative-selection",
+                                "message": f"Narrative '{nid}' uses only root stories even though child stories exist. Prefer more specific child stories when they carry the real explanatory detail.",
+                                "related_entities": [nid, *sorted(narrative_story_ids)],
+                                "evidence_refs": story_seed_refs[:3],
+                                "conflict_type": "fact_vs_semantic" if story_seed_refs else None,
+                            })
                     if "getting-started" not in ids:
                         all_issues.append({"level": "ERROR", "section": "narrative", "message": "getting-started narrative is required — teaching-order path covering the main top-level components"})
 
         if atlas and all_stories and isinstance(narratives, list):
-            all_issues.extend(detect_cross_artifact_conflicts(atlas, all_stories, narratives))
+            all_issues.extend(
+                detect_cross_artifact_conflicts(
+                    atlas,
+                    all_stories,
+                    narratives,
+                    narrative_seeds_payload=narrative_seeds_payload,
+                    control_hotspots_payload=control_hotspots_payload,
+                    state_access_summary_payload=state_access_summary_payload,
+                )
+            )
 
     meta_path = analysis_dir / "meta.json"
     if meta_path.exists():

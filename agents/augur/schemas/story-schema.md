@@ -31,6 +31,7 @@ Apply these rules to story summaries, findings, and rationale:
 - use the canonical path rules from `augur-output-contract.md`
 - treat stories as resolved teaching structure, not as arbitrary file-group summaries
 - when `facts/component-seeds.json` and `facts/story-seeds.json` are present, use them to challenge root choice and child-story decomposition before writing
+- when `facts/narrative-seeds.json` is present, keep story scope and teaching value strong enough that narratives can select stories by explanatory value rather than by root coverage alone
 
 ## Story Schema
 

@@ -45,6 +45,7 @@ $MEM/
     concept-evidence.json
     story-seeds.json
     component-seeds.json
+    narrative-seeds.json
     symbols-seed.json
     state-seeds.json
     facts-guide.json
@@ -71,7 +72,7 @@ Use these categories when interpreting files under `facts/`:
 - `guide`
   - interpretation aids such as `facts-guide.json`
 - `planning-aid`
-  - deterministic advisory artifacts such as `story-seeds.json`, `component-seeds.json`, `symbols-seed.json`, or `state-seeds.json`
+  - deterministic advisory artifacts such as `story-seeds.json`, `component-seeds.json`, `narrative-seeds.json`, `symbols-seed.json`, or `state-seeds.json`
 - `derived-structure`
   - deterministic summaries synthesized from lower-level facts, such as `control-hotspots.json` or `state-access-summary.json`
 
