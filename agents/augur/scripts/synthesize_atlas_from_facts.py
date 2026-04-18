@@ -282,19 +282,16 @@ def normalize_health_block(target: dict[str, Any]) -> None:
     local = health.get("local") if isinstance(health.get("local"), dict) else {}
     integration = health.get("integration") if isinstance(health.get("integration"), dict) else {}
     propagation = health.get("propagation") if isinstance(health.get("propagation"), dict) else {}
-    local_failure_modes = merge_failure_modes(local.get("failure_modes") or [])
+    local_failure_modes = merge_failure_modes((local.get("failure_modes") or []) + legacy_failure_modes)
     integration_failure_modes = merge_failure_modes(integration.get("failure_modes") or [])
     propagation_scenarios = [item for item in (propagation.get("scenarios") or []) if isinstance(item, dict)]
-
-    if legacy_failure_modes and not local_failure_modes and not integration_failure_modes:
-        local_failure_modes = legacy_failure_modes
 
     health["local"] = {"failure_modes": local_failure_modes}
     health["integration"] = {"failure_modes": integration_failure_modes}
     health["propagation"] = {"scenarios": propagation_scenarios}
-    health["failure_modes"] = merge_failure_modes(local_failure_modes + integration_failure_modes)
     health["signals"] = unique_strings([str(v) for v in health.get("signals") or [] if v])
     health["gaps"] = unique_strings([str(v) for v in health.get("gaps") or [] if v])
+    health.pop("failure_modes", None)
 
 
 def coerce_bool(value: Any) -> bool:
@@ -903,18 +900,20 @@ def build_external_dependencies(facts: list[dict[str, Any]], joern: dict[str, An
                 "criticality": str(raw.get("criticality") or "important"),
                 "resilience": resilience,
                 "health": {
-                    "failure_modes": [
-                        {
-                            "id": f"{slugify(name)}-availability",
-                            "trigger": f"{name} becomes slow or unavailable",
-                            "impact": f"Features that depend on {name} may degrade.",
-                            "signals": [f"missing-resilience:{item}" for item in missing],
-                            "gaps": [f"missing-{item}" for item in missing],
-                            "recovery": ["Add timeout, retry, and circuit-breaker where appropriate."],
-                            "severity": "medium",
-                            "grounded_in": [source_line(item) for item in fact.get("source_files", []) if item],
-                        }
-                    ] if missing else [],
+                    "local": {
+                        "failure_modes": [
+                            {
+                                "id": f"{slugify(name)}-availability",
+                                "trigger": f"{name} becomes slow or unavailable",
+                                "impact": f"Features that depend on {name} may degrade.",
+                                "signals": [f"missing-resilience:{item}" for item in missing],
+                                "gaps": [f"missing-{item}" for item in missing],
+                                "recovery": ["Add timeout, retry, and circuit-breaker where appropriate."],
+                                "severity": "medium",
+                                "grounded_in": [source_line(item) for item in fact.get("source_files", []) if item],
+                            }
+                        ] if missing else [],
+                    },
                     "gaps": [f"missing-{item}" for item in missing],
                 },
             }
@@ -941,8 +940,8 @@ def build_external_dependencies(facts: list[dict[str, Any]], joern: dict[str, An
             dependency["components"] = sorted(components_set)
             if touch_count >= 3 and dependency.get("criticality") == "important":
                 dependency["criticality"] = "critical"
-            if grounded and dependency.get("health", {}).get("failure_modes"):
-                for item in dependency["health"]["failure_modes"]:
+            if grounded and dependency.get("health", {}).get("local", {}).get("failure_modes"):
+                for item in dependency["health"]["local"]["failure_modes"]:
                     item["grounded_in"] = unique_strings(list(item.get("grounded_in") or []) + sorted(grounded))
         dependencies.append(dependency)
 
@@ -1092,7 +1091,7 @@ def build_components_and_groups(facts: list[dict[str, Any]], joern: dict[str, An
                 "abstraction": [],
                 "patterns": sorted(bucket["patterns"]),
                 "health": {
-                    "failure_modes": merge_failure_modes(bucket["health_failure_modes"]),
+                    "local": {"failure_modes": merge_failure_modes(bucket["health_failure_modes"])},
                     "gaps": sorted(bucket["health_gaps"]),
                 },
                 "deployment": {"namespace": "", "kind": "", "replicas": "", "node": ""},
@@ -1116,7 +1115,7 @@ def build_components_and_groups(facts: list[dict[str, Any]], joern: dict[str, An
                 "depends_on": [],
                 "abstraction": [],
                 "patterns": [],
-                "health": {"failure_modes": [], "gaps": []},
+                "health": {"local": {"failure_modes": []}, "gaps": []},
                 "deployment": {"namespace": "", "kind": "", "replicas": "", "node": ""},
                 "children": sorted(component_ids),
             }
@@ -1400,9 +1399,9 @@ def build_flows(
             slice_step_count = len(edge_steps)
             component_span = max(1, len(touched_components))
         state_hits, dependency_hits = apply_touches(flow, touch_facts, base_component)
-        if edge_facts and len(edge_facts) > 3 and flow.get("health", {}).get("failure_modes"):
-            flow["health"]["failure_modes"][0]["signals"] = unique_strings(
-                list(flow["health"]["failure_modes"][0].get("signals") or []) + ["call.path.depth"]
+        if edge_facts and len(edge_facts) > 3 and flow.get("health", {}).get("local", {}).get("failure_modes"):
+            flow["health"]["local"]["failure_modes"][0]["signals"] = unique_strings(
+                list(flow["health"]["local"]["failure_modes"][0].get("signals") or []) + ["call.path.depth"]
             )
         flow["business_metrics"] = derive_flow_business_metrics(flow)
         candidates.append(
@@ -1446,18 +1445,20 @@ def build_flows(
             "actors": ["api-client"],
             "grounded_in": grounded,
             "health": {
-                "failure_modes": [
-                    {
-                        "id": f"{flow_id}-request-failure",
-                        "trigger": "Request handling slows down or fails.",
-                        "impact": "Clients experience latency, errors, or incomplete responses.",
-                        "signals": ["request.error_rate", "request.latency"],
-                        "gaps": [],
-                        "recovery": [],
-                        "severity": "medium",
-                        "grounded_in": grounded,
-                    }
-                ],
+                "local": {
+                    "failure_modes": [
+                        {
+                            "id": f"{flow_id}-request-failure",
+                            "trigger": "Request handling slows down or fails.",
+                            "impact": "Clients experience latency, errors, or incomplete responses.",
+                            "signals": ["request.error_rate", "request.latency"],
+                            "gaps": [],
+                            "recovery": [],
+                            "severity": "medium",
+                            "grounded_in": grounded,
+                        }
+                    ],
+                },
                 "gaps": [],
             },
             "business_metrics": [],
@@ -1513,18 +1514,20 @@ def build_flows(
             "actors": actors,
             "grounded_in": grounded,
             "health": {
-                "failure_modes": [
-                    {
-                        "id": f"{flow_id}-execution-failure",
-                        "trigger": "Background execution stalls, retries excessively, or fails.",
-                        "impact": "Deferred work becomes delayed or incomplete.",
-                        "signals": ["job.failure_rate", "job.duration"],
-                        "gaps": [],
-                        "recovery": [],
-                        "severity": "low",
-                        "grounded_in": grounded,
-                    }
-                ],
+                "local": {
+                    "failure_modes": [
+                        {
+                            "id": f"{flow_id}-execution-failure",
+                            "trigger": "Background execution stalls, retries excessively, or fails.",
+                            "impact": "Deferred work becomes delayed or incomplete.",
+                            "signals": ["job.failure_rate", "job.duration"],
+                            "gaps": [],
+                            "recovery": [],
+                            "severity": "low",
+                            "grounded_in": grounded,
+                        }
+                    ],
+                },
                 "gaps": [],
             },
             "business_metrics": [],
@@ -1570,18 +1573,20 @@ def build_flows(
             "actors": ["service"],
             "grounded_in": grounded,
             "health": {
-                "failure_modes": [
-                    {
-                        "id": f"{flow_id}-execution-path",
-                        "trigger": "A key runtime path degrades or breaks.",
-                        "impact": "A meaningful code path may fail, stall, or misbehave.",
-                        "signals": ["call.path.depth"],
-                        "gaps": [],
-                        "recovery": [],
-                        "severity": "low",
-                        "grounded_in": grounded,
-                    }
-                ],
+                "local": {
+                    "failure_modes": [
+                        {
+                            "id": f"{flow_id}-execution-path",
+                            "trigger": "A key runtime path degrades or breaks.",
+                            "impact": "A meaningful code path may fail, stall, or misbehave.",
+                            "signals": ["call.path.depth"],
+                            "gaps": [],
+                            "recovery": [],
+                            "severity": "low",
+                            "grounded_in": grounded,
+                        }
+                    ],
+                },
                 "gaps": [],
             },
             "business_metrics": [],
@@ -1856,7 +1861,7 @@ def append_concept_health(
     health = target.setdefault("health", {})
     existing_gaps = health.get("gaps") or []
     local = health.setdefault("local", {})
-    existing_failure_modes = local.get("failure_modes") or health.get("failure_modes") or []
+    existing_failure_modes = local.get("failure_modes") or []
     health["gaps"] = unique_strings(existing_gaps + [str(item) for item in monitoring.get("gaps") or [] if item] + missing_gaps)
 
     failure_mode_id = f"{target.get('id', 'entity')}-{slugify(concept_id)}-runtime"
@@ -1879,7 +1884,6 @@ def append_concept_health(
                 }
             )
     local["failure_modes"] = merge_failure_modes(existing_failure_modes)
-    health["failure_modes"] = merge_failure_modes(local["failure_modes"] + list((health.get("integration") or {}).get("failure_modes") or []))
 
 
 def attach_concept_monitoring(

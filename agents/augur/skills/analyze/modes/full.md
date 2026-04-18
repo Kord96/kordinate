@@ -30,7 +30,9 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
    - Use deterministic stack evidence to summarize `stack_summary`, `languages`, compact resolved `frameworks`, and `technologies`.
 12. Just before writing `stories/*.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` and follow it exactly.
 13. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
+    - Treat `getting-started` as the repo overview path, not as an onboarding checklist or setup guide.
     - Write `getting-started.description` as a compact "how it works" synopsis, not a label: usually 3-4 sentences naming the main slices, dominant flow, and why the sequence teaches the architecture.
+    - Prefer `Overview` or `Repo Overview` as the title unless a more specific repo-wide overview title is clearly better.
     - Treat each narrative as a coherent lesson plan with explicit `teaches` goals; the selected stories should collectively deliver those goals rather than act as a loose component inventory.
     - Add `throughline` to explain why the chosen stories form one coherent lesson in that order.
     - Prefer 2-4 total narratives unless the repo has clearly distinct audiences or cross-cutting review paths.
@@ -54,8 +56,8 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - If a concept candidate still matters after that first pass, read only the specific concept file and detector `meta.yaml` for that concept instead of broad concept preload.
 - Keep `atlas.json.concepts` compact and grounded: prefer a few high-signal concepts with repo-specific summaries over a long generic pattern list.
 - If `story-seeds.json` is present, use it as an advisory checklist for child-story decomposition, not as a replacement for actual architectural judgment.
-- If `narrative-seeds.json` is present, use it as an advisory ranking layer for `getting-started` and other teaching paths: prefer the smallest set of stories that teaches system shape plus the operating model.
-- If `control-hotspots.json` or `state-access-summary.json` are present, use them as evidence for which flows or state/dependency boundaries deserve to appear in onboarding narratives, not as content to dump literally.
+- If `narrative-seeds.json` is present, use it as an advisory ranking layer for `getting-started` and other teaching paths: prefer the smallest set of stories that teaches repo shape plus the operating model.
+- If `control-hotspots.json` or `state-access-summary.json` are present, use them as evidence for which flows or state/dependency boundaries deserve to appear in the repo overview narrative, not as content to dump literally.
 - If `health-candidates.json` is present, use it to pressure atlas health coverage and make sure important local failures, dependency seams, and propagation scenarios are modeled distinctly.
 - If `symbols-seed.json` is present, use it as an advisory exact-name inventory for high-signal files before finalizing observations, summaries, and flow steps.
 - If `state-seeds.json` is present, use it as an advisory exact-name inventory for state entries grounded in state or operations files.

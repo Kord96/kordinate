@@ -203,18 +203,6 @@ These legacy fields must not appear:
           }
         ]
       },
-      "failure_modes": [
-        {
-          "id": "<kebab-case>",
-          "trigger": "<what goes wrong>",
-          "impact": "<what users or operators experience>",
-          "signals": ["<metric or symptom>"],
-          "gaps": ["<missing guardrail>"],
-          "recovery": ["<recovery step>"],
-          "severity": "critical | high | medium | low",
-          "grounded_in": ["<file:line>"]
-        }
-      ],
       "gaps": ["<missing signal or resilience control>"]
     }
   }
@@ -231,7 +219,6 @@ Hierarchy rules:
   - `health.local` for failures internal to this unit
   - `health.integration` for failures at seams with dependencies, stores, or callers
   - `health.propagation` for downstream degraded modes or blast radius
-- `health.failure_modes` may appear as a compatibility mirror, but the layered sections are the preferred source of truth
 - if a high-severity integration failure is present, either model a propagation scenario or make containment explicit
 
 ### `flows`
@@ -257,18 +244,6 @@ Hierarchy rules:
       "propagation": {
         "scenarios": []
       },
-      "failure_modes": [
-        {
-          "id": "<kebab-case>",
-          "trigger": "<what breaks this flow>",
-          "impact": "<what the caller or user experiences>",
-          "signals": ["<flow-level signal>"],
-          "gaps": ["<missing flow instrumentation>"],
-          "recovery": ["<fallback or recovery step>"],
-          "severity": "critical | high | medium | low",
-          "grounded_in": ["<file:line>"]
-        }
-      ],
       "gaps": ["<missing flow health visibility>"]
     },
     "steps": [
@@ -361,18 +336,6 @@ State modeling rules:
       "propagation": {
         "scenarios": []
       },
-      "failure_modes": [
-        {
-          "id": "<kebab-case>",
-          "trigger": "<dependency degradation or outage>",
-          "impact": "<what features degrade>",
-          "signals": ["<signal>"],
-          "gaps": ["<missing timeout/retry/circuit-breaker>"],
-          "recovery": ["<fallback or operator action>"],
-          "severity": "critical | high | medium | low",
-          "grounded_in": ["<file:line>"]
-        }
-      ],
       "gaps": ["<missing protection or signal>"]
     }
   }

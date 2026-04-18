@@ -96,7 +96,9 @@ The deterministic phase is already done. Work from the prepared run directory an
 
 6. Produce `$RUN/narratives.yaml`.
    - read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` before writing
-   - treat `getting-started.description` as the canonical "how it works" overview used downstream; make it a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
+   - treat `getting-started` as the canonical repo overview narrative used downstream; the id is historical, but the content should explain the repo's architecture rather than read like a startup guide
+   - write `getting-started.description` as a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
+   - prefer `Overview` or `Repo Overview` as the human-facing title for `getting-started`
    - write each narrative as a teaching sequence, not just an ordered list: include explicit `teaches` goals and make sure each selected story clearly serves those goals
    - include `throughline` for each narrative: one short paragraph explaining why these stories belong together in this order
    - usually emit 2-4 total narratives for one repo; every extra narrative should earn its place through a distinct audience or cross-cutting teaching purpose

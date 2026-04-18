@@ -20,6 +20,7 @@ Apply these rules to story summaries, findings, and rationale:
 ## Core Rules
 
 - every structure node id must already exist in `atlas.json`
+- every structure node should be justified by observations or explicit structure edges; avoid floating grouping nodes that are not tied back to grounded observations
 - every flow step `node` and `to` reference must already exist in `atlas.json`
 - do not invent pseudo-nodes such as `detectors`, `scripts`, `http-server`, `kafka-consumer`, `llm-runtime`, or `fact-store` unless they are real atlas ids
 - do not turn filenames or helper modules into structure nodes; if `fact_extractor_support.py` or a similar file matters, cite it in `anchor`, `evidence`, or `grounded_in` instead of inventing a node id from the filename
@@ -160,6 +161,7 @@ Avoid child stories that exist only to satisfy count heuristics. A child should 
 ## Grounding Style
 
 - observations and summaries should sound like the code they cite, not like generic architectural paraphrases
+- if a structure node introduces a grouping relationship through `children`, attach `observation_ids` that explain why that grouping exists in code
 - when grounded code exposes concrete identifiers, prefer those identifiers or their exact stage names over abstract substitutes
 - when `facts/symbols-seed.json` is available for the cited file, prefer exact identifiers from that inventory over nearby paraphrases
 - if multiple `grounded_in` lines support one observation, keep the finding focused enough that the same mechanism is visible across those lines

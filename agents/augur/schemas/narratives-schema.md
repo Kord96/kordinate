@@ -56,17 +56,23 @@ narratives:
 
 ## Required Narrative
 
-Include a narrative with exact id `getting-started` that provides a teaching-order path covering the main top-level components.
+Include a narrative with exact id `getting-started` that serves as the default repository overview.
 
-`getting-started` should normally move from one orientation root into the most explanatory child stories before returning to later roots. Do not keep it root-only when child stories carry the real architecture.
+The id is historical. Treat this narrative as the canonical repo overview path, not as a literal onboarding or setup guide.
 
-`getting-started.description` is the canonical "how it works" overview used by downstream readers. It should be a compact synopsis of the main architecture, usually 3-4 sentences, and should name the dominant top-level components, major execution path, or cross-cutting subsystem boundaries explicitly.
+`getting-started` should usually be titled `Overview` or `Repo Overview` unless a more specific repo-wide overview title is clearly better.
 
-`getting-started.teaches` should name the core architectural lessons that the included stories collectively deliver. The stories chosen for the narrative should clearly serve those goals rather than acting as a loose inventory.
+`getting-started` should normally move from one orienting root into the most explanatory child stories and defining cross-component flows before returning to later roots. Do not keep it root-only when child stories carry the real architecture.
 
-`throughline` should explain why the chosen stories form one coherent lesson in this order. It is not another summary; it is the teaching arc.
+`getting-started.description` is the canonical "how it works" overview used by downstream readers. It should be a compact synopsis of the repo's architectural shape, usually 3-4 sentences, and should name the dominant top-level components, major execution path, or cross-cutting subsystem boundaries explicitly.
 
-Use component hierarchy and defining flows as selection signals for `getting-started`, not as content to dump. Prefer the few stories that best establish system shape and operating model over broader component coverage.
+`getting-started.teaches` should name the core architectural lessons that the included stories collectively deliver about the repository. The stories chosen for the narrative should clearly serve those goals rather than acting as a loose inventory.
+
+`throughline` should explain why the chosen stories form one coherent overview in this order. It is not another summary; it is the teaching arc.
+
+Use component hierarchy, defining flows, important state boundaries, and major tensions as selection signals for `getting-started`, not as content to dump. Prefer the few stories that best establish repo shape and operating model over broader component coverage.
+
+Do not write `getting-started` in a procedural "how to begin using the repo" tone. It should describe how the repo is organized and how its main architecture operates.
 
 Do not rename this required narrative to variants such as `narrative-getting-started`.
 

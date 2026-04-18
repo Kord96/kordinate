@@ -385,10 +385,14 @@ def validate_health(
     local_block = health.get("local") if isinstance(health.get("local"), dict) else {}
     integration_block = health.get("integration") if isinstance(health.get("integration"), dict) else {}
     propagation_block = health.get("propagation") if isinstance(health.get("propagation"), dict) else {}
-    legacy_failure_modes = health.get("failure_modes") or []
-    if legacy_failure_modes and not isinstance(legacy_failure_modes, list):
-        issues.append({"level": "ERROR", "section": section, "kind": "health-model", "message": f"'{item_id}' health.failure_modes must be a list"})
-        return issues
+    if "failure_modes" in health:
+        issues.append({
+            "level": "ERROR",
+            "section": section,
+            "kind": "health-model",
+            "message": f"'{item_id}' uses deprecated health.failure_modes; move failures into health.local or health.integration",
+            "related_entities": [item_id],
+        })
 
     local_failure_modes = local_block.get("failure_modes") or []
     integration_failure_modes = integration_block.get("failure_modes") or []
@@ -405,9 +409,6 @@ def validate_health(
         propagation_scenarios = []
 
     failure_modes = []
-    layered_present = bool(local_failure_modes or integration_failure_modes)
-    if isinstance(legacy_failure_modes, list) and not layered_present:
-        failure_modes.extend(("legacy", item) for item in legacy_failure_modes)
     if isinstance(local_failure_modes, list):
         failure_modes.extend(("local", item) for item in local_failure_modes)
     if isinstance(integration_failure_modes, list):
@@ -539,7 +540,7 @@ def validate_health(
                 "related_entities": [item_id, scenario_id],
             })
 
-    if candidate_local and not (local_failure_modes or legacy_failure_modes):
+    if candidate_local and not local_failure_modes:
         issues.append({
             "level": "WARNING",
             "section": section,
@@ -1203,10 +1204,37 @@ def validate_story(
 
     # Structure node refs
     for struct in story.get("structures", []):
+        structure_edges = struct.get("edges", []) or []
+        referenced_by_edge = set()
+        for edge in structure_edges:
+            if isinstance(edge, dict):
+                if edge.get("from"):
+                    referenced_by_edge.add(edge.get("from"))
+                if edge.get("to"):
+                    referenced_by_edge.add(edge.get("to"))
         for node in struct.get("nodes", []):
             nid = node.get("id", "") if isinstance(node, dict) else node
             if nid and nid not in atlas_node_ids:
                 error(f"Story '{sid}' structure node '{nid}' not in atlas")
+            if isinstance(node, dict):
+                observation_ids = [obs_id for obs_id in (node.get("observation_ids") or []) if obs_id]
+                child_ids = [child_id for child_id in (node.get("children") or []) if child_id]
+                if child_ids and not observation_ids:
+                    issues.append({
+                        "level": "WARNING",
+                        "section": "story",
+                        "kind": "story-quality",
+                        "message": f"Story '{sid}' structure node '{nid}' groups children but has no observation_ids grounding that grouping",
+                        "related_entities": [sid, nid, *child_ids[:2]],
+                    })
+                if not child_ids and not observation_ids and nid not in referenced_by_edge:
+                    issues.append({
+                        "level": "WARNING",
+                        "section": "story",
+                        "kind": "story-quality",
+                        "message": f"Story '{sid}' structure node '{nid}' is weakly grounded; add observation_ids or connect it through explicit structure edges",
+                        "related_entities": [sid, nid],
+                    })
         for edge in struct.get("edges", []):
             for key in ("from", "to"):
                 ref = edge.get(key, "")
@@ -1278,6 +1306,7 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
         error(f"Narrative '{jid}' missing required field: title")
     if "description" not in narrative:
         error(f"Narrative '{jid}' missing required field: description")
+    title = str(narrative.get("title") or "").strip()
 
     stories = narrative.get("stories", [])
     teaches = narrative.get("teaches")
@@ -1303,6 +1332,13 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
                 "kind": "narrative-overview",
                 "message": f"Narrative '{jid}' description is too long for the overview slot; keep it to roughly 2-4 sentences",
             })
+    if jid == "getting-started" and title.lower() == "getting started":
+        issues.append({
+            "level": "WARNING",
+            "section": "narrative",
+            "kind": "narrative-overview",
+            "message": "getting-started title still reads like onboarding; prefer a repo-overview title such as 'Overview'",
+        })
     if teaches is None:
         issues.append({
             "level": "WARNING",
@@ -1666,7 +1702,7 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-overview",
-                        "message": "getting-started description is too short to serve as the architecture overview; use roughly 3-4 sentences",
+                        "message": "getting-started description is too short to serve as the repo overview; use roughly 3-4 sentences",
                         "conflict_type": "cross_artifact",
                         "related_entities": [nid],
                         "evidence_refs": [],
@@ -1688,7 +1724,7 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-overview",
-                        "message": "getting-started description does not name enough of the main top-level slices to function as a useful architecture overview",
+                        "message": "getting-started description does not name enough of the main top-level slices to function as a useful repo overview",
                         "conflict_type": "cross_artifact",
                         "related_entities": [nid, *[str(component.get('id')) for component in top_level_components]],
                         "evidence_refs": [],
@@ -1713,7 +1749,7 @@ def detect_cross_artifact_conflicts(
                             "level": "WARNING",
                             "section": "narrative",
                             "kind": "narrative-selection",
-                            "message": f"getting-started omits preferred introductory roots suggested by deterministic evidence: {', '.join(missing[:2])}",
+                        "message": f"getting-started omits preferred repo-overview roots suggested by deterministic evidence: {', '.join(missing[:2])}",
                             "conflict_type": "fact_vs_semantic",
                             "related_entities": [nid, *missing],
                             "evidence_refs": evidence_refs[:3],
@@ -1740,7 +1776,7 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-selection",
-                        "message": "getting-started does not include a clearly flow-bearing story even though deterministic signals suggest the operating model should be taught through a real flow",
+                        "message": "getting-started does not include a clearly flow-bearing story even though deterministic signals suggest the repo overview should teach the operating model through a real flow",
                         "conflict_type": "fact_vs_semantic",
                         "related_entities": [nid, *referenced_story_ids],
                         "evidence_refs": hotspot_refs[:3],
@@ -1763,7 +1799,7 @@ def detect_cross_artifact_conflicts(
                         "level": "WARNING",
                         "section": "narrative",
                         "kind": "narrative-selection",
-                        "message": "getting-started avoids the strongest deterministic control hotspots, so the introductory path may miss the repo's defining operating path",
+                        "message": "getting-started avoids the strongest deterministic control hotspots, so the repo overview may miss the repo's defining operating path",
                         "conflict_type": "fact_vs_semantic",
                         "related_entities": [nid, *sorted(hotspot_components)[:3]],
                         "evidence_refs": hotspot_refs[:3],
@@ -1793,7 +1829,7 @@ def detect_cross_artifact_conflicts(
                             "level": "WARNING",
                             "section": "narrative",
                             "kind": "narrative-selection",
-                            "message": "getting-started does not include a story that clearly teaches a state or dependency boundary even though deterministic evidence suggests one is central",
+                        "message": "getting-started does not include a story that clearly teaches a state or dependency boundary even though deterministic evidence suggests one is central to the repo overview",
                             "conflict_type": "fact_vs_semantic",
                             "related_entities": [nid, *referenced_story_ids],
                             "evidence_refs": boundary_refs[:3],
@@ -1817,7 +1853,7 @@ def detect_cross_artifact_conflicts(
                             "level": "WARNING",
                             "section": "narrative",
                             "kind": "narrative-selection",
-                            "message": "getting-started avoids the strongest deterministic state or boundary targets, so the introductory path may miss an important system boundary",
+                        "message": "getting-started avoids the strongest deterministic state or boundary targets, so the repo overview may miss an important system boundary",
                             "conflict_type": "fact_vs_semantic",
                             "related_entities": [nid, *sorted(boundary_components)[:3]],
                             "evidence_refs": boundary_refs[:3],
