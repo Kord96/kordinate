@@ -58,6 +58,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - Keep `atlas.json.concepts` compact and grounded: prefer a few high-signal concepts with repo-specific summaries over a long generic pattern list.
 - If `story-seeds.json` is present, use it as an advisory checklist for child-story decomposition, not as a replacement for actual architectural judgment.
 - If `narrative-seeds.json` is present, use it as an advisory ranking layer for `system-overview` and other teaching paths: prefer the smallest set of stories that teaches repo shape plus the operating model.
+- If `narrative-seeds.json` is present, use its `recommended_narratives` section to decide which optional canonical narrative ids are truly justified for this repo. Do not invent freeform narrative ids when the canonical palette already fits.
 - If `control-hotspots.json` or `state-access-summary.json` are present, use them as evidence for which flows or state/dependency boundaries deserve to appear in the repo overview narrative, not as content to dump literally.
 - If `health-candidates.json` is present, use it to pressure atlas health coverage and make sure important local failures, dependency seams, and propagation scenarios are modeled distinctly.
 - If `symbols-seed.json` is present, use it as an advisory exact-name inventory for high-signal files before finalizing observations, summaries, and flow steps.

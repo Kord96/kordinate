@@ -105,8 +105,9 @@ The deterministic phase is already done. Work from the prepared run directory an
    - write each narrative as a teaching sequence, not just an ordered list: include explicit `teaches` goals and make sure each selected story clearly serves those goals
    - include `throughline` for each narrative: one short paragraph explaining why these stories belong together in this order
    - usually emit 2-4 total narratives for one repo; every extra narrative should earn its place through a distinct audience or cross-cutting teaching purpose
+   - keep narrative ids inside the canonical palette defined in `narratives-schema.md`; only `system-overview` is always required, and optional narratives should be chosen from the palette only when repo evidence justifies them
    - make the bridge text between adjacent stories explain why the next story follows from the previous one, not just that it comes next
-   - use `facts/narrative-seeds.json` when present to rank which roots, child stories, and flow-bearing stories deserve inclusion, especially for `system-overview`
+   - use `facts/narrative-seeds.json` when present both to rank which roots, child stories, and flow-bearing stories deserve inclusion and to decide which optional canonical narratives are actually justified for this repo
 
 7. Validate in a loop.
    - run:

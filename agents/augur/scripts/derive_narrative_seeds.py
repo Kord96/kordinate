@@ -175,6 +175,9 @@ def main() -> int:
     story_payload = load_json(facts_dir / "story-seeds.json") if (facts_dir / "story-seeds.json").exists() else {}
     control_hotspots_payload = load_json(facts_dir / "control-hotspots.json") if (facts_dir / "control-hotspots.json").exists() else {}
     state_access_summary_payload = load_json(facts_dir / "state-access-summary.json") if (facts_dir / "state-access-summary.json").exists() else {}
+    concept_evidence_payload = load_json(facts_dir / "concept-evidence.json") if (facts_dir / "concept-evidence.json").exists() else {}
+    health_candidates_payload = load_json(facts_dir / "health-candidates.json") if (facts_dir / "health-candidates.json").exists() else {}
+    index_payload = load_json(facts_dir / "index.json") if (facts_dir / "index.json").exists() else {}
 
     preferred_concern_classes, require_flow_story, require_state_or_boundary_story, prefer_child_stories = concern_summary(story_payload)
     starter_files = normalize_file_refs(list(story_payload.get("starter_files") or []))[:8]
@@ -182,9 +185,107 @@ def main() -> int:
     preferred_flow_hotspots = hotspot_summary(control_hotspots_payload)
     preferred_state_or_boundary_targets = boundary_summary(state_access_summary_payload)
 
+    present_domains = {
+        str(item.get("name") or "")
+        for item in ((index_payload.get("index") or {}).get("domains") or [])
+        if isinstance(item, dict)
+    }
+    accepted_concepts = {
+        str((fact.get("raw_evidence") or {}).get("concept_id") or fact.get("id") or "")
+        for fact in (concept_evidence_payload.get("facts") or [])
+        if isinstance(fact, dict)
+        and str((fact.get("raw_evidence") or {}).get("decision_mode") or "") in {"accepted", "semantic-review"}
+    }
+
+    recommended_narratives: list[dict[str, Any]] = [
+        {
+            "id": "system-overview",
+            "required": True,
+            "reason": "Every repo needs one canonical narrative that explains what the system does and how its main architecture achieves that outcome.",
+            "evidence": {
+                "preferred_root_components": [item.get("id") for item in candidate_roots(component_payload)],
+                "preferred_flow_hotspots": [item.get("component") for item in preferred_flow_hotspots],
+                "preferred_state_or_boundary_targets": [item.get("target_name") for item in preferred_state_or_boundary_targets],
+            },
+        }
+    ]
+
+    def add_recommended_narrative(narrative_id: str, reason: str, evidence: dict[str, Any]) -> None:
+        recommended_narratives.append(
+            {
+                "id": narrative_id,
+                "required": False,
+                "reason": reason,
+                "evidence": evidence,
+            }
+        )
+
+    runtime_domains = {"routes", "handlers", "jobs", "events"} & present_domains
+    if preferred_flow_hotspots or len(runtime_domains) >= 3:
+        add_recommended_narrative(
+            "runtime-paths",
+            "Deterministic control, request, scheduler, or event evidence suggests the repo benefits from a narrative focused on how execution actually moves.",
+            {
+                "flow_hotspots": [item.get("component") for item in preferred_flow_hotspots],
+                "domains": sorted(runtime_domains),
+            },
+        )
+
+    if preferred_state_or_boundary_targets or "state-access-summary" in present_domains:
+        add_recommended_narrative(
+            "state-and-data",
+            "Deterministic state-access evidence suggests persistence or data boundaries deserve their own teaching path.",
+            {
+                "targets": [item.get("target_name") for item in preferred_state_or_boundary_targets],
+                "domains": sorted({"state-access-summary"} & present_domains),
+            },
+        )
+
+    if "external-clients" in present_domains and (
+        preferred_state_or_boundary_targets or "dependency-or-operations-boundary" in preferred_concern_classes
+    ):
+        add_recommended_narrative(
+            "integrations",
+            "External-client or boundary evidence suggests the repo has important dependency seams or protocol handoffs worth isolating.",
+            {
+                "domains": sorted({"external-clients"} & present_domains),
+                "concern_classes": [item for item in preferred_concern_classes if item == "dependency-or-operations-boundary"],
+            },
+        )
+
+    if any((health_candidates_payload.get(key) or []) for key in ("local_candidates", "integration_candidates", "propagation_candidates")):
+        add_recommended_narrative(
+            "operations-and-failure",
+            "Layered health candidates suggest a narrative focused on degraded modes, seams, and observability.",
+            {
+                "local_candidates": len(health_candidates_payload.get("local_candidates") or []),
+                "integration_candidates": len(health_candidates_payload.get("integration_candidates") or []),
+                "propagation_candidates": len(health_candidates_payload.get("propagation_candidates") or []),
+            },
+        )
+
+    if accepted_concepts & {"plugin-system", "command-dispatch", "service-manager"}:
+        add_recommended_narrative(
+            "extensibility",
+            "Dispatch or extensibility evidence suggests the repo exposes meaningful composition or extension seams.",
+            {
+                "concepts": sorted(accepted_concepts & {"plugin-system", "command-dispatch", "service-manager"}),
+            },
+        )
+
+    if accepted_concepts & {"oauth-oidc", "token-auth", "session-auth", "rbac"}:
+        add_recommended_narrative(
+            "security-and-access",
+            "Security-related concept evidence suggests identity, token, or access-control flows are important enough to deserve a separate teaching path.",
+            {
+                "concepts": sorted(accepted_concepts & {"oauth-oidc", "token-auth", "session-auth", "rbac"}),
+            },
+        )
+
     payload = {
         "version": 1,
         "goal": "Advisory narrative-planning seeds derived from deterministic facts.",
+        "recommended_narratives": recommended_narratives,
         "system_overview": {
             "recommended_story_budget": {
                 "min": 2,

@@ -54,6 +54,28 @@ narratives:
 - each per-story bridge description should justify the transition from the previous story into the next concern; do not use filler such as "next" or "then" without naming the reason
 - use `facts/narrative-seeds.json` when present as a ranking aid for which roots, child stories, and flow-bearing stories deserve inclusion, especially in `system-overview`
 
+## Canonical Narrative Palette
+
+Narratives should come from this constrained palette unless the repo has an unusually strong reason to justify a different reading path:
+
+- `system-overview`
+  - required
+  - teaches what the system does and how it does it
+- `runtime-paths`
+  - deeper execution, control, scheduling, or event paths
+- `state-and-data`
+  - stores, persistence, caches, data movement, and state boundaries
+- `integrations`
+  - external systems, protocols, dependency boundaries, and handoff seams
+- `operations-and-failure`
+  - health, degraded modes, blast radius, and observability
+- `extensibility`
+  - plugins, hooks, customization seams, registries, or framework extension surfaces
+- `security-and-access`
+  - trust boundaries, authn, authz, identity, token/session handling, and privileged control surfaces
+
+Prefer the palette name that best matches the real teaching purpose. Do not invent custom ids when one of the canonical narratives already fits.
+
 ## Required Narrative
 
 Include a narrative with exact id `system-overview` that serves as the default repository overview.
@@ -68,6 +90,10 @@ Include a narrative with exact id `system-overview` that serves as the default r
 
 `throughline` should explain why the chosen stories form one coherent overview in this order. It is not another summary; it is the teaching arc.
 
+`system-overview` should explicitly answer:
+- what the repository or system does
+- how its main architecture achieves that outcome
+
 Use component hierarchy, defining flows, important state boundaries, and major tensions as selection signals for `system-overview`, not as content to dump. Prefer the few stories that best establish repo shape and operating model over broader component coverage.
 
 Do not write `system-overview` in a procedural "how to begin using the repo" tone. It should describe how the repo is organized and how its main architecture operates.
@@ -79,6 +105,8 @@ Do not rename this required narrative to variants such as `narrative-system-over
 - do create one when a concern spans multiple top-level components
 - do create one for a specific audience such as onboarding or resilience review
 - do not create one for a single-root drilldown already covered by the story tree
+- do use a canonical palette id when the repo strongly supports it through deterministic evidence or a clear cross-component teaching need
+- do not emit optional palette narratives just to fill slots; each extra narrative should have a distinct concern and evidence-backed reason to exist
 
 ## File Layout
 

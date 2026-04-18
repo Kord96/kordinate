@@ -84,6 +84,16 @@ REQUIRED_ATLAS_FIELDS = [
     "external_dependencies", "concepts", "tensions"
 ]
 
+CANONICAL_NARRATIVE_IDS = {
+    "system-overview",
+    "runtime-paths",
+    "state-and-data",
+    "integrations",
+    "operations-and-failure",
+    "extensibility",
+    "security-and-access",
+}
+
 DETERMINISTIC_ONLY = (
     os.getenv("AUGUR_DETERMINISTIC_ONLY") in ("1", "true", "TRUE", "yes", "YES")
 )
@@ -1354,6 +1364,11 @@ def validate_narrative(narrative: dict, story_ids: set) -> list[dict]:
         error(f"Narrative '{jid}' missing required field: title")
     if "description" not in narrative:
         error(f"Narrative '{jid}' missing required field: description")
+    if jid and jid not in CANONICAL_NARRATIVE_IDS:
+        error(
+            f"Narrative '{jid}' is outside the canonical narrative palette; use one of: "
+            + ", ".join(sorted(CANONICAL_NARRATIVE_IDS))
+        )
 
     stories = narrative.get("stories", [])
     teaches = narrative.get("teaches")
@@ -1527,6 +1542,20 @@ def detect_cross_artifact_conflicts(
         if isinstance(narrative_seeds_payload, dict)
         else {}
     )
+    recommended_narrative_records = [
+        item
+        for item in ((narrative_seeds_payload or {}).get("recommended_narratives") or [])
+        if isinstance(item, dict) and str(item.get("id") or "")
+    ] if isinstance(narrative_seeds_payload, dict) else []
+    recommended_narrative_ids = {
+        str(item.get("id") or "")
+        for item in recommended_narrative_records
+    }
+    optional_recommended_ids = {
+        narrative_id
+        for narrative_id in recommended_narrative_ids
+        if narrative_id and narrative_id != "system-overview"
+    }
     preferred_roots = [
         item for item in (system_overview_seed.get("preferred_root_components") or [])
         if isinstance(item, dict)
@@ -1598,6 +1627,22 @@ def detect_cross_artifact_conflicts(
             if story_id:
                 referenced_story_ids.append(story_id)
         referenced_set = set(referenced_story_ids)
+        recommended_record = next(
+            (item for item in recommended_narrative_records if str(item.get("id") or "") == nid),
+            None,
+        )
+        if nid != "system-overview" and nid in CANONICAL_NARRATIVE_IDS and recommended_record is None:
+            issues.append(
+                {
+                    "level": "WARNING",
+                    "section": "narrative",
+                    "kind": "narrative-selection",
+                    "message": f"Narrative '{nid}' is in the canonical palette but is not strongly justified by deterministic narrative seeds",
+                    "conflict_type": "fact_vs_semantic",
+                    "related_entities": [nid, *referenced_story_ids[:3]],
+                    "evidence_refs": [],
+                }
+            )
         missing_child_coverage: list[str] = []
         for story_id in referenced_story_ids:
             child_ids = child_story_ids_by_parent.get(story_id) or []
@@ -1770,6 +1815,36 @@ def detect_cross_artifact_conflicts(
                         "evidence_refs": [],
                     }
                 )
+            teach_text = " ".join(
+                [description, throughline]
+                + [str(goal) for goal in teaches if isinstance(goal, str)]
+            ).lower()
+            what_tokens = {"purpose", "capability", "serves", "provides", "answers", "classifies", "stores", "scans", "emits", "manages", "handles"}
+            how_tokens = {"flow", "pipeline", "path", "through", "runtime", "control", "orchestrates", "routes", "executes", "persists", "publishes"}
+            if not any(token in teach_text for token in what_tokens):
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-overview",
+                        "message": "system-overview does not clearly answer what the system does; make the repo capability explicit in description or teaches",
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid],
+                        "evidence_refs": [],
+                    }
+                )
+            if not any(token in teach_text for token in how_tokens):
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-overview",
+                        "message": "system-overview does not clearly answer how the system does it; make the operating model explicit in description, teaches, or throughline",
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid],
+                        "evidence_refs": [],
+                    }
+                )
 
         if nid == "system-overview":
             selected_roots = {story_root(story_id) for story_id in referenced_story_ids if story_id in all_stories}
@@ -1914,6 +1989,34 @@ def detect_cross_artifact_conflicts(
                             "evidence_refs": [],
                         }
                     )
+
+    present_ids = {
+        str(narrative.get("id") or "")
+        for narrative in narratives
+        if isinstance(narrative, dict)
+    }
+    present_optional_recommended = sorted(optional_recommended_ids & present_ids)
+    if optional_recommended_ids and not present_optional_recommended:
+        exemplar_id = sorted(optional_recommended_ids)[0]
+        record = next((item for item in recommended_narrative_records if str(item.get("id") or "") == exemplar_id), None)
+        evidence_refs: list[str] = []
+        evidence = (record or {}).get("evidence") or {}
+        if isinstance(evidence, dict):
+            for key in ("domains", "flow_hotspots", "targets", "concepts"):
+                for value in evidence.get(key) or []:
+                    if isinstance(value, str) and value and value not in evidence_refs:
+                        evidence_refs.append(value)
+        issues.append(
+            {
+                "level": "WARNING",
+                "section": "narrative",
+                "kind": "narrative-selection",
+                "message": "Deterministic narrative seeds suggest the repo would benefit from at least one additional canonical narrative beyond system-overview, but none are present",
+                "conflict_type": "fact_vs_semantic",
+                "related_entities": sorted(optional_recommended_ids),
+                "evidence_refs": evidence_refs[:3],
+            }
+        )
 
     return issues
 
