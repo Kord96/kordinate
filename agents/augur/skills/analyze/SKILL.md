@@ -12,6 +12,13 @@ Semantic phase for Augur `/analyze`.
 
 The deterministic phase is already done. Work from the prepared run directory and produce semantic outputs that validate.
 
+Operational path rules for this runtime:
+- `KORDINATE_HOME`, `RUN`, `ANALYSIS`, and `PROJECT_MEM` are already set in the shell environment
+- if `VALIDATOR_SCRIPT` or `FINALIZE_SCRIPT` are present, use them directly instead of rediscovering script paths
+- do not manually reconstruct or shorten the run directory
+- do not create sibling run directories with guessed suffixes
+- write artifacts only to the exact paths rooted under `$RUN`
+
 ## Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs for this run.
 
 1. Read startup inputs first.
@@ -125,7 +132,7 @@ The deterministic phase is already done. Work from the prepared run directory an
    - run:
 
 ```bash
-python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py $RUN
+python3 ${VALIDATOR_SCRIPT:-$KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py} "$RUN"
 ```
 
    - the validator writes `$RUN/repair-log.json`
@@ -144,14 +151,14 @@ python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py $
    - once the latest `repair-log.json` iteration status is `valid`, write the canonical accepted-run metadata by running:
 
 ```bash
-python3 $KORDINATE_HOME/agents/augur/scripts/finalize_analysis.py $RUN
+python3 ${FINALIZE_SCRIPT:-$KORDINATE_HOME/agents/augur/scripts/finalize_analysis.py} "$RUN"
 ```
 
    - this must produce `$RUN/meta.json` and update the project-level latest pointers for accepted analyses
    - after finalizing, rerun:
 
 ```bash
-python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py $RUN
+python3 ${VALIDATOR_SCRIPT:-$KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py} "$RUN"
 ```
 
    - only finish when:

@@ -26,6 +26,9 @@ def main() -> int:
     startup_path = facts_dir / "startup.json"
     blast_path = run_dir / "blast.json"
     atlas_path = run_dir / "atlas.json"
+    stories_dir = run_dir / "stories"
+    narratives_path = run_dir / "narratives.yaml"
+    meta_path = run_dir / "meta.json"
     concept_evidence_path = facts_dir / "concept-evidence.json"
     story_seeds_path = facts_dir / "story-seeds.json"
     component_seeds_path = facts_dir / "component-seeds.json"
@@ -121,6 +124,9 @@ def main() -> int:
         "symbols_seed_path": str(symbols_seed_path),
         "state_seeds_path": str(state_seeds_path),
         "atlas_path": str(atlas_path),
+        "stories_dir": str(stories_dir),
+        "narratives_path": str(narratives_path),
+        "meta_path": str(meta_path),
         "latest_path": str(analysis_dir.parent / "latest.json"),
         "starter_files": starter_files,
         "startup_directive": startup_directive,

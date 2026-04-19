@@ -1484,7 +1484,28 @@ async function runOpenClaudePrint(prompt: string, options: {
       env.RUN = runDir
       env.ANALYSIS = path.dirname(runDir)
       env.PROJECT_MEM = path.dirname(path.dirname(runDir))
+      env.ATLAS_PATH = path.join(runDir, 'atlas.json')
+      env.STORIES_DIR = path.join(runDir, 'stories')
+      env.NARRATIVES_PATH = path.join(runDir, 'narratives.yaml')
+      env.META_PATH = path.join(runDir, 'meta.json')
     }
+  }
+  if (typeof options.request?.agent_params?.analysis_context === 'object' && options.request.agent_params.analysis_context) {
+    const context = options.request.agent_params.analysis_context as Record<string, unknown>
+    const assignString = (key: string, envName: string): void => {
+      const value = context[key]
+      if (typeof value === 'string' && value.trim()) env[envName] = value.trim()
+    }
+    assignString('atlas_path', 'ATLAS_PATH')
+    assignString('stories_dir', 'STORIES_DIR')
+    assignString('narratives_path', 'NARRATIVES_PATH')
+    assignString('meta_path', 'META_PATH')
+  }
+  if (typeof options.request?.agent_params?.validator_script === 'string' && options.request.agent_params.validator_script.trim()) {
+    env.VALIDATOR_SCRIPT = options.request.agent_params.validator_script.trim()
+  }
+  if (typeof options.request?.agent_params?.finalize_script === 'string' && options.request.agent_params.finalize_script.trim()) {
+    env.FINALIZE_SCRIPT = options.request.agent_params.finalize_script.trim()
   }
   Object.assign(env, withGitSafeDirectoryEnv({}, cwd))
 

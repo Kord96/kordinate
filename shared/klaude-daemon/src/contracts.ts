@@ -153,7 +153,7 @@ function renderStartupGuidance(agentParams?: Record<string, unknown>): string {
   return parts.length > 0 ? `## Startup Guidance\n\n${parts.join('\n')}\n\n` : ''
 }
 
-function renderRuntimeContext(message: RequestMessage, runtimeProfile: RuntimeProfile): string {
+function renderRuntimeContext(agentContract: AgentContract, message: RequestMessage, runtimeProfile: RuntimeProfile): string {
   const analysisContext = message.agent_params?.analysis_context
   const requestedBundleMode = typeof message.agent_params?.bundle_mode === 'string'
     ? resolveBundleMode(message)
@@ -171,10 +171,23 @@ function renderRuntimeContext(message: RequestMessage, runtimeProfile: RuntimePr
     pushLine('Facts dir', context.facts_dir)
     pushLine('Startup manifest', context.startup_path)
     pushLine('Blast file', context.blast_path)
-    pushLine('Seed atlas path', context.atlas_path)
+    pushLine('Atlas output path', context.atlas_path)
+    pushLine('Stories output dir', context.stories_dir)
+    pushLine('Narratives output path', context.narratives_path)
+    pushLine('Meta output path', context.meta_path)
+    if (typeof agentContract.validation?.validatorScript === 'string' && agentContract.validation.validatorScript.trim()) {
+      lines.push(`- Validator script: \`${agentContract.validation.validatorScript.trim()}\``)
+    }
+    if (typeof agentContract.validation?.finalizeScript === 'string' && agentContract.validation.finalizeScript.trim()) {
+      lines.push(`- Finalize script: \`${agentContract.validation.finalizeScript.trim()}\``)
+    }
     if (requestedBundleMode) {
       lines.push(`- Bundle mode: \`${requestedBundleMode}\``)
     }
+    lines.push('- Shell environment already provides `KORDINATE_HOME`, `RUN`, `ANALYSIS`, and `PROJECT_MEM` for this request.')
+    lines.push('- Use those exact variables in Bash commands instead of retyping long absolute paths.')
+    lines.push('- Never invent or rewrite sibling run directories. Write outputs only under the exact `Run dir` above.')
+    lines.push('- The canonical semantic output targets for this request are the exact `Atlas output path`, `Stories output dir`, `Narratives output path`, and `Meta output path` listed above.')
     lines.push('- Start from the prepared run artifacts above before reading repo code.')
     lines.push('- Treat the prepared run dir above as the authoritative home for generated artifacts such as `facts/*`, `atlas.json`, `stories/`, `narratives.yaml`, and `meta.json`.')
     lines.push('- Use `facts/startup.json` and `facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run.')
@@ -233,7 +246,7 @@ export function buildPromptPlan(agentContract: AgentContract, runtimeProfile: Ru
   const runtimePreamble = runtimeProfile.promptPreamble?.trim()
     ? `${runtimeProfile.promptPreamble.trim()}\n\n`
     : ''
-  const runtimeContext = renderRuntimeContext(message, runtimeProfile)
+  const runtimeContext = renderRuntimeContext(agentContract, message, runtimeProfile)
   const startupGuidance = renderStartupGuidance(message.agent_params)
   const resolvedBundleMode = resolveBundleMode(message)
   const promptContext = loadPromptContext(agentContract, message)

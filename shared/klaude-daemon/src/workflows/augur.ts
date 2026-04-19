@@ -485,6 +485,8 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
             run_dir: prepared.runDir,
             analysis_mode: analysisMode,
             bundle_mode: plan.bundle_mode ?? (analysisMode === 'incremental' ? 'selective' : 'holistic'),
+            validator_script: context.agentContract.validation?.validatorScript,
+            finalize_script: context.agentContract.validation?.finalizeScript,
             analysis_context: analysisContext,
             startup_guidance: {
               directive: analysisContext.startup_directive,
