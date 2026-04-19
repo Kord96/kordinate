@@ -1740,6 +1740,41 @@ def validate_story(
 
     # Structure node refs
     for struct in structures:
+        struct_id = str(struct.get("id") or "?")
+        struct_summary = str(struct.get("summary") or "").strip()
+        struct_focus = str(struct.get("focus") or "").strip()
+        if not struct_summary:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' structure '{struct_id}' is missing summary; each visible graph should explain what slice it is showing",
+                "related_entities": [sid, struct_id],
+            })
+        elif len(struct_summary.split()) < 5:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' structure '{struct_id}' has a thin summary; explain the graph more clearly",
+                "related_entities": [sid, struct_id],
+            })
+        if not struct_focus:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' structure '{struct_id}' is missing focus; say what the reader should notice first in the graph",
+                "related_entities": [sid, struct_id],
+            })
+        elif len(struct_focus.split()) < 4:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' structure '{struct_id}' has a thin focus; make the main takeaway more explicit",
+                "related_entities": [sid, struct_id],
+            })
         structure_edges = struct.get("edges", []) or []
         referenced_by_edge = set()
         for edge in structure_edges:

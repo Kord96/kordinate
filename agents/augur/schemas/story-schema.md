@@ -70,6 +70,8 @@ structures:
   - id: "<kebab-case>"
     title: "<Human Readable>"
     type: "<freeform>"
+    summary: "<one sentence — what this graph is showing>"
+    focus: "<one sentence — what the reader should notice first>"
     nodes:
       - id: "<atlas-node-id>"
         children: ["<atlas-node-id>"]
@@ -198,6 +200,7 @@ Rules:
   - `decision` stories should make the decision and trade-off explicit, with structure/flow only as support
 - do not default to always emitting both a structure and a flow; if both appear, there should be a clear reason the story cannot teach the concern without the supporting explainer
 - avoid stories that give equal weight to several unrelated explainers; split them or narrow them instead
+- when a story includes a structure view, give that structure its own `summary` and `focus` so the graph can explain itself without borrowing all of the story prose
 
 ## Grounding Style
 

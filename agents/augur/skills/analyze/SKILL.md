@@ -101,6 +101,7 @@ The deterministic phase is already done. Work from the prepared run directory an
    - make each story teach one primary thing; choose a `primary_mode` and let one explainer dominate
    - write `teaches` as the visible thesis sentence for the story
    - for story flows, make `trigger` and `outcome` explicit instead of leaving completion to be inferred from the final step
+   - for story structures, give each visible graph its own concise `summary` and `focus` so the graph can explain itself without borrowing all of the story summary
    - keep low-signal transport or tool metadata secondary; the main flow presentation should foreground what starts the flow, what it does, and what it produces
    - treat observations, anchor evidence, and rationale as supporting inspection material, not as equal-weight primary sections
    - when a story is flow-first, use `flow` consistently in titles and summaries instead of mixing `path` and `flow`

@@ -18,6 +18,7 @@ Incremental mode means the semantic pass should start from the accepted prior se
    - Preserve or sharpen the story's dominant `primary_mode`; avoid turning one story into several equal-weight explainers.
    - Keep `teaches` as the story thesis and treat evidence/rationale as supporting inspection material.
    - When editing or adding story flows, keep `trigger` and `outcome` explicit instead of relying on final-step inference.
+   - When editing or adding story structures, give each visible graph its own concise `summary` and `focus` instead of relying on the story summary alone.
    - When updating a flow-first story, keep `flow` terminology consistent instead of mixing `path` and `flow`.
    - Avoid casually introducing both `structures` and `flows` into the same story; if the story is `structure`-first or `flow`-first, the non-primary explainer should usually stay absent.
 10. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
