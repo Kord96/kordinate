@@ -268,6 +268,31 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
+  augur-qwen3-30b-a3b:
+    description: Augur specialist pinned to Qwen3 30B-A3B through Fireworks.
+    defaults:
+      flavor: augur
+      image_customization: agent-augur
+      provider: fireworks
+      model: accounts/fireworks/models/qwen3-30b-a3b
+      backend: fireworks
+      backend_base_url: https://api.fireworks.ai/inference/v1
+      secret_env: BACKEND_API_KEY
+      secret_name: fireworks-api
+      secret_key: api-key
+    required_choices:
+      - memory_bundle
+      - runtime_bundle
+    choices:
+      memory_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+      runtime_bundle:
+        allowed:
+          - analyze-holistic-v1
+          - analyze-selective-v1
+
   augur-gpt54:
     description: Augur specialist pinned to GPT-5.4 on the OpenAI API.
     defaults:

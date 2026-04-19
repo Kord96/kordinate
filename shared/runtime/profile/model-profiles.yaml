@@ -54,6 +54,13 @@ profiles:
     credential_ref: kordinate/fireworks/api-key
     notes: Fireworks-hosted Qwen3.6 Plus candidate for model comparison.
 
+  fireworks-qwen3-30b-a3b:
+    profile: openai
+    model: accounts/fireworks/models/qwen3-30b-a3b
+    base_url: https://api.fireworks.ai/inference/v1
+    credential_ref: kordinate/fireworks/api-key
+    notes: Fireworks-hosted Qwen3 30B-A3B candidate for lower-cost day-to-day Augur tests.
+
   gemini-3.1-pro-preview:
     profile: gemini
     model: gemini-3.1-pro-preview

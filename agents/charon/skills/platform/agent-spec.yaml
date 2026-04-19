@@ -633,6 +633,52 @@ agents:
         limits:
           memory: 4Gi
 
+  - name: augur-qwen3-30b-a3b
+    flavor: augur
+    accepted_request_prefixes: ["/analyze"]
+    image:
+      base: agent-base
+      customization: agent-augur
+    runtime:
+      command: ["klaude-daemon"]
+      daemon:
+        kind: openclaude-harness
+        provider: fireworks
+        model: accounts/fireworks/models/qwen3-30b-a3b
+        backend:
+          name: fireworks
+          base_url: https://api.fireworks.ai/inference/v1
+        secret:
+          env: BACKEND_API_KEY
+          name: fireworks-api
+          key: api-key
+      kafka:
+        request_topic: augur-qwen3-30b-a3b
+        reply_required: true
+        request_schema:
+          required: [type, sender, correlation_id, prompt]
+          optional: [working_dir, timeout_ms, reflect, reflection_prompt, agent_params]
+        response_schema:
+          required: [type, sender, correlation_id, status, output]
+          optional: [reflection, errors, metadata]
+      state:
+        agent_home_dir: /kord/agents/augur-qwen3-30b-a3b
+        state_dir: /kord/agents/augur-qwen3-30b-a3b
+    creation:
+      memory_bundle: analyze-selective-v1
+      runtime_bundle: analyze-selective-v1
+    deploy:
+      replicas:
+        min: 1
+        max: 3
+        cooldown: 300
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 4Gi
+
   - name: augur-gpt54
     flavor: augur
     accepted_request_prefixes: ["/analyze"]
