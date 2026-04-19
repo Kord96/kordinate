@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
-import { mkdir, readFile, readdir, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, readdir, rename, rm, stat, symlink, writeFile } from 'node:fs/promises';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import { GoogleGenAI, Type } from '@google/genai';
 import { Codex } from '@openai/codex-sdk';
@@ -191,6 +191,54 @@ function extractBashCommand(input) {
         }
     }
     return undefined;
+}
+function resolveSystemCommand(commandName) {
+    const resolved = spawnSync('bash', ['-lc', `command -v ${commandName}`], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    if (resolved.status !== 0)
+        return undefined;
+    const candidate = resolved.stdout.trim();
+    return candidate || undefined;
+}
+async function ensureOpenClaudeCommandGuards(runtimeHome, request) {
+    const forbiddenTargets = [
+        request?.agent?.validator_script,
+        request?.agent?.root_dir ? path.join(request.agent.root_dir, 'scripts', 'finalize_analysis.py') : undefined,
+    ]
+        .filter((value) => typeof value === 'string' && value.trim().length > 0)
+        .map(value => value.trim());
+    if (forbiddenTargets.length === 0)
+        return undefined;
+    const realPython3 = resolveSystemCommand('python3');
+    if (!realPython3)
+        return undefined;
+    const guardDir = path.join(runtimeHome, '.daemon-tool-guards');
+    await mkdir(guardDir, { recursive: true });
+    const shellQuotedTargets = forbiddenTargets
+        .map(target => `'${target.replace(/'/g, `'\"'\"'`)}'`)
+        .join(' ');
+    const wrapperScript = `#!/usr/bin/env bash
+set -euo pipefail
+REAL_PYTHON='${realPython3.replace(/'/g, `'\"'\"'`)}'
+FORBIDDEN_TARGETS=(${shellQuotedTargets})
+for arg in "$@"; do
+  for forbidden in "\${FORBIDDEN_TARGETS[@]}"; do
+    if [[ "$arg" == "$forbidden" ]]; then
+      echo "Daemon-managed script unavailable in-session: $arg" >&2
+      exit 126
+    fi
+  done
+done
+exec "$REAL_PYTHON" "$@"
+`;
+    for (const commandName of ['python3', 'python']) {
+        const wrapperPath = path.join(guardDir, commandName);
+        await writeFile(wrapperPath, wrapperScript, 'utf8');
+        await chmod(wrapperPath, 0o755);
+    }
+    return guardDir;
 }
 function processOpenClaudeStructuredMessage(message, options) {
     if (message.type === 'assistant' && Array.isArray(message.message?.content)) {
@@ -1314,6 +1362,10 @@ async function runOpenClaudePrint(prompt, options) {
     }
     if (typeof options.request?.agent?.framework_catalog_index === 'string' && options.request.agent.framework_catalog_index.trim()) {
         env.FRAMEWORK_CATALOG_INDEX = options.request.agent.framework_catalog_index.trim();
+    }
+    const guardDir = await ensureOpenClaudeCommandGuards(runtimeHome, options.request);
+    if (guardDir) {
+        env.PATH = `${guardDir}:${env.PATH ?? process.env.PATH ?? ''}`;
     }
     Object.assign(env, withGitSafeDirectoryEnv({}, cwd));
     const args = [

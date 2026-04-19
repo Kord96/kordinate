@@ -167,6 +167,10 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
             "validatorScript": "/app/agents/augur/skills/analyze/scripts/validate_output.py",
             "finalizeScript": "/app/agents/augur/scripts/finalize_analysis.py",
         }
+        validation = agent.get("validation") if isinstance(agent.get("validation"), dict) else {}
+        max_attempts = validation.get("max_attempts", validation.get("maxAttempts"))
+        if isinstance(max_attempts, int):
+            contract["validation"]["maxAttempts"] = max_attempts
 
     return contract
 

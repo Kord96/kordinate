@@ -511,6 +511,8 @@ agents:
   - name: augur-minimax-m2p7
     flavor: augur
     accepted_request_prefixes: ["/analyze"]
+    validation:
+      max_attempts: 3
     image:
       base: agent-base
       customization: agent-augur
