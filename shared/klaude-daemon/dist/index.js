@@ -92,7 +92,7 @@ function markCompletedRequest(correlationId, status) {
     });
 }
 async function publishResponse(message, response) {
-    const payload = buildResponseMessage(AGENT_NAME, message, response);
+    const payload = buildResponseMessage(AGENT_NAME, message, sanitizeResponseForKafka(response));
     log('response_publish_start', {
         agent: AGENT_NAME,
         reply_topic: message.sender,
@@ -109,6 +109,65 @@ async function publishResponse(message, response) {
         correlation_id: message.correlation_id,
         status: response.status,
     });
+}
+const maxKafkaResponseBytes = Number.parseInt(process.env.KLAUDE_DAEMON_MAX_KAFKA_RESPONSE_BYTES ?? '900000', 10);
+function truncateText(value, maxLength) {
+    if (value.length <= maxLength)
+        return value;
+    return `${value.slice(0, Math.max(0, maxLength - 17))}\n\n[truncated by daemon]`;
+}
+function sanitizeResponseForKafka(response) {
+    const payload = {
+        ...response,
+        errors: Array.isArray(response.errors) ? [...response.errors] : response.errors,
+        metadata: response.metadata ? { ...response.metadata } : response.metadata,
+    };
+    let serialized = JSON.stringify(buildResponseMessage(AGENT_NAME, {
+        type: 'request',
+        sender: '',
+        correlation_id: '',
+        prompt: '',
+    }, payload));
+    if (Buffer.byteLength(serialized, 'utf8') <= maxKafkaResponseBytes)
+        return payload;
+    if (Array.isArray(payload.errors)) {
+        payload.errors = payload.errors.map(error => truncateText(String(error), 1200)).slice(0, 8);
+    }
+    if (typeof payload.output === 'string') {
+        payload.output = truncateText(payload.output, 4000);
+    }
+    if (payload.metadata && typeof payload.metadata === 'object') {
+        const metadata = payload.metadata;
+        const runtime = metadata.runtime;
+        if (runtime && typeof runtime === 'object') {
+            const runtimeRecord = { ...runtime };
+            if (typeof runtimeRecord.stdout === 'string')
+                runtimeRecord.stdout = truncateText(runtimeRecord.stdout, 1200);
+            if (typeof runtimeRecord.stderr === 'string')
+                runtimeRecord.stderr = truncateText(runtimeRecord.stderr, 1200);
+            metadata.runtime = runtimeRecord;
+        }
+    }
+    serialized = JSON.stringify(buildResponseMessage(AGENT_NAME, {
+        type: 'request',
+        sender: '',
+        correlation_id: '',
+        prompt: '',
+    }, payload));
+    if (Buffer.byteLength(serialized, 'utf8') <= maxKafkaResponseBytes)
+        return payload;
+    return {
+        ...payload,
+        output: typeof payload.output === 'string' ? truncateText(payload.output, 1200) : payload.output,
+        errors: Array.isArray(payload.errors)
+            ? payload.errors.map(error => truncateText(String(error), 400)).slice(0, 4)
+            : payload.errors,
+        metadata: payload.metadata ? {
+            timing: payload.metadata.timing,
+            telemetry: payload.metadata.telemetry,
+            validation: payload.metadata.validation,
+        } : payload.metadata,
+    };
 }
 async function publishReflection(message, reflection) {
     const payload = buildReflectionEvent({

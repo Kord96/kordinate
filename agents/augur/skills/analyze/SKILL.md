@@ -2,15 +2,15 @@
 name: analyze
 description: >
   Semantic phase for Augur /analyze. Consumes a prepared run directory, follows
-  the runtime-selected mode guidance, writes atlas/stories/narratives, and
-  validates until completion or timeout.
+  the runtime-selected mode guidance, and writes atlas/stories/narratives for
+  daemon-owned validation and finalization.
 ---
 
 # Analyze
 
 Semantic phase for Augur `/analyze`.
 
-The deterministic phase is already done. Work from the prepared run directory and produce semantic outputs that validate.
+The deterministic phase is already done. Work from the prepared run directory and produce semantic outputs for daemon-owned validation and finalization.
 
 Operational path rules for this runtime:
 - the runtime provides one canonical repo root and one canonical output directory for this request
@@ -127,23 +127,12 @@ Operational path rules for this runtime:
    - make the bridge text between adjacent stories explain why the next story follows from the previous one, not just that it comes next
    - use `facts/narrative-seeds.json` when present both to rank which roots, child stories, and flow-bearing stories deserve inclusion and to decide which optional canonical narratives are actually justified for this repo
 
-7. Validate in a loop.
-   - run:
-
-```bash
-python3 "$VALIDATOR_SCRIPT" "<output_dir>"
-```
-
-   - the validator writes `repair-log.json` under the output directory
-   - after each validation attempt, read the latest iteration in `repair-log.json` and use it as the authoritative structured repair record
-   - use `repair_targets` in the latest iteration to prioritize grouped fixes before chasing individual line-level grounding warnings
-   - if validation returns `INVALID` or `NEEDS_REFINEMENT`:
-     - use the latest `repair-log.json` iteration to prioritize open or regressed issues before making edits
-     - fix files in place
-     - run the validator again
-   - only stop when the latest `repair-log.json` iteration status is `valid`
-   - continue until validation passes cleanly or the request times out
+7. Hand control back after writing semantic artifacts.
+   - once `atlas.json`, `stories/`, and `narratives.yaml` are written, stop broad repo exploration
+   - do not search for validator, finalizer, schema, or mirrored-agent paths
+   - do not run validation proactively during the initial semantic generation pass
+   - the daemon/workflow owns validation, repair-loop orchestration, and finalization
+   - if you are resumed later with validator findings, treat that as a repair pass against the same canonical output directory
 
 8. Finalization is orchestrator-owned.
-   - once the latest `repair-log.json` iteration status is `valid`, stop returning to repo exploration
-   - the daemon/workflow will finalize the accepted run and write `meta.json`
+   - the daemon/workflow will validate the run, drive any repair loop, and write `meta.json`

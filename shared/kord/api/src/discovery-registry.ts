@@ -80,8 +80,8 @@ export function createDiscoveryRegistry(input?: {
   function preferredVariantRank(record: AgentDiscoveryRecord): number {
     const logicalName = logicalNameFor(record)
     const preferredByLogical: Record<string, string[]> = {
-      alfred: ['alfred-gpt-oss-20b', 'alfred-deepseek-chat'],
-      augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-31-pro', 'augur-deepseek-reasoner', 'augur-glm5'],
+      alfred: ['alfred-gpt-oss-20b'],
+      augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-31-pro', 'augur-deepseek-v3p2', 'augur-glm5'],
       charon: ['charon-gpt53-codex'],
       generic: ['generic-opus'],
       sauron: ['sauron-gpt53-codex'],

@@ -12,20 +12,6 @@ profiles:
     credential_ref: kordinate/codex-api/api-key
     notes: Standard OpenAI API candidate for comparison.
 
-  deepseek-chat:
-    profile: openai
-    model: deepseek-chat
-    base_url: https://api.deepseek.com
-    credential_ref: kordinate/deepseek/api-key
-    notes: Cheap default for clerical/config agents like Alfred.
-
-  deepseek-reasoner:
-    profile: openai
-    model: deepseek-reasoner
-    base_url: https://api.deepseek.com
-    credential_ref: kordinate/deepseek/api-key
-    notes: Stronger DeepSeek reasoning profile for analysis workloads.
-
   codex-gpt-5.3:
     profile: openai
     model: gpt-5.3-codex

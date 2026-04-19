@@ -19,11 +19,8 @@ models:
   gpt-5.2-codex:
     backend_provider: openai
     runtime: codex-sdk
-  deepseek-chat:
-    backend_provider: deepseek
-    runtime: openclaude-harness
-  deepseek-reasoner:
-    backend_provider: deepseek
+  accounts/fireworks/models/deepseek-v3p2:
+    backend_provider: fireworks
     runtime: openclaude-harness
   gemini-2.5-pro:
     backend_provider: gemini

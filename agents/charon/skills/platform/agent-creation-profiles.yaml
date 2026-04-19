@@ -72,20 +72,6 @@ profiles:
       secret_key: api-key
     required_choices: []
 
-  generic-deepseek-reasoner:
-    description: Generic daemon-backed DeepSeek Reasoner agent.
-    defaults:
-      flavor: generic
-      image_customization: none
-      provider: deepseek
-      model: deepseek-reasoner
-      backend: deepseek
-      backend_base_url: https://api.deepseek.com/v1
-      secret_env: BACKEND_API_KEY
-      secret_name: deepseek-api
-      secret_key: api-key
-    required_choices: []
-
   generic-glm5:
     description: Generic daemon-backed GLM-5 agent through Fireworks.
     defaults:
@@ -218,17 +204,17 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  augur-deepseek-reasoner:
-    description: Augur specialist pinned to DeepSeek Reasoner.
+  augur-deepseek-v3p2:
+    description: Augur specialist pinned to Fireworks DeepSeek V3.2.
     defaults:
       flavor: augur
       image_customization: agent-augur
-      provider: deepseek
-      model: deepseek-reasoner
-      backend: deepseek
-      backend_base_url: https://api.deepseek.com/v1
+      provider: fireworks
+      model: accounts/fireworks/models/deepseek-v3p2
+      backend: fireworks
+      backend_base_url: https://api.fireworks.ai/inference/v1
       secret_env: BACKEND_API_KEY
-      secret_name: deepseek-api
+      secret_name: fireworks-api
       secret_key: api-key
     required_choices:
       - memory_bundle
@@ -337,23 +323,6 @@ profiles:
       memory_bundle: platform-core-v1
       skill_bundle: platform-ops-v1
       runtime_bundle: ops-default-v1
-    required_choices: []
-
-  alfred-deepseek-chat:
-    description: Alfred specialist deployment using the DeepSeek Chat-backed Alfred flavor seed.
-    defaults:
-      flavor: alfred
-      image_customization: none
-      provider: deepseek
-      model: deepseek-chat
-      backend: deepseek
-      backend_base_url: https://api.deepseek.com/v1
-      secret_env: DEEPSEEK_API_KEY
-      secret_name: deepseek-api
-      secret_key: api-key
-      memory_bundle: operate-direct-v1
-      skill_bundle: get-store-core-v1
-      runtime_bundle: direct-action-v1
     required_choices: []
 
   alfred-gpt-oss-20b:
