@@ -410,7 +410,7 @@ function groundingSummaryLooksPopulated(summary: string | undefined): boolean {
 
 function splitWeakModelTimeout(totalMs: number | undefined): { summaryMs: number; writeMs: number } {
   const total = Number.isFinite(totalMs) ? Math.max(120000, totalMs as number) : 900000
-  const summaryMs = Math.min(Math.max(Math.floor(total * 0.45), 240000), 480000)
+  const summaryMs = Math.min(Math.max(Math.floor(total * 0.2), 240000), 300000)
   const writeMs = Math.max(180000, total - summaryMs)
   return { summaryMs, writeMs }
 }
@@ -433,12 +433,13 @@ async function executeWeakModelStagedAnalysis(
   })
   const summaryRun = await runtime.executePrompt({ ...session, providerSessionId: undefined }, summaryRequest)
   const summarySession = updateSessionPromptCache(summaryRun.session, summaryRequest, summaryRun.result)
-  if (summaryRun.result.status !== 'success') {
-    return { session: summarySession, result: summaryRun.result }
-  }
 
   const afterSummary = await readWeakModelGroundingSummary(context.grounding_summary_path)
-  if (!groundingSummaryLooksPopulated(afterSummary) || afterSummary === beforeSummary) {
+  const summaryReady = groundingSummaryLooksPopulated(afterSummary) && afterSummary !== beforeSummary
+  if (!summaryReady) {
+    if (summaryRun.result.status !== 'success') {
+      return { session: summarySession, result: summaryRun.result }
+    }
     return {
       session: summarySession,
       result: {
