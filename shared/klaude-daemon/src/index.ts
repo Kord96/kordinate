@@ -727,7 +727,7 @@ function buildValidationRepairPrompt(input: {
 }
 
 function normalizeValidationMaxAttempts(raw: number | undefined): number {
-  if (!Number.isFinite(raw)) return 3
+  if (!Number.isFinite(raw)) return 10
   return Math.max(1, Math.floor(raw as number))
 }
 

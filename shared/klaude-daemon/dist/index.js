@@ -612,7 +612,7 @@ function buildValidationRepairPrompt(input) {
 }
 function normalizeValidationMaxAttempts(raw) {
     if (!Number.isFinite(raw))
-        return 3;
+        return 10;
     return Math.max(1, Math.floor(raw));
 }
 async function clearValidationLock(targetDir) {
