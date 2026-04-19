@@ -76,7 +76,6 @@ def main() -> int:
                 "Use facts/symbols-seed.json when present to prefer exact mechanism names from high-signal files over abstract paraphrases in observations and summaries.",
                 "Use facts/state-seeds.json when present to tighten state claims around exact structs, enums, maps, config variants, or storage selectors in the grounded files.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
-                "When you need schemas, use the exact canonical files under $KORDINATE_HOME/agents/augur/schemas/.",
             ]
         )
     else:
@@ -100,7 +99,6 @@ def main() -> int:
                 "For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file before finalizing stories.",
                 "Use facts to prioritize where to start, not to cap how broadly you read in full mode.",
                 "Use the run manifest for available fact files instead of guessing optional paths.",
-                "When you need schemas, use the exact canonical files under $KORDINATE_HOME/agents/augur/schemas/.",
             ]
         )
 

@@ -265,6 +265,13 @@ async function passInsert(keyPath, value, cwd) {
         timeoutMs: 10000,
     });
 }
+function isPathInsideRoot(targetPath, rootPath) {
+    if (!rootPath?.trim())
+        return true;
+    const normalizedRoot = path.resolve(rootPath);
+    const normalizedTarget = path.resolve(targetPath);
+    return normalizedTarget === normalizedRoot || normalizedTarget.startsWith(`${normalizedRoot}${path.sep}`);
+}
 function invalidAlfredDirectResult(intent, output) {
     const trimmed = output.trim();
     if (!trimmed) {
@@ -414,7 +421,7 @@ function simpleHarnessTools() {
         },
     ];
 }
-async function executeSimpleHarnessToolCall(call, cwd) {
+async function executeSimpleHarnessToolCall(call, cwd, outputDir) {
     switch (call.name) {
         case 'read_file': {
             const target = String(call.arguments.path ?? '');
@@ -424,6 +431,9 @@ async function executeSimpleHarnessToolCall(call, cwd) {
             const target = String(call.arguments.path ?? '');
             const content = String(call.arguments.content ?? '');
             const absolute = path.isAbsolute(target) ? target : path.join(cwd, target);
+            if (!isPathInsideRoot(absolute, outputDir)) {
+                throw new Error(`write_file denied outside output_dir: ${absolute}`);
+            }
             await mkdir(path.dirname(absolute), { recursive: true });
             await writeFile(absolute, content, 'utf8');
             return 'written';
@@ -682,7 +692,7 @@ async function runToolLoop(request, options) {
                     args = {};
                 }
                 await writeEvent({ type: 'tool_use', id, name, arguments: args });
-                const output = await executeSimpleHarnessToolCall({ id, name, arguments: args }, cwd);
+                const output = await executeSimpleHarnessToolCall({ id, name, arguments: args }, cwd, request.workspace?.output_dir);
                 await writeEvent({ type: 'tool_result', id, name, output: summarizeText(output, 1200) });
                 messages.push({
                     role: 'tool',

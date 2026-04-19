@@ -213,6 +213,28 @@ function validateRequestContract(message) {
     if (agentContract.requiresWorkingDirectory && !message.working_dir) {
         return 'working_dir is required for this agent';
     }
+    if (message.workspace) {
+        if (!message.workspace.working_dir?.trim()) {
+            return 'workspace.working_dir is required when workspace is provided';
+        }
+        if (!message.workspace.output_dir?.trim()) {
+            return 'workspace.output_dir is required when workspace is provided';
+        }
+        if (message.working_dir && message.workspace.working_dir !== message.working_dir) {
+            return 'working_dir must match workspace.working_dir when both are provided';
+        }
+    }
+    if (agentContract.validation?.required && !message.agent) {
+        return 'agent resource contract is required for agents with validation';
+    }
+    if (message.agent) {
+        if (!message.agent.root_dir?.trim()) {
+            return 'agent.root_dir is required when agent resources are provided';
+        }
+        if (agentContract.validation?.required && !message.agent.validator_script?.trim()) {
+            return 'agent.validator_script is required for agents with validation';
+        }
+    }
     const acceptedPrefixes = Array.isArray(agentContract.acceptedRequestPrefixes)
         ? agentContract.acceptedRequestPrefixes.filter(prefix => typeof prefix === 'string' && prefix.trim().length > 0)
         : [];
@@ -239,172 +261,13 @@ function buildRuntimePromptRequest(session, message, overrides) {
         raw_prompt: promptMessage.raw_prompt,
         promptPlan,
         working_dir: promptMessage.working_dir,
+        workspace: promptMessage.workspace,
+        agent: promptMessage.agent,
         timeout_ms: promptMessage.timeout_ms,
         reflect: overrides?.reflect ?? (agentContract.validation?.required ? false : promptMessage.reflect),
         reflection_prompt: promptMessage.reflection_prompt,
         agent_params: promptMessage.agent_params,
         progress: event => publishProgress(message, event),
-    };
-}
-function getWeakModelAnalysisContext(message) {
-    const analysisContext = message.agent_params?.analysis_context;
-    if (!analysisContext || typeof analysisContext !== 'object' || Array.isArray(analysisContext))
-        return undefined;
-    const record = analysisContext;
-    if (record.execution_strategy !== 'staged-weak')
-        return undefined;
-    return {
-        execution_strategy: 'staged-weak',
-        grounding_summary_path: typeof record.grounding_summary_path === 'string' ? record.grounding_summary_path : undefined,
-        write_handoff_path: typeof record.write_handoff_path === 'string' ? record.write_handoff_path : undefined,
-        startup_path: typeof record.startup_path === 'string' ? record.startup_path : undefined,
-        blast_path: typeof record.blast_path === 'string' ? record.blast_path : undefined,
-        atlas_path: typeof record.atlas_path === 'string' ? record.atlas_path : undefined,
-        run_dir: typeof record.run_dir === 'string' ? record.run_dir : undefined,
-    };
-}
-function buildWeakModelSummaryPassPrompt(message, context) {
-    const parts = [
-        'You are in weak-model staged analysis pass 1.',
-        'Goal: gather enough grounded evidence to fill the grounding summary, then stop.',
-        'Breadth reading is allowed, but you must prefer prepared analysis artifacts over re-exploring the repo tree.',
-        'Read the prepared facts first: startup, boundaries, hot-files, component seeds, state seeds, story seeds, narrative seeds, and other fact files already placed in the run directory.',
-        'After reading the prepared facts, do only a small number of targeted source reads needed to resolve the real top-level architecture. Do not keep enumerating directories once the shape is clear.',
-        'As a hard cap, avoid reading more than about 12 repo source files in this summary pass unless a specific unresolved architectural ambiguity requires it.',
-        'Do not write atlas.json, story YAML files, narratives.yaml, or meta.json in this pass.',
-        'Once you are grounded, update the grounding summary file with concrete components, flows, story plan, narrative plan, open questions, and source anchors.',
-        'After the grounding summary is updated, stop immediately so a fresh write pass can begin from that summary.',
-    ];
-    if (context.grounding_summary_path) {
-        parts.push(`Grounding summary path: ${context.grounding_summary_path}`);
-    }
-    if (context.write_handoff_path) {
-        parts.push(`Write handoff path: ${context.write_handoff_path}`);
-    }
-    if (context.blast_path) {
-        parts.push(`Blast file: ${context.blast_path}`);
-    }
-    if (context.startup_path) {
-        parts.push(`Startup manifest: ${context.startup_path}`);
-    }
-    parts.push('', 'Original request:', message.raw_prompt ?? message.prompt);
-    return parts.join('\n');
-}
-function buildWeakModelWritePassPrompt(message, context) {
-    const parts = [
-        'You are in weak-model staged analysis pass 2.',
-        'Goal: write the final Augur artifacts from the grounded synthesis summary.',
-        'Start by re-reading only the write handoff and grounding summary files.',
-        'If the grounding summary still looks like a placeholder or partial scaffold, update grounding-summary.md immediately before doing anything else.',
-        'After the grounding summary is updated, re-read grounding-summary.md and use it as the primary plan for component set, flows, stories, and narratives.',
-        'Then write atlas.json, story YAML files, and narratives.yaml in that order.',
-        'Do not return to broad repo exploration in this pass.',
-        'Do not re-open prepared fact files in this pass unless validation or a concrete write blocker identifies one specific missing detail.',
-        'Do not read additional repo files unless a single explicit grounding gap prevents writing a concrete artifact.',
-        'Prefer finishing slightly imperfect grounded artifacts over drifting back into more analysis.',
-        'After artifacts exist, stop and let validation/finalization run.',
-    ];
-    if (context.write_handoff_path) {
-        parts.push(`Write handoff path: ${context.write_handoff_path}`);
-    }
-    if (context.grounding_summary_path) {
-        parts.push(`Grounding summary path: ${context.grounding_summary_path}`);
-    }
-    if (context.atlas_path) {
-        parts.push(`Atlas output path: ${context.atlas_path}`);
-    }
-    if (context.run_dir) {
-        parts.push(`Stories output dir: ${join(context.run_dir, 'stories')}`);
-        parts.push(`Narratives output path: ${join(context.run_dir, 'narratives.yaml')}`);
-    }
-    parts.push('', 'Original request:', message.raw_prompt ?? message.prompt);
-    return parts.join('\n');
-}
-async function readWeakModelGroundingSummary(pathValue) {
-    if (!pathValue || !(await pathExists(pathValue)))
-        return undefined;
-    try {
-        return await readFile(pathValue, 'utf8');
-    }
-    catch {
-        return undefined;
-    }
-}
-function groundingSummaryLooksPopulated(summary) {
-    if (!summary)
-        return false;
-    const requiredSignals = [
-        '## Top-level Components',
-        '## Key Flows',
-        '## Story Plan',
-        '## Narrative Plan',
-    ];
-    if (!requiredSignals.every(signal => summary.includes(signal)))
-        return false;
-    return !summary.includes('## Top-level Components\n-\n')
-        || !summary.includes('## Key Flows\n-\n')
-        || !summary.includes('## Open Questions\n-\n');
-}
-function splitWeakModelTimeout(totalMs) {
-    const total = Number.isFinite(totalMs) ? Math.max(120000, totalMs) : 900000;
-    const summaryMs = Math.min(Math.max(Math.floor(total * 0.2), 240000), 300000);
-    const writeMs = Math.max(180000, total - summaryMs);
-    return { summaryMs, writeMs };
-}
-async function executeWeakModelStagedAnalysis(session, message, context) {
-    const timeoutSplit = splitWeakModelTimeout(message.timeout_ms);
-    const beforeSummary = await readWeakModelGroundingSummary(context.grounding_summary_path);
-    const summaryMessage = {
-        ...message,
-        timeout_ms: timeoutSplit.summaryMs,
-    };
-    const summaryRequest = buildRuntimePromptRequest({ ...session, providerSessionId: undefined }, summaryMessage, {
-        prompt: buildWeakModelSummaryPassPrompt(message, context),
-        rawPrompt: buildWeakModelSummaryPassPrompt(message, context),
-        reflect: false,
-    });
-    const summaryRun = await runtime.executePrompt({ ...session, providerSessionId: undefined }, summaryRequest);
-    const summarySession = updateSessionPromptCache(summaryRun.session, summaryRequest, summaryRun.result);
-    const afterSummary = await readWeakModelGroundingSummary(context.grounding_summary_path);
-    const summaryReady = groundingSummaryLooksPopulated(afterSummary) && afterSummary !== beforeSummary;
-    if (!summaryReady) {
-        if (summaryRun.result.status !== 'success') {
-            return { session: summarySession, result: summaryRun.result };
-        }
-        return {
-            session: summarySession,
-            result: {
-                status: 'error',
-                output: 'weak-model summary pass did not produce a populated grounding summary',
-                errors: ['weak-model summary pass did not produce a populated grounding summary'],
-                metadata: summaryRun.result.metadata,
-            },
-        };
-    }
-    const writeMessage = {
-        ...message,
-        timeout_ms: timeoutSplit.writeMs,
-    };
-    const writePrompt = buildWeakModelWritePassPrompt(message, context);
-    const writeRequest = buildRuntimePromptRequest({ ...summarySession, providerSessionId: undefined }, writeMessage, {
-        prompt: writePrompt,
-        rawPrompt: writePrompt,
-        reflect: false,
-    });
-    const writeRun = await runtime.executePrompt({ ...summarySession, providerSessionId: undefined }, writeRequest);
-    const mergedUsage = mergeUsageMetadata(summaryRun.result.metadata?.usage, writeRun.result.metadata?.usage);
-    const writeResult = mergedUsage
-        ? {
-            ...writeRun.result,
-            metadata: {
-                ...(writeRun.result.metadata ?? {}),
-                usage: mergedUsage,
-            },
-        }
-        : writeRun.result;
-    return {
-        session: updateSessionPromptCache(writeRun.session, writeRequest, writeResult),
-        result: writeResult,
     };
 }
 function updateSessionPromptCache(session, request, result) {
@@ -908,21 +771,13 @@ async function handleRequest(message, gatewayReceivedAt) {
     }
     else {
         const readySession = await runtime.startOrResumeWarmSession(session);
-        const weakModelContext = getWeakModelAnalysisContext(effectiveMessage);
-        if (weakModelContext) {
-            const run = await executeWeakModelStagedAnalysis(readySession, effectiveMessage, weakModelContext);
-            executedSession = run.session;
-            executedResult = run.result;
-        }
-        else {
-            const runtimeSession = effectiveMessage.agent_params?.run_dir
-                ? { ...readySession, providerSessionId: undefined }
-                : readySession;
-            const runtimeRequest = buildRuntimePromptRequest(runtimeSession, effectiveMessage);
-            const run = await runtime.executePrompt(runtimeSession, runtimeRequest);
-            executedSession = updateSessionPromptCache(run.session, runtimeRequest, run.result);
-            executedResult = run.result;
-        }
+        const runtimeSession = effectiveMessage.agent_params?.run_dir
+            ? { ...readySession, providerSessionId: undefined }
+            : readySession;
+        const runtimeRequest = buildRuntimePromptRequest(runtimeSession, effectiveMessage);
+        const run = await runtime.executePrompt(runtimeSession, runtimeRequest);
+        executedSession = updateSessionPromptCache(run.session, runtimeRequest, run.result);
+        executedResult = run.result;
     }
     samplePeakRss();
     const { session: nextSession, result } = await maybeRunValidationLoop(executedSession, effectiveMessage, executedResult);

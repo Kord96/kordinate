@@ -13,21 +13,23 @@ Semantic phase for Augur `/analyze`.
 The deterministic phase is already done. Work from the prepared run directory and produce semantic outputs that validate.
 
 Operational path rules for this runtime:
-- `KORDINATE_HOME`, `RUN`, `ANALYSIS`, and `PROJECT_MEM` are already set in the shell environment
-- if `VALIDATOR_SCRIPT` or `FINALIZE_SCRIPT` are present, use them directly instead of rediscovering script paths
-- do not manually reconstruct or shorten the run directory
+- the runtime provides one canonical repo root and one canonical output directory for this request
+- if `AGENT_ROOT` is present, treat it as the stable base for agent-owned resources
+- if `VALIDATOR_SCRIPT` is present, use it directly instead of rediscovering validator paths
+- if `CONCEPT_CATALOG_INDEX` or `FRAMEWORK_CATALOG_INDEX` are present, start there for on-demand semantic reads instead of browsing the catalogs
+- do not manually reconstruct or shorten the output directory
 - do not create sibling run directories with guessed suffixes
-- write artifacts only to the exact paths rooted under `$RUN`
+- generated artifacts belong in the canonical output directory for this request
 
-## Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs for this run.
+## Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs in the canonical output directory for this run.
 
 1. Read startup inputs first.
-   - `$RUN/blast.json`
-   - `$RUN/facts/startup.json`
-   - `$RUN/facts/facts-guide.json` when present
-   - `$RUN/facts/index.json`
-   - the small high-signal fact files listed in `$RUN/facts/startup.json`
-   - treat `$RUN/facts/startup.json` and `$RUN/facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run
+   - `blast.json`
+   - `facts/startup.json`
+   - `facts/facts-guide.json` when present
+   - `facts/index.json`
+   - the small high-signal fact files listed in `facts/startup.json`
+   - treat `facts/startup.json` and `facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run
 
 2. Follow the mode-specific instructions already provided by the runtime.
    - the semantic mode is determined before this skill runs
@@ -40,7 +42,7 @@ Operational path rules for this runtime:
    - use `facts/facts-guide.json` when present as the run-specific interpretation guide for deterministic artifacts in this run
    - treat each domain file in `facts/` as a JSON object with metadata and a top-level `facts` array
    - do not force every file under `facts/` into the domain-file shape; manifest, guide, planning-aid, and derived-structure artifacts may use specialized JSON layouts
-   - if you encounter an unfamiliar deterministic artifact shape, read `$KORDINATE_HOME/agents/augur/schemas/facts-schema.md` and `$KORDINATE_HOME/agents/augur/schemas/facts-catalog.json` before interpreting it
+   - if you encounter an unfamiliar deterministic artifact shape and `AGENT_ROOT` is present, read `AGENT_ROOT/schemas/facts-schema.md` and `AGENT_ROOT/schemas/facts-catalog.json` before interpreting it
    - use the bundle-mode guidance as concept-resolution methodology, not as a cue to preload a broad semantic concept bundle
    - use the deterministic phase in three tiers:
      - startup orientation: `blast.json`, `facts/startup.json`, `facts/index.json`, and the small high-signal startup fact files
@@ -49,9 +51,9 @@ Operational path rules for this runtime:
    - after startup orientation, move into repo code before doing more fact reduction
    - if `facts/concept-evidence.json` is present in this run, use it as the primary trigger for concept work: inspect candidate concepts, detector backing, contradictions, and attached semantic questions before letting concepts affect the atlas
    - if `facts/frameworks.json` is present in this run, use it as candidate guidance for framework interpretation: resolve materially relevant frameworks from repo code before letting them change component naming, flow interpretation, or concept activation
-   - when a framework remains materially relevant and ambiguous after reviewing `facts/frameworks.json`, read only the corresponding framework files at `$KORDINATE_HOME/agents/augur/memory/catalog/frameworks/<framework>/framework.md` and `$KORDINATE_HOME/agents/augur/memory/catalog/frameworks/<framework>/semantics.yaml`
-   - when a concept candidate is materially relevant and remains ambiguous after reviewing `facts/concept-evidence.json`, read only the corresponding concept file at `$KORDINATE_HOME/agents/augur/memory/catalog/concepts/<concept>.md`
-   - when you need the detector's intended threshold, semantic questions, or monitoring expectations for a materially relevant concept candidate, read `$KORDINATE_HOME/agents/augur/detectors/facts/concept-evidence/<concept>/meta.yaml`
+   - when a framework remains materially relevant and ambiguous after reviewing `facts/frameworks.json`, start from `FRAMEWORK_CATALOG_INDEX` or `AGENT_ROOT/memory/catalog/frameworks/README.md`, then read only the corresponding framework files you actually need
+   - when a concept candidate is materially relevant and remains ambiguous after reviewing `facts/concept-evidence.json`, start from `CONCEPT_CATALOG_INDEX` or `AGENT_ROOT/memory/catalog/concepts/README.md`, then read only the corresponding concept file you actually need
+   - when you need the detector's intended threshold, semantic questions, or monitoring expectations for a materially relevant concept candidate and `AGENT_ROOT` is present, read `AGENT_ROOT/detectors/facts/concept-evidence/<concept>/meta.yaml`
    - if `facts/story-seeds.json` is present in this run, use it as an advisory planning aid before writing stories or narratives
    - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for system-overview and other teaching paths before finalizing `narratives.yaml`
    - when optional narratives are recommended, prefer the strongest-ranked canonical narrative types instead of keeping a weaker optional path just because it is also allowed
@@ -86,8 +88,7 @@ Operational path rules for this runtime:
      - `health.propagation` for downstream degraded modes, stale results, blocked work, or wider blast radius
    - use `facts/health-candidates.json` as a ranking and contradiction aid for health coverage, but do not treat it as final truth without code grounding
 
-4. Produce `$RUN/atlas.json`.
-   - read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` before writing
+4. Produce `atlas.json` in the canonical output directory.
    - include `metadata` as part of the normal atlas contract
    - when deterministic facts are present, populate at least:
      - `analysis_mode`
@@ -102,8 +103,7 @@ Operational path rules for this runtime:
    - write component `summary` as the ownership/dependency explanation, not a prose copy of the title
    - write flow `summary` as the operating-path explanation, not a repeat of the trigger
 
-5. Produce `$RUN/stories/*.yaml`.
-   - read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` before writing
+5. Produce `stories/*.yaml` in the canonical output directory.
    - keep every story grounded in inspected evidence
    - make each story teach one primary thing; choose a `primary_mode` and let one explainer dominate
    - write `teaches` as the visible thesis sentence for the story
@@ -116,8 +116,7 @@ Operational path rules for this runtime:
    - for `structure`-first and `flow`-first stories, prefer one primary explainer and omit the other unless it is materially necessary
    - mixed `structure` + `flow` stories should usually be reserved for `state` or `failure` stories where both views are needed together
 
-6. Produce `$RUN/narratives.yaml`.
-   - read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` before writing
+6. Produce `narratives.yaml` in the canonical output directory.
    - treat `system-overview` as the canonical repo overview narrative used downstream
    - write `system-overview.description` as a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
    - prefer `Overview` or `Repo Overview` as the human-facing title for `system-overview`
@@ -132,35 +131,19 @@ Operational path rules for this runtime:
    - run:
 
 ```bash
-python3 ${VALIDATOR_SCRIPT:-$KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py} "$RUN"
+python3 "$VALIDATOR_SCRIPT" "<output_dir>"
 ```
 
-   - the validator writes `$RUN/repair-log.json`
+   - the validator writes `repair-log.json` under the output directory
    - after each validation attempt, read the latest iteration in `repair-log.json` and use it as the authoritative structured repair record
    - use `repair_targets` in the latest iteration to prioritize grouped fixes before chasing individual line-level grounding warnings
    - if validation returns `INVALID` or `NEEDS_REFINEMENT`:
-     - read only the schema for the failing artifact
-     - read `$KORDINATE_HOME/agents/augur/schemas/repair-log-schema.md` if you need the repair-log contract
      - use the latest `repair-log.json` iteration to prioritize open or regressed issues before making edits
      - fix files in place
      - run the validator again
    - only stop when the latest `repair-log.json` iteration status is `valid`
    - continue until validation passes cleanly or the request times out
 
-8. Finalize the accepted run.
-   - once the latest `repair-log.json` iteration status is `valid`, write the canonical accepted-run metadata by running:
-
-```bash
-python3 ${FINALIZE_SCRIPT:-$KORDINATE_HOME/agents/augur/scripts/finalize_analysis.py} "$RUN"
-```
-
-   - this must produce `$RUN/meta.json` and update the project-level latest pointers for accepted analyses
-   - after finalizing, rerun:
-
-```bash
-python3 ${VALIDATOR_SCRIPT:-$KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py} "$RUN"
-```
-
-   - only finish when:
-     - the latest `repair-log.json` iteration status is still `valid`
-     - and `$RUN/meta.json` exists and validates cleanly
+8. Finalization is orchestrator-owned.
+   - once the latest `repair-log.json` iteration status is `valid`, stop returning to repo exploration
+   - the daemon/workflow will finalize the accepted run and write `meta.json`

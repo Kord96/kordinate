@@ -154,57 +154,42 @@ function renderStartupGuidance(agentParams?: Record<string, unknown>): string {
 }
 
 function renderRuntimeContext(agentContract: AgentContract, message: RequestMessage, runtimeProfile: RuntimeProfile): string {
-  const analysisContext = message.agent_params?.analysis_context
+  const workspace = message.workspace
+  const agent = message.agent
   const requestedBundleMode = typeof message.agent_params?.bundle_mode === 'string'
     ? resolveBundleMode(message)
     : undefined
   const toolGuidance = runtimeProfile.toolGuidance ?? []
   const runArtifactGuidance = runtimeProfile.runArtifactGuidance ?? []
-  if (analysisContext && typeof analysisContext === 'object' && !Array.isArray(analysisContext)) {
-    const context = analysisContext as Record<string, unknown>
+  if (workspace && typeof workspace.working_dir === 'string' && typeof workspace.output_dir === 'string') {
     const lines: string[] = []
-    const pushLine = (label: string, value: unknown): void => {
-      if (typeof value === 'string' && value.trim()) lines.push(`- ${label}: \`${value.trim()}\``)
+    lines.push(`- Working directory: \`${workspace.working_dir}\``)
+    lines.push(`- Output directory: \`${workspace.output_dir}\``)
+    if (typeof agent?.root_dir === 'string' && agent.root_dir.trim()) {
+      lines.push(`- Agent root: \`${agent.root_dir.trim()}\``)
     }
-    pushLine('Mode', context.mode)
-    pushLine('Run dir', context.run_dir)
-    pushLine('Facts dir', context.facts_dir)
-    pushLine('Startup manifest', context.startup_path)
-    pushLine('Blast file', context.blast_path)
-    pushLine('Atlas output path', context.atlas_path)
-    pushLine('Stories output dir', context.stories_dir)
-    pushLine('Narratives output path', context.narratives_path)
-    pushLine('Meta output path', context.meta_path)
-    pushLine('Grounding summary path', context.grounding_summary_path)
-    pushLine('Write handoff path', context.write_handoff_path)
-    if (typeof agentContract.validation?.validatorScript === 'string' && agentContract.validation.validatorScript.trim()) {
-      lines.push(`- Validator script: \`${agentContract.validation.validatorScript.trim()}\``)
+    if (typeof agent?.validator_script === 'string' && agent.validator_script.trim()) {
+      lines.push(`- Validator script: \`${agent.validator_script.trim()}\``)
     }
-    if (typeof agentContract.validation?.finalizeScript === 'string' && agentContract.validation.finalizeScript.trim()) {
-      lines.push(`- Finalize script: \`${agentContract.validation.finalizeScript.trim()}\``)
+    if (typeof agent?.concept_catalog_index === 'string' && agent.concept_catalog_index.trim()) {
+      lines.push(`- Concept catalog entrypoint: \`${agent.concept_catalog_index.trim()}\``)
+    }
+    if (typeof agent?.framework_catalog_index === 'string' && agent.framework_catalog_index.trim()) {
+      lines.push(`- Framework catalog entrypoint: \`${agent.framework_catalog_index.trim()}\``)
     }
     if (requestedBundleMode) {
       lines.push(`- Bundle mode: \`${requestedBundleMode}\``)
     }
-    lines.push('- Shell environment already provides `KORDINATE_HOME`, `RUN`, `ANALYSIS`, and `PROJECT_MEM` for this request.')
-    lines.push('- Use those exact variables in Bash commands instead of retyping long absolute paths.')
-    lines.push('- Never invent or rewrite sibling run directories. Write outputs only under the exact `Run dir` above.')
-    lines.push('- The canonical semantic output targets for this request are the exact `Atlas output path`, `Stories output dir`, `Narratives output path`, and `Meta output path` listed above.')
-    lines.push('- Start from the prepared run artifacts above before reading repo code.')
-    lines.push('- Treat the prepared run dir above as the authoritative home for generated artifacts such as `facts/*`, `atlas.json`, `stories/`, `narratives.yaml`, and `meta.json`.')
-    lines.push('- Use `facts/startup.json` and `facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run.')
+    lines.push('- Start in the working directory and treat it as the authoritative repo root for analysis and edits.')
+    lines.push('- Generated artifacts belong in the output directory.')
+    lines.push('- Use the provided validator path and catalog entrypoints directly instead of discovering alternate internal paths.')
+    lines.push('- Use the prepared run artifacts under the output directory for startup orientation before broad repo reading.')
+    lines.push('- Treat `facts/startup.json` and `facts/index.json` under the output directory as the authoritative manifest for prepared deterministic fact domains in this run.')
+    lines.push('- Use the agent root as the stable base for agent-owned resources and the provided catalog entrypoints for on-demand concept/framework reads.')
     lines.push('- Use deterministic artifacts for startup orientation first, then move into repo code for the main architectural synthesis.')
     lines.push('- Revisit larger supporting fact domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.')
     lines.push('- Read repo code through fact-selected files, architecture entrypoints, adjacent implementation, or concrete validation gaps.')
     lines.push('- Do not begin with repo-root listings or metadata-file discovery.')
-    if (context.execution_strategy === 'staged-weak') {
-      lines.push('- Execution strategy: `staged-weak`.')
-      lines.push('- Breadth reading is allowed until you are sufficiently grounded.')
-      lines.push('- Once grounded, stop broad repo exploration and update the exact `Grounding summary path` above.')
-      lines.push('- After any compaction, re-read the `Write handoff path`, the `Grounding summary path`, starter facts, and schema files before doing new repo reads.')
-      lines.push('- In staged-weak mode, write artifacts in this order: atlas, stories, narratives, then finalize.')
-      lines.push('- Do not return to broad repo exploration after switching into write mode unless validation identifies a specific grounding gap.')
-    }
     lines.push('- Follow the runtime-harness tool schema directly instead of assuming specific tool names from prior runs or other runtimes.')
     for (const guidance of toolGuidance) {
       lines.push(`- ${guidance}`)
@@ -223,8 +208,8 @@ function renderRuntimeContext(agentContract: AgentContract, message: RequestMess
     ? message.agent_params.run_dir.trim()
     : ''
   if (runDir) {
-    runtimeHints.push(`Prepared analysis run: use \`${runDir}\` as the authoritative semantic analysis directory for this request.`)
-    runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\`.`)
+    runtimeHints.push(`Prepared analysis run: use \`${runDir}\` as the authoritative output directory for this request.`)
+    runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\` for prepared run artifacts.`)
   }
   if (requestedBundleMode) {
     runtimeHints.push(`Bundle mode hint: use \`${requestedBundleMode}\` prompt preload assumptions for this request.`)

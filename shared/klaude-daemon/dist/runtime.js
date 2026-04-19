@@ -835,6 +835,13 @@ function withGitSafeDirectoryEnv(baseEnv, repoPath) {
         GIT_CONFIG_VALUE_0: repoPath,
     };
 }
+function isPathInsideRoot(targetPath, rootPath) {
+    if (!rootPath?.trim())
+        return true;
+    const normalizedRoot = path.resolve(rootPath);
+    const normalizedTarget = path.resolve(targetPath);
+    return normalizedTarget === normalizedRoot || normalizedTarget.startsWith(`${normalizedRoot}${path.sep}`);
+}
 async function runBashCommand(options) {
     let lastError;
     for (const shellPath of shellCandidates()) {
@@ -1120,6 +1127,10 @@ async function executeGeminiSdkToolCall(call, cwd, env, artifactContext) {
             const content = String(call.arguments.content ?? '');
             const normalizedTarget = normalizeRunArtifactReference(target, artifactContext);
             const absolute = path.isAbsolute(normalizedTarget) ? normalizedTarget : path.join(cwd, normalizedTarget);
+            const outputDir = env?.OUTPUT_DIR;
+            if (!isPathInsideRoot(absolute, outputDir)) {
+                throw new Error(`write_file denied outside output_dir: ${absolute}`);
+            }
             await writeFileAtomic(absolute, content);
             return 'written';
         }
@@ -1286,35 +1297,23 @@ async function runOpenClaudePrint(prompt, options) {
     env.CLAUDE_CODE_USE_OPENAI = '1';
     env.HOME = runtimeHome;
     env.KORDINATE_HOME = process.env.KORDINATE_HOME ?? '/app';
-    if (typeof options.request?.agent_params?.run_dir === 'string') {
-        const runDir = options.request.agent_params.run_dir.trim();
-        if (runDir) {
-            env.RUN = runDir;
-            env.ANALYSIS = path.dirname(runDir);
-            env.PROJECT_MEM = path.dirname(path.dirname(runDir));
-            env.ATLAS_PATH = path.join(runDir, 'atlas.json');
-            env.STORIES_DIR = path.join(runDir, 'stories');
-            env.NARRATIVES_PATH = path.join(runDir, 'narratives.yaml');
-            env.META_PATH = path.join(runDir, 'meta.json');
-        }
+    if (typeof options.request?.workspace?.working_dir === 'string' && options.request.workspace.working_dir.trim()) {
+        env.WORKING_DIR = options.request.workspace.working_dir.trim();
     }
-    if (typeof options.request?.agent_params?.analysis_context === 'object' && options.request.agent_params.analysis_context) {
-        const context = options.request.agent_params.analysis_context;
-        const assignString = (key, envName) => {
-            const value = context[key];
-            if (typeof value === 'string' && value.trim())
-                env[envName] = value.trim();
-        };
-        assignString('atlas_path', 'ATLAS_PATH');
-        assignString('stories_dir', 'STORIES_DIR');
-        assignString('narratives_path', 'NARRATIVES_PATH');
-        assignString('meta_path', 'META_PATH');
+    if (typeof options.request?.workspace?.output_dir === 'string' && options.request.workspace.output_dir.trim()) {
+        env.OUTPUT_DIR = options.request.workspace.output_dir.trim();
     }
-    if (typeof options.request?.agent_params?.validator_script === 'string' && options.request.agent_params.validator_script.trim()) {
-        env.VALIDATOR_SCRIPT = options.request.agent_params.validator_script.trim();
+    if (typeof options.request?.agent?.root_dir === 'string' && options.request.agent.root_dir.trim()) {
+        env.AGENT_ROOT = options.request.agent.root_dir.trim();
     }
-    if (typeof options.request?.agent_params?.finalize_script === 'string' && options.request.agent_params.finalize_script.trim()) {
-        env.FINALIZE_SCRIPT = options.request.agent_params.finalize_script.trim();
+    if (typeof options.request?.agent?.validator_script === 'string' && options.request.agent.validator_script.trim()) {
+        env.VALIDATOR_SCRIPT = options.request.agent.validator_script.trim();
+    }
+    if (typeof options.request?.agent?.concept_catalog_index === 'string' && options.request.agent.concept_catalog_index.trim()) {
+        env.CONCEPT_CATALOG_INDEX = options.request.agent.concept_catalog_index.trim();
+    }
+    if (typeof options.request?.agent?.framework_catalog_index === 'string' && options.request.agent.framework_catalog_index.trim()) {
+        env.FRAMEWORK_CATALOG_INDEX = options.request.agent.framework_catalog_index.trim();
     }
     Object.assign(env, withGitSafeDirectoryEnv({}, cwd));
     const args = [
@@ -1766,13 +1765,15 @@ export class GeminiSdkAdapter {
         const toolEnv = {
             AGENT_HOME_DIR: runtimeHome,
             KORDINATE_HOME: process.env.KORDINATE_HOME ?? '/app',
-            ROOT: request.working_dir ?? this.workingDirectory ?? this.homeDirectory ?? process.cwd(),
-            REPO_ROOT: request.working_dir ?? this.workingDirectory ?? this.homeDirectory ?? process.cwd(),
+            ...(request.agent?.root_dir ? { AGENT_ROOT: request.agent.root_dir } : {}),
+            ...(request.agent?.concept_catalog_index ? { CONCEPT_CATALOG_INDEX: request.agent.concept_catalog_index } : {}),
+            ...(request.agent?.framework_catalog_index ? { FRAMEWORK_CATALOG_INDEX: request.agent.framework_catalog_index } : {}),
+            ...(request.agent?.validator_script ? { VALIDATOR_SCRIPT: request.agent.validator_script } : {}),
+            WORKING_DIR: request.workspace?.working_dir ?? request.working_dir ?? this.workingDirectory ?? this.homeDirectory ?? process.cwd(),
             ...(runDir
                 ? {
+                    OUTPUT_DIR: request.workspace?.output_dir ?? runDir,
                     RUN: runDir,
-                    ANALYSIS: path.dirname(runDir),
-                    PROJECT_MEM: path.dirname(path.dirname(runDir)),
                 }
                 : {}),
         };

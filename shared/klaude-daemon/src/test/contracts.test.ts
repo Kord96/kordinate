@@ -141,13 +141,17 @@ test('buildPromptPlan keeps cacheable prefix separate from task prompt and runti
     sender: 'agent-a',
     correlation_id: 'corr-1',
     prompt: 'Analyze only the auth flow',
-    working_dir: '/kord/repos/kordinate',
+    workspace: {
+      working_dir: '/kord/repos/kordinate',
+      output_dir: '/tmp/run',
+    },
   })
 
   assert.match(promptPlan.cacheablePrefix ?? '', /You are Augur/)
   assert.doesNotMatch(promptPlan.cacheablePrefix ?? '', /Analyze only the auth flow/)
   assert.match(promptPlan.dynamicPrompt, /Analyze only the auth flow/)
-  assert.match(promptPlan.dynamicPrompt, /Working directory hint:/)
+  assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/repos\/kordinate`/)
+  assert.match(promptPlan.dynamicPrompt, /Output directory: `\/tmp\/run`/)
 })
 
 test('buildPromptPlan renders startup guidance outside the cached prefix', () => {
@@ -170,33 +174,33 @@ test('buildPromptPlan renders startup guidance outside the cached prefix', () =>
   assert.match(promptPlan.dynamicPrompt, /\/tmp\/blast\.json/)
 })
 
-test('buildPromptPlan renders staged weak-model runtime guidance when requested', () => {
+test('buildPromptPlan renders workspace contract and runtime guidance when requested', () => {
   const promptPlan = buildPromptPlan(augurContract(), genericRuntimeProfile(), {
     type: 'request',
     sender: 'agent-a',
     correlation_id: 'corr-1',
     prompt: 'Analyze the repo',
+    workspace: {
+      working_dir: '/kord/repos/repo',
+      output_dir: '/tmp/run',
+    },
+    agent: {
+      root_dir: '/app/agents/augur',
+      validator_script: '/app/agents/augur/skills/analyze/scripts/validate_output.py',
+      concept_catalog_index: '/app/agents/augur/memory/catalog/concepts/README.md',
+      framework_catalog_index: '/app/agents/augur/memory/catalog/frameworks/README.md',
+    },
     agent_params: {
       bundle_mode: 'selective',
-      analysis_context: {
-        mode: 'full',
-        run_dir: '/tmp/run',
-        facts_dir: '/tmp/run/facts',
-        startup_path: '/tmp/run/facts/startup.json',
-        blast_path: '/tmp/run/blast.json',
-        atlas_path: '/tmp/run/atlas.json',
-        stories_dir: '/tmp/run/stories',
-        narratives_path: '/tmp/run/narratives.yaml',
-        meta_path: '/tmp/run/meta.json',
-        grounding_summary_path: '/tmp/run/grounding-summary.md',
-        write_handoff_path: '/tmp/run/write-handoff.md',
-        execution_strategy: 'staged-weak',
-      },
     },
   })
 
-  assert.match(promptPlan.dynamicPrompt, /Execution strategy: `staged-weak`/)
-  assert.match(promptPlan.dynamicPrompt, /Grounding summary path: `\/tmp\/run\/grounding-summary\.md`/)
-  assert.match(promptPlan.dynamicPrompt, /Write handoff path: `\/tmp\/run\/write-handoff\.md`/)
-  assert.match(promptPlan.dynamicPrompt, /write artifacts in this order: atlas, stories, narratives, then finalize/i)
+  assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/repos\/repo`/)
+  assert.match(promptPlan.dynamicPrompt, /Output directory: `\/tmp\/run`/)
+  assert.match(promptPlan.dynamicPrompt, /Agent root: `\/app\/agents\/augur`/)
+  assert.match(promptPlan.dynamicPrompt, /Validator script: `\/app\/agents\/augur\/skills\/analyze\/scripts\/validate_output\.py`/)
+  assert.match(promptPlan.dynamicPrompt, /Concept catalog entrypoint: `\/app\/agents\/augur\/memory\/catalog\/concepts\/README\.md`/)
+  assert.match(promptPlan.dynamicPrompt, /Framework catalog entrypoint: `\/app\/agents\/augur\/memory\/catalog\/frameworks\/README\.md`/)
+  assert.doesNotMatch(promptPlan.dynamicPrompt, /Grounding summary path:/)
+  assert.doesNotMatch(promptPlan.dynamicPrompt, /Write handoff path:/)
 })

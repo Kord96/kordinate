@@ -25,11 +25,11 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
    - reject provisional roots anchored mainly in tests, docs, examples, or client-only paths
    - if strong engine, storage, runtime, or coordination slices exist, do not let bootstrap absorb a full top-level root unless it is genuinely the dominant system concern
    - on large repos, make sure at least one top-level root is anchored in deeper runtime or storage internals when deterministic seeds provide one
-11. Just before writing or rewriting `$RUN/atlas.json`, read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` and follow it exactly.
+11. Just before writing or rewriting `atlas.json`, follow the active atlas contract exactly.
    - Emit `metadata` as part of the atlas, not as an optional afterthought.
    - Use deterministic stack evidence to summarize `stack_summary`, `languages`, compact resolved `frameworks`, and `technologies`.
    - Keep component and flow `description` fields terse enough for atlas cards, but add `summary` where readers need a fuller architectural explanation in drilldown views.
-12. Just before writing `stories/*.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` and follow it exactly.
+12. Just before writing `stories/*.yaml`, follow the active story contract exactly.
     - Give every story one dominant `primary_mode` and one clear teaching thesis in `teaches`.
     - For story flows, make both `trigger` and `outcome` explicit; do not rely on the UI to infer completion from the last step.
     - For story structures, give each visible graph its own concise `summary` and `focus`; do not rely on the story summary alone to explain the graph.
@@ -37,7 +37,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
     - For flow-first stories, make the primary flow explain trigger, major boundaries, outcome, and why it matters to the story.
     - Do not make mixed structure+flow stories the default. For `structure`-first and `flow`-first stories, omit the non-primary explainer unless the concern truly needs both.
     - Prefer `state` or `failure` stories when the story legitimately needs both a structural boundary view and an operating sequence.
-13. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
+13. Just before writing `narratives.yaml`, follow the active narratives contract exactly.
     - Treat `system-overview` as the repo overview path.
     - Write `system-overview.description` as a compact "how it works" synopsis, not a label: usually 3-4 sentences naming the main slices, dominant flow, and why the sequence teaches the architecture.
     - Prefer `Overview` or `Repo Overview` as the title unless a more specific repo-wide overview title is clearly better.

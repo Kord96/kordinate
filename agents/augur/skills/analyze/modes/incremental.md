@@ -13,15 +13,15 @@ Incremental mode means the semantic pass should start from the accepted prior se
 5. If `frameworks.json` is present and framework interpretation is relevant to the changed slice, resolve those framework candidates before letting framework semantics change the updated atlas or stories.
 6. When needed, read the accepted base analysis referenced by `base_analysis_dir`.
 7. Read only the repo files needed to verify the changed slice and its architectural impact.
-8. Just before writing or rewriting `$RUN/atlas.json`, read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` and follow it exactly.
-9. Just before writing `stories/*.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` and follow it exactly.
+8. Just before writing or rewriting `atlas.json`, follow the active atlas contract exactly.
+9. Just before writing `stories/*.yaml`, follow the active story contract exactly.
    - Preserve or sharpen the story's dominant `primary_mode`; avoid turning one story into several equal-weight explainers.
    - Keep `teaches` as the story thesis and treat evidence/rationale as supporting inspection material.
    - When editing or adding story flows, keep `trigger` and `outcome` explicit instead of relying on final-step inference.
    - When editing or adding story structures, give each visible graph its own concise `summary` and `focus` instead of relying on the story summary alone.
    - When updating a flow-first story, keep `flow` terminology consistent instead of mixing `path` and `flow`.
    - Avoid casually introducing both `structures` and `flows` into the same story; if the story is `structure`-first or `flow`-first, the non-primary explainer should usually stay absent.
-10. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
+10. Just before writing `narratives.yaml`, follow the active narratives contract exactly.
 11. Update outputs under `$RUN`, preserving unaffected structure where possible.
 
 ## Incremental-Mode Expectations
@@ -39,4 +39,4 @@ Incremental mode means the semantic pass should start from the accepted prior se
 - If `control-hotspots.json` or `state-access-summary.json` are present and touched by the changed slice, use them as evidence for operating-model or boundary-story selection rather than restating them directly.
 - If a changed-slice framework candidate remains ambiguous, read only the specific framework catalog files for that framework instead of widening framework context broadly.
 - If a changed-slice concept candidate remains ambiguous, read only the specific concept file and detector `meta.yaml` for that concept instead of widening concept context broadly.
-- The available tools in this runtime are `Read`, `Edit`, and `Bash`. Use `Bash` with `find`, `rg`, `jq`, or `python` for discovery or filtering instead of assuming `Glob` or `Grep` tools exist.
+- Follow the runtime's advertised tool schema instead of assuming specific tool names from other runtimes.

@@ -16,7 +16,15 @@ def read(path: Path) -> str:
 
 def extract_core_sections() -> str:
     text = read(SKILL)
-    start = text.find("Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs for this run.")
+    headings = [
+        "## Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs in the canonical output directory for this run.",
+        "## Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs for this run.",
+    ]
+    start = -1
+    for heading in headings:
+        start = text.find(heading)
+        if start != -1:
+            break
     if start == -1:
         raise RuntimeError("Failed to locate stable analyze skill sections.")
     return text[start:].rstrip()
