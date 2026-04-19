@@ -856,7 +856,11 @@ async function handleRequest(
   const samplePeakRss = (): void => {
     peakRssBytes = Math.max(peakRssBytes, process.memoryUsage().rss)
   }
-  const contractError = validateRequestContract(message)
+  const preparedMessage: RequestMessage = message
+  const session = sessionForMessage(message)
+  const workflowResult = await agentWorkflowHooks?.beforeRuntime?.(preparedMessage)
+  const effectiveMessage = workflowResult?.runtimeMessage ?? preparedMessage
+  const contractError = validateRequestContract(effectiveMessage)
   if (contractError) {
     const daemonCompletedAt = Date.now()
     const telemetry = buildTelemetryMetadata({
@@ -893,16 +897,12 @@ async function handleRequest(
       errors: [contractError],
     }
   }
-  const preparedMessage: RequestMessage = message
-  const session = sessionForMessage(message)
-  await ensureGitSafeDirectory(preparedMessage.working_dir)
+  await ensureGitSafeDirectory(effectiveMessage.working_dir)
   samplePeakRss()
 
   const executeStartAt = Date.now()
   let executedSession = session
   let executedResult: RuntimeResult
-  const workflowResult = await agentWorkflowHooks?.beforeRuntime?.(preparedMessage)
-  const effectiveMessage = workflowResult?.runtimeMessage ?? preparedMessage
   if (workflowResult?.skipResult) {
     executedResult = workflowResult.skipResult
   } else {
