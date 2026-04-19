@@ -371,11 +371,14 @@ function buildWeakModelWritePassPrompt(message: RequestMessage, context: WeakMod
   const parts = [
     'You are in weak-model staged analysis pass 2.',
     'Goal: write the final Augur artifacts from the grounded synthesis summary.',
-    'Start by re-reading the write handoff and grounding summary files.',
-    'Use the grounding summary as the primary plan for component set, flows, stories, and narratives.',
-    'Write atlas.json, story YAML files, and narratives.yaml now.',
+    'Start by re-reading only the write handoff and grounding summary files.',
+    'If the grounding summary still looks like a placeholder or partial scaffold, update grounding-summary.md immediately before doing anything else.',
+    'After the grounding summary is updated, re-read grounding-summary.md and use it as the primary plan for component set, flows, stories, and narratives.',
+    'Then write atlas.json, story YAML files, and narratives.yaml in that order.',
     'Do not return to broad repo exploration in this pass.',
-    'Only read an additional repo file if a very specific grounding gap blocks artifact writing.',
+    'Do not re-open prepared fact files in this pass unless validation or a concrete write blocker identifies one specific missing detail.',
+    'Do not read additional repo files unless a single explicit grounding gap prevents writing a concrete artifact.',
+    'Prefer finishing slightly imperfect grounded artifacts over drifting back into more analysis.',
     'After artifacts exist, stop and let validation/finalization run.',
   ]
   if (context.write_handoff_path) {
