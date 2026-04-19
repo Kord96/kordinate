@@ -8,6 +8,8 @@ import type { AgentContract, RequestMessage, RuntimeResult } from '../types.js'
 type DaemonConfigLike = {
   executionProfile: {
     homeDirectory?: string
+    provider: string
+    model: string
   }
 }
 
@@ -86,6 +88,86 @@ type AugurAnalysisContext = {
   atlas_path: string
   starter_files: string[]
   startup_directive: string
+  execution_strategy?: 'default' | 'staged-weak'
+  grounding_summary_path?: string
+  write_handoff_path?: string
+}
+
+function isWeakAugurModel(context: WorkflowContext): boolean {
+  const provider = context.daemonConfig.executionProfile.provider.toLowerCase()
+  const model = context.daemonConfig.executionProfile.model.toLowerCase()
+  return provider.includes('deepseek')
+    || model.includes('qwen')
+    || model.includes('glm')
+    || model.includes('deepseek')
+}
+
+async function prepareWeakModelHandoffFiles(
+  analysisContext: AugurAnalysisContext,
+  bundleMode: string,
+): Promise<Pick<AugurAnalysisContext, 'execution_strategy' | 'grounding_summary_path' | 'write_handoff_path' | 'starter_files' | 'startup_directive'>> {
+  const groundingSummaryPath = join(analysisContext.run_dir, 'grounding-summary.md')
+  const writeHandoffPath = join(analysisContext.run_dir, 'write-handoff.md')
+  const groundingTemplate = [
+    '# Grounding Summary',
+    '',
+    'Fill this file once breadth reading is sufficient.',
+    '',
+    '## Top-level Components',
+    '-',
+    '',
+    '## Key Flows',
+    '-',
+    '',
+    '## Story Plan',
+    '- root stories:',
+    '- child stories:',
+    '',
+    '## Narrative Plan',
+    '- system-overview:',
+    '- optional narrative:',
+    '',
+    '## Open Questions',
+    '-',
+    '',
+    '## Source Anchors',
+    '-',
+    '',
+    `Bundle mode: ${bundleMode}`,
+    `Atlas path: ${analysisContext.atlas_path}`,
+    `Stories dir: ${join(analysisContext.run_dir, 'stories')}`,
+    `Narratives path: ${join(analysisContext.run_dir, 'narratives.yaml')}`,
+  ].join('\n')
+  const handoffText = [
+    '# Weak-Model Write Handoff',
+    '',
+    'Breadth reading is allowed until you have enough grounded evidence.',
+    'After that, stop opening new repo files unless a specific validation gap requires it.',
+    '',
+    '## Required sequence',
+    `1. Update \`${groundingSummaryPath}\` with the final grounded synthesis plan.`,
+    `2. Re-read \`${groundingSummaryPath}\` before writing artifacts.`,
+    `3. Write \`${analysisContext.atlas_path}\`.`,
+    `4. Write story files under \`${join(analysisContext.run_dir, 'stories')}\`.`,
+    `5. Write \`${join(analysisContext.run_dir, 'narratives.yaml')}\`.`,
+    '6. Run validation/finalization only after all artifacts exist.',
+    '',
+    '## Compaction recovery',
+    `If the session compacts, resume from \`${groundingSummaryPath}\`, \`${writeHandoffPath}\`, starter facts, and schema files before doing any new broad repo reading.`,
+  ].join('\n')
+  await writeFile(groundingSummaryPath, `${groundingTemplate}\n`, 'utf8')
+  await writeFile(writeHandoffPath, `${handoffText}\n`, 'utf8')
+  return {
+    execution_strategy: 'staged-weak',
+    grounding_summary_path: groundingSummaryPath,
+    write_handoff_path: writeHandoffPath,
+    starter_files: [
+      writeHandoffPath,
+      groundingSummaryPath,
+      ...analysisContext.starter_files,
+    ],
+    startup_directive: `${analysisContext.startup_directive} For this weaker model path, breadth-read until grounded, then update the grounding summary and switch permanently into write mode.`,
+  }
 }
 
 async function pathExists(path: string): Promise<boolean> {
@@ -476,7 +558,28 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
       if (!workingDir) {
         throw new Error('working_dir is required for Augur semantic preparation')
       }
-      const analysisContext = await buildAugurAnalysisContext(context, workingDir, prepared.project, prepared.runDir, analysisMode)
+      const weakModel = isWeakAugurModel(context)
+      const resolvedBundleMode = weakModel
+        ? 'selective'
+        : plan.bundle_mode ?? (analysisMode === 'incremental' ? 'selective' : 'holistic')
+      let analysisContext = await buildAugurAnalysisContext(context, workingDir, prepared.project, prepared.runDir, analysisMode)
+      if (weakModel) {
+        analysisContext = {
+          ...analysisContext,
+          ...(await prepareWeakModelHandoffFiles(analysisContext, resolvedBundleMode)),
+        }
+        await context.publishProgress(message, {
+          source: 'agent-daemon',
+          kind: 'augur.weak_model_profile',
+          payload: {
+            model: context.daemonConfig.executionProfile.model,
+            bundle_mode: resolvedBundleMode,
+            run_dir: prepared.runDir,
+            grounding_summary_path: analysisContext.grounding_summary_path,
+            write_handoff_path: analysisContext.write_handoff_path,
+          },
+        })
+      }
       return {
         runtimeMessage: {
           ...message,
@@ -484,7 +587,7 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
             ...(message.agent_params ?? {}),
             run_dir: prepared.runDir,
             analysis_mode: analysisMode,
-            bundle_mode: plan.bundle_mode ?? (analysisMode === 'incremental' ? 'selective' : 'holistic'),
+            bundle_mode: resolvedBundleMode,
             validator_script: context.agentContract.validation?.validatorScript,
             finalize_script: context.agentContract.validation?.finalizeScript,
             analysis_context: analysisContext,

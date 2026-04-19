@@ -169,3 +169,34 @@ test('buildPromptPlan renders startup guidance outside the cached prefix', () =>
   assert.match(promptPlan.dynamicPrompt, /Read prepared artifacts before repo exploration\./)
   assert.match(promptPlan.dynamicPrompt, /\/tmp\/blast\.json/)
 })
+
+test('buildPromptPlan renders staged weak-model runtime guidance when requested', () => {
+  const promptPlan = buildPromptPlan(augurContract(), genericRuntimeProfile(), {
+    type: 'request',
+    sender: 'agent-a',
+    correlation_id: 'corr-1',
+    prompt: 'Analyze the repo',
+    agent_params: {
+      bundle_mode: 'selective',
+      analysis_context: {
+        mode: 'full',
+        run_dir: '/tmp/run',
+        facts_dir: '/tmp/run/facts',
+        startup_path: '/tmp/run/facts/startup.json',
+        blast_path: '/tmp/run/blast.json',
+        atlas_path: '/tmp/run/atlas.json',
+        stories_dir: '/tmp/run/stories',
+        narratives_path: '/tmp/run/narratives.yaml',
+        meta_path: '/tmp/run/meta.json',
+        grounding_summary_path: '/tmp/run/grounding-summary.md',
+        write_handoff_path: '/tmp/run/write-handoff.md',
+        execution_strategy: 'staged-weak',
+      },
+    },
+  })
+
+  assert.match(promptPlan.dynamicPrompt, /Execution strategy: `staged-weak`/)
+  assert.match(promptPlan.dynamicPrompt, /Grounding summary path: `\/tmp\/run\/grounding-summary\.md`/)
+  assert.match(promptPlan.dynamicPrompt, /Write handoff path: `\/tmp\/run\/write-handoff\.md`/)
+  assert.match(promptPlan.dynamicPrompt, /write artifacts in this order: atlas, stories, narratives, then finalize/i)
+})
