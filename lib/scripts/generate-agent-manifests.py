@@ -23,9 +23,8 @@ DEFAULT_RUNTIME_PROFILES = {
     "gemini-sdk": {
         "kind": "gemini-sdk",
         "toolGuidance": [
-            "Use `Read` to open files when a path is known.",
-            "Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.",
-            "Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.",
+            "Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.",
+            "Do not invent helper names or wrap nonexistent tools inside Bash.",
         ],
         "runArtifactGuidance": [
             "Use the prepared run artifact tools for generated analysis artifacts when available.",
@@ -36,9 +35,8 @@ DEFAULT_RUNTIME_PROFILES = {
     "openclaude-harness": {
         "kind": "openclaude-harness",
         "toolGuidance": [
-            "Use `Read` to open files when a path is known.",
-            "Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.",
-            "Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.",
+            "Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.",
+            "Do not invent helper names or wrap nonexistent tools inside Bash.",
         ],
     },
     "codex-sdk": {"kind": "codex-sdk", "toolGuidance": []},

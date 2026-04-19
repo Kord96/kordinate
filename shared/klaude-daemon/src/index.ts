@@ -258,6 +258,13 @@ function logTelemetry(telemetry: ResponseTelemetryMetadata): void {
   log('request_telemetry', telemetry as unknown as Record<string, unknown>)
 }
 
+function isKafkaMembershipLostError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  const normalized = message.toLowerCase()
+  return normalized.includes('the group is rebalancing')
+    || normalized.includes('the coordinator is not aware of this member')
+}
+
 function validateRequestContract(message: RequestMessage): string | undefined {
   if (agentContract.requiresWorkingDirectory && !message.working_dir) {
     return 'working_dir is required for this agent'
@@ -1240,13 +1247,29 @@ async function main(): Promise<void> {
           has_working_dir: Boolean(parsed.working_dir),
         })
 
+        let membershipLost = false
+        let heartbeatFailureLogged = false
         const heartbeatTimer = setInterval(() => {
+          if (membershipLost) return
           void heartbeat().catch(error => {
-            log('consumer_heartbeat_failed', {
-              topic: batch.topic,
-              correlation_id: parsed.correlation_id,
-              error: error instanceof Error ? error.message : String(error),
-            })
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            if (isKafkaMembershipLostError(error)) {
+              membershipLost = true
+              log('consumer_membership_lost', {
+                topic: batch.topic,
+                correlation_id: parsed.correlation_id,
+                error: errorMessage,
+              })
+              return
+            }
+            if (!heartbeatFailureLogged) {
+              heartbeatFailureLogged = true
+              log('consumer_heartbeat_failed', {
+                topic: batch.topic,
+                correlation_id: parsed.correlation_id,
+                error: errorMessage,
+              })
+            }
           })
         }, Math.max(1000, Math.floor(daemonConfig.kafkaHeartbeatIntervalMs / 2)))
 
@@ -1302,6 +1325,17 @@ async function main(): Promise<void> {
           await persistCompletedRequests()
         } finally {
           clearInterval(heartbeatTimer)
+        }
+
+        if (membershipLost || isStale() || !isRunning()) {
+          log('consumer_offset_commit_skipped', {
+            topic: batch.topic,
+            correlation_id: parsed.correlation_id,
+            membership_lost: membershipLost,
+            stale: isStale(),
+            running: isRunning(),
+          })
+          break
         }
 
         resolveOffset(message.offset)

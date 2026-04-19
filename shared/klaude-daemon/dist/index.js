@@ -203,6 +203,12 @@ function buildTelemetryMetadata(input) {
 function logTelemetry(telemetry) {
     log('request_telemetry', telemetry);
 }
+function isKafkaMembershipLostError(error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const normalized = message.toLowerCase();
+    return normalized.includes('the group is rebalancing')
+        || normalized.includes('the coordinator is not aware of this member');
+}
 function validateRequestContract(message) {
     if (agentContract.requiresWorkingDirectory && !message.working_dir) {
         return 'working_dir is required for this agent';
@@ -261,7 +267,10 @@ function buildWeakModelSummaryPassPrompt(message, context) {
     const parts = [
         'You are in weak-model staged analysis pass 1.',
         'Goal: gather enough grounded evidence to fill the grounding summary, then stop.',
-        'Breadth reading is allowed while you are still identifying the real architectural shape.',
+        'Breadth reading is allowed, but you must prefer prepared analysis artifacts over re-exploring the repo tree.',
+        'Read the prepared facts first: startup, boundaries, hot-files, component seeds, state seeds, story seeds, narrative seeds, and other fact files already placed in the run directory.',
+        'After reading the prepared facts, do only a small number of targeted source reads needed to resolve the real top-level architecture. Do not keep enumerating directories once the shape is clear.',
+        'As a hard cap, avoid reading more than about 12 repo source files in this summary pass unless a specific unresolved architectural ambiguity requires it.',
         'Do not write atlas.json, story YAML files, narratives.yaml, or meta.json in this pass.',
         'Once you are grounded, update the grounding summary file with concrete components, flows, story plan, narrative plan, open questions, and source anchors.',
         'After the grounding summary is updated, stop immediately so a fresh write pass can begin from that summary.',
@@ -335,7 +344,7 @@ function groundingSummaryLooksPopulated(summary) {
 }
 function splitWeakModelTimeout(totalMs) {
     const total = Number.isFinite(totalMs) ? Math.max(120000, totalMs) : 900000;
-    const summaryMs = Math.min(Math.max(Math.floor(total * 0.45), 240000), 480000);
+    const summaryMs = Math.min(Math.max(Math.floor(total * 0.2), 240000), 300000);
     const writeMs = Math.max(180000, total - summaryMs);
     return { summaryMs, writeMs };
 }
@@ -353,11 +362,12 @@ async function executeWeakModelStagedAnalysis(session, message, context) {
     });
     const summaryRun = await runtime.executePrompt({ ...session, providerSessionId: undefined }, summaryRequest);
     const summarySession = updateSessionPromptCache(summaryRun.session, summaryRequest, summaryRun.result);
-    if (summaryRun.result.status !== 'success') {
-        return { session: summarySession, result: summaryRun.result };
-    }
     const afterSummary = await readWeakModelGroundingSummary(context.grounding_summary_path);
-    if (!groundingSummaryLooksPopulated(afterSummary) || afterSummary === beforeSummary) {
+    const summaryReady = groundingSummaryLooksPopulated(afterSummary) && afterSummary !== beforeSummary;
+    if (!summaryReady) {
+        if (summaryRun.result.status !== 'success') {
+            return { session: summarySession, result: summaryRun.result };
+        }
         return {
             session: summarySession,
             result: {
@@ -1071,13 +1081,30 @@ async function main() {
                     session_id: parsed.session_id ?? null,
                     has_working_dir: Boolean(parsed.working_dir),
                 });
+                let membershipLost = false;
+                let heartbeatFailureLogged = false;
                 const heartbeatTimer = setInterval(() => {
+                    if (membershipLost)
+                        return;
                     void heartbeat().catch(error => {
-                        log('consumer_heartbeat_failed', {
-                            topic: batch.topic,
-                            correlation_id: parsed.correlation_id,
-                            error: error instanceof Error ? error.message : String(error),
-                        });
+                        const errorMessage = error instanceof Error ? error.message : String(error);
+                        if (isKafkaMembershipLostError(error)) {
+                            membershipLost = true;
+                            log('consumer_membership_lost', {
+                                topic: batch.topic,
+                                correlation_id: parsed.correlation_id,
+                                error: errorMessage,
+                            });
+                            return;
+                        }
+                        if (!heartbeatFailureLogged) {
+                            heartbeatFailureLogged = true;
+                            log('consumer_heartbeat_failed', {
+                                topic: batch.topic,
+                                correlation_id: parsed.correlation_id,
+                                error: errorMessage,
+                            });
+                        }
                     });
                 }, Math.max(1000, Math.floor(daemonConfig.kafkaHeartbeatIntervalMs / 2)));
                 try {
@@ -1134,6 +1161,16 @@ async function main() {
                 }
                 finally {
                     clearInterval(heartbeatTimer);
+                }
+                if (membershipLost || isStale() || !isRunning()) {
+                    log('consumer_offset_commit_skipped', {
+                        topic: batch.topic,
+                        correlation_id: parsed.correlation_id,
+                        membership_lost: membershipLost,
+                        stale: isStale(),
+                        running: isRunning(),
+                    });
+                    break;
                 }
                 resolveOffset(message.offset);
                 await commitOffsetsIfNecessary();

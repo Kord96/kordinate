@@ -33,8 +33,8 @@ function genericRuntimeProfile(): RuntimeProfile {
     version: 'runtime-profile-v2',
     kind: 'gemini-sdk',
     toolGuidance: [
-      'Use `Read` to open files when a path is known.',
-      'Use `Bash` only for real shell commands.',
+      "Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.",
+      'Do not invent helper names or wrap nonexistent tools inside Bash.',
     ],
   }
 }

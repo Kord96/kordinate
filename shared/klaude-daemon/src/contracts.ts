@@ -205,7 +205,7 @@ function renderRuntimeContext(agentContract: AgentContract, message: RequestMess
       lines.push('- In staged-weak mode, write artifacts in this order: atlas, stories, narratives, then finalize.')
       lines.push('- Do not return to broad repo exploration after switching into write mode unless validation identifies a specific grounding gap.')
     }
-    lines.push('- Available tools in this runtime are `Read`, `Edit`, and `Bash`.')
+    lines.push('- Follow the runtime-harness tool schema directly instead of assuming specific tool names from prior runs or other runtimes.')
     for (const guidance of toolGuidance) {
       lines.push(`- ${guidance}`)
     }

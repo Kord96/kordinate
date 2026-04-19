@@ -3,9 +3,8 @@ version: 2
 runtime_profiles:
   gemini-sdk:
     toolGuidance:
-      - Use `Read` to open files when a path is known.
-      - Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.
-      - Do not call invented helpers like `read_file`, `write_file`, `glob`, or `grep_file` inside Bash.
+      - Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.
+      - Do not invent helper names or wrap nonexistent tools inside Bash.
     runArtifactGuidance:
       - Use the prepared run artifact tools for generated analysis artifacts when available.
       - Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.
@@ -13,9 +12,8 @@ runtime_profiles:
     toolGuidance: []
   openclaude-harness:
     toolGuidance:
-      - Use `Read` to open files when a path is known.
-      - Use `Edit` to create or replace files; this runtime does not provide a `Write` tool.
-      - Use `Bash` only for real shell commands such as `find`, `rg`, `python`, `git`, or validators.
+      - Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.
+      - Do not invent helper names or wrap nonexistent tools inside Bash.
   codex-sdk:
     toolGuidance: []
 
