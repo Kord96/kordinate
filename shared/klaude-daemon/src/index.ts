@@ -336,7 +336,10 @@ function buildWeakModelSummaryPassPrompt(message: RequestMessage, context: WeakM
   const parts = [
     'You are in weak-model staged analysis pass 1.',
     'Goal: gather enough grounded evidence to fill the grounding summary, then stop.',
-    'Breadth reading is allowed while you are still identifying the real architectural shape.',
+    'Breadth reading is allowed, but you must prefer prepared analysis artifacts over re-exploring the repo tree.',
+    'Read the prepared facts first: startup, boundaries, hot-files, component seeds, state seeds, story seeds, narrative seeds, and other fact files already placed in the run directory.',
+    'After reading the prepared facts, do only a small number of targeted source reads needed to resolve the real top-level architecture. Do not keep enumerating directories once the shape is clear.',
+    'As a hard cap, avoid reading more than about 12 repo source files in this summary pass unless a specific unresolved architectural ambiguity requires it.',
     'Do not write atlas.json, story YAML files, narratives.yaml, or meta.json in this pass.',
     'Once you are grounded, update the grounding summary file with concrete components, flows, story plan, narrative plan, open questions, and source anchors.',
     'After the grounding summary is updated, stop immediately so a fresh write pass can begin from that summary.',
