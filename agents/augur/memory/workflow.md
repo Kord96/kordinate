@@ -10,6 +10,10 @@ description: Augur workflow — analyze existing code or design new projects, pr
 | `/analyze` | Analyze existing codebases — deterministic fact extraction, semantic atlas composition, stories, and narratives |
 | `/design` | Design new projects (4 modes: full, api, service, component) |
 
+## Product Roadmap
+
+- [roadmap.md](roadmap.md) — prioritized product plan for telemetry, ask, evolution, feedback, and design
+
 ## Structured Outputs
 
 ### Facts

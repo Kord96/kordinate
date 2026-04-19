@@ -31,14 +31,22 @@ def copy_file(src: Path, dst: Path) -> None:
 
 
 def normalize_docs_meta(meta: dict[str, Any], project: str, analysis_id: str) -> dict[str, Any]:
+    repository = meta.get("repository") or {}
+    agent = meta.get("agent") or {}
+    analysis = meta.get("analysis") or {}
     return {
         "project": project,
         "analysis_id": analysis_id,
-        "commit_sha": str(meta.get("sha") or ""),
-        "commit_time": str(meta.get("commit_time") or ""),
-        "analyzed_at": str(meta.get("analyzed_at") or ""),
+        "request_id": str(meta.get("request_id") or ""),
+        "repository": repository if isinstance(repository, dict) else {},
+        "agent": agent if isinstance(agent, dict) else {},
+        "commit_sha": str(repository.get("commit") or meta.get("sha") or ""),
+        "commit_time": str(repository.get("commit_time") or meta.get("commit_time") or ""),
+        "analyzed_at": str(analysis.get("analyzed_at") or meta.get("analyzed_at") or ""),
         "source": "augur",
-        "status": "ready" if bool(((meta.get("validation") or {}).get("passed"))) else "pending",
+        "status": "ready" if bool(((analysis.get("validation") or {}).get("passed"))) else "pending",
+        "analysis": analysis if isinstance(analysis, dict) else {},
+        "validation": analysis.get("validation") if isinstance(analysis.get("validation"), dict) else {},
     }
 
 
@@ -79,8 +87,8 @@ def export_analysis(analysis_dir: Path, docs_store_root: Path, publish_current: 
         raise SystemExit(f"narratives.yaml not found at {narratives_path}")
 
     meta = read_json(meta_path)
-    project = str(meta.get("project") or analysis_dir.parents[1].name)
-    analysis_id = str(meta.get("analysis_id") or analysis_dir.name)
+    project = str(((meta.get("repository") or {}).get("project")) or meta.get("project") or analysis_dir.parents[1].name)
+    analysis_id = str(((meta.get("analysis") or {}).get("id")) or meta.get("analysis_id") or analysis_dir.name)
 
     docs_analysis_root = docs_store_root / "projects" / project / "analyses" / analysis_id
     docs_analysis_root.mkdir(parents=True, exist_ok=True)

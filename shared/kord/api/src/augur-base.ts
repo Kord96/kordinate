@@ -13,9 +13,14 @@ export interface AugurProjectSummary {
 export interface AugurAnalysisSummary {
   analysis_id: string
   commit_sha: string
+  commit_time: string
   analyzed_at: string
   validation_passed: boolean
   status: string
+  request_id: string
+  repository: Record<string, unknown>
+  agent: Record<string, unknown>
+  validation: Record<string, unknown>
 }
 
 export interface AugurAnalysisDetails {
@@ -91,9 +96,13 @@ function normalizeNarratives(document: unknown): unknown[] {
 }
 
 function validationPassed(meta: Record<string, unknown>): boolean {
-  const validation = meta.validation
-  if (!validation || typeof validation !== 'object') return false
-  return (validation as { passed?: unknown }).passed === true
+  const direct = meta.validation
+  if (direct && typeof direct === 'object' && (direct as { passed?: unknown }).passed === true) return true
+  const analysis = meta.analysis
+  if (!analysis || typeof analysis !== 'object') return false
+  const nested = (analysis as { validation?: unknown }).validation
+  if (!nested || typeof nested !== 'object') return false
+  return (nested as { passed?: unknown }).passed === true
 }
 
 async function loadAcceptedMeta(metaPath: string): Promise<Record<string, unknown>> {
@@ -135,7 +144,8 @@ export async function resolveLatestAcceptedAnalysisDir(projectsRoot: string, pro
   const metaPath = join(analysisDir, 'meta.json')
   if (!(await pathExists(metaPath))) return null
   const meta = await loadAcceptedMeta(metaPath)
-  if (analysisId && meta.analysis_id !== analysisId) return null
+  const resolvedAnalysisId = String((meta.analysis && typeof meta.analysis === 'object' ? (meta.analysis as { id?: unknown }).id : '') || meta.analysis_id || '')
+  if (analysisId && resolvedAnalysisId !== analysisId) return null
   return analysisDir
 }
 
@@ -150,8 +160,8 @@ export async function loadAugurProjectSummary(projectsRoot: string, project: str
     project,
     title: String(atlas.project || project),
     purpose: String(atlas.purpose || ''),
-    latest_analysis_id: String(meta.analysis_id || ''),
-    latest_commit_sha: String(meta.sha || ''),
+    latest_analysis_id: String((meta.analysis && typeof meta.analysis === 'object' ? (meta.analysis as { id?: unknown }).id : '') || meta.analysis_id || ''),
+    latest_commit_sha: String((meta.repository && typeof meta.repository === 'object' ? (meta.repository as { commit?: unknown }).commit : '') || meta.sha || ''),
   }
 }
 
@@ -167,9 +177,14 @@ export async function listAugurAnalysisSummaries(projectsRoot: string, project: 
       return {
         analysis_id: String(record.analysis_id || ''),
         commit_sha: String(record.sha || ''),
+        commit_time: String(record.commit_time || ''),
         analyzed_at: String(record.analyzed_at || ''),
         validation_passed: true,
         status: 'accepted',
+        request_id: String(record.request_id || ''),
+        repository: (record.repository && typeof record.repository === 'object') ? record.repository as Record<string, unknown> : {},
+        agent: (record.agent && typeof record.agent === 'object') ? record.agent as Record<string, unknown> : {},
+        validation: (record.validation && typeof record.validation === 'object') ? record.validation as Record<string, unknown> : {},
       }
     })
 }

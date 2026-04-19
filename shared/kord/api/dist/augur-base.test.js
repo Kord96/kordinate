@@ -18,30 +18,47 @@ async function writeAcceptedAnalysis(root, project, sha, analysisId) {
     await writeFile(join(analysisDir, 'repair-log.json'), JSON.stringify({ latest_status: 'valid' }, null, 2));
     await writeFile(join(analysisDir, 'reflections', 'index.json'), JSON.stringify({ analysis_id: analysisId, reflections: [{ id: 'r1' }] }, null, 2));
     await writeFile(join(analysisDir, 'meta.json'), JSON.stringify({
-        project,
-        analysis_id: analysisId,
-        sha,
-        commit_time: '123',
-        analysis_mode: 'full',
-        base_sha: '',
-        base_commit_time: '',
-        analyzed_at: '2026-04-18T16:24:54Z',
-        blast: { mode: 'full', tier: 3, reasons: [], affected_components: [], affected_flows: [], affected_state: [], affected_dependencies: [], affected_concepts: [] },
-        artifacts: {
-            root: analysisDir,
-            atlas: join(analysisDir, 'atlas.json'),
-            facts_index: '',
-            stories_dir: join(analysisDir, 'stories'),
-            narratives: join(analysisDir, 'narratives.yaml'),
-            blast: '',
-            overlays_dir: join(analysisDir, 'overlays'),
-            overlays_index: join(analysisDir, 'overlays', 'index.json'),
-            reflections_dir: join(analysisDir, 'reflections'),
-            reflections_index: join(analysisDir, 'reflections', 'index.json'),
+        request_id: 'req-1',
+        repository: {
+            project,
+            commit: sha,
+            commit_time: '123',
+            base_commit: '',
+            base_commit_time: '',
+            file_count: 10,
+            files_read_count: 3,
+            repo_tokens_est: 240,
         },
-        schemas: { facts: '/facts', atlas: '/atlas', story: '/story', narratives: '/narratives', meta: '/meta' },
-        execution: {},
-        validation: { passed: true, attempts: 2, token: '' },
+        agent: {
+            name: 'augur-opus',
+            bundle_mode: 'selective',
+        },
+        analysis: {
+            id: analysisId,
+            mode: 'full',
+            analyzed_at: '2026-04-18T16:24:54Z',
+            blast: { mode: 'full', tier: 3, reasons: [], affected_components: [], affected_flows: [], affected_state: [], affected_dependencies: [], affected_concepts: [] },
+            artifacts: {
+                root: '.',
+                atlas: 'atlas.json',
+                facts_index: '',
+                stories_dir: 'stories',
+                narratives: 'narratives.yaml',
+                blast: '',
+                overlays_dir: 'overlays',
+                overlays_index: 'overlays/index.json',
+                reflections_dir: 'reflections',
+                reflections_index: 'reflections/index.json',
+            },
+            schemas: { facts: '/facts', atlas: '/atlas', story: '/story', narratives: '/narratives', meta: '/meta' },
+            inputs: {
+                bundles: [],
+                loaded_refs: [],
+                artifacts: [],
+                totals: { bundle_tokens_est: 0, loaded_ref_tokens_est: 0, artifact_tokens_est: 0, repo_tokens_est: 240, validation_tokens_est: 0, total_tokens_est: 240 },
+            },
+            validation: { passed: true, attempts: 2, token: '' },
+        },
     }, null, 2));
     await writeFile(join(root, project, 'analysis', 'latest.json'), JSON.stringify({
         analysis_id: analysisId,
@@ -58,6 +75,9 @@ async function writeAcceptedAnalysis(root, project, sha, analysisId) {
                 sha,
                 commit_time: '123',
                 analyzed_at: '2026-04-18T16:24:54Z',
+                request_id: 'req-1',
+                repository: { project, commit: sha, commit_time: '123' },
+                agent: { name: 'augur-opus', bundle_mode: 'selective' },
                 validation: { passed: true },
             }],
     }, null, 2));
@@ -75,13 +95,16 @@ test('augur base loaders use accepted meta.json snapshots', async () => {
         const analyses = await listAugurAnalysisSummaries(root, 'demo');
         assert.equal(analyses.length, 1);
         assert.equal(analyses[0].status, 'accepted');
+        assert.equal(analyses[0].commit_time, '123');
+        assert.equal(analyses[0].request_id, 'req-1');
+        assert.deepEqual(analyses[0].agent, { name: 'augur-opus', bundle_mode: 'selective' });
         const details = await loadAugurAnalysisDetails(root, 'demo', '2026-04-18T16-24-54Z');
         assert.ok(details);
-        assert.equal(details.meta.analysis_id, '2026-04-18T16-24-54Z');
+        assert.equal(details.meta.analysis.id, '2026-04-18T16-24-54Z');
         assert.equal(details.artifacts.atlas, true);
         const base = await loadAugurBase(root, 'demo', '2026-04-18T16-24-54Z');
         assert.ok(base);
-        assert.equal(base.meta.analysis_id, '2026-04-18T16-24-54Z');
+        assert.equal(base.meta.analysis.id, '2026-04-18T16-24-54Z');
         assert.equal(Array.isArray(base.stories), true);
         assert.equal(base.stories.length, 1);
         assert.equal(Array.isArray(base.narratives), true);

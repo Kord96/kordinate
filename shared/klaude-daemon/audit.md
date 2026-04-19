@@ -48,6 +48,14 @@ Runtime questions:
 - Are reflection and error paths captured correctly?
 - Does the daemon surface backend failures with enough detail to debug?
 
+Telemetry contract:
+- Shared daemon telemetry should stay runtime-oriented and joinable by `request_id`.
+- Canonical shape:
+  - `executor`: daemon-selected agent/provider/model identity
+  - `times`: `gateway_received_at`, `daemon_started_at`, `daemon_completed_at`
+  - `metrics`: derived queue/elapsed/cpu/memory/token/cost measurements
+- Agent-specific context such as repository, commit, analysis id, bundles, and validation should remain agent-owned metadata linked through `request_id`, not daemon-owned telemetry fields.
+
 ## Fix Layer Guidance
 
 When issues are found, prefer fixing them in:

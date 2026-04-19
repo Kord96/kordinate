@@ -24,9 +24,43 @@ export interface ResponseUsageMetadata {
   estimated_cost?: number
 }
 
+export interface ResponseExecutorMetadata {
+  name: string
+  specialization?: string
+  provider: string
+  model: string
+}
+
+export interface ResponseTimesMetadata {
+  gateway_received_at: string
+  daemon_started_at: string
+  daemon_completed_at: string
+}
+
+export interface ResponseMetricsMetadata {
+  queue_wait_seconds?: number
+  elapsed_seconds?: number
+  cpu_time_seconds?: number
+  peak_rss_mb?: number
+  input_tokens?: number
+  cached_input_tokens?: number
+  output_tokens?: number
+  estimated_cost_usd?: number
+}
+
+export interface ResponseTelemetryMetadata {
+  request_id: string
+  status: JobStatus
+  error?: string | null
+  executor: ResponseExecutorMetadata
+  times: ResponseTimesMetadata
+  metrics: ResponseMetricsMetadata
+}
+
 export interface ResponseMetadata {
   timing: ResponseTimingMetadata
   usage?: ResponseUsageMetadata
+  telemetry?: ResponseTelemetryMetadata
   gateway_timing?: {
     started_at: string
     completed_at: string

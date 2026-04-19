@@ -143,15 +143,65 @@ function redactExecutionProfile(profile) {
 }
 function buildTimingMetadata(input) {
     return {
-        received_at: new Date(input.receivedAt).toISOString(),
-        started_at: new Date(input.startedAt).toISOString(),
-        completed_at: nowIso(),
-        total_ms: Date.now() - input.receivedAt,
-        session_prepare_ms: input.executeStartAt - input.startedAt,
+        received_at: new Date(input.gatewayReceivedAt).toISOString(),
+        started_at: new Date(input.daemonStartedAt).toISOString(),
+        completed_at: new Date(input.daemonCompletedAt).toISOString(),
+        total_ms: Math.max(0, input.daemonCompletedAt - input.gatewayReceivedAt),
+        session_prepare_ms: input.executeStartAt - input.daemonStartedAt,
         execute_prompt_ms: input.executeEndAt - input.executeStartAt,
         persist_sessions_ms: input.persistEndAt - input.persistStartAt,
         publish_response_ms: 0,
     };
+}
+function parseGatewayReceivedAt(rawTimestamp) {
+    if (rawTimestamp) {
+        const parsed = Number.parseInt(rawTimestamp, 10);
+        if (Number.isFinite(parsed) && parsed > 0)
+            return parsed;
+    }
+    return Date.now();
+}
+function mergeUsageMetadata(left, right) {
+    if (!left && !right)
+        return undefined;
+    return {
+        input_tokens: (left?.input_tokens ?? 0) + (right?.input_tokens ?? 0),
+        cached_input_tokens: (left?.cached_input_tokens ?? 0) + (right?.cached_input_tokens ?? 0),
+        output_tokens: (left?.output_tokens ?? 0) + (right?.output_tokens ?? 0),
+        cache_write_tokens: (left?.cache_write_tokens ?? 0) + (right?.cache_write_tokens ?? 0),
+        estimated_cost: (left?.estimated_cost ?? 0) + (right?.estimated_cost ?? 0),
+    };
+}
+function buildTelemetryMetadata(input) {
+    return {
+        request_id: input.requestId,
+        status: input.status,
+        error: input.error ?? null,
+        executor: {
+            name: AGENT_NAME,
+            specialization: agentContract.specialization,
+            provider: daemonConfig.executionProfile.provider,
+            model: daemonConfig.executionProfile.model,
+        },
+        times: {
+            gateway_received_at: new Date(input.gatewayReceivedAt).toISOString(),
+            daemon_started_at: new Date(input.daemonStartedAt).toISOString(),
+            daemon_completed_at: new Date(input.daemonCompletedAt).toISOString(),
+        },
+        metrics: {
+            queue_wait_seconds: Math.max(0, input.daemonStartedAt - input.gatewayReceivedAt) / 1000,
+            elapsed_seconds: Math.max(0, input.daemonCompletedAt - input.gatewayReceivedAt) / 1000,
+            cpu_time_seconds: (input.cpuUsage.user + input.cpuUsage.system) / 1_000_000,
+            peak_rss_mb: input.peakRssBytes / (1024 * 1024),
+            input_tokens: input.usage?.input_tokens,
+            cached_input_tokens: input.usage?.cached_input_tokens,
+            output_tokens: input.usage?.output_tokens,
+            estimated_cost_usd: input.usage?.estimated_cost,
+        },
+    };
+}
+function logTelemetry(telemetry) {
+    log('request_telemetry', telemetry);
 }
 function validateRequestContract(message) {
     if (agentContract.requiresWorkingDirectory && !message.working_dir) {
@@ -419,6 +469,20 @@ function resolvedBundleMode(message) {
     }
     return 'selective';
 }
+function resolveSelectedBundleRef(selection, bundleMode, dir) {
+    if (!selection)
+        return '';
+    if (dir === 'skill')
+        return selection;
+    if (bundleMode === 'holistic') {
+        return selection
+            .replace('analyze-selective-', 'analyze-holistic-')
+            .replace('analyze-evidence-driven-', 'analyze-holistic-');
+    }
+    return selection
+        .replace('analyze-holistic-', 'analyze-selective-')
+        .replace('analyze-evidence-driven-', 'analyze-selective-');
+}
 async function hashValidatedDirectory(root) {
     const hash = createHash('sha256');
     async function walk(dir, relativePrefix = '') {
@@ -517,6 +581,7 @@ async function maybeRunValidationLoop(session, message, result) {
     const validatorEnv = workflowContext?.extraEnv;
     let currentSession = session;
     let currentResult = result;
+    let accumulatedUsage = currentResult.metadata?.usage;
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         const validationRun = await runValidatorScript(validation.validatorScript, targetDir, false, validatorEnv);
         if (validationRun.valid) {
@@ -524,7 +589,9 @@ async function maybeRunValidationLoop(session, message, result) {
             const token = await hashValidatedDirectory(targetDir);
             let finalizePayload;
             if (validation.finalizeScript && await pathExists(validation.finalizeScript)) {
+                const bundleMode = resolvedBundleMode(message);
                 const finalized = await runFinalizeScript(validation.finalizeScript, targetDir, token, attempt, {
+                    AUGUR_REQUEST_ID: message.correlation_id,
                     AUGUR_AGENT_NAME: AGENT_NAME,
                     AUGUR_AGENT_SPECIALIZATION: agentContract.specialization,
                     AUGUR_AGENT_CONTRACT_VERSION: agentContract.version ?? '',
@@ -532,7 +599,12 @@ async function maybeRunValidationLoop(session, message, result) {
                     AUGUR_RUNTIME_KIND: daemonConfig.executionProfile.runtime,
                     AUGUR_PROVIDER: daemonConfig.executionProfile.provider,
                     AUGUR_MODEL: daemonConfig.executionProfile.model,
-                    AUGUR_BUNDLE_MODE: resolvedBundleMode(message),
+                    AUGUR_BUNDLE_MODE: bundleMode,
+                    AUGUR_MEMORY_BUNDLE: resolveSelectedBundleRef(agentContract.bundleRefs?.memory, bundleMode, 'memory'),
+                    AUGUR_RUNTIME_BUNDLE: resolveSelectedBundleRef(agentContract.bundleRefs?.runtime, bundleMode, 'runtime'),
+                    AUGUR_SKILL_BUNDLE: resolveSelectedBundleRef(agentContract.bundleRefs?.skill, bundleMode, 'skill'),
+                    AUGUR_WORKING_DIR: message.working_dir ?? '',
+                    AUGUR_PROJECT: typeof message.agent_params?.project === 'string' ? message.agent_params.project : '',
                 });
                 if (finalized.ok) {
                     finalizePayload = finalized.payload;
@@ -545,6 +617,7 @@ async function maybeRunValidationLoop(session, message, result) {
                     output: `${currentResult.output}\n\nValidation token: ${token}`,
                     metadata: {
                         ...(currentResult.metadata ?? {}),
+                        ...(accumulatedUsage ? { usage: accumulatedUsage } : {}),
                         artifacts: buildArtifactsMetadata(targetDir, finalizePayload),
                         validation: {
                             required: true,
@@ -570,6 +643,7 @@ async function maybeRunValidationLoop(session, message, result) {
                     errors: validationRun.findings.length > 0 ? validationRun.findings : ['validation failed'],
                     metadata: {
                         ...(currentResult.metadata ?? {}),
+                        ...(accumulatedUsage ? { usage: accumulatedUsage } : {}),
                         validation: {
                             required: true,
                             passed: false,
@@ -595,40 +669,68 @@ async function maybeRunValidationLoop(session, message, result) {
         });
         const repairRun = await runtime.executePrompt(currentSession, repairRequest);
         currentSession = updateSessionPromptCache(repairRun.session, repairRequest, repairRun.result);
+        accumulatedUsage = mergeUsageMetadata(accumulatedUsage, repairRun.result.metadata?.usage);
         currentResult = repairRun.result;
     }
-    return { session: currentSession, result: currentResult };
+    return {
+        session: currentSession,
+        result: {
+            ...currentResult,
+            metadata: {
+                ...(currentResult.metadata ?? {}),
+                ...(accumulatedUsage ? { usage: accumulatedUsage } : {}),
+            },
+        },
+    };
 }
-async function handleRequest(message) {
-    const receivedAt = Date.now();
+async function handleRequest(message, gatewayReceivedAt) {
+    const daemonStartedAt = Date.now();
+    const cpuUsageStart = process.cpuUsage();
+    let peakRssBytes = process.memoryUsage().rss;
+    const samplePeakRss = () => {
+        peakRssBytes = Math.max(peakRssBytes, process.memoryUsage().rss);
+    };
     const contractError = validateRequestContract(message);
     if (contractError) {
+        const daemonCompletedAt = Date.now();
+        const telemetry = buildTelemetryMetadata({
+            requestId: message.correlation_id,
+            status: 'error',
+            error: contractError,
+            gatewayReceivedAt,
+            daemonStartedAt,
+            daemonCompletedAt,
+            cpuUsage: process.cpuUsage(cpuUsageStart),
+            peakRssBytes,
+        });
         await publishResponse(message, {
             status: 'error',
             output: contractError,
             errors: [contractError],
             metadata: {
                 timing: {
-                    received_at: new Date(receivedAt).toISOString(),
-                    started_at: new Date(receivedAt).toISOString(),
-                    completed_at: nowIso(),
-                    total_ms: 0,
+                    received_at: new Date(gatewayReceivedAt).toISOString(),
+                    started_at: new Date(daemonStartedAt).toISOString(),
+                    completed_at: new Date(daemonCompletedAt).toISOString(),
+                    total_ms: Math.max(0, daemonCompletedAt - gatewayReceivedAt),
                     session_prepare_ms: 0,
                     execute_prompt_ms: 0,
                     persist_sessions_ms: 0,
                     publish_response_ms: 0,
                 },
+                telemetry,
             },
         });
+        logTelemetry(telemetry);
         return {
             status: 'error',
             errors: [contractError],
         };
     }
-    const startedAt = Date.now();
     const preparedMessage = message;
     const session = sessionForMessage(message);
     await ensureGitSafeDirectory(preparedMessage.working_dir);
+    samplePeakRss();
     const executeStartAt = Date.now();
     let executedSession = session;
     let executedResult;
@@ -647,14 +749,29 @@ async function handleRequest(message) {
         executedSession = updateSessionPromptCache(run.session, runtimeRequest, run.result);
         executedResult = run.result;
     }
+    samplePeakRss();
     const { session: nextSession, result } = await maybeRunValidationLoop(executedSession, effectiveMessage, executedResult);
     const executeEndAt = Date.now();
+    samplePeakRss();
     sessions.set(nextSession.key, nextSession);
     const persistStartAt = Date.now();
     await persistSessions();
     markCompletedRequest(message.correlation_id, result.status);
     await persistCompletedRequests();
     const persistEndAt = Date.now();
+    samplePeakRss();
+    const daemonCompletedAt = Date.now();
+    const telemetry = buildTelemetryMetadata({
+        requestId: message.correlation_id,
+        status: result.status,
+        error: result.status === 'error' ? (result.errors?.[0] ?? result.output) : null,
+        gatewayReceivedAt,
+        daemonStartedAt,
+        daemonCompletedAt,
+        cpuUsage: process.cpuUsage(cpuUsageStart),
+        peakRssBytes,
+        usage: result.metadata?.usage,
+    });
     const response = {
         status: result.status,
         output: result.output,
@@ -662,9 +779,11 @@ async function handleRequest(message) {
         errors: result.errors,
         metadata: {
             ...(result.metadata ?? {}),
+            telemetry,
             timing: buildTimingMetadata({
-                receivedAt,
-                startedAt,
+                gatewayReceivedAt,
+                daemonStartedAt,
+                daemonCompletedAt,
                 executeStartAt,
                 executeEndAt,
                 persistStartAt,
@@ -673,6 +792,7 @@ async function handleRequest(message) {
         },
     };
     await publishResponse(message, response);
+    logTelemetry(telemetry);
     if (result.reflection) {
         await publishReflection(message, result.reflection);
     }
@@ -771,6 +891,7 @@ async function main() {
                     await heartbeat();
                     continue;
                 }
+                const gatewayReceivedAt = parseGatewayReceivedAt(message.timestamp);
                 await publishProgress(parsed, {
                     source: 'agent-daemon',
                     kind: 'request.picked_up',
@@ -798,7 +919,7 @@ async function main() {
                     });
                 }, Math.max(1000, Math.floor(daemonConfig.kafkaHeartbeatIntervalMs / 2)));
                 try {
-                    const summary = await handleRequest(parsed);
+                    const summary = await handleRequest(parsed, gatewayReceivedAt);
                     log('request_handled', {
                         topic: batch.topic,
                         sender: parsed.sender,
@@ -809,6 +930,18 @@ async function main() {
                 }
                 catch (error) {
                     const messageText = error.message;
+                    const daemonStartedAt = Date.now();
+                    const daemonCompletedAt = daemonStartedAt;
+                    const telemetry = buildTelemetryMetadata({
+                        requestId: parsed.correlation_id,
+                        status: 'error',
+                        error: messageText,
+                        gatewayReceivedAt,
+                        daemonStartedAt,
+                        daemonCompletedAt,
+                        cpuUsage: { user: 0, system: 0 },
+                        peakRssBytes: process.memoryUsage().rss,
+                    });
                     log('request_failed', {
                         topic: batch.topic,
                         sender: parsed.sender,
@@ -821,17 +954,19 @@ async function main() {
                         errors: [messageText],
                         metadata: {
                             timing: {
-                                received_at: nowIso(),
-                                started_at: nowIso(),
-                                completed_at: nowIso(),
-                                total_ms: 0,
+                                received_at: new Date(gatewayReceivedAt).toISOString(),
+                                started_at: new Date(daemonStartedAt).toISOString(),
+                                completed_at: new Date(daemonCompletedAt).toISOString(),
+                                total_ms: Math.max(0, daemonCompletedAt - gatewayReceivedAt),
                                 session_prepare_ms: 0,
                                 execute_prompt_ms: 0,
                                 persist_sessions_ms: 0,
                                 publish_response_ms: 0,
                             },
+                            telemetry,
                         },
                     });
+                    logTelemetry(telemetry);
                     markCompletedRequest(parsed.correlation_id, 'error');
                     await persistCompletedRequests();
                 }

@@ -206,19 +206,24 @@ def write_analysis_indexes(project: str, agent_home: str | Path | None = None) -
     by_sha: dict[str, list[dict[str, Any]]] = {}
 
     for path, meta in records:
-        sha_key = normalize_sha_key(str(meta.get("sha") or ""))
+        repository = meta.get("repository") or {}
+        analysis = meta.get("analysis") or {}
+        agent = meta.get("agent") or {}
+        validation = analysis.get("validation") or {}
+        sha_key = normalize_sha_key(str(repository.get("commit") or meta.get("sha") or ""))
         summary = {
-            "analysis_id": str(meta.get("analysis_id") or path.name),
+            "analysis_id": str(analysis.get("id") or meta.get("analysis_id") or path.name),
             "analysis_dir": _portable_analysis_ref(analysis_root, path),
-            "project": str(meta.get("project") or project),
+            "project": str(repository.get("project") or meta.get("project") or project),
             "sha": "" if sha_key == "unknown" else sha_key,
-            "commit_time": str(meta.get("commit_time") or ""),
-            "base_sha": str(meta.get("base_sha") or ""),
-            "base_commit_time": str(meta.get("base_commit_time") or ""),
-            "analysis_mode": str(meta.get("analysis_mode") or ""),
-            "analyzed_at": str(meta.get("analyzed_at") or ""),
-            "execution": meta.get("execution") or {},
-            "validation": meta.get("validation") or {},
+            "commit_time": str(repository.get("commit_time") or meta.get("commit_time") or ""),
+            "base_sha": str(repository.get("base_commit") or meta.get("base_sha") or ""),
+            "base_commit_time": str(repository.get("base_commit_time") or meta.get("base_commit_time") or ""),
+            "analysis_mode": str(analysis.get("mode") or meta.get("analysis_mode") or ""),
+            "analyzed_at": str(analysis.get("analyzed_at") or meta.get("analyzed_at") or ""),
+            "request_id": str(meta.get("request_id") or ""),
+            "agent": agent if isinstance(agent, dict) else {},
+            "validation": validation if isinstance(validation, dict) else {},
         }
         summaries.append(summary)
         if summary["sha"]:

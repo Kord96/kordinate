@@ -47,10 +47,16 @@ function normalizeNarratives(document) {
     return [];
 }
 function validationPassed(meta) {
-    const validation = meta.validation;
-    if (!validation || typeof validation !== 'object')
+    const direct = meta.validation;
+    if (direct && typeof direct === 'object' && direct.passed === true)
+        return true;
+    const analysis = meta.analysis;
+    if (!analysis || typeof analysis !== 'object')
         return false;
-    return validation.passed === true;
+    const nested = analysis.validation;
+    if (!nested || typeof nested !== 'object')
+        return false;
+    return nested.passed === true;
 }
 async function loadAcceptedMeta(metaPath) {
     const meta = await readJson(metaPath);
@@ -92,7 +98,8 @@ export async function resolveLatestAcceptedAnalysisDir(projectsRoot, project) {
     if (!(await pathExists(metaPath)))
         return null;
     const meta = await loadAcceptedMeta(metaPath);
-    if (analysisId && meta.analysis_id !== analysisId)
+    const resolvedAnalysisId = String((meta.analysis && typeof meta.analysis === 'object' ? meta.analysis.id : '') || meta.analysis_id || '');
+    if (analysisId && resolvedAnalysisId !== analysisId)
         return null;
     return analysisDir;
 }
@@ -108,8 +115,8 @@ export async function loadAugurProjectSummary(projectsRoot, project) {
         project,
         title: String(atlas.project || project),
         purpose: String(atlas.purpose || ''),
-        latest_analysis_id: String(meta.analysis_id || ''),
-        latest_commit_sha: String(meta.sha || ''),
+        latest_analysis_id: String((meta.analysis && typeof meta.analysis === 'object' ? meta.analysis.id : '') || meta.analysis_id || ''),
+        latest_commit_sha: String((meta.repository && typeof meta.repository === 'object' ? meta.repository.commit : '') || meta.sha || ''),
     };
 }
 export async function listAugurAnalysisSummaries(projectsRoot, project) {
@@ -125,9 +132,14 @@ export async function listAugurAnalysisSummaries(projectsRoot, project) {
         return {
             analysis_id: String(record.analysis_id || ''),
             commit_sha: String(record.sha || ''),
+            commit_time: String(record.commit_time || ''),
             analyzed_at: String(record.analyzed_at || ''),
             validation_passed: true,
             status: 'accepted',
+            request_id: String(record.request_id || ''),
+            repository: (record.repository && typeof record.repository === 'object') ? record.repository : {},
+            agent: (record.agent && typeof record.agent === 'object') ? record.agent : {},
+            validation: (record.validation && typeof record.validation === 'object') ? record.validation : {},
         };
     });
 }
