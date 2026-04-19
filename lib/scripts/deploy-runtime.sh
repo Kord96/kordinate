@@ -459,7 +459,7 @@ deploy_team() {
 Publish a request to the target Kafka topic `agent.<name>`.
 Example request:
 ```
-{"prompt":"<what you need>","timeout_ms":1500000,"reflect":true,"reply_to":"agent.master-workstation"}
+{"prompt":"<what you need>","timeout_ms":"<optional-timeout-ms>","reflect":true,"reply_to":"<reply-topic>"}
 ```
 
 Replies are published by Klaude to `reply_to` and use:

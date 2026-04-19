@@ -60,7 +60,7 @@ def main() -> int:
         "For narrative fixes, prefer pruning or swapping weak stories over adding more prose. Keep deterministic seeds as constraints and ranking hints, not as a script to restate literally.",
         "Repair the output files now. Do not restart analysis. Keep the same project understanding and only change what is needed to pass validation.",
         "Use the provided validator path directly. Do not search `/kord` or `/app` for alternate validator, schema, or mirrored-agent paths unless the provided path fails.",
-        f"Do not call `/validate-output` as a shell command. If you need to validate manually inside the runtime, run `python3 {args.validator_script} {args.target_dir}`.",
+        "Do not invoke the validator yourself during repair. The daemon/workflow will rerun validation after your changes.",
     ])
     print(prompt)
     return 0

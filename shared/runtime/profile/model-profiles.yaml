@@ -26,26 +26,12 @@ profiles:
     credential_ref: kordinate/fireworks/api-key
     notes: Fireworks-hosted GLM-5 candidate for model comparison.
 
-  fireworks-deepseek-v3p2:
+  fireworks-minimax-m2p7:
     profile: openai
-    model: accounts/fireworks/models/deepseek-v3p2
+    model: fireworks/minimax-m2p7
     base_url: https://api.fireworks.ai/inference/v1
     credential_ref: kordinate/fireworks/api-key
-    notes: Fireworks-hosted DeepSeek V3.2 candidate for model comparison.
-
-  fireworks-qwen3p6-plus:
-    profile: openai
-    model: accounts/fireworks/models/qwen3p6-plus
-    base_url: https://api.fireworks.ai/inference/v1
-    credential_ref: kordinate/fireworks/api-key
-    notes: Fireworks-hosted Qwen3.6 Plus candidate for model comparison.
-
-  fireworks-qwen3-30b-a3b:
-    profile: openai
-    model: accounts/fireworks/models/qwen3-30b-a3b
-    base_url: https://api.fireworks.ai/inference/v1
-    credential_ref: kordinate/fireworks/api-key
-    notes: Fireworks-hosted Qwen3 30B-A3B candidate for lower-cost day-to-day Augur tests.
+    notes: Fireworks-hosted MiniMax M2.7 candidate for agentic and tool-using workloads.
 
   gemini-3.1-pro-preview:
     profile: gemini

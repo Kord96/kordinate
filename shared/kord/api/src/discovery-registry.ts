@@ -81,7 +81,7 @@ export function createDiscoveryRegistry(input?: {
     const logicalName = logicalNameFor(record)
     const preferredByLogical: Record<string, string[]> = {
       alfred: ['alfred-gpt-oss-20b'],
-      augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-31-pro', 'augur-deepseek-v3p2', 'augur-glm5'],
+      augur: ['augur-opus', 'augur-gpt54', 'augur-gemini-31-pro', 'augur-minimax-m2p7', 'augur-glm5'],
       charon: ['charon-gpt53-codex'],
       generic: ['generic-opus'],
       sauron: ['sauron-gpt53-codex'],

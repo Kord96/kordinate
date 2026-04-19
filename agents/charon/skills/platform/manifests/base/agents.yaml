@@ -119,6 +119,8 @@ metadata:
   name: agent-augur-opus
   labels: { app: kord-agent, agent: augur-opus }
 spec:
+  strategy:
+    type: Recreate
   selector:
     matchLabels: { app: kord-agent, agent: augur-opus }
   template:
@@ -1157,244 +1159,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-augur-deepseek-v3p2
-  labels: { app: kord-agent, agent: augur-deepseek-v3p2 }
-spec:
-  selector:
-    matchLabels: { app: kord-agent, agent: augur-deepseek-v3p2 }
-  template:
-    metadata:
-      labels: { app: kord-agent, agent: augur-deepseek-v3p2 }
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9090"
-    spec:
-
-      serviceAccountName: kord
-      initContainers:
-        - name: setup
-          image: REGISTRY/agent-augur:latest
-          imagePullPolicy: Always
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-              bash /app/scripts/setup-agent-dir.sh augur-deepseek-v3p2
-              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-deepseek-v3p2
-          volumeMounts:
-            - { name: runtime, mountPath: /kord }
-
-            - { name: docker-sock, mountPath: /var/run/docker.sock }
-      containers:
-        - name: agent
-          image: REGISTRY/agent-augur:latest
-          imagePullPolicy: Always
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-              exec klaude-daemon
-          env:
-            - { name: AGENT_NAME, value: "augur-deepseek-v3p2" }
-            - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-deepseek-v3p2\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
-            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"version\":\"runtime-profile-v2\"}" }
-            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-deepseek-v3p2" }
-            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-deepseek-v3p2" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-deepseek-v3p2" }
-            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-deepseek-v3p2/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-deepseek-v3p2/.daemon-state/sessions.json" }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
-            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
-            # Standard Unix home for shells and CLIs that implicitly read $HOME.
-            - { name: HOME, value: "/home/node" }
-            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
-            - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-deepseek-v3p2:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
-            - { name: DAEMON_PROVIDER, value: "fireworks" }
-            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/deepseek-v3p2" }
-            - { name: DAEMON_BACKEND, value: "fireworks" }
-            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
-            - name: BACKEND_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: fireworks-api
-                  key: api-key
-          resources:
-            requests: { cpu: 100m, memory: 512Mi }
-            limits: { memory: 4Gi }
-          ports:
-            - { containerPort: 9090, name: status }
-          readinessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          livenessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 30
-            periodSeconds: 30
-          volumeMounts:
-            - { name: runtime, mountPath: /kord }
-
-            - { name: docker-sock, mountPath: /var/run/docker.sock }
-      volumes:
-        - name: runtime
-          persistentVolumeClaim: { claimName: agent-runtime }
-
-        - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
-            type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: agent-augur-deepseek-v3p2
-  labels: { app: kord-agent, agent: augur-deepseek-v3p2 }
-spec:
-  selector:
-    app: kord-agent
-    agent: augur-deepseek-v3p2
-  ports:
-    - name: health
-      port: 9090
-      targetPort: 9090
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: agent-augur-qwen3p6-plus
-  labels: { app: kord-agent, agent: augur-qwen3p6-plus }
-spec:
-  selector:
-    matchLabels: { app: kord-agent, agent: augur-qwen3p6-plus }
-  template:
-    metadata:
-      labels: { app: kord-agent, agent: augur-qwen3p6-plus }
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "9090"
-    spec:
-
-      serviceAccountName: kord
-      initContainers:
-        - name: setup
-          image: REGISTRY/agent-augur:latest
-          imagePullPolicy: Always
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-              bash /app/scripts/setup-agent-dir.sh augur-qwen3p6-plus
-              AGENT_MEMORY_BUNDLE=analyze-selective-v1 AGENT_RUNTIME_BUNDLE=analyze-selective-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-qwen3p6-plus
-          volumeMounts:
-            - { name: runtime, mountPath: /kord }
-
-            - { name: docker-sock, mountPath: /var/run/docker.sock }
-      containers:
-        - name: agent
-          image: REGISTRY/agent-augur:latest
-          imagePullPolicy: Always
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            runAsGroup: 1000
-          command: ["/bin/bash", "-c"]
-          args:
-            - |
-              exec klaude-daemon
-          env:
-            - { name: AGENT_NAME, value: "augur-qwen3p6-plus" }
-            - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-qwen3p6-plus\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"bundleRefs\":{\"memory\":\"analyze-selective-v1\",\"skill\":null,\"runtime\":\"analyze-selective-v1\"},\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
-            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"version\":\"runtime-profile-v2\"}" }
-            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-qwen3p6-plus" }
-            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-qwen3p6-plus" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-qwen3p6-plus" }
-            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-qwen3p6-plus/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-qwen3p6-plus/.daemon-state/sessions.json" }
-            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
-            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
-            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
-            # Standard Unix home for shells and CLIs that implicitly read $HOME.
-            - { name: HOME, value: "/home/node" }
-            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
-            - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
-            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-qwen3p6-plus:9090/health" }
-            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
-            - { name: DAEMON_PROVIDER, value: "fireworks" }
-            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/qwen3p6-plus" }
-            - { name: DAEMON_BACKEND, value: "fireworks" }
-            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
-            - { name: AGENT_MEMORY_BUNDLE, value: "analyze-selective-v1" }
-            - { name: AGENT_RUNTIME_BUNDLE, value: "analyze-selective-v1" }
-            - name: BACKEND_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: fireworks-api
-                  key: api-key
-          resources:
-            requests: { cpu: 100m, memory: 512Mi }
-            limits: { memory: 4Gi }
-          ports:
-            - { containerPort: 9090, name: status }
-          readinessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 10
-            periodSeconds: 10
-          livenessProbe:
-            httpGet: { path: /health, port: 9090 }
-            initialDelaySeconds: 30
-            periodSeconds: 30
-          volumeMounts:
-            - { name: runtime, mountPath: /kord }
-
-            - { name: docker-sock, mountPath: /var/run/docker.sock }
-      volumes:
-        - name: runtime
-          persistentVolumeClaim: { claimName: agent-runtime }
-
-        - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
-            type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: agent-augur-qwen3p6-plus
-  labels: { app: kord-agent, agent: augur-qwen3p6-plus }
-spec:
-  selector:
-    app: kord-agent
-    agent: augur-qwen3p6-plus
-  ports:
-    - name: health
-      port: 9090
-      targetPort: 9090
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: agent-augur-glm5
   labels: { app: kord-agent, agent: augur-glm5 }
 spec:
@@ -1513,14 +1277,16 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-augur-qwen3-30b-a3b
-  labels: { app: kord-agent, agent: augur-qwen3-30b-a3b }
+  name: agent-augur-minimax-m2p7
+  labels: { app: kord-agent, agent: augur-minimax-m2p7 }
 spec:
+  strategy:
+    type: Recreate
   selector:
-    matchLabels: { app: kord-agent, agent: augur-qwen3-30b-a3b }
+    matchLabels: { app: kord-agent, agent: augur-minimax-m2p7 }
   template:
     metadata:
-      labels: { app: kord-agent, agent: augur-qwen3-30b-a3b }
+      labels: { app: kord-agent, agent: augur-minimax-m2p7 }
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -1534,8 +1300,8 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-              bash /app/scripts/setup-agent-dir.sh augur-qwen3-30b-a3b
-              AGENT_MEMORY_BUNDLE=analyze-selective-v1 AGENT_RUNTIME_BUNDLE=analyze-selective-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-qwen3-30b-a3b
+              bash /app/scripts/setup-agent-dir.sh augur-minimax-m2p7
+              KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-minimax-m2p7
           volumeMounts:
             - { name: runtime, mountPath: /kord }
 
@@ -1553,15 +1319,15 @@ spec:
             - |
               exec klaude-daemon
           env:
-            - { name: AGENT_NAME, value: "augur-qwen3-30b-a3b" }
+            - { name: AGENT_NAME, value: "augur-minimax-m2p7" }
             - { name: AGENT_PROFILE, value: "augur" }
-            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-qwen3-30b-a3b\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"bundleRefs\":{\"memory\":\"analyze-selective-v1\",\"skill\":null,\"runtime\":\"analyze-selective-v1\"},\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-minimax-m2p7\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/app/agents/augur/scripts/build_analysis_context.py\",\"promptContextScript\":\"/app/agents/augur/scripts/build_prompt_context.py\",\"repairPromptScript\":\"/app/agents/augur/scripts/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/app/agents/augur/skills/analyze/scripts/validate_output.py\",\"finalizeScript\":\"/app/agents/augur/scripts/finalize_analysis.py\"}}" }
             - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"version\":\"runtime-profile-v2\"}" }
-            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-qwen3-30b-a3b" }
-            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-qwen3-30b-a3b" }
-            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-qwen3-30b-a3b" }
-            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-qwen3-30b-a3b/.daemon-state" }
-            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-qwen3-30b-a3b/.daemon-state/sessions.json" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-minimax-m2p7" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-minimax-m2p7" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-minimax-m2p7" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-minimax-m2p7/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-minimax-m2p7/.daemon-state/sessions.json" }
             - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
             - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
             - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
@@ -1571,14 +1337,12 @@ spec:
             - { name: KORDINATE_HOME, value: "/app" }
             - { name: PROJECTS_ROOT, value: "/kord/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
-            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-qwen3-30b-a3b:9090/health" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-minimax-m2p7:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
             - { name: DAEMON_PROVIDER, value: "fireworks" }
-            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/qwen3-30b-a3b" }
+            - { name: DAEMON_MODEL, value: "fireworks/minimax-m2p7" }
             - { name: DAEMON_BACKEND, value: "fireworks" }
             - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
-            - { name: AGENT_MEMORY_BUNDLE, value: "analyze-selective-v1" }
-            - { name: AGENT_RUNTIME_BUNDLE, value: "analyze-selective-v1" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -1618,12 +1382,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-augur-qwen3-30b-a3b
-  labels: { app: kord-agent, agent: augur-qwen3-30b-a3b }
+  name: agent-augur-minimax-m2p7
+  labels: { app: kord-agent, agent: augur-minimax-m2p7 }
 spec:
   selector:
     app: kord-agent
-    agent: augur-qwen3-30b-a3b
+    agent: augur-minimax-m2p7
   ports:
     - name: health
       port: 9090

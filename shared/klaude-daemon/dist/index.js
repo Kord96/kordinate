@@ -607,7 +607,7 @@ function buildValidationRepairPrompt(input) {
         findings || '- Validation failed with no structured findings.',
         '',
         'Repair the output files now. Do not restart analysis. Keep the same project understanding and only change what is needed to pass validation.',
-        `Do not call \`/validate-output\` as a shell command. If you need to validate manually inside the runtime, run \`python3 ${input.validatorScript} ${input.targetDir}\`.`,
+        'Do not invoke the validator yourself during repair. The daemon/workflow will rerun validation after your changes.',
     ].join('\n');
 }
 function normalizeValidationMaxAttempts(raw) {

@@ -14,9 +14,9 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-generic-opus:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "generic-opus"
   },
   {
@@ -35,9 +35,9 @@
     "runtime": "claude-agent-sdk",
     "health_url": "http://agent-augur-opus:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "augur-opus"
   },
   {
@@ -55,9 +55,9 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-generic-gemini-31-pro:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "generic-gemini-31-pro"
   },
   {
@@ -75,9 +75,9 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-generic-gemini-25-pro:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "generic-gemini-25-pro"
   },
   {
@@ -95,9 +95,9 @@
     "runtime": "gemini-sdk",
     "health_url": "http://agent-generic-gemini-25-flash:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "generic-gemini-25-flash"
   },
   {
@@ -116,8 +116,8 @@
     "health_url": "http://agent-generic-glm5:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "generic-glm5"
   },
   {
@@ -136,8 +136,8 @@
     "health_url": "http://agent-generic-gpt54:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "generic-gpt54"
   },
   {
@@ -157,8 +157,8 @@
     "health_url": "http://agent-augur-gemini-31-pro:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "augur-gemini-31-pro"
   },
   {
@@ -178,8 +178,8 @@
     "health_url": "http://agent-augur-gemini-25-pro:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "augur-gemini-25-pro"
   },
   {
@@ -199,51 +199,9 @@
     "health_url": "http://agent-augur-gemini-25-flash:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "augur-gemini-25-flash"
-  },
-  {
-    "name": "augur-deepseek-v3p2",
-    "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
-      "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`"
-    ],
-    "backend_provider": "fireworks",
-    "backend_model": "accounts/fireworks/models/deepseek-v3p2",
-    "supported_agent_params": [
-      "bundle_mode"
-    ],
-    "active": false,
-    "specialization": "augur",
-    "runtime": "openclaude-harness",
-    "health_url": "http://agent-augur-deepseek-v3p2:9090/health",
-    "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
-    "request_topic": "augur-deepseek-v3p2"
-  },
-  {
-    "name": "augur-qwen3p6-plus",
-    "capabilities": [
-      "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
-      "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`"
-    ],
-    "backend_provider": "fireworks",
-    "backend_model": "accounts/fireworks/models/qwen3p6-plus",
-    "supported_agent_params": [
-      "bundle_mode"
-    ],
-    "active": false,
-    "specialization": "augur",
-    "runtime": "openclaude-harness",
-    "health_url": "http://agent-augur-qwen3p6-plus:9090/health",
-    "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
-    "request_topic": "augur-qwen3p6-plus"
   },
   {
     "name": "augur-glm5",
@@ -261,31 +219,31 @@
     "runtime": "openclaude-harness",
     "health_url": "http://agent-augur-glm5:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "augur-glm5"
   },
   {
-    "name": "augur-qwen3-30b-a3b",
+    "name": "augur-minimax-m2p7",
     "capabilities": [
       "Can produce a blast-aware semantic atlas/story pass via `/analyze` \u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
       "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`"
     ],
     "backend_provider": "fireworks",
-    "backend_model": "accounts/fireworks/models/qwen3-30b-a3b",
+    "backend_model": "fireworks/minimax-m2p7",
     "supported_agent_params": [
       "bundle_mode"
     ],
     "active": false,
     "specialization": "augur",
     "runtime": "openclaude-harness",
-    "health_url": "http://agent-augur-qwen3-30b-a3b:9090/health",
+    "health_url": "http://agent-augur-minimax-m2p7:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
-    "request_topic": "augur-qwen3-30b-a3b"
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
+    "request_topic": "augur-minimax-m2p7"
   },
   {
     "name": "augur-gpt54",
@@ -303,9 +261,9 @@
     "runtime": "codex-sdk",
     "health_url": "http://agent-augur-gpt54:9090/health",
     "default_working_dir": null,
-    "default_timeout_ms": 1500000,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "default_timeout_ms": 1800000,
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "augur-gpt54"
   },
   {
@@ -328,8 +286,8 @@
     "health_url": "http://agent-charon-gpt53-codex:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "charon-gpt53-codex"
   },
   {
@@ -350,8 +308,8 @@
     "health_url": "http://agent-sauron-gpt53-codex:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "sauron-gpt53-codex"
   },
   {
@@ -371,8 +329,8 @@
     "health_url": "http://agent-alfred-gpt-oss-20b:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-19T19:56:48Z",
-    "last_seen_at": "2026-04-19T19:56:48Z",
+    "registered_at": "2026-04-19T21:37:10Z",
+    "last_seen_at": "2026-04-19T21:37:10Z",
     "request_topic": "alfred-gpt-oss-20b"
   }
 ]

@@ -19,9 +19,6 @@ models:
   gpt-5.2-codex:
     backend_provider: openai
     runtime: codex-sdk
-  accounts/fireworks/models/deepseek-v3p2:
-    backend_provider: fireworks
-    runtime: openclaude-harness
   gemini-2.5-pro:
     backend_provider: gemini
     runtime: gemini-sdk
@@ -34,7 +31,7 @@ models:
   accounts/fireworks/models/glm-5:
     backend_provider: fireworks
     runtime: openclaude-harness
-  accounts/fireworks/models/qwen3-30b-a3b:
+  fireworks/minimax-m2p7:
     backend_provider: fireworks
     runtime: openclaude-harness
   fireworks/gpt-oss-20b:

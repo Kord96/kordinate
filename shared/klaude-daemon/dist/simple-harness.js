@@ -172,6 +172,19 @@ async function reportProgress(progress, event) {
         return;
     await progress(event);
 }
+function summarizeToolCall(name, args) {
+    const pathValue = typeof args.path === 'string'
+        ? args.path
+        : typeof args.file_path === 'string'
+            ? args.file_path
+            : typeof args.key_path === 'string'
+                ? args.key_path
+                : undefined;
+    if (pathValue) {
+        return `${name}: ${pathValue}`;
+    }
+    return name;
+}
 function shellSingleQuote(value) {
     return `'${value.replace(/'/g, `'\"'\"'`)}'`;
 }
@@ -425,7 +438,16 @@ async function executeSimpleHarnessToolCall(call, cwd, outputDir) {
     switch (call.name) {
         case 'read_file': {
             const target = String(call.arguments.path ?? '');
-            return await readFile(path.isAbsolute(target) ? target : path.join(cwd, target), 'utf8');
+            const resolved = path.isAbsolute(target) ? target : path.join(cwd, target);
+            try {
+                return await readFile(resolved, 'utf8');
+            }
+            catch (error) {
+                if (error?.code === 'ENOENT') {
+                    return `ERROR: file not found: ${resolved}`;
+                }
+                throw error;
+            }
         }
         case 'write_file': {
             const target = String(call.arguments.path ?? '');
@@ -642,7 +664,9 @@ async function runToolLoop(request, options) {
             payload: { cwd },
         });
         await writeEvent({ type: 'system', subtype: 'init', runtime: 'simple-harness', cwd, session_id: options.sessionId, model: options.model });
-        for (let step = 0; step < 8; step += 1) {
+        let step = 0;
+        while (true) {
+            step += 1;
             const response = await callOpenAiChatCompletion({
                 model: options.model,
                 apiKey: options.apiKey,
@@ -655,6 +679,28 @@ async function runToolLoop(request, options) {
             const choice = Array.isArray(response.choices) ? response.choices[0] : undefined;
             const message = choice && typeof choice === 'object' ? choice.message : undefined;
             const toolCalls = Array.isArray(message?.tool_calls) ? message.tool_calls : [];
+            await reportProgress(request.progress, {
+                source: 'agent-daemon',
+                kind: 'agent.update',
+                runtime: 'simple-harness',
+                model: options.model,
+                session_id: options.sessionId,
+                structured_log_path: structuredLogPath,
+                payload: toolCalls.length > 0
+                    ? {
+                        step,
+                        message: `agent requested ${toolCalls.length} tool call${toolCalls.length === 1 ? '' : 's'}`,
+                        tool_names: toolCalls
+                            .map(call => {
+                            const fn = call.function;
+                            return typeof fn?.name === 'string' ? fn.name : 'unknown';
+                        }),
+                    }
+                    : {
+                        step,
+                        message: 'agent produced a final response',
+                    },
+            });
             if (toolCalls.length === 0) {
                 const content = typeof message?.content === 'string'
                     ? message.content
@@ -691,9 +737,38 @@ async function runToolLoop(request, options) {
                 catch {
                     args = {};
                 }
+                await reportProgress(request.progress, {
+                    source: 'agent-daemon',
+                    kind: 'agent.update',
+                    runtime: 'simple-harness',
+                    model: options.model,
+                    session_id: options.sessionId,
+                    structured_log_path: structuredLogPath,
+                    payload: {
+                        step,
+                        message: summarizeToolCall(name, args),
+                        tool_name: name,
+                        phase: 'tool_start',
+                    },
+                });
                 await writeEvent({ type: 'tool_use', id, name, arguments: args });
                 const output = await executeSimpleHarnessToolCall({ id, name, arguments: args }, cwd, request.workspace?.output_dir);
                 await writeEvent({ type: 'tool_result', id, name, output: summarizeText(output, 1200) });
+                await reportProgress(request.progress, {
+                    source: 'agent-daemon',
+                    kind: 'agent.update',
+                    runtime: 'simple-harness',
+                    model: options.model,
+                    session_id: options.sessionId,
+                    structured_log_path: structuredLogPath,
+                    payload: {
+                        step,
+                        message: `${name} completed`,
+                        tool_name: name,
+                        phase: 'tool_complete',
+                        result_preview: summarizeText(output, 160),
+                    },
+                });
                 messages.push({
                     role: 'tool',
                     tool_call_id: id,
@@ -701,7 +776,6 @@ async function runToolLoop(request, options) {
                 });
             }
         }
-        throw new Error('simple harness exceeded maximum steps');
     }
     catch (error) {
         await writeEvent({ type: 'result', subtype: 'error', error: error instanceof Error ? error.message : String(error) });

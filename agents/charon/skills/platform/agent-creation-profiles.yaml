@@ -204,31 +204,6 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  augur-deepseek-v3p2:
-    description: Augur specialist pinned to Fireworks DeepSeek V3.2.
-    defaults:
-      flavor: augur
-      image_customization: agent-augur
-      provider: fireworks
-      model: accounts/fireworks/models/deepseek-v3p2
-      backend: fireworks
-      backend_base_url: https://api.fireworks.ai/inference/v1
-      secret_env: BACKEND_API_KEY
-      secret_name: fireworks-api
-      secret_key: api-key
-    required_choices:
-      - memory_bundle
-      - runtime_bundle
-    choices:
-      memory_bundle:
-        allowed:
-          - analyze-holistic-v1
-          - analyze-selective-v1
-      runtime_bundle:
-        allowed:
-          - analyze-holistic-v1
-          - analyze-selective-v1
-
   augur-glm5:
     description: Augur specialist pinned to GLM-5 through Fireworks.
     defaults:
@@ -254,13 +229,13 @@ profiles:
           - analyze-holistic-v1
           - analyze-selective-v1
 
-  augur-qwen3-30b-a3b:
-    description: Augur specialist pinned to Qwen3 30B-A3B through Fireworks.
+  augur-minimax-m2p7:
+    description: Augur specialist pinned to MiniMax M2.7 through Fireworks.
     defaults:
       flavor: augur
       image_customization: agent-augur
       provider: fireworks
-      model: accounts/fireworks/models/qwen3-30b-a3b
+      model: fireworks/minimax-m2p7
       backend: fireworks
       backend_base_url: https://api.fireworks.ai/inference/v1
       secret_env: BACKEND_API_KEY

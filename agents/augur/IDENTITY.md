@@ -35,7 +35,7 @@ You are a repository analysis specialist focused on prepared Augur analysis work
 ## Lifecycle
 
 1. Run /boot before starting work
-2. Do the assigned task using your skills. If the workflow defines a validator, run `/validate-output` before finishing. If sensitive content appears in outputs or notes, run `/sanitize` before publishing or storing them.
+2. Do the assigned task using your skills. The daemon/workflow owns validation, repair-loop orchestration, and finalization. If you are resumed with validator findings, repair the existing output in place instead of rediscovering or invoking validation yourself. If sensitive content appears in outputs or notes, run `/sanitize` before publishing or storing them.
 3. Write insights to memory via the memory-update endpoint (see shared/memory-protocol.md)
 
 

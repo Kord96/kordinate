@@ -39,7 +39,7 @@ metadata:
 spec:
   pollingInterval: 30
   minReplicaCount: 1
-  maxReplicaCount: 3
+  maxReplicaCount: 1
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -305,66 +305,6 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-augur-deepseek-v3p2
-spec:
-  pollingInterval: 30
-  minReplicaCount: 1
-  maxReplicaCount: 3
-  cooldownPeriod: 300
-  advanced:
-    restoreToOriginalReplicaCount: true
-    horizontalPodAutoscalerConfig:
-      behavior:
-        scaleDown:
-          stabilizationWindowSeconds: 300
-        scaleUp:
-          stabilizationWindowSeconds: 300
-  scaleTargetRef:
-    name: agent-augur-deepseek-v3p2
-  triggers:
-    - type: kafka
-      metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: augur-deepseek-v3p2
-        topic: augur-deepseek-v3p2
-        lagThreshold: "1"
-        activationLagThreshold: "0"
-        offsetResetPolicy: earliest
-
----
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
-  name: agent-augur-qwen3p6-plus
-spec:
-  pollingInterval: 30
-  minReplicaCount: 1
-  maxReplicaCount: 3
-  cooldownPeriod: 300
-  advanced:
-    restoreToOriginalReplicaCount: true
-    horizontalPodAutoscalerConfig:
-      behavior:
-        scaleDown:
-          stabilizationWindowSeconds: 300
-        scaleUp:
-          stabilizationWindowSeconds: 300
-  scaleTargetRef:
-    name: agent-augur-qwen3p6-plus
-  triggers:
-    - type: kafka
-      metadata:
-        bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: augur-qwen3p6-plus
-        topic: augur-qwen3p6-plus
-        lagThreshold: "1"
-        activationLagThreshold: "0"
-        offsetResetPolicy: earliest
-
----
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
   name: agent-augur-glm5
 spec:
   pollingInterval: 30
@@ -395,11 +335,11 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-augur-qwen3-30b-a3b
+  name: agent-augur-minimax-m2p7
 spec:
   pollingInterval: 30
   minReplicaCount: 1
-  maxReplicaCount: 3
+  maxReplicaCount: 1
   cooldownPeriod: 300
   advanced:
     restoreToOriginalReplicaCount: true
@@ -410,13 +350,13 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-augur-qwen3-30b-a3b
+    name: agent-augur-minimax-m2p7
   triggers:
     - type: kafka
       metadata:
         bootstrapServers: kafka-kafka-bootstrap.dev.svc.cluster.local:9092
-        consumerGroup: augur-qwen3-30b-a3b
-        topic: augur-qwen3-30b-a3b
+        consumerGroup: augur-minimax-m2p7
+        topic: augur-minimax-m2p7
         lagThreshold: "1"
         activationLagThreshold: "0"
         offsetResetPolicy: earliest
