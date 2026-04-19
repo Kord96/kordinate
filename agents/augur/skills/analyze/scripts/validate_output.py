@@ -847,6 +847,7 @@ def validate_atlas(
         description = str(f.get("description") or "").strip()
         summary = str(f.get("summary") or "").strip()
         trigger = str(f.get("trigger") or "").strip()
+        outcome = str(f.get("outcome") or "").strip()
         if not description:
             warn(f"Flow '{fid}' is missing description", "flows")
         if not summary:
@@ -859,13 +860,17 @@ def validate_atlas(
                 warn(f"Flow '{fid}' summary is too long; keep it to roughly 2-4 sentences", "flows")
         if not trigger:
             warn(f"Flow '{fid}' is missing trigger; say what starts the path", "flows")
+        if not outcome:
+            warn(f"Flow '{fid}' is missing outcome; say what successful completion produces", "flows")
+        elif len(outcome.split()) < 4:
+            warn(f"Flow '{fid}' outcome is too thin; describe the result of the flow more clearly", "flows")
         if not f.get("grounded_in"):
             warn(f"Flow '{fid}' has no grounded_in", "flows")
         elif project_root or analysis_dir:
             issues.extend(check_grounded_in(f["grounded_in"], project_root, analysis_dir, "flows", fid))
             issues.extend(verify_grounding_quality(
                 f["grounded_in"],
-                " ".join(str(part) for part in (f.get("name"), f.get("title"), f.get("summary"), f.get("trigger")) if part),
+                " ".join(str(part) for part in (f.get("name"), f.get("title"), f.get("summary"), f.get("trigger"), f.get("outcome")) if part),
                 project_root,
                 analysis_dir,
                 "flows",
@@ -1757,10 +1762,36 @@ def validate_story(
     for flow in flows:
         flow_summary = str(flow.get("summary") or "").strip()
         flow_title = str(flow.get("title") or "").strip()
+        flow_trigger = str(flow.get("trigger") or "").strip()
+        flow_outcome = str(flow.get("outcome") or "").strip()
         if flow_title:
             flow_titles_or_summaries.append(flow_title)
         if flow_summary:
             flow_titles_or_summaries.append(flow_summary)
+        if not flow_trigger:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' flow '{flow.get('id', '?')}' is missing trigger; make what starts the flow explicit",
+                "related_entities": [sid, str(flow.get("id") or "?")],
+            })
+        if not flow_outcome:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' flow '{flow.get('id', '?')}' is missing outcome; make what successful completion produces explicit instead of relying on the final step alone",
+                "related_entities": [sid, str(flow.get("id") or "?")],
+            })
+        elif len(flow_outcome.split()) < 4:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' flow '{flow.get('id', '?')}' has a thin outcome; describe the result of the flow more clearly",
+                "related_entities": [sid, str(flow.get("id") or "?")],
+            })
         if primary_mode == "flow":
             if not flow_summary:
                 issues.append({

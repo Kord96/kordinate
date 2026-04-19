@@ -83,6 +83,7 @@ flows:
     title: "<Human Readable>"
     type: "<freeform>"
     trigger: "<what starts this flow>"
+    outcome: "<what successful completion produces>"
     summary: "<one sentence — why this flow matters to the story>"
     severity: "<critical|high|medium|low>"
     detection: ["<signal or 'none'>"]

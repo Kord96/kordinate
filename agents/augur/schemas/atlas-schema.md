@@ -198,8 +198,9 @@ Hierarchy rules:
     "type": "data | control | event | state | resource",
     "name": "<Human Readable Flow Name>",
     "description": "<one sentence>",
-    "summary": "<2-4 sentences explaining what starts the flow, which boundaries it crosses, and why it matters>",
+    "summary": "<2-4 sentences explaining what starts the flow, which boundaries it crosses, what it produces, and why it matters>",
     "trigger": "<what starts it>",
+    "outcome": "<what successful completion produces>",
     "actors": ["<actor-id>"],
     "grounded_in": ["<file:line>"],
     "health": {
