@@ -158,6 +158,8 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         pushLine('Stories output dir', context.stories_dir);
         pushLine('Narratives output path', context.narratives_path);
         pushLine('Meta output path', context.meta_path);
+        pushLine('Grounding summary path', context.grounding_summary_path);
+        pushLine('Write handoff path', context.write_handoff_path);
         if (typeof agentContract.validation?.validatorScript === 'string' && agentContract.validation.validatorScript.trim()) {
             lines.push(`- Validator script: \`${agentContract.validation.validatorScript.trim()}\``);
         }
@@ -178,6 +180,14 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         lines.push('- Revisit larger supporting fact domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.');
         lines.push('- Read repo code through fact-selected files, architecture entrypoints, adjacent implementation, or concrete validation gaps.');
         lines.push('- Do not begin with repo-root listings or metadata-file discovery.');
+        if (context.execution_strategy === 'staged-weak') {
+            lines.push('- Execution strategy: `staged-weak`.');
+            lines.push('- Breadth reading is allowed until you are sufficiently grounded.');
+            lines.push('- Once grounded, stop broad repo exploration and update the exact `Grounding summary path` above.');
+            lines.push('- After any compaction, re-read the `Write handoff path`, the `Grounding summary path`, starter facts, and schema files before doing new repo reads.');
+            lines.push('- In staged-weak mode, write artifacts in this order: atlas, stories, narratives, then finalize.');
+            lines.push('- Do not return to broad repo exploration after switching into write mode unless validation identifies a specific grounding gap.');
+        }
         lines.push('- Available tools in this runtime are `Read`, `Edit`, and `Bash`.');
         for (const guidance of toolGuidance) {
             lines.push(`- ${guidance}`);
