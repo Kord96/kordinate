@@ -551,6 +551,11 @@ function buildValidationRepairPrompt(input) {
         `Do not call \`/validate-output\` as a shell command. If you need to validate manually inside the runtime, run \`python3 ${input.validatorScript} ${input.targetDir}\`.`,
     ].join('\n');
 }
+function normalizeValidationMaxAttempts(raw) {
+    if (!Number.isFinite(raw))
+        return 3;
+    return Math.max(1, Math.floor(raw));
+}
 async function clearValidationLock(targetDir) {
     await rm(join(targetDir, '.validate-lock'), { force: true });
 }
@@ -601,9 +606,7 @@ async function maybeRunValidationLoop(session, message, result) {
             },
         };
     }
-    const maxAttempts = Number.isFinite(validation.maxAttempts)
-        ? Math.max(validation.maxAttempts, 1)
-        : Number.POSITIVE_INFINITY;
+    const maxAttempts = normalizeValidationMaxAttempts(validation.maxAttempts);
     const timeoutMs = Number.isFinite(message.timeout_ms) ? Math.max(1, message.timeout_ms) : 300000;
     const validationDeadline = Date.now() + timeoutMs;
     const minRepairBudgetMs = 15000;
@@ -661,7 +664,7 @@ async function maybeRunValidationLoop(session, message, result) {
             };
         }
         const remainingBudgetMs = validationDeadline - Date.now();
-        const outOfAttempts = Number.isFinite(maxAttempts) && attempt >= maxAttempts;
+        const outOfAttempts = attempt >= maxAttempts;
         const outOfTime = remainingBudgetMs <= minRepairBudgetMs;
         if (outOfAttempts || outOfTime || currentResult.status === 'cancelled') {
             await runValidatorScript(validation.validatorScript, targetDir, true, validatorEnv);
@@ -720,7 +723,11 @@ async function handleRequest(message, gatewayReceivedAt) {
     const samplePeakRss = () => {
         peakRssBytes = Math.max(peakRssBytes, process.memoryUsage().rss);
     };
-    const contractError = validateRequestContract(message);
+    const preparedMessage = message;
+    const session = sessionForMessage(message);
+    const workflowResult = await agentWorkflowHooks?.beforeRuntime?.(preparedMessage);
+    const effectiveMessage = workflowResult?.runtimeMessage ?? preparedMessage;
+    const contractError = validateRequestContract(effectiveMessage);
     if (contractError) {
         const daemonCompletedAt = Date.now();
         const telemetry = buildTelemetryMetadata({
@@ -757,15 +764,11 @@ async function handleRequest(message, gatewayReceivedAt) {
             errors: [contractError],
         };
     }
-    const preparedMessage = message;
-    const session = sessionForMessage(message);
-    await ensureGitSafeDirectory(preparedMessage.working_dir);
+    await ensureGitSafeDirectory(effectiveMessage.working_dir);
     samplePeakRss();
     const executeStartAt = Date.now();
     let executedSession = session;
     let executedResult;
-    const workflowResult = await agentWorkflowHooks?.beforeRuntime?.(preparedMessage);
-    const effectiveMessage = workflowResult?.runtimeMessage ?? preparedMessage;
     if (workflowResult?.skipResult) {
         executedResult = workflowResult.skipResult;
     }

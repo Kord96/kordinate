@@ -1131,6 +1131,11 @@ def validate_atlas(
 
     # Concepts
     concepts = atlas.get("concepts", {})
+    if concepts is None:
+        concepts = {}
+    elif not isinstance(concepts, dict):
+        error("concepts must be an object with detected_patterns and detected_anti_patterns", "concepts")
+        concepts = {}
 
     def validate_concept_entry(entry: dict, entry_kind: str) -> None:
         cid = str(entry.get("id") or "?")
