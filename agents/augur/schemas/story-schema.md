@@ -39,6 +39,9 @@ Apply these rules to story summaries, findings, and rationale:
 - `teaches` is the story thesis and should be the first thing a reader can understand; write it as one clear teaching sentence, not a label
 - treat `observations` and `rationale` as supporting inspection material; do not let them overwhelm the main teaching arc
 - prefer one primary structure or flow explainer over several competing equal-weight blocks
+- avoid combining both `structures` and `flows` in the same story unless one is clearly secondary and materially necessary
+- for `structure` or `flow` stories, the non-primary explainer should usually be absent or limited to one supporting variant
+- mixed `structure` + `flow` stories are most justified for `state` and `failure` stories, where both the boundary and the operating sequence may be needed together
 
 ## Story Schema
 
@@ -190,6 +193,7 @@ Rules:
   - `state` stories may use either a structure or a flow, but one should clearly explain the state boundary
   - `failure` stories should make the failure path or degraded mode the main explainer
   - `decision` stories should make the decision and trade-off explicit, with structure/flow only as support
+- do not default to always emitting both a structure and a flow; if both appear, there should be a clear reason the story cannot teach the concern without the supporting explainer
 - avoid stories that give equal weight to several unrelated explainers; split them or narrow them instead
 
 ## Grounding Style

@@ -1835,6 +1835,58 @@ def validate_story(
             "related_entities": [sid],
         })
 
+    mixed_primary_explainers = bool(structures) and bool(flows)
+    if mixed_primary_explainers:
+        if primary_mode in {"structure", "flow"}:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": (
+                    f"Story '{sid}' mixes structure and flow explainers even though it is {primary_mode}-first; "
+                    "split the concern or demote one explainer unless both are truly necessary"
+                ),
+                "related_entities": [sid],
+            })
+        elif primary_mode == "decision" and (structures or flows):
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": (
+                    f"Decision-first story '{sid}' includes both structure and flow explainers; "
+                    "keep those only when they materially clarify the decision"
+                ),
+                "related_entities": [sid],
+            })
+        elif primary_mode in {"state", "failure"} and len(structures) > 1 and len(flows) > 1:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": (
+                    f"{primary_mode.title()}-first story '{sid}' mixes multiple structures and multiple flows; "
+                    "keep one primary explainer and at most one supporting counterpart unless the concern is truly irreducible"
+                ),
+                "related_entities": [sid],
+            })
+    if primary_mode == "structure" and len(flows) > 1:
+        issues.append({
+            "level": "WARNING",
+            "section": "story",
+            "kind": "story-quality",
+            "message": f"Structure-first story '{sid}' has too many supporting flows; keep at most one if the story really needs it",
+            "related_entities": [sid],
+        })
+    if primary_mode == "flow" and len(structures) > 1:
+        issues.append({
+            "level": "WARNING",
+            "section": "story",
+            "kind": "story-quality",
+            "message": f"Flow-first story '{sid}' has too many supporting structures; keep at most one if the story really needs it",
+            "related_entities": [sid],
+        })
+
     thesis_text = " ".join(part for part in (teaches_text, str(story.get("title") or ""), summary) if part).lower()
     state_tokens = ("state", "storage", "persist", "cache", "queue", "snapshot", "config", "session")
     failure_tokens = ("fail", "degrad", "stale", "lag", "retry", "outage", "incident", "recovery", "mitigat", "cascade")
@@ -2067,6 +2119,10 @@ def detect_cross_artifact_conflicts(
                 if component in components:
                     ids.add(component)
         return ids
+
+    def story_primary_mode(story_id: str) -> str:
+        story = all_stories.get(story_id) or {}
+        return str(story.get("primary_mode") or "").strip()
 
     root_to_story_ids: dict[str, list[str]] = {}
     for sid in all_stories:
@@ -2456,6 +2512,32 @@ def detect_cross_artifact_conflicts(
 
         if nid == "system-overview":
             selected_roots = {story_root(story_id) for story_id in referenced_story_ids if story_id in all_stories}
+            selected_modes = [story_primary_mode(story_id) for story_id in referenced_story_ids if story_id in all_stories]
+            flow_count = sum(1 for mode in selected_modes if mode == "flow")
+            structure_like_count = sum(1 for mode in selected_modes if mode in {"structure", "state", "decision"})
+            available_structure_like = any(
+                story_primary_mode(story_id) in {"structure", "state", "decision"}
+                for story_id in all_stories
+            )
+            if (
+                len(selected_modes) >= 4
+                and flow_count >= max(3, len(selected_modes) - 1)
+                and structure_like_count <= 1
+                and available_structure_like
+            ):
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-selection",
+                        "message": (
+                            "system-overview leans too heavily on flow-first stories; include more structure- or state-first stories so the repo overview teaches system shape as well as motion"
+                        ),
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [nid, *referenced_story_ids],
+                        "evidence_refs": [],
+                    }
+                )
             if preferred_root_ids:
                 expected_root_count = min(2, len(preferred_root_ids))
                 covered_preferred = [root_id for root_id in preferred_root_ids if root_id in selected_roots]

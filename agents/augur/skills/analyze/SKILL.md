@@ -101,6 +101,9 @@ The deterministic phase is already done. Work from the prepared run directory an
    - write `teaches` as the visible thesis sentence for the story
    - treat observations, anchor evidence, and rationale as supporting inspection material, not as equal-weight primary sections
    - when a story is flow-first, use `flow` consistently in titles and summaries instead of mixing `path` and `flow`
+   - do not default to emitting both `structures` and `flows` in the same story
+   - for `structure`-first and `flow`-first stories, prefer one primary explainer and omit the other unless it is materially necessary
+   - mixed `structure` + `flow` stories should usually be reserved for `state` or `failure` stories where both views are needed together
 
 6. Produce `$RUN/narratives.yaml`.
    - read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` before writing
