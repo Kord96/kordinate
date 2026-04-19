@@ -153,6 +153,7 @@ export interface AgentDiscoveryRecord {
   last_seen_at?: string
   request_topic?: string
   default_working_dir?: string
+  default_timeout_ms?: number
   registered_at?: string
 }
 

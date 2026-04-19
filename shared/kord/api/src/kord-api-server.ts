@@ -20,7 +20,6 @@ const kafkaBrokers = (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(',')
 const replyTopic = process.env.KORD_API_REPLY_TOPIC ?? 'kord-api-replies'
 const progressTopic = process.env.KORD_API_PROGRESS_TOPIC ?? process.env.PROGRESS_TOPIC ?? 'kord-progress'
 const defaultTimeoutMs = Number.parseInt(process.env.KORD_API_DEFAULT_TIMEOUT_MS ?? '120000', 10)
-const augurAnalyzeDefaultTimeoutMs = Number.parseInt(process.env.KORD_API_AUGUR_ANALYZE_TIMEOUT_MS ?? '1800000', 10)
 const kubernetesHost = process.env.KUBERNETES_SERVICE_HOST ?? 'kubernetes.default.svc'
 const kubernetesPort = Number.parseInt(process.env.KUBERNETES_SERVICE_PORT_HTTPS ?? '443', 10)
 const kubernetesNamespacePath = process.env.KUBERNETES_NAMESPACE_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
@@ -59,13 +58,13 @@ let kubernetesNamespacePromise: Promise<string> | undefined
 let kubernetesTokenPromise: Promise<string> | undefined
 let kubernetesCaPromise: Promise<Buffer> | undefined
 
-function resolveTimeoutMs(agent: string, body: {
+function resolveTimeoutMs(record: { name: string; default_timeout_ms?: number }, body: {
   prompt: string
   timeout_ms?: number
 }): number {
   if (typeof body.timeout_ms === 'number') return body.timeout_ms
-  if (agent.startsWith('augur-') && body.prompt.trimStart().startsWith('/analyze')) {
-    return augurAnalyzeDefaultTimeoutMs
+  if (typeof record.default_timeout_ms === 'number' && Number.isFinite(record.default_timeout_ms) && record.default_timeout_ms > 0) {
+    return record.default_timeout_ms
   }
   return defaultTimeoutMs
 }
@@ -652,7 +651,7 @@ async function sendPrompt(agent: string, body: {
   session_id?: string
 }, requestId?: string): Promise<{ correlationId: string, reply: Promise<ResponseMessage> }> {
   const correlationId = requestId ?? `${agent}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-  const timeoutMs = resolveTimeoutMs(agent, body)
+  const timeoutMs = resolveTimeoutMs({ name: agent }, body)
   const workingDir = canonicalizeWorkingDir(body.working_dir)
   const request: RequestMessage = {
     type: 'request',
@@ -993,7 +992,7 @@ const server = createServer(async (req, res) => {
         requested_variant: body.variant ?? null,
         requested_backend_model: body.backend_model ?? null,
         async: body.async === true,
-        timeout_ms: resolveTimeoutMs(record.name, body),
+        timeout_ms: resolveTimeoutMs(record, body),
         has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
         session_id: body.session_id ?? null,
       })
@@ -1001,7 +1000,7 @@ const server = createServer(async (req, res) => {
         request_id: requestId,
         agent: record.name,
         created_at: new Date(startedAt).toISOString(),
-        timeout_ms: resolveTimeoutMs(record.name, body),
+        timeout_ms: resolveTimeoutMs(record, body),
       }))
       pushRequestEvent(requestId, 'request_received', {
         requested_agent: name,
@@ -1009,7 +1008,7 @@ const server = createServer(async (req, res) => {
         requested_variant: body.variant ?? null,
         requested_backend_model: body.backend_model ?? null,
         async: body.async === true,
-        timeout_ms: resolveTimeoutMs(record.name, body),
+        timeout_ms: resolveTimeoutMs(record, body),
         has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
         session_id: body.session_id ?? null,
       })
@@ -1102,7 +1101,7 @@ const server = createServer(async (req, res) => {
           request_id: requestId,
           agent: record.name,
           created_at: new Date(startedAt).toISOString(),
-          timeout_ms: resolveTimeoutMs(record.name, body),
+          timeout_ms: resolveTimeoutMs(record, body),
         })
         const failedRecord = applyFailureToRequestRecord(baseRecord, {
           message,
@@ -1114,7 +1113,7 @@ const server = createServer(async (req, res) => {
           response,
         })
         pushRequestEvent(requestId, isTimeout ? 'prompt_timeout' : 'request_error', {
-          ...(isTimeout ? { timeout_ms: existing?.timeout_ms ?? resolveTimeoutMs(record.name, body) } : {}),
+          ...(isTimeout ? { timeout_ms: existing?.timeout_ms ?? resolveTimeoutMs(record, body) } : {}),
           error: message,
         })
         const payload: Record<string, unknown> = { ...response }

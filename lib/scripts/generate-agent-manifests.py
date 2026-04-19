@@ -96,6 +96,7 @@ def build_discovery_record(agent: dict, generated_at: str) -> dict:
     identity = parse_identity(agent)
     daemon = agent.get("runtime", {}).get("daemon", {})
     default_working_dir = daemon.get("default_working_dir")
+    default_timeout_ms = daemon.get("default_timeout_ms")
     return {
         "name": name,
         "capabilities": identity["capabilities"],
@@ -107,6 +108,7 @@ def build_discovery_record(agent: dict, generated_at: str) -> dict:
         "runtime": daemon.get("kind", "openclaude-harness"),
         "health_url": f"http://agent-{name}:9090/health",
         "default_working_dir": default_working_dir,
+        "default_timeout_ms": default_timeout_ms,
         "registered_at": generated_at,
         "last_seen_at": generated_at,
         "request_topic": agent["runtime"]["kafka"]["request_topic"],

@@ -143,6 +143,7 @@ export function createDiscoveryRegistry(input) {
             backend_provider: record.backend_provider,
             backend_model: record.backend_model,
             supported_agent_params: record.supported_agent_params,
+            default_timeout_ms: record.default_timeout_ms,
             active: record.active,
         };
     }
