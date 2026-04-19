@@ -1585,16 +1585,54 @@ def validate_story(
     story: dict,
     atlas_node_ids: set,
     atlas_entity_ids: set,
+    atlas_story_node_details: dict[str, dict] | None = None,
     project_root: Path | None = None,
     analysis_dir: Path | None = None,
 ) -> list[dict]:
     issues = []
+    atlas_story_node_details = atlas_story_node_details or {}
+    warned_story_node_detail_ids: set[str] = set()
 
     def error(msg):
         issues.append({"level": "ERROR", "section": "story", "message": msg})
 
     def warn(msg):
         issues.append({"level": "WARNING", "section": "story", "message": msg})
+
+    def warn_story_node_detail(nid: str):
+        if nid in warned_story_node_detail_ids:
+            return
+        warned_story_node_detail_ids.add(nid)
+        detail = atlas_story_node_details.get(nid) or {}
+        if not detail:
+            return
+        description = str(detail.get("description") or "").strip()
+        summary = str(detail.get("summary") or "").strip()
+        kind = str(detail.get("kind") or "atlas node")
+        if not description:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' uses {kind} '{nid}' but it has no description; story-used atlas nodes need basic drilldown prose",
+                "related_entities": [sid, nid],
+            })
+        if not summary:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' uses {kind} '{nid}' but it has no summary; story-used atlas nodes need richer drilldown prose for the drawer",
+                "related_entities": [sid, nid],
+            })
+        elif len(summary.split()) < 12:
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' uses {kind} '{nid}' but its summary is too thin for drilldown; explain ownership, dependency shape, and why it matters",
+                "related_entities": [sid, nid],
+            })
 
     sid = story.get("id", "<unknown>")
     parent_story = story.get("parent")
@@ -1659,6 +1697,8 @@ def validate_story(
             nid = node.get("id", "") if isinstance(node, dict) else node
             if nid and nid not in atlas_node_ids:
                 error(f"Story '{sid}' structure node '{nid}' not in atlas")
+            elif nid:
+                warn_story_node_detail(nid)
             if isinstance(node, dict):
                 observation_ids = [obs_id for obs_id in (node.get("observation_ids") or []) if obs_id]
                 child_ids = [child_id for child_id in (node.get("children") or []) if child_id]
@@ -1691,6 +1731,8 @@ def validate_story(
                 ref = step.get(key, "")
                 if ref and ref not in atlas_node_ids:
                     error(f"Story '{sid}' flow step {key} '{ref}' not in atlas")
+                elif ref:
+                    warn_story_node_detail(ref)
 
     # Observation grounded_in
     for obs in story.get("observations", []):
@@ -3199,12 +3241,27 @@ def main():
     narratives: list[dict] = []
     if not DETERMINISTIC_ONLY:
         component_signal_counts: dict[str, int] = {}
+        atlas_story_node_details: dict[str, dict] = {}
         if isinstance(atlas, dict):
             component_ids = {
                 str(component.get("id"))
                 for component in (atlas.get("components") or [])
                 if isinstance(component, dict) and component.get("id")
             }
+            for component in atlas.get("components") or []:
+                if isinstance(component, dict) and component.get("id"):
+                    atlas_story_node_details[str(component.get("id"))] = {
+                        "kind": "component",
+                        "description": component.get("description"),
+                        "summary": component.get("summary"),
+                    }
+            for dependency in atlas.get("external_dependencies") or []:
+                if isinstance(dependency, dict) and dependency.get("id"):
+                    atlas_story_node_details[str(dependency.get("id"))] = {
+                        "kind": "external dependency",
+                        "description": dependency.get("description"),
+                        "summary": dependency.get("summary"),
+                    }
             for flow in atlas.get("flows") or []:
                 if not isinstance(flow, dict):
                     continue
@@ -3244,7 +3301,14 @@ def main():
                     continue
                 sid = story.get("id", f.stem)
                 story_ids.add(sid)
-                all_issues.extend(validate_story(story, atlas_node_ids, atlas_entity_ids, project_root, analysis_dir))
+                all_issues.extend(validate_story(
+                    story,
+                    atlas_node_ids,
+                    atlas_entity_ids,
+                    atlas_story_node_details,
+                    project_root,
+                    analysis_dir,
+                ))
 
             # Story tree: check children per parent
             for f in sorted(stories_dir.iterdir()):
