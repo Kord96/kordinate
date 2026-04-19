@@ -97,6 +97,10 @@ The deterministic phase is already done. Work from the prepared run directory an
 5. Produce `$RUN/stories/*.yaml`.
    - read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` before writing
    - keep every story grounded in inspected evidence
+   - make each story teach one primary thing; choose a `primary_mode` and let one explainer dominate
+   - write `teaches` as the visible thesis sentence for the story
+   - treat observations, anchor evidence, and rationale as supporting inspection material, not as equal-weight primary sections
+   - when a story is flow-first, use `flow` consistently in titles and summaries instead of mixing `path` and `flow`
 
 6. Produce `$RUN/narratives.yaml`.
    - read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` before writing

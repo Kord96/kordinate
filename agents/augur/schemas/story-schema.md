@@ -4,6 +4,8 @@ Canonical contract for `stories/*.yaml`.
 
 Stories are the primary navigation layer over the atlas. Root stories mirror top-level components. Child stories zoom into a specific concern within that component subtree or a cross-cutting concern anchored there.
 
+Each story should teach one primary thing. A story may include structures, flows, observations, and rationale together, but one explainer mode must dominate and the rest should support it rather than compete with it.
+
 ## Prose Rules
 
 Apply these rules to story summaries, findings, and rationale:
@@ -33,6 +35,10 @@ Apply these rules to story summaries, findings, and rationale:
 - treat stories as resolved teaching structure, not as arbitrary file-group summaries
 - when `facts/component-seeds.json` and `facts/story-seeds.json` are present, use them to challenge root choice and child-story decomposition before writing
 - when `facts/narrative-seeds.json` is present, keep story scope and teaching value strong enough that narratives can select stories by explanatory value rather than by root coverage alone
+- every story must declare one `primary_mode`; use it to decide what the main explainer is, not just as metadata
+- `teaches` is the story thesis and should be the first thing a reader can understand; write it as one clear teaching sentence, not a label
+- treat `observations` and `rationale` as supporting inspection material; do not let them overwhelm the main teaching arc
+- prefer one primary structure or flow explainer over several competing equal-weight blocks
 
 ## Story Schema
 
@@ -40,6 +46,7 @@ Apply these rules to story summaries, findings, and rationale:
 id: "<kebab-case>"
 title: "<Human Readable Title>"
 teaches: "<one sentence — what the reader learns>"
+primary_mode: "<structure|flow|state|failure|decision>"
 tags: ["<freeform>"]
 
 anchor:
@@ -73,6 +80,7 @@ flows:
     title: "<Human Readable>"
     type: "<freeform>"
     trigger: "<what starts this flow>"
+    summary: "<one sentence — why this flow matters to the story>"
     severity: "<critical|high|medium|low>"
     detection: ["<signal or 'none'>"]
     recovery: ["<step or 'none'>"]
@@ -158,6 +166,32 @@ Prefer child stories that explain one distinct concern class:
 Avoid child stories that merely rename a directory, restate the root summary, or split the parent by arbitrary file groups.
 Avoid child stories that exist only to satisfy count heuristics. A child should teach one distinct concern the parent cannot explain as clearly on its own.
 
+## Primary Mode
+
+Every story must declare one `primary_mode`:
+
+- `structure`
+  - the story primarily teaches arrangement, ownership, or dependency shape
+- `flow`
+  - the story primarily teaches an operating flow or control path
+- `state`
+  - the story primarily teaches state lifecycle, persistence, or boundary semantics
+- `failure`
+  - the story primarily teaches degraded behavior, failure propagation, or operations risk
+- `decision`
+  - the story primarily teaches a design choice or trade-off
+
+Rules:
+
+- the visible story thesis (`teaches`) should match the declared `primary_mode`
+- one primary explainer should dominate:
+  - `structure` stories usually lead with one structure view
+  - `flow` stories usually lead with one flow
+  - `state` stories may use either a structure or a flow, but one should clearly explain the state boundary
+  - `failure` stories should make the failure path or degraded mode the main explainer
+  - `decision` stories should make the decision and trade-off explicit, with structure/flow only as support
+- avoid stories that give equal weight to several unrelated explainers; split them or narrow them instead
+
 ## Grounding Style
 
 - observations and summaries should sound like the code they cite, not like generic architectural paraphrases
@@ -177,6 +211,10 @@ Summary length scales with depth and grounding scope. Cap at 3 paragraphs.
 | 0 (root) | 2 | 50-80 words | Orient: what this top-level component owns and why it matters |
 | 1 (child) | 3 | 80-120 words | Explain: one specific concern with evidence |
 
+`teaches` should stay to one sentence.
+`summary` should explain the concern in prose, while the primary explainer shows it.
+`observations` and `rationale` should support understanding, not restate the summary in list form.
+
 ## Suggested Types
 
 Types are freeform strings.
@@ -195,6 +233,8 @@ Types are freeform strings.
 - `event chain`
 - `deployment sequence`
 - `config resolution`
+
+When a flow is the primary explainer for a story, prefer the word `flow` consistently in titles, summaries, and UI-facing prose rather than switching between `flow` and `path`.
 
 ## Attachment Rules
 

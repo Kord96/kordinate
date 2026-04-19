@@ -15,6 +15,9 @@ Incremental mode means the semantic pass should start from the accepted prior se
 7. Read only the repo files needed to verify the changed slice and its architectural impact.
 8. Just before writing or rewriting `$RUN/atlas.json`, read `$KORDINATE_HOME/agents/augur/schemas/atlas-schema.md` and follow it exactly.
 9. Just before writing `stories/*.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` and follow it exactly.
+   - Preserve or sharpen the story's dominant `primary_mode`; avoid turning one story into several equal-weight explainers.
+   - Keep `teaches` as the story thesis and treat evidence/rationale as supporting inspection material.
+   - When updating a flow-first story, keep `flow` terminology consistent instead of mixing `path` and `flow`.
 10. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
 11. Update outputs under `$RUN`, preserving unaffected structure where possible.
 

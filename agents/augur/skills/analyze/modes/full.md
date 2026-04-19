@@ -30,6 +30,9 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
    - Use deterministic stack evidence to summarize `stack_summary`, `languages`, compact resolved `frameworks`, and `technologies`.
    - Keep component and flow `description` fields terse enough for atlas cards, but add `summary` where readers need a fuller architectural explanation in drilldown views.
 12. Just before writing `stories/*.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/story-schema.md` and follow it exactly.
+    - Give every story one dominant `primary_mode` and one clear teaching thesis in `teaches`.
+    - Keep one explainer primary and demote evidence, rationale, and extra supporting material to secondary roles.
+    - For flow-first stories, make the primary flow explain trigger, major boundaries, outcome, and why it matters to the story.
 13. Just before writing `narratives.yaml`, read `$KORDINATE_HOME/agents/augur/schemas/narratives-schema.md` and follow it exactly.
     - Treat `system-overview` as the repo overview path.
     - Write `system-overview.description` as a compact "how it works" synopsis, not a label: usually 3-4 sentences naming the main slices, dominant flow, and why the sequence teaches the architecture.

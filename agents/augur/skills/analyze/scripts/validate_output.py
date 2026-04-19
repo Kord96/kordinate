@@ -1592,6 +1592,7 @@ def validate_story(
     issues = []
     atlas_story_node_details = atlas_story_node_details or {}
     warned_story_node_detail_ids: set[str] = set()
+    allowed_primary_modes = {"structure", "flow", "state", "failure", "decision"}
 
     def error(msg):
         issues.append({"level": "ERROR", "section": "story", "message": msg})
@@ -1643,8 +1644,26 @@ def validate_story(
         error(f"Story '{sid}' missing required field: title")
     if "teaches" not in story:
         error(f"Story '{sid}' missing required field: teaches")
+    if "primary_mode" not in story:
+        error(f"Story '{sid}' missing required field: primary_mode")
     if "summary" not in story:
         error(f"Story '{sid}' missing required field: summary")
+
+    primary_mode = str(story.get("primary_mode") or "").strip()
+    if primary_mode and primary_mode not in allowed_primary_modes:
+        error(
+            f"Story '{sid}' primary_mode '{primary_mode}' is invalid; use one of: "
+            + ", ".join(sorted(allowed_primary_modes))
+        )
+
+    teaches_text = str(story.get("teaches") or "").strip()
+    if teaches_text:
+        if len(teaches_text.split()) < 5:
+            warn(f"Story '{sid}' teaches is too thin; make it a real thesis sentence")
+        if len(re.findall(r"[.!?]", teaches_text)) > 1:
+            warn(f"Story '{sid}' teaches should usually stay to one sentence")
+    else:
+        warn(f"Story '{sid}' teaches is empty; make the main lesson explicit")
 
     anchor = story.get("anchor")
     if not isinstance(anchor, dict):
@@ -1675,6 +1694,15 @@ def validate_story(
     word_count = len(summary.split())
     if word_count > 100:
         warn(f"Story '{sid}' summary is {word_count} words (max 100)")
+    if word_count < 18:
+        warn(f"Story '{sid}' summary is thin; use it to explain the concern, not just relabel it")
+
+    structures = story.get("structures", []) or []
+    flows = story.get("flows", []) or []
+    observations = story.get("observations", []) or []
+    rationale_entries = story.get("rationale", []) or []
+    if not (structures or flows or observations or rationale_entries):
+        error(f"Story '{sid}' has no primary explainer or support content")
 
     # Bold refs in summary should resolve to atlas entities, not filenames or fact artifacts.
     bold_refs = re.findall(r"\*\*([^*]+)\*\*", summary)
@@ -1684,7 +1712,7 @@ def validate_story(
             error(f"Story '{sid}' bold ref '**{ref}**' doesn't match any atlas entity")
 
     # Structure node refs
-    for struct in story.get("structures", []):
+    for struct in structures:
         structure_edges = struct.get("edges", []) or []
         referenced_by_edge = set()
         for edge in structure_edges:
@@ -1725,7 +1753,39 @@ def validate_story(
                     error(f"Story '{sid}' structure edge {key} '{ref}' not in atlas")
 
     # Flow node refs
-    for flow in story.get("flows", []):
+    flow_titles_or_summaries: list[str] = []
+    for flow in flows:
+        flow_summary = str(flow.get("summary") or "").strip()
+        flow_title = str(flow.get("title") or "").strip()
+        if flow_title:
+            flow_titles_or_summaries.append(flow_title)
+        if flow_summary:
+            flow_titles_or_summaries.append(flow_summary)
+        if primary_mode == "flow":
+            if not flow_summary:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "story",
+                    "kind": "story-quality",
+                    "message": f"Flow-first story '{sid}' should give each primary flow a short summary explaining why it matters",
+                    "related_entities": [sid, str(flow.get("id") or "?")],
+                })
+            elif len(flow_summary.split()) < 6:
+                issues.append({
+                    "level": "WARNING",
+                    "section": "story",
+                    "kind": "story-quality",
+                    "message": f"Flow-first story '{sid}' flow '{flow.get('id', '?')}' has a thin summary; explain trigger, outcome, or architectural significance",
+                    "related_entities": [sid, str(flow.get("id") or "?")],
+                })
+        if "path" in flow_title.lower() or "path" in flow_summary.lower():
+            issues.append({
+                "level": "WARNING",
+                "section": "story",
+                "kind": "story-quality",
+                "message": f"Story '{sid}' flow '{flow.get('id', '?')}' uses 'path' wording; prefer 'flow' consistently in the story contract",
+                "related_entities": [sid, str(flow.get("id") or "?")],
+            })
         for step in flow.get("steps", []):
             for key in ("node", "to"):
                 ref = step.get(key, "")
@@ -1735,7 +1795,7 @@ def validate_story(
                     warn_story_node_detail(ref)
 
     # Observation grounded_in
-    for obs in story.get("observations", []):
+    for obs in observations:
         oid = obs.get("id", "?")
         finding = obs.get("finding", "")
         if not obs.get("grounded_in"):
@@ -1758,9 +1818,78 @@ def validate_story(
         if comp and comp not in atlas_node_ids:
             error(f"Story '{sid}' observation component '{comp}' not in atlas")
 
+    if len(observations) > 4:
+        issues.append({
+            "level": "WARNING",
+            "section": "story",
+            "kind": "story-quality",
+            "message": f"Story '{sid}' has many observations ({len(observations)}); keep the visible story focused and push extra evidence into support material only when it changes understanding",
+            "related_entities": [sid],
+        })
+    if len(rationale_entries) > 3:
+        issues.append({
+            "level": "WARNING",
+            "section": "story",
+            "kind": "story-quality",
+            "message": f"Story '{sid}' has many rationale entries ({len(rationale_entries)}); keep decisions selective unless the story is decision-first",
+            "related_entities": [sid],
+        })
+
+    thesis_text = " ".join(part for part in (teaches_text, str(story.get("title") or ""), summary) if part).lower()
+    state_tokens = ("state", "storage", "persist", "cache", "queue", "snapshot", "config", "session")
+    failure_tokens = ("fail", "degrad", "stale", "lag", "retry", "outage", "incident", "recovery", "mitigat", "cascade")
+    decision_tokens = ("trade-off", "tradeoff", "decision", "choose", "constraint", "because", "alternative")
+    has_failure_support = any(token in thesis_text for token in failure_tokens) or any(
+        any(
+            token in " ".join(
+                str(part) for part in (entry.get("decision"), entry.get("context"), entry.get("trade_offs")) if part
+            ).lower()
+            for token in failure_tokens
+        )
+        for entry in rationale_entries if isinstance(entry, dict)
+    ) or any(
+        any(
+            token in " ".join(str(part) for part in (obs.get("finding"), obs.get("recommendation")) if part).lower()
+            for token in failure_tokens
+        )
+        for obs in observations if isinstance(obs, dict)
+    )
+
+    if primary_mode == "structure":
+        if not structures:
+            error(f"Structure-first story '{sid}' is missing structures")
+        if len(structures) > 2:
+            warn(f"Structure-first story '{sid}' has too many structure views; keep one primary explainer and at most one supporting variant")
+        if flows and len(flows) > len(structures):
+            warn(f"Structure-first story '{sid}' includes more flows than structures; keep the structural explainer dominant")
+    elif primary_mode == "flow":
+        if not flows:
+            error(f"Flow-first story '{sid}' is missing flows")
+        if len(flows) > 2:
+            warn(f"Flow-first story '{sid}' has too many flows; keep one primary flow and at most one supporting flow")
+        if structures and len(structures) > len(flows):
+            warn(f"Flow-first story '{sid}' includes more structure views than flows; keep the flow explainer dominant")
+    elif primary_mode == "state":
+        if not (structures or flows):
+            error(f"State-first story '{sid}' should include a structure or flow that explains the state boundary")
+        if not any(token in thesis_text for token in state_tokens):
+            warn(f"State-first story '{sid}' thesis and summary do not clearly read as state-focused")
+    elif primary_mode == "failure":
+        if not (flows or observations):
+            error(f"Failure-first story '{sid}' should include a flow or observation set that explains the failure mode")
+        if not has_failure_support:
+            warn(f"Failure-first story '{sid}' does not clearly describe degraded behavior, failure, or recovery")
+    elif primary_mode == "decision":
+        if not rationale_entries:
+            error(f"Decision-first story '{sid}' is missing rationale")
+        if not any(token in thesis_text for token in decision_tokens):
+            warn(f"Decision-first story '{sid}' thesis and summary do not clearly frame the design choice or trade-off")
+        if structures and flows and len(rationale_entries) < 1:
+            warn(f"Decision-first story '{sid}' is leaning on structure and flow explainers without enough explicit rationale")
+
     if parent_story:
         child_nodes: set[str] = set()
-        for struct in story.get("structures", []):
+        for struct in structures:
             for node in struct.get("nodes", []):
                 if isinstance(node, dict):
                     nid = str(node.get("id") or "")
