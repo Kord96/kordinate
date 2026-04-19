@@ -50,7 +50,7 @@ Request contract:
   "correlation_id": "job-123",
   "prompt": "Deploy the api-gateway service to staging. Use the latest image tag from CI.",
   "working_dir": "/kord/repos/api-gateway",
-  "timeout_ms": 1800000,
+  "timeout_ms": 1500000,
   "reflect": true
 }
 ```
