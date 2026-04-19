@@ -446,7 +446,6 @@ async function executeWeakModelStagedAnalysis(
   })
   const summaryRun = await runtime.executePrompt({ ...session, providerSessionId: undefined }, summaryRequest)
   const summarySession = updateSessionPromptCache(summaryRun.session, summaryRequest, summaryRun.result)
-
   const afterSummary = await readWeakModelGroundingSummary(context.grounding_summary_path)
   const summaryReady = groundingSummaryLooksPopulated(afterSummary) && afterSummary !== beforeSummary
   if (!summaryReady) {

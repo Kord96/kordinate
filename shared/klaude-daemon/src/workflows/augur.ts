@@ -98,7 +98,6 @@ function isWeakAugurModel(context: WorkflowContext): boolean {
   const model = context.daemonConfig.executionProfile.model.toLowerCase()
   return provider.includes('deepseek')
     || model.includes('qwen')
-    || model.includes('glm')
     || model.includes('deepseek')
 }
 
