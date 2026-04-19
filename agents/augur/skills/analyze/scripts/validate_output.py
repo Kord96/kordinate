@@ -2641,7 +2641,93 @@ def detect_cross_artifact_conflicts(
                 "related_entities": sorted(optional_recommended_ids),
                 "evidence_refs": evidence_refs[:3],
             }
-        )
+                    )
+
+    valid_narratives = [
+        narrative for narrative in narratives
+        if isinstance(narrative, dict) and str(narrative.get("id") or "")
+    ]
+    narrative_story_sets: dict[str, set[str]] = {}
+    narrative_text_tokens: dict[str, set[str]] = {}
+    narrative_goal_tokens: dict[str, set[str]] = {}
+    for narrative in valid_narratives:
+        nid = str(narrative.get("id") or "")
+        story_entries = narrative.get("stories") or []
+        story_ids_for_narrative: list[str] = []
+        for entry in story_entries:
+            if isinstance(entry, dict):
+                sid = str(entry.get("id") or "")
+            else:
+                sid = str(entry or "")
+            if sid:
+                story_ids_for_narrative.append(sid)
+        narrative_story_sets[nid] = set(story_ids_for_narrative)
+        description = str(narrative.get("description") or "")
+        throughline = str(narrative.get("throughline") or "")
+        teaches = narrative.get("teaches") if isinstance(narrative.get("teaches"), list) else []
+        narrative_text_tokens[nid] = text_tokens(" ".join([description, throughline, *[str(goal) for goal in teaches if isinstance(goal, str)]]))
+        narrative_goal_tokens[nid] = set().union(*(text_tokens(str(goal)) for goal in teaches if isinstance(goal, str) and goal.strip())) if teaches else set()
+
+    checked_pairs: set[tuple[str, str]] = set()
+    for left in valid_narratives:
+        left_id = str(left.get("id") or "")
+        left_set = narrative_story_sets.get(left_id) or set()
+        if not left_id or not left_set:
+            continue
+        for right in valid_narratives:
+            right_id = str(right.get("id") or "")
+            right_set = narrative_story_sets.get(right_id) or set()
+            if not right_id or not right_set or left_id == right_id:
+                continue
+            pair = tuple(sorted((left_id, right_id)))
+            if pair in checked_pairs:
+                continue
+            checked_pairs.add(pair)
+            intersection = left_set & right_set
+            union = left_set | right_set
+            if not union:
+                continue
+            jaccard = len(intersection) / len(union)
+            symmetric_difference = len(union - intersection)
+            left_text = narrative_text_tokens.get(left_id) or set()
+            right_text = narrative_text_tokens.get(right_id) or set()
+            left_goals = narrative_goal_tokens.get(left_id) or set()
+            right_goals = narrative_goal_tokens.get(right_id) or set()
+            text_overlap = (len(left_text & right_text) / len(left_text | right_text)) if (left_text or right_text) else 0.0
+            goal_overlap = (len(left_goals & right_goals) / len(left_goals | right_goals)) if (left_goals or right_goals) else 0.0
+
+            if jaccard >= 0.75 and symmetric_difference <= 2:
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-selection",
+                        "message": (
+                            f"Narratives '{left_id}' and '{right_id}' reuse almost the same story set; "
+                            "merge them or make their teaching paths more distinct"
+                        ),
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [left_id, right_id, *sorted(intersection)[:3]],
+                        "evidence_refs": [],
+                    }
+                )
+                continue
+
+            if jaccard >= 0.6 and text_overlap >= 0.55 and goal_overlap >= 0.45:
+                issues.append(
+                    {
+                        "level": "WARNING",
+                        "section": "narrative",
+                        "kind": "narrative-coherence",
+                        "message": (
+                            f"Narratives '{left_id}' and '{right_id}' have highly overlapping stories and teaching text; "
+                            "differentiate their goals or replace the weaker narrative"
+                        ),
+                        "conflict_type": "cross_artifact",
+                        "related_entities": [left_id, right_id, *sorted(intersection)[:3]],
+                        "evidence_refs": [],
+                    }
+                )
 
     return issues
 
