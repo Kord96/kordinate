@@ -98,6 +98,10 @@ DETERMINISTIC_ONLY = (
     os.getenv("AUGUR_DETERMINISTIC_ONLY") in ("1", "true", "TRUE", "yes", "YES")
 )
 
+if os.getenv("AUGUR_DAEMON_ALLOW_VALIDATION") != "1":
+    print("validate_output.py is daemon-managed and unavailable in-session", file=sys.stderr)
+    sys.exit(126)
+
 
 def kebab_case(s: str) -> bool:
     return bool(KEBAB_RE.match(s))

@@ -14,6 +14,9 @@ import yaml
 
 from analysis_paths import write_analysis_indexes, write_json, write_latest_analysis_pointer
 
+if os.getenv("AUGUR_DAEMON_ALLOW_FINALIZE") != "1":
+    raise SystemExit("finalize_analysis.py is daemon-managed and unavailable in-session")
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ATLAS_SCHEMA = ROOT / "schemas" / "atlas-schema.md"

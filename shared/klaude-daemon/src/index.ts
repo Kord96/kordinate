@@ -547,6 +547,7 @@ async function runValidatorScript(
   const runner = validatorScript.endsWith('.sh') ? 'bash' : 'python3'
   const env = {
     ...process.env,
+    AUGUR_DAEMON_ALLOW_VALIDATION: '1',
     ...(manageLock ? { VALIDATE_LOCK: '1' } : {}),
     ...(extraEnv ?? {}),
   }
@@ -584,6 +585,7 @@ async function runFinalizeScript(
 ): Promise<FinalizeRunResult> {
   const env = {
     ...process.env,
+    AUGUR_DAEMON_ALLOW_FINALIZE: '1',
     ...(extraEnv ?? {}),
   }
   return await new Promise<FinalizeRunResult>((resolve) => {

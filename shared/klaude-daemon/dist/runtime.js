@@ -212,6 +212,7 @@ async function ensureOpenClaudeCommandGuards(runtimeHome, request) {
     if (forbiddenTargets.length === 0)
         return undefined;
     const realPython3 = resolveSystemCommand('python3');
+    const realBash = resolveSystemCommand('bash');
     if (!realPython3)
         return undefined;
     const guardDir = path.join(runtimeHome, '.daemon-tool-guards');
@@ -233,10 +234,30 @@ for arg in "$@"; do
 done
 exec "$REAL_PYTHON" "$@"
 `;
+    const bashWrapperScript = realBash ? `#!/usr/bin/env bash
+set -euo pipefail
+REAL_BASH='${realBash.replace(/'/g, `'\"'\"'`)}'
+FORBIDDEN_TARGETS=(${shellQuotedTargets})
+command_text="$*"
+for forbidden in "\${FORBIDDEN_TARGETS[@]}"; do
+  if [[ "$command_text" == *"$forbidden"* ]]; then
+    echo "Daemon-managed script unavailable in-session: $forbidden" >&2
+    exit 126
+  fi
+done
+exec "$REAL_BASH" "$@"
+` : undefined;
     for (const commandName of ['python3', 'python']) {
         const wrapperPath = path.join(guardDir, commandName);
         await writeFile(wrapperPath, wrapperScript, 'utf8');
         await chmod(wrapperPath, 0o755);
+    }
+    if (bashWrapperScript) {
+        for (const commandName of ['bash', 'sh']) {
+            const wrapperPath = path.join(guardDir, commandName);
+            await writeFile(wrapperPath, bashWrapperScript, 'utf8');
+            await chmod(wrapperPath, 0o755);
+        }
     }
     return guardDir;
 }
