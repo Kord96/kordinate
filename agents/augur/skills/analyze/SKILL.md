@@ -70,7 +70,8 @@ The deterministic phase is already done. Work from the prepared run directory an
    - before writing stories, draft candidate root stories and 2-3 concern-focused child stories per root, then merge weak or duplicative children back into the parent
    - child stories should usually come from major flows, state boundaries, dependency boundaries, failure paths, or important design decisions, not from arbitrary file splits
    - prefer one mechanism per claim instead of compressing several stages into one abstract sentence unless the code presents them together
-   - when `facts/symbols-seed.json` exposes exact hooks, parsers, commands, registries, options, classes, or stage names for the cited files, prefer those exact names in grounded claims
+  - when `facts/symbols-seed.json` exposes exact hooks, parsers, commands, registries, options, classes, or stage names for the cited files, prefer those exact names in grounded claims
+  - if you emphasize a mechanism name with `**bold**`, make sure it resolves either to a real atlas entity or to a grounded symbol from `facts/symbols-seed.json`
    - when `facts/state-seeds.json` exposes exact structs, enums, maps, config variants, or storage selectors for the cited state files, prefer those exact names in state descriptions and keep one concrete mechanism per claim
    - when writing atlas health, prefer the layered model from `atlas-schema.md`:
      - `health.local` for failures inside one unit

@@ -1590,12 +1590,14 @@ def validate_story(
     story: dict,
     atlas_node_ids: set,
     atlas_entity_ids: set,
+    grounded_symbol_names: set[str] | None = None,
     atlas_story_node_details: dict[str, dict] | None = None,
     project_root: Path | None = None,
     analysis_dir: Path | None = None,
 ) -> list[dict]:
     issues = []
     atlas_story_node_details = atlas_story_node_details or {}
+    grounded_symbol_names = grounded_symbol_names or set()
     warned_story_node_detail_ids: set[str] = set()
     allowed_primary_modes = {"structure", "flow", "state", "failure", "decision"}
 
@@ -1709,12 +1711,32 @@ def validate_story(
     if not (structures or flows or observations or rationale_entries):
         error(f"Story '{sid}' has no primary explainer or support content")
 
-    # Bold refs in summary should resolve to atlas entities, not filenames or fact artifacts.
-    bold_refs = re.findall(r"\*\*([^*]+)\*\*", summary)
+    # Bold refs in visible story prose should resolve to atlas entities or grounded symbols.
+    prose_fields = [summary, teaches_text]
+    prose_fields.extend(str(obs.get("finding") or "") for obs in observations if isinstance(obs, dict))
+    prose_fields.extend(
+        " ".join(
+            str(part or "")
+            for part in (
+                entry.get("decision"),
+                entry.get("context"),
+                entry.get("trade_offs"),
+            )
+        ).strip()
+        for entry in rationale_entries if isinstance(entry, dict)
+    )
+    bold_refs = []
+    for field in prose_fields:
+        if field:
+            bold_refs.extend(re.findall(r"\*\*([^*]+)\*\*", field))
     for ref in bold_refs:
-        ref_kebab = ref.lower().replace(" ", "-")
-        if ref_kebab not in atlas_entity_ids and ref not in atlas_entity_ids:
-            error(f"Story '{sid}' bold ref '**{ref}**' doesn't match any atlas entity")
+        ref_text = str(ref).strip()
+        ref_kebab = ref_text.lower().replace(" ", "-")
+        if ref_kebab in atlas_entity_ids or ref_text in atlas_entity_ids:
+            continue
+        if ref_text in grounded_symbol_names:
+            continue
+        error(f"Story '{sid}' bold ref '**{ref_text}**' doesn't match any atlas entity or grounded symbol")
 
     # Structure node refs
     for struct in structures:
@@ -3468,6 +3490,24 @@ def main():
                 seen_story_seed_refs.add(normalized)
                 story_seed_refs.append(normalized)
 
+    symbols_seed_path = facts_dir / "symbols-seed.json"
+    symbols_seed_payload = {}
+    if symbols_seed_path.exists():
+        try:
+            symbols_seed_payload = json.loads(symbols_seed_path.read_text())
+        except json.JSONDecodeError as e:
+            all_issues.append({"level": "ERROR", "section": "symbols-seed", "message": f"JSON parse error: {e}"})
+    grounded_symbol_names: set[str] = set()
+    for file_entry in (symbols_seed_payload.get("files") or []) if isinstance(symbols_seed_payload, dict) else []:
+        if not isinstance(file_entry, dict):
+            continue
+        for symbol in file_entry.get("symbols") or []:
+            if not isinstance(symbol, dict):
+                continue
+            name = str(symbol.get("name") or "").strip()
+            if name:
+                grounded_symbol_names.add(name)
+
     narrative_seeds_path = facts_dir / "narrative-seeds.json"
     narrative_seeds_payload = {}
     if narrative_seeds_path.exists():
@@ -3633,6 +3673,7 @@ def main():
                     story,
                     atlas_node_ids,
                     atlas_entity_ids,
+                    grounded_symbol_names,
                     atlas_story_node_details,
                     project_root,
                     analysis_dir,

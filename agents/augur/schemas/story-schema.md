@@ -15,7 +15,9 @@ Apply these rules to story summaries, findings, and rationale:
 - keep summaries concise and grounded
 - prefer exact mechanism names from code when they exist, such as hook names, lifecycle stage names, parser names, registry names, or option names
 - prefer one mechanism per sentence unless the code clearly binds multiple mechanisms into one stage
-- use `**bold**` atlas references only when they resolve to real atlas ids such as components, state entries, dependencies, flows, events, concepts, or tensions
+- use `**bold**` references only when they resolve to either:
+  - real atlas ids such as components, state entries, dependencies, flows, events, concepts, or tensions
+  - grounded mechanism symbols present in `facts/symbols-seed.json`
 - prefer active phrasing and direct relationships
 - avoid filler such as "this story covers" or "the following section"
 
@@ -27,7 +29,7 @@ Apply these rules to story summaries, findings, and rationale:
 - do not invent pseudo-nodes such as `detectors`, `scripts`, `http-server`, `kafka-consumer`, `llm-runtime`, or `fact-store` unless they are real atlas ids
 - do not turn filenames or helper modules into structure nodes; if `fact_extractor_support.py` or a similar file matters, cite it in `anchor`, `evidence`, or `grounded_in` instead of inventing a node id from the filename
 - describe internal subparts through observations, findings, and prose when they are not modeled as atlas nodes
-- bold references in `summary` must resolve to real atlas ids; do not bold filenames, fact artifacts, or schema names
+- bold references in visible story prose must resolve to real atlas ids or grounded symbols; do not bold filenames, fact artifacts, or schema names
 - root story ids should normally match the top-level component ids they explain
 - child story ids should stay story-specific, but `parent` must always reference a real story id
 - before you cite a repo file in `anchor`, `evidence.file`, or `grounded_in`, confirm the path actually exists in the repo or analysis run; do not guess filenames such as `agents/augur/agent.yaml`

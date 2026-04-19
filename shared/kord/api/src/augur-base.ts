@@ -37,6 +37,7 @@ export interface AugurBasePayload {
   atlas: Record<string, unknown>
   stories: unknown[]
   narratives: unknown[]
+  symbols_seed: Record<string, unknown> | null
   meta: Record<string, unknown>
   repair_log: Record<string, unknown> | null
 }
@@ -214,11 +215,14 @@ export async function loadAugurAnalysisDetails(projectsRoot: string, project: st
 export async function loadAugurBase(projectsRoot: string, project: string, analysisId: string): Promise<AugurBasePayload | null> {
   const analysisDir = await findAugurAnalysisDir(projectsRoot, project, analysisId)
   if (!analysisDir) return null
-  const [meta, atlas, stories, narrativesDoc, repairLog] = await Promise.all([
+  const [meta, atlas, stories, narrativesDoc, symbolsSeed, repairLog] = await Promise.all([
     loadAcceptedMeta(join(analysisDir, 'meta.json')),
     readJson<Record<string, unknown>>(join(analysisDir, 'atlas.json')),
     loadStoryDirectory(join(analysisDir, 'stories')),
     readYaml(join(analysisDir, 'narratives.yaml')),
+    (await pathExists(join(analysisDir, 'facts', 'symbols-seed.json')))
+      ? readJson<Record<string, unknown>>(join(analysisDir, 'facts', 'symbols-seed.json'))
+      : Promise.resolve(null),
     (await pathExists(join(analysisDir, 'repair-log.json')))
       ? readJson<Record<string, unknown>>(join(analysisDir, 'repair-log.json'))
       : Promise.resolve(null),
@@ -229,6 +233,7 @@ export async function loadAugurBase(projectsRoot: string, project: string, analy
     atlas,
     stories,
     narratives: normalizeNarratives(narrativesDoc),
+    symbols_seed: symbolsSeed,
     meta,
     repair_log: repairLog,
   }

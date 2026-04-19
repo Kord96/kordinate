@@ -173,11 +173,14 @@ export async function loadAugurBase(projectsRoot, project, analysisId) {
     const analysisDir = await findAugurAnalysisDir(projectsRoot, project, analysisId);
     if (!analysisDir)
         return null;
-    const [meta, atlas, stories, narrativesDoc, repairLog] = await Promise.all([
+    const [meta, atlas, stories, narrativesDoc, symbolsSeed, repairLog] = await Promise.all([
         loadAcceptedMeta(join(analysisDir, 'meta.json')),
         readJson(join(analysisDir, 'atlas.json')),
         loadStoryDirectory(join(analysisDir, 'stories')),
         readYaml(join(analysisDir, 'narratives.yaml')),
+        (await pathExists(join(analysisDir, 'facts', 'symbols-seed.json')))
+            ? readJson(join(analysisDir, 'facts', 'symbols-seed.json'))
+            : Promise.resolve(null),
         (await pathExists(join(analysisDir, 'repair-log.json')))
             ? readJson(join(analysisDir, 'repair-log.json'))
             : Promise.resolve(null),
@@ -188,6 +191,7 @@ export async function loadAugurBase(projectsRoot, project, analysisId) {
         atlas,
         stories,
         narratives: normalizeNarratives(narrativesDoc),
+        symbols_seed: symbolsSeed,
         meta,
         repair_log: repairLog,
     };
