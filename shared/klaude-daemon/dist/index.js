@@ -1,9 +1,8 @@
 import { createHash } from 'node:crypto';
-import { tmpdir } from 'node:os';
 import { spawn } from 'node:child_process';
 import { basename, join } from 'node:path';
 import { constants as fsConstants, existsSync, readFileSync } from 'node:fs';
-import { access, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, readFile, readdir, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { Kafka } from 'kafkajs';
 import { createAgentWorkflowHooks } from './workflows/index.js';
@@ -623,119 +622,6 @@ function buildValidationRepairPrompt(input) {
         'Do not invoke the validator yourself during repair. The daemon/workflow will rerun validation after your changes.',
     ].join('\n');
 }
-function buildSemanticIssueCandidatePrompt(input) {
-    const findings = input.findings.map(line => `- ${line}`).join('\n');
-    return [
-        `Review the current Augur analysis snapshot in \`${input.snapshotPath}\`.`,
-        `This is semantic candidate issue pass ${input.attempt} of ${input.maxAttempts}.`,
-        'Return strict JSON only. No markdown fences, no prose, no explanations.',
-        'Return either [] or an object of the form {"issues":[...]}',
-        'Each issue object must use this shape:',
-        '{"level":"WARNING|ERROR","section":"semantic|atlas|story|narrative","message":"...","related_entities":["..."],"evidence_refs":["path:line"],"conflict_type":"optional","kind":"optional","related_issue_ids":["optional"]}',
-        'Focus only on semantic contradictions, logic gaps, decomposition mistakes, narrative incoherence, or cross-artifact inconsistencies that are not already obvious from the validator findings below.',
-        'Analyze only the supplied snapshot. Do not edit files. Do not run validation. Do not describe fixes.',
-        '',
-        'Current validator findings:',
-        findings || '- No structured validator findings were provided.',
-    ].join('\n');
-}
-async function buildSemanticIssueSnapshot(targetDir) {
-    const sections = [
-        '# Augur Analysis Snapshot',
-        '',
-        `Target dir: ${targetDir}`,
-        '',
-    ];
-    const appendFile = async (label, path, maxChars = 20000) => {
-        try {
-            const content = await readFile(path, 'utf8');
-            sections.push(`## ${label}`, '', '```', content.slice(0, maxChars), '```', '');
-        }
-        catch (error) {
-            sections.push(`## ${label}`, '', `[missing] ${error instanceof Error ? error.message : String(error)}`, '');
-        }
-    };
-    await appendFile('atlas.json', join(targetDir, 'atlas.json'));
-    await appendFile('narratives.yaml', join(targetDir, 'narratives.yaml'));
-    try {
-        const storyDir = join(targetDir, 'stories');
-        const storyFiles = (await readdir(storyDir))
-            .filter(name => name.endsWith('.yaml'))
-            .sort();
-        sections.push('## story-files', '', ...storyFiles.map(name => `- ${name}`), '');
-        for (const name of storyFiles) {
-            await appendFile(`stories/${name}`, join(storyDir, name), 16000);
-        }
-    }
-    catch (error) {
-        sections.push('## story-files', '', `[missing] ${error instanceof Error ? error.message : String(error)}`, '');
-    }
-    await appendFile('repair-log.json', join(targetDir, 'repair-log.json'), 16000);
-    return sections.join('\n');
-}
-function parseSemanticIssueCandidates(output) {
-    const text = output.trim();
-    if (!text)
-        return [];
-    const candidates = [text];
-    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
-    if (fenced?.[1])
-        candidates.push(fenced[1].trim());
-    for (const candidate of candidates) {
-        try {
-            const parsed = JSON.parse(candidate);
-            if (Array.isArray(parsed))
-                return parsed.filter(item => item && typeof item === 'object');
-            if (parsed && typeof parsed === 'object' && Array.isArray(parsed.issues)) {
-                return (parsed.issues).filter(item => item && typeof item === 'object');
-            }
-        }
-        catch {
-            continue;
-        }
-    }
-    return [];
-}
-async function collectSemanticIssueCandidates(session, message, findings, attempt, maxAttempts, targetDir) {
-    const scratchDir = await mkdtemp(join(tmpdir(), 'augur-semantic-'));
-    try {
-        const snapshotPath = join(scratchDir, 'analysis-snapshot.md');
-        await writeFile(snapshotPath, await buildSemanticIssueSnapshot(targetDir), 'utf8');
-        const prompt = buildSemanticIssueCandidatePrompt({
-            snapshotPath,
-            findings,
-            attempt,
-            maxAttempts,
-        });
-        const request = {
-            prompt,
-            raw_prompt: prompt,
-            working_dir: scratchDir,
-            timeout_ms: Math.min(message.timeout_ms ?? 1800000, 300000),
-            reflect: false,
-            progress: event => publishProgress(message, event),
-        };
-        const isolatedSession = {
-            key: `${session.key}:semantic-candidates:${attempt}`,
-        };
-        const run = await runtime.executePrompt(isolatedSession, request);
-        if (run.result.status !== 'success') {
-            return {
-                session,
-                usage: run.result.metadata?.usage,
-                issues: [],
-            };
-        }
-        return {
-            session,
-            usage: run.result.metadata?.usage,
-            issues: parseSemanticIssueCandidates(run.result.output),
-        };
-    }
-    finally {
-        await rm(scratchDir, { recursive: true, force: true });
-    }
-}
 function normalizeValidationMaxAttempts(raw) {
     if (!Number.isFinite(raw))
         return 10;
@@ -852,19 +738,6 @@ async function maybeRunValidationLoop(session, message, result) {
                     },
                 },
             };
-        }
-        const semanticCandidateFile = join(targetDir, 'semantic-issue-candidates.json');
-        const semanticCandidateRun = await collectSemanticIssueCandidates(currentSession, message, validationRun.findings, attempt, maxAttempts, targetDir);
-        currentSession = semanticCandidateRun.session;
-        accumulatedUsage = mergeUsageMetadata(accumulatedUsage, semanticCandidateRun.usage);
-        if (semanticCandidateRun.issues.length > 0) {
-            await writeFile(semanticCandidateFile, `${JSON.stringify({ issues: semanticCandidateRun.issues }, null, 2)}\n`, 'utf8');
-            validationRun = await runValidatorScript(validation.validatorScript, targetDir, false, {
-                ...(validatorEnv ?? {}),
-                AUGUR_VALIDATION_TOKEN: validationToken,
-                AUGUR_VALIDATION_ATTEMPTS: String(attempt),
-                AUGUR_SEMANTIC_CANDIDATES_PATH: semanticCandidateFile,
-            });
         }
         const repairPromptBuilder = workflowContext?.repairPromptBuilder ?? buildValidationRepairPrompt;
         const repairPrompt = repairPromptBuilder({

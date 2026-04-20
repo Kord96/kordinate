@@ -85,7 +85,6 @@ if str(VALIDATOR_MODULE_DIR) not in sys.path:
     sys.path.append(str(VALIDATOR_MODULE_DIR))
 
 from finalize_analysis import finalize_analysis_dir
-from semantic_candidates import load_semantic_candidate_issues
 
 KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
@@ -3871,12 +3870,6 @@ def main():
                 all_issues.append({"level": "ERROR", "section": "meta", "message": "meta.json must be a JSON object"})
         except json.JSONDecodeError as e:
             all_issues.append({"level": "ERROR", "section": "meta", "message": f"JSON parse error: {e}"})
-
-    semantic_candidates_path = Path(
-        os.environ.get("AUGUR_SEMANTIC_CANDIDATES_PATH", "").strip()
-        or (analysis_dir / "semantic-issue-candidates.json")
-    )
-    all_issues.extend(load_semantic_candidate_issues(semantic_candidates_path))
 
     # Finalization is part of validation success. If semantic validation passes,
     # write meta/index artifacts here so this script remains the single authority.
