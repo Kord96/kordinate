@@ -430,7 +430,7 @@ Concept rules:
 - every detected pattern or anti-pattern should include grounded evidence through `grounded_in` or `evidence.files`
 - treat every concept entry as a resolved architectural judgment, not as a raw detector suggestion
 - only keep a concept when the repo code plus deterministic evidence make it materially useful to the architecture model
-- if a concept remains ambiguous after semantic questions and repo inspection, prefer omitting it over emitting a generic filler pattern
+- if a concept remains ambiguous after review questions and repo inspection, prefer omitting it over emitting a generic filler pattern
 - if you keep a tentative concept at all, the uncertainty itself must matter architecturally and should be stated in `summary` or `why_it_matters`
 - avoid empty generic labels with no repo-specific manifestation text; explain how the concept changes the architecture here
 - do not duplicate a component name as a concept unless the concept adds cross-cutting meaning beyond the component boundary

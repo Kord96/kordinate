@@ -252,21 +252,34 @@ def adjusted_pattern_confidence(concept_id: str, confidence: str, facts: list[di
     return adjusted
 
 
-def contradiction_summary(concept_id: str, facts: list[dict[str, Any]]) -> list[str]:
-    contradictions: list[str] = []
-    if concept_id in {"timeout", "retry"}:
-        missing = [fact for fact in facts if not fact.get("raw_evidence", {}).get(concept_id)]
-        if missing:
-            contradictions.append(f"{len(missing)} supporting facts are missing `{concept_id}` configuration.")
-    if concept_id == "circuit-breaker":
-        missing = [fact for fact in facts if not fact.get("raw_evidence", {}).get("circuit_breaker")]
-        if missing:
-            contradictions.append(f"{len(missing)} supporting facts are missing circuit-breaker configuration.")
+def supporting_evidence(concept_id: str, facts: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "fact_ids": [fact["id"] for fact in facts if fact.get("id")],
+        "component_ids": sorted({component for fact in facts for component in fact_components(fact)}),
+        "detector_backing": detector_backing(concept_id),
+    }
+
+
+def counter_evidence_summary(concept_id: str, facts: list[dict[str, Any]]) -> list[str]:
+    counter: list[str] = []
     if concept_id == "route-guard":
         unprotected = [fact for fact in facts if fact.get("raw_evidence", {}).get("auth") in ("", "no", False, None)]
         if unprotected:
-            contradictions.append(f"{len(unprotected)} route facts appear unguarded.")
-    return contradictions
+            counter.append(f"{len(unprotected)} route facts appear unguarded.")
+    return counter
+
+
+def evidence_gap_summary(concept_id: str, facts: list[dict[str, Any]]) -> list[str]:
+    gaps: list[str] = []
+    if concept_id in {"timeout", "retry"}:
+        missing = [fact for fact in facts if not fact.get("raw_evidence", {}).get(concept_id)]
+        if missing:
+            gaps.append(f"{len(missing)} supporting facts are missing `{concept_id}` configuration.")
+    if concept_id == "circuit-breaker":
+        missing = [fact for fact in facts if not fact.get("raw_evidence", {}).get("circuit_breaker")]
+        if missing:
+            gaps.append(f"{len(missing)} supporting facts are missing circuit-breaker configuration.")
+    return gaps
 
 
 def build_pattern(
@@ -281,19 +294,19 @@ def build_pattern(
     evidence = make_evidence(concept_id, facts, note)
     grounded_in = evidence["files"]
     fact_evidence = evidence["fact_ids"]
-    contradictions = contradiction_summary(concept_id, facts)
     return {
         "id": concept_id,
         "category": category,
         "confidence": confidence,
-        "detector_backing": detector_backing(concept_id),
         "components": components,
         "evidence": evidence,
+        "supporting_evidence": supporting_evidence(concept_id, facts),
+        "counter_evidence": counter_evidence_summary(concept_id, facts),
+        "evidence_gaps": evidence_gap_summary(concept_id, facts),
         "grounded_in": grounded_in,
         "fact_evidence": fact_evidence,
-        "contradictions": contradictions,
         "decision_mode": concept_decision_mode(concept_id),
-        "semantic_review_required": concept_decision_mode(concept_id) == "semantic-review",
+        "review_required": concept_decision_mode(concept_id) == "semantic-review",
     }
 
 
@@ -644,7 +657,7 @@ def load_concept_question_bundle() -> dict[str, Any]:
     return concepts if isinstance(concepts, dict) else {}
 
 
-def questions_for_pattern(pattern: dict[str, Any], question_bundle: dict[str, Any]) -> dict[str, Any]:
+def review_questions_for_pattern(pattern: dict[str, Any], question_bundle: dict[str, Any]) -> dict[str, Any]:
     concept_id = str(pattern.get("id") or "")
     bundled = question_bundle.get(concept_id)
     if not isinstance(bundled, dict):
@@ -669,7 +682,7 @@ def questions_for_pattern(pattern: dict[str, Any], question_bundle: dict[str, An
 
 def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any], framework_review_context: dict[str, Any]) -> dict[str, Any]:
     evidence = pattern.get("evidence") or {}
-    question_payload = questions_for_pattern(pattern, question_bundle)
+    question_payload = review_questions_for_pattern(pattern, question_bundle)
     concept_id = str(pattern.get("id") or "")
     heuristic_frameworks = framework_review_context.get("concept_to_frameworks", {}).get(concept_id, [])
     raw_evidence = {
@@ -678,12 +691,7 @@ def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any], fr
         "inference_method": evidence.get("method") or "inferred-from-facts",
         "note": evidence.get("note") or "",
         "fingerprint": evidence.get("fingerprint") or "",
-        "supporting_fact_ids": evidence.get("fact_ids") or [],
-        "supporting_components": evidence.get("components") or [],
         "decision_mode": pattern.get("decision_mode") or "fact-inference",
-        "semantic_review_required": bool(pattern.get("semantic_review_required")),
-        "detector_backing": pattern.get("detector_backing") or detector_backing(concept_id),
-        "semantic_questions": question_payload,
         "framework_heuristics": {
             "suggested_by_frameworks": heuristic_frameworks,
             "heuristic_only": bool(heuristic_frameworks),
@@ -718,13 +726,20 @@ def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any], fr
                 "strong": 5,
                 "partial": 3,
                 "weak": 2,
-            }.get(str(pattern.get("detector_backing") or detector_backing(concept_id)), 3),
+            }.get(str((pattern.get("supporting_evidence") or {}).get("detector_backing") or detector_backing(concept_id)), 3),
             "rule": None,
             "bundle": "detectors:concept-evidence",
         },
         "raw_evidence": raw_evidence,
-        "negative_evidence": [],
-        "contradictions": list(pattern.get("contradictions") or []),
+        "evidence": {
+            "supporting": dict(pattern.get("supporting_evidence") or {}),
+            "counter": list(pattern.get("counter_evidence") or []),
+            "gaps": list(pattern.get("evidence_gaps") or []),
+        },
+        "review": {
+            "required": bool(pattern.get("review_required")),
+            "questions": question_payload,
+        },
         "relationships": {
             "component_ids": list(pattern.get("components") or []),
             "depends_on_fact_ids": list(evidence.get("fact_ids") or []),
@@ -755,8 +770,22 @@ def gap_to_fact(gap: dict[str, Any]) -> dict[str, Any]:
             "recommendation": str(gap.get("recommendation") or ""),
             "kind": "gap",
         },
-        "negative_evidence": [],
-        "contradictions": [],
+        "evidence": {
+            "supporting": {},
+            "counter": [],
+            "gaps": [],
+        },
+        "review": {
+            "required": False,
+            "questions": {
+                "enabled": False,
+                "threshold": None,
+                "ask_when": [],
+                "entries": [],
+                "entry_ids": [],
+                "recommended_next_step": "none",
+            },
+        },
         "relationships": {
             "component_ids": [],
             "depends_on_fact_ids": [],

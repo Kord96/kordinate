@@ -14,7 +14,7 @@ Concept detection is deterministic runtime machinery and should be kept separate
 
 ```text
 detectors/facts/concept-evidence/<name>/
-  meta.yaml           # decision rules, semantic questions, monitoring guidance
+  meta.yaml           # decision rules, review questions, monitoring guidance
   signatures.yaml     # broad textual/structural signals
   ast-grep.yaml       # optional executable structural rules
   semgrep.yaml        # optional executable semantic/security rules

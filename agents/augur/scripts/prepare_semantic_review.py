@@ -45,7 +45,11 @@ def framework_review_context(concept_evidence_payload: dict[str, Any]) -> dict[s
 def packet_item(fact: dict[str, Any], fact_index: dict[str, dict[str, Any]]) -> dict[str, Any]:
     raw_evidence = fact.get("raw_evidence", {})
     relationships = fact.get("relationships", {})
-    fact_ids = list(raw_evidence.get("supporting_fact_ids") or [])
+    evidence = fact.get("evidence") or {}
+    supporting = evidence.get("supporting") or {}
+    review = fact.get("review") or {}
+    questions = review.get("questions") or {}
+    fact_ids = list(supporting.get("fact_ids") or [])
     supporting_facts = []
     for fact_id in fact_ids[:12]:
         supporting_fact = fact_index.get(fact_id)
@@ -67,13 +71,14 @@ def packet_item(fact: dict[str, Any], fact_index: dict[str, dict[str, Any]]) -> 
         "grounded_in": relationships.get("component_ids", []),
         "fact_evidence": fact_ids,
         "detector_evidence": [fact.get("detector", {})] if fact.get("detector") else [],
-        "contradictions": fact.get("contradictions", []),
+        "counter_evidence": evidence.get("counter", []),
+        "evidence_gaps": evidence.get("gaps", []),
         "review_required_reason": (
             "Deterministic concept evidence requires semantic adjudication."
-            if raw_evidence.get("semantic_review_required")
+            if review.get("required")
             else ""
         ),
-        "semantic_questions": raw_evidence.get("semantic_questions", {}),
+        "review_questions": questions,
         "framework_hints": raw_evidence.get("framework_heuristics", {}),
         "supporting_facts": supporting_facts,
     }
@@ -87,7 +92,7 @@ def build_review_packet(concept_evidence_payload: dict[str, Any], facts_payload:
         raw_evidence = fact.get("raw_evidence", {})
         if fact.get("kind") != "concept-candidate":
             continue
-        if not raw_evidence.get("semantic_review_required"):
+        if not (fact.get("review") or {}).get("required"):
             continue
         candidates.append(packet_item(fact, fact_index))
     return {

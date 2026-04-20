@@ -687,6 +687,12 @@ def normalize_fact(raw: Any) -> dict[str, Any] | None:
     detector = raw.get("detector") or {}
     if not isinstance(detector, dict):
         detector = {}
+    evidence = raw.get("evidence") or {}
+    if not isinstance(evidence, dict):
+        evidence = {}
+    review = raw.get("review") or {}
+    if not isinstance(review, dict):
+        review = {}
 
     return {
         "id": str(raw.get("id") or slugify(f"{raw.get('kind', 'fact')}::{source_files[0] if source_files else 'unknown'}")),
@@ -704,6 +710,8 @@ def normalize_fact(raw: Any) -> dict[str, Any] | None:
             "bundle": detector.get("bundle"),
         },
         "raw_evidence": raw.get("raw_evidence") if isinstance(raw.get("raw_evidence"), dict) else {},
+        "evidence": evidence,
+        "review": review,
         "negative_evidence": [str(item) for item in raw.get("negative_evidence") or [] if item],
         "contradictions": [str(item) for item in raw.get("contradictions") or [] if item],
         "relationships": {
@@ -786,6 +794,15 @@ def load_detected_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         raw = item.get("raw_evidence") or {}
         if not isinstance(raw, dict):
             continue
+        evidence = item.get("evidence") or {}
+        if not isinstance(evidence, dict):
+            evidence = {}
+        supporting = evidence.get("supporting") or {}
+        if not isinstance(supporting, dict):
+            supporting = {}
+        review = item.get("review") or {}
+        if not isinstance(review, dict):
+            review = {}
         concept_id = raw.get("concept_id")
         if not isinstance(concept_id, str) or not concept_id:
             continue
@@ -794,8 +811,8 @@ def load_detected_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "category": str(raw.get("category") or "unknown"),
             "confidence": str(item.get("confidence") or "low"),
             "decision_mode": str(raw.get("decision_mode") or "fact-inference"),
-            "semantic_review_required": bool(raw.get("semantic_review_required")),
-            "detector_backing": str(raw.get("detector_backing") or "weak"),
+            "review_required": bool(review.get("required")),
+            "detector_backing": str(supporting.get("detector_backing") or "weak"),
             "summary": str(raw.get("note") or f"{concept_id} is suggested by deterministic fact evidence in this repo."),
             "why_it_matters": str(raw.get("note") or "This concept materially shapes the architecture or integration boundaries."),
             "components": item.get("relationships", {}).get("component_ids") if isinstance(item.get("relationships"), dict) else [],
@@ -803,13 +820,15 @@ def load_detected_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "state": [],
             "grounded_in": [f"{path}:1" for path in (item.get("source_files") or [])[:3]],
             "evidence": {
-                "fact_ids": raw.get("supporting_fact_ids") or item.get("relationships", {}).get("depends_on_fact_ids") if isinstance(item.get("relationships"), dict) else [],
+                "fact_ids": supporting.get("fact_ids") or item.get("relationships", {}).get("depends_on_fact_ids") if isinstance(item.get("relationships"), dict) else [],
                 "files": item.get("source_files") or [],
-                "components": raw.get("supporting_components") or [],
+                "components": supporting.get("component_ids") or [],
                 "method": raw.get("inference_method") or "inferred-from-facts",
                 "detector_class": raw.get("detector_class") or "inference",
                 "note": raw.get("note") or "",
-                "questions_asked": raw.get("questions_asked") or [],
+                "questions_asked": (review.get("questions") or {}).get("entry_ids") if isinstance(review.get("questions"), dict) else [],
+                "counter": [str(item) for item in evidence.get("counter") or [] if item],
+                "gaps": [str(item) for item in evidence.get("gaps") or [] if item],
             },
         })
     return patterns
@@ -2104,10 +2123,10 @@ def concept_monitoring_eligible(pattern: dict[str, Any]) -> bool:
     detector_backing = str(pattern.get("detector_backing") or "weak").strip().lower()
     confidence = str(pattern.get("confidence") or "low").strip().lower()
     decision_mode = str(pattern.get("decision_mode") or "fact-inference").strip().lower()
-    semantic_review_required = bool(pattern.get("semantic_review_required"))
+    review_required = bool(pattern.get("review_required"))
     if detector_backing == "weak":
         return False
-    if decision_mode == "semantic-review" and semantic_review_required:
+    if decision_mode == "semantic-review" and review_required:
         return detector_backing == "strong" and confidence == "high"
     if detector_backing == "strong" and confidence in {"medium", "high"}:
         return True

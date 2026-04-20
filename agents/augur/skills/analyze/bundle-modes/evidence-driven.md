@@ -6,15 +6,15 @@ Evidence-driven mode means:
 
 - keep only high-level semantic methodology resident by default
 - let deterministic evidence surface candidate concepts
-- resolve those candidates through repo inspection and semantic questions before they materially affect outputs
+- resolve those candidates through repo inspection and review questions before they materially affect outputs
 
 ## Expectations
 
 - Start from prepared facts, startup artifacts, and repo code, not from a broad resident concept bundle.
 - Treat `facts/concept-evidence.json` as the main trigger for concept work.
 - For each concept candidate that could materially affect the atlas, stories, monitoring, or gaps:
-  - inspect detector backing and contradictions
-  - answer any attached semantic questions
+  - inspect supporting evidence, counter evidence, and evidence gaps
+  - answer any attached review questions
   - confirm or reject it from grounded repo evidence
 - Only accepted concepts should strongly influence `atlas.json.concepts`, concept-driven monitoring, or concept-driven gaps.
 - Tentative concepts should be weakly expressed or omitted.

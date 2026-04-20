@@ -3,19 +3,18 @@ name: analyze
 description: >
   Semantic phase for Augur /analyze. Consumes a prepared run directory, follows
   the runtime-selected mode guidance, and writes atlas/stories/narratives for
-  daemon-owned validation and finalization.
+  daemon-owned validation and sealing.
 ---
 
 # Analyze
 
 Semantic phase for Augur `/analyze`.
 
-The deterministic phase is already done. Work from the prepared run directory and produce semantic outputs for daemon-owned validation and finalization.
+The deterministic phase is already done. Work from the prepared run directory and produce semantic outputs for daemon-owned validation and sealing.
 
 Operational path rules for this runtime:
 - the runtime provides one canonical repo root and one canonical output directory for this request
 - if `AGENT_ROOT` is present, treat it as the stable base for agent-owned resources
-- if `VALIDATOR_SCRIPT` is present, use it directly instead of rediscovering validator paths
 - if `CONCEPT_CATALOG_INDEX` or `FRAMEWORK_CATALOG_INDEX` are present, start there for on-demand semantic reads instead of browsing the catalogs
 - do not manually reconstruct or shorten the output directory
 - do not create sibling run directories with guessed suffixes
@@ -49,20 +48,20 @@ Operational path rules for this runtime:
      - early architectural guidance: `hot-files.json` plus the most relevant routing, boundary, handler, dispatch, or framework domains
      - targeted disambiguation only when needed: optional or noisier domains listed in `facts/index.json`, such as `concept-evidence.json`, `import-graph.json`, `config.json`, or similar supporting artifacts
    - after startup orientation, move into repo code before doing more fact reduction
-   - if `facts/concept-evidence.json` is present in this run, use it as the primary trigger for concept work: inspect candidate concepts, detector backing, contradictions, and attached semantic questions before letting concepts affect the atlas
+   - if `facts/concept-evidence.json` is present in this run, use it as the primary trigger for concept work: inspect candidate concepts, supporting evidence, counter evidence, evidence gaps, and attached review questions before letting concepts affect the atlas
    - if `facts/frameworks.json` is present in this run, use it as candidate guidance for framework interpretation: resolve materially relevant frameworks from repo code before letting them change component naming, flow interpretation, or concept activation
    - when a framework remains materially relevant and ambiguous after reviewing `facts/frameworks.json`, start from `FRAMEWORK_CATALOG_INDEX` or `AGENT_ROOT/memory/catalog/frameworks/README.md`, then read only the corresponding framework files you actually need
    - when a concept candidate is materially relevant and remains ambiguous after reviewing `facts/concept-evidence.json`, start from `CONCEPT_CATALOG_INDEX` or `AGENT_ROOT/memory/catalog/concepts/README.md`, then read only the corresponding concept file you actually need
-   - when you need the detector's intended threshold, semantic questions, or monitoring expectations for a materially relevant concept candidate and `AGENT_ROOT` is present, read `AGENT_ROOT/detectors/facts/concept-evidence/<concept>/meta.yaml`
+   - when you need the detector's intended threshold, review questions, or monitoring expectations for a materially relevant concept candidate and `AGENT_ROOT` is present, read `AGENT_ROOT/detectors/facts/concept-evidence/<concept>/meta.yaml`
    - if `facts/story-seeds.json` is present in this run, use it as an advisory planning aid before writing stories or narratives
    - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for system-overview and other teaching paths before finalizing `narratives.yaml`
    - when optional narratives are recommended, prefer the strongest-ranked canonical narrative types instead of keeping a weaker optional path just because it is also allowed
    - if `facts/symbols-seed.json` is present in this run, use it as an advisory exact-name dictionary for high-signal files before writing observations, summaries, or flow steps
    - if `facts/state-seeds.json` is present in this run, use it as an advisory exact-name dictionary for state entries grounded in state or operations files
    - if `facts/health-candidates.json` is present in this run, use it as advisory coverage and contradiction pressure for atlas health: distinguish local failures, boundary failures, and downstream propagation instead of collapsing them into one flat list
-   - if `facts/concept-evidence.json` is present, explicitly resolve each materially relevant concept candidate as accepted, tentative, or rejected from repo code and attached semantic questions before finalizing `atlas.json.concepts`
+   - if `facts/concept-evidence.json` is present, explicitly resolve each materially relevant concept candidate as accepted, tentative, or rejected from repo code and attached review questions before finalizing `atlas.json.concepts`
    - if `facts/frameworks.json` is present, explicitly resolve each materially relevant framework as accepted, tentative, or rejected from repo code before using framework-specific semantics to interpret the atlas
-   - if present, answer any attached semantic questions before accepting a concept that changes component boundaries, flow interpretation, monitoring expectations, or gaps
+   - if present, answer any attached review questions before accepting a concept that changes component boundaries, flow interpretation, monitoring expectations, or gaps
    - treat `atlas.json.concepts` as a cross-cutting interpretation layer of resolved concepts: each kept concept should explain how it manifests in this repo and why it matters architecturally, not just name a pattern
    - prefer omitting or downgrading a concept over carrying a broad detector-led label that remains unresolved after code inspection
    - treat deterministic evidence as guidance, not final truth
@@ -129,10 +128,10 @@ Operational path rules for this runtime:
 
 7. Hand control back after writing semantic artifacts.
    - once `atlas.json`, `stories/`, and `narratives.yaml` are written, stop broad repo exploration
-   - do not search for validator, finalizer, schema, or mirrored-agent paths
+   - do not search for validator, schema, or mirrored-agent paths
    - do not run validation proactively during the initial semantic generation pass
-   - the daemon/workflow owns validation, repair-loop orchestration, and finalization
+   - the daemon/workflow owns validation, repair-loop orchestration, and sealing
    - if you are resumed later with validator findings, treat that as a repair pass against the same canonical output directory
 
-8. Finalization is orchestrator-owned.
-   - the daemon/workflow will validate the run, drive any repair loop, and write `meta.json`
+8. Sealing is orchestrator-owned.
+   - the daemon/workflow will validate the run, drive any repair loop, and seal successful runs

@@ -78,13 +78,21 @@ def strong_concept_candidates(concept_payload: dict[str, Any]) -> list[dict[str,
     for fact in concept_payload.get("facts") or []:
         if not isinstance(fact, dict) or fact.get("kind") != "concept-candidate":
             continue
-        raw = fact.get("raw_evidence") or {}
-        detector_backing = str(raw.get("detector_backing") or "weak").strip().lower()
+        evidence = fact.get("evidence") or {}
+        if not isinstance(evidence, dict):
+            evidence = {}
+        supporting = evidence.get("supporting") or {}
+        if not isinstance(supporting, dict):
+            supporting = {}
+        review = fact.get("review") or {}
+        if not isinstance(review, dict):
+            review = {}
+        detector_backing = str(supporting.get("detector_backing") or "weak").strip().lower()
         confidence = str(fact.get("confidence") or "low").strip().lower()
-        semantic_review_required = bool(raw.get("semantic_review_required"))
+        review_required = bool(review.get("required"))
         if detector_backing == "weak":
             continue
-        if semantic_review_required and not (detector_backing == "strong" and confidence == "high"):
+        if review_required and not (detector_backing == "strong" and confidence == "high"):
             continue
         if detector_backing == "partial" and confidence != "high":
             continue

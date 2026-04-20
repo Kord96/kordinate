@@ -64,7 +64,7 @@ relationships:                        # optional — explicit ontology edges
 - `concepts/<name>.md`
   Canonical meaning: what the concept is, how to recognize it semantically, and why it matters architecturally.
 - `detectors/facts/concept-evidence/<name>/`
-  Deterministic evidence policy: signatures, executable rules, semantic questions, and monitoring hints for concepts that have detector support.
+  Deterministic evidence policy: signatures, executable rules, review questions, and monitoring hints for concepts that have detector support.
 
 ## Relationship Semantics
 

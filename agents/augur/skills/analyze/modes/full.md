@@ -10,7 +10,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 2. Read `$RUN/facts/startup.json` and `$RUN/facts/index.json` and use them as the authoritative manifest for available domains, counts, detector coverage, and failed domains.
 3. Read `hot-files.json` and the most relevant startup fact files as the early guidance layer after the prepared startup facts.
 4. Transition into repo code once you have an initial architectural picture from startup artifacts.
-5. Use larger or noisier supporting domains only when they are present in `facts/index.json` and help resolve materially relevant concept candidates, answer semantic questions, or resolve ambiguity.
+5. Use larger or noisier supporting domains only when they are present in `facts/index.json` and help resolve materially relevant concept candidates, answer review questions, or resolve ambiguity.
 6. Perform a mandatory breadth pass in repo code after the first provisional architecture draft.
 7. For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file.
 8. Read repo files broadly enough to understand the whole architecture, starting from files surfaced by the prepared facts and then widening across adjacent implementation, not only when blocked.
@@ -55,7 +55,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - Do not leave the atlas fully flat unless the codebase is genuinely flat. Use parent-child component relationships when subsystems contain real nested responsibilities.
 - Use deterministic facts first for orientation, then let code inspection drive the main architectural synthesis.
 - Do not stay in a long fact-mining loop after startup. Once you have initial hypotheses, confirm or reject them in repo code.
-- If `concept-evidence.json` is present, use it as the primary concept trigger: review candidate concepts, detector backing, contradictions, and semantic questions before keeping a concept in `atlas.json`.
+- If `concept-evidence.json` is present, use it as the primary concept trigger: review candidate concepts, supporting evidence, counter evidence, evidence gaps, and review questions before keeping a concept in `atlas.json`.
 - If `frameworks.json` is present, use it as the primary framework trigger: review framework evidence first, then confirm only the frameworks that materially affect component boundaries, flows, or concept activation.
 - Resolve concept candidates as accepted, tentative, or rejected from deterministic evidence plus repo code; do not let broad concept vocabulary leak into the atlas before that resolution.
 - Resolve framework candidates as accepted, tentative, or rejected from deterministic evidence plus repo code; do not let framework labels steer the atlas just because detection fired.

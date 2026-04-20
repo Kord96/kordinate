@@ -11,7 +11,7 @@ Suggested per-concept files:
 
 ```text
 detectors/facts/concept-evidence/<name>/
-  meta.yaml           # concept decision, semantic questions, and monitoring metadata
+  meta.yaml           # concept decision, review questions, and monitoring metadata
   signatures.yaml     # broad textual/structural signals
   ast-grep.yaml       # executable structural rules
   semgrep.yaml        # executable semantic/security rules

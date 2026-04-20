@@ -10,7 +10,7 @@ detectors -> facts (including concept-evidence) -> atlas -> stories/narratives
 
 Facts are not final semantic conclusions. A fact records a normalized observation about the codebase. Some deterministic inference outputs, such as `concept-evidence`, are still facts: they preserve candidate concept evidence without making the final semantic judgment. Final concept interpretation happens in the atlas phase.
 
-For `concept-evidence`, deterministic output should include any run-specific semantic questions needed to confirm or reject an ambiguous candidate concept during Phase 2.
+For `concept-evidence`, deterministic output should include any run-specific review questions needed to confirm or reject an ambiguous candidate concept during Phase 2.
 
 For planning-aid artifacts such as `component-seeds`, `story-seeds`, `symbols-seed`, and `state-seeds`, the contract is:
 - use them to steer reading, naming, and repair
@@ -124,23 +124,33 @@ Do not assume every file under `facts/` uses the same JSON shape.
       "raw_evidence": {
         "<key>": "<detector-specific normalized value>"
       },
-      "semantic_questions": {
-        "enabled": true,
-        "threshold": 6,
-        "ask_when": ["<broad_match>"],
-        "entries": [
-          {
-            "id": "<stable question id>",
-            "prompt": "<question text>",
-            "weight": 3,
-            "signals": ["<signal>"]
-          }
-        ],
-        "entry_ids": ["<stable question id>"],
-        "recommended_next_step": "answer_questions | none"
+      "evidence": {
+        "supporting": {
+          "fact_ids": ["<fact-id>"],
+          "component_ids": ["<component-id>"],
+          "detector_backing": "strong | partial | weak"
+        },
+        "counter": ["<counter-signal that points against the concept>"],
+        "gaps": ["<missing expected support or missing guardrail>"]
       },
-      "negative_evidence": ["<contradicting or confidence-reducing signal>"],
-      "contradictions": ["<fact id or textual note>"],
+      "review": {
+        "required": true,
+        "questions": {
+          "enabled": true,
+          "threshold": 6,
+          "ask_when": ["<broad_match>"],
+          "entries": [
+            {
+              "id": "<stable question id>",
+              "prompt": "<question text>",
+              "weight": 3,
+              "signals": ["<signal>"]
+            }
+          ],
+          "entry_ids": ["<stable question id>"],
+          "recommended_next_step": "answer_questions | none"
+        }
+      },
       "relationships": {
         "component_ids": ["<component-id>"],
         "depends_on_fact_ids": ["<fact-id>"],
@@ -312,12 +322,13 @@ Expected `raw_evidence` keys:
 
 ### Concept Evidence
 
-Capture deterministic concept candidates plus any run-specific semantic questions that Phase 2 must answer before confirming the concept in `atlas.json`.
+Capture deterministic concept candidates plus any run-specific review questions that Phase 2 must answer before confirming the concept in `atlas.json`.
 
 Phase 2 should resolve each materially relevant candidate as accepted, tentative, or rejected from:
-- detector backing
-- contradictions
-- semantic questions
+- evidence.supporting
+- evidence.counter
+- evidence.gaps
+- review.questions
 - direct repo evidence
 
 Do not let `concept-evidence` become a detector-led concept list. It is a candidate-resolution input.
@@ -328,12 +339,9 @@ Expected `raw_evidence` keys:
 - `inference_method`
 - `note`
 - `fingerprint`
-- `supporting_fact_ids`
-- `supporting_components`
 - `decision_mode`
-- `semantic_review_required`
 
-Expected `semantic_questions` keys when present:
+Expected `review.questions` keys when present:
 - `enabled`
 - `threshold`
 - `ask_when`
@@ -351,7 +359,7 @@ Concept inference must consume fact IDs rather than raw detector matches wheneve
 Each detected concept in `atlas.json` should be traceable back to:
 - one or more fact IDs
 - detector provenance from those facts
-- semantic questions asked to resolve ambiguity
+- review questions asked to resolve ambiguity
 
 Questions belong after fact extraction and before concept confirmation.
 

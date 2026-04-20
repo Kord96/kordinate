@@ -9,7 +9,7 @@ Incremental mode means the semantic pass should start from the accepted prior se
 1. Read `$RUN/blast.json` and capture `changed_files`, `base_analysis_dir`, and the affected blast slice.
 2. Read `$RUN/facts/startup.json`, then the relevant files listed in `$RUN/facts/index.json`, especially `frameworks.json` and the domain files named by the blast slice. Use `concept-evidence.json` only if it is present in this run and relevant to the changed slice.
 3. Form a provisional view of how the changed slice affects the existing architecture.
-4. If `concept-evidence.json` is present and carries semantic questions for affected concept candidates, use them to resolve those candidates as accepted, tentative, or rejected before finalizing `atlas.json.concepts`.
+4. If `concept-evidence.json` is present and carries review questions for affected concept candidates, use them to resolve those candidates as accepted, tentative, or rejected before finalizing `atlas.json.concepts`.
 5. If `frameworks.json` is present and framework interpretation is relevant to the changed slice, resolve those framework candidates before letting framework semantics change the updated atlas or stories.
 6. When needed, read the accepted base analysis referenced by `base_analysis_dir`.
 7. Read only the repo files needed to verify the changed slice and its architectural impact.

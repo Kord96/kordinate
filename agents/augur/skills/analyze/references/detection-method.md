@@ -17,7 +17,7 @@ Use this reference when interpreting deterministic concept evidence.
 - when a concept candidate remains materially ambiguous, load only that concept's catalog file and detector `meta.yaml`; do not broaden into generic concept preload
 - naming and folder structure alone are weak signals
 - prefer `candidate` over `confirmed` when the structure is ambiguous
-- contradictions must lower confidence or block confirmation
+- counter evidence must lower confidence or block confirmation, and evidence gaps should prevent overconfident confirmation
 - do not let concept labels override observed runtime directionality
 - treat `depends_on` as runtime reliance, not as "is adjacent to", "serves", or "contains"
 - when storage technology or persistence changes by configuration, keep the state model truthful to that variability instead of forcing one narrow store type
@@ -35,4 +35,4 @@ When a framework remains materially ambiguous, load only that framework's catalo
 
 ## Goal
 
-Use deterministic concept evidence plus semantic questions to improve semantic judgment without replacing direct architectural grounding.
+Use deterministic concept evidence plus review questions to improve semantic judgment without replacing direct architectural grounding.

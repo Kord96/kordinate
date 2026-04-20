@@ -1132,11 +1132,13 @@ def validate_atlas(
             concept_id = str(raw.get("concept_id") or "").strip()
             if not concept_id:
                 continue
-            if not raw.get("semantic_review_required"):
+            review = fact.get("review") or {}
+            questions = review.get("questions") or {}
+            if not review.get("required"):
                 continue
             concept_review_requirements[concept_id] = {
-                "question_ids": list(((raw.get("semantic_questions") or {}).get("entry_ids") or [])),
-                "detector_backing": str(raw.get("detector_backing") or ""),
+                "question_ids": list((questions.get("entry_ids") or [])),
+                "detector_backing": str(((fact.get("evidence") or {}).get("supporting") or {}).get("detector_backing") or ""),
             }
 
     # Concepts
@@ -1198,14 +1200,14 @@ def validate_atlas(
         if review_requirement:
             if not questions_asked:
                 warn(
-                    f"{entry_kind.title()} '{cid}' was marked for semantic review by deterministic evidence but records no answered semantic questions",
+                    f"{entry_kind.title()} '{cid}' requires review by deterministic evidence but records no answered review questions",
                     "concepts",
                 )
             elif review_requirement.get("question_ids"):
                 missing = sorted(set(str(item) for item in review_requirement["question_ids"]) - set(questions_asked))
                 if missing:
                     warn(
-                        f"{entry_kind.title()} '{cid}' does not record all expected semantic questions from deterministic review: {', '.join(missing)}",
+                        f"{entry_kind.title()} '{cid}' does not record all expected review questions from deterministic evidence: {', '.join(missing)}",
                         "concepts",
                     )
 
@@ -3891,7 +3893,7 @@ def main():
             all_issues.append({
                 "level": "ERROR",
                 "section": "meta",
-                "message": f"finalization failed: {exc}",
+                "message": f"sealing failed: {exc}",
             })
 
     # --- Summary ---

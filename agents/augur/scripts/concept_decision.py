@@ -64,21 +64,23 @@ def build_concept_verdict(
     grounded_in: list[str],
     detector_evidence: list[str] | None = None,
     fact_evidence: list[str] | None = None,
-    contradictions: list[str] | None = None,
-    semantic_review_required: bool = False,
-    semantic_review_summary: str = "",
+    counter_evidence: list[str] | None = None,
+    evidence_gaps: list[str] | None = None,
+    review_required: bool = False,
+    review_summary: str = "",
     review_required_reason: str = "",
     explanation: str = "",
 ) -> dict[str, object]:
     detector_evidence = detector_evidence or []
     fact_evidence = fact_evidence or []
-    contradictions = contradictions or []
-    if contradictions:
+    counter_evidence = counter_evidence or []
+    evidence_gaps = evidence_gaps or []
+    if counter_evidence or evidence_gaps:
         verdict = "candidate" if detector_verdict == "confirmed" else detector_verdict
-        contradiction_resolution = "Downgraded due to contradiction or missing expected supporting evidence."
+        resolution_summary = "Downgraded due to counter evidence or unresolved evidence gaps."
     else:
         verdict = detector_verdict
-        contradiction_resolution = ""
+        resolution_summary = ""
 
     return {
         "id": concept,
@@ -100,19 +102,22 @@ def build_concept_verdict(
             "semgrep_matches": 0,
             "fact_hits": len(fact_evidence),
             "signature_hits": 0,
-            "contradictions": len(contradictions),
+            "counter_evidence": len(counter_evidence),
+            "evidence_gaps": len(evidence_gaps),
         },
-        "contradictions": _unique_strings(contradictions),
-        "contradiction_resolution": contradiction_resolution,
+        "counter_evidence": _unique_strings(counter_evidence),
+        "evidence_gaps": _unique_strings(evidence_gaps),
+        "review_resolution": resolution_summary,
         "confidence_factors": {
             "fact_hit_count": len(fact_evidence),
-            "contradiction_count": len(contradictions),
-            "semantic_review_required": semantic_review_required,
+            "counter_evidence_count": len(counter_evidence),
+            "evidence_gap_count": len(evidence_gaps),
+            "review_required": review_required,
         },
-        "semantic_review": {
-            "required": semantic_review_required,
+        "review": {
+            "required": review_required,
             "performed": False,
-            "summary": semantic_review_summary,
+            "summary": review_summary,
             "review_required_reason": review_required_reason,
         },
         "explanation": explanation,

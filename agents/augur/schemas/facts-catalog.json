@@ -110,8 +110,8 @@
       "kind": "planning-aid",
       "file": "facts/concept-evidence.json",
       "priority": "targeted-disambiguation",
-      "meaning": "Deterministic candidate concept evidence plus run-specific semantic questions.",
-      "how_to_use": "Use to resolve concept candidates as accepted, tentative, or rejected from detector backing, contradictions, semantic questions, and repo code.",
+      "meaning": "Deterministic candidate concept evidence plus run-specific review questions.",
+      "how_to_use": "Use to resolve concept candidates as accepted, tentative, or rejected from supporting evidence, counter evidence, evidence gaps, review questions, and repo code.",
       "what_not_to_infer": "Candidate concepts are not final architecture truth."
     },
     "story-seeds": {

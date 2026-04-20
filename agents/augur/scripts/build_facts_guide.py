@@ -123,7 +123,7 @@ def main() -> int:
         "rules": [
             "Observation-domain files contain normalized observations and usually expose a top-level facts array.",
             "Planning-aid, guide, manifest, and derived-structure artifacts may use specialized JSON shapes and should not be forced into a facts-array interpretation.",
-            "Treat concept-evidence as candidate guidance: resolve materially relevant concepts from detector backing, contradictions, semantic questions, and repo code before letting them affect atlas concepts, monitoring, or gaps.",
+            "Treat concept-evidence as candidate guidance: resolve materially relevant concepts from supporting evidence, counter evidence, evidence gaps, review questions, and repo code before letting them affect atlas concepts, monitoring, or gaps.",
             "Deterministic artifacts are guidance and evidence, not final semantic conclusions.",
         ],
         "artifacts": entries,
