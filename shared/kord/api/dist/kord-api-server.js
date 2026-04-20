@@ -445,7 +445,7 @@ function recordProgressEvent(message) {
         payload: message.event.payload ?? null,
     };
     recordRequestEvent(message.correlation_id, eventRecord);
-    noteRequestExecutionStarted(message.correlation_id, message.timestamp);
+    noteRequestActivity(message.correlation_id, message.timestamp);
     const transcriptEvent = buildTranscriptEventFromProgress(message);
     if (transcriptEvent)
         recordTranscriptEvent(message.correlation_id, transcriptEvent);
@@ -541,16 +541,20 @@ function armPendingTimer(waiter, correlationId, timeoutMs) {
         waiter.reject(buildPendingTimeoutError(correlationId));
     }, timeoutMs);
 }
-function noteRequestExecutionStarted(correlationId, startedAt) {
+function noteRequestActivity(correlationId, startedAt) {
     const waiter = pending.get(correlationId);
-    if (!waiter || waiter.execution_started_at)
+    if (!waiter)
         return;
     clearTimeout(waiter.timer);
-    waiter.execution_started_at = startedAt ? Date.parse(startedAt) || Date.now() : Date.now();
+    const activityAt = startedAt ? Date.parse(startedAt) || Date.now() : Date.now();
+    const firstExecutionStart = !waiter.execution_started_at;
+    waiter.execution_started_at ??= activityAt;
     armPendingTimer(waiter, correlationId, waiter.timeout_ms);
-    pushRequestEvent(correlationId, 'request_picked_up', {
-        queue_ms: Math.max(0, waiter.execution_started_at - waiter.queue_started_at),
-    });
+    if (firstExecutionStart) {
+        pushRequestEvent(correlationId, 'request_picked_up', {
+            queue_ms: Math.max(0, waiter.execution_started_at - waiter.queue_started_at),
+        });
+    }
 }
 function deferReply(correlationId, agent, timeoutMs) {
     return new Promise((resolve, reject) => {

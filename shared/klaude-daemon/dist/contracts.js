@@ -150,9 +150,6 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         if (typeof agent?.root_dir === 'string' && agent.root_dir.trim()) {
             lines.push(`- Agent root: \`${agent.root_dir.trim()}\``);
         }
-        if (typeof agent?.validator_script === 'string' && agent.validator_script.trim()) {
-            lines.push(`- Validator script: \`${agent.validator_script.trim()}\``);
-        }
         if (typeof agent?.concept_catalog_index === 'string' && agent.concept_catalog_index.trim()) {
             lines.push(`- Concept catalog entrypoint: \`${agent.concept_catalog_index.trim()}\``);
         }

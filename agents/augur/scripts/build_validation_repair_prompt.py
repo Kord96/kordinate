@@ -21,19 +21,15 @@ def main() -> int:
     args = parse_args()
     findings = json.loads(args.findings_json)
     lines = [f"- {line}" for line in findings] if isinstance(findings, list) else []
-    repair_log = f"{args.target_dir}/repair-log.json"
     prompt = "\n".join([
         f"Validation did not complete cleanly for `{args.target_dir}`.",
         "You must fix the generated output in place and obtain a clean validation result before finishing.",
-        f"Validator: `{args.validator_script}`",
         f"Attempt {args.attempt} of {args.max_attempts}.",
         "",
         "Current validator findings:",
         "\n".join(lines) if lines else "- Validation failed with no structured findings.",
         "",
-        f"Read `{repair_log}` and use the latest iteration as the authoritative structured repair record.",
-        "If the latest repair-log iteration status is `needs_refinement`, the output is structurally valid but not yet quality-clean enough to stop.",
-        "Prioritize issues whose status is `open` or `regressed`.",
+        "Use only the current validator findings in this prompt as the authoritative repair input for this iteration.",
         "When grounding or naming issues remain, use `facts/symbols-seed.json` when present to replace vague mechanism names with exact identifiers from the prepared high-signal files.",
         "When state grounding issues remain, use `facts/state-seeds.json` when present to replace abstract store wording with exact structs, enums, maps, config variants, or storage selector names from the grounded files.",
         "When framework interpretation is part of the issue, consult `facts/frameworks.json` first. If needed, start from `$FRAMEWORK_CATALOG_INDEX`, then read only `$AGENT_ROOT/memory/catalog/frameworks/<framework>/framework.md` and `$AGENT_ROOT/memory/catalog/frameworks/<framework>/semantics.yaml` for the specific framework in question.",
@@ -59,7 +55,6 @@ def main() -> int:
         "When narrative throughline issues remain, rewrite `throughline` so it explains the teaching arc that connects the selected stories into one lesson.",
         "For narrative fixes, prefer pruning or swapping weak stories over adding more prose. Keep deterministic seeds as constraints and ranking hints, not as a script to restate literally.",
         "Repair the output files now. Do not restart analysis. Keep the same project understanding and only change what is needed to pass validation.",
-        "Use the provided validator path directly. Do not search `/kord` or `/app` for alternate validator, schema, or mirrored-agent paths unless the provided path fails.",
         "Do not invoke the validator yourself during repair. The daemon/workflow will rerun validation after your changes.",
     ])
     print(prompt)

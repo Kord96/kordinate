@@ -14,9 +14,6 @@ import yaml
 
 from analysis_paths import write_analysis_indexes, write_json, write_latest_analysis_pointer
 
-if os.getenv("AUGUR_DAEMON_ALLOW_FINALIZE") != "1":
-    raise SystemExit("finalize_analysis.py is daemon-managed and unavailable in-session")
-
 
 ROOT = Path(__file__).resolve().parents[1]
 ATLAS_SCHEMA = ROOT / "schemas" / "atlas-schema.md"
@@ -291,14 +288,12 @@ def build_inputs_block(analysis_dir: Path, working_dir: Path, bundle_mode: str, 
     }, len(repo_refs), repo_tokens_est
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize an Augur analysis directory by writing meta.json and updating latest.json.")
-    parser.add_argument("analysis_dir", type=Path)
-    parser.add_argument("--validation-token", default="")
-    parser.add_argument("--validation-attempts", type=int, default=0)
-    args = parser.parse_args()
-
-    analysis_dir = args.analysis_dir.resolve()
+def build_meta_payload(
+    analysis_dir: Path,
+    validation_token: str = "",
+    validation_attempts: int = 0,
+) -> dict[str, Any]:
+    analysis_dir = analysis_dir.resolve()
     atlas_path = analysis_dir / "atlas.json"
     if not atlas_path.exists():
         raise SystemExit(f"atlas.json not found at {atlas_path}")
@@ -406,16 +401,53 @@ def main() -> int:
             "inputs": inputs,
             "validation": {
                 "passed": validation_passed or bool((((existing_meta.get("analysis") or {}).get("validation") or {}).get("passed"))),
-                "attempts": int(latest_repair.get("iteration") or args.validation_attempts or (((existing_meta.get("analysis") or {}).get("validation") or {}).get("attempts")) or 0),
-                "token": str(args.validation_token or (((existing_meta.get("analysis") or {}).get("validation") or {}).get("token")) or ""),
+                "attempts": int(latest_repair.get("iteration") or validation_attempts or (((existing_meta.get("analysis") or {}).get("validation") or {}).get("attempts")) or 0),
+                "token": str(validation_token or (((existing_meta.get("analysis") or {}).get("validation") or {}).get("token")) or ""),
             },
         },
     }
+    return meta
 
+
+def finalize_analysis_dir(
+    analysis_dir: Path,
+    validation_token: str = "",
+    validation_attempts: int = 0,
+) -> dict[str, Any]:
+    analysis_dir = analysis_dir.resolve()
+    meta = build_meta_payload(
+        analysis_dir,
+        validation_token=validation_token,
+        validation_attempts=validation_attempts,
+    )
+    project_slug, analysis_id, agent_home = analysis_context(analysis_dir)
+    repository = meta.get("repository") or {}
+    existing_meta_path = analysis_dir / "meta.json"
     write_json(existing_meta_path, meta)
-    write_latest_analysis_pointer(project_slug, analysis_id, sha, commit_time, agent_home=agent_home, analysis_path=analysis_dir)
+    write_latest_analysis_pointer(
+        project_slug,
+        analysis_id,
+        str(repository.get("commit") or ""),
+        str(repository.get("commit_time") or ""),
+        agent_home=agent_home,
+        analysis_path=analysis_dir,
+    )
     write_analysis_indexes(project_slug, agent_home=agent_home)
+    return meta
 
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Finalize an Augur analysis directory by writing meta.json and updating latest.json.")
+    parser.add_argument("analysis_dir", type=Path)
+    parser.add_argument("--validation-token", default="")
+    parser.add_argument("--validation-attempts", type=int, default=0)
+    args = parser.parse_args()
+
+    meta = finalize_analysis_dir(
+        args.analysis_dir,
+        validation_token=args.validation_token,
+        validation_attempts=args.validation_attempts,
+    )
     print(json.dumps(meta, indent=2))
     return 0
 

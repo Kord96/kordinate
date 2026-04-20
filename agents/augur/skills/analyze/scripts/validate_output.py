@@ -7,7 +7,7 @@ Usage:
     <analysis-dir> is the validated Augur analysis directory.
     Deterministic-only runs must contain blast.json and facts/.
     Full semantic runs must also contain atlas.json, stories/, and narratives.yaml.
-    meta.json is validated when present, but it may be finalized after semantic validation.
+    meta.json is validated when present and is written on successful semantic validation.
     e.g., /kord/augur/memory/projects/<project>/analysis/<sha>/<analysis-id>/
 
 Lock management is automatic when VALIDATE_LOCK=1 is set in the environment.
@@ -76,6 +76,17 @@ try:
 except ImportError:
     yaml = None
 
+AUGUR_ROOT = Path(__file__).resolve().parents[3]
+AUGUR_SCRIPTS_DIR = AUGUR_ROOT / "scripts"
+if str(AUGUR_SCRIPTS_DIR) not in sys.path:
+    sys.path.append(str(AUGUR_SCRIPTS_DIR))
+VALIDATOR_MODULE_DIR = Path(__file__).resolve().parents[1] / "validator"
+if str(VALIDATOR_MODULE_DIR) not in sys.path:
+    sys.path.append(str(VALIDATOR_MODULE_DIR))
+
+from finalize_analysis import finalize_analysis_dir
+from semantic_candidates import load_semantic_candidate_issues
+
 KEBAB_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 REQUIRED_ATLAS_FIELDS = [
@@ -97,10 +108,6 @@ CANONICAL_NARRATIVE_IDS = {
 DETERMINISTIC_ONLY = (
     os.getenv("AUGUR_DETERMINISTIC_ONLY") in ("1", "true", "TRUE", "yes", "YES")
 )
-
-if os.getenv("AUGUR_DAEMON_ALLOW_VALIDATION") != "1":
-    print("validate_output.py is daemon-managed and unavailable in-session", file=sys.stderr)
-    sys.exit(126)
 
 
 def kebab_case(s: str) -> bool:
@@ -3864,6 +3871,35 @@ def main():
                 all_issues.append({"level": "ERROR", "section": "meta", "message": "meta.json must be a JSON object"})
         except json.JSONDecodeError as e:
             all_issues.append({"level": "ERROR", "section": "meta", "message": f"JSON parse error: {e}"})
+
+    semantic_candidates_path = Path(
+        os.environ.get("AUGUR_SEMANTIC_CANDIDATES_PATH", "").strip()
+        or (analysis_dir / "semantic-issue-candidates.json")
+    )
+    all_issues.extend(load_semantic_candidate_issues(semantic_candidates_path))
+
+    # Finalization is part of validation success. If semantic validation passes,
+    # write meta/index artifacts here so this script remains the single authority.
+    errors = [i for i in all_issues if i["level"] == "ERROR"]
+    valid = len(errors) == 0
+    if valid and not DETERMINISTIC_ONLY:
+        try:
+            finalize_analysis_dir(
+                analysis_dir,
+                validation_token=os.environ.get("AUGUR_VALIDATION_TOKEN", "").strip(),
+                validation_attempts=int(os.environ.get("AUGUR_VALIDATION_ATTEMPTS", "0") or "0"),
+            )
+            meta = json.loads((analysis_dir / "meta.json").read_text())
+            if isinstance(meta, dict):
+                all_issues.extend(validate_meta(meta, analysis_dir))
+            else:
+                all_issues.append({"level": "ERROR", "section": "meta", "message": "meta.json must be a JSON object"})
+        except Exception as exc:
+            all_issues.append({
+                "level": "ERROR",
+                "section": "meta",
+                "message": f"finalization failed: {exc}",
+            })
 
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]

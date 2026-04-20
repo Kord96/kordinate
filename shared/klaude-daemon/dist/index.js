@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { basename, join } from 'node:path';
-import { constants as fsConstants } from 'node:fs';
-import { access, readdir, readFile, rm } from 'node:fs/promises';
+import { constants as fsConstants, existsSync, readFileSync } from 'node:fs';
+import { access, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { Kafka } from 'kafkajs';
 import { createAgentWorkflowHooks } from './workflows/index.js';
@@ -457,7 +457,6 @@ async function runValidatorScript(validatorScript, targetDir, manageLock, extraE
     const runner = validatorScript.endsWith('.sh') ? 'bash' : 'python3';
     const env = {
         ...process.env,
-        AUGUR_DAEMON_ALLOW_VALIDATION: '1',
         ...(manageLock ? { VALIDATE_LOCK: '1' } : {}),
         ...(extraEnv ?? {}),
     };
@@ -486,7 +485,6 @@ async function runValidatorScript(validatorScript, targetDir, manageLock, extraE
 async function runFinalizeScript(finalizeScript, targetDir, token, attempts, extraEnv) {
     const env = {
         ...process.env,
-        AUGUR_DAEMON_ALLOW_FINALIZE: '1',
         ...(extraEnv ?? {}),
     };
     return await new Promise((resolve) => {
@@ -524,15 +522,27 @@ async function runFinalizeScript(finalizeScript, targetDir, token, attempts, ext
 function buildArtifactsMetadata(targetDir, finalizePayload) {
     const files = {};
     const schemas = {};
-    if (finalizePayload && typeof finalizePayload === 'object') {
-        const artifactBlock = finalizePayload.artifacts;
+    let effectivePayload = finalizePayload;
+    if (!effectivePayload) {
+        try {
+            const metaPath = join(targetDir, 'meta.json');
+            if (existsSync(metaPath)) {
+                effectivePayload = JSON.parse(readFileSync(metaPath, 'utf8'));
+            }
+        }
+        catch {
+            effectivePayload = undefined;
+        }
+    }
+    if (effectivePayload && typeof effectivePayload === 'object') {
+        const artifactBlock = effectivePayload.artifacts;
         if (artifactBlock && typeof artifactBlock === 'object') {
             for (const [key, value] of Object.entries(artifactBlock)) {
                 if (typeof value === 'string' && value.trim())
                     files[key] = value;
             }
         }
-        const schemaBlock = finalizePayload.schemas;
+        const schemaBlock = effectivePayload.schemas;
         if (schemaBlock && typeof schemaBlock === 'object') {
             for (const [key, value] of Object.entries(schemaBlock)) {
                 if (typeof value === 'string' && value.trim())
@@ -612,6 +622,72 @@ function buildValidationRepairPrompt(input) {
         'Do not invoke the validator yourself during repair. The daemon/workflow will rerun validation after your changes.',
     ].join('\n');
 }
+function buildSemanticIssueCandidatePrompt(input) {
+    const findings = input.findings.map(line => `- ${line}`).join('\n');
+    return [
+        `Review the current Augur analysis artifacts in \`${input.targetDir}\`.`,
+        `This is semantic candidate issue pass ${input.attempt} of ${input.maxAttempts}.`,
+        'Return strict JSON only. No markdown fences, no prose, no explanations.',
+        'Return either [] or an object of the form {"issues":[...]}',
+        'Each issue object must use this shape:',
+        '{"level":"WARNING|ERROR","section":"semantic|atlas|story|narrative","message":"...","related_entities":["..."],"evidence_refs":["path:line"],"conflict_type":"optional","kind":"optional","related_issue_ids":["optional"]}',
+        'Focus only on semantic contradictions, logic gaps, decomposition mistakes, narrative incoherence, or cross-artifact inconsistencies that are not already obvious from the validator findings below.',
+        'Do not edit files. Do not run validation. Do not describe fixes.',
+        '',
+        'Current validator findings:',
+        findings || '- No structured validator findings were provided.',
+    ].join('\n');
+}
+function parseSemanticIssueCandidates(output) {
+    const text = output.trim();
+    if (!text)
+        return [];
+    const candidates = [text];
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fenced?.[1])
+        candidates.push(fenced[1].trim());
+    for (const candidate of candidates) {
+        try {
+            const parsed = JSON.parse(candidate);
+            if (Array.isArray(parsed))
+                return parsed.filter(item => item && typeof item === 'object');
+            if (parsed && typeof parsed === 'object' && Array.isArray(parsed.issues)) {
+                return (parsed.issues).filter(item => item && typeof item === 'object');
+            }
+        }
+        catch {
+            continue;
+        }
+    }
+    return [];
+}
+async function collectSemanticIssueCandidates(session, message, findings, attempt, maxAttempts, targetDir) {
+    const prompt = buildSemanticIssueCandidatePrompt({
+        targetDir,
+        findings,
+        attempt,
+        maxAttempts,
+    });
+    const request = buildRuntimePromptRequest(session, message, {
+        prompt,
+        rawPrompt: prompt,
+        reflect: false,
+    });
+    const run = await runtime.executePrompt(session, request);
+    const nextSession = updateSessionPromptCache(run.session, request, run.result);
+    if (run.result.status !== 'success') {
+        return {
+            session: nextSession,
+            usage: run.result.metadata?.usage,
+            issues: [],
+        };
+    }
+    return {
+        session: nextSession,
+        usage: run.result.metadata?.usage,
+        issues: parseSemanticIssueCandidates(run.result.output),
+    };
+}
 function normalizeValidationMaxAttempts(raw) {
     if (!Number.isFinite(raw))
         return 10;
@@ -677,47 +753,28 @@ async function maybeRunValidationLoop(session, message, result) {
     let currentResult = result;
     let accumulatedUsage = currentResult.metadata?.usage;
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-        const validationRun = await runValidatorScript(validation.validatorScript, targetDir, false, validatorEnv);
+        const validationToken = await hashValidatedDirectory(targetDir);
+        let validationRun = await runValidatorScript(validation.validatorScript, targetDir, false, {
+            ...(validatorEnv ?? {}),
+            AUGUR_VALIDATION_TOKEN: validationToken,
+            AUGUR_VALIDATION_ATTEMPTS: String(attempt),
+        });
         if (validationRun.valid) {
             await clearValidationLock(targetDir);
-            const token = await hashValidatedDirectory(targetDir);
-            let finalizePayload;
-            if (validation.finalizeScript && await pathExists(validation.finalizeScript)) {
-                const bundleMode = resolvedBundleMode(message);
-                const finalized = await runFinalizeScript(validation.finalizeScript, targetDir, token, attempt, {
-                    AUGUR_REQUEST_ID: message.correlation_id,
-                    AUGUR_AGENT_NAME: AGENT_NAME,
-                    AUGUR_AGENT_SPECIALIZATION: agentContract.specialization,
-                    AUGUR_AGENT_CONTRACT_VERSION: agentContract.version ?? '',
-                    AUGUR_RUNTIME_PROFILE_VERSION: runtimeProfile.version ?? '',
-                    AUGUR_RUNTIME_KIND: daemonConfig.executionProfile.runtime,
-                    AUGUR_PROVIDER: daemonConfig.executionProfile.provider,
-                    AUGUR_MODEL: daemonConfig.executionProfile.model,
-                    AUGUR_BUNDLE_MODE: bundleMode,
-                    AUGUR_MEMORY_BUNDLE: resolveSelectedBundleRef(agentContract.bundleRefs?.memory, bundleMode, 'memory'),
-                    AUGUR_RUNTIME_BUNDLE: resolveSelectedBundleRef(agentContract.bundleRefs?.runtime, bundleMode, 'runtime'),
-                    AUGUR_SKILL_BUNDLE: resolveSelectedBundleRef(agentContract.bundleRefs?.skill, bundleMode, 'skill'),
-                    AUGUR_WORKING_DIR: message.working_dir ?? '',
-                    AUGUR_PROJECT: typeof message.agent_params?.project === 'string' ? message.agent_params.project : '',
-                });
-                if (finalized.ok) {
-                    finalizePayload = finalized.payload;
-                }
-            }
             return {
                 session: currentSession,
                 result: {
                     ...currentResult,
-                    output: `${currentResult.output}\n\nValidation token: ${token}`,
+                    output: `${currentResult.output}\n\nValidation token: ${validationToken}`,
                     metadata: {
                         ...(currentResult.metadata ?? {}),
                         ...(accumulatedUsage ? { usage: accumulatedUsage } : {}),
-                        artifacts: buildArtifactsMetadata(targetDir, finalizePayload),
+                        artifacts: buildArtifactsMetadata(targetDir),
                         validation: {
                             required: true,
                             passed: true,
                             attempts: attempt,
-                            token,
+                            token: validationToken,
                             target_dir: targetDir,
                         },
                     },
@@ -747,6 +804,19 @@ async function maybeRunValidationLoop(session, message, result) {
                     },
                 },
             };
+        }
+        const semanticCandidateFile = join(targetDir, 'semantic-issue-candidates.json');
+        const semanticCandidateRun = await collectSemanticIssueCandidates(currentSession, message, validationRun.findings, attempt, maxAttempts, targetDir);
+        currentSession = semanticCandidateRun.session;
+        accumulatedUsage = mergeUsageMetadata(accumulatedUsage, semanticCandidateRun.usage);
+        if (semanticCandidateRun.issues.length > 0) {
+            await writeFile(semanticCandidateFile, `${JSON.stringify({ issues: semanticCandidateRun.issues }, null, 2)}\n`, 'utf8');
+            validationRun = await runValidatorScript(validation.validatorScript, targetDir, false, {
+                ...(validatorEnv ?? {}),
+                AUGUR_VALIDATION_TOKEN: validationToken,
+                AUGUR_VALIDATION_ATTEMPTS: String(attempt),
+                AUGUR_SEMANTIC_CANDIDATES_PATH: semanticCandidateFile,
+            });
         }
         const repairPromptBuilder = workflowContext?.repairPromptBuilder ?? buildValidationRepairPrompt;
         const repairPrompt = repairPromptBuilder({
