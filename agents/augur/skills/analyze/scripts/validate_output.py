@@ -3873,11 +3873,16 @@ def main():
         except json.JSONDecodeError as e:
             all_issues.append({"level": "ERROR", "section": "meta", "message": f"JSON parse error: {e}"})
 
-    # Finalization is part of validation success. If semantic validation passes,
-    # write meta/index artifacts here so this script remains the single authority.
+    # Finalization is part of validation success. Record the validator outcome
+    # first so sealing sees the current authoritative repair-log state.
     errors = [i for i in all_issues if i["level"] == "ERROR"]
     valid = len(errors) == 0
-    if valid and not DETERMINISTIC_ONLY:
+    append_repair_log(repair_log_path, analysis_dir, valid, all_issues)
+    repair_log = load_repair_log(repair_log_path)
+    latest_iteration = (repair_log.get("iterations") or [])[-1] if (repair_log.get("iterations") or []) else {}
+    final_status = str(latest_iteration.get("status") or ("valid" if valid else "invalid"))
+
+    if final_status == "valid" and not DETERMINISTIC_ONLY:
         try:
             finalize_analysis_dir(
                 analysis_dir,
@@ -3896,6 +3901,14 @@ def main():
                 "message": f"sealing failed: {exc}",
             })
 
+        errors = [i for i in all_issues if i["level"] == "ERROR"]
+        valid = len(errors) == 0
+        if not valid:
+            append_repair_log(repair_log_path, analysis_dir, valid, all_issues)
+            repair_log = load_repair_log(repair_log_path)
+            latest_iteration = (repair_log.get("iterations") or [])[-1] if (repair_log.get("iterations") or []) else {}
+            final_status = str(latest_iteration.get("status") or "invalid")
+
     # --- Summary ---
     errors = [i for i in all_issues if i["level"] == "ERROR"]
     warnings = [i for i in all_issues if i["level"] == "WARNING"]
@@ -3904,11 +3917,6 @@ def main():
         section = f" [{i['section']}]" if i.get("section") else ""
         print(f"{i['level']}{section}: {i['message']}")
 
-    valid = len(errors) == 0
-    append_repair_log(repair_log_path, analysis_dir, valid, all_issues)
-    repair_log = load_repair_log(repair_log_path)
-    latest_iteration = (repair_log.get("iterations") or [])[-1] if (repair_log.get("iterations") or []) else {}
-    final_status = str(latest_iteration.get("status") or ("valid" if valid else "invalid"))
     banner = "VALID" if final_status == "valid" else ("NEEDS_REFINEMENT" if final_status == "needs_refinement" else "INVALID")
     print(f"\n{banner}: {len(errors)} errors, {len(warnings)} warnings")
 
