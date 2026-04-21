@@ -526,6 +526,11 @@ function buildPendingTimeoutError(correlationId) {
     return new Error(`timed out waiting for ${correlationId}`);
 }
 function armPendingTimer(waiter, correlationId, timeoutMs) {
+    if (!(timeoutMs > 0) || !Number.isFinite(timeoutMs)) {
+        waiter.timer = setTimeout(() => undefined, 0);
+        clearTimeout(waiter.timer);
+        return;
+    }
     waiter.timer = setTimeout(() => {
         pending.delete(correlationId);
         log('prompt_timeout', {
@@ -572,7 +577,7 @@ function deferReply(correlationId, agent, timeoutMs) {
         pending.set(correlationId, waiter);
     });
 }
-async function sendPrompt(agent, body, requestId) {
+async function sendPrompt(agent, body, requestId, options) {
     const correlationId = requestId ?? `${agent}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     const timeoutMs = resolveTimeoutMs({ name: agent }, body);
     const workingDir = canonicalizeWorkingDir(body.working_dir);
@@ -588,11 +593,11 @@ async function sendPrompt(agent, body, requestId) {
         agent_params: body.agent_params,
         session_id: body.session_id,
     };
-    const reply = deferReply(correlationId, agent, timeoutMs);
+    const reply = deferReply(correlationId, agent, options?.disable_timeout ? 0 : timeoutMs);
     log('prompt_publish_start', {
         agent,
         correlation_id: correlationId,
-        timeout_ms: timeoutMs,
+        timeout_ms: options?.disable_timeout ? null : timeoutMs,
         session_id: body.session_id ?? null,
     });
     await producer.send({
@@ -925,7 +930,9 @@ const server = createServer(async (req, res) => {
                 has_working_dir: typeof body.working_dir === 'string' && body.working_dir.length > 0,
                 session_id: body.session_id ?? null,
             });
-            const { reply } = await sendPrompt(record.name, body, requestId);
+            const { reply } = await sendPrompt(record.name, body, requestId, {
+                disable_timeout: body.async === true,
+            });
             pushRequestEvent(requestId, 'prompt_published', {
                 topic: record.name,
             });
