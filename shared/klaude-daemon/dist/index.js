@@ -322,7 +322,10 @@ function buildRuntimePromptRequest(session, message, overrides) {
         working_dir: promptMessage.working_dir,
         workspace: promptMessage.workspace,
         agent: promptMessage.agent,
-        timeout_ms: promptMessage.timeout_ms,
+        // Request timeout is gateway/accounting metadata only. Do not propagate it
+        // into the runtime, otherwise async runs and repair resumes can be killed by
+        // stale per-request execution deadlines.
+        timeout_ms: undefined,
         reflect: overrides?.reflect ?? (agentContract.validation?.required ? false : promptMessage.reflect),
         reflection_prompt: promptMessage.reflection_prompt,
         agent_params: promptMessage.agent_params,
