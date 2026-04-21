@@ -1170,9 +1170,25 @@ def validate_atlas(
             if state_id not in state_ids:
                 error(f"{entry_kind.title()} '{cid}' references unknown state '{state_id}'", "concepts")
         grounded_refs = entry.get("grounded_in") or []
-        evidence = entry.get("evidence") or {}
-        files = evidence.get("files") or []
-        questions_asked = [str(item) for item in evidence.get("questions_asked") or [] if item]
+        raw_evidence = entry.get("evidence")
+        evidence = raw_evidence if isinstance(raw_evidence, dict) else {}
+        if raw_evidence not in (None, {}) and not isinstance(raw_evidence, dict):
+            error(
+                f"{entry_kind.title()} '{cid}' evidence must be an object, got {type(raw_evidence).__name__}",
+                "concepts",
+            )
+        raw_files = evidence.get("files") or []
+        if raw_files and not isinstance(raw_files, list):
+            error(f"{entry_kind.title()} '{cid}' evidence.files must be a list", "concepts")
+            files: list[str] = []
+        else:
+            files = [str(item) for item in raw_files if item]
+        raw_questions = evidence.get("questions_asked") or []
+        if raw_questions and not isinstance(raw_questions, list):
+            error(f"{entry_kind.title()} '{cid}' evidence.questions_asked must be a list", "concepts")
+            questions_asked: list[str] = []
+        else:
+            questions_asked = [str(item) for item in raw_questions if item]
         if not grounded_refs and not files:
             warn(f"{entry_kind.title()} '{cid}' has no grounded_in or evidence files", "concepts")
         if grounded_refs and (project_root or analysis_dir):
