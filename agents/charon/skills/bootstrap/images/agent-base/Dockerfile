@@ -96,7 +96,7 @@ retry_new = """      } else {
         if (error41 instanceof APIError && error41.status === 429) {
           const errorMessageText = typeof error41.message === \"string\" ? error41.message.toLowerCase() : \"\";
           const firstTokenOverload = errorMessageText.includes(\"didn't generate first token before the given deadline\") || errorMessageText.includes(\"service is overloaded\");
-          delayMs = Math.max(delayMs, firstTokenOverload ? 5000 : 2000);
+          delayMs = Math.max(delayMs, firstTokenOverload ? 15000 : 5000);
         }
       }
 """
