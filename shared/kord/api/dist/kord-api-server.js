@@ -580,6 +580,7 @@ function deferReply(correlationId, agent, timeoutMs) {
 async function sendPrompt(agent, body, requestId, options) {
     const correlationId = requestId ?? `${agent}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     const timeoutMs = resolveTimeoutMs({ name: agent }, body);
+    const runtimeTimeoutMs = options?.disable_timeout ? undefined : timeoutMs;
     const workingDir = canonicalizeWorkingDir(body.working_dir);
     const request = {
         type: 'request',
@@ -587,7 +588,7 @@ async function sendPrompt(agent, body, requestId, options) {
         correlation_id: correlationId,
         prompt: body.prompt,
         working_dir: workingDir,
-        timeout_ms: timeoutMs,
+        timeout_ms: runtimeTimeoutMs,
         reflect: body.reflect,
         reflection_prompt: body.reflection_prompt,
         agent_params: body.agent_params,

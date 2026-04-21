@@ -663,6 +663,7 @@ async function sendPrompt(agent: string, body: {
 }): Promise<{ correlationId: string, reply: Promise<ResponseMessage> }> {
   const correlationId = requestId ?? `${agent}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
   const timeoutMs = resolveTimeoutMs({ name: agent }, body)
+  const runtimeTimeoutMs = options?.disable_timeout ? undefined : timeoutMs
   const workingDir = canonicalizeWorkingDir(body.working_dir)
   const request: RequestMessage = {
     type: 'request',
@@ -670,7 +671,7 @@ async function sendPrompt(agent: string, body: {
     correlation_id: correlationId,
     prompt: body.prompt,
     working_dir: workingDir,
-    timeout_ms: timeoutMs,
+    timeout_ms: runtimeTimeoutMs,
     reflect: body.reflect,
     reflection_prompt: body.reflection_prompt,
     agent_params: body.agent_params,
