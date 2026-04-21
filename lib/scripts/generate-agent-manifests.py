@@ -544,7 +544,7 @@ spec:
         offsetResetPolicy: earliest
 """
 
-    topic_partitions = 1 if int(maxr) <= 1 else 3
+    topic_partitions = max(1, int(maxr))
 
     topic = f"""---
 apiVersion: kafka.strimzi.io/v1beta2
