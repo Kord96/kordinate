@@ -40,9 +40,8 @@ def main() -> int:
     facts_guide_path = facts_dir / "facts-guide.json"
 
     starter_files: list[str] = [str(blast_path), str(startup_path)]
-    for optional in (facts_guide_path, concept_evidence_path, story_seeds_path, component_seeds_path, narrative_seeds_path, health_candidates_path, failure_scenario_candidates_path, symbols_seed_path, state_seeds_path):
-        if optional.exists():
-            starter_files.append(str(optional))
+    if facts_guide_path.exists():
+        starter_files.append(str(facts_guide_path))
     try:
         startup = json.loads(startup_path.read_text(encoding="utf-8"))
         startup_files = startup.get("startup_files") or []
@@ -71,10 +70,9 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
-                "Use those facts to form initial hypotheses, then move into repo code before doing more fact reduction.",
+                "Use those core startup files to form initial hypotheses, then move into repo code before doing more fact reduction.",
+                "Do not preload large supporting domains during startup. Read them only when the changed slice, a concrete ambiguity, or a review question requires them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
-                "Use facts/symbols-seed.json when present to prefer exact mechanism names from high-signal files over abstract paraphrases in observations and summaries.",
-                "Use facts/state-seeds.json when present to tighten state claims around exact structs, enums, maps, config variants, or storage selectors in the grounded files.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
             ]
         )
@@ -83,19 +81,14 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
-                "Use those facts to form initial architectural hypotheses, then move into repo code before doing more fact reduction.",
+                "Use those core startup files to form initial architectural hypotheses, then move into repo code before doing more fact reduction.",
+                "Do not preload large supporting domains during startup. Read them only when the current task actually needs them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
                 "After you identify provisional top-level components, perform a mandatory breadth pass in repo code for each root slice.",
-                "Treat facts/concept-evidence.json as candidate guidance: use supporting evidence, counter evidence, evidence gaps, and review questions to resolve concepts before they affect atlas concepts, monitoring, or gaps.",
-                "Use facts/component-seeds.json when present to choose representative files for each provisional root slice before finalizing the atlas or stories.",
-                "Use facts/narrative-seeds.json when present to challenge system-overview and other narrative selections before finalizing narratives.",
-                "Use facts/health-candidates.json when present to challenge unit health criteria, shared failure-scenario links, top-level monitoring coverage, and top-level gaps before finalizing the atlas.",
-                "Use facts/failure-scenario-candidates.json when present to challenge whether repeated multi-unit cascades should become a top-level failure_scenarios entry.",
+                "Use targeted fact domains on demand: concept-evidence for concept questions, seeds for decomposition and narrative selection, and health or failure candidates for health, monitoring, or failure modeling.",
                 "Perform a root challenge pass before finalizing roots: reject provisional roots anchored mainly in test/, docs/, examples/, or client-only paths.",
                 "If the repo has strong engine, storage, or runtime slices, do not spend a full top-level root on bootstrap alone; keep bootstrap as a child unless it is truly the dominant system concern.",
                 "On large repos, require at least one top-level root anchored in deeper runtime or storage internals when deterministic seeds provide one.",
-                "Use facts/symbols-seed.json when present to prefer exact mechanism names from high-signal files over abstract paraphrases in summaries, observations, and flows.",
-                "Use facts/state-seeds.json when present to tighten state claims around exact structs, enums, maps, config variants, or storage selectors in the grounded files.",
                 "For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file before finalizing stories.",
                 "Use facts to prioritize where to start, not to cap how broadly you read in full mode.",
                 "Use the run manifest for available fact files instead of guessing optional paths.",

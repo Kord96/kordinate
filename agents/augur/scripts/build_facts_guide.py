@@ -112,17 +112,13 @@ def main() -> int:
         "read_order": [
             "facts/startup.json",
             "facts/facts-guide.json",
-            "facts/index.json",
-            "facts/concept-evidence.json",
-            "facts/component-seeds.json",
-            "facts/narrative-seeds.json",
-            "facts/health-candidates.json",
-            "facts/symbols-seed.json",
-            "facts/state-seeds.json"
+            "facts/index.json"
         ],
         "rules": [
             "Observation-domain files contain normalized observations and usually expose a top-level facts array.",
             "Planning-aid, guide, manifest, and derived-structure artifacts may use specialized JSON shapes and should not be forced into a facts-array interpretation.",
+            "Use startup-priority artifacts first, then move into repo code before reading targeted-disambiguation artifacts.",
+            "Read large targeted artifacts only when the current ambiguity or validator findings make them relevant.",
             "Treat concept-evidence as candidate guidance: resolve materially relevant concepts from supporting evidence, counter evidence, evidence gaps, review questions, and repo code before letting them affect atlas concepts, monitoring, or gaps.",
             "Deterministic artifacts are guidance and evidence, not final semantic conclusions.",
         ],
