@@ -69,8 +69,9 @@ def main() -> int:
         startup_directive = " ".join(
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
-                "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
+                "Read starter_files first and treat facts/startup.json as the startup authority for this run.",
                 "Use those core startup files to form initial hypotheses, then move into repo code before doing more fact reduction.",
+                "Do not read facts/index.json during startup unless the startup manifest or current work requires discovering an additional artifact.",
                 "Do not preload large supporting domains during startup. Read them only when the changed slice, a concrete ambiguity, or a review question requires them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
@@ -80,8 +81,9 @@ def main() -> int:
         startup_directive = " ".join(
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
-                "Read starter_files first and treat facts/startup.json plus facts/index.json as the authority for which deterministic domains are available in this run.",
+                "Read starter_files first and treat facts/startup.json as the startup authority for this run.",
                 "Use those core startup files to form initial architectural hypotheses, then move into repo code before doing more fact reduction.",
+                "Do not read facts/index.json during startup unless the startup manifest or current work requires discovering an additional artifact.",
                 "Do not preload large supporting domains during startup. Read them only when the current task actually needs them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
                 "After you identify provisional top-level components, perform a mandatory breadth pass in repo code for each root slice.",

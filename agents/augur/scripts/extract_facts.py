@@ -93,23 +93,36 @@ def main(argv: list[str] | None = None) -> int:
             "analysis_mode": payload.get("analysis_mode"),
             "root": payload.get("root"),
             "startup_files": [f"facts/{domain}.json" for domain in startup_domains],
-            "large_domains": [
-                {
-                    "name": domain.get("name"),
-                    "file": domain.get("file"),
-                    "count": domain.get("count"),
-                }
-                for domain in (index_payload.get("index", {}) or {}).get("domains", [])
-                if str(domain.get("name") or "") in {"concept-evidence", "external-clients", "config", "import-graph", "call-edges", "data-touches", "execution-slices"}
-            ],
-            "domain_counts": [
-                {
-                    "name": domain.get("name"),
-                    "file": domain.get("file"),
-                    "count": domain.get("count"),
-                }
-                for domain in (index_payload.get("index", {}) or {}).get("domains", [])
-            ],
+            "targeted_domains": {
+                "concept_questions": [
+                    "facts/concept-evidence.json",
+                    "facts/frameworks.json",
+                ],
+                "decomposition_and_narratives": [
+                    "facts/component-seeds.json",
+                    "facts/story-seeds.json",
+                    "facts/narrative-seeds.json",
+                    "facts/symbols-seed.json",
+                ],
+                "state_and_data_flow": [
+                    "facts/state-seeds.json",
+                    "facts/state-access-summary.json",
+                    "facts/execution-slices.json",
+                    "facts/data-touches.json",
+                ],
+                "boundaries_and_dependencies": [
+                    "facts/boundaries.json",
+                    "facts/handlers.json",
+                    "facts/external-clients.json",
+                    "facts/auth-surface.json",
+                    "facts/config.json",
+                ],
+                "health_and_failure": [
+                    "facts/health-candidates.json",
+                    "facts/failure-scenario-candidates.json",
+                    "facts/control-hotspots.json",
+                ],
+            },
             "detector_status": [
                 {
                     "id": run.get("id"),

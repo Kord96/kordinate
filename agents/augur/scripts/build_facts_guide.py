@@ -39,72 +39,53 @@ def main() -> int:
         if isinstance(item, str)
     }
 
-    entries: list[dict[str, Any]] = []
-    seen: set[str] = set()
-
-    def default_meaning(name: str, kind: str) -> str:
-        if kind == "observation-domain":
-            return f"Normalized deterministic observations for the '{name}' domain."
-        if kind == "planning-aid":
-            return f"Deterministic planning aid for '{name}'."
-        if kind == "derived-structure":
-            return f"Deterministic derived structure for '{name}'."
-        return f"Deterministic {kind} artifact for '{name}'."
-
-    def default_how_to_use(name: str, kind: str) -> str:
-        if kind == "observation-domain":
-            return f"Use '{name}' as supporting evidence when it helps clarify components, flows, state, or dependencies."
-        if kind == "planning-aid":
-            return f"Use '{name}' to refine planning or prioritization before final semantic writing."
-        if kind == "derived-structure":
-            return f"Use '{name}' as a deterministic summary to guide follow-up repo reads and architectural checks."
-        return f"Use '{name}' according to its run-specific role before wider repo exploration."
-
-    def default_what_not_to_infer(kind: str) -> str:
-        if kind == "observation-domain":
-            return "Do not treat one observation domain as final architecture truth without corroborating code reads."
-        if kind == "planning-aid":
-            return "Do not treat this planning aid as a final semantic conclusion."
-        if kind == "derived-structure":
-            return "Do not treat this derived summary as a substitute for direct code grounding."
-        return "Do not over-interpret this artifact without corroborating evidence."
-
-    def add_entry(name: str, file: str, count: int | None = None) -> None:
-        if name in seen:
-            return
-        seen.add(name)
-        catalog_entry = catalog_artifacts.get(name, {})
-        kind = catalog_entry.get("kind", "observation-domain")
-        entries.append({
-            "name": name,
-            "file": file,
-            "kind": kind,
-            "priority": (
-                "startup" if name in startup_files else catalog_entry.get("priority", "targeted-disambiguation")
-            ),
-            "count": count,
-            "meaning": catalog_entry.get("meaning", default_meaning(name, kind)),
-            "how_to_use": catalog_entry.get("how_to_use", default_how_to_use(name, kind)),
-            "what_not_to_infer": catalog_entry.get("what_not_to_infer", default_what_not_to_infer(kind)),
+    startup_artifacts: list[dict[str, Any]] = [
+        {
+            "file": "facts/startup.json",
+            "role": "Startup manifest for this run.",
+        },
+        {
+            "file": "facts/facts-guide.json",
+            "role": "Task-oriented retrieval policy for optional deterministic artifacts.",
+        },
+    ]
+    for startup_file in startup_payload.get("startup_files") or []:
+        if not isinstance(startup_file, str) or not startup_file.strip():
+            continue
+        normalized = startup_file.removeprefix("./")
+        artifact_name = Path(normalized).stem
+        catalog_entry = catalog_artifacts.get(artifact_name, {})
+        startup_artifacts.append({
+            "file": normalized,
+            "role": catalog_entry.get("how_to_use", f"Use '{artifact_name}' for initial orientation only."),
         })
 
-    add_entry("index", "facts/index.json")
-    add_entry("startup", "facts/startup.json")
-
-    for domain in (index_payload.get("index", {}) or {}).get("domains", []) or []:
-        name = str(domain.get("name") or "").strip()
-        file = str(domain.get("file") or f"facts/{name}.json")
-        count = domain.get("count")
-        if name:
-            add_entry(name, file, int(count) if isinstance(count, int) else count)
-
-    for extra_name, entry in catalog_artifacts.items():
-        file = str(entry.get("file") or "")
-        if not file:
+    targeted_domains = startup_payload.get("targeted_domains") or {}
+    targeted_guidance: list[dict[str, Any]] = []
+    group_meanings = {
+        "concept_questions": "Reach for these only when concept validity, framework-shaped claims, or contradictions need resolution.",
+        "decomposition_and_narratives": "Use these when component boundaries, story selection, or narrative teaching choices are the active problem.",
+        "state_and_data_flow": "Use these when state ownership, flow truthfulness, or data movement is unclear.",
+        "boundaries_and_dependencies": "Use these when boundary placement, handler ownership, auth surfaces, or external dependency modeling is unclear.",
+        "health_and_failure": "Use these when health, monitoring, resilience, or failure-scenario coverage is the active problem.",
+    }
+    for group_name, files in targeted_domains.items():
+        if not isinstance(files, list):
             continue
-        candidate = facts_dir.parent / file if file.startswith("facts/") else facts_dir / file
-        if candidate.exists():
-            add_entry(extra_name, file)
+        existing = []
+        for entry in files:
+            if not isinstance(entry, str) or not entry.strip():
+                continue
+            normalized = entry.removeprefix("./")
+            candidate = facts_dir.parent / normalized if normalized.startswith("facts/") else facts_dir / normalized
+            if candidate.exists():
+                existing.append(normalized)
+        if existing:
+            targeted_guidance.append({
+                "name": group_name,
+                "when": group_meanings.get(group_name, "Use these only when the current ambiguity specifically matches this area."),
+                "files": existing,
+            })
 
     payload = {
         "version": 1,
@@ -112,17 +93,15 @@ def main() -> int:
         "read_order": [
             "facts/startup.json",
             "facts/facts-guide.json",
-            "facts/index.json"
         ],
         "rules": [
-            "Observation-domain files contain normalized observations and usually expose a top-level facts array.",
-            "Planning-aid, guide, manifest, and derived-structure artifacts may use specialized JSON shapes and should not be forced into a facts-array interpretation.",
-            "Use startup-priority artifacts first, then move into repo code before reading targeted-disambiguation artifacts.",
-            "Read large targeted artifacts only when the current ambiguity or validator findings make them relevant.",
-            "Treat concept-evidence as candidate guidance: resolve materially relevant concepts from supporting evidence, counter evidence, evidence gaps, review questions, and repo code before letting them affect atlas concepts, monitoring, or gaps.",
+            "Read only the startup artifacts first, then move into repo code before consulting optional deterministic artifacts.",
+            "Do not read facts/index.json during startup unless you genuinely need to discover an artifact not already covered by startup.json or this guide.",
+            "Treat targeted deterministic artifacts as on-demand support for a specific ambiguity, validator finding, or review question.",
             "Deterministic artifacts are guidance and evidence, not final semantic conclusions.",
         ],
-        "artifacts": entries,
+        "startup_artifacts": startup_artifacts,
+        "targeted_guidance": targeted_guidance,
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
