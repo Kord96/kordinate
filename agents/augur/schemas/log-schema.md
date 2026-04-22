@@ -1,14 +1,15 @@
-# repair-log.json Schema
+# log.json Schema
 
-Defines the validator-owned repair lifecycle contract for one analysis run.
+Defines the validator-owned lifecycle contract for one analysis run.
 
-`repair-log.json` is not a semantic output. It is a structured validation and repair record that the repair loop can read after each validator attempt.
+`log.json` is not a semantic output. It is a structured validator log. The current `log_type` is `validation`, and future log types may be added under the same neutral filename.
 
 ## Minimal Shape
 
 ```json
 {
   "version": "1",
+  "log_type": "validation",
   "analysis_dir": "<absolute path>",
   "latest_status": "valid | needs_refinement | invalid",
   "latest_iteration": 2,
@@ -40,7 +41,7 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
         "low": 10
       },
       "conflict_summary": {
-        "open_semantic_conflicts": 2,
+        "open_consistency_conflicts": 2,
         "by_conflict_type": {
           "cross_artifact": 1,
           "shape_tension": 1
@@ -60,7 +61,7 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
           "recommended_artifacts": ["facts/concept-evidence.json"],
           "suggested_resolution": "<short repair hint>"
         }
-      },
+      ],
       "quality_gate": {
         "passed": false,
         "failure_reasons": [
@@ -76,8 +77,8 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
           "kind": "<normalized issue kind>",
           "family": "<broader repair family>",
           "priority": "high | medium | low",
-          "is_semantic_conflict": false,
-          "conflict_type": "cross_artifact | fact_vs_semantic | shape_tension | null",
+          "is_consistency_conflict": false,
+          "conflict_type": "cross_artifact | evidence_vs_model | shape_tension | null",
           "message": "<validator message>",
           "related_entities": [
             "<optional related story/component/narrative ids>"
@@ -89,7 +90,7 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
             "<optional linked issue ids>"
           ],
           "recommended_artifacts": [
-            "<deterministic artifacts to consult first>"
+            "<script-derived artifacts to consult first>"
           ],
           "status": "open | unchanged | regressed",
           "first_seen_iteration": 1,
@@ -105,8 +106,8 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
           "kind": "<normalized issue kind>",
           "family": "<broader repair family>",
           "priority": "high | medium | low",
-          "is_semantic_conflict": false,
-          "conflict_type": "cross_artifact | fact_vs_semantic | shape_tension | null",
+          "is_consistency_conflict": false,
+          "conflict_type": "cross_artifact | evidence_vs_model | shape_tension | null",
           "message": "<validator message>",
           "related_entities": [
             "<optional related story/component/narrative ids>"
@@ -118,7 +119,7 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
             "<optional linked issue ids>"
           ],
           "recommended_artifacts": [
-            "<deterministic artifacts to consult first>"
+            "<script-derived artifacts to consult first>"
           ],
           "status": "resolved",
           "first_seen_iteration": 1,
@@ -134,23 +135,23 @@ Defines the validator-owned repair lifecycle contract for one analysis run.
 
 ## Rules
 
-- the latest iteration is the authoritative current repair state
+- the latest iteration is the authoritative current validation state
 - `needs_refinement` means the run is structurally valid but has not cleared the post-validation quality gate
 - repair loops should prioritize issues with status `open` or `regressed`
 - repair loops should next prioritize `high` before `medium` before `low`
-- issues marked `is_semantic_conflict: true` are contradiction-like problems that should be reconciled within the current run
+- issues marked `is_consistency_conflict: true` are contradiction-like problems that should be reconciled within the current run
 - `conflict_type` distinguishes broad contradiction classes without requiring a separate contradiction artifact
-- `related_entities` and `evidence_refs` help reconcile cross-artifact disagreements directly from the repair log
-- `recommended_artifacts` points the repair loop at the highest-value deterministic artifacts for that issue or repair target
+- `related_entities` and `evidence_refs` help reconcile cross-artifact disagreements directly from the log
+- `recommended_artifacts` points the repair loop at the highest-value script-derived artifacts for that issue or repair target
 - `repair_targets` groups repeated low-level issues, especially grounding warnings, into claim-level repair buckets
 - `quality_gate` records whether the run is clean enough to stop after structural validation
 - a missing issue from the prior open set should move into `resolved_issues`
 - issue ids are validator-owned and should be stable across repeated runs of the validator on the same unresolved finding
-- this file is append-only across repair iterations within one run
+- this file is append-only across iterations within one run
 
 ### Recommended Repair Routing
 
-Use the issue family and kind to decide which deterministic artifacts to consult first:
+Use the issue family and kind to decide which script-derived artifacts to consult first:
 
 - grounding, naming
   - `facts/symbols-seed.json`
@@ -176,10 +177,10 @@ Treat these artifacts as repair constraints and evidence, not as unquestioned tr
 
 ## Purpose
 
-Use `repair-log.json` to:
+Use `log.json` to:
 - understand what is still broken
 - see what has already been fixed
-- distinguish provenance, grounding, teaching-structure, and semantic-consistency problems
+- distinguish provenance, grounding, teaching-structure, and cross-artifact-consistency problems
 - identify contradiction-like issues without a separate artifact
 - prioritize the next repair step
 - compare repair convergence across iterations

@@ -174,7 +174,7 @@ async function resolveAugurAnalysisPlan(
   }
   const project = basename(workingDir)
   const kordHome = process.env.KORDINATE_HOME ?? '/app'
-  const payload = await runCommand('python3', [
+  const args = [
     join(kordHome, 'agents', 'augur', 'scripts', 'resolve_analysis_plan.py'),
     workingDir,
     '--agent-home', agentHome,
@@ -182,7 +182,34 @@ async function resolveAugurAnalysisPlan(
     '--analysis-mode', options?.forcedAnalysisMode ?? 'auto',
     '--bundle-mode',
     typeof message.agent_params?.bundle_mode === 'string' ? message.agent_params.bundle_mode : 'auto',
-  ], agentHome)
+  ]
+  let payload: string
+  try {
+    payload = await runCommand('python3', args, agentHome)
+  } catch (error) {
+    try {
+      payload = await runCommand('python3', args, agentHome)
+    } catch (retryError) {
+      const [repoExists, repoGitExists, repoGitHead] = await Promise.all([
+        pathExists(workingDir),
+        pathExists(join(workingDir, '.git')),
+        runCommand('git', gitArgsForRepo(workingDir, 'rev-parse', 'HEAD'), agentHome).catch(() => ''),
+      ])
+      const originalMessage = error instanceof Error ? error.message : String(error)
+      const retryMessage = retryError instanceof Error ? retryError.message : String(retryError)
+      throw new Error(
+        [
+          retryMessage,
+          `resolve_analysis_plan diagnostics: cwd=${agentHome}`,
+          `repo_root=${workingDir}`,
+          `repo_exists=${repoExists}`,
+          `repo_git_exists=${repoGitExists}`,
+          `git_head=${repoGitHead || '<unresolved>'}`,
+          `first_error=${originalMessage}`,
+        ].join('\n'),
+      )
+    }
+  }
   if (!payload) {
     throw new Error('resolve_analysis_plan.py did not return a plan')
   }

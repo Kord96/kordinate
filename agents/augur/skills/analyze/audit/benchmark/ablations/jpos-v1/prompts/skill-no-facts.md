@@ -17,7 +17,7 @@ Rules:
   - `/kord/workstation/home/project/kordinate/agents/augur/schemas/atlas-schema.md`
   - `/kord/workstation/home/project/kordinate/agents/augur/schemas/story-schema.md`
   - `/kord/workstation/home/project/kordinate/agents/augur/schemas/narratives-schema.md`
-  - `/kord/workstation/home/project/kordinate/agents/augur/schemas/repair-log-schema.md`
+- `/kord/workstation/home/project/kordinate/agents/augur/schemas/log-schema.md`
 
 Task:
 - analyze the repo from scratch
@@ -28,9 +28,9 @@ Task:
 
 Validation:
 - run:
-  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/scripts/validate_output.py /tmp/augur-ablation/jpos-v1/skill-no-facts`
-- after each validation attempt, read `/tmp/augur-ablation/jpos-v1/skill-no-facts/repair-log.json`
-- continue until the latest repair-log status is `valid`
+  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/validator/validate.py /tmp/augur-ablation/jpos-v1/skill-no-facts`
+- after each validation attempt, read `/tmp/augur-ablation/jpos-v1/skill-no-facts/log.json`
+- continue until the latest log status is `valid`
 
 At the end, report:
 - validator result

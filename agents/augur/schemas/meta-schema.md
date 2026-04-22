@@ -30,7 +30,7 @@ Daemon-owned runtime telemetry belongs to `klaude-daemon` response metadata and 
   "agent": {
     "name": "<deployed agent name>",
     "specialization": "<agent specialization>",
-    "bundle_mode": "<selective | holistic | evidence-driven>",
+    "bundle_mode": "evidence-driven",
     "agent_contract_version": "<contract version>",
     "runtime_profile_version": "<runtime profile version>"
   },

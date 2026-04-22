@@ -86,28 +86,10 @@ count_tokens_new = """      const countTokensFn = anthropic?.beta?.messages?.cou
       });
 """
 
-retry_old = """      } else {
-        delayMs = getRetryDelay(attempt, retryAfter);
-      }
-"""
-
-retry_new = """      } else {
-        delayMs = getRetryDelay(attempt, retryAfter);
-        if (error41 instanceof APIError && error41.status === 429) {
-          const errorMessageText = typeof error41.message === \"string\" ? error41.message.toLowerCase() : \"\";
-          const firstTokenOverload = errorMessageText.includes(\"didn't generate first token before the given deadline\") || errorMessageText.includes(\"service is overloaded\");
-          delayMs = Math.max(delayMs, firstTokenOverload ? 15000 : 5000);
-        }
-      }
-"""
-
 if count_tokens_old not in text:
     raise SystemExit("openclaude countTokens patch anchor not found")
-if retry_old not in text:
-    raise SystemExit("openclaude retry patch anchor not found")
 
 text = text.replace(count_tokens_old, count_tokens_new, 1)
-text = text.replace(retry_old, retry_new, 1)
 target.write_text(text)
 PY
 

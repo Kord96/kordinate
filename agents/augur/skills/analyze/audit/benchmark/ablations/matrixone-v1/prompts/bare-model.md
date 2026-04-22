@@ -25,8 +25,8 @@ Rules:
 
 Validation:
 - run:
-  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/scripts/validate_output.py /tmp/augur-ablation/matrixone-v1/bare-model`
-- if validation returns `INVALID` or `NEEDS_REFINEMENT`, repair and rerun until the latest repair-log status is `valid`
+  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/validator/validate.py /tmp/augur-ablation/matrixone-v1/bare-model`
+- if validation returns `INVALID` or `NEEDS_REFINEMENT`, repair and rerun until the latest log status is `valid`
 
 At the end, report:
 - validator result

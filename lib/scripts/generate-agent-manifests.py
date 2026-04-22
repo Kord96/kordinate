@@ -164,7 +164,7 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
         }
         contract["validation"] = {
             "required": True,
-            "validatorScript": "/app/agents/augur/skills/analyze/scripts/validate_output.py",
+            "validatorScript": "/app/agents/augur/skills/analyze/validator/validate.py",
             "finalizeScript": "/app/agents/augur/scripts/finalize_analysis.py",
         }
         validation = agent.get("validation") if isinstance(agent.get("validation"), dict) else {}

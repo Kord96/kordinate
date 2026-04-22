@@ -35,7 +35,7 @@ $PROJECT_MEM/
           index.json
 ```
 
-Deterministic-only runs produce:
+Facts-only runs produce:
 - `blast.json`
 - `facts/`
 - `meta.json`
@@ -56,7 +56,7 @@ Stable constraints:
 - fact ids are stable and unique within a run
 - every fact has provenance
 - domain files may be omitted when empty
-- facts are observations and candidate evidence, not final semantic conclusions
+- facts are observations and candidate evidence, not final architecture conclusions
 
 ## atlas.json
 
@@ -90,7 +90,7 @@ Stable constraints:
 Secondary cross-cutting reading paths over the story tree. YAML. See [narratives-schema.md](narratives-schema.md).
 
 Stable constraints:
-- `system-overview` narrative is required when semantic outputs are present
+- `system-overview` narrative is required when full artifact outputs are present
 - every narrative story id exists in `stories/`
 - each narrative contains `3-8` stories
 - narratives may pull from any level of the story tree
@@ -108,11 +108,11 @@ Do not:
 - guess package-local paths that do not exist
 - mix repo-relative and analysis-relative semantics within one reference string
 
-Validators and repair loops should treat these rules as the canonical path contract for semantic outputs.
+Validators and repair loops should treat these rules as the canonical path contract for full artifact outputs.
 
-## repair-log.json
+## log.json
 
-`repair-log.json` is a validator-owned lifecycle record for one run.
+`log.json` is a validator-owned lifecycle record for one run. The current log type is `validation`, and future log types may be added under the same neutral filename.
 
 Stable constraints:
 - one entry is appended per validation attempt
@@ -161,7 +161,7 @@ Stable constraints:
 2. `analysis/index.json` provides a per-project history of accepted analyses.
 3. `analysis/<sha>/index.json` groups accepted analyses by analyzed commit.
 4. `analysis/<sha>/latest.json` points to the latest accepted run for that commit.
-5. Deterministic artifacts use `blast.json` plus `facts/`.
+5. Facts and script-derived artifacts use `blast.json` plus `facts/`.
 6. Semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
 7. Overlay and reflection containers exist beside every accepted run even before any user edits or reviews are created.
 8. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.

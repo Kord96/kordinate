@@ -15,7 +15,7 @@ async function writeAcceptedAnalysis(root, project, sha, analysisId) {
     }, null, 2));
     await writeFile(join(analysisDir, 'stories', 'svc.yaml'), 'id: svc\ntitle: Service\nsummary: Main story\n');
     await writeFile(join(analysisDir, 'narratives.yaml'), 'version: "1"\nnarratives:\n  - id: system-overview\n    title: Overview\n    stories: [svc]\n');
-    await writeFile(join(analysisDir, 'repair-log.json'), JSON.stringify({ latest_status: 'valid' }, null, 2));
+    await writeFile(join(analysisDir, 'log.json'), JSON.stringify({ log_type: 'validation', latest_status: 'valid' }, null, 2));
     await writeFile(join(analysisDir, 'reflections', 'index.json'), JSON.stringify({ analysis_id: analysisId, reflections: [{ id: 'r1' }] }, null, 2));
     await writeFile(join(analysisDir, 'meta.json'), JSON.stringify({
         request_id: 'req-1',

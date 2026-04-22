@@ -19,13 +19,13 @@ def utc_now() -> str:
 
 PRECHECK_RULES = {
     "uses_schemas": [
-        re.compile(r"atlas-schema\.md|story-schema\.md|narratives-schema\.md|repair-log-schema\.md"),
+        re.compile(r"atlas-schema\.md|story-schema\.md|narratives-schema\.md|log-schema\.md"),
     ],
     "uses_validator": [
-        re.compile(r"validate_output\.py|repair-log\.json|NEEDS_REFINEMENT|latest repair-log status is `valid`|latest repair-log iteration status is `valid`", re.IGNORECASE),
+        re.compile(r"validate_output\.py|\blog\.json\b|NEEDS_REFINEMENT|latest log status is `valid`|latest log iteration status is `valid`", re.IGNORECASE),
     ],
     "uses_deterministic_facts": [
-        re.compile(r"/facts/|facts-guide\.json|facts/index\.json|blast\.json|startup\.json|component-seeds\.json|story-seeds\.json|symbols-seed\.json|state-seeds\.json|concept-evidence\.json|frameworks\.json|boundaries\.json|hot-files\.json"),
+        re.compile(r"/facts/|facts/index\.json|blast\.json|startup\.json|component-seeds\.json|story-seeds\.json|symbols-seed\.json|state-seeds\.json|concept-evidence\.json|frameworks\.json|boundaries\.json|hot-files\.json"),
     ],
     "uses_augur_skill": [
         re.compile(r"augur-local-analyze|Use the full current Augur policy|PACK\.json|PROMPT\.md"),
@@ -37,17 +37,16 @@ POSTCHECK_RULES = {
         "/agents/augur/schemas/atlas-schema.md",
         "/agents/augur/schemas/story-schema.md",
         "/agents/augur/schemas/narratives-schema.md",
-        "/agents/augur/schemas/repair-log-schema.md",
+        "/agents/augur/schemas/log-schema.md",
     ],
     "uses_validator": [
-        "/agents/augur/skills/analyze/scripts/validate_output.py",
-        "repair-log.json",
+        "/agents/augur/skills/analyze/validator/validate.py",
+        "log.json",
     ],
     "uses_deterministic_facts": [
         "/facts/",
         "/blast.json",
         "/startup.json",
-        "facts-guide.json",
         "component-seeds.json",
         "story-seeds.json",
         "symbols-seed.json",

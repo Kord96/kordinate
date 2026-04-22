@@ -439,7 +439,7 @@ async function resolveValidationTargetDir(message) {
     const projectRoot = join(homeDir, 'memory', 'projects', basename(workingDir));
     const analysisRoot = join(projectRoot, 'analysis');
     const validatorScript = agentContract.validation?.validatorScript ?? '';
-    const isAugurAnalyzeValidator = validatorScript.endsWith('/skills/analyze/scripts/validate_output.py')
+    const isAugurAnalyzeValidator = validatorScript.endsWith('/skills/analyze/validator/validate.py')
         && validatorScript.includes('/agents/augur/');
     if (isAugurAnalyzeValidator || agentContract.specialization === 'augur') {
         const sha = await runCommand('git', gitArgsForRepo(workingDir, 'rev-parse', 'HEAD'));

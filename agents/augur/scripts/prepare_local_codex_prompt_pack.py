@@ -108,13 +108,12 @@ def resolve_analysis_plan(project: str, working_dir: Path, analysis_mode: str, b
     )
 
 
-def render_local_runtime_context(context: dict, bundle_mode: str) -> str:
+def render_local_runtime_context(context: dict) -> str:
     lines = [
         "## Local Runtime Context",
         "",
         f"- Working directory: `{context['working_dir']}`",
         f"- Output directory: `{context['run_dir']}`",
-        f"- Bundle mode: `{bundle_mode}`",
         "- This local Codex session is standing in for the semantic agent runtime.",
         "- Treat the output directory above as the authoritative home for generated artifacts such as `facts/*`, `atlas.json`, `stories/`, and `narratives.yaml`.",
         "- Do not search for alternate validator, schema, or mirrored-agent paths unless a provided path actually fails.",
@@ -137,13 +136,12 @@ def render_startup_guidance(context: dict) -> str:
     return "\n".join(lines)
 
 
-def build_prompt(project: str, analysis_mode: str, bundle_mode: str, prompt_context: dict, analysis_context: dict) -> str:
+def build_prompt(project: str, analysis_mode: str, prompt_context: dict, analysis_context: dict) -> str:
     prompt_parts = [
         "You are Augur. Favor design-level reasoning and architecture trade-offs.",
         "",
         (prompt_context.get("bundle_prefix") or "").rstrip(),
-        (prompt_context.get("bundle_mode_guide") or "").rstrip(),
-        render_local_runtime_context(analysis_context, bundle_mode).rstrip(),
+        render_local_runtime_context(analysis_context).rstrip(),
         render_startup_guidance(analysis_context).rstrip(),
         (prompt_context.get("mode_guide") or "").rstrip(),
         f"User request: /analyze {project} --{analysis_mode}",
@@ -193,7 +191,7 @@ def main() -> int:
     pack_json_path = pack_dir / "PACK.json"
     readme_path = pack_dir / "README.md"
 
-    prompt_text = build_prompt(args.project, resolved_analysis_mode, resolved_bundle_mode, prompt_context, analysis_context)
+    prompt_text = build_prompt(args.project, resolved_analysis_mode, prompt_context, analysis_context)
     prompt_path.write_text(prompt_text, encoding="utf-8")
 
     pack = {
@@ -207,7 +205,7 @@ def main() -> int:
         "prompt_path": str(prompt_path),
         "prompt_context": prompt_context,
         "analysis_context": analysis_context,
-        "validator": str(ROOT / "skills" / "analyze" / "scripts" / "validate_output.py"),
+        "validator": str(ROOT / "skills" / "analyze" / "validator" / "validate.py"),
     }
     pack_json_path.write_text(json.dumps(pack, indent=2), encoding="utf-8")
 

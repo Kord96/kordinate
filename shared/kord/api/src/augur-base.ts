@@ -31,7 +31,7 @@ export interface AugurAnalysisDetails {
     atlas: boolean
     stories: boolean
     narratives: boolean
-    repair_log: boolean
+    log: boolean
     reflections: boolean
   }
 }
@@ -44,7 +44,7 @@ export interface AugurBasePayload {
   narratives: unknown[]
   symbols_seed: Record<string, unknown> | null
   meta: Record<string, unknown>
-  repair_log: Record<string, unknown> | null
+  log: Record<string, unknown> | null
 }
 
 function isWithin(parentPath: string, childPath: string): boolean {
@@ -221,7 +221,7 @@ export async function loadAugurAnalysisDetails(projectsRoot: string, project: st
       atlas: await pathExists(join(analysisDir, 'atlas.json')),
       stories: await pathExists(join(analysisDir, 'stories')),
       narratives: await pathExists(join(analysisDir, 'narratives.yaml')),
-      repair_log: await pathExists(join(analysisDir, 'repair-log.json')),
+      log: await pathExists(join(analysisDir, 'log.json')),
       reflections: await pathExists(join(analysisDir, 'reflections')),
     },
   }
@@ -230,7 +230,7 @@ export async function loadAugurAnalysisDetails(projectsRoot: string, project: st
 export async function loadAugurBase(projectsRoot: string, project: string, analysisId: string): Promise<AugurBasePayload | null> {
   const analysisDir = await findAugurAnalysisDir(projectsRoot, project, analysisId)
   if (!analysisDir) return null
-  const [meta, atlas, stories, narrativesDoc, symbolsSeed, repairLog] = await Promise.all([
+  const [meta, atlas, stories, narrativesDoc, symbolsSeed, runLog] = await Promise.all([
     loadAcceptedMeta(join(analysisDir, 'meta.json')),
     readJson<Record<string, unknown>>(join(analysisDir, 'atlas.json')),
     loadStoryDirectory(join(analysisDir, 'stories')),
@@ -238,8 +238,8 @@ export async function loadAugurBase(projectsRoot: string, project: string, analy
     (await pathExists(join(analysisDir, 'facts', 'symbols-seed.json')))
       ? readJson<Record<string, unknown>>(join(analysisDir, 'facts', 'symbols-seed.json'))
       : Promise.resolve(null),
-    (await pathExists(join(analysisDir, 'repair-log.json')))
-      ? readJson<Record<string, unknown>>(join(analysisDir, 'repair-log.json'))
+    (await pathExists(join(analysisDir, 'log.json')))
+      ? readJson<Record<string, unknown>>(join(analysisDir, 'log.json'))
       : Promise.resolve(null),
   ])
   return {
@@ -250,7 +250,7 @@ export async function loadAugurBase(projectsRoot: string, project: string, analy
     narratives: normalizeNarratives(narrativesDoc),
     symbols_seed: symbolsSeed,
     meta,
-    repair_log: repairLog,
+    log: runLog,
   }
 }
 

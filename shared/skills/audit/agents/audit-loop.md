@@ -247,7 +247,7 @@ specific claims:
 
 **Oracle 2 — Schema compliance.** Validate the output against the v4 schema:
 
-- Run `python3 $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py` on atlas.json
+- Run `python3 $KORDINATE_HOME/agents/augur/skills/analyze/validator/validate.py` on atlas.json
 - Check: version is "4", 3-5 groups, 5-10 components, flow types are valid enum values
 - Check: all cross-references resolve (component IDs in flows, state readers/writers, failure cascade components)
 - Check: `grounded_in` references on flows, state, and failure_modes are present

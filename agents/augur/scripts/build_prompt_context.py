@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build Augur prompt context fragments")
-    parser.add_argument("--bundle-mode", default="evidence-driven", help="Bundle mode such as evidence-driven or auto")
+    parser.add_argument("--bundle-mode", default="evidence-driven", help="Deprecated semantic methodology selector; retained for compatibility")
     parser.add_argument("--analysis-mode", default="", help="analysis mode such as full or incremental")
     return parser.parse_args()
 
@@ -71,21 +71,10 @@ def build_mode_guide(analysis_mode: str) -> str:
     return f"## {title}\n\n{text}\n\n" if text else ""
 
 
-def build_bundle_mode_guide(bundle_mode: str) -> str:
-    mode = resolve_bundle_mode(bundle_mode, "")
-    path = ROOT / "skills" / "analyze" / "bundle-modes" / f"{mode}.md"
-    if not path.exists():
-        return ""
-    title = "Bundle Mode Guide"
-    text = read_text(path)
-    return f"## {title}\n\n{text}\n\n" if text else ""
-
-
 def main() -> int:
     args = parse_args()
     payload = {
         "bundle_prefix": build_bundle_prefix(resolve_bundle_mode(args.bundle_mode, args.analysis_mode)),
-        "bundle_mode_guide": build_bundle_mode_guide(resolve_bundle_mode(args.bundle_mode, args.analysis_mode)),
         "mode_guide": build_mode_guide(args.analysis_mode),
     }
     print(json.dumps(payload))

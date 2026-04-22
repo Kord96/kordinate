@@ -17,9 +17,10 @@ MCP server for logical agent discovery and delegation through `kord-api`.
   - Resume a prior request by request id.
   - Use `stream: true` to read the normalized transcript snapshot.
 - `get_request`
-  - Request summary/status. Prefer `resume_request` for normal use.
+  - Request summary/status.
+  - Supports include flags for `debug`, `events`, and `transcript` so one request interface can expand into deeper monitoring views.
 - `get_request_events`
-  - Debug-only raw event timeline.
+  - Legacy debug-only raw event timeline.
 - `get_e2e_logs`
   - Debug-only end-to-end pod and API logs.
 

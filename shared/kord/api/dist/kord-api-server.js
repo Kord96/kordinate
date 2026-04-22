@@ -522,6 +522,19 @@ function openRequestTranscriptStream(req, res, requestId) {
     req.on('close', cleanup);
     res.on('close', cleanup);
 }
+function parseIncludeFlags(url) {
+    const verbose = url.searchParams.get('verbose') === '1';
+    const include = new Set((url.searchParams.get('include') ?? '')
+        .split(',')
+        .map(value => value.trim().toLowerCase())
+        .filter(Boolean));
+    return {
+        verbose,
+        include_debug: verbose || include.has('debug'),
+        include_events: verbose || include.has('events'),
+        include_transcript: verbose || include.has('transcript'),
+    };
+}
 function buildPendingTimeoutError(correlationId) {
     return new Error(`timed out waiting for ${correlationId}`);
 }
@@ -843,7 +856,7 @@ const server = createServer(async (req, res) => {
                 return;
             }
             const requestId = decodeURIComponent(requestPath);
-            const verbose = url.searchParams.get('verbose') === '1';
+            const includes = parseIncludeFlags(url);
             const requestRecord = requests.get(requestId);
             if (!requestRecord) {
                 json(res, 404, { error: `request '${requestId}' not found` });
@@ -864,18 +877,26 @@ const server = createServer(async (req, res) => {
                 stream_url: `/requests/${requestId}/stream`,
                 events_url: `/requests/${requestId}/events`,
             };
-            if (!verbose) {
+            if (!includes.include_debug && !includes.include_events && !includes.include_transcript) {
                 json(res, 200, summary);
                 return;
             }
-            json(res, 200, {
+            const expanded = {
                 ...summary,
                 response: requestRecord.response ?? null,
                 late_response: requestRecord.late_response ?? null,
                 error: requestRecord.error ?? null,
-                debug: requestRecord.debug,
-                transcript: requestRecord.transcript ?? { events: [] },
-            });
+            };
+            if (includes.include_debug) {
+                expanded.debug = requestRecord.debug ?? { events: [] };
+            }
+            if (includes.include_events) {
+                expanded.events = requestRecord.debug?.events ?? [];
+            }
+            if (includes.include_transcript) {
+                expanded.transcript = requestRecord.transcript ?? { events: [] };
+            }
+            json(res, 200, expanded);
             return;
         }
         if (req.method === 'POST' && url.pathname.startsWith('/agents/')) {

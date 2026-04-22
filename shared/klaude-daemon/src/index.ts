@@ -524,7 +524,7 @@ async function resolveValidationTargetDir(message: RequestMessage): Promise<stri
   const analysisRoot = join(projectRoot, 'analysis')
   const validatorScript = agentContract.validation?.validatorScript ?? ''
   const isAugurAnalyzeValidator =
-    validatorScript.endsWith('/skills/analyze/scripts/validate_output.py')
+    validatorScript.endsWith('/skills/analyze/validator/validate.py')
     && validatorScript.includes('/agents/augur/')
   if (isAugurAnalyzeValidator || agentContract.specialization === 'augur') {
     const sha = await runCommand('git', gitArgsForRepo(workingDir, 'rev-parse', 'HEAD'))

@@ -22,7 +22,7 @@ function augurContract(): AgentContract {
     },
     validation: {
       required: true,
-      validatorScript: '/app/agents/augur/skills/analyze/scripts/validate_output.py',
+      validatorScript: '/app/agents/augur/skills/analyze/validator/validate.py',
       finalizeScript: '/app/agents/augur/scripts/finalize_analysis.py',
     },
   }
@@ -186,7 +186,7 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
       agent_root: '/app/agents/augur',
     },
     resources: {
-      validator_script: '/app/agents/augur/skills/analyze/scripts/validate_output.py',
+      validator_script: '/app/agents/augur/skills/analyze/validator/validate.py',
       concept_catalog_index: '/app/agents/augur/memory/catalog/concepts/README.md',
       framework_catalog_index: '/app/agents/augur/memory/catalog/frameworks/README.md',
     },

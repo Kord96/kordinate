@@ -36,7 +36,7 @@ Shared scoring references:
 
 4. `current-policy`
 - full current Augur setup
-- deterministic facts + semantic bundle + repair-log loop + quality gate
+- deterministic facts + semantic bundle + log loop + quality gate
 
 ## Goal
 

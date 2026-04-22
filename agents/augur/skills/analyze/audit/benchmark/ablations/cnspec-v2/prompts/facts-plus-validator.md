@@ -20,7 +20,7 @@ Allowed reads:
 - `/kord/workstation/home/project/kordinate/agents/augur/schemas/atlas-schema.md`
 - `/kord/workstation/home/project/kordinate/agents/augur/schemas/story-schema.md`
 - `/kord/workstation/home/project/kordinate/agents/augur/schemas/narratives-schema.md`
-- `/kord/workstation/home/project/kordinate/agents/augur/schemas/repair-log-schema.md`
+- `/kord/workstation/home/project/kordinate/agents/augur/schemas/log-schema.md`
 
 Task:
 - use repo code plus deterministic artifacts to generate:
@@ -30,9 +30,9 @@ Task:
 
 Validation:
 - run:
-  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/scripts/validate_output.py /tmp/augur-ablation/cnspec-v2/facts-plus-validator`
-- after each validation attempt, read `/tmp/augur-ablation/cnspec-v2/facts-plus-validator/repair-log.json`
-- continue until the latest repair-log status is `valid`
+  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/validator/validate.py /tmp/augur-ablation/cnspec-v2/facts-plus-validator`
+- after each validation attempt, read `/tmp/augur-ablation/cnspec-v2/facts-plus-validator/log.json`
+- continue until the latest log status is `valid`
 
 Rules:
 - do not use Augur semantic memory bundle

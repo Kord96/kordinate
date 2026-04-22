@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a run-specific interpretation guide for deterministic fact artifacts."""
+"""Attach run-specific retrieval guidance to facts/index.json."""
 
 from __future__ import annotations
 
@@ -14,9 +14,9 @@ CATALOG_PATH = ROOT / "schemas" / "facts-catalog.json"
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Build Augur facts guide for one run")
+    parser = argparse.ArgumentParser(description="Attach retrieval guidance to facts/index.json for one run")
     parser.add_argument("facts_dir", help="facts directory for the run")
-    parser.add_argument("--output", required=True, help="Output JSON path")
+    parser.add_argument("--output", help="Deprecated explicit output path; defaults to facts/index.json")
     return parser.parse_args()
 
 
@@ -27,7 +27,7 @@ def load_json(path: Path) -> dict[str, Any]:
 def main() -> int:
     args = parse_args()
     facts_dir = Path(args.facts_dir).resolve()
-    output_path = Path(args.output).resolve()
+    output_path = Path(args.output).resolve() if args.output else (facts_dir / "index.json")
     catalog = load_json(CATALOG_PATH)
     catalog_artifacts = catalog.get("artifacts", {}) or {}
     index_payload = load_json(facts_dir / "index.json") if (facts_dir / "index.json").exists() else {}
@@ -45,8 +45,8 @@ def main() -> int:
             "role": "Startup manifest for this run.",
         },
         {
-            "file": "facts/facts-guide.json",
-            "role": "Task-oriented retrieval policy for optional deterministic artifacts.",
+            "file": "facts/index.json",
+            "role": "Canonical manifest plus retrieval policy for deterministic artifacts in this run.",
         },
     ]
     for startup_file in startup_payload.get("startup_files") or []:
@@ -87,24 +87,25 @@ def main() -> int:
                 "files": existing,
             })
 
-    payload = {
+    guide_payload = {
         "version": 1,
         "goal": "Run-specific interpretation guide for deterministic Augur fact artifacts.",
         "read_order": [
             "facts/startup.json",
-            "facts/facts-guide.json",
+            "facts/index.json",
         ],
         "rules": [
             "Read only the startup artifacts first, then move into repo code before consulting optional deterministic artifacts.",
-            "Do not read facts/index.json during startup unless you genuinely need to discover an artifact not already covered by startup.json or this guide.",
+            "Use facts/index.json when you genuinely need to discover an artifact not already covered by startup.json or to choose the right targeted support artifact.",
             "Treat targeted deterministic artifacts as on-demand support for a specific ambiguity, validator finding, or review question.",
             "Deterministic artifacts are guidance and evidence, not final semantic conclusions.",
         ],
         "startup_artifacts": startup_artifacts,
         "targeted_guidance": targeted_guidance,
     }
+    index_payload["guide"] = guide_payload
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    output_path.write_text(json.dumps(index_payload, indent=2) + "\n", encoding="utf-8")
     return 0
 
 

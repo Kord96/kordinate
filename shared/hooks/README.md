@@ -53,17 +53,17 @@ Blocks writes to any validated output root that contains a `.validate-lock` file
 
 ### validate-post-hook.sh (PostToolUse on Bash)
 
-Detects when an agent runs a `validate_output` script (any skill's validator following the naming convention). Silently re-runs the same validator with `VALIDATE_LOCK=1` to create or remove the lock based on the result.
+Detects when an agent runs a canonical validator entrypoint (`*/validator/validate.py` or `.sh`). Silently re-runs the same validator with `VALIDATE_LOCK=1` to create or remove the lock based on the result.
 
 | Trigger | Condition | Action |
 |---------|-----------|--------|
 | Write/Edit to `memory/projects/*/` | `.validate-lock` exists | Deny with fix instructions |
-| Bash runs `*validate_output*` | script + dir detected | Re-run with `VALIDATE_LOCK=1` to manage lock |
+| Bash runs `*/validator/validate.*` | script + dir detected | Re-run with `VALIDATE_LOCK=1` to manage lock |
 
 ### Validator contract
 
 Any validator script that follows this contract works with the hooks:
-1. Named `validate_output.py` or `validate_output.sh`
+1. Named `validate.py` or `validate.sh` under a `validator/` directory
 2. Accepts a directory path as first argument
 3. Exits 0 on success, non-zero on failure
 4. When `VALIDATE_LOCK=1`: creates `<dir>/.validate-lock` on failure, removes on success

@@ -21,7 +21,7 @@ workflow should not finish until validation passes.
 Example:
 
 ```bash
-/validate-output $MEM --validator $KORDINATE_HOME/agents/augur/skills/analyze/scripts/validate_output.py
+/validate-output $MEM --validator $KORDINATE_HOME/agents/augur/skills/analyze/validator/validate.py
 ```
 
 ## Contract
@@ -29,10 +29,10 @@ Example:
 The validator script must:
 
 1. live inside the repo under an approved path such as:
-   - `agents/*/skills/*/scripts/*validate_output*.py`
-   - `agents/*/skills/*/scripts/*validate_output*.sh`
-   - `shared/skills/*/scripts/*validate_output*.py`
-   - `shared/skills/*/scripts/*validate_output*.sh`
+   - `agents/*/skills/*/validator/validate.py`
+   - `agents/*/skills/*/validator/validate.sh`
+   - `shared/skills/*/validator/validate.py`
+   - `shared/skills/*/validator/validate.sh`
 2. accept the target directory as its first argument
 3. exit `0` on success, non-zero on failure
 4. when `VALIDATE_LOCK=1` is set, create `<target-dir>/.validate-lock` on failure and remove it on success

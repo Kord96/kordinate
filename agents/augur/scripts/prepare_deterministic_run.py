@@ -160,8 +160,8 @@ def main() -> int:
     failure_scenario_candidates_path = facts_dir / "failure-scenario-candidates.json"
     symbols_seed_path = facts_dir / "symbols-seed.json"
     state_seeds_path = facts_dir / "state-seeds.json"
-    facts_guide_path = facts_dir / "facts-guide.json"
     blast_path = run_dir / "blast.json"
+    facts_index_path = facts_dir / "index.json"
 
     run_dir.mkdir(parents=True, exist_ok=True)
     facts_dir.mkdir(parents=True, exist_ok=True)
@@ -248,11 +248,12 @@ def main() -> int:
     )
     run_cmd([
         "python3",
-        str(ROOT / "scripts" / "build_facts_guide.py"),
+        str(ROOT / "scripts" / "enrich_facts_index.py"),
         str(facts_dir),
-        "--output",
-        str(facts_guide_path),
     ])
+    stale_facts_guide_path = facts_dir / "facts-guide.json"
+    if stale_facts_guide_path.exists():
+        stale_facts_guide_path.unlink()
 
     blast_cmd = [
         "python3",
@@ -282,7 +283,7 @@ def main() -> int:
         "health_candidates": str(health_candidates_path),
         "symbols_seed": str(symbols_seed_path),
         "state_seeds": str(state_seeds_path),
-        "facts_guide": str(facts_guide_path),
+        "facts_index": str(facts_index_path),
         "blast": str(blast_path),
         "analysis_mode": args.analysis_mode,
     }

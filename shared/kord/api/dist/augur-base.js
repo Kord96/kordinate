@@ -176,7 +176,7 @@ export async function loadAugurAnalysisDetails(projectsRoot, project, analysisId
             atlas: await pathExists(join(analysisDir, 'atlas.json')),
             stories: await pathExists(join(analysisDir, 'stories')),
             narratives: await pathExists(join(analysisDir, 'narratives.yaml')),
-            repair_log: await pathExists(join(analysisDir, 'repair-log.json')),
+            log: await pathExists(join(analysisDir, 'log.json')),
             reflections: await pathExists(join(analysisDir, 'reflections')),
         },
     };
@@ -185,7 +185,7 @@ export async function loadAugurBase(projectsRoot, project, analysisId) {
     const analysisDir = await findAugurAnalysisDir(projectsRoot, project, analysisId);
     if (!analysisDir)
         return null;
-    const [meta, atlas, stories, narrativesDoc, symbolsSeed, repairLog] = await Promise.all([
+    const [meta, atlas, stories, narrativesDoc, symbolsSeed, runLog] = await Promise.all([
         loadAcceptedMeta(join(analysisDir, 'meta.json')),
         readJson(join(analysisDir, 'atlas.json')),
         loadStoryDirectory(join(analysisDir, 'stories')),
@@ -193,8 +193,8 @@ export async function loadAugurBase(projectsRoot, project, analysisId) {
         (await pathExists(join(analysisDir, 'facts', 'symbols-seed.json')))
             ? readJson(join(analysisDir, 'facts', 'symbols-seed.json'))
             : Promise.resolve(null),
-        (await pathExists(join(analysisDir, 'repair-log.json')))
-            ? readJson(join(analysisDir, 'repair-log.json'))
+        (await pathExists(join(analysisDir, 'log.json')))
+            ? readJson(join(analysisDir, 'log.json'))
             : Promise.resolve(null),
     ]);
     return {
@@ -205,7 +205,7 @@ export async function loadAugurBase(projectsRoot, project, analysisId) {
         narratives: normalizeNarratives(narrativesDoc),
         symbols_seed: symbolsSeed,
         meta,
-        repair_log: repairLog,
+        log: runLog,
     };
 }
 export async function loadAugurReflections(projectsRoot, project, analysisId) {

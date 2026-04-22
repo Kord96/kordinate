@@ -40,11 +40,11 @@ def read_yaml(path: Path) -> Any:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-def latest_repair_iteration(analysis_dir: Path) -> dict[str, Any]:
-    repair_log_path = analysis_dir / "repair-log.json"
-    if not repair_log_path.exists():
+def latest_validation_iteration(analysis_dir: Path) -> dict[str, Any]:
+    log_path = analysis_dir / "log.json"
+    if not log_path.exists():
         return {}
-    payload = read_json(repair_log_path)
+    payload = read_json(log_path)
     iterations = payload.get("iterations") or []
     if not isinstance(iterations, list) or not iterations:
         return {}
@@ -181,7 +181,7 @@ def collect_bundle_inputs() -> list[dict[str, Any]]:
     return bundles
 
 
-def collect_loaded_refs(bundle_mode: str, analysis_mode: str) -> list[dict[str, Any]]:
+def collect_loaded_refs(analysis_mode: str) -> list[dict[str, Any]]:
     refs: list[dict[str, Any]] = []
     mode_guide = ROOT / "skills" / "analyze" / "modes" / f"{analysis_mode}.md"
     if analysis_mode in {"full", "incremental"} and mode_guide.exists():
@@ -189,13 +189,6 @@ def collect_loaded_refs(bundle_mode: str, analysis_mode: str) -> list[dict[str, 
             "kind": "guide",
             "path": str(mode_guide.resolve()),
             "tokens_est": estimate_tokens_from_file(mode_guide),
-        })
-    bundle_mode_guide = ROOT / "skills" / "analyze" / "bundle-modes" / f"{bundle_mode}.md"
-    if bundle_mode_guide.exists():
-        refs.append({
-            "kind": "guide",
-            "path": str(bundle_mode_guide.resolve()),
-            "tokens_est": estimate_tokens_from_file(bundle_mode_guide),
         })
     for schema_path in (FACTS_SCHEMA, ATLAS_SCHEMA, STORY_SCHEMA, NARRATIVES_SCHEMA, META_SCHEMA):
         refs.append({
@@ -260,9 +253,9 @@ def collect_artifact_inputs(analysis_dir: Path, working_dir: Path, analysis_mode
     return list(dedup.values())
 
 
-def build_inputs_block(analysis_dir: Path, working_dir: Path, bundle_mode: str, analysis_mode: str) -> tuple[dict[str, Any], int, int]:
+def build_inputs_block(analysis_dir: Path, working_dir: Path, analysis_mode: str) -> tuple[dict[str, Any], int, int]:
     bundles = collect_bundle_inputs()
-    loaded_refs = collect_loaded_refs(bundle_mode, analysis_mode)
+    loaded_refs = collect_loaded_refs(analysis_mode)
     artifacts = collect_artifact_inputs(analysis_dir, working_dir, analysis_mode)
     repo_refs = collect_repo_refs(analysis_dir, working_dir)
     repo_tokens_est = sum(estimate_tokens_from_file(path) for path in repo_refs)
@@ -301,16 +294,16 @@ def build_meta_payload(
     atlas = read_json(atlas_path)
     blast_path = analysis_dir / "blast.json"
     blast = read_json(blast_path) if blast_path.exists() else {}
-    latest_repair = latest_repair_iteration(analysis_dir)
+    latest_validation = latest_validation_iteration(analysis_dir)
     existing_meta_path = analysis_dir / "meta.json"
     existing_meta = read_json(existing_meta_path) if existing_meta_path.exists() else {}
 
-    latest_status = str(latest_repair.get("status") or "")
+    latest_status = str(latest_validation.get("status") or "")
     validation_passed = latest_status == "valid"
     if latest_status and not validation_passed:
-        raise SystemExit(f"cannot finalize analysis with repair-log status '{latest_status}'")
+        raise SystemExit(f"cannot finalize analysis with log.json validation status '{latest_status}'")
     if not latest_status and not (((existing_meta.get("analysis") or {}).get("validation") or {}).get("passed")):
-        raise SystemExit("cannot finalize analysis without a valid repair-log.json or an already-passed meta.json")
+        raise SystemExit("cannot finalize analysis without a valid log.json validation entry or an already-passed meta.json")
 
     project_slug, analysis_id, agent_home = analysis_context(analysis_dir)
     project_name = str(atlas.get("project") or ((existing_meta.get("repository") or {}).get("project")) or project_slug)
@@ -328,7 +321,6 @@ def build_meta_payload(
     inputs, files_read_count, repo_tokens_est = build_inputs_block(
         analysis_dir,
         working_dir if working_dir and working_dir.exists() else analysis_dir,
-        bundle_mode,
         analysis_mode if analysis_mode in {"full", "incremental"} else "full",
     )
 
@@ -401,7 +393,7 @@ def build_meta_payload(
             "inputs": inputs,
             "validation": {
                 "passed": validation_passed or bool((((existing_meta.get("analysis") or {}).get("validation") or {}).get("passed"))),
-                "attempts": int(latest_repair.get("iteration") or validation_attempts or (((existing_meta.get("analysis") or {}).get("validation") or {}).get("attempts")) or 0),
+                "attempts": int(latest_validation.get("iteration") or validation_attempts or (((existing_meta.get("analysis") or {}).get("validation") or {}).get("attempts")) or 0),
                 "token": str(validation_token or (((existing_meta.get("analysis") or {}).get("validation") or {}).get("token")) or ""),
             },
         },

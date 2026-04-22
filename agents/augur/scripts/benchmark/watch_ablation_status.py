@@ -32,7 +32,7 @@ def fmt_elapsed(started_at: str | None) -> str:
 
 def artifact_flags(run_dir: Path) -> str:
     flags = []
-    for name in ("atlas.json", "narratives.yaml", "repair-log.json"):
+    for name in ("atlas.json", "narratives.yaml", "log.json"):
         if (run_dir / name).exists():
             flags.append(name.split(".")[0])
     stories_dir = run_dir / "stories"

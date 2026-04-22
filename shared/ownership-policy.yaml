@@ -97,6 +97,6 @@ protected_paths:
   - path: agents/augur/memory/workflow.md
     owner: augur
     reason: Augur workflow reference
-  - path: agents/augur/skills/analyze/scripts/validate_output.py
+  - path: agents/augur/skills/analyze/validator/validate.py
     owner: augur
     reason: Augur-owned output validator

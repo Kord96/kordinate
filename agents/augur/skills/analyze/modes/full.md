@@ -6,18 +6,21 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 
 ## Sequence
 
-1. Read `$RUN/blast.json` to confirm `mode=full` and capture any invalidation reasons.
-2. Read `$RUN/facts/startup.json` and `$RUN/facts/facts-guide.json` first. Treat `startup.json` as the startup authority for this run.
+1. Read `blast.json` in the canonical output directory to confirm `mode=full` and capture any invalidation reasons.
+2. Read `facts/startup.json` and `facts/index.json` in the canonical output directory first. Treat `startup.json` as the startup authority and `index.json` as the canonical manifest plus retrieval guide for this run.
 3. Read only the small startup-priority fact files first. Do not preload large targeted domains during startup.
 4. Transition into repo code once you have an initial architectural picture from startup artifacts.
-5. Read `$RUN/facts/index.json` only when you need to discover additional optional domains. Use larger or noisier supporting domains only when they help resolve materially relevant concept candidates, answer review questions, or resolve ambiguity.
+5. Read `facts/index.json` in the canonical output directory only when you need to discover additional optional domains. Use larger or noisier supporting domains only when they help resolve materially relevant concept candidates, answer review questions, or resolve ambiguity.
 6. Perform a mandatory breadth pass in repo code after the first provisional architecture draft.
 7. For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file.
 8. Read repo files broadly enough to understand the whole architecture, starting from files surfaced by the prepared facts and then widening across adjacent implementation, not only when blocked.
-9. Draft the story tree before writing:
+9. Draft the narrative plan and story tree before writing:
+   - choose the required `system-overview` narrative and any justified optional canonical narratives first
+   - identify the root and child stories those narratives actually need
    - identify root stories from the top-level components
    - draft 2-3 concern-focused child stories per root where the component really owns multiple concerns
    - prefer child stories grounded in major flow, state, dependency, failure, or design-decision boundaries
+   - prune weak or redundant stories before writing files; do not generate stories that no narrative or child decomposition needs
 10. Reconcile the model before writing:
    - dependency direction must match runtime reliance
    - state semantics must stay truthful to configurable backends and persistence modes
@@ -29,7 +32,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
    - Emit `metadata` as part of the atlas, not as an optional afterthought.
    - Use deterministic stack evidence to summarize `stack_summary`, `languages`, compact resolved `frameworks`, and `technologies`.
    - Keep component and flow `description` fields terse enough for atlas cards, but add `summary` where readers need a fuller architectural explanation in drilldown views.
-12. Just before writing `stories/*.yaml`, follow the active story contract exactly.
+12. Just before writing `stories/*.yaml` and `narratives.yaml`, follow the active story and narratives contracts exactly.
     - Give every story one dominant `primary_mode` and one clear teaching thesis in `teaches`.
     - For story flows, make both `trigger` and `outcome` explicit; do not rely on the UI to infer completion from the last step.
     - For story structures, give each visible graph its own concise `summary` and `focus`; do not rely on the story summary alone to explain the graph.
@@ -37,7 +40,6 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
     - For flow-first stories, make the primary flow explain trigger, major boundaries, outcome, and why it matters to the story.
     - Do not make mixed structure+flow stories the default. For `structure`-first and `flow`-first stories, omit the non-primary explainer unless the concern truly needs both.
     - Prefer `state` or `failure` stories when the story legitimately needs both a structural boundary view and an operating sequence.
-13. Just before writing `narratives.yaml`, follow the active narratives contract exactly.
     - Treat `system-overview` as the repo overview path.
     - Allowed narrative ids are exactly: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`.
     - Do not invent freeform narrative ids.
@@ -48,10 +50,10 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
     - Prefer 2-4 total narratives unless the repo has clearly distinct audiences or cross-cutting review paths.
     - Make each adjacent story transition defensible: the per-story bridge text should explain the architectural reason for moving to that next story.
     - Choose optional narratives from `facts/narrative-seeds.json.recommended_narratives` when present. If two narratives reuse most of the same stories, merge them or replace the weaker one.
-14. Generate `stories/*.yaml` and `narratives.yaml` from the refined atlas.
-15. Run `resources.validator_script` against the canonical output directory for this run.
-16. If validation reports errors or warnings, fix the artifacts in place and rerun the validator until it is clean.
-17. Re-read repo files or supporting fact domains only when needed to resolve ambiguity, verify architecture boundaries, or address concrete validation findings.
+13. Generate `stories/*.yaml` and `narratives.yaml` together from the refined atlas and the narrative plan.
+14. Run `resources.validator_script` against the canonical output directory for this run.
+15. If validation reports errors or warnings, fix the artifacts in place and rerun the validator until it is clean.
+16. Re-read repo files or supporting fact domains only when needed to resolve ambiguity, verify architecture boundaries, or address concrete validation findings.
 
 ## Full-Mode Expectations
 

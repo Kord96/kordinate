@@ -48,16 +48,15 @@ $MEM/
     narrative-seeds.json
     symbols-seed.json
     state-seeds.json
-    facts-guide.json
     state-access-summary.json
     control-hotspots.json
 ```
 
-`index.json` is the canonical manifest. Domain files may be omitted when empty.
+`index.json` is the canonical manifest and retrieval guide. Domain files may be omitted when empty.
 
 Observation-domain files are JSON objects containing metadata plus a top-level `facts` array. Consumers should query `file.facts`, not treat the whole domain file as a bare array.
 
-Manifest, guide, planning-aid, and derived-structure artifacts under `facts/` may use specialized JSON shapes instead of a `facts` array. They are still deterministic normalized outputs, but they are not observation-domain files.
+Manifest, planning-aid, and derived-structure artifacts under `facts/` may use specialized JSON shapes instead of a `facts` array. They are still deterministic normalized outputs, but they are not observation-domain files.
 
 Some benchmark and legacy tooling may still materialize a consolidated `facts.json` payload, but the directory layout above is the source-of-truth contract for Augur analysis.
 
@@ -69,8 +68,6 @@ Use these categories when interpreting files under `facts/`:
   - normalized detector or inference observations with a top-level `facts` array
 - `manifest`
   - run-level inventory files such as `index.json` and `startup.json`
-- `guide`
-  - interpretation aids such as `facts-guide.json`
 - `planning-aid`
   - deterministic advisory artifacts such as `story-seeds.json`, `component-seeds.json`, `narrative-seeds.json`, `symbols-seed.json`, or `state-seeds.json`
 - `derived-structure`

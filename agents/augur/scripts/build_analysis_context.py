@@ -37,11 +37,11 @@ def main() -> int:
     failure_scenario_candidates_path = facts_dir / "failure-scenario-candidates.json"
     symbols_seed_path = facts_dir / "symbols-seed.json"
     state_seeds_path = facts_dir / "state-seeds.json"
-    facts_guide_path = facts_dir / "facts-guide.json"
+    facts_index_path = facts_dir / "index.json"
 
     starter_files: list[str] = [str(blast_path), str(startup_path)]
-    if facts_guide_path.exists():
-        starter_files.append(str(facts_guide_path))
+    if facts_index_path.exists():
+        starter_files.append(str(facts_index_path))
     try:
         startup = json.loads(startup_path.read_text(encoding="utf-8"))
         startup_files = startup.get("startup_files") or []
@@ -70,8 +70,8 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json as the startup authority for this run.",
+                "Use facts/index.json as the canonical manifest and retrieval guide for deterministic artifacts in this run.",
                 "Use those core startup files to form initial hypotheses, then move into repo code before doing more fact reduction.",
-                "Do not read facts/index.json during startup unless the startup manifest or current work requires discovering an additional artifact.",
                 "Do not preload large supporting domains during startup. Read them only when the changed slice, a concrete ambiguity, or a review question requires them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
                 "Preserve unchanged accepted outputs unless blast evidence forces wider revision.",
@@ -82,8 +82,8 @@ def main() -> int:
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
                 "Read starter_files first and treat facts/startup.json as the startup authority for this run.",
+                "Use facts/index.json as the canonical manifest and retrieval guide for deterministic artifacts in this run.",
                 "Use those core startup files to form initial architectural hypotheses, then move into repo code before doing more fact reduction.",
-                "Do not read facts/index.json during startup unless the startup manifest or current work requires discovering an additional artifact.",
                 "Do not preload large supporting domains during startup. Read them only when the current task actually needs them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
                 "After you identify provisional top-level components, perform a mandatory breadth pass in repo code for each root slice.",
@@ -107,7 +107,7 @@ def main() -> int:
         "facts_dir": str(facts_dir),
         "startup_path": str(startup_path),
         "blast_path": str(blast_path),
-        "facts_guide_path": str(facts_guide_path),
+        "facts_index_path": str(facts_index_path),
         "concept_evidence_path": str(concept_evidence_path),
         "story_seeds_path": str(story_seeds_path),
         "component_seeds_path": str(component_seeds_path),

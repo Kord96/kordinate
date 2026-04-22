@@ -13,13 +13,13 @@ Requirements:
   - `stories/*.yaml`
   - `narratives.yaml`
 - validate in a loop with:
-  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/scripts/validate_output.py /kord/agents/augur-local-codex/memory/projects/mondoohq--cnspec/analysis/eb0390792c16b23ecfe9e2ea46faa24712c7747b/2026-04-18T02-50-38Z`
-- after each validation attempt, read `repair-log.json`
-- continue until the latest repair-log iteration status is `valid`
+  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/validator/validate.py /kord/agents/augur-local-codex/memory/projects/mondoohq--cnspec/analysis/eb0390792c16b23ecfe9e2ea46faa24712c7747b/2026-04-18T02-50-38Z`
+- after each validation attempt, read `log.json`
+- continue until the latest log iteration status is `valid`
 
 At the end, report:
 - whether all deterministic seed artifacts existed
-- whether repair-log.json existed
+- whether log.json existed
 - validator result
 - whether any previous semantic outputs were consulted
 - a brief quality self-assessment

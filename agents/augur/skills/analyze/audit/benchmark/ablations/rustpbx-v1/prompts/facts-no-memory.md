@@ -21,7 +21,7 @@ You may use:
   - `/kord/workstation/home/project/kordinate/agents/augur/schemas/atlas-schema.md`
   - `/kord/workstation/home/project/kordinate/agents/augur/schemas/story-schema.md`
   - `/kord/workstation/home/project/kordinate/agents/augur/schemas/narratives-schema.md`
-  - `/kord/workstation/home/project/kordinate/agents/augur/schemas/repair-log-schema.md`
+- `/kord/workstation/home/project/kordinate/agents/augur/schemas/log-schema.md`
 
 You must not use:
 - Augur semantic memory bundle
@@ -36,9 +36,9 @@ Task:
 
 Validation:
 - run:
-  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/scripts/validate_output.py /tmp/augur-ablation/rustpbx-v1/facts-no-memory`
-- after each validation attempt, read `/tmp/augur-ablation/rustpbx-v1/facts-no-memory/repair-log.json`
-- continue until the latest repair-log status is `valid`
+  - `python3 /kord/workstation/home/project/kordinate/agents/augur/skills/analyze/validator/validate.py /tmp/augur-ablation/rustpbx-v1/facts-no-memory`
+- after each validation attempt, read `/tmp/augur-ablation/rustpbx-v1/facts-no-memory/log.json`
+- continue until the latest log status is `valid`
 
 At the end, report:
 - validator result

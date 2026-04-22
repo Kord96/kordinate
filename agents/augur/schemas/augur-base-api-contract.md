@@ -26,7 +26,7 @@ base analysis.
 - `stories/*.yaml`
 - `narratives.yaml`
 - `meta.json`
-- `repair-log.json`
+- `log.json`
 - `reflections/`
 - immutable analysis snapshots
 - convenience pointers such as `analysis/latest.json`
@@ -128,7 +128,7 @@ Response:
     "atlas": true,
     "stories": true,
     "narratives": true,
-    "repair_log": true,
+    "log": true,
     "reflections": true
   }
 }
@@ -148,7 +148,7 @@ Response:
   "stories": [],
   "narratives": [],
   "meta": {},
-  "repair_log": {}
+  "log": {}
 }
 ```
 
@@ -158,7 +158,7 @@ Notes:
   YAML blobs.
 - `narratives` should be normalized to the list form expected by downstream
   consumers.
-- `repair_log` is optional for consumers, but useful for provenance and debug.
+- `log` is optional for consumers, but useful for provenance and debug.
 
 ### `GET /augur/projects/:project/analyses/:analysisId/reflections`
 

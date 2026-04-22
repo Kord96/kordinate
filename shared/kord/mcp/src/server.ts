@@ -228,15 +228,26 @@ server.registerTool(
   'get_request',
   {
     title: 'Get Request',
-    description: 'Fetch the current summary status of one kord request. Prefer `resume_request` for normal use.',
+    description: 'Fetch one kord request. Use include flags to expand summary with debug events or transcript data.',
     inputSchema: {
       request_id: z.string().min(1),
       verbose: z.boolean().optional(),
+      include_events: z.boolean().optional(),
+      include_transcript: z.boolean().optional(),
+      include_debug: z.boolean().optional(),
     },
   },
-  async ({ request_id, verbose = false }) => {
+  async ({ request_id, verbose = false, include_events = false, include_transcript = false, include_debug = false }) => {
     try {
-      const payload = await getJson(withQuery(`/requests/${encodeURIComponent(request_id)}`, { verbose }))
+      const include = [
+        include_debug ? 'debug' : null,
+        include_events ? 'events' : null,
+        include_transcript ? 'transcript' : null,
+      ].filter(Boolean).join(',')
+      const payload = await getJson(withQuery(`/requests/${encodeURIComponent(request_id)}`, {
+        verbose,
+        include: include || undefined,
+      }))
       return textResult(payload)
     } catch (error) {
       return textResult({ error: error instanceof Error ? error.message : String(error) }, true)

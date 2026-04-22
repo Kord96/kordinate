@@ -24,7 +24,6 @@ type BundleLayer = {
 
 type AugurPromptContext = {
   bundle_prefix?: string
-  bundle_mode_guide?: string
   mode_guide?: string
 }
 
@@ -243,12 +242,11 @@ export function buildPromptPlan(agentContract: AgentContract, runtimeProfile: Ru
   const resolvedBundleMode = resolveBundleMode(message)
   const promptContext = loadPromptContext(agentContract, message)
   const bundlePrefix = promptContext?.bundle_prefix ?? loadRepoBundlePrefix(agentContract, resolvedBundleMode)
-  const bundleModeGuide = promptContext?.bundle_mode_guide ?? ''
   const modeGuide = promptContext?.mode_guide ?? ''
   const cacheablePrefix = agentContract.promptPrefix || bundlePrefix
     ? `${agentContract.promptPrefix ? `${agentContract.promptPrefix}\n\n` : ''}${bundlePrefix}`
     : ''
-  const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${bundleModeGuide}${modeGuide}${message.prompt}`
+  const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${modeGuide}${message.prompt}`
   const fullPrompt = cacheablePrefix
     ? `${cacheablePrefix}${dynamicPrompt}`
     : dynamicPrompt

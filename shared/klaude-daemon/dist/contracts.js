@@ -220,12 +220,11 @@ export function buildPromptPlan(agentContract, runtimeProfile, message) {
     const resolvedBundleMode = resolveBundleMode(message);
     const promptContext = loadPromptContext(agentContract, message);
     const bundlePrefix = promptContext?.bundle_prefix ?? loadRepoBundlePrefix(agentContract, resolvedBundleMode);
-    const bundleModeGuide = promptContext?.bundle_mode_guide ?? '';
     const modeGuide = promptContext?.mode_guide ?? '';
     const cacheablePrefix = agentContract.promptPrefix || bundlePrefix
         ? `${agentContract.promptPrefix ? `${agentContract.promptPrefix}\n\n` : ''}${bundlePrefix}`
         : '';
-    const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${bundleModeGuide}${modeGuide}${message.prompt}`;
+    const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${modeGuide}${message.prompt}`;
     const fullPrompt = cacheablePrefix
         ? `${cacheablePrefix}${dynamicPrompt}`
         : dynamicPrompt;

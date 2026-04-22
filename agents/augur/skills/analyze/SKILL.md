@@ -2,21 +2,21 @@
 name: analyze
 description: >
   Semantic phase for Augur /analyze. Consumes a prepared run directory, follows
-  the runtime-selected mode guidance, writes atlas/stories/narratives, runs the
-  validator until clean, and then hands control back for daemon-owned final
-  sealing.
+  the prepared full or incremental guidance, writes atlas/stories/narratives,
+  and runs the validator until clean.
 ---
 
 # Analyze
 
 Semantic phase for Augur `/analyze`.
 
-The deterministic phase is already done. Work from the prepared run directory, produce semantic outputs, and own the local validate-fix loop until the output is clean. The daemon performs one final authoritative validation and sealing pass after you stop.
+The deterministic phase is already done. Work from the prepared run directory, produce semantic outputs, and own the local validate-fix loop until the output is clean.
 
 Operational path rules for this runtime:
 - the runtime provides one canonical repo root and one canonical output directory for this request
-- if `AGENT_ROOT` is present, treat it as the stable base for agent-owned resources
-- if `CONCEPT_CATALOG_INDEX` or `FRAMEWORK_CATALOG_INDEX` are present, start there for on-demand semantic reads instead of browsing the catalogs
+- if `workspace.agent_root` is present, treat it as the stable base for agent-owned resources
+- if `resources.concept_catalog_index` or `resources.framework_catalog_index` are present, start there for on-demand semantic reads instead of browsing the catalogs
+- if `workspace.agent_root` is present, treat `workspace.agent_root/schemas/` as the canonical schema base for `facts-schema.md`, `atlas-schema.md`, `story-schema.md`, and `narratives-schema.md`
 - do not manually reconstruct or shorten the output directory
 - do not create sibling run directories with guessed suffixes
 - generated artifacts belong in the canonical output directory for this request
@@ -26,10 +26,10 @@ Operational path rules for this runtime:
 1. Read startup inputs first.
    - `blast.json`
    - `facts/startup.json`
-   - `facts/facts-guide.json` when present
-   - the small high-signal fact files listed in `facts/startup.json`
-   - treat `facts/startup.json` as the startup authority for this run
-   - do not read `facts/index.json` during startup unless the startup manifest or the current work requires discovering an additional artifact
+   - `facts/index.json`
+   - the small startup files listed in `facts/startup.json`
+   - treat `facts/startup.json` as the startup authority for startup order
+   - treat `facts/index.json` as the canonical manifest and retrieval guide for deterministic artifacts in this run
 
 2. Follow the mode-specific instructions already provided by the runtime.
    - the semantic mode is determined before this skill runs
@@ -37,100 +37,69 @@ Operational path rules for this runtime:
    - do not choose your own mode
    - if you are invoked despite `skip`, stop
 
-3. Use facts as guidance, then explore code semantically.
-   - use `facts/index.json` only when you need to discover optional deterministic domains beyond what startup already surfaced
-   - use `facts/facts-guide.json` when present as the run-specific interpretation guide for deterministic artifacts in this run
-   - treat each domain file in `facts/` as a JSON object with metadata and a top-level `facts` array
-   - do not force every file under `facts/` into the domain-file shape; manifest, guide, planning-aid, and derived-structure artifacts may use specialized JSON layouts
-   - if you encounter an unfamiliar deterministic artifact shape and `AGENT_ROOT` is present, read `AGENT_ROOT/schemas/facts-schema.md` and `AGENT_ROOT/schemas/facts-catalog.json` before interpreting it
-   - use the bundle-mode guidance as concept-resolution methodology, not as a cue to preload a broad semantic concept bundle
-   - use the deterministic phase in three tiers:
-     - startup orientation: `blast.json`, `facts/startup.json`, `facts/facts-guide.json`, and the small high-signal startup fact files
-     - early architectural guidance: `hot-files.json` plus the most relevant routing, boundary, handler, dispatch, or framework domains
-     - targeted disambiguation only when needed: optional or noisier domains discovered from `facts/index.json`, such as `concept-evidence.json`, `import-graph.json`, `config.json`, or similar supporting artifacts
+3. Use facts as guidance, then move into repo code.
+   - treat deterministic artifacts as guidance, not final truth
+   - use `facts/index.json` as the source of truth for what each deterministic artifact means, when to read it, how to use it, and what not to infer from it
+   - use deterministic evidence in three tiers: startup orientation first, early architectural guidance next, targeted disambiguation only when needed
    - after startup orientation, move into repo code before doing more fact reduction
-   - if `facts/concept-evidence.json` is present in this run, use it as the primary trigger for concept work: inspect candidate concepts, supporting evidence, counter evidence, evidence gaps, and attached review questions before letting concepts affect the atlas
-   - if `facts/frameworks.json` is present in this run, use it as candidate guidance for framework interpretation: resolve materially relevant frameworks from repo code before letting them change component naming, flow interpretation, or concept activation
-   - when a framework remains materially relevant and ambiguous after reviewing `facts/frameworks.json`, start from `FRAMEWORK_CATALOG_INDEX` or `AGENT_ROOT/memory/catalog/frameworks/README.md`, then read only the corresponding framework files you actually need
-   - when a concept candidate is materially relevant and remains ambiguous after reviewing `facts/concept-evidence.json`, start from `CONCEPT_CATALOG_INDEX` or `AGENT_ROOT/memory/catalog/concepts/README.md`, then read only the corresponding concept file you actually need
-   - when you need the detector's intended threshold, review questions, or monitoring expectations for a materially relevant concept candidate and `AGENT_ROOT` is present, read `AGENT_ROOT/detectors/facts/concept-evidence/<concept>/meta.yaml`
-   - if `facts/story-seeds.json` is present in this run, use it as an advisory planning aid before writing stories or narratives
-   - if `facts/narrative-seeds.json` is present in this run, use it as an advisory ranking aid for system-overview and other teaching paths before finalizing `narratives.yaml`
-   - when optional narratives are recommended, prefer the strongest-ranked canonical narrative types instead of keeping a weaker optional path just because it is also allowed
-   - if `facts/symbols-seed.json` is present in this run, use it as an advisory exact-name dictionary for high-signal files before writing observations, summaries, or flow steps
-   - if `facts/state-seeds.json` is present in this run, use it as an advisory exact-name dictionary for state entries grounded in state or operations files
-   - if `facts/health-candidates.json` is present in this run, use it as advisory coverage and contradiction pressure for atlas health: distinguish local failures, boundary failures, and downstream propagation instead of collapsing them into one flat list
-   - if `facts/concept-evidence.json` is present, explicitly resolve each materially relevant concept candidate as accepted, tentative, or rejected from repo code and attached review questions before finalizing `atlas.json.concepts`
-   - if `facts/frameworks.json` is present, explicitly resolve each materially relevant framework as accepted, tentative, or rejected from repo code before using framework-specific semantics to interpret the atlas
-   - if present, answer any attached review questions before accepting a concept that changes component boundaries, flow interpretation, monitoring expectations, or gaps
-   - treat `atlas.json.concepts` as a cross-cutting interpretation layer of resolved concepts: each kept concept should explain how it manifests in this repo and why it matters architecturally, not just name a pattern
-   - prefer omitting or downgrading a concept over carrying a broad detector-led label that remains unresolved after code inspection
-   - treat deterministic evidence as guidance, not final truth
-   - prefer strong architectural evidence when naming components, boundaries, and flows
-   - prefer entrypoints, runtime wiring, registration points, and cross-component communication over helper, validator, identity, or support files when promoting major components
-   - inspect the actual repo code to understand boundaries, responsibilities, flows, and ambiguities
-   - widen from fact-selected files to adjacent code when you need broader context
-   - before writing outputs, reconcile the architecture:
-     - verify `components[].depends_on` reflects runtime reliance rather than presentation, hosting, or navigational relationships
-     - verify state entries stay truthful when backend class or persistence changes by configuration
-     - verify the atlas graph, story edges, and narratives tell the same ownership and dependency story
-     - verify each claim uses concrete mechanism names from code such as hook names, parser/controller names, stage names, registry names, or option names when those names are available
-   - if stories and atlas disagree, fix the model before emitting final artifacts
-   - before writing stories, draft candidate root stories and 2-3 concern-focused child stories per root, then merge weak or duplicative children back into the parent
-   - child stories should usually come from major flows, state boundaries, dependency boundaries, failure paths, or important design decisions, not from arbitrary file splits
-   - prefer one mechanism per claim instead of compressing several stages into one abstract sentence unless the code presents them together
-  - when `facts/symbols-seed.json` exposes exact hooks, parsers, commands, registries, options, classes, or stage names for the cited files, prefer those exact names in grounded claims
-  - if you emphasize a mechanism name with `**bold**`, make sure it resolves either to a real atlas entity or to a grounded symbol from `facts/symbols-seed.json`
-   - when `facts/state-seeds.json` exposes exact structs, enums, maps, config variants, or storage selectors for the cited state files, prefer those exact names in state descriptions and keep one concrete mechanism per claim
-   - when writing atlas health, prefer the layered model from `atlas-schema.md`:
+   - prefer entrypoints, runtime wiring, registrations, and cross-component communication over helpers, validators, docs, or support files when promoting major components
+   - widen from fact-selected files into adjacent code until the ownership and dependency story is clear
+
+4. Resolve concepts, frameworks, and other deterministic candidates evidence-first.
+   - use the relevant deterministic artifacts as candidate guidance, not as final semantic truth
+   - for any materially relevant concept or framework, inspect the supporting repo code and resolve it as accepted, tentative, or rejected before it materially changes the atlas
+   - answer attached review questions before accepting a materially relevant candidate
+   - if ambiguity remains, use the provided concept/framework catalog entrypoints and read only the specific catalog files you actually need
+   - prefer omitting or downgrading a concept over carrying a broad unresolved detector label
+   - treat `atlas.json.concepts` as a compact layer of resolved cross-cutting interpretations, not a generic pattern dump
+
+5. Reconcile the architecture before you write artifacts.
+   - verify `components[].depends_on` reflects runtime reliance rather than presentation, hosting, or navigation
+   - verify state entries stay truthful when backend class or persistence changes by configuration
+   - verify the atlas graph, stories, and narratives tell the same ownership and dependency story
+   - verify each claim uses concrete mechanism names from code when those names are available
+   - when `facts/symbols-seed.json` or `facts/state-seeds.json` expose exact hooks, parsers, commands, registries, options, structs, enums, or selectors for cited files, prefer those exact names in grounded claims
+   - if a mechanism name is emphasized, make sure it resolves either to a real atlas entity or to grounded evidence
+   - when writing atlas health, prefer the layered model defined in the atlas schema:
      - `health.local` for failures inside one unit
      - `health.integration` for failures at seams with dependencies, stores, or callers
      - `health.propagation` for downstream degraded modes, stale results, blocked work, or wider blast radius
-   - use `facts/health-candidates.json` as a ranking and contradiction aid for health coverage, but do not treat it as final truth without code grounding
+   - use `facts/health-candidates.json` as ranking and contradiction pressure, not as final truth without code grounding
 
-4. Produce `atlas.json` in the canonical output directory.
+6. Produce `atlas.json` in the canonical output directory.
+   - consult the atlas schema before first write and again during repair if atlas validation fails
    - include `metadata` as part of the normal atlas contract
-   - when deterministic facts are present, populate at least:
-     - `analysis_mode`
-     - `story_ids`
-     - `affected_components`
-     - `stack_summary`
-     - `languages`
-     - compact resolved `frameworks`
-     - `technologies`
-   - keep `metadata.frameworks` limited to materially relevant accepted or tentative frameworks; do not mirror every detected framework fact
+   - keep metadata grounded and compact; include materially relevant deterministic context, but do not mirror every detected fact into the atlas
    - keep component and flow `description` fields compact, but add `summary` when a click-through reader needs more than a one-line label
    - write component `summary` as the ownership/dependency explanation, not a prose copy of the title
    - write flow `summary` as the operating-path explanation, not a repeat of the trigger
 
-5. Produce `stories/*.yaml` in the canonical output directory.
-   - keep every story grounded in inspected evidence
-   - make each story teach one primary thing; choose a `primary_mode` and let one explainer dominate
-   - write `teaches` as the visible thesis sentence for the story
-   - for story flows, make `trigger` and `outcome` explicit instead of leaving completion to be inferred from the final step
-   - for story structures, give each visible graph its own concise `summary` and `focus` so the graph can explain itself without borrowing all of the story summary
-   - keep low-signal transport or tool metadata secondary; the main flow presentation should foreground what starts the flow, what it does, and what it produces
-   - treat observations, anchor evidence, and rationale as supporting inspection material, not as equal-weight primary sections
-   - when a story is flow-first, use `flow` consistently in titles and summaries instead of mixing `path` and `flow`
-   - do not default to emitting both `structures` and `flows` in the same story
-   - for `structure`-first and `flow`-first stories, prefer one primary explainer and omit the other unless it is materially necessary
-   - mixed `structure` + `flow` stories should usually be reserved for `state` or `failure` stories where both views are needed together
-
-6. Produce `narratives.yaml` in the canonical output directory.
+7. Plan narratives first, then derive the story set from that teaching plan.
    - treat `system-overview` as the canonical repo overview narrative used downstream
    - allowed narrative ids are exactly: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`
    - do not invent freeform narrative ids
+   - choose the narrative set before writing stories
+   - use `facts/narrative-seeds.json` when present to rank which optional canonical narratives are actually justified for this repo
+   - choose optional narratives from `recommended_narratives`; if two narratives reuse most of the same stories, merge them or replace the weaker one
+   - for each chosen narrative, decide which root and child stories are needed to teach it
+   - draft candidate root stories and 2-3 concern-focused child stories per root, then merge weak or duplicative children back into the parent
+   - child stories should usually come from major flows, state boundaries, dependency boundaries, failure paths, or important design decisions, not from arbitrary file splits
+   - let the narrative plan prune unnecessary stories; do not generate stories that no narrative or story tree actually needs
+
+8. Produce `stories/*.yaml` and `narratives.yaml` together from the refined atlas and narrative plan.
+   - consult the story schema and narratives schema before first write and again during repair if those artifacts fail validation
+   - keep every story grounded in inspected evidence
+   - make each story teach one primary thing with one dominant explainer
+   - keep supporting material secondary to the main teaching path
    - write `system-overview.description` as a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
    - prefer `Overview` or `Repo Overview` as the human-facing title for `system-overview`
    - write each narrative as a teaching sequence, not just an ordered list: include explicit `teaches` goals and make sure each selected story clearly serves those goals
    - include `throughline` for each narrative: one short paragraph explaining why these stories belong together in this order
    - usually emit 2-4 total narratives for one repo; every extra narrative should earn its place through a distinct audience or cross-cutting teaching purpose
-   - keep narrative ids inside the canonical palette defined in `narratives-schema.md`; only `system-overview` is always required, and optional narratives should be chosen from the palette only when repo evidence justifies them
+   - keep narrative ids inside the canonical palette defined in the narratives schema; only `system-overview` is always required, and optional narratives should be chosen from the palette only when repo evidence justifies them
    - make the bridge text between adjacent stories explain why the next story follows from the previous one, not just that it comes next
-   - use `facts/narrative-seeds.json` when present both to rank which roots, child stories, and flow-bearing stories deserve inclusion and to decide which optional canonical narratives are actually justified for this repo
-   - choose optional narratives from `recommended_narratives`; if two narratives reuse most of the same stories, merge them or replace the weaker one
 
-7. Run the local validation loop before you stop.
+9. Run the local validation loop before you stop.
    - once `atlas.json`, `stories/`, and `narratives.yaml` are written, stop broad repo exploration and move into validation
    - run the validator from `resources.validator_script` against the canonical output directory for this run
    - if validation reports errors or warnings, repair the artifacts in place and rerun the validator
@@ -138,6 +107,6 @@ Operational path rules for this runtime:
    - use validation naturally as a working tool while you repair; do not wait for the daemon to drive individual repair rounds
    - keep validation scoped to the canonical output directory and do not create sibling run directories
 
-8. Final sealing is orchestrator-owned.
-   - after you stop, the daemon/workflow runs one final authoritative validation pass
-   - only the daemon/workflow can mark success, write `meta.json`, and seal the run
+10. Completion means the artifacts are clean.
+   - stop only after the validator reports a clean result for the canonical output directory
+   - do not stop immediately after first-pass generation if validation is still failing

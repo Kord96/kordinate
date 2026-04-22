@@ -6,8 +6,8 @@
       "kind": "manifest",
       "file": "facts/index.json",
       "priority": "startup",
-      "meaning": "Canonical manifest for deterministic artifacts produced in this run.",
-      "how_to_use": "Use it to discover which fact artifacts exist before opening optional files.",
+      "meaning": "Canonical manifest and retrieval guide for deterministic artifacts produced in this run.",
+      "how_to_use": "Use it to discover which fact artifacts exist, what role they play, and which optional files are appropriate for the current ambiguity.",
       "what_not_to_infer": "Do not treat domain presence or count alone as architecture truth."
     },
     "startup": {
@@ -161,14 +161,6 @@
       "meaning": "Deterministic exact-name seeds for state entries grounded in state or operations files.",
       "how_to_use": "Use to tighten state claims around exact structs, enums, maps, config variants, and storage selectors from the grounded files.",
       "what_not_to_infer": "The state seeds guide naming and focus for state claims; they do not define the final storage model by themselves."
-    },
-    "facts-guide": {
-      "kind": "guide",
-      "file": "facts/facts-guide.json",
-      "priority": "startup",
-      "meaning": "Run-specific interpretation guide for the deterministic artifacts present in this run.",
-      "how_to_use": "Read this early to understand how to interpret the fact files that exist for this project.",
-      "what_not_to_infer": "The guide explains usage; it does not replace direct code reading."
     },
     "state-access-summary": {
       "kind": "derived-structure",
