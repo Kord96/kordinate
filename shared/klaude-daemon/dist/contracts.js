@@ -163,7 +163,7 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         lines.push('- Generated artifacts belong in the output directory.');
         lines.push('- Use the provided validator path and catalog entrypoints directly instead of discovering alternate internal paths.');
         lines.push('- Use the prepared run artifacts under the output directory for startup orientation before broad repo reading.');
-        lines.push('- Treat `facts/startup.json` and `facts/index.json` under the output directory as the authoritative manifest for prepared deterministic fact domains in this run.');
+        lines.push('- Treat `startup.json` and `index.json` under the output directory as the authoritative manifests for prepared deterministic and derived analysis inputs in this run.');
         lines.push('- Use the agent root as the stable base for agent-owned resources and the provided catalog entrypoints for on-demand concept/framework reads.');
         lines.push('- Use deterministic artifacts for startup orientation first, then move into repo code for the main architectural synthesis.');
         lines.push('- Revisit larger supporting fact domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.');
@@ -187,7 +187,7 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         : '';
     if (runDir) {
         runtimeHints.push(`Prepared analysis run: use \`${runDir}\` as the authoritative output directory for this request.`);
-        runtimeHints.push(`Start with \`${runDir}/blast.json\` and \`${runDir}/facts/\` for prepared run artifacts.`);
+        runtimeHints.push(`Start with \`${runDir}/blast.json\`, \`${runDir}/startup.json\`, and \`${runDir}/index.json\` for prepared run artifacts.`);
     }
     if (requestedBundleMode) {
         runtimeHints.push(`Bundle mode hint: use \`${requestedBundleMode}\` prompt preload assumptions for this request.`);

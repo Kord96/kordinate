@@ -1,0 +1,65 @@
+---
+kind: concept
+name: memento
+signatures: {}
+source:
+  memory_concept: memory/catalog/concepts/memento.md
+type: pattern
+abstraction:
+- design
+scope: backend
+status: primary
+---
+
+# Explanation
+
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- `save_state()` / `restore_state()` method pairs
+- `createMemento()` / `setMemento()` on originator objects
+- `undo_stack` / `redo_stack` data structures
+- `deepcopy()` for state snapshots
+- `Command` + state history in editors
+- Caretaker class managing a list of mementos
+- Serialized state checkpoints for rollback
+
+### Confidence
+
+- **high** -- Originator with `createMemento()`/`setMemento()` and a caretaker managing a stack of opaque state snapshots
+- **medium** -- Undo/redo stack storing serialized state snapshots with restore capability
+- **low** -- State serialization for persistence that resembles memento but lacks the undo/restore workflow
+
+## Architecture
+
+Look for an originator that creates opaque state snapshots managed by a caretaker for undo/restore operations.
+
+### Review Checklist
+
+- Memento is opaque to the caretaker (no direct access to internal state)
+- Memory usage is bounded (limited history depth or incremental snapshots)
+- Restore operation returns the originator to a fully valid state
+- Concurrent access to the memento stack is synchronized if applicable
+- Large state objects use incremental or compressed snapshots to control memory
+
+### Anti-patterns
+
+- Caretaker reaching into the memento to read or modify internal state
+- Unbounded memento history consuming excessive memory
+- Memento capturing references to external mutable objects instead of copying state
+- Restoring state without validating that the memento is compatible with the current version
+
+### Relationship To Other Concepts
+
+- Related to [command](/concepts/command) because undo or redo systems often pair commands with stored pre-change snapshots.
+- Related to [event-sourcing](/concepts/event-sourcing) as an alternative history strategy, though memento stores snapshots rather than replayable events.
+- Related to [snapshot-testing](/concepts/snapshot-testing) because both rely on comparing or restoring saved state, though one is runtime behavior and the other is verification.
+
+### Boundary
+
+Use `memento` when an object captures opaque snapshots of its internal state for later restoration.
+
+Do not use it for generic persistence, serialization, or event logs without an explicit restore-oriented caretaker pattern.

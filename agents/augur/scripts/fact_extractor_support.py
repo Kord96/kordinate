@@ -26,7 +26,10 @@ from typing import Any, Iterable
 
 import yaml
 
-from facts import (
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "detectors"))
+
+from utils import (
+    component_ids_from_relationships,
     extract_auth_surfaces,
     extract_boundaries,
     extract_csharp_boundaries,
@@ -56,15 +59,18 @@ from facts import (
     extract_plugin_dispatch_bindings,
     extract_plugin_registrations,
     extract_registrations,
+    fact_payload,
     line_number_for_offset,
+    normalize_fact_record,
 )
 
 
 MAX_FILE_BYTES = 100 * 1024
 ROOT = Path(__file__).resolve().parents[1]
-FACT_DETECTORS = ROOT / "detectors" / "facts"
+FACT_DETECTORS = ROOT / "detectors"
 FRAMEWORK_DETECTORS = FACT_DETECTORS / "frameworks"
 FRAMEWORK_CATALOG = ROOT / "memory" / "catalog" / "frameworks"
+FRAMEWORK_REFERENCES = ROOT / "references" / "frameworks"
 AST_GREP_BIN = shutil.which("ast-grep")
 REPO_PROFILE_SCRIPT = ROOT.parent.parent / "shared" / "tools" / "repo_profile" / "detect_repo_profile.py"
 JOERN_BATCH_EXPORTER = ROOT.parent.parent / "shared" / "tools" / "joern" / "export_augur_facts.py"
@@ -226,10 +232,13 @@ def _semantic_framework_metadata(name: str) -> dict[str, Any]:
 @functools.lru_cache(maxsize=1)
 def load_framework_rules() -> tuple[FrameworkRule, ...]:
     rules: list[FrameworkRule] = []
-    if not FRAMEWORK_DETECTORS.exists():
+    if not FRAMEWORK_REFERENCES.exists():
         return ()
-    for entry in sorted(p for p in FRAMEWORK_DETECTORS.iterdir() if p.is_dir()):
-        signatures = load_yaml(entry / "signatures.yaml")
+    for entry in sorted(p for p in FRAMEWORK_REFERENCES.glob("*.md") if p.name != "README.md"):
+        text = entry.read_text(encoding="utf-8")
+        match = re.match(r"^---\n(.*?)\n---\n?", text, re.DOTALL)
+        frontmatter = yaml.safe_load(match.group(1)) if match else {}
+        signatures = frontmatter.get("signatures") if isinstance(frontmatter.get("signatures"), dict) else {}
         name = str(signatures.get("framework") or entry.name).strip()
         if not name:
             continue
@@ -856,7 +865,7 @@ def derive_joern_state_access_summary_facts(data_touch_facts: list[dict[str, Any
         target_name = str(raw.get("target_name") or raw.get("target_full_name") or "").strip()
         if not target_name:
             continue
-        owner_components = [str(item) for item in fact.get("relationships", {}).get("component_ids") or [] if item]
+        owner_components = component_ids_from_relationships(fact.get("relationships"))
         if not owner_components:
             continue
         touch_kind = str(raw.get("touch_kind") or "read").strip().lower()
@@ -929,7 +938,7 @@ def derive_joern_control_hotspot_facts(execution_slice_facts: list[dict[str, Any
         slice_file = str(raw.get("slice_file") or "").strip()
         if not slice_file:
             continue
-        component_ids = [str(item) for item in fact.get("relationships", {}).get("component_ids") or infer_component_ids(slice_file) if item]
+        component_ids = component_ids_from_relationships(fact.get("relationships")) or infer_component_ids(slice_file)
         component = component_ids[0] if component_ids else "unknown"
         key = (component, slice_file)
         bucket = grouped.setdefault(
@@ -2879,7 +2888,7 @@ HOT_FILE_DOMAIN_WEIGHTS: dict[str, int] = {
     "jobs": 1,
     "config": 1,
     "import-graph": 1,
-    "concept-evidence": 1,
+    "concepts": 1,
 }
 
 LOW_SIGNAL_PATH_SEGMENTS = {
@@ -3306,9 +3315,14 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
     for fact in facts:
         if fact.get("kind") != "framework" and not fact.get("framework_context"):
             fact["framework_context"] = framework_context
+        if fact.get("kind") != "framework":
+            raw_evidence = fact.get("raw_evidence")
+            if isinstance(raw_evidence, dict) and framework_context and "framework_context" not in raw_evidence:
+                raw_evidence["framework_context"] = framework_context
 
     domains: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for fact in facts:
+    normalized_facts = [normalize_fact_record(fact) for fact in facts]
+    for fact in normalized_facts:
         domains[fact["domain"]].append(fact)
 
     index_domains = [
@@ -3330,7 +3344,7 @@ def build_facts_payload(root: Path, analysis_mode: str = "full") -> dict[str, An
             "domains": index_domains,
             "detectors_run": _dedupe_detector_runs(detectors_run),
         },
-        "facts": _dedupe_facts(facts),
+        "facts": _dedupe_facts(normalized_facts),
         "metadata": {
             "analyzed_at_sha": get_git_sha(root),
             "execution_plan_version": 1,
@@ -3358,9 +3372,9 @@ def _dedupe_facts(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if not fact_id:
             fact_id = stable_id(
                 "fact",
-                fact.get("kind", ""),
+                str((fact_payload(fact) or {}).get("kind") or ""),
                 fact.get("domain", ""),
-                json.dumps(fact.get("raw_evidence", {}), sort_keys=True, default=str),
+                json.dumps(fact_payload(fact), sort_keys=True, default=str),
             )
             fact["id"] = fact_id
         if fact_id in seen:

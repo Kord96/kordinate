@@ -6,7 +6,7 @@ description: Java framework for cloud-native services with JAX-RS routes and bui
 Quarkus is a framework Augur recognizes during deterministic analysis. Its semantic role is defined in `semantics.yaml`, and Phase 2 should treat detection as strong but revisable evidence when interpreting the architecture.
 
 ## Recognition
-Use the detector package under `detectors/facts/frameworks/quarkus/` as the deterministic source of truth for framework evidence.
+Use the framework reference in `references/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/quarkus/`.
 
 ## Architectural implications
 - framework scope: `backend`

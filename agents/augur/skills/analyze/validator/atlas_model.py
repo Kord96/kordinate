@@ -31,7 +31,7 @@ def validate_atlas(
     atlas: dict,
     project_root: Path | None = None,
     analysis_dir: Path | None = None,
-    concept_evidence_payload: dict | None = None,
+    concepts_payload: dict | None = None,
     frameworks_payload: dict | None = None,
     health_candidates_payload: dict | None = None,
 ) -> list[dict]:
@@ -676,21 +676,21 @@ def validate_atlas(
     event_ids = {e.get("id") for e in atlas.get("events", []) if e.get("id")}
 
     concept_review_requirements: dict[str, dict] = {}
-    if isinstance(concept_evidence_payload, dict):
-        for fact in concept_evidence_payload.get("facts") or []:
-            if not isinstance(fact, dict) or fact.get("kind") != "concept-candidate":
+    if isinstance(concepts_payload, dict):
+        for fact in concepts_payload.get("facts") or []:
+            if not isinstance(fact, dict) or fact.get("kind") != "concept":
                 continue
             raw = fact.get("raw_evidence") or {}
             concept_id = str(raw.get("concept_id") or "").strip()
             if not concept_id:
                 continue
-            review = fact.get("review") or {}
+            review = raw.get("review") or {}
             questions = review.get("questions") or {}
             if not review.get("required"):
                 continue
             concept_review_requirements[concept_id] = {
                 "question_ids": list((questions.get("entry_ids") or [])),
-                "detector_backing": str(((fact.get("evidence") or {}).get("supporting") or {}).get("detector_backing") or ""),
+                "detector_backing": str(raw.get("detector_backing") or ""),
             }
 
     # Concepts
@@ -807,7 +807,7 @@ def validate_atlas(
             "kind": "metadata",
             "message": "atlas.json is missing metadata; emit the resolved stack summary and run metadata when deterministic facts are available",
             "related_entities": [],
-            "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+            "evidence_refs": ["index.json", "facts/frameworks.json"],
             "conflict_type": "evidence_vs_model",
         })
     if metadata:
@@ -819,7 +819,7 @@ def validate_atlas(
                 "kind": "metadata",
                 "message": "metadata.stack_summary is missing or empty",
                 "related_entities": [],
-                "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+                "evidence_refs": ["index.json", "facts/frameworks.json"],
                 "conflict_type": "evidence_vs_model",
             })
         languages = metadata.get("languages") or []
@@ -832,7 +832,7 @@ def validate_atlas(
                 "kind": "metadata",
                 "message": "metadata.languages is missing or empty",
                 "related_entities": [],
-                "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+                "evidence_refs": ["index.json", "facts/frameworks.json"],
                 "conflict_type": "evidence_vs_model",
             })
 
@@ -846,7 +846,7 @@ def validate_atlas(
                 "kind": "metadata",
                 "message": "metadata.technologies is missing or empty",
                 "related_entities": [],
-                "evidence_refs": ["facts/index.json", "facts/frameworks.json"],
+                "evidence_refs": ["index.json", "facts/frameworks.json"],
                 "conflict_type": "evidence_vs_model",
             })
 
@@ -887,7 +887,7 @@ def validate_atlas(
                 })
 
         for name, fact in framework_facts.items():
-            confidence = str(fact.get("confidence") or "").lower()
+            confidence = str((fact.get("raw_evidence") or {}).get("confidence_hint") or "").lower()
             if confidence not in {"medium", "high"}:
                 continue
             if name not in framework_names_in_meta:

@@ -1,62 +1,129 @@
 # Augur Output Contract
 
-Stable interface for accepted Augur analysis outputs.
+Stable interface for Augur analysis outputs.
 
 This document describes what downstream consumers can depend on. For field-level rules, use the canonical schema files:
-- [facts-schema.md](facts-schema.md)
+- [../detectors/schema.md](../detectors/schema.md)
+- [observations/observations-schema.md](observations/observations-schema.md)
 - [atlas-schema.md](atlas-schema.md)
 - [story-schema.md](story-schema.md)
 - [narratives-schema.md](narratives-schema.md)
 - [meta-schema.md](meta-schema.md)
 
-## Output Layout
+## Run-Local Working Layout
+
+During one active analysis run, the canonical working layout is:
 
 ```text
-$PROJECT_MEM/
+<RUN>/
+  contract.json
+  blast.json
+  startup.json
+  index.json
+  facts/
+    <domain>.json
+  observations/
+    <artifact>.json
+  derived/
+    <artifact>.json
+  atlas.json
+  stories/
+    <id>.yaml
+  narratives.yaml
+  log.json
+```
+
+`contract.json` is the run-local path contract. It tells the skill where the working directory, output directory, agent root, validator, and other runtime resources live for this request.
+
+Not every run writes every semantic artifact immediately. Deterministic-only preparation may populate only:
+- `contract.json`
+- `blast.json`
+- `startup.json`
+- `index.json`
+- `facts/`
+- `observations/`        # optional until the semantic layer emits them
+- `derived/`
+
+Semantic work then fills in:
+- `atlas.json`
+- `stories/`
+- `narratives.yaml`
+- `log.json`
+
+## Accepted Persisted Layout
+
+Accepted analyses may then be persisted into the project analysis store using this layout:
+
+```text
+<PROJECT_ANALYSIS_ROOT>/
   analysis/
     index.json
-    latest.json                  # convenience pointer to latest accepted run in the project
+    latest.json
     <commit-sha>/
       index.json
       latest.json
       <analysis-id>/
         meta.json
         blast.json
+        startup.json
+        index.json
         facts/
-          index.json
           <domain>.json
+        observations/
+          <artifact>.json
+        derived/
+          <artifact>.json
         atlas.json
         stories/
           <id>.yaml
         narratives.yaml
+        log.json
         overlays/
           index.json
         reflections/
           index.json
 ```
 
-Facts-only runs produce:
-- `blast.json`
-- `facts/`
-- `meta.json`
-- `overlays/index.json`
-- `reflections/index.json`
+Only accepted analyses should appear in the persisted layout above.
 
-Semantic runs additionally produce:
-- `atlas.json`
-- `stories/`
-- `narratives.yaml`
+## startup.json and index.json
+
+Run-root manifests. JSON, version `"1"` where applicable.
+
+Stable constraints:
+- `startup.json` exists after deterministic analysis
+- `index.json` exists after deterministic analysis
+- `startup.json` declares startup order
+- `index.json` declares available fact and derived artifacts plus retrieval guidance
 
 ## facts/
 
-Normalized deterministic evidence. JSON, version `"1"`. See [facts-schema.md](facts-schema.md).
+Normalized deterministic evidence. JSON, version `"1"`. See [../detectors/schema.md](../detectors/schema.md).
 
 Stable constraints:
-- `facts/index.json` exists after deterministic analysis
 - fact ids are stable and unique within a run
 - every fact has provenance
 - domain files may be omitted when empty
-- facts are observations and candidate evidence, not final architecture conclusions
+- facts are normalized observations, not final architecture conclusions
+
+## observations/
+
+Agent-authored semantic observations derived from facts plus repo inspection.
+
+Stable constraints:
+- observations are not detector output
+- observations may carry confidence, questions, gaps, and recommendations
+- observations do not replace `atlas.json`, `stories/`, or `narratives.yaml`
+- observations are optional until the semantic layer emits them
+
+## derived/
+
+Deterministic semantic-planning outputs such as `component-seeds.json`, `story-seeds.json`, and `narrative-seeds.json`.
+
+Stable constraints:
+- derived artifacts live under `derived/`
+- derived artifacts may use specialized JSON shapes
+- derived artifacts are advisory or supporting inputs, not final semantic outputs
 
 ## atlas.json
 
@@ -100,7 +167,7 @@ Stable constraints:
 All semantic artifacts should use one of these path forms when citing files:
 
 - repo-relative paths rooted at the analyzed project, such as `pkg/server/watch.go`
-- analysis-relative paths rooted at the run directory, such as `facts/startup.json`
+- analysis-relative paths rooted at the run directory, such as `startup.json`, `facts/routes.json`, or `derived/story-seeds.json`
 - absolute paths only when the runtime already emitted absolute deterministic references and they resolve correctly
 
 Do not:
@@ -123,20 +190,6 @@ Stable constraints:
 ## meta.json
 
 Durable metadata record for one accepted analysis directory. See [meta-schema.md](meta-schema.md).
-
-Stable fields:
-- `project`
-- `analysis_id`
-- `sha`
-- `commit_time`
-- `analysis_mode`
-- `base_sha`
-- `base_commit_time`
-- `blast`
-- `artifacts`
-- `schemas`
-- `execution`
-- `validation`
 
 ## overlays/
 
@@ -161,8 +214,8 @@ Stable constraints:
 2. `analysis/index.json` provides a per-project history of accepted analyses.
 3. `analysis/<sha>/index.json` groups accepted analyses by analyzed commit.
 4. `analysis/<sha>/latest.json` points to the latest accepted run for that commit.
-5. Facts and script-derived artifacts use `blast.json` plus `facts/`.
-6. Semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
+5. Deterministic run artifacts use `blast.json`, `startup.json`, `index.json`, `facts/`, and `derived/`.
+6. Semantic artifacts use `observations/`, `atlas.json`, `stories/`, and `narratives.yaml`.
 7. Overlay and reflection containers exist beside every accepted run even before any user edits or reviews are created.
 8. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.
 9. New optional fields may appear, but existing stable fields do not change without a versioned schema change.

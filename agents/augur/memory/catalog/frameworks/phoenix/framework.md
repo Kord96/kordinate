@@ -6,7 +6,7 @@ description: Elixir web framework with router macros, channel support, and expli
 Phoenix is an Elixir web framework with router macros, channel support, and explicit endpoint pipelines.
 
 ## Recognition
-Use the detector package under `detectors/facts/frameworks/phoenix/` as the deterministic source of truth for framework evidence.
+Use the framework reference in `references/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/phoenix/`.
 
 ## Architectural implications
 - framework scope: `backend`

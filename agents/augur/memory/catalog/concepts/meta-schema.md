@@ -1,11 +1,10 @@
 # Concept semantics note
 
-Concept semantics now live entirely in `concept.md` under `memory/catalog/concepts/<name>/`.
+Canonical concept semantics now live under the semantic family subdirectories in `../../../references/concepts/`.
 
-Structured detector policy and executable rule assets are no longer defined from the semantic memory side. They live under:
-- `detectors/facts/concept-evidence/<name>/meta.yaml`
-- `detectors/facts/concept-evidence/<name>/signatures.yaml`
-- `detectors/facts/concept-evidence/<name>/ast-grep.yaml`
-- `detectors/facts/concept-evidence/<name>/semgrep.yaml`
+Structured detector policy and executable rule assets live under:
+- `../../../detectors/concepts/<name>/policy.yaml`
+- `../../../detectors/concepts/<name>/ast-grep.yaml`
+- `../../../detectors/concepts/<name>/semgrep.yaml`
 
-Use `memory/catalog/concepts/README.md` for the semantic catalog shape and `detectors/facts/concept-evidence/schema.md` for the detector-side schema.
+Use `README.md` for the legacy catalog view, `../../../references/concepts/README.md` for the canonical reference layer, and `../../../detectors/concepts/schema.md` for the detector-side schema.

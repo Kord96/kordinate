@@ -137,7 +137,7 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     facts_path = output_dir / "facts.json"
-    concept_evidence_path = output_dir / "concept-evidence.json"
+    concepts_path = output_dir / "concepts.json"
     semantic_review_path = output_dir / "semantic-review.json"
     meta_path = output_dir / "meta.json"
 
@@ -146,7 +146,7 @@ def main() -> int:
         "setup": 0,
         "gather": 0,
         "facts": 0,
-        "concept_evidence": 0,
+        "concepts": 0,
         "atlas": 0,
         "stories": 0,
         "validation": 0,
@@ -179,13 +179,13 @@ def main() -> int:
         rc, _out, err, elapsed = run_cmd(
             [
                 "python3",
-                str(SCRIPT_DIR / "infer_concepts_from_facts.py"),
+                str(SCRIPT_DIR.parent / "detectors" / "scripts" / "infer_concepts_from_facts.py"),
                 str(facts_path),
                 "--output",
-                str(concept_evidence_path),
+                str(concepts_path),
             ]
         )
-        runtime_ms["concept_evidence"] = elapsed
+        runtime_ms["concepts"] = elapsed
         if rc != 0:
             failure_reason = err.strip() or "infer_concepts_from_facts failed"
             success = False
@@ -194,7 +194,7 @@ def main() -> int:
                 [
                     "python3",
                     str(SCRIPT_DIR / "prepare_semantic_review.py"),
-                    str(concept_evidence_path),
+                    str(concepts_path),
                     str(facts_path),
                     "--output",
                     str(semantic_review_path),
@@ -207,7 +207,7 @@ def main() -> int:
     runtime_ms["total"] = int((time.perf_counter() - total_start) * 1000)
 
     validation = {
-        "output_files_exist": facts_path.exists() and concept_evidence_path.exists() and semantic_review_path.exists(),
+        "output_files_exist": facts_path.exists() and concepts_path.exists() and semantic_review_path.exists(),
         "schema_valid": success,
         "grounding_refs_resolve": True,
         "analyzed_sha_matches": True,
@@ -292,7 +292,7 @@ def main() -> int:
             "facts_dir": str(facts_path),
             "stories_dir": "",
             "transcript_path": "",
-            "concept_evidence_path": str(concept_evidence_path),
+            "concepts_path": str(concepts_path),
             "semantic_review_path": str(semantic_review_path),
         },
         "validation": validation,

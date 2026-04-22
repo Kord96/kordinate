@@ -35,8 +35,8 @@ Apply these rules to story summaries, findings, and rationale:
 - before you cite a repo file in `anchor`, `evidence.file`, or `grounded_in`, confirm the path actually exists in the repo or analysis run; do not guess filenames such as `agents/augur/agent.yaml`
 - use the canonical path rules from `augur-output-contract.md`
 - treat stories as resolved teaching structure, not as arbitrary file-group summaries
-- when `facts/component-seeds.json` and `facts/story-seeds.json` are present, use them to challenge root choice and child-story decomposition before writing
-- when `facts/narrative-seeds.json` is present, keep story scope and teaching value strong enough that narratives can select stories by explanatory value rather than by root coverage alone
+- when `derived/component-seeds.json` and `derived/story-seeds.json` are present, use them to challenge root choice and child-story decomposition before writing
+- when `derived/narrative-seeds.json` is present, keep story scope and teaching value strong enough that narratives can select stories by explanatory value rather than by root coverage alone
 - every story must declare one `primary_mode`; use it to decide what the main explainer is, not just as metadata
 - `teaches` is the story thesis and should be the first thing a reader can understand; write it as one clear teaching sentence, not a label
 - treat `observations` and `rationale` as supporting inspection material; do not let them overwhelm the main teaching arc

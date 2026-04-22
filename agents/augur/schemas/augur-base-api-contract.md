@@ -1,24 +1,10 @@
 # Augur Base API Contract
 
-This document defines the read-only interface Augur should expose for canonical
-analysis artifacts.
+This document defines the read-only interface Augur should expose for canonical analysis artifacts.
 
-It exists to separate:
+It exists to let downstream consumers read accepted Augur analyses without depending on Augur filesystem paths.
 
-- **Augur-owned data**
-  - immutable base analyses
-  - reflections
-  - validation and canonical analysis metadata
-- **Docs-owned data**
-  - overlays
-  - published/current view selection
-  - website-facing merged projection
-
-The intent is to avoid coupling downstream consumers directly to Augur's
-filesystem layout while still letting Augur remain the source of truth for the
-base analysis.
-
-## Ownership Split
+## Ownership Model
 
 ### Augur owns
 
@@ -37,28 +23,6 @@ base analysis.
 - overlay metadata and user edits
 - published/current pointers for docs presentation
 - merged website-facing views
-
-## Deployment Model
-
-The shared daemon runtime should be generic at the platform level, but each
-agent may expose its own namespace and contract.
-
-For Augur, the recommended shape is:
-
-- shared daemon or gateway core
-  - auth
-  - routing
-  - health
-  - capability discovery
-  - common error envelope
-- Augur namespace
-  - read-only analysis retrieval API
-
-This implies:
-
-- **do not** make docs read Augur memory paths directly
-- **do not** make Augur own docs overlays
-- **do** let docs fetch Augur base snapshots through an API
 
 ## Namespace
 
@@ -188,7 +152,7 @@ Only expose an analysis snapshot when all are true:
 
 ## Error Model
 
-Use the daemon's common error envelope. At minimum:
+Use the common API error envelope. At minimum:
 
 ```json
 {
@@ -220,10 +184,7 @@ Recommended docs flow:
 3. merge into website-facing current or analysis view
 4. serve via docs API
 
-This keeps:
-
-- Augur responsible for canonical analysis generation
-- docs responsible for editorial customization and presentation
+This keeps Augur responsible for canonical analysis generation while docs remains responsible for editorial customization and presentation.
 
 ## Non-Goals
 

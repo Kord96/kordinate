@@ -27,6 +27,8 @@ from pathlib import Path
 from typing import Any
 import re
 
+from facts import component_ids_from_relationships, normalize_fact_record, relationship_targets
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -674,33 +676,30 @@ def normalize_fact(raw: Any) -> dict[str, Any] | None:
     if not isinstance(raw, dict):
         return None
 
-    source_files = raw.get("source_files") or raw.get("grounded_in") or []
+    normalized = normalize_fact_record(raw)
+    source_files = normalized.get("source_files") or normalized.get("grounded_in") or []
     if isinstance(source_files, str):
         source_files = [source_files]
     if not isinstance(source_files, list):
         source_files = []
 
-    relationships = raw.get("relationships") or {}
-    if not isinstance(relationships, dict):
-        relationships = {}
-
-    detector = raw.get("detector") or {}
-    if not isinstance(detector, dict):
-        detector = {}
-    evidence = raw.get("evidence") or {}
+    relationships = normalized.get("relationships") or []
+    detector = normalized.get("detector") or {}
+    raw_evidence = normalized.get("raw_evidence") or {}
+    evidence = raw_evidence.get("evidence_summary") or {}
     if not isinstance(evidence, dict):
         evidence = {}
-    review = raw.get("review") or {}
+    review = raw_evidence.get("review") or {}
     if not isinstance(review, dict):
         review = {}
 
     return {
-        "id": str(raw.get("id") or slugify(f"{raw.get('kind', 'fact')}::{source_files[0] if source_files else 'unknown'}")),
-        "kind": str(raw.get("kind") or "fact"),
-        "domain": str(raw.get("domain") or "unknown"),
-        "summary": str(raw.get("summary") or ""),
-        "confidence": str(raw.get("confidence") or "low"),
-        "framework_context": [str(item) for item in raw.get("framework_context") or [] if item],
+        "id": str(normalized.get("id") or slugify(f"{normalized.get('kind', 'fact')}::{source_files[0] if source_files else 'unknown'}")),
+        "kind": str(normalized.get("kind") or "fact"),
+        "domain": str(normalized.get("domain") or "unknown"),
+        "summary": str(normalized.get("summary") or ""),
+        "confidence": str(raw_evidence.get("confidence_hint") or "low"),
+        "framework_context": [str(item) for item in raw_evidence.get("framework_context") or [] if item],
         "source_files": [str(item) for item in source_files if item],
         "detector": {
             "id": str(detector.get("id") or "unknown"),
@@ -709,15 +708,15 @@ def normalize_fact(raw: Any) -> dict[str, Any] | None:
             "rule": detector.get("rule"),
             "bundle": detector.get("bundle"),
         },
-        "raw_evidence": raw.get("raw_evidence") if isinstance(raw.get("raw_evidence"), dict) else {},
+        "raw_evidence": raw_evidence,
         "evidence": evidence,
         "review": review,
-        "negative_evidence": [str(item) for item in raw.get("negative_evidence") or [] if item],
-        "contradictions": [str(item) for item in raw.get("contradictions") or [] if item],
+        "negative_evidence": [str(item) for item in raw_evidence.get("negative_evidence") or [] if item],
+        "contradictions": [str(item) for item in raw_evidence.get("contradictions") or [] if item],
         "relationships": {
-            "component_ids": [str(item) for item in relationships.get("component_ids") or [] if item],
-            "depends_on_fact_ids": [str(item) for item in relationships.get("depends_on_fact_ids") or [] if item],
-            "related_fact_ids": [str(item) for item in relationships.get("related_fact_ids") or [] if item],
+            "component_ids": component_ids_from_relationships(relationships),
+            "depends_on_fact_ids": relationship_targets(relationships, rel_type="fact_ref", label="derived_from"),
+            "related_fact_ids": relationship_targets(relationships, rel_type="fact_ref", label="related_to"),
         },
     }
 
@@ -794,41 +793,38 @@ def load_detected_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         raw = item.get("raw_evidence") or {}
         if not isinstance(raw, dict):
             continue
-        evidence = item.get("evidence") or {}
-        if not isinstance(evidence, dict):
-            evidence = {}
-        supporting = evidence.get("supporting") or {}
-        if not isinstance(supporting, dict):
-            supporting = {}
-        review = item.get("review") or {}
-        if not isinstance(review, dict):
-            review = {}
         concept_id = raw.get("concept_id")
         if not isinstance(concept_id, str) or not concept_id:
             continue
+        review = raw.get("review") or {}
+        if not isinstance(review, dict):
+            review = {}
+        evidence = raw.get("evidence_summary") or {}
+        if not isinstance(evidence, dict):
+            evidence = {}
         patterns.append({
             "id": concept_id,
             "category": str(raw.get("category") or "unknown"),
-            "confidence": str(item.get("confidence") or "low"),
+            "confidence": str(raw.get("confidence_hint") or "low"),
             "decision_mode": str(raw.get("decision_mode") or "fact-inference"),
             "review_required": bool(review.get("required")),
-            "detector_backing": str(supporting.get("detector_backing") or "weak"),
+            "detector_backing": str(raw.get("detector_backing") or "weak"),
             "summary": str(raw.get("note") or f"{concept_id} is suggested by deterministic fact evidence in this repo."),
             "why_it_matters": str(raw.get("note") or "This concept materially shapes the architecture or integration boundaries."),
-            "components": item.get("relationships", {}).get("component_ids") if isinstance(item.get("relationships"), dict) else [],
+            "components": component_ids_from_relationships(item.get("relationships")),
             "flows": [],
             "state": [],
             "grounded_in": [f"{path}:1" for path in (item.get("source_files") or [])[:3]],
             "evidence": {
-                "fact_ids": supporting.get("fact_ids") or item.get("relationships", {}).get("depends_on_fact_ids") if isinstance(item.get("relationships"), dict) else [],
+                "fact_ids": relationship_targets(item.get("relationships"), rel_type="fact_ref", label="derived_from"),
                 "files": item.get("source_files") or [],
-                "components": supporting.get("component_ids") or [],
-                "method": raw.get("inference_method") or "inferred-from-facts",
+                "components": component_ids_from_relationships(item.get("relationships")),
+                "method": raw.get("inference_method") or raw.get("method") or "inferred-from-facts",
                 "detector_class": raw.get("detector_class") or "inference",
                 "note": raw.get("note") or "",
-                "questions_asked": (review.get("questions") or {}).get("entry_ids") if isinstance(review.get("questions"), dict) else [],
-                "counter": [str(item) for item in evidence.get("counter") or [] if item],
-                "gaps": [str(item) for item in evidence.get("gaps") or [] if item],
+                "questions_asked": relationship_targets(item.get("relationships"), rel_type="question_ref"),
+                "counter": [str(entry) for entry in raw.get("counter_evidence") or evidence.get("counter") or [] if entry],
+                "gaps": [str(entry) for entry in raw.get("evidence_gaps") or evidence.get("gaps") or [] if entry],
             },
         })
     return patterns
@@ -836,8 +832,8 @@ def load_detected_patterns(facts: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def load_monitoring_index() -> dict[str, dict[str, Any]]:
     candidates = [
-        ROOT / ".generated" / "bundles" / "detectors" / "concept-evidence" / "monitoring.json",
-        ROOT / "bundles" / "detectors" / "concept-evidence" / "monitoring.json",
+        ROOT / ".generated" / "bundles" / "detectors" / "concepts" / "monitoring.json",
+        ROOT / "bundles" / "detectors" / "concepts" / "monitoring.json",
     ]
     for path in candidates:
         if not path.exists():
@@ -2375,7 +2371,7 @@ def build_output(
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Synthesize atlas sections from Augur facts")
-    parser.add_argument("facts", type=Path, help="Path to facts directory or facts/index.json")
+    parser.add_argument("facts", type=Path, help="Path to facts directory or run index.json")
     parser.add_argument("--project", default="", help="Project name to place in the synthesized output")
     parser.add_argument("--purpose", default="", help="Optional explicit purpose override")
     parser.add_argument("--output", type=Path, default=None, help="Write synthesized atlas JSON to this file")

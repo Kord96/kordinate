@@ -43,7 +43,9 @@ def rewrite_meta_paths(run_dir: Path, meta: dict[str, Any]) -> None:
     if isinstance(artifacts, dict):
         artifacts["root"] = str(run_dir)
         artifacts["atlas"] = str(run_dir / "atlas.json") if (run_dir / "atlas.json").exists() else ""
-        artifacts["facts_index"] = str(run_dir / "facts" / "index.json") if (run_dir / "facts" / "index.json").exists() else ""
+        artifacts["startup"] = str(run_dir / "startup.json") if (run_dir / "startup.json").exists() else ""
+        artifacts["index"] = str(run_dir / "index.json") if (run_dir / "index.json").exists() else ""
+        artifacts.pop("facts_index", None)
         artifacts["stories_dir"] = str(run_dir / "stories") if (run_dir / "stories").exists() else ""
         artifacts["narratives"] = str(run_dir / "narratives.yaml") if (run_dir / "narratives.yaml").exists() else ""
         artifacts["blast"] = str(run_dir / "blast.json") if (run_dir / "blast.json").exists() else ""

@@ -5,9 +5,9 @@ Generates:
 - .generated/bundles/detectors/execution-plan.json
 - .generated/bundles/detectors/frameworks/<name>.json
 - .generated/bundles/detectors/facts/<name>.json
-- .generated/bundles/detectors/concept-evidence/<name>.json
-- .generated/bundles/detectors/concept-evidence/questions.json
-- .generated/bundles/detectors/concept-evidence/monitoring.json
+- .generated/bundles/detectors/concepts/<name>.json
+- .generated/bundles/detectors/concepts/review_questions.json
+- .generated/bundles/detectors/concepts/monitoring.json
 
 This is intentionally lightweight for now: it groups source detector assets into
 runtime bundle manifests rather than trying to merge YAML AST rules into one file.
@@ -19,30 +19,52 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import re
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 DETECTORS = ROOT / 'detectors'
+REFERENCES = ROOT / 'references'
 BUNDLES = ROOT / '.generated' / 'bundles' / 'detectors'
+FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
 
 
-def load_concept_meta(path: Path) -> dict:
-    raw = yaml.safe_load(path.read_text(encoding='utf-8')) or {}
-    detector_questions = (
-        raw.get('detectors', {})
+def load_yaml(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return yaml.safe_load(path.read_text(encoding='utf-8')) or {}
+
+
+def load_markdown_frontmatter(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    text = path.read_text(encoding='utf-8')
+    match = FRONTMATTER_RE.match(text)
+    if not match:
+        return {}
+    return yaml.safe_load(match.group(1)) or {}
+
+
+def load_concept_metadata(reference_path: Path, policy_path: Path) -> dict:
+    reference = load_markdown_frontmatter(reference_path)
+    policy_raw = load_yaml(policy_path)
+    question_policy = (
+        policy_raw.get('detectors', {})
         .get('questions', {})
+        if isinstance(policy_raw.get('detectors'), dict)
+        else {}
     )
-    questions = raw.get('questions', {})
+    review_questions = reference.get('review_questions', {})
     entries = []
-    for entry in questions.get('entries', []) or []:
+    for entry in review_questions.get('entries', []) or []:
         entries.append({
             'id': entry.get('id'),
             'prompt': entry.get('prompt'),
             'weight': entry.get('weight', 1),
             'signals': entry.get('signals', []) or [],
         })
-    monitoring = raw.get('monitoring', {}) or {}
+    monitoring = reference.get('monitoring', {}) or {}
     health_signals = []
     for entry in monitoring.get('health_signals', []) or []:
         health_signals.append({
@@ -56,22 +78,22 @@ def load_concept_meta(path: Path) -> dict:
             'description': entry.get('description'),
         })
     return {
-        'concept': raw.get('concept'),
+        'concept': reference.get('name') or reference.get('concept'),
         'policy': {
             'auto_confirm_allowed': bool(
-                raw.get('policy', {})
+                policy_raw.get('policy', {})
                 .get('auto_confirm', {})
                 .get('allowed', False)
             ),
-            'unresolved_state': raw.get('policy', {}).get('unresolved_state'),
+            'unresolved_state': policy_raw.get('policy', {}).get('unresolved_state'),
             'broad_match_requires_questions': bool(
-                raw.get('policy', {}).get('broad_match_requires_questions', False)
+                policy_raw.get('policy', {}).get('broad_match_requires_questions', False)
             ),
         },
-        'questions': {
-            'enabled': bool(detector_questions.get('enabled', False)),
-            'ask_when': detector_questions.get('ask_when', []) or [],
-            'threshold': questions.get('threshold'),
+        'review_questions': {
+            'enabled': bool(question_policy.get('enabled', False)),
+            'ask_when': question_policy.get('ask_when', []) or [],
+            'threshold': review_questions.get('threshold'),
             'entries': entries,
         },
         'monitoring': {
@@ -80,28 +102,90 @@ def load_concept_meta(path: Path) -> dict:
             'business_metrics': business_metrics,
             'gaps': monitoring.get('gaps', []) or [],
         },
+        'signatures': reference.get('signatures') if isinstance(reference.get('signatures'), dict) else {},
     }
 
 
-def collect(base: Path, kind: str):
+def collect_fact_domains(base: Path):
     out = []
     if not base.exists():
         return out
     for entry in sorted(p for p in base.iterdir() if p.is_dir()):
+        if entry.name in {'frameworks', 'concepts', 'utils'}:
+            continue
         files = {}
-        concept_meta_name = 'meta.yaml' if kind == 'concept-evidence' else 'policy.yaml'
-        for name in [concept_meta_name, 'signatures.yaml', 'ast-grep.yaml', 'semgrep.yaml']:
+        for name in ['policy.yaml', 'signatures.yaml', 'ast-grep.yaml', 'semgrep.yaml']:
             path = entry / name
             if path.exists():
                 files[name] = str(path.relative_to(ROOT))
         record = {'name': entry.name, 'files': files}
-        meta_path = entry / 'meta.yaml'
-        if kind == 'concept-evidence' and meta_path.exists():
-            metadata = load_concept_meta(meta_path)
-            if metadata.get('questions', {}).get('entries'):
-                record['question_count'] = len(metadata['questions']['entries'])
+        out.append(record)
+    return out
+
+
+def collect_frameworks():
+    out = []
+    frameworks_dir = REFERENCES / 'frameworks'
+    policy_dir = DETECTORS / 'frameworks'
+    if not frameworks_dir.exists():
+        return out
+    for entry in sorted(p for p in frameworks_dir.glob('*.md') if p.name != 'README.md'):
+        frontmatter = load_markdown_frontmatter(entry)
+        signatures = frontmatter.get('signatures') if isinstance(frontmatter.get('signatures'), dict) else {}
+        if not signatures:
+            continue
+        policy_path = policy_dir / entry.stem / 'policy.yaml'
+        files = {'reference': str(entry.relative_to(ROOT))}
+        if policy_path.exists():
+            files['policy.yaml'] = str(policy_path.relative_to(ROOT))
+        record = {
+            'name': entry.stem,
+            'files': files,
+            'policy': load_yaml(policy_path).get('policy', {}) if policy_path.exists() else {},
+            'signatures': signatures,
+            'docs': [f"references/frameworks/{entry.stem}.md"],
+        }
+        out.append(record)
+    return out
+
+
+def collect_concepts():
+    out = []
+    names = set()
+    references_dir = REFERENCES / 'concepts'
+    reference_paths: dict[str, Path] = {}
+    if references_dir.exists():
+        for path in references_dir.rglob('*.md'):
+            if path.name == 'README.md':
+                continue
+            names.add(path.stem)
+            reference_paths[path.stem] = path
+    concepts_dir = DETECTORS / 'concepts'
+    if concepts_dir.exists():
+        names.update(entry.name for entry in concepts_dir.iterdir() if entry.is_dir())
+    for name in sorted(names):
+        files = {}
+        reference_path = reference_paths.get(name, references_dir / f'{name}.md')
+        if reference_path.exists():
+            files['reference'] = str(reference_path.relative_to(ROOT))
+        detector_dir = concepts_dir / name
+        policy_path = detector_dir / 'policy.yaml'
+        if policy_path.exists():
+            files['policy.yaml'] = str(policy_path.relative_to(ROOT))
+        for filename in ['ast-grep.yaml', 'semgrep.yaml']:
+            path = detector_dir / filename
+            if path.exists():
+                files[filename] = str(path.relative_to(ROOT))
+        record = {'name': name, 'files': files}
+        if reference_path.exists():
+            metadata = load_concept_metadata(reference_path, policy_path)
+            if metadata.get('review_questions', {}).get('entries'):
+                record['review_question_count'] = len(metadata['review_questions']['entries'])
             record['policy'] = metadata['policy']
-            record['questions'] = metadata['questions']
+            record['docs'] = [str(reference_path.relative_to(ROOT))]
+            record['review_questions'] = metadata['review_questions']
+            if metadata.get('signatures'):
+                record['signatures'] = metadata['signatures']
             if (
                 metadata.get('monitoring', {}).get('health_signals')
                 or metadata.get('monitoring', {}).get('business_metrics')
@@ -118,20 +202,17 @@ def write_json(path: Path, data):
 
 
 def main() -> int:
-    frameworks = collect(DETECTORS / 'facts' / 'frameworks', 'frameworks')
-    facts = collect(
-        DETECTORS / 'facts',
-        'facts',
-    )
-    facts = [fact for fact in facts if fact['name'] not in {'frameworks', 'concept-evidence'}]
-    concepts = collect(DETECTORS / 'facts' / 'concept-evidence', 'concept-evidence')
-    concept_questions = {
+    frameworks = collect_frameworks()
+    facts = collect_fact_domains(DETECTORS)
+    concepts = collect_concepts()
+    concept_review_questions = {
         concept['name']: {
             'policy': concept.get('policy'),
-            'questions': concept.get('questions'),
+            'docs': concept.get('docs', []),
+            'review_questions': concept.get('review_questions'),
         }
         for concept in concepts
-        if concept.get('questions', {}).get('entries')
+        if concept.get('review_questions', {}).get('entries')
     }
     concept_monitoring = {
         concept['name']: concept.get('monitoring')
@@ -141,9 +222,9 @@ def main() -> int:
 
     write_json(BUNDLES / 'frameworks' / 'all.json', {'frameworks': frameworks})
     write_json(BUNDLES / 'facts' / 'all.json', {'facts': facts})
-    write_json(BUNDLES / 'concept-evidence' / 'all.json', {'concepts': concepts})
-    write_json(BUNDLES / 'concept-evidence' / 'questions.json', {'concepts': concept_questions})
-    write_json(BUNDLES / 'concept-evidence' / 'monitoring.json', {'concepts': concept_monitoring})
+    write_json(BUNDLES / 'concepts' / 'all.json', {'concepts': concepts})
+    write_json(BUNDLES / 'concepts' / 'review_questions.json', {'concepts': concept_review_questions})
+    write_json(BUNDLES / 'concepts' / 'monitoring.json', {'concepts': concept_monitoring})
     write_json(BUNDLES / 'execution-plan.json', {
         'version': 1,
         'steps': [
@@ -158,9 +239,9 @@ def main() -> int:
                 'purpose': 'Extract normalized facts before semantic concept inference'
             },
             {
-                'name': 'concept-evidence-inference',
-                'bundle': '.generated/bundles/detectors/concept-evidence/all.json',
-                'purpose': 'Infer concept-evidence facts from normalized deterministic evidence'
+                'name': 'concepts-inference',
+                'bundle': '.generated/bundles/detectors/concepts/all.json',
+                'purpose': 'Infer concepts facts from normalized deterministic evidence'
             }
         ]
     })

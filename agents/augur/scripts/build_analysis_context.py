@@ -23,25 +23,26 @@ def main() -> int:
     analysis_dir = run_dir.parent
     project_mem = analysis_dir.parent
     facts_dir = run_dir / "facts"
-    startup_path = facts_dir / "startup.json"
+    derived_dir = run_dir / "derived"
+    startup_path = run_dir / "startup.json"
     blast_path = run_dir / "blast.json"
     atlas_path = run_dir / "atlas.json"
     stories_dir = run_dir / "stories"
     narratives_path = run_dir / "narratives.yaml"
     meta_path = run_dir / "meta.json"
-    concept_evidence_path = facts_dir / "concept-evidence.json"
-    story_seeds_path = facts_dir / "story-seeds.json"
-    component_seeds_path = facts_dir / "component-seeds.json"
-    narrative_seeds_path = facts_dir / "narrative-seeds.json"
+    concepts_path = facts_dir / "concepts.json"
+    story_seeds_path = derived_dir / "story-seeds.json"
+    component_seeds_path = derived_dir / "component-seeds.json"
+    narrative_seeds_path = derived_dir / "narrative-seeds.json"
     health_candidates_path = facts_dir / "health-candidates.json"
     failure_scenario_candidates_path = facts_dir / "failure-scenario-candidates.json"
     symbols_seed_path = facts_dir / "symbols-seed.json"
     state_seeds_path = facts_dir / "state-seeds.json"
-    facts_index_path = facts_dir / "index.json"
+    index_path = run_dir / "index.json"
 
     starter_files: list[str] = [str(blast_path), str(startup_path)]
-    if facts_index_path.exists():
-        starter_files.append(str(facts_index_path))
+    if index_path.exists():
+        starter_files.append(str(index_path))
     try:
         startup = json.loads(startup_path.read_text(encoding="utf-8"))
         startup_files = startup.get("startup_files") or []
@@ -50,7 +51,7 @@ def main() -> int:
                 if not isinstance(relative_path, str) or not relative_path.strip():
                     continue
                 normalized = relative_path.removeprefix("./")
-                absolute_path = run_dir / normalized if normalized.startswith("facts/") else facts_dir / normalized
+                absolute_path = run_dir / normalized
                 absolute = str(absolute_path)
                 if absolute not in starter_files:
                     starter_files.append(absolute)
@@ -69,8 +70,8 @@ def main() -> int:
         startup_directive = " ".join(
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
-                "Read starter_files first and treat facts/startup.json as the startup authority for this run.",
-                "Use facts/index.json as the canonical manifest and retrieval guide for deterministic artifacts in this run.",
+                "Read starter_files first and treat startup.json as the startup authority for this run.",
+                "Use index.json as the canonical manifest and retrieval guide for deterministic and derived artifacts in this run.",
                 "Use those core startup files to form initial hypotheses, then move into repo code before doing more fact reduction.",
                 "Do not preload large supporting domains during startup. Read them only when the changed slice, a concrete ambiguity, or a review question requires them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
@@ -81,13 +82,13 @@ def main() -> int:
         startup_directive = " ".join(
             [
                 "Begin with the prepared analysis artifacts, not generic repo orientation.",
-                "Read starter_files first and treat facts/startup.json as the startup authority for this run.",
-                "Use facts/index.json as the canonical manifest and retrieval guide for deterministic artifacts in this run.",
+                "Read starter_files first and treat startup.json as the startup authority for this run.",
+                "Use index.json as the canonical manifest and retrieval guide for deterministic and derived artifacts in this run.",
                 "Use those core startup files to form initial architectural hypotheses, then move into repo code before doing more fact reduction.",
                 "Do not preload large supporting domains during startup. Read them only when the current task actually needs them.",
                 "Use larger supporting domains only when they help resolve ambiguity, answer review questions, or resolve materially relevant concept candidates.",
                 "After you identify provisional top-level components, perform a mandatory breadth pass in repo code for each root slice.",
-                "Use targeted fact domains on demand: concept-evidence for concept questions, seeds for decomposition and narrative selection, and health or failure candidates for health, monitoring, or failure modeling.",
+                "Use targeted fact domains on demand: concepts for concept questions, seeds for decomposition and narrative selection, and health or failure candidates for health, monitoring, or failure modeling.",
                 "Perform a root challenge pass before finalizing roots: reject provisional roots anchored mainly in test/, docs/, examples/, or client-only paths.",
                 "If the repo has strong engine, storage, or runtime slices, do not spend a full top-level root on bootstrap alone; keep bootstrap as a child unless it is truly the dominant system concern.",
                 "On large repos, require at least one top-level root anchored in deeper runtime or storage internals when deterministic seeds provide one.",
@@ -105,10 +106,11 @@ def main() -> int:
         "analysis_dir": str(analysis_dir),
         "project_mem": str(project_mem),
         "facts_dir": str(facts_dir),
+        "derived_dir": str(derived_dir),
         "startup_path": str(startup_path),
         "blast_path": str(blast_path),
-        "facts_index_path": str(facts_index_path),
-        "concept_evidence_path": str(concept_evidence_path),
+        "index_path": str(index_path),
+        "concepts_path": str(concepts_path),
         "story_seeds_path": str(story_seeds_path),
         "component_seeds_path": str(component_seeds_path),
         "narrative_seeds_path": str(narrative_seeds_path),

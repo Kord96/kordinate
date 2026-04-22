@@ -25,7 +25,7 @@ PRECHECK_RULES = {
         re.compile(r"validate_output\.py|\blog\.json\b|NEEDS_REFINEMENT|latest log status is `valid`|latest log iteration status is `valid`", re.IGNORECASE),
     ],
     "uses_deterministic_facts": [
-        re.compile(r"/facts/|facts/index\.json|blast\.json|startup\.json|component-seeds\.json|story-seeds\.json|symbols-seed\.json|state-seeds\.json|concept-evidence\.json|frameworks\.json|boundaries\.json|hot-files\.json"),
+        re.compile(r"/facts/|facts/index\.json|blast\.json|startup\.json|component-seeds\.json|story-seeds\.json|symbols-seed\.json|state-seeds\.json|concepts\.json|frameworks\.json|boundaries\.json|hot-files\.json"),
     ],
     "uses_augur_skill": [
         re.compile(r"augur-local-analyze|Use the full current Augur policy|PACK\.json|PROMPT\.md"),
@@ -51,7 +51,7 @@ POSTCHECK_RULES = {
         "story-seeds.json",
         "symbols-seed.json",
         "state-seeds.json",
-        "concept-evidence.json",
+        "concepts.json",
     ],
     "uses_augur_skill": [
         "augur-local-analyze",

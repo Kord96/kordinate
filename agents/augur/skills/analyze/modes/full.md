@@ -7,10 +7,10 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 ## Sequence
 
 1. Read `blast.json` in the canonical output directory to confirm `mode=full` and capture any invalidation reasons.
-2. Read `facts/startup.json` and `facts/index.json` in the canonical output directory first. Treat `startup.json` as the startup authority and `index.json` as the canonical manifest plus retrieval guide for this run.
+2. Read `startup.json` and `index.json` in the canonical output directory first. Treat `startup.json` as the startup authority and `index.json` as the canonical manifest plus retrieval guide for this run.
 3. Read only the small startup-priority fact files first. Do not preload large targeted domains during startup.
 4. Transition into repo code once you have an initial architectural picture from startup artifacts.
-5. Read `facts/index.json` in the canonical output directory only when you need to discover additional optional domains. Use larger or noisier supporting domains only when they help resolve materially relevant concept candidates, answer review questions, or resolve ambiguity.
+5. Read `index.json` in the canonical output directory only when you need to discover additional optional domains. Use larger or noisier supporting domains only when they help resolve materially relevant concept candidates, answer review questions, or resolve ambiguity.
 6. Perform a mandatory breadth pass in repo code after the first provisional architecture draft.
 7. For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file.
 8. Read repo files broadly enough to understand the whole architecture, starting from files surfaced by the prepared facts and then widening across adjacent implementation, not only when blocked.
@@ -49,7 +49,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
     - Add `throughline` to explain why the chosen stories form one coherent lesson in that order.
     - Prefer 2-4 total narratives unless the repo has clearly distinct audiences or cross-cutting review paths.
     - Make each adjacent story transition defensible: the per-story bridge text should explain the architectural reason for moving to that next story.
-    - Choose optional narratives from `facts/narrative-seeds.json.recommended_narratives` when present. If two narratives reuse most of the same stories, merge them or replace the weaker one.
+    - Choose optional narratives from `derived/narrative-seeds.json.recommended_narratives` when present. If two narratives reuse most of the same stories, merge them or replace the weaker one.
 13. Generate `stories/*.yaml` and `narratives.yaml` together from the refined atlas and the narrative plan.
 14. Run `resources.validator_script` against the canonical output directory for this run.
 15. If validation reports errors or warnings, fix the artifacts in place and rerun the validator until it is clean.
@@ -62,21 +62,21 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - Do not leave the atlas fully flat unless the codebase is genuinely flat. Use parent-child component relationships when subsystems contain real nested responsibilities.
 - Use deterministic facts first for orientation, then let code inspection drive the main architectural synthesis.
 - Do not stay in a long fact-mining loop after startup. Once you have initial hypotheses, confirm or reject them in repo code.
-- If `concept-evidence.json` is present, use it as the primary concept trigger only when concept work is actually in play: review candidate concepts, supporting evidence, counter evidence, evidence gaps, and review questions before keeping a concept in `atlas.json`.
+- If `facts/concepts.json` is present, use it as the primary concept trigger only when concept work is actually in play: review candidate concepts, supporting evidence, counter evidence, evidence gaps, and review questions before keeping a concept in `atlas.json`.
 - If `frameworks.json` is present, use it as the primary framework trigger: review framework evidence first, then confirm only the frameworks that materially affect component boundaries, flows, or concept activation.
 - Resolve concept candidates as accepted, tentative, or rejected from deterministic evidence plus repo code; do not let broad concept vocabulary leak into the atlas before that resolution.
 - Resolve framework candidates as accepted, tentative, or rejected from deterministic evidence plus repo code; do not let framework labels steer the atlas just because detection fired.
 - Treat unresolved or weakly backed concepts as candidates to drop or downgrade, not as decorative pattern labels.
 - If a framework candidate still matters after that first pass, read only the specific framework catalog files instead of broad framework preload.
-- If a concept candidate still matters after that first pass, read only the specific concept file and detector `meta.yaml` for that concept instead of broad concept preload.
+- If a concept candidate still matters after that first pass, read only the specific concept reference and detector policy or rules for that concept instead of broad concept preload.
 - Keep `atlas.json.concepts` compact and grounded: prefer a few high-signal concepts with repo-specific summaries over a long generic pattern list.
-- If `story-seeds.json` is present, use it only when story decomposition or root choice is still unclear, not as a startup preload.
-- If `narrative-seeds.json` is present, use it only when system-overview or other teaching-path selection is still unclear.
-- If `narrative-seeds.json` is present, use its `recommended_narratives` section to decide which optional canonical narrative ids are truly justified for this repo. Prefer higher-ranked optional narratives over weaker ones when you only keep one secondary teaching path. Do not invent freeform narrative ids when the canonical palette already fits.
-- If `control-hotspots.json` or `state-access-summary.json` are present, use them only when overview selection, flow choice, or state or dependency boundaries remain unclear.
-- If `health-candidates.json` is present, use it only when health, monitoring, gaps, or failure-scenario modeling is underdetermined.
-- If `symbols-seed.json` is present, use it when naming or grounding issues remain, not as a default startup read.
-- If `state-seeds.json` is present, use it when state naming or state truthfulness is unclear, not as a default startup read.
+- If `derived/story-seeds.json` is present, use it only when story decomposition or root choice is still unclear, not as a startup preload.
+- If `derived/narrative-seeds.json` is present, use it only when system-overview or other teaching-path selection is still unclear.
+- If `derived/narrative-seeds.json` is present, use its `recommended_narratives` section to decide which optional canonical narrative ids are truly justified for this repo. Prefer higher-ranked optional narratives over weaker ones when you only keep one secondary teaching path. Do not invent freeform narrative ids when the canonical palette already fits.
+- If `facts/control-hotspots.json` or `facts/state-access-summary.json` are present, use them only when overview selection, flow choice, or state or dependency boundaries remain unclear.
+- If `facts/health-candidates.json` is present, use it only when health, monitoring, gaps, or failure-scenario modeling is underdetermined.
+- If `facts/symbols-seed.json` is present, use it when naming or grounding issues remain, not as a default startup read.
+- If `facts/state-seeds.json` is present, use it when state naming or state truthfulness is unclear, not as a default startup read.
 - Use strong architectural evidence when naming components, responsibilities, and flows.
 - Prefer real runtime boundaries, registration paths, cross-component communication, and entrypoints over helper or support files when promoting major components.
 - For agent, plugin, hook, or skill-oriented repos, identify the host runtime or chassis first, then model capabilities beneath it.

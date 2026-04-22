@@ -18,9 +18,9 @@ description: Augur workflow — analyze existing code or design new projects, pr
 
 ### Facts
 
-Facts are the normalized result of deterministic extraction. They are concrete observations like routes, models, external clients, import edges, jobs, and concept-evidence. Facts are consumed by semantic atlas work and may also be consumed directly for targeted tasks like blast radius or focused summaries.
+Facts are the normalized result of deterministic extraction. They are concrete observations like routes, models, external clients, import edges, jobs, and concepts. Facts are consumed by semantic atlas work and may also be consumed directly for targeted tasks like blast radius or focused summaries.
 
-See `schemas/facts-schema.md` for the full schema.
+See `detectors/schema.md` for the canonical facts schema and `schemas/observations/observations-schema.md` for semantic observations.
 
 ### Atlas
 
@@ -34,8 +34,8 @@ See `agents/augur/schemas/atlas-schema.md` for the full atlas schema.
 
 ## Knowledge Base
 
-- **Concept catalog semantics** at `memory/catalog/concepts/` — `<concept>.md` is canonical for concept meaning and architectural implications
-- **Framework catalog semantics** at `memory/catalog/frameworks/` — framework primitives, conventions, and common co-occurring concepts
+- **Concept references** at `references/concepts/` — the matching family-scoped concept file is canonical for concept meaning, explanation, and signatures
+- **Framework references** at `references/frameworks/` — `<framework>.md` is canonical for framework explanation and signatures
 - **Ontology/index layer** at `memory/indexes/` — abstractions, concept index, anti-pattern index
 - **Ontology graph index** at `memory/indexes/ontology-graph.json` and `memory/indexes/ontology-graph.md` — machine-readable and visual graph of concepts, frameworks, abstractions, and cross-links, generated from concept/framework source metadata
 - **Detector source assets** at `detectors/` — deterministic fact-production rules and policies
@@ -47,8 +47,8 @@ See `agents/augur/schemas/atlas-schema.md` for the full atlas schema.
 
 1. Gather source code and identify languages and frameworks
 2. Use deterministic detector assets to establish stack context and produce normalized facts
-3. Treat `facts/index.json` as the manifest for deterministic evidence
-4. Use deterministic facts, including `facts/concept-evidence.json`, to guide semantic atlas work
+3. Treat `index.json` as the manifest for deterministic run artifacts
+4. Use deterministic facts plus planning aids, including `facts/concepts.json`, to guide semantic atlas work
 5. Use `agents/augur/schemas/atlas-schema.md`, `agents/augur/schemas/story-schema.md`, and `agents/augur/schemas/narratives-schema.md` as the canonical semantic output contracts
 
 ## Design Workflow

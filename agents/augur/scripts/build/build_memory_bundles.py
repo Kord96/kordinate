@@ -8,6 +8,7 @@ from subprocess import run
 
 ROOT = Path(__file__).resolve().parents[2]
 MEMORY = ROOT / 'memory'
+REFERENCES = ROOT / 'references'
 BUNDLES = ROOT / '.generated' / 'bundles' / 'memory'
 
 
@@ -16,16 +17,16 @@ def read(path: Path) -> str:
 
 
 def concept_files() -> list[Path]:
-    base = MEMORY / 'catalog' / 'concepts'
+    base = REFERENCES / 'concepts'
     return [
-        p for p in sorted(base.iterdir())
-        if p.is_file() and p.suffix == '.md' and p.name not in {'README.md', 'meta-schema.md'}
+        p for p in sorted(base.rglob('*.md'))
+        if p.is_file() and p.name not in {'README.md'}
     ]
 
 
 def framework_dirs() -> list[Path]:
-    base = MEMORY / 'catalog' / 'frameworks'
-    return [p for p in sorted(base.iterdir()) if p.is_dir() and (p / 'framework.md').exists()]
+    base = REFERENCES / 'frameworks'
+    return [p for p in sorted(base.iterdir()) if p.is_file() and p.suffix == '.md' and p.name not in {'README.md'}]
 
 
 def concept_summary(path: Path) -> str:
@@ -47,8 +48,8 @@ def concept_summary(path: Path) -> str:
 
 
 def framework_summary(path: Path) -> str:
-    text = read(path / 'framework.md').splitlines()
-    title = next((line[2:].strip() for line in text if line.startswith('# ')), path.name)
+    text = read(path).splitlines()
+    title = next((line[2:].strip() for line in text if line.startswith('# ')), path.stem)
     summary = None
     for line in text[1:8]:
         stripped = line.strip()
@@ -67,8 +68,8 @@ def common_header(title: str, mode_note: str) -> list[str]:
         '## Shared analyze workflow',
         '',
         '1. Resolve mode and scope (full, incremental, or skip).',
-        '2. Start from the prepared deterministic artifacts for this run: `$RUN/blast.json` and `$RUN/facts/`.',
-        '3. Use deterministic evidence, including `facts/concept-evidence.json`, to decide what deserves attention.',
+        '2. Start from the prepared deterministic artifacts for this run: `$RUN/blast.json`, `$RUN/startup.json`, `$RUN/index.json`, `$RUN/facts/`, and `$RUN/derived/`.',
+        '3. Use deterministic evidence, including `facts/concepts.json`, to decide what deserves attention.',
         '4. Interpret that evidence semantically.',
         '5. Widen into source files only where the prepared artifacts leave ambiguity or show a larger boundary.',
         '6. Build the architectural model, derive grounded tensions and failure modes, and write atlas/stories.',
@@ -103,7 +104,7 @@ def build_holistic() -> str:
     )
     sections.extend(['## Framework semantics', ''])
     for framework in framework_dirs():
-        sections.extend([read(framework / 'framework.md'), ''])
+        sections.extend([read(framework), ''])
     sections.extend(['## Concept semantics', ''])
     for concept in concept_files():
         sections.extend([read(concept), ''])
@@ -119,7 +120,7 @@ def build_selective() -> str:
     sections.extend(framework_summary(p) for p in framework_dirs())
     sections.extend(['', '## Concept summaries', ''])
     sections.extend(concept_summary(p) for p in concept_files())
-    sections.extend(['', '## Selective-read rule', '', 'When detector evidence is ambiguous, high-signal, or central to the architecture, read the full semantic definition from `memory/catalog/frameworks/<name>/framework.md` or `memory/catalog/concepts/<name>.md` before final interpretation.'])
+    sections.extend(['', '## Selective-read rule', '', 'When detector evidence is ambiguous, high-signal, or central to the architecture, read the full canonical reference from `references/frameworks/<name>.md` or the matching concept reference under `references/concepts/` before final interpretation.'])
     return '\n'.join(sections).rstrip() + '\n'
 
 

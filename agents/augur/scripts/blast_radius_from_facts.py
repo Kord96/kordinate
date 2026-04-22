@@ -18,7 +18,7 @@ def load_facts(path: Path) -> list[dict[str, Any]]:
     payload = load_payload(path)
     if path.is_dir():
         facts: list[dict[str, Any]] = []
-        index = path / "index.json"
+        index = path.parent / "index.json"
         if index.exists():
             payload = load_payload(index)
             for domain in payload.get("index", {}).get("domains", []):

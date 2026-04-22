@@ -74,7 +74,7 @@ type AugurAnalysisContext = {
   facts_dir: string
   startup_path: string
   blast_path: string
-  concept_evidence_path: string
+  concepts_path: string
   latest_path: string
   atlas_path: string
   starter_files: string[]
@@ -490,8 +490,8 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
           },
           resources: {
             validator_script: context.agentContract.validation?.validatorScript,
-            concept_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/catalog/concepts/README.md`,
-            framework_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/catalog/frameworks/README.md`,
+            concept_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/references/concepts/README.md`,
+            framework_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/references/frameworks/README.md`,
           },
           agent_params: {
             ...(message.agent_params ?? {}),

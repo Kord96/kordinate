@@ -6,7 +6,7 @@ description: Ruby API framework centered on declarative endpoint DSLs and resour
 Grape is a Ruby API framework centered on declarative endpoint DSLs and resource blocks.
 
 ## Recognition
-Use the detector package under `detectors/facts/frameworks/grape/` as the deterministic source of truth for framework evidence.
+Use the framework reference in `references/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/grape/`.
 
 ## Architectural implications
 - framework scope: `backend`

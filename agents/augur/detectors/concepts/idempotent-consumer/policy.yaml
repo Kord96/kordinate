@@ -1,0 +1,3 @@
+concept: idempotent-consumer
+detectors: {}
+policy: {}

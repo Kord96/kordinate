@@ -41,7 +41,8 @@ async function writeAcceptedAnalysis(root, project, sha, analysisId) {
             artifacts: {
                 root: '.',
                 atlas: 'atlas.json',
-                facts_index: '',
+                startup: '',
+                index: '',
                 stories_dir: 'stories',
                 narratives: 'narratives.yaml',
                 blast: '',

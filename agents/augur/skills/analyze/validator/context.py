@@ -2,9 +2,9 @@
 
 Checks owned here:
 - derive the repo root for evidence/path checks
-- verify that `facts/` exists and is a directory
-- load fact JSON files used by downstream validators
-- report JSON parse errors for fact artifacts
+- verify that `facts/` and `derived/` exist and are directories when needed
+- load fact and planning JSON files used by downstream validators
+- report JSON parse errors for those artifacts
 
 This module does not validate atlas, stories, narratives, or meta contracts.
 """
@@ -64,6 +64,7 @@ def load_json_artifact(path: Path, section: str, issues: list[dict]) -> dict:
 
 def collect_facts_context(analysis_dir: Path, issues: list[dict]) -> dict:
     facts_dir = analysis_dir / "facts"
+    derived_dir = analysis_dir / "derived"
     if not facts_dir.exists():
         issues.append(
             {
@@ -81,13 +82,22 @@ def collect_facts_context(analysis_dir: Path, issues: list[dict]) -> dict:
             }
         )
 
+    if derived_dir.exists() and not derived_dir.is_dir():
+        issues.append(
+            {
+                "level": "ERROR",
+                "section": "structure",
+                "message": f"derived path exists but is not a directory: {derived_dir}",
+            }
+        )
+
     payloads = {
-        "concepts_payload": load_json_artifact(facts_dir / "concept-evidence.json", "concept-evidence", issues),
+        "concepts_payload": load_json_artifact(facts_dir / "concepts.json", "concepts", issues),
         "frameworks_payload": load_json_artifact(facts_dir / "frameworks.json", "frameworks", issues),
-        "component_seeds_payload": load_json_artifact(facts_dir / "component-seeds.json", "component-seeds", issues),
-        "story_seeds_payload": load_json_artifact(facts_dir / "story-seeds.json", "story-seeds", issues),
+        "component_seeds_payload": load_json_artifact(derived_dir / "component-seeds.json", "component-seeds", issues),
+        "story_seeds_payload": load_json_artifact(derived_dir / "story-seeds.json", "story-seeds", issues),
         "symbols_seed_payload": load_json_artifact(facts_dir / "symbols-seed.json", "symbols-seed", issues),
-        "narrative_seeds_payload": load_json_artifact(facts_dir / "narrative-seeds.json", "narrative-seeds", issues),
+        "narrative_seeds_payload": load_json_artifact(derived_dir / "narrative-seeds.json", "narrative-seeds", issues),
         "health_candidates_payload": load_json_artifact(facts_dir / "health-candidates.json", "health-candidates", issues),
         "control_hotspots_payload": load_json_artifact(facts_dir / "control-hotspots.json", "control-hotspots", issues),
         "state_access_summary_payload": load_json_artifact(
@@ -124,4 +134,5 @@ def collect_facts_context(analysis_dir: Path, issues: list[dict]) -> dict:
     payloads["story_seed_refs"] = story_seed_refs
     payloads["grounded_symbol_names"] = grounded_symbol_names
     payloads["facts_dir"] = facts_dir
+    payloads["derived_dir"] = derived_dir
     return payloads

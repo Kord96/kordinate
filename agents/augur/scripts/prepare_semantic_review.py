@@ -24,8 +24,8 @@ def build_fact_index(facts_payload: dict[str, Any]) -> dict[str, dict[str, Any]]
     return {fact["id"]: fact for fact in facts_payload.get("facts", []) if fact.get("id")}
 
 
-def framework_review_context(concept_evidence_payload: dict[str, Any]) -> dict[str, Any]:
-    metadata = concept_evidence_payload.get("metadata", {})
+def framework_review_context(concepts_payload: dict[str, Any]) -> dict[str, Any]:
+    metadata = concepts_payload.get("metadata", {})
     context = metadata.get("framework_review_context") if isinstance(metadata, dict) else {}
     if not isinstance(context, dict):
         return {
@@ -84,11 +84,11 @@ def packet_item(fact: dict[str, Any], fact_index: dict[str, dict[str, Any]]) -> 
     }
 
 
-def build_review_packet(concept_evidence_payload: dict[str, Any], facts_payload: dict[str, Any]) -> dict[str, Any]:
+def build_review_packet(concepts_payload: dict[str, Any], facts_payload: dict[str, Any]) -> dict[str, Any]:
     fact_index = build_fact_index(facts_payload)
-    review_context = framework_review_context(concept_evidence_payload)
+    review_context = framework_review_context(concepts_payload)
     candidates = []
-    for fact in concept_evidence_payload.get("facts", []):
+    for fact in concepts_payload.get("facts", []):
         raw_evidence = fact.get("raw_evidence", {})
         if fact.get("kind") != "concept-candidate":
             continue
@@ -99,7 +99,7 @@ def build_review_packet(concept_evidence_payload: dict[str, Any], facts_payload:
         "version": "1",
         "prompt_path": str(PROMPT_PATH),
         "generated_from": {
-            "concept_evidence": concept_evidence_payload.get("metadata", {}).get("generated_from", ""),
+            "concepts": concepts_payload.get("metadata", {}).get("generated_from", ""),
             "facts": facts_payload.get("root", ""),
         },
         "framework_review_context": review_context,
@@ -109,7 +109,7 @@ def build_review_packet(concept_evidence_payload: dict[str, Any], facts_payload:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Prepare a semantic-review packet from concept evidence facts and facts.")
-    parser.add_argument("concept_evidence_json", type=Path, help="Path to deterministic concept-evidence JSON.")
+    parser.add_argument("concepts_json", type=Path, help="Path to deterministic concepts JSON.")
     parser.add_argument("facts_json", type=Path, help="Path to facts payload JSON.")
     parser.add_argument("--output", type=Path, required=True, help="Output review packet JSON path.")
     return parser.parse_args()
@@ -117,9 +117,9 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    concept_evidence_payload = load_json(args.concept_evidence_json)
+    concepts_payload = load_json(args.concepts_json)
     facts_payload = load_json(args.facts_json)
-    write_json(args.output, build_review_packet(concept_evidence_payload, facts_payload))
+    write_json(args.output, build_review_packet(concepts_payload, facts_payload))
     return 0
 
 

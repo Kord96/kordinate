@@ -58,7 +58,7 @@ Defines the validator-owned lifecycle contract for one analysis run.
           "sections": ["story"],
           "issue_ids": ["<stable short id>"],
           "messages": ["<representative issue message>"],
-          "recommended_artifacts": ["facts/concept-evidence.json"],
+          "recommended_artifacts": ["facts/concepts.json"],
           "suggested_resolution": "<short repair hint>"
         }
       ],
@@ -162,16 +162,16 @@ Use the issue family and kind to decide which script-derived artifacts to consul
   - `facts/state-access-summary.json`
   - `facts/control-hotspots.json`
 - story-decomposition, narrative-selection, teaching-structure
-  - `facts/story-seeds.json`
-  - `facts/component-seeds.json`
-  - `facts/narrative-seeds.json`
+  - `derived/story-seeds.json`
+  - `derived/component-seeds.json`
+  - `derived/narrative-seeds.json`
   - `facts/control-hotspots.json`
   - `facts/state-access-summary.json`
-- concept-evidence, fact-vs-semantic, concept quality
-  - `facts/concept-evidence.json`
+- concepts, fact-vs-semantic, concept quality
+  - `facts/concepts.json`
 - root-shape, atlas-story tension, component-model
-  - `facts/component-seeds.json`
-  - `facts/story-seeds.json`
+  - `derived/component-seeds.json`
+  - `derived/story-seeds.json`
 
 Treat these artifacts as repair constraints and evidence, not as unquestioned truth.
 

@@ -16,7 +16,7 @@ Operational path rules for this runtime:
 - the runtime provides one canonical repo root and one canonical output directory for this request
 - if `workspace.agent_root` is present, treat it as the stable base for agent-owned resources
 - if `resources.concept_catalog_index` or `resources.framework_catalog_index` are present, start there for on-demand semantic reads instead of browsing the catalogs
-- if `workspace.agent_root` is present, treat `workspace.agent_root/schemas/` as the canonical schema base for `facts-schema.md`, `atlas-schema.md`, `story-schema.md`, and `narratives-schema.md`
+- if `workspace.agent_root` is present, treat `workspace.agent_root/schemas/` as the canonical schema base; facts-layer contracts live under `workspace.agent_root/schemas/facts/`, while atlas, story, and narratives contracts remain under `workspace.agent_root/schemas/`
 - do not manually reconstruct or shorten the output directory
 - do not create sibling run directories with guessed suffixes
 - generated artifacts belong in the canonical output directory for this request
@@ -25,11 +25,11 @@ Operational path rules for this runtime:
 
 1. Read startup inputs first.
    - `blast.json`
-   - `facts/startup.json`
-   - `facts/index.json`
-   - the small startup files listed in `facts/startup.json`
-   - treat `facts/startup.json` as the startup authority for startup order
-   - treat `facts/index.json` as the canonical manifest and retrieval guide for deterministic artifacts in this run
+   - `startup.json`
+   - `index.json`
+   - the small startup files listed in `startup.json`
+   - treat `startup.json` as the startup authority for startup order
+   - treat `index.json` as the canonical manifest and retrieval guide for deterministic and derived artifacts in this run
 
 2. Follow the mode-specific instructions already provided by the runtime.
    - the semantic mode is determined before this skill runs
@@ -39,7 +39,7 @@ Operational path rules for this runtime:
 
 3. Use facts as guidance, then move into repo code.
    - treat deterministic artifacts as guidance, not final truth
-   - use `facts/index.json` as the source of truth for what each deterministic artifact means, when to read it, how to use it, and what not to infer from it
+   - use `index.json` as the source of truth for what each deterministic or derived artifact means, when to read it, how to use it, and what not to infer from it
    - use deterministic evidence in three tiers: startup orientation first, early architectural guidance next, targeted disambiguation only when needed
    - after startup orientation, move into repo code before doing more fact reduction
    - prefer entrypoints, runtime wiring, registrations, and cross-component communication over helpers, validators, docs, or support files when promoting major components
@@ -79,7 +79,7 @@ Operational path rules for this runtime:
    - allowed narrative ids are exactly: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`
    - do not invent freeform narrative ids
    - choose the narrative set before writing stories
-   - use `facts/narrative-seeds.json` when present to rank which optional canonical narratives are actually justified for this repo
+   - use `derived/narrative-seeds.json` when present to rank which optional canonical narratives are actually justified for this repo
    - choose optional narratives from `recommended_narratives`; if two narratives reuse most of the same stories, merge them or replace the weaker one
    - for each chosen narrative, decide which root and child stories are needed to teach it
    - draft candidate root stories and 2-3 concern-focused child stories per root, then merge weak or duplicative children back into the parent

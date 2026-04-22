@@ -17,7 +17,7 @@ from analysis_paths import write_analysis_indexes, write_json, write_latest_anal
 
 ROOT = Path(__file__).resolve().parents[1]
 ATLAS_SCHEMA = ROOT / "schemas" / "atlas-schema.md"
-FACTS_SCHEMA = ROOT / "schemas" / "facts-schema.md"
+FACTS_SCHEMA = ROOT / "detectors" / "facts" / "schema.md"
 STORY_SCHEMA = ROOT / "schemas" / "story-schema.md"
 NARRATIVES_SCHEMA = ROOT / "schemas" / "narratives-schema.md"
 META_SCHEMA = ROOT / "schemas" / "meta-schema.md"
@@ -209,7 +209,7 @@ def collect_artifact_inputs(analysis_dir: Path, working_dir: Path, analysis_mode
             "tokens_est": estimate_tokens_from_file(blast_path),
         })
 
-    startup_path = analysis_dir / "facts" / "startup.json"
+    startup_path = analysis_dir / "startup.json"
     if startup_path.exists():
         artifacts.append({
             "kind": "startup",
@@ -324,7 +324,8 @@ def build_meta_payload(
         analysis_mode if analysis_mode in {"full", "incremental"} else "full",
     )
 
-    facts_index = analysis_dir / "facts" / "index.json"
+    startup_manifest = analysis_dir / "startup.json"
+    run_index = analysis_dir / "index.json"
     stories_dir = analysis_dir / "stories"
     narratives_path = analysis_dir / "narratives.yaml"
     overlays_dir = analysis_dir / "overlays"
@@ -374,7 +375,8 @@ def build_meta_payload(
             "artifacts": {
                 "root": ".",
                 "atlas": relative_to_run_root(analysis_dir, atlas_path),
-                "facts_index": relative_to_run_root(analysis_dir, facts_index) if facts_index.exists() else "",
+                "startup": relative_to_run_root(analysis_dir, startup_manifest) if startup_manifest.exists() else "",
+                "index": relative_to_run_root(analysis_dir, run_index) if run_index.exists() else "",
                 "stories_dir": relative_to_run_root(analysis_dir, stories_dir) if stories_dir.exists() else "",
                 "narratives": relative_to_run_root(analysis_dir, narratives_path) if narratives_path.exists() else "",
                 "blast": relative_to_run_root(analysis_dir, blast_path) if blast_path.exists() else "",

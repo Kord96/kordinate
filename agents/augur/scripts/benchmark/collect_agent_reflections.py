@@ -74,14 +74,14 @@ def latest_run_dir(project_dir: Path) -> Path:
 def build_prompt(run_dir: Path) -> str:
     meta_path = run_dir / "meta.json"
     manifest = load_json(meta_path)
-    facts_index = load_json(run_dir / "facts" / "index.json")
-    concept_evidence = load_json(run_dir / "facts" / "concept-evidence.json")
+    facts_index = load_json(run_dir / "index.json")
+    concepts = load_json(run_dir / "facts" / "concepts.json")
     review = load_json(run_dir / "semantic-review.json")
 
     domain_counts = collections.Counter(d["name"] for d in facts_index.get("index", {}).get("domains", []))
     patterns = [
         (fact.get("raw_evidence") or {}).get("concept_id")
-        for fact in concept_evidence.get("facts", [])[:10]
+        for fact in concepts.get("facts", [])[:10]
         if isinstance(fact, dict)
     ]
     candidates = [c["concept"] for c in review.get("candidates", [])[:10]]

@@ -1,6 +1,8 @@
 # Concept Catalog
 
-Augur's vocabulary for understanding codebases. Each concept has recognition signatures that augur uses to detect what patterns, models, flows, and structures a codebase employs.
+Supporting legacy view only.
+
+Canonical concept references now live under `../../../references/concepts/`.
 
 ## Concept Types
 
@@ -22,9 +24,9 @@ concepts/<name>.md  # canonical narrative: recognition signatures, confidence ti
 
 Detector coverage is optional.
 
-- some concepts are semantics-only ontology entries with no deterministic detector package yet
-- when a concept has deterministic coverage, it lives under `../../../detectors/facts/concept-evidence/<name>/`
-- semantic meaning still lives here even when no detector package exists yet
+- some concepts are semantics-only entries with no deterministic detector package yet
+- canonical explanation, signatures, and review questions now live under the semantic family subdirectories in `../../../references/concepts/`
+- executable concept rules and detector policy, when present, live under `../../../detectors/concepts/<name>/`
 
 ## Frontmatter
 
@@ -52,19 +54,19 @@ relationships:                        # optional — explicit ontology edges
 ## How Augur Uses This
 
 1. The index layer under `../../indexes/` is preloaded as stable ontology and navigation context.
-2. During `/analyze`, Augur detects frameworks and concept evidence via deterministic assets under `../../../detectors/facts/`.
-3. `<name>.md` remains the canonical narrative for concept meaning, signatures, and architectural implications.
-4. When present, detector policy and executable rules live under `../../../detectors/facts/concept-evidence/<name>/`.
+2. During `/analyze`, Augur detects frameworks and concept evidence via deterministic assets under `../../../detectors/`.
+3. The matching concept reference under `../../../references/concepts/` is the canonical source for concept meaning, signatures, and architectural implications.
+4. Executable rules and detector policy live under `../../../detectors/concepts/<name>/` when present.
 5. The ontology graph is generated from concept and framework source metadata into `../../indexes/ontology-graph.json` and `../../indexes/ontology-graph.md`.
 6. Generated runtime bundles live under `../../../.generated/bundles/`.
 7. Concept frontmatter is the canonical source for concept-to-concept ontology edges. Framework semantics may author framework-origin edges to concepts, but should not redefine concept-to-concept relationships.
 
 ## Split Of Responsibilities
 
-- `concepts/<name>.md`
-  Canonical meaning: what the concept is, how to recognize it semantically, and why it matters architecturally.
-- `detectors/facts/concept-evidence/<name>/`
-  Deterministic evidence policy: signatures, executable rules, review questions, and monitoring hints for concepts that have detector support.
+- the matching concept reference under `../../../references/concepts/`
+  Canonical meaning, signatures, and review questions for this concept.
+- `../../../detectors/concepts/<name>/`
+  Executable AST or semgrep rules and detector policy when this concept has deterministic rule coverage.
 
 ## Relationship Semantics
 

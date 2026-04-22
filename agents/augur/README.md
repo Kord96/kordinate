@@ -18,8 +18,8 @@ Architecture review and pattern authority — reviews design consistency, identi
 - [memory/tools.md](memory/tools.md) — Tool reference
 - [memory/indexes/](memory/indexes/) — Ontology and index layer
 - [memory/contracts/](memory/contracts/) — Normative contracts
-- [memory/catalog/concepts/](memory/catalog/concepts/) — Concept semantics catalog
-- [memory/catalog/frameworks/](memory/catalog/frameworks/) — Framework semantics catalog
+- [references/concepts/](references/concepts/) — Canonical concept references
+- [references/frameworks/](references/frameworks/) — Canonical framework references
 
 ### Detector source
 - [detectors/concepts/](detectors/concepts/) — Deterministic concept detector assets
@@ -31,8 +31,11 @@ Architecture review and pattern authority — reviews design consistency, identi
 - [.generated/bundles/detectors/](.generated/bundles/detectors/) — Generated detector execution bundles
 
 ### Facts-first synthesis
-- [schemas/facts-schema.md](schemas/facts-schema.md) — normalized extraction contract
+- [detectors/schema.md](detectors/schema.md) — canonical normalized facts contract
+- [schemas/facts/facts-schema.md](schemas/facts/facts-schema.md) — consumer-facing facts contract entrypoint
+- [schemas/observations/observations-schema.md](schemas/observations/observations-schema.md) — semantic observations contract
 - [scripts/synthesize_atlas_from_facts.py](scripts/synthesize_atlas_from_facts.py) — deterministic CLI that turns `facts/` into atlas scaffolding
+- [detectors/utils/](detectors/utils/) — detector-owned deterministic fact generation and synthesis helpers
 
 ## Rules
 

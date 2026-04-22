@@ -38,7 +38,7 @@ common_failure_modes:
   - business-logic-in-routes
 ```
 
-Detector policy and executable rules for frameworks live under `../../../detectors/facts/frameworks/`.
+Canonical framework references now live under `../../references/frameworks/`.
 
 ## Split Of Responsibilities
 
@@ -46,8 +46,8 @@ Detector policy and executable rules for frameworks live under `../../../detecto
   Human-readable semantic contract for what the framework exposes architecturally.
 - `semantics.yaml`
   Machine-friendly ontology and detection summary for language, scope, framework kind, traits, framework-authored concept edges, and common failure modes.
-- `detectors/facts/frameworks/<name>/`
-  Deterministic detection assets for proving the framework is present.
+- `../../references/frameworks/<name>.md`
+  Canonical explanation and signatures for proving the framework is present.
 
 ## Precedence
 

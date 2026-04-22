@@ -68,9 +68,10 @@ def main() -> int:
     args = parse_args()
     facts_dir = Path(args.facts_dir).resolve()
     output_path = Path(args.output).resolve()
+    run_dir = facts_dir.parent
 
-    index_payload = load_json(facts_dir / "index.json") if (facts_dir / "index.json").exists() else {}
-    startup_payload = load_json(facts_dir / "startup.json") if (facts_dir / "startup.json").exists() else {}
+    index_payload = load_json(run_dir / "index.json") if (run_dir / "index.json").exists() else {}
+    startup_payload = load_json(run_dir / "startup.json") if (run_dir / "startup.json").exists() else {}
     hot_files_payload = load_json(facts_dir / "hot-files.json") if (facts_dir / "hot-files.json").exists() else {}
 
     domains = existing_domain_names(index_payload)

@@ -2,21 +2,21 @@
 
 Canonical agent-owned metadata record for one accepted Augur analysis directory.
 
-Location:
+Canonical location:
 
 ```text
-$AGENT_HOME_DIR/memory/projects/<project>/analysis/<sha>/<analysis-id>/meta.json
+<ACCEPTED_ANALYSIS_DIR>/meta.json
 ```
 
-`analysis/latest.json` and `analysis/<sha>/latest.json` are convenience pointers. `meta.json` is the durable per-analysis record.
+Project-level and commit-level `latest.json` files are convenience pointers. `meta.json` is the durable per-analysis record.
 
-Daemon-owned runtime telemetry belongs to `klaude-daemon` response metadata and Loki logs, not to Augur `meta.json`.
+Shared runtime telemetry belongs to runtime response metadata and centralized logs, not to Augur `meta.json`.
 
 ## Schema
 
 ```json
 {
-  "request_id": "<daemon request id or empty>",
+  "request_id": "<runtime request id or empty>",
   "repository": {
     "project": "<owner/repo or slug>",
     "commit": "<analyzed commit SHA>",
@@ -30,7 +30,7 @@ Daemon-owned runtime telemetry belongs to `klaude-daemon` response metadata and 
   "agent": {
     "name": "<deployed agent name>",
     "specialization": "<agent specialization>",
-    "bundle_mode": "evidence-driven",
+    "bundle_mode": "<selected bundle mode>",
     "agent_contract_version": "<contract version>",
     "runtime_profile_version": "<runtime profile version>"
   },
@@ -51,7 +51,8 @@ Daemon-owned runtime telemetry belongs to `klaude-daemon` response metadata and 
     "artifacts": {
       "root": "<relative analysis dir marker>",
       "atlas": "<relative atlas.json path>",
-      "facts_index": "<relative facts/index.json path or empty>",
+      "startup": "<relative startup.json path or empty>",
+      "index": "<relative index.json path or empty>",
       "stories_dir": "<relative stories dir path or empty>",
       "narratives": "<relative narratives.yaml path or empty>",
       "blast": "<relative blast.json path or empty>",
@@ -110,17 +111,18 @@ Daemon-owned runtime telemetry belongs to `klaude-daemon` response metadata and 
 
 ## Rules
 
-- `request_id` should be the daemon request correlation id when available. It is the join key back to shared daemon telemetry.
+- `request_id` should be the runtime request correlation id when available. It is the join key back to shared execution telemetry.
 - `repository.project` identifies the analyzed repository and should use the canonical display id when known, such as `Kord96/logbd`.
 - `repository.commit_time` describes the commit being analyzed, not the time the job started.
 - `repository.base_commit` / `repository.base_commit_time` describe the analysis used for drift comparison. They may be empty on a full first-run analysis.
-- `repository.file_count` should count repo files in the analyzed working tree. `files_read_count` and `repo_tokens_est` are Augur-side estimates derived from grounded repo refs, not daemon billing truth.
+- `repository.file_count` should count repo files in the analyzed working tree. `files_read_count` and `repo_tokens_est` are Augur-side estimates derived from grounded repo refs, not provider billing truth.
 - `analysis.id` should identify the analysis run itself and should default to a sortable UTC timestamp such as `2026-04-16T20-21-02Z`.
 - If multiple concurrent runs need isolation, a short suffix may be appended, e.g. `2026-04-16T20-21-02Z--abc123`.
 - `analysis.mode` should describe the accepted Augur workflow mode (`full`, `incremental`, or `skip`).
 - `analysis.blast` is the durable summary of drift evaluation for this accepted analysis.
 - `analysis.artifacts` should use run-relative paths so the analysis directory remains portable.
-- `analysis.schemas` should contain absolute paths so daemon and downstream consumers can follow them directly.
-- `analysis.inputs` is Augur-owned prompt/input estimation, not runtime billing truth. All estimated token fields must use `_est`.
+- `analysis.artifacts.startup` and `analysis.artifacts.index` should point at the run-root manifests when they exist.
+- `analysis.schemas` should contain absolute paths so runtime tools and downstream consumers can follow them directly.
+- `analysis.inputs` is Augur-owned prompt/input estimation, not provider billing truth. All estimated token fields must use `_est`.
 - `analysis.inputs.bundles` should describe selected bundle files. `loaded_refs` should list additional Augur-loaded files such as guides and schemas. `artifacts` should list prepared run artifacts consulted for startup or repair context.
 - `analysis.validation.passed` must be `true` for any analysis referenced by `analysis/latest.json` or `analysis/<sha>/latest.json`.

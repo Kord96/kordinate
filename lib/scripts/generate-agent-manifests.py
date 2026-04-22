@@ -28,7 +28,7 @@ DEFAULT_RUNTIME_PROFILES = {
         ],
         "runArtifactGuidance": [
             "Use the prepared run artifact tools for generated analysis artifacts when available.",
-            "Treat facts/index.json as the authoritative inventory for optional fact files in this run.",
+            "Treat index.json as the authoritative inventory for optional fact and derived files in this run.",
         ],
     },
     "claude-agent-sdk": {"kind": "claude-agent-sdk", "toolGuidance": []},

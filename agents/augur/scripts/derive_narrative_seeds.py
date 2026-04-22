@@ -170,14 +170,16 @@ def main() -> int:
     args = parse_args()
     facts_dir = Path(args.facts_dir).resolve()
     output_path = Path(args.output).resolve()
+    run_dir = facts_dir.parent
+    derived_dir = run_dir / "derived"
 
-    component_payload = load_json(facts_dir / "component-seeds.json") if (facts_dir / "component-seeds.json").exists() else {}
-    story_payload = load_json(facts_dir / "story-seeds.json") if (facts_dir / "story-seeds.json").exists() else {}
+    component_payload = load_json(derived_dir / "component-seeds.json") if (derived_dir / "component-seeds.json").exists() else {}
+    story_payload = load_json(derived_dir / "story-seeds.json") if (derived_dir / "story-seeds.json").exists() else {}
     control_hotspots_payload = load_json(facts_dir / "control-hotspots.json") if (facts_dir / "control-hotspots.json").exists() else {}
     state_access_summary_payload = load_json(facts_dir / "state-access-summary.json") if (facts_dir / "state-access-summary.json").exists() else {}
-    concept_evidence_payload = load_json(facts_dir / "concept-evidence.json") if (facts_dir / "concept-evidence.json").exists() else {}
+    concepts_payload = load_json(facts_dir / "concepts.json") if (facts_dir / "concepts.json").exists() else {}
     health_candidates_payload = load_json(facts_dir / "health-candidates.json") if (facts_dir / "health-candidates.json").exists() else {}
-    index_payload = load_json(facts_dir / "index.json") if (facts_dir / "index.json").exists() else {}
+    index_payload = load_json(run_dir / "index.json") if (run_dir / "index.json").exists() else {}
 
     preferred_concern_classes, require_flow_story, require_state_or_boundary_story, prefer_child_stories = concern_summary(story_payload)
     starter_files = normalize_file_refs(list(story_payload.get("starter_files") or []))[:8]
@@ -192,7 +194,7 @@ def main() -> int:
     }
     accepted_concepts = {
         str((fact.get("raw_evidence") or {}).get("concept_id") or fact.get("id") or "")
-        for fact in (concept_evidence_payload.get("facts") or [])
+        for fact in (concepts_payload.get("facts") or [])
         if isinstance(fact, dict)
         and str((fact.get("raw_evidence") or {}).get("decision_mode") or "") in {"accepted", "semantic-review"}
     }

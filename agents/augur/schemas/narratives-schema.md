@@ -52,7 +52,7 @@ narratives:
 - for cross-cutting narratives, mix root and child stories when that yields a clearer teaching sequence than repeating roots only
 - prefer the smallest story that teaches the next architectural step clearly; avoid repeating a root story when a child story is the real explanation
 - each per-story bridge description should justify the transition from the previous story into the next concern; do not use filler such as "next" or "then" without naming the reason
-- use `facts/narrative-seeds.json` when present as a ranking aid for which roots, child stories, and flow-bearing stories deserve inclusion, especially in `system-overview`
+- use `derived/narrative-seeds.json` when present as a ranking aid for which roots, child stories, and flow-bearing stories deserve inclusion, especially in `system-overview`
 - for optional narratives, prefer the highest-ranked canonical narratives from `recommended_narratives`; do not keep a weaker optional narrative while omitting a clearly stronger one unless repo evidence in the final atlas justifies that tradeoff
 - narratives should be meaningfully distinct from each other; do not emit two narratives that differ by only one swapped story or a light rewording of the same teaching path
 - if two narratives reuse most of the same stories, they should also have clearly different teaching goals and throughlines; otherwise merge them or replace the weaker one

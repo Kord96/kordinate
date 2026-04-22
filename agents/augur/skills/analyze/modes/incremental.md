@@ -7,9 +7,9 @@ Incremental mode means the semantic pass should start from the accepted prior se
 ## Sequence
 
 1. Read `blast.json` in the canonical output directory and capture `changed_files`, `base_analysis_dir`, and the affected blast slice.
-2. Read `facts/startup.json` and `facts/index.json` in the canonical output directory, then only the small startup-priority files listed in `startup.json`. Treat `index.json` as the canonical manifest plus retrieval guide for this run.
+2. Read `startup.json` and `index.json` in the canonical output directory, then only the small startup-priority files listed in `startup.json`. Treat `index.json` as the canonical manifest plus retrieval guide for this run.
 3. Form a provisional view of how the changed slice affects the existing architecture.
-4. If `concept-evidence.json` is present and carries review questions for affected concept candidates, use them to resolve those candidates as accepted, tentative, or rejected before finalizing `atlas.json.concepts`.
+4. If `facts/concepts.json` is present and carries review questions for affected concept candidates, use them to resolve those candidates as accepted, tentative, or rejected before finalizing `atlas.json.concepts`.
 5. If `frameworks.json` is present and framework interpretation is relevant to the changed slice, resolve those framework candidates before letting framework semantics change the updated atlas or stories.
 6. When needed, read the accepted base analysis referenced by `base_analysis_dir`.
 7. Read only the repo files needed to verify the changed slice and its architectural impact.
@@ -26,7 +26,7 @@ Incremental mode means the semantic pass should start from the accepted prior se
    - When updating a flow-first story, keep `flow` terminology consistent instead of mixing `path` and `flow`.
    - Avoid casually introducing both `structures` and `flows` into the same story; if the story is `structure`-first or `flow`-first, the non-primary explainer should usually stay absent.
    - Keep narrative ids inside the canonical palette only: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`.
-   - Use `facts/narrative-seeds.json` when present to choose optional canonical narratives and to prune overlapping teaching paths.
+   - Use `derived/narrative-seeds.json` when present to choose optional canonical narratives and to prune overlapping teaching paths.
 11. Update stories and `narratives.yaml` in the canonical output directory, preserving unaffected structure where possible.
 12. Run `resources.validator_script` against the canonical output directory for this run.
 13. If validation reports errors or warnings, repair the changed artifacts in place and rerun the validator until it is clean.
@@ -40,10 +40,10 @@ Incremental mode means the semantic pass should start from the accepted prior se
 - Preserve existing top-level component boundaries unless new strong evidence disproves them.
 - When changed files belong to a capability or plugin under an existing host, update that capability story first instead of promoting a new top-level component.
 - Prefer runtime wiring, registrations, entrypoints, and inter-component communication over validators, helpers, identity docs, or support scripts when deciding whether architecture has materially changed.
-- Treat concept-evidence as candidate guidance, not as a final concept list. Only accepted concepts should materially change atlas concepts, monitoring expectations, or gaps.
+- Treat concepts as candidate guidance, not as a final concept list. Only accepted concepts should materially change atlas concepts, monitoring expectations, or gaps.
 - Treat framework evidence as candidate guidance, not as a final framework list. Only accepted frameworks should materially change atlas naming, flow interpretation, or framework-driven concept activation.
-- If `narrative-seeds.json` is present, use it only when the changed slice may alter onboarding or another teaching path; prefer swapping or pruning stories over expanding the narrative.
-- If `control-hotspots.json` or `state-access-summary.json` are present and touched by the changed slice, use them only when operating-model or boundary-story selection remains unclear.
+- If `derived/narrative-seeds.json` is present, use it only when the changed slice may alter onboarding or another teaching path; prefer swapping or pruning stories over expanding the narrative.
+- If `facts/control-hotspots.json` or `facts/state-access-summary.json` are present and touched by the changed slice, use them only when operating-model or boundary-story selection remains unclear.
 - If a changed-slice framework candidate remains ambiguous, read only the specific framework catalog files for that framework instead of widening framework context broadly.
-- If a changed-slice concept candidate remains ambiguous, read only the specific concept file and detector `meta.yaml` for that concept instead of widening concept context broadly.
+- If a changed-slice concept candidate remains ambiguous, read only the specific concept reference and detector policy or rules for that concept instead of widening concept context broadly.
 - Follow the runtime's advertised tool schema instead of assuming specific tool names from other runtimes.

@@ -6,7 +6,7 @@ description: ASP.NET Core minimal API surface with builder-based startup and Map
 ASP.NET Minimal is the ASP.NET Core minimal API surface with builder-based startup and `MapVerb` route registration.
 
 ## Recognition
-Use the detector package under `detectors/facts/frameworks/aspnet-minimal/` as the deterministic source of truth for framework evidence.
+Use the framework reference in `references/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/aspnet-minimal/`.
 
 ## Architectural implications
 - framework scope: `backend`

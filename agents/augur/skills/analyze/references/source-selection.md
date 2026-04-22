@@ -32,7 +32,7 @@ Prefer this order:
 
 ## Large Repos
 
-- start from `facts/index.json`
+- start from `index.json`
 - read only the domains relevant to the current question
 - use targeted `rg`, `jq`, or small reads instead of full-file slurps
 - avoid broad repo walks unless the blast slice or facts prove they are needed

@@ -6,7 +6,7 @@ description: Swift server framework with route builders, grouped endpoints, and 
 Vapor is a Swift server framework with route builders, grouped endpoints, and explicit application bootstrap.
 
 ## Recognition
-Use the detector package under `detectors/facts/frameworks/vapor/` as the deterministic source of truth for framework evidence.
+Use the framework reference in `references/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/vapor/`.
 
 ## Architectural implications
 - framework scope: `backend`

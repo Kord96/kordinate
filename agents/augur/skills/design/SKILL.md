@@ -84,7 +84,7 @@ Auth, feature flags, tracing, graceful shutdown.
 
 For each recommended pattern, note:
 - Which concept catalog entry it maps to
-- Which detector and semantic assets are available (for example policy, signatures, or executable rules)
+- Which canonical references and detector assets are available (for example signatures, policy, or executable rules)
 - One-sentence rationale
 
 ```
@@ -94,21 +94,21 @@ Based on: <1-sentence requirements summary>
 Infrastructure: <available services from infra atlas>
 
 ### Architecture
-- **hexagonal** — [reason]. Assets: policy ✓, signatures ✓
+- **hexagonal** — [reason]. Assets: reference ✓, policy ✓
 
 ### Communication
-- **consumer-group** — [reason]. Assets: semantics ✓
-- **webhook** — [reason]. Assets: semantics ✓, detector rules ✓
+- **consumer-group** — [reason]. Assets: reference ✓
+- **webhook** — [reason]. Assets: reference ✓, detector rules ✓
 
 ### Resilience
-- **circuit-breaker** — [reason]. Assets: semantics ✓, detector rules ✓
-- **retry** — [reason]. Assets: semantics ✓, detector rules ✓
+- **circuit-breaker** — [reason]. Assets: reference ✓, detector rules ✓
+- **retry** — [reason]. Assets: reference ✓, detector rules ✓
 
 ### Data
-- **event-sourcing** — [reason]. Assets: policy ✓, signatures ✓, detector rules ✓
+- **event-sourcing** — [reason]. Assets: reference ✓, policy ✓, detector rules ✓
 
 ### Cross-cutting
-- **distributed-tracing** — [reason]. Assets: semantics ✓, detector rules ✓
+- **distributed-tracing** — [reason]. Assets: reference ✓, detector rules ✓
 
 New infrastructure needed: <list> or "none — all available in dev"
 
@@ -124,8 +124,8 @@ Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,re
 ### Step 1 — Load patterns
 
 For each pattern in the comma-separated list:
-1. Read `memory/catalog/concepts/<pattern>.md`
-2. Load deterministic concept-evidence detector metadata from `detectors/facts/concept-evidence/<pattern>/` when needed
+1. Read the matching concept reference under `references/concepts/`
+2. Load detector `policy.yaml` or executable rules from `detectors/concepts/<pattern>/` only when they are needed
 
 ### Step 2 — Read infra atlas
 

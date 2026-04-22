@@ -1,0 +1,3 @@
+concept: insecure-deserialization
+detectors: {}
+policy: {}

@@ -45,7 +45,7 @@ def find_latest_run(project: str) -> Path:
             for run_dir in candidate_root.iterdir():
                 if not run_dir.is_dir():
                     continue
-                if (run_dir / "blast.json").exists() and (run_dir / "facts" / "startup.json").exists():
+                if (run_dir / "blast.json").exists() and (run_dir / "startup.json").exists():
                     candidates.append(run_dir)
     if not candidates:
         raise FileNotFoundError(project)
@@ -115,7 +115,7 @@ def render_local_runtime_context(context: dict) -> str:
         f"- Working directory: `{context['working_dir']}`",
         f"- Output directory: `{context['run_dir']}`",
         "- This local Codex session is standing in for the semantic agent runtime.",
-        "- Treat the output directory above as the authoritative home for generated artifacts such as `facts/*`, `atlas.json`, `stories/`, and `narratives.yaml`.",
+        "- Treat the output directory above as the authoritative home for generated artifacts such as `startup.json`, `index.json`, `facts/*`, `derived/*`, `atlas.json`, `stories/`, and `narratives.yaml`.",
         "- Do not search for alternate validator, schema, or mirrored-agent paths unless a provided path actually fails.",
         "- Use the tools available in this Codex session directly; do not assume daemon-specific tool names.",
         "",

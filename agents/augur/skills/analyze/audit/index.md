@@ -26,7 +26,7 @@ Primary files:
 - [augur-output-contract.md](/kord/workstation/home/project/kordinate/agents/augur/schemas/augur-output-contract.md)
 - [snapshot-layout.md](./runtime/snapshot-layout.md)
 - [blast-radius-schema.md](./runtime/blast-radius-schema.md)
-- [facts-schema.md](/kord/workstation/home/project/kordinate/agents/augur/schemas/facts-schema.md)
+- [facts-schema.md](/kord/workstation/home/project/kordinate/agents/augur/schemas/facts/facts-schema.md)
 - [build_detector_bundles.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/build/build_detector_bundles.py)
 - [synthesize_atlas_from_facts.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/synthesize_atlas_from_facts.py)
 - [fact_extractor_support.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/fact_extractor_support.py)
@@ -48,9 +48,9 @@ Primary files:
 - [tension-signals.md](../references/tension-signals.md)
 - [semantic-review-prompt.md](./prompts/semantic-review.md)
 - [reflection-prompt.md](./prompts/reflection.md)
-- [concept-decision-design.md](/kord/workstation/home/project/kordinate/agents/augur/scripts/notes/concept-decision-design.md)
-- [README.md](/kord/workstation/home/project/kordinate/agents/augur/detectors/facts/concept-evidence/README.md)
-- [schema.md](/kord/workstation/home/project/kordinate/agents/augur/detectors/facts/concept-evidence/schema.md)
+- [concept-decision-design.md](/kord/workstation/home/project/kordinate/agents/augur/docs/notes/concept-decision-design.md)
+- [README.md](/kord/workstation/home/project/kordinate/agents/augur/detectors/concepts/README.md)
+- [schema.md](/kord/workstation/home/project/kordinate/agents/augur/detectors/concepts/schema.md)
 - [meta-schema.md](/kord/workstation/home/project/kordinate/agents/augur/memory/catalog/concepts/meta-schema.md)
 
 ### Runtime
@@ -86,7 +86,7 @@ Primary files:
 - [augur-repo-label-schema.md](./benchmark/augur-repo-label-schema.md)
 - [benchmark-comparison-schema.md](/kord/workstation/home/project/kordinate/shared/skills/audit/references/benchmark-comparison-schema.md)
 - [reflection-analysis-schema.md](/kord/workstation/home/project/kordinate/shared/skills/audit/references/reflection-analysis-schema.md)
-- [codesight-fact-layer-gap-analysis.md](/kord/workstation/home/project/kordinate/agents/augur/scripts/notes/codesight-fact-layer-gap-analysis.md)
+- [codesight-fact-layer-gap-analysis.md](/kord/workstation/home/project/kordinate/agents/augur/docs/notes/codesight-fact-layer-gap-analysis.md)
 
 ### Loop
 

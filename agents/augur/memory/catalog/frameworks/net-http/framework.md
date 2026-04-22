@@ -6,7 +6,7 @@ description: Standard Go HTTP server surface built from net/http handlers and mu
 net/http is the standard Go HTTP server surface built from handlers, mux wiring, and listen/serve entrypoints.
 
 ## Recognition
-Use the detector package under `detectors/facts/frameworks/net-http/` as the deterministic source of truth for framework evidence.
+Use the framework reference in `references/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/net-http/`.
 
 ## Architectural implications
 - framework scope: `backend`

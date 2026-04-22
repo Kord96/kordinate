@@ -1,17 +1,53 @@
-# Augur deterministic detectors
+# Augur Detectors
 
-Detector source assets define the deterministic Phase 1 pipeline. They are
-separate from semantic memory and should be organized by the kind of facts they
-help produce, not by which rule engine happens to execute them.
+`detectors/` is the canonical home for deterministic detector assets and
+detector-owned utilities.
 
-Current source families:
+This layer owns:
+- detector definitions that produce normalized facts
+- detector-side contracts in [schema.md](./schema.md)
+- shared detector-side Python helpers under `utils/`
 
-- `facts/` — normalized fact producers, including shared framework detection
-- `concepts/` — transitional source tree for deterministic concept-evidence
-  inference rules and metadata
-- `frameworks/` — transitional legacy framework-specific source tree being
-  folded into `facts/frameworks`
+This layer does not own:
+- canonical semantic references for concepts or frameworks
+- semantic observations
+- atlas/story/narrative generation
+- run manifests such as `startup.json` or `index.json`
 
-Generated runtime bundles live under `../bundles/detectors/`. Those are still
-the runtime inputs today, but they should be understood as derived artifacts of
-the deterministic detector source tree rather than the source of truth.
+## Layout
+
+```text
+detectors/
+  schema.md
+  utils/
+  frameworks/
+  concepts/
+  routes/
+  models/
+  handlers/
+  boundaries/
+  ...
+```
+
+Meaning:
+- ordinary detector directories such as `routes/` or `models/` define one fact
+  domain
+- `frameworks/` is a special deterministic family for framework-presence facts
+- `concepts/` is a special deterministic bridge family that still emits
+  facts, not semantic observations
+- canonical explanation, signatures, and review questions live under
+  `../references/`
+- `utils/` contains detector-side executable helpers and runners shared by
+  extraction and higher-level deterministic synthesis
+
+## Pipeline Role
+
+The deterministic pipeline is:
+
+```text
+detector definitions + detector utils -> facts/ -> semantic analysis
+```
+
+Detectors should emit normalized facts only. If a record needs confidence,
+semantic uncertainty, recommendations, or semantic entity mappings, it belongs
+in `observations/`, not in detector output.

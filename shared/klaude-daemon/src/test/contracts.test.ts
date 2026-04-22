@@ -163,7 +163,7 @@ test('buildPromptPlan renders startup guidance outside the cached prefix', () =>
     agent_params: {
       startup_guidance: {
         directive: 'Read prepared artifacts before repo exploration.',
-        starter_files: ['/tmp/blast.json', '/tmp/facts/index.json'],
+        starter_files: ['/tmp/blast.json', '/tmp/index.json'],
       },
     },
   })
@@ -187,8 +187,8 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
     },
     resources: {
       validator_script: '/app/agents/augur/skills/analyze/validator/validate.py',
-      concept_catalog_index: '/app/agents/augur/memory/catalog/concepts/README.md',
-      framework_catalog_index: '/app/agents/augur/memory/catalog/frameworks/README.md',
+      concept_catalog_index: '/app/agents/augur/references/concepts/README.md',
+      framework_catalog_index: '/app/agents/augur/references/frameworks/README.md',
     },
     agent_params: {
       bundle_mode: 'selective',

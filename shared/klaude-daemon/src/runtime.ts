@@ -84,7 +84,7 @@ type GeminiSdkToolCall = {
 type RunArtifactContext = {
   runDir: string
   files: Map<string, string>
-  factFiles: Set<string>
+  declaredFiles: Set<string>
 }
 
 type RunArtifactSnapshot = {
@@ -875,37 +875,37 @@ async function loadRunArtifactContext(runDir?: string): Promise<RunArtifactConte
   register('atlas.json')
   register('narratives.yaml')
   register('meta.json')
-  register('facts/index.json')
-  register('facts/startup.json')
+  register('index.json')
+  register('startup.json')
 
   try {
-    const raw = await readFile(path.join(normalizedRunDir, 'facts', 'index.json'), 'utf8')
+    const raw = await readFile(path.join(normalizedRunDir, 'index.json'), 'utf8')
     const parsed = JSON.parse(raw) as {
       index?: {
         domains?: Array<{ file?: unknown }>
       }
+      derived_artifacts?: Array<{ file?: unknown }>
     }
     for (const domain of parsed.index?.domains ?? []) {
       if (typeof domain?.file === 'string') register(domain.file)
+    }
+    for (const artifact of parsed.derived_artifacts ?? []) {
+      if (typeof artifact?.file === 'string') register(artifact.file)
     }
   } catch {
     // ignore missing or malformed facts index; callers can still use guaranteed files
   }
 
   try {
-    const raw = await readFile(path.join(normalizedRunDir, 'facts', 'startup.json'), 'utf8')
+    const raw = await readFile(path.join(normalizedRunDir, 'startup.json'), 'utf8')
     const parsed = JSON.parse(raw) as {
       startup_files?: unknown[]
-      large_domains?: Array<{ file?: unknown }>
-      domain_counts?: Array<{ file?: unknown }>
+      derived_artifacts?: Array<{ file?: unknown }>
     }
     for (const item of parsed.startup_files ?? []) {
       if (typeof item === 'string') register(item)
     }
-    for (const item of parsed.large_domains ?? []) {
-      if (item && typeof item === 'object' && typeof item.file === 'string') register(item.file)
-    }
-    for (const item of parsed.domain_counts ?? []) {
+    for (const item of parsed.derived_artifacts ?? []) {
       if (item && typeof item === 'object' && typeof item.file === 'string') register(item.file)
     }
   } catch {
@@ -915,7 +915,7 @@ async function loadRunArtifactContext(runDir?: string): Promise<RunArtifactConte
   return {
     runDir: normalizedRunDir,
     files,
-    factFiles: new Set(Array.from(files.keys()).filter(key => key.startsWith('facts/'))),
+    declaredFiles: new Set(Array.from(files.keys()).filter(key => key.startsWith('facts/') || key.startsWith('derived/'))),
   }
 }
 
@@ -937,10 +937,10 @@ function normalizeRunArtifactReference(input: string, artifactContext?: RunArtif
 
 function undeclaredFactReferences(command: string, artifactContext?: RunArtifactContext): string[] {
   if (!artifactContext) return []
-  const matches = Array.from(command.matchAll(/(^|[\s"'`])((?:\.\/)?facts\/[A-Za-z0-9._-]+\.json)\b/g))
+  const matches = Array.from(command.matchAll(/(^|[\s"'`])((?:\.\/)?(?:facts|derived)\/[A-Za-z0-9._-]+\.json)\b/g))
     .map(match => String(match[2] ?? '').replace(/^\.?\//, ''))
   const unique = Array.from(new Set(matches))
-  return unique.filter(reference => !artifactContext.factFiles.has(reference))
+  return unique.filter(reference => !artifactContext.declaredFiles.has(reference))
 }
 
 function rewriteCommandRunArtifactPaths(command: string, artifactContext?: RunArtifactContext): string {
@@ -1197,7 +1197,7 @@ function geminiSdkFunctionDeclarations(): Array<Record<string, unknown>> {
     },
     {
       name: 'read_run_file',
-      description: 'Read a prepared analysis run artifact by relative path, such as facts/index.json or atlas.json.',
+      description: 'Read a prepared analysis run artifact by relative path, such as index.json, facts/frameworks.json, derived/story-seeds.json, or atlas.json.',
       parameters: {
         type: Type.OBJECT,
         properties: {
@@ -1251,7 +1251,7 @@ async function executeGeminiSdkToolCall(
       const originalCommand = String(call.arguments.command ?? '')
       const undeclaredFacts = undeclaredFactReferences(originalCommand, artifactContext)
       if (undeclaredFacts.length > 0) {
-        throw new Error(`Run artifact(s) not declared in facts/index.json: ${undeclaredFacts.join(', ')}`)
+        throw new Error(`Run artifact(s) not declared in index.json: ${undeclaredFacts.join(', ')}`)
       }
       const command = rewriteCommandRunArtifactPaths(originalCommand, artifactContext)
       const protectedSnapshots = await snapshotProtectedRunArtifacts(artifactContext)

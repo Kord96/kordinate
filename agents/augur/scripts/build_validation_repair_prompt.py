@@ -32,9 +32,9 @@ def relevant_fact_files(findings: list[str]) -> list[str]:
     if any(token in joined for token in ("state", "store", "cache", "persistence", "truthfulness")):
         add("facts/state-seeds.json", "facts/state-access-summary.json")
     if any(token in joined for token in ("concept", "framework")):
-        add("facts/concept-evidence.json", "facts/frameworks.json")
+        add("facts/concepts.json", "facts/frameworks.json")
     if any(token in joined for token in ("story", "decomposition", "narrative", "overview", "throughline", "teaches")):
-        add("facts/story-seeds.json", "facts/component-seeds.json", "facts/narrative-seeds.json")
+        add("derived/story-seeds.json", "derived/component-seeds.json", "derived/narrative-seeds.json")
     if any(token in joined for token in ("health", "monitoring", "gap", "failure", "scenario", "resilien")):
         add("facts/health-candidates.json", "facts/failure-scenario-candidates.json")
     if any(token in joined for token in ("flow", "handoff", "boundary crossing", "boundary or state handoff", "control hotspot")):
@@ -54,12 +54,12 @@ def repair_actions(findings: list[str]) -> list[str]:
         add(
             "Rename every non-canonical narrative id to the closest allowed canonical id. "
             f"Allowed ids: {', '.join(CANONICAL_NARRATIVE_IDS)}. "
-            "Use `facts/narrative-seeds.json` to choose the best optional narratives."
+            "Use `derived/narrative-seeds.json` to choose the best optional narratives."
         )
     if any(token in joined for token in ("narrative-selection", "reuse almost the same story set", "not strongly justified")):
         add(
             "Make narratives meaningfully distinct. If two narratives reuse most of the same stories, merge them or replace the weaker one. "
-            "Prefer the highest-ranked optional narratives from `facts/narrative-seeds.json.recommended_narratives`."
+            "Prefer the highest-ranked optional narratives from `derived/narrative-seeds.json.recommended_narratives`."
         )
     if any(token in joined for token in ("narrative-coherence", "weak adjacent-story transitions", "throughline")):
         add(

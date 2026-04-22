@@ -45,7 +45,7 @@ def classify_issue_kind(issue: dict) -> str:
     if section == "state" and ("too narrow" in message or "persistence" in message):
         return "state-truthfulness"
     if section == "concepts":
-        return "concept-evidence"
+        return "concepts"
     if section == "components":
         return "component-model"
     if section == "flows":
@@ -79,7 +79,7 @@ def grounding_group_label(issue: dict) -> str | None:
 
 def issue_family(issue: dict) -> str:
     kind = classify_issue_kind(issue)
-    if kind in {"path-provenance", "concept-evidence"}:
+    if kind in {"path-provenance", "concepts"}:
         return "provenance"
     if kind in {"grounding"}:
         return "grounding"
@@ -131,7 +131,7 @@ def is_consistency_conflict(issue: dict) -> bool:
         "narrative-count",
         "component-model",
         "flow-model",
-        "concept-evidence",
+        "concepts",
         "framework-resolution",
         "health-criteria-missing",
         "health-scenario-link-missing",
@@ -163,7 +163,7 @@ def issue_conflict_type(issue: dict) -> str | None:
         "narrative-count": "shape_tension",
         "component-model": "cross_artifact",
         "flow-model": "cross_artifact",
-        "concept-evidence": "evidence_vs_model",
+        "concepts": "evidence_vs_model",
         "framework-resolution": "evidence_vs_model",
         "health-criteria-missing": "cross_artifact",
         "health-scenario-link-missing": "evidence_vs_model",
@@ -191,7 +191,7 @@ def issue_priority(issue: dict) -> str:
         "component-model",
         "flow-model",
         "path-provenance",
-        "concept-evidence",
+        "concepts",
         "health-model",
         "dependency-model",
         "monitoring-model",
@@ -228,41 +228,41 @@ def recommended_artifacts(issue: dict) -> list[str]:
         "grounding": ["facts/symbols-seed.json"],
         "state-truthfulness": ["facts/state-seeds.json"],
         "story-decomposition": [
-            "facts/story-seeds.json",
-            "facts/component-seeds.json",
-            "facts/narrative-seeds.json",
+            "derived/story-seeds.json",
+            "derived/component-seeds.json",
+            "derived/narrative-seeds.json",
             "facts/state-access-summary.json",
         ],
         "narrative-selection": [
-            "facts/story-seeds.json",
-            "facts/component-seeds.json",
-            "facts/narrative-seeds.json",
+            "derived/story-seeds.json",
+            "derived/component-seeds.json",
+            "derived/narrative-seeds.json",
             "facts/control-hotspots.json",
             "facts/state-access-summary.json",
             "atlas.json",
         ],
         "narrative-overview": [
-            "facts/story-seeds.json",
-            "facts/component-seeds.json",
-            "facts/narrative-seeds.json",
+            "derived/story-seeds.json",
+            "derived/component-seeds.json",
+            "derived/narrative-seeds.json",
             "facts/control-hotspots.json",
             "atlas.json",
         ],
         "narrative-coherence": [
-            "facts/story-seeds.json",
-            "facts/component-seeds.json",
-            "facts/narrative-seeds.json",
+            "derived/story-seeds.json",
+            "derived/component-seeds.json",
+            "derived/narrative-seeds.json",
             "narratives.yaml",
             "atlas.json",
         ],
-        "narrative-count": ["facts/narrative-seeds.json", "narratives.yaml", "atlas.json"],
-        "story-quality": ["facts/story-seeds.json", "facts/component-seeds.json"],
-        "component-model": ["facts/component-seeds.json", "facts/story-seeds.json"],
-        "flow-model": ["facts/symbols-seed.json", "facts/component-seeds.json"],
+        "narrative-count": ["derived/narrative-seeds.json", "narratives.yaml", "atlas.json"],
+        "story-quality": ["derived/story-seeds.json", "derived/component-seeds.json"],
+        "component-model": ["derived/component-seeds.json", "derived/story-seeds.json"],
+        "flow-model": ["facts/symbols-seed.json", "derived/component-seeds.json"],
         "health-criteria-missing": ["facts/health-candidates.json", "atlas.json"],
         "health-scenario-link-missing": ["facts/failure-scenario-candidates.json", "atlas.json"],
         "health-scenario-link-invalid": ["atlas.json", "facts/failure-scenario-candidates.json"],
-        "health-ownership-unclear": ["facts/component-seeds.json", "atlas.json"],
+        "health-ownership-unclear": ["derived/component-seeds.json", "atlas.json"],
         "failure-scenario-missing": [
             "facts/failure-scenario-candidates.json",
             "facts/health-candidates.json",
@@ -277,16 +277,16 @@ def recommended_artifacts(issue: dict) -> list[str]:
         "gaps-model": [
             "facts/health-candidates.json",
             "facts/failure-scenario-candidates.json",
-            "facts/concept-evidence.json",
+            "facts/concepts.json",
             "atlas.json",
         ],
         "actors-model": ["facts/routes.json", "facts/jobs.json", "facts/events.json", "atlas.json"],
         "events-model": ["facts/events.json", "atlas.json"],
         "domain-model": ["facts/models.json", "atlas.json"],
         "dependency-model": ["facts/external-clients.json", "atlas.json"],
-        "concept-evidence": ["facts/concept-evidence.json"],
+        "concepts": ["facts/concepts.json"],
         "framework-resolution": ["facts/frameworks.json"],
-        "path-provenance": ["facts/index.json", "facts/startup.json"],
+        "path-provenance": ["index.json", "startup.json"],
     }
     return mapping.get(kind, [])
 
@@ -316,7 +316,7 @@ def suggested_resolution(issue: dict) -> str:
         "narrative-count": "Reduce or add narratives until the repo has a small set of clearly distinct teaching paths rather than one overloaded path or many redundant ones.",
         "graph-cycle": "Revisit dependency direction and remove cyclic component relationships.",
         "state-truthfulness": "Widen the state label or persistence mode so it matches the configured backend reality.",
-        "concept-evidence": "Repair the concept evidence files or component references so provenance is valid.",
+        "concepts": "Repair the concept evidence files or component references so provenance is valid.",
         "framework-resolution": "Reconcile the resolved framework summary with deterministic framework evidence and repo code.",
         "health-criteria-missing": "Add 1-3 concrete health.criteria statements that say what healthy operation looks like for this unit or flow.",
         "health-scenario-link-missing": "Link this unit to the shared failure scenarios it can trigger or participates in, rather than hiding that relationship elsewhere.",

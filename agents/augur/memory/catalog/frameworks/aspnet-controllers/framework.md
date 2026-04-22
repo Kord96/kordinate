@@ -6,7 +6,7 @@ description: ASP.NET Core controller-based API surface with attribute routing an
 ASP.NET Controllers is the ASP.NET Core controller-based API surface with attribute routing and controller classes.
 
 ## Recognition
-Use the detector package under `detectors/facts/frameworks/aspnet-controllers/` as the deterministic source of truth for framework evidence.
+Use the framework reference in `references/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/aspnet-controllers/`.
 
 ## Architectural implications
 - framework scope: `backend`
