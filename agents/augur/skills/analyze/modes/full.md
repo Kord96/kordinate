@@ -7,10 +7,10 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 ## Sequence
 
 1. Read `$RUN/blast.json` to confirm `mode=full` and capture any invalidation reasons.
-2. Read `$RUN/facts/startup.json` and `$RUN/facts/index.json` and use them as the authoritative manifest for available domains, counts, detector coverage, and failed domains.
+2. Read `$RUN/facts/startup.json` and `$RUN/facts/facts-guide.json` first. Treat `startup.json` as the startup authority for this run.
 3. Read only the small startup-priority fact files first. Do not preload large targeted domains during startup.
 4. Transition into repo code once you have an initial architectural picture from startup artifacts.
-5. Use larger or noisier supporting domains only when they are present in `facts/index.json` and help resolve materially relevant concept candidates, answer review questions, or resolve ambiguity.
+5. Read `$RUN/facts/index.json` only when you need to discover additional optional domains. Use larger or noisier supporting domains only when they help resolve materially relevant concept candidates, answer review questions, or resolve ambiguity.
 6. Perform a mandatory breadth pass in repo code after the first provisional architecture draft.
 7. For each provisional top-level component, inspect at least one composition or entry file, one primary behavior or flow file, and one state, dependency, or operations file.
 8. Read repo files broadly enough to understand the whole architecture, starting from files surfaced by the prepared facts and then widening across adjacent implementation, not only when blocked.
@@ -39,12 +39,15 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
     - Prefer `state` or `failure` stories when the story legitimately needs both a structural boundary view and an operating sequence.
 13. Just before writing `narratives.yaml`, follow the active narratives contract exactly.
     - Treat `system-overview` as the repo overview path.
+    - Allowed narrative ids are exactly: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`.
+    - Do not invent freeform narrative ids.
     - Write `system-overview.description` as a compact "how it works" synopsis, not a label: usually 3-4 sentences naming the main slices, dominant flow, and why the sequence teaches the architecture.
     - Prefer `Overview` or `Repo Overview` as the title unless a more specific repo-wide overview title is clearly better.
     - Treat each narrative as a coherent lesson plan with explicit `teaches` goals; the selected stories should collectively deliver those goals rather than act as a loose component inventory.
     - Add `throughline` to explain why the chosen stories form one coherent lesson in that order.
     - Prefer 2-4 total narratives unless the repo has clearly distinct audiences or cross-cutting review paths.
     - Make each adjacent story transition defensible: the per-story bridge text should explain the architectural reason for moving to that next story.
+    - Choose optional narratives from `facts/narrative-seeds.json.recommended_narratives` when present. If two narratives reuse most of the same stories, merge them or replace the weaker one.
 14. Generate `stories/*.yaml` and `narratives.yaml` from the refined atlas.
 15. Re-read repo files or supporting fact domains only when needed to resolve ambiguity, verify architecture boundaries, or address concrete validation findings.
 

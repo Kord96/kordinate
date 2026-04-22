@@ -26,9 +26,9 @@ Operational path rules for this runtime:
    - `blast.json`
    - `facts/startup.json`
    - `facts/facts-guide.json` when present
-   - `facts/index.json`
    - the small high-signal fact files listed in `facts/startup.json`
-   - treat `facts/startup.json` and `facts/index.json` as the authoritative manifest for which deterministic fact domains exist in this run
+   - treat `facts/startup.json` as the startup authority for this run
+   - do not read `facts/index.json` during startup unless the startup manifest or the current work requires discovering an additional artifact
 
 2. Follow the mode-specific instructions already provided by the runtime.
    - the semantic mode is determined before this skill runs
@@ -37,16 +37,16 @@ Operational path rules for this runtime:
    - if you are invoked despite `skip`, stop
 
 3. Use facts as guidance, then explore code semantically.
-   - use `facts/index.json` to identify likely high-signal domains and files
+   - use `facts/index.json` only when you need to discover optional deterministic domains beyond what startup already surfaced
    - use `facts/facts-guide.json` when present as the run-specific interpretation guide for deterministic artifacts in this run
    - treat each domain file in `facts/` as a JSON object with metadata and a top-level `facts` array
    - do not force every file under `facts/` into the domain-file shape; manifest, guide, planning-aid, and derived-structure artifacts may use specialized JSON layouts
    - if you encounter an unfamiliar deterministic artifact shape and `AGENT_ROOT` is present, read `AGENT_ROOT/schemas/facts-schema.md` and `AGENT_ROOT/schemas/facts-catalog.json` before interpreting it
    - use the bundle-mode guidance as concept-resolution methodology, not as a cue to preload a broad semantic concept bundle
    - use the deterministic phase in three tiers:
-     - startup orientation: `blast.json`, `facts/startup.json`, `facts/index.json`, and the small high-signal startup fact files
+     - startup orientation: `blast.json`, `facts/startup.json`, `facts/facts-guide.json`, and the small high-signal startup fact files
      - early architectural guidance: `hot-files.json` plus the most relevant routing, boundary, handler, dispatch, or framework domains
-     - targeted disambiguation only when needed: optional or noisier domains listed in `facts/index.json`, such as `concept-evidence.json`, `import-graph.json`, `config.json`, or similar supporting artifacts
+     - targeted disambiguation only when needed: optional or noisier domains discovered from `facts/index.json`, such as `concept-evidence.json`, `import-graph.json`, `config.json`, or similar supporting artifacts
    - after startup orientation, move into repo code before doing more fact reduction
    - if `facts/concept-evidence.json` is present in this run, use it as the primary trigger for concept work: inspect candidate concepts, supporting evidence, counter evidence, evidence gaps, and attached review questions before letting concepts affect the atlas
    - if `facts/frameworks.json` is present in this run, use it as candidate guidance for framework interpretation: resolve materially relevant frameworks from repo code before letting them change component naming, flow interpretation, or concept activation
@@ -117,6 +117,8 @@ Operational path rules for this runtime:
 
 6. Produce `narratives.yaml` in the canonical output directory.
    - treat `system-overview` as the canonical repo overview narrative used downstream
+   - allowed narrative ids are exactly: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`
+   - do not invent freeform narrative ids
    - write `system-overview.description` as a compact architecture synopsis, usually 3-4 sentences, naming the main top-level slices and the primary execution or control path rather than a generic one-liner
    - prefer `Overview` or `Repo Overview` as the human-facing title for `system-overview`
    - write each narrative as a teaching sequence, not just an ordered list: include explicit `teaches` goals and make sure each selected story clearly serves those goals
@@ -125,6 +127,7 @@ Operational path rules for this runtime:
    - keep narrative ids inside the canonical palette defined in `narratives-schema.md`; only `system-overview` is always required, and optional narratives should be chosen from the palette only when repo evidence justifies them
    - make the bridge text between adjacent stories explain why the next story follows from the previous one, not just that it comes next
    - use `facts/narrative-seeds.json` when present both to rank which roots, child stories, and flow-bearing stories deserve inclusion and to decide which optional canonical narratives are actually justified for this repo
+   - choose optional narratives from `recommended_narratives`; if two narratives reuse most of the same stories, merge them or replace the weaker one
 
 7. Hand control back after writing semantic artifacts.
    - once `atlas.json`, `stories/`, and `narratives.yaml` are written, stop broad repo exploration

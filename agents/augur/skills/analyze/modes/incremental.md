@@ -7,7 +7,7 @@ Incremental mode means the semantic pass should start from the accepted prior se
 ## Sequence
 
 1. Read `$RUN/blast.json` and capture `changed_files`, `base_analysis_dir`, and the affected blast slice.
-2. Read `$RUN/facts/startup.json`, then only the small startup-priority files listed there. Use larger domains from `$RUN/facts/index.json` only when they are relevant to the changed slice.
+2. Read `$RUN/facts/startup.json` and `$RUN/facts/facts-guide.json`, then only the small startup-priority files listed there. Do not read `$RUN/facts/index.json` during startup unless you need to discover an additional optional domain.
 3. Form a provisional view of how the changed slice affects the existing architecture.
 4. If `concept-evidence.json` is present and carries review questions for affected concept candidates, use them to resolve those candidates as accepted, tentative, or rejected before finalizing `atlas.json.concepts`.
 5. If `frameworks.json` is present and framework interpretation is relevant to the changed slice, resolve those framework candidates before letting framework semantics change the updated atlas or stories.
@@ -22,6 +22,8 @@ Incremental mode means the semantic pass should start from the accepted prior se
    - When updating a flow-first story, keep `flow` terminology consistent instead of mixing `path` and `flow`.
    - Avoid casually introducing both `structures` and `flows` into the same story; if the story is `structure`-first or `flow`-first, the non-primary explainer should usually stay absent.
 10. Just before writing `narratives.yaml`, follow the active narratives contract exactly.
+   - Keep narrative ids inside the canonical palette only: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`.
+   - Use `facts/narrative-seeds.json` when present to choose optional canonical narratives and to prune overlapping teaching paths.
 11. Update outputs under `$RUN`, preserving unaffected structure where possible.
 
 ## Incremental-Mode Expectations
