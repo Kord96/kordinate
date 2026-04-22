@@ -183,9 +183,9 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
     workspace: {
       working_dir: '/kord/repos/repo',
       output_dir: '/tmp/run',
+      agent_root: '/app/agents/augur',
     },
-    agent: {
-      root_dir: '/app/agents/augur',
+    resources: {
       validator_script: '/app/agents/augur/skills/analyze/scripts/validate_output.py',
       concept_catalog_index: '/app/agents/augur/memory/catalog/concepts/README.md',
       framework_catalog_index: '/app/agents/augur/memory/catalog/frameworks/README.md',

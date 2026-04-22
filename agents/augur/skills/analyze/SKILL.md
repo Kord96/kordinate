@@ -2,15 +2,16 @@
 name: analyze
 description: >
   Semantic phase for Augur /analyze. Consumes a prepared run directory, follows
-  the runtime-selected mode guidance, and writes atlas/stories/narratives for
-  daemon-owned validation and sealing.
+  the runtime-selected mode guidance, writes atlas/stories/narratives, runs the
+  validator until clean, and then hands control back for daemon-owned final
+  sealing.
 ---
 
 # Analyze
 
 Semantic phase for Augur `/analyze`.
 
-The deterministic phase is already done. Work from the prepared run directory and produce semantic outputs for daemon-owned validation and sealing.
+The deterministic phase is already done. Work from the prepared run directory, produce semantic outputs, and own the local validate-fix loop until the output is clean. The daemon performs one final authoritative validation and sealing pass after you stop.
 
 Operational path rules for this runtime:
 - the runtime provides one canonical repo root and one canonical output directory for this request
@@ -20,7 +21,7 @@ Operational path rules for this runtime:
 - do not create sibling run directories with guessed suffixes
 - generated artifacts belong in the canonical output directory for this request
 
-## Produce `atlas.json`, `stories/`, and `narratives.yaml` using the prepared semantic inputs in the canonical output directory for this run.
+## Produce `atlas.json`, `stories/`, and `narratives.yaml`, then validate and repair them until clean, using the prepared semantic inputs in the canonical output directory for this run.
 
 1. Read startup inputs first.
    - `blast.json`
@@ -129,12 +130,14 @@ Operational path rules for this runtime:
    - use `facts/narrative-seeds.json` when present both to rank which roots, child stories, and flow-bearing stories deserve inclusion and to decide which optional canonical narratives are actually justified for this repo
    - choose optional narratives from `recommended_narratives`; if two narratives reuse most of the same stories, merge them or replace the weaker one
 
-7. Hand control back after writing semantic artifacts.
-   - once `atlas.json`, `stories/`, and `narratives.yaml` are written, stop broad repo exploration
-   - do not search for validator, schema, or mirrored-agent paths
-   - do not run validation proactively during the initial semantic generation pass
-   - the daemon/workflow owns validation, repair-loop orchestration, and sealing
-   - if you are resumed later with validator findings, treat that as a repair pass against the same canonical output directory
+7. Run the local validation loop before you stop.
+   - once `atlas.json`, `stories/`, and `narratives.yaml` are written, stop broad repo exploration and move into validation
+   - run the validator from `resources.validator_script` against the canonical output directory for this run
+   - if validation reports errors or warnings, repair the artifacts in place and rerun the validator
+   - continue until the validator reports a clean result
+   - use validation naturally as a working tool while you repair; do not wait for the daemon to drive individual repair rounds
+   - keep validation scoped to the canonical output directory and do not create sibling run directories
 
-8. Sealing is orchestrator-owned.
-   - the daemon/workflow will validate the run, drive any repair loop, and seal successful runs
+8. Final sealing is orchestrator-owned.
+   - after you stop, the daemon/workflow runs one final authoritative validation pass
+   - only the daemon/workflow can mark success, write `meta.json`, and seal the run

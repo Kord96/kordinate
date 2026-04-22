@@ -49,7 +49,9 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
     - Make each adjacent story transition defensible: the per-story bridge text should explain the architectural reason for moving to that next story.
     - Choose optional narratives from `facts/narrative-seeds.json.recommended_narratives` when present. If two narratives reuse most of the same stories, merge them or replace the weaker one.
 14. Generate `stories/*.yaml` and `narratives.yaml` from the refined atlas.
-15. Re-read repo files or supporting fact domains only when needed to resolve ambiguity, verify architecture boundaries, or address concrete validation findings.
+15. Run `resources.validator_script` against the canonical output directory for this run.
+16. If validation reports errors or warnings, fix the artifacts in place and rerun the validator until it is clean.
+17. Re-read repo files or supporting fact domains only when needed to resolve ambiguity, verify architecture boundaries, or address concrete validation findings.
 
 ## Full-Mode Expectations
 

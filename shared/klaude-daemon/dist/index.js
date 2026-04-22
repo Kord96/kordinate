@@ -283,16 +283,16 @@ function validateRequestContract(message) {
             return 'working_dir must match workspace.working_dir when both are provided';
         }
     }
-    if (agentContract.validation?.required && !message.agent) {
-        return 'agent resource contract is required for agents with validation';
+    if (agentContract.validation?.required && !message.resources) {
+        return 'resources contract is required for agents with validation';
     }
-    if (message.agent) {
-        if (!message.agent.root_dir?.trim()) {
-            return 'agent.root_dir is required when agent resources are provided';
+    if (message.resources) {
+        if (agentContract.validation?.required && !message.resources.validator_script?.trim()) {
+            return 'resources.validator_script is required for agents with validation';
         }
-        if (agentContract.validation?.required && !message.agent.validator_script?.trim()) {
-            return 'agent.validator_script is required for agents with validation';
-        }
+    }
+    if (message.workspace?.agent_root !== undefined && !message.workspace.agent_root?.trim()) {
+        return 'workspace.agent_root must be non-empty when provided';
     }
     const acceptedPrefixes = Array.isArray(agentContract.acceptedRequestPrefixes)
         ? agentContract.acceptedRequestPrefixes.filter(prefix => typeof prefix === 'string' && prefix.trim().length > 0)
@@ -321,7 +321,7 @@ function buildRuntimePromptRequest(session, message, overrides) {
         promptPlan,
         working_dir: promptMessage.working_dir,
         workspace: promptMessage.workspace,
-        agent: promptMessage.agent,
+        resources: promptMessage.resources,
         // Request timeout is gateway/accounting metadata only. Do not propagate it
         // into the runtime, otherwise async runs and repair resumes can be killed by
         // stale per-request execution deadlines.
@@ -610,30 +610,10 @@ async function hashValidatedDirectory(root) {
     await walk(root);
     return hash.digest('hex');
 }
-function buildValidationRepairPrompt(input) {
-    const findings = input.findings.map(line => `- ${line}`).join('\n');
-    return [
-        `Validation failed for \`${input.targetDir}\`.`,
-        `You must fix the generated output in place and obtain a validation completion token before finishing.`,
-        `Validator: \`${input.validatorScript}\``,
-        `Attempt ${input.attempt} of ${input.maxAttempts}.`,
-        '',
-        'Current validator findings:',
-        findings || '- Validation failed with no structured findings.',
-        '',
-        'Repair the output files now. Do not restart analysis. Keep the same project understanding and only change what is needed to pass validation.',
-        'Do not invoke the validator yourself during repair. The daemon/workflow will rerun validation after your changes.',
-    ].join('\n');
-}
-function normalizeValidationMaxAttempts(raw) {
-    if (!Number.isFinite(raw))
-        return 10;
-    return Math.max(1, Math.floor(raw));
-}
 async function clearValidationLock(targetDir) {
     await rm(join(targetDir, '.validate-lock'), { force: true });
 }
-async function maybeRunValidationLoop(session, message, result) {
+async function maybeRunFinalValidation(session, message, result) {
     const validation = agentContract.validation;
     if (!validation?.required)
         return { session, result };
@@ -680,88 +660,52 @@ async function maybeRunValidationLoop(session, message, result) {
             },
         };
     }
-    const maxAttempts = normalizeValidationMaxAttempts(validation.maxAttempts);
     const workflowContext = await agentWorkflowHooks?.validationContext?.(message);
     const validatorEnv = workflowContext?.extraEnv;
-    let currentSession = session;
-    let currentResult = result;
-    let accumulatedUsage = currentResult.metadata?.usage;
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-        const validationToken = await hashValidatedDirectory(targetDir);
-        let validationRun = await runValidatorScript(validation.validatorScript, targetDir, false, {
-            ...(validatorEnv ?? {}),
-            AUGUR_VALIDATION_TOKEN: validationToken,
-            AUGUR_VALIDATION_ATTEMPTS: String(attempt),
-        });
-        if (validationRun.valid) {
-            await clearValidationLock(targetDir);
-            return {
-                session: currentSession,
-                result: {
-                    ...currentResult,
-                    output: `${currentResult.output}\n\nValidation token: ${validationToken}`,
-                    metadata: {
-                        ...(currentResult.metadata ?? {}),
-                        ...(accumulatedUsage ? { usage: accumulatedUsage } : {}),
-                        artifacts: buildArtifactsMetadata(targetDir),
-                        validation: {
-                            required: true,
-                            passed: true,
-                            attempts: attempt,
-                            token: validationToken,
-                            target_dir: targetDir,
-                        },
+    const priorAttempts = typeof result.metadata?.validation?.attempts === 'number'
+        ? Math.max(0, result.metadata.validation.attempts)
+        : 0;
+    const validationToken = await hashValidatedDirectory(targetDir);
+    const validationRun = await runValidatorScript(validation.validatorScript, targetDir, true, {
+        ...(validatorEnv ?? {}),
+        AUGUR_VALIDATION_TOKEN: validationToken,
+        AUGUR_VALIDATION_ATTEMPTS: String(priorAttempts),
+    });
+    if (validationRun.valid) {
+        await clearValidationLock(targetDir);
+        return {
+            session,
+            result: {
+                ...result,
+                output: `${result.output}\n\nValidation token: ${validationToken}`,
+                metadata: {
+                    ...(result.metadata ?? {}),
+                    artifacts: buildArtifactsMetadata(targetDir),
+                    validation: {
+                        required: true,
+                        passed: true,
+                        attempts: priorAttempts,
+                        token: validationToken,
+                        target_dir: targetDir,
                     },
                 },
-            };
-        }
-        const outOfAttempts = attempt >= maxAttempts;
-        if (outOfAttempts || currentResult.status === 'cancelled') {
-            await runValidatorScript(validation.validatorScript, targetDir, true, validatorEnv);
-            return {
-                session: currentSession,
-                result: {
-                    status: 'error',
-                    output: validationRun.findings[0] ?? 'validation failed',
-                    errors: validationRun.findings.length > 0 ? validationRun.findings : ['validation failed'],
-                    metadata: {
-                        ...(currentResult.metadata ?? {}),
-                        ...(accumulatedUsage ? { usage: accumulatedUsage } : {}),
-                        validation: {
-                            required: true,
-                            passed: false,
-                            attempts: attempt,
-                            target_dir: targetDir,
-                        },
-                    },
-                },
-            };
-        }
-        const repairPromptBuilder = workflowContext?.repairPromptBuilder ?? buildValidationRepairPrompt;
-        const repairPrompt = repairPromptBuilder({
-            targetDir,
-            validatorScript: validation.validatorScript,
-            findings: validationRun.findings,
-            attempt,
-            maxAttempts,
-        });
-        const repairRequest = buildRuntimePromptRequest(currentSession, message, {
-            prompt: repairPrompt,
-            rawPrompt: repairPrompt,
-            reflect: false,
-        });
-        const repairRun = await runtime.executePrompt(currentSession, repairRequest);
-        currentSession = updateSessionPromptCache(repairRun.session, repairRequest, repairRun.result);
-        accumulatedUsage = mergeUsageMetadata(accumulatedUsage, repairRun.result.metadata?.usage);
-        currentResult = repairRun.result;
+            },
+        };
     }
     return {
-        session: currentSession,
+        session,
         result: {
-            ...currentResult,
+            status: 'error',
+            output: validationRun.findings[0] ?? 'validation failed',
+            errors: validationRun.findings.length > 0 ? validationRun.findings : ['validation failed'],
             metadata: {
-                ...(currentResult.metadata ?? {}),
-                ...(accumulatedUsage ? { usage: accumulatedUsage } : {}),
+                ...(result.metadata ?? {}),
+                validation: {
+                    required: true,
+                    passed: false,
+                    attempts: priorAttempts,
+                    target_dir: targetDir,
+                },
             },
         },
     };
@@ -833,7 +777,7 @@ async function handleRequest(message, gatewayReceivedAt) {
         executedResult = run.result;
     }
     samplePeakRss();
-    const { session: nextSession, result } = await maybeRunValidationLoop(executedSession, effectiveMessage, executedResult);
+    const { session: nextSession, result } = await maybeRunFinalValidation(executedSession, effectiveMessage, executedResult);
     const executeEndAt = Date.now();
     samplePeakRss();
     sessions.set(nextSession.key, nextSession);

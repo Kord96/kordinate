@@ -117,7 +117,8 @@ def main() -> int:
             "Use the prepared facts in the run directory only when the current findings actually require extra deterministic support."
         ),
         "Prefer small targeted edits over broad rewrites. Preserve good existing structure and only change the artifacts implicated by the current findings.",
-        "Do not invoke the validator yourself during repair. The daemon/workflow will rerun validation after your changes.",
+        "You may invoke the validator yourself during repair and continue iterating until the output is clean.",
+        "The daemon/workflow still performs one final authoritative validation pass before sealing the run.",
     ])
     print(prompt)
     return 0

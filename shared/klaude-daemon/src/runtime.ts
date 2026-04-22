@@ -1495,17 +1495,17 @@ async function runOpenClaudePrint(prompt: string, options: {
   if (typeof options.request?.workspace?.output_dir === 'string' && options.request.workspace.output_dir.trim()) {
     env.OUTPUT_DIR = options.request.workspace.output_dir.trim()
   }
-  if (typeof options.request?.agent?.root_dir === 'string' && options.request.agent.root_dir.trim()) {
-    env.AGENT_ROOT = options.request.agent.root_dir.trim()
+  if (typeof options.request?.workspace?.agent_root === 'string' && options.request.workspace.agent_root.trim()) {
+    env.AGENT_ROOT = options.request.workspace.agent_root.trim()
   }
-  if (typeof options.request?.agent?.validator_script === 'string' && options.request.agent.validator_script.trim()) {
-    env.VALIDATOR_SCRIPT = options.request.agent.validator_script.trim()
+  if (typeof options.request?.resources?.validator_script === 'string' && options.request.resources.validator_script.trim()) {
+    env.VALIDATOR_SCRIPT = options.request.resources.validator_script.trim()
   }
-  if (typeof options.request?.agent?.concept_catalog_index === 'string' && options.request.agent.concept_catalog_index.trim()) {
-    env.CONCEPT_CATALOG_INDEX = options.request.agent.concept_catalog_index.trim()
+  if (typeof options.request?.resources?.concept_catalog_index === 'string' && options.request.resources.concept_catalog_index.trim()) {
+    env.CONCEPT_CATALOG_INDEX = options.request.resources.concept_catalog_index.trim()
   }
-  if (typeof options.request?.agent?.framework_catalog_index === 'string' && options.request.agent.framework_catalog_index.trim()) {
-    env.FRAMEWORK_CATALOG_INDEX = options.request.agent.framework_catalog_index.trim()
+  if (typeof options.request?.resources?.framework_catalog_index === 'string' && options.request.resources.framework_catalog_index.trim()) {
+    env.FRAMEWORK_CATALOG_INDEX = options.request.resources.framework_catalog_index.trim()
   }
   Object.assign(env, withGitSafeDirectoryEnv({}, cwd))
 
@@ -1997,10 +1997,10 @@ export class GeminiSdkAdapter implements ProviderSessionAdapter {
     const toolEnv = {
       AGENT_HOME_DIR: runtimeHome,
       KORDINATE_HOME: process.env.KORDINATE_HOME ?? '/app',
-      ...(request.agent?.root_dir ? { AGENT_ROOT: request.agent.root_dir } : {}),
-      ...(request.agent?.concept_catalog_index ? { CONCEPT_CATALOG_INDEX: request.agent.concept_catalog_index } : {}),
-      ...(request.agent?.framework_catalog_index ? { FRAMEWORK_CATALOG_INDEX: request.agent.framework_catalog_index } : {}),
-      ...(request.agent?.validator_script ? { VALIDATOR_SCRIPT: request.agent.validator_script } : {}),
+      ...(request.workspace?.agent_root ? { AGENT_ROOT: request.workspace.agent_root } : {}),
+      ...(request.resources?.concept_catalog_index ? { CONCEPT_CATALOG_INDEX: request.resources.concept_catalog_index } : {}),
+      ...(request.resources?.framework_catalog_index ? { FRAMEWORK_CATALOG_INDEX: request.resources.framework_catalog_index } : {}),
+      ...(request.resources?.validator_script ? { VALIDATOR_SCRIPT: request.resources.validator_script } : {}),
       WORKING_DIR: request.workspace?.working_dir ?? request.working_dir ?? this.workingDirectory ?? this.homeDirectory ?? process.cwd(),
       ...(runDir
         ? {

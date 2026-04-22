@@ -33,7 +33,7 @@ export interface RuntimeRequest {
   promptPlan?: PromptPlan
   working_dir?: string
   workspace?: WorkspaceContract
-  agent?: AgentResourceContract
+  resources?: AgentResourceContract
   timeout_ms?: number
   reflect?: boolean
   reflection_prompt?: string
@@ -114,10 +114,10 @@ export interface BundleRefs {
 export interface WorkspaceContract {
   working_dir: string
   output_dir: string
+  agent_root?: string
 }
 
 export interface AgentResourceContract {
-  root_dir: string
   validator_script?: string
   concept_catalog_index?: string
   framework_catalog_index?: string

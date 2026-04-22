@@ -25,6 +25,8 @@ Incremental mode means the semantic pass should start from the accepted prior se
    - Keep narrative ids inside the canonical palette only: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`.
    - Use `facts/narrative-seeds.json` when present to choose optional canonical narratives and to prune overlapping teaching paths.
 11. Update outputs under `$RUN`, preserving unaffected structure where possible.
+12. Run `resources.validator_script` against `$RUN`.
+13. If validation reports errors or warnings, repair the changed artifacts in place and rerun the validator until it is clean.
 
 ## Incremental-Mode Expectations
 

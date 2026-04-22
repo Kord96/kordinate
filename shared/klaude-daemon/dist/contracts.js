@@ -137,7 +137,7 @@ function renderStartupGuidance(agentParams) {
 }
 function renderRuntimeContext(agentContract, message, runtimeProfile) {
     const workspace = message.workspace;
-    const agent = message.agent;
+    const resources = message.resources;
     const requestedBundleMode = typeof message.agent_params?.bundle_mode === 'string'
         ? resolveBundleMode(message)
         : undefined;
@@ -147,14 +147,14 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         const lines = [];
         lines.push(`- Working directory: \`${workspace.working_dir}\``);
         lines.push(`- Output directory: \`${workspace.output_dir}\``);
-        if (typeof agent?.root_dir === 'string' && agent.root_dir.trim()) {
-            lines.push(`- Agent root: \`${agent.root_dir.trim()}\``);
+        if (typeof workspace.agent_root === 'string' && workspace.agent_root.trim()) {
+            lines.push(`- Agent root: \`${workspace.agent_root.trim()}\``);
         }
-        if (typeof agent?.concept_catalog_index === 'string' && agent.concept_catalog_index.trim()) {
-            lines.push(`- Concept catalog entrypoint: \`${agent.concept_catalog_index.trim()}\``);
+        if (typeof resources?.concept_catalog_index === 'string' && resources.concept_catalog_index.trim()) {
+            lines.push(`- Concept catalog entrypoint: \`${resources.concept_catalog_index.trim()}\``);
         }
-        if (typeof agent?.framework_catalog_index === 'string' && agent.framework_catalog_index.trim()) {
-            lines.push(`- Framework catalog entrypoint: \`${agent.framework_catalog_index.trim()}\``);
+        if (typeof resources?.framework_catalog_index === 'string' && resources.framework_catalog_index.trim()) {
+            lines.push(`- Framework catalog entrypoint: \`${resources.framework_catalog_index.trim()}\``);
         }
         if (requestedBundleMode) {
             lines.push(`- Bundle mode: \`${requestedBundleMode}\``);

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { execFileSync, spawn } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { basename, join } from 'node:path'
 import { constants as fsConstants } from 'node:fs'
 import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
@@ -13,18 +13,9 @@ type DaemonConfigLike = {
   }
 }
 
-type ValidationRepairPromptInput = {
-  targetDir: string
-  validatorScript: string
-  findings: string[]
-  attempt: number
-  maxAttempts: number
-}
-
 type ValidationContext = {
   targetDir?: string
   extraEnv?: Record<string, string>
-  repairPromptBuilder?: (input: ValidationRepairPromptInput) => string
 }
 
 type BeforeRuntimeResult = {
@@ -364,24 +355,6 @@ function contextHomeDirectoryFallback(): string {
     ?? process.cwd()
 }
 
-function buildAugurValidationRepairPrompt(context: WorkflowContext, input: ValidationRepairPromptInput): string {
-  const scriptPath = context.agentContract.workflow?.repairPromptScript
-  if (!scriptPath) {
-    throw new Error('augur repair prompt script is missing from the injected agent contract')
-  }
-  const payload = execFileSync('python3', [
-    scriptPath,
-    '--target-dir', input.targetDir,
-    '--validator-script', input.validatorScript,
-    '--attempt', String(input.attempt),
-    '--max-attempts', String(input.maxAttempts),
-    '--findings-json', JSON.stringify(input.findings),
-  ], {
-    encoding: 'utf8',
-  }).trim()
-  return payload
-}
-
 export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflowHooks {
   return {
     async beforeRuntime(message) {
@@ -486,9 +459,9 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
           workspace: {
             working_dir: workingDir,
             output_dir: prepared.runDir,
+            agent_root: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur`,
           },
-          agent: {
-            root_dir: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur`,
+          resources: {
             validator_script: context.agentContract.validation?.validatorScript,
             concept_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/catalog/concepts/README.md`,
             framework_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/catalog/frameworks/README.md`,
@@ -525,7 +498,6 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
             : {}),
           AUGUR_PROJECT_ROOT: workingDir,
         },
-        repairPromptBuilder: input => buildAugurValidationRepairPrompt(context, input),
       }
     },
   }
