@@ -26,6 +26,54 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[deploy-runtime] $*"; }
 
+safe_chown() {
+  local target="$1"
+  if ! chown -R 1000:1000 "$target" 2>/dev/null; then
+    log "  WARN: could not chown $target to 1000:1000; continuing"
+  fi
+}
+
+install_augur_release() {
+  local dst="$1"
+  local store="${AUGUR_RELEASE_STORE:-/kord/shared/runtime/artifacts/augur}"
+  local channel="${AUGUR_RELEASE_CHANNEL:-}"
+  local version="${AUGUR_RELEASE_VERSION:-}"
+  local release_base="$dst/.augur"
+  local releases_dir="$release_base/releases"
+  local installed_json="$release_base/install.json"
+  local current_link="$release_base/current"
+
+  mkdir -p "$releases_dir"
+
+  local install_args=("$SCRIPT_DIR/install-augur-release.py" "--store" "$store" "--dest" "$releases_dir")
+  if [ -n "$version" ]; then
+    install_args+=("--version" "$version")
+  else
+    install_args+=("--channel" "${channel:-stable}")
+  fi
+
+  local payload
+  payload="$(python3 "${install_args[@]}")"
+  printf '%s\n' "$payload" > "$installed_json"
+
+  local installed_root
+  installed_root="$(python3 - "$installed_json" <<'PY'
+import json, sys
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
+    payload = json.load(f)
+print(payload["installed_root"])
+PY
+)"
+
+  if [ -z "$installed_root" ] || [ ! -d "$installed_root" ]; then
+    log "  ERROR: Augur release install did not produce a valid root"
+    return 1
+  fi
+
+  ln -sfn "$installed_root" "$current_link"
+  log "  Augur release installed: $installed_root"
+}
+
 normalize_backend_name() {
   local profile="$1"
   local model="$2"
@@ -102,27 +150,34 @@ deploy_agent() {
   # Ensure destination directory exists
   mkdir -p "$DST"
 
+  local EFFECTIVE_SRC="$SRC"
+  if [ "$SOURCE_AGENT" = "augur" ]; then
+    install_augur_release "$DST"
+    EFFECTIVE_SRC="$DST/.augur/current"
+  fi
+
   # Shared specialization alias for deterministic compatibility paths such as
   # /kord/agents/augur/... used by some model backends during exploration.
+  # For Augur this must resolve to the installed release, not the source tree.
   if [ "$SOURCE_AGENT" != "$DEST_AGENT" ]; then
-    ln -sfn "$SRC" "$RUNTIME/$SOURCE_AGENT"
+    ln -sfn "$EFFECTIVE_SRC" "$RUNTIME/$SOURCE_AGENT"
   fi
 
   # Memory: recursive copy, don't overwrite scribe's merged files
-  if [ -d "$SRC/memory" ]; then
+  if [ -d "$EFFECTIVE_SRC/memory" ]; then
     mkdir -p "$DST/memory/global"
-    local src_count=$(find "$SRC/memory" -type f | wc -l)
-    log "  memory source: $SRC/memory ($src_count files)"
+    local src_count=$(find "$EFFECTIVE_SRC/memory" -type f | wc -l)
+    log "  memory source: $EFFECTIVE_SRC/memory ($src_count files)"
     # cp -rn requires GNU coreutils (BusyBox cp lacks -n / --no-clobber).
     # Fall back to a find-based copy if cp -n is not supported.
     if cp --help 2>&1 | grep -q 'no-clobber\|-n'; then
-      cp -rn "$SRC/memory/." "$DST/memory/global/"
+      cp -rn "$EFFECTIVE_SRC/memory/." "$DST/memory/global/"
     else
       log "  WARN: cp -n not available, using find-based no-clobber copy"
-      (cd "$SRC/memory" && find . -type f) | while read -r f; do
+      (cd "$EFFECTIVE_SRC/memory" && find . -type f) | while read -r f; do
         if [ ! -e "$DST/memory/global/$f" ]; then
           mkdir -p "$(dirname "$DST/memory/global/$f")"
-          cp "$SRC/memory/$f" "$DST/memory/global/$f"
+          cp "$EFFECTIVE_SRC/memory/$f" "$DST/memory/global/$f"
         fi
       done
     fi
@@ -130,12 +185,12 @@ deploy_agent() {
     local dst_count=$(find "$DST/memory/global" -type f | wc -l)
     log "  memory/global/ seeded ($dst_count files)"
   else
-    log "  WARN: no memory dir at $SRC/memory"
+    log "  WARN: no memory dir at $EFFECTIVE_SRC/memory"
   fi
 
   # Identity: strip frontmatter
-  if [ -f "$SRC/IDENTITY.md" ]; then
-    sed '/^---$/,/^---$/d' "$SRC/IDENTITY.md" > "$DST/identity.md"
+  if [ -f "$EFFECTIVE_SRC/IDENTITY.md" ]; then
+    sed '/^---$/,/^---$/d' "$EFFECTIVE_SRC/IDENTITY.md" > "$DST/identity.md"
     log "  identity.md created"
   fi
 
@@ -159,7 +214,7 @@ deploy_agent() {
       PASSWORD_STORE_DIR="$SHARED_ALFRED_ROOT/pass" GNUPGHOME="$SHARED_ALFRED_ROOT/gnupg" pass init "$GPG_KEY_ID" >/dev/null
     fi
 
-    chown -R 1000:1000 "$SHARED_ALFRED_ROOT"
+    safe_chown "$SHARED_ALFRED_ROOT"
     chmod 700 "$SHARED_ALFRED_ROOT/pass" "$SHARED_ALFRED_ROOT/gnupg" 2>/dev/null || true
     log "  Alfred shared pass/GPG runtime prepared"
   fi
@@ -338,9 +393,9 @@ EOF
   log "  backend_strategy: ${BACKEND_STRATEGY:-first}"
 
   # Skills: symlink to repo (read from data PVC)
-  if [ -d "$SRC/skills" ]; then
+  if [ -d "$EFFECTIVE_SRC/skills" ]; then
     mkdir -p "$DST/skills"
-    for skill_dir in "$SRC/skills"/*/; do
+    for skill_dir in "$EFFECTIVE_SRC/skills"/*/; do
       [ -d "$skill_dir" ] || continue
       local skill_name=$(basename "$skill_dir")
       ln -sfn "$skill_dir" "$DST/skills/$skill_name"
@@ -362,8 +417,8 @@ EOF
       log "  linked .claude/skills/$skill_name (shared)"
     done
   fi
-  if [ -d "$SRC/skills" ]; then
-    for skill_dir in "$SRC/skills"/*/; do
+  if [ -d "$EFFECTIVE_SRC/skills" ]; then
+    for skill_dir in "$EFFECTIVE_SRC/skills"/*/; do
       [ -d "$skill_dir" ] || continue
       local skill_name=$(basename "$skill_dir")
       ln -sfn "$skill_dir" "$CLAUDE_SKILLS_DIR/$skill_name"
@@ -372,18 +427,18 @@ EOF
   fi
 
   # Preflight script (if agent provides one)
-  if [ -f "$SRC/scripts/preflight.sh" ]; then
-    cp "$SRC/scripts/preflight.sh" "$DST/preflight.sh"
+  if [ -f "$EFFECTIVE_SRC/scripts/preflight.sh" ]; then
+    cp "$EFFECTIVE_SRC/scripts/preflight.sh" "$DST/preflight.sh"
     chmod +x "$DST/preflight.sh"
     log "  preflight.sh installed"
   fi
 
   local AGENT_BUNDLE_NAME="AGENT.md"
-  local AGENT_BUNDLE_SRC="$SRC/INDEX.yaml"
+  local AGENT_BUNDLE_SRC="$EFFECTIVE_SRC/INDEX.yaml"
   local AGENT_BUNDLE_DST="$DST/$AGENT_BUNDLE_NAME"
 
   if [ -f "$AGENT_BUNDLE_SRC" ]; then
-    python3 "$SCRIPT_DIR/generate-agent-bundle.py" "$SRC" "$AGENT_BUNDLE_DST"
+    python3 "$SCRIPT_DIR/generate-agent-bundle.py" "$EFFECTIVE_SRC" "$AGENT_BUNDLE_DST"
     log "  $AGENT_BUNDLE_NAME generated"
   fi
 
@@ -417,7 +472,7 @@ EOF
   } > "$DST/SKILLS.md"
   log "  SKILLS.md generated"
 
-  chown -R 1000:1000 "$DST"
+  safe_chown "$DST"
   chmod -R u+rwX,g+rwX "$DST"
 
   log "  done"
@@ -470,7 +525,7 @@ TEAM
     log "team/memory/global/team.md generated"
   fi
 
-  chown -R 1000:1000 "$DST"
+  safe_chown "$DST"
   chmod -R u+rwX,g+rwX "$DST"
 }
 

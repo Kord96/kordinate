@@ -120,6 +120,7 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
     name = agent["name"]
     flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
     creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
+    agent_home_dir = agent["runtime"]["state"]["agent_home_dir"]
     identity = parse_identity(agent)
     contract = {
         "version": f"agent-spec-v{spec_version}",
@@ -151,6 +152,7 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
         contract["bundleRefs"] = bundle_refs
 
     if flavor == "augur":
+        augur_home = f"{agent_home_dir}/.augur/current"
         contract["promptPrefix"] = "You are Augur. Favor design-level reasoning and architecture trade-offs."
         contract["defaultReflectionPrompt"] = "\n".join([
             'Return strict JSON with exactly {"project":"...","general":"..."}.',
@@ -158,14 +160,14 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
             "For general, focus on transferable architecture and review lessons.",
         ])
         contract["workflow"] = {
-            "analysisContextScript": "/app/agents/augur/scripts/run/build_analysis_context.py",
-            "promptContextScript": "/app/agents/augur/scripts/run/build_prompt_context.py",
-            "repairPromptScript": "/app/agents/augur/scripts/run/build_validation_repair_prompt.py",
+            "analysisContextScript": f"{augur_home}/scripts/run/build_analysis_context.py",
+            "promptContextScript": f"{augur_home}/scripts/run/build_prompt_context.py",
+            "repairPromptScript": f"{augur_home}/scripts/run/build_validation_repair_prompt.py",
         }
         contract["validation"] = {
             "required": True,
-            "validatorScript": "/app/agents/augur/skills/analyze/validator/validate.py",
-            "finalizeScript": "/app/agents/augur/scripts/run/finalize_analysis.py",
+            "validatorScript": f"{augur_home}/skills/analyze/validator/validate.py",
+            "finalizeScript": f"{augur_home}/scripts/run/finalize_analysis.py",
         }
         validation = agent.get("validation") if isinstance(agent.get("validation"), dict) else {}
         max_attempts = validation.get("max_attempts", validation.get("maxAttempts"))
@@ -255,6 +257,10 @@ def emit_env_lines(spec: dict, agent: dict) -> list[str]:
     if flavor == "alfred":
         env.append(("PASSWORD_STORE_DIR", "/kord/alfred/pass"))
         env.append(("GNUPGHOME", "/kord/alfred/gnupg"))
+    if flavor == "augur":
+        env.append(("AUGUR_HOME", f"{agent_home_dir}/.augur/current"))
+        env.append(("AUGUR_RELEASE_STORE", "/kord/shared/runtime/artifacts/augur"))
+        env.append(("AUGUR_RELEASE_CHANNEL", "stable"))
 
     env_lines: list[str] = []
     for key, value in env:

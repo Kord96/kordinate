@@ -22,8 +22,8 @@ function augurContract(): AgentContract {
     },
     validation: {
       required: true,
-      validatorScript: '/app/agents/augur/skills/analyze/validator/validate.py',
-      finalizeScript: '/app/agents/augur/scripts/run/finalize_analysis.py',
+      validatorScript: '/kord/agents/augur-opus/.augur/current/skills/analyze/validator/validate.py',
+      finalizeScript: '/kord/agents/augur-opus/.augur/current/scripts/run/finalize_analysis.py',
     },
   }
 }
@@ -48,7 +48,7 @@ test('injected contract loader reads AGENT_CONTRACT_JSON', () => {
     assert.deepEqual(contract.acceptedRequestPrefixes, ['/analyze'])
     assert.deepEqual(contract.supportedAgentParams, ['bundle_mode'])
     assert.equal(contract.requiresWorkingDirectory, true)
-    assert.match(contract.validation?.validatorScript ?? '', /validate_output\.py$/)
+    assert.match(contract.validation?.validatorScript ?? '', /validate\.py$/)
   } finally {
     if (previous === undefined) delete process.env.AGENT_CONTRACT_JSON
     else process.env.AGENT_CONTRACT_JSON = previous
@@ -183,12 +183,12 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
     workspace: {
       working_dir: '/kord/repos/repo',
       output_dir: '/tmp/run',
-      agent_root: '/app/agents/augur',
+      agent_root: '/kord/agents/augur-opus/.augur/current',
     },
     resources: {
-      validator_script: '/app/agents/augur/skills/analyze/validator/validate.py',
-      concept_catalog_index: '/app/agents/augur/memory/concepts/README.md',
-      framework_catalog_index: '/app/agents/augur/memory/concepts/frameworks/README.md',
+      validator_script: '/kord/agents/augur-opus/.augur/current/skills/analyze/validator/validate.py',
+      concept_catalog_index: '/kord/agents/augur-opus/.augur/current/memory/concepts/README.md',
+      framework_catalog_index: '/kord/agents/augur-opus/.augur/current/memory/concepts/frameworks/README.md',
     },
     agent_params: {
       bundle_mode: 'selective',
@@ -197,9 +197,9 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
 
   assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/repos\/repo`/)
   assert.match(promptPlan.dynamicPrompt, /Output directory: `\/tmp\/run`/)
-  assert.match(promptPlan.dynamicPrompt, /Agent root: `\/app\/agents\/augur`/)
-  assert.match(promptPlan.dynamicPrompt, /Concept catalog entrypoint: `\/app\/agents\/augur\/memory\/concepts\/README\.md`/)
-  assert.match(promptPlan.dynamicPrompt, /Framework catalog entrypoint: `\/app\/agents\/augur\/memory\/concepts\/frameworks\/README\.md`/)
+  assert.match(promptPlan.dynamicPrompt, /Agent root: `\/kord\/agents\/augur-opus\/\.augur\/current`/)
+  assert.match(promptPlan.dynamicPrompt, /Concept catalog entrypoint: `\/kord\/agents\/augur-opus\/\.augur\/current\/memory\/concepts\/README\.md`/)
+  assert.match(promptPlan.dynamicPrompt, /Framework catalog entrypoint: `\/kord\/agents\/augur-opus\/\.augur\/current\/memory\/concepts\/frameworks\/README\.md`/)
   assert.doesNotMatch(promptPlan.dynamicPrompt, /Validator script:/)
   assert.doesNotMatch(promptPlan.dynamicPrompt, /Grounding summary path:/)
   assert.doesNotMatch(promptPlan.dynamicPrompt, /Write handoff path:/)

@@ -81,6 +81,10 @@ type AugurAnalysisContext = {
   startup_directive: string
 }
 
+function resolveAugurHome(): string {
+  return process.env.AUGUR_HOME ?? `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur`
+}
+
 async function pathExists(path: string): Promise<boolean> {
   try {
     await access(path, fsConstants.F_OK)
@@ -173,9 +177,9 @@ async function resolveAugurAnalysisPlan(
     throw new Error('working_dir and agent home are required for Augur analysis')
   }
   const project = basename(workingDir)
-  const kordHome = process.env.KORDINATE_HOME ?? '/app'
+  const augurHome = resolveAugurHome()
   const args = [
-    join(kordHome, 'agents', 'augur', 'scripts', 'resolve_analysis_plan.py'),
+    join(augurHome, 'scripts', 'run', 'resolve_analysis_plan.py'),
     workingDir,
     '--agent-home', agentHome,
     '--project', project,
@@ -287,6 +291,7 @@ async function prepareAugurDeterministicArtifacts(
 
   const project = basename(workingDir)
   const kordHome = process.env.KORDINATE_HOME ?? '/app'
+  const augurHome = resolveAugurHome()
   const currentSha = await runCommand('git', gitArgsForRepo(workingDir, 'rev-parse', 'HEAD'), agentHome)
   const commitTime = currentSha
     ? await runCommand('git', gitArgsForRepo(workingDir, 'show', '-s', '--format=%ct', currentSha), agentHome)
@@ -303,6 +308,7 @@ async function prepareAugurDeterministicArtifacts(
   const factsDir = join(runDir, 'facts')
   const env = {
     KORDINATE_HOME: kordHome,
+    AUGUR_HOME: augurHome,
     AGENT_HOME_DIR: agentHome,
     ROOT: workingDir,
     PROJECT: project,
@@ -321,7 +327,7 @@ async function prepareAugurDeterministicArtifacts(
     payload: { project, working_dir: workingDir, run_dir: runDir },
   })
   await runRequiredCommand('python3', [
-    join(kordHome, 'agents', 'augur', 'scripts', 'prepare_deterministic_run.py'),
+    join(augurHome, 'scripts', 'run', 'prepare_deterministic_run.py'),
     workingDir,
     '--run-dir', runDir,
     '--project', project,
@@ -478,6 +484,7 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
       if (!workingDir) {
         throw new Error('working_dir is required for Augur semantic preparation')
       }
+      const augurHome = resolveAugurHome()
       const resolvedBundleMode = plan.bundle_mode ?? (analysisMode === 'incremental' ? 'selective' : 'holistic')
       const analysisContext = await buildAugurAnalysisContext(context, workingDir, prepared.project, prepared.runDir, analysisMode)
       return {
@@ -486,12 +493,12 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
           workspace: {
             working_dir: workingDir,
             output_dir: prepared.runDir,
-            agent_root: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur`,
+            agent_root: augurHome,
           },
           resources: {
             validator_script: context.agentContract.validation?.validatorScript,
-            concept_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/concepts/README.md`,
-            framework_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/concepts/frameworks/README.md`,
+            concept_catalog_index: `${augurHome}/memory/concepts/README.md`,
+            framework_catalog_index: `${augurHome}/memory/concepts/frameworks/README.md`,
           },
           agent_params: {
             ...(message.agent_params ?? {}),
