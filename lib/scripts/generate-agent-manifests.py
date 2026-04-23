@@ -52,6 +52,9 @@ def infer_supported_agent_params(agent: dict) -> list[str]:
 
 def parse_identity(agent: dict) -> dict:
     flavor = agent.get("flavor") or (agent["name"] if agent["name"] in SPECIAL_FLAVORS else "generic")
+    metadata_path = Path(f"/kord/workstation/home/project/kordinate/shared/runtime/agent-metadata/{flavor}.json")
+    if metadata_path.exists():
+        return json.loads(metadata_path.read_text(encoding="utf-8"))
     identity_path = Path(f"/kord/workstation/home/project/kordinate/agents/{flavor}/IDENTITY.md")
     if not identity_path.exists():
         return {

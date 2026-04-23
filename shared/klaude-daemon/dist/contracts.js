@@ -29,10 +29,13 @@ function readCached(path) {
     return text;
 }
 function agentRootCandidates(agentName) {
-    return [
+    const candidates = [
+        process.env.AUGUR_HOME,
+        process.env.AGENT_HOME_DIR && agentName === 'augur' ? join(process.env.AGENT_HOME_DIR, '.augur', 'current') : undefined,
         join('/app/agents', agentName),
         join(moduleDir, '..', '..', '..', 'agents', agentName),
     ];
+    return candidates.filter((value) => typeof value === 'string' && value.length > 0);
 }
 function resolveRepoBundleFile(agentName, dir, selection) {
     if (!selection)

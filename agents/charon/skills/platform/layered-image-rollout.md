@@ -58,7 +58,7 @@ Augur is moving toward a versioned release contract that Charon can publish inde
 Preferred preparation flow for Augur:
 
 ```bash
-python3 agents/augur/scripts/build/build_release_artifact.py --output-dir /tmp/augur-release
+python3 lib/scripts/build-augur-release.py --output-dir /tmp/augur-release
 python3 lib/scripts/publish-augur-release.py /tmp/augur-release/augur-<version>/augur-release.json --channel candidate
 python3 lib/scripts/install-augur-release.py --channel candidate --dest /tmp/augur-installed
 ```

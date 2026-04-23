@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
 import { buildPrompt, buildPromptPlan, loadInjectedAgentContract, loadInjectedRuntimeProfile, resolveReflectionPrompt } from '../contracts.js'
 import type { AgentContract, RuntimeProfile } from '../types.js'
@@ -36,6 +39,28 @@ function genericRuntimeProfile(): RuntimeProfile {
       "Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.",
       'Do not invent helper names or wrap nonexistent tools inside Bash.',
     ],
+  }
+}
+
+function withAugurBundleFixture<T>(fn: () => T): T {
+  const root = mkdtempSync(join(tmpdir(), 'augur-bundles-'))
+  const previousAugurHome = process.env.AUGUR_HOME
+  try {
+    const bundlesRoot = join(root, '.generated', 'bundles')
+    mkdirSync(join(bundlesRoot, 'skill'), { recursive: true })
+    mkdirSync(join(bundlesRoot, 'memory'), { recursive: true })
+    mkdirSync(join(bundlesRoot, 'runtime'), { recursive: true })
+    writeFileSync(join(bundlesRoot, 'skill', 'core-v1.md'), '# Augur Skill Bundle')
+    writeFileSync(join(bundlesRoot, 'memory', 'analyze-selective-v1.md'), '# Augur Analyze Bundle — Selective v1')
+    writeFileSync(join(bundlesRoot, 'memory', 'analyze-holistic-v1.md'), '# Augur Analyze Bundle — Holistic v1')
+    writeFileSync(join(bundlesRoot, 'runtime', 'analyze-selective-v1.md'), '# Runtime Selective Bundle')
+    writeFileSync(join(bundlesRoot, 'runtime', 'analyze-holistic-v1.md'), '# Runtime Holistic Bundle')
+    process.env.AUGUR_HOME = root
+    return fn()
+  } finally {
+    if (previousAugurHome === undefined) delete process.env.AUGUR_HOME
+    else process.env.AUGUR_HOME = previousAugurHome
+    rmSync(root, { recursive: true, force: true })
   }
 }
 
@@ -81,12 +106,12 @@ test('buildPrompt prepends prompt prefix when present', () => {
 })
 
 test('buildPromptPlan composes repo bundle layers from injected bundle refs', () => {
-  const promptPlan = buildPromptPlan(augurContract(), genericRuntimeProfile(), {
+  const promptPlan = withAugurBundleFixture(() => buildPromptPlan(augurContract(), genericRuntimeProfile(), {
     type: 'request',
     sender: 'agent-a',
     correlation_id: 'corr-1',
     prompt: 'Analyze the repo',
-  })
+  }))
 
   assert.match(promptPlan.fullPrompt, /Augur Analyze Bundle — Selective v1/)
   assert.match(promptPlan.fullPrompt, /## Memory Bundle/)
@@ -96,7 +121,7 @@ test('buildPromptPlan composes repo bundle layers from injected bundle refs', ()
 })
 
 test('buildPromptPlan defaults to holistic bundle guidance for full analysis when bundle mode is unspecified', () => {
-  const promptPlan = buildPromptPlan(augurContract(), genericRuntimeProfile(), {
+  const promptPlan = withAugurBundleFixture(() => buildPromptPlan(augurContract(), genericRuntimeProfile(), {
     type: 'request',
     sender: 'agent-a',
     correlation_id: 'corr-1',
@@ -104,13 +129,13 @@ test('buildPromptPlan defaults to holistic bundle guidance for full analysis whe
     agent_params: {
       analysis_mode: 'full',
     },
-  })
+  }))
 
   assert.match(promptPlan.fullPrompt, /Analyze Bundle — Holistic/i)
 })
 
 test('buildPromptPlan defaults to selective bundle guidance for incremental analysis when bundle mode is unspecified', () => {
-  const promptPlan = buildPromptPlan(augurContract(), genericRuntimeProfile(), {
+  const promptPlan = withAugurBundleFixture(() => buildPromptPlan(augurContract(), genericRuntimeProfile(), {
     type: 'request',
     sender: 'agent-a',
     correlation_id: 'corr-1',
@@ -118,7 +143,7 @@ test('buildPromptPlan defaults to selective bundle guidance for incremental anal
     agent_params: {
       analysis_mode: 'incremental',
     },
-  })
+  }))
 
   assert.match(promptPlan.fullPrompt, /Analyze Bundle — Selective/i)
 })

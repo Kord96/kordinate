@@ -1,9 +1,0 @@
-domain: data-touches
-positive:
-  strong: []
-  medium: []
-  weak: []
-negative: []
-notes:
-  - This domain is produced by the shared Joern-backed CPG extractor rather than textual signatures.
-  - Records should capture read, write, and emit-style touches at concrete callsites when available.

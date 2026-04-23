@@ -79,24 +79,6 @@ protected_paths:
   - path: shared/runtime/profile/config.yaml
     owner: shared
     reason: Runtime config projection
-  - path: agents/augur/memory/concepts.md
+  - path: shared/runtime/agent-metadata/augur.json
     owner: augur
-    reason: Augur concept catalog
-  - path: agents/augur/memory/anti-patterns.md
-    owner: augur
-    reason: Augur anti-pattern catalog
-  - path: agents/augur/memory/abstractions.md
-    owner: augur
-    reason: Augur abstraction catalog
-  - path: agents/augur/memory/app-contract.md
-    owner: augur
-    reason: Augur app contract
-  - path: agents/augur/memory/tools.md
-    owner: augur
-    reason: Augur tool reference
-  - path: agents/augur/memory/workflow.md
-    owner: augur
-    reason: Augur workflow reference
-  - path: agents/augur/skills/analyze/validator/validate.py
-    owner: augur
-    reason: Augur-owned output validator
+    reason: Augur platform metadata retained in Kordinate after the repo split

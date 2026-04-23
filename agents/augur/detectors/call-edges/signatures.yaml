@@ -1,9 +1,0 @@
-domain: call-edges
-positive:
-  strong: []
-  medium: []
-  weak: []
-negative: []
-notes:
-  - This domain is produced by the shared Joern-backed CPG extractor rather than textual signatures.
-  - Records should represent concrete callsites with both caller and callee context when available.

@@ -1,4 +1,0 @@
-domain: registrations
-enabled: true
-class: signature
-description: Detect runtime or framework registration points such as plugin registration, workflow/activity registration, and service registration.

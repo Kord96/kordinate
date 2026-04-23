@@ -1,0 +1,8 @@
+{
+  "name": "augur",
+  "description": "Repository analysis specialist for Augur `/analyze` only",
+  "capabilities": [
+    "Can produce a blast-aware semantic atlas/story pass via `/analyze` — covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
+    "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`"
+  ]
+}

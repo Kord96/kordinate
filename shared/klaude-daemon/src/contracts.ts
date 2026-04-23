@@ -44,10 +44,13 @@ function readCached(path: string): string | undefined {
 }
 
 function agentRootCandidates(agentName: string): string[] {
-  return [
+  const candidates = [
+    process.env.AUGUR_HOME,
+    process.env.AGENT_HOME_DIR && agentName === 'augur' ? join(process.env.AGENT_HOME_DIR, '.augur', 'current') : undefined,
     join('/app/agents', agentName),
     join(moduleDir, '..', '..', '..', 'agents', agentName),
   ]
+  return candidates.filter((value): value is string => typeof value === 'string' && value.length > 0)
 }
 
 function resolveRepoBundleFile(agentName: string, dir: string, selection?: string): string | undefined {

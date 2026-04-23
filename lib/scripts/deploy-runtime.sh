@@ -140,7 +140,7 @@ deploy_agent() {
   local SRC="$REPO/agents/$SOURCE_AGENT"
   local DST="$RUNTIME/$DEST_AGENT"
   local SHARED_ALFRED_ROOT="$KORD_ROOT/alfred"
-  if [ ! -d "$SRC" ]; then
+  if [ "$SOURCE_AGENT" != "augur" ] && [ ! -d "$SRC" ]; then
     log "WARN: no source dir at $SRC"
     return
   fi
@@ -154,6 +154,11 @@ deploy_agent() {
   if [ "$SOURCE_AGENT" = "augur" ]; then
     install_augur_release "$DST"
     EFFECTIVE_SRC="$DST/.augur/current"
+  fi
+
+  if [ ! -d "$EFFECTIVE_SRC" ]; then
+    log "WARN: no effective source dir at $EFFECTIVE_SRC"
+    return
   fi
 
   # Shared specialization alias for deterministic compatibility paths such as
@@ -228,17 +233,21 @@ deploy_agent() {
   local API_KEY_ENV=""
   local BACKEND_NAME=""
   local BACKEND_STRATEGY="first"
-  local BACKENDS_FILE="$SRC/BACKENDS.json"
+  local METADATA_SRC="$SRC"
+  if [ "$SOURCE_AGENT" = "augur" ]; then
+    METADATA_SRC="$EFFECTIVE_SRC"
+  fi
+  local BACKENDS_FILE="$METADATA_SRC/BACKENDS.json"
 
-  if [ -f "$SRC/IDENTITY.md" ]; then
-    PROFILE=$(sed -n 's/^profile: *//p' "$SRC/IDENTITY.md" | head -1)
-    MODEL=$(sed -n 's/^model: *//p' "$SRC/IDENTITY.md" | head -1)
+  if [ -f "$METADATA_SRC/IDENTITY.md" ]; then
+    PROFILE=$(sed -n 's/^profile: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
+    MODEL=$(sed -n 's/^model: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
     [ -z "$MODEL" ] && MODEL="sonnet"
-    BASE_URL=$(sed -n 's/^base_url: *//p' "$SRC/IDENTITY.md" | head -1)
-    API_KEY_REF=$(sed -n 's/^api_key_ref: *//p' "$SRC/IDENTITY.md" | head -1)
-    API_KEY_ENV=$(sed -n 's/^api_key_env: *//p' "$SRC/IDENTITY.md" | head -1)
-    BACKEND_NAME=$(sed -n 's/^backend_name: *//p' "$SRC/IDENTITY.md" | head -1)
-    BACKEND_STRATEGY=$(sed -n 's/^backend_strategy: *//p' "$SRC/IDENTITY.md" | head -1)
+    BASE_URL=$(sed -n 's/^base_url: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
+    API_KEY_REF=$(sed -n 's/^api_key_ref: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
+    API_KEY_ENV=$(sed -n 's/^api_key_env: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
+    BACKEND_NAME=$(sed -n 's/^backend_name: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
+    BACKEND_STRATEGY=$(sed -n 's/^backend_strategy: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
     [ -z "$BACKEND_STRATEGY" ] && BACKEND_STRATEGY="first"
   fi
 

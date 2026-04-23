@@ -5,10 +5,7 @@ FROM ${BASE_IMAGE}
 LABEL org.opencontainers.image.title="agent-augur"
 LABEL org.opencontainers.image.description="Augur specialization layered on the shared agent-base runtime"
 
-RUN python3 /app/agents/augur/scripts/build/build_skill_bundles.py \
-  && python3 /app/agents/augur/scripts/build/build_memory_bundles.py \
-  && python3 /app/agents/augur/scripts/build/build_detector_bundles.py \
-  && python3 /app/agents/augur/scripts/build/build_runtime_bundles.py
-
-RUN ln -sfn /app/agents/augur/.generated/bundles /app/bundles \
-  && ln -sfn /app/agents/augur/memory /app/memory
+# Augur now installs from published releases under $AGENT_HOME_DIR/.augur/current
+# during runtime seeding. Keep the specialization image lightweight and avoid
+# depending on the in-repo source tree at image-build time.
+RUN mkdir -p /app/bundles /app/memory

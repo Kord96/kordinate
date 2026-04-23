@@ -82,7 +82,9 @@ type AugurAnalysisContext = {
 }
 
 function resolveAugurHome(): string {
-  return process.env.AUGUR_HOME ?? `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur`
+  if (process.env.AUGUR_HOME) return process.env.AUGUR_HOME
+  if (process.env.AGENT_HOME_DIR) return `${process.env.AGENT_HOME_DIR}/.augur/current`
+  throw new Error('AUGUR_HOME or AGENT_HOME_DIR is required for Augur workflows')
 }
 
 async function pathExists(path: string): Promise<boolean> {
@@ -530,7 +532,6 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
           ...(requestCommandText(message).includes('--deterministic-only')
             ? { AUGUR_DETERMINISTIC_ONLY: '1' }
             : {}),
-          AUGUR_PROJECT_ROOT: workingDir,
         },
       }
     },

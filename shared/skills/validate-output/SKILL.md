@@ -21,7 +21,7 @@ workflow should not finish until validation passes.
 Example:
 
 ```bash
-/validate-output $MEM --validator $KORDINATE_HOME/agents/augur/skills/analyze/validator/validate.py
+/validate-output $MEM --validator $AUGUR_HOME/skills/analyze/validator/validate.py
 ```
 
 ## Contract
