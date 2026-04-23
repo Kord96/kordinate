@@ -1,0 +1,14 @@
+concept: health-check
+positive:
+  strong:
+  - dedicated health or readiness endpoints
+  - explicit K8s probe configuration
+  medium:
+  - single health endpoint with lightweight checks
+  weak:
+  - root endpoint used informally as health
+negative:
+- liveness depends on external dependencies
+- health endpoint performs expensive operations
+notes:
+- Favor evidence that distinguishes liveness from readiness.

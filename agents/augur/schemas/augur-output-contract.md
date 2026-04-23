@@ -41,7 +41,7 @@ Not every run writes every semantic artifact immediately. Deterministic-only pre
 - `startup.json`
 - `index.json`
 - `facts/`
-- `observations/`        # optional until the semantic layer emits them
+- `observations/`
 - `derived/`
 
 Semantic work then fills in:
@@ -108,17 +108,18 @@ Stable constraints:
 
 ## observations/
 
-Agent-authored semantic observations derived from facts plus repo inspection.
+Normalized semantic assessment artifacts derived from facts plus semantic
+signatures, review questions, and optionally repo inspection.
 
 Stable constraints:
 - observations are not detector output
-- observations may carry confidence, questions, gaps, and recommendations
+- observations may carry confidence, questions, gaps, semantic signatures, and recommendations
 - observations do not replace `atlas.json`, `stories/`, or `narratives.yaml`
-- observations are optional until the semantic layer emits them
+- observations may be produced deterministically before the main semantic phase
 
 ## derived/
 
-Deterministic semantic-planning outputs such as `component-seeds.json`, `story-seeds.json`, and `narrative-seeds.json`.
+Deterministic semantic-planning outputs such as `component-seeds.json`, `story-seeds.json`, and `narrative-seeds.json`. Public semantic guidance should prefer the normalized observation artifacts under `observations/`.
 
 Stable constraints:
 - derived artifacts live under `derived/`
@@ -167,7 +168,7 @@ Stable constraints:
 All semantic artifacts should use one of these path forms when citing files:
 
 - repo-relative paths rooted at the analyzed project, such as `pkg/server/watch.go`
-- analysis-relative paths rooted at the run directory, such as `startup.json`, `facts/routes.json`, or `derived/story-seeds.json`
+- analysis-relative paths rooted at the run directory, such as `startup.json`, `facts/routes.json`, or `observations/stories.json`
 - absolute paths only when the runtime already emitted absolute deterministic references and they resolve correctly
 
 Do not:
@@ -214,8 +215,8 @@ Stable constraints:
 2. `analysis/index.json` provides a per-project history of accepted analyses.
 3. `analysis/<sha>/index.json` groups accepted analyses by analyzed commit.
 4. `analysis/<sha>/latest.json` points to the latest accepted run for that commit.
-5. Deterministic run artifacts use `blast.json`, `startup.json`, `index.json`, `facts/`, and `derived/`.
-6. Semantic artifacts use `observations/`, `atlas.json`, `stories/`, and `narratives.yaml`.
+5. Deterministic run artifacts use `blast.json`, `startup.json`, `index.json`, `facts/`, `observations/`, and `derived/`.
+6. Final semantic artifacts use `atlas.json`, `stories/`, and `narratives.yaml`.
 7. Overlay and reflection containers exist beside every accepted run even before any user edits or reviews are created.
 8. Canonical field-level meaning lives in the schema files, not in ad hoc prompt docs.
 9. New optional fields may appear, but existing stable fields do not change without a versioned schema change.

@@ -47,7 +47,7 @@ See `agents/augur/schemas/atlas-schema.md` for the full atlas schema.
 1. Gather source code and identify languages and frameworks
 2. Use deterministic detector assets to establish stack context and produce normalized facts
 3. Treat `index.json` as the manifest for deterministic run artifacts
-4. Use deterministic facts plus planning aids, including `facts/concepts.json`, to guide semantic atlas work
+4. Use deterministic facts plus normalized observations, including `observations/concepts.json`, to guide semantic atlas work
 5. Use `agents/augur/schemas/atlas-schema.md`, `agents/augur/schemas/story-schema.md`, and `agents/augur/schemas/narratives-schema.md` as the canonical semantic output contracts
 
 ## Design Workflow

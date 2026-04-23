@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MEMORY_CONCEPTS = ROOT / "memory" / "concepts"
 DETECTORS = ROOT / "detectors"
 
-from layout import concept_asset_paths, find_reference_file, load_markdown_frontmatter, load_yaml  # noqa: E402
+from layout import concept_asset_paths, concept_policy, find_reference_file, load_markdown_frontmatter, load_yaml  # noqa: E402
 
 
 def load_detector_support(concept_source: Path | str) -> dict[str, Any]:
@@ -17,13 +17,11 @@ def load_detector_support(concept_source: Path | str) -> dict[str, Any]:
     reference_path = find_reference_file(MEMORY_CONCEPTS, concept_name)
     reference = load_markdown_frontmatter(reference_path) if reference_path else {}
     assets = concept_asset_paths(DETECTORS, concept_name)
-    policy = load_yaml(assets.get("policy.yaml"))
-    signatures = {}
+    policy = concept_policy(DETECTORS, concept_name)
+    signatures = reference.get("signatures") if isinstance(reference.get("signatures"), dict) else {}
     asset_signatures = load_yaml(assets.get("signatures.yaml"))
-    if isinstance(reference.get("signatures"), dict):
-        signatures = reference.get("signatures") or {}
     if isinstance(asset_signatures, dict):
-        signatures = {**asset_signatures, **signatures}
+        signatures = {**signatures, **asset_signatures}
     return {
         "policy": policy,
         "signatures": signatures,

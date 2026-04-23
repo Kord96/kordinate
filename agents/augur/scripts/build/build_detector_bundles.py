@@ -3,9 +3,9 @@
 
 Generates:
 - .generated/bundles/detectors/execution-plan.json
-- .generated/bundles/detectors/frameworks/<name>.json
+- .generated/bundles/detectors/frameworks/all.json
 - .generated/bundles/detectors/facts/<name>.json
-- .generated/bundles/detectors/concepts/<name>.json
+- .generated/bundles/detectors/concepts/all.json
 - .generated/bundles/detectors/concepts/review_questions.json
 - .generated/bundles/detectors/concepts/monitoring.json
 
@@ -24,16 +24,15 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 DETECTORS = ROOT / 'detectors'
-REFERENCES = ROOT / 'references'
+MEMORY_CONCEPTS = ROOT / 'memory' / 'concepts'
 BUNDLES = ROOT / '.generated' / 'bundles' / 'detectors'
 import sys
 sys.path.insert(0, str(ROOT / 'detectors' / 'utils'))
-from layout import concept_asset_paths, find_reference_file, iter_concept_asset_ids, load_markdown_frontmatter, load_yaml  # noqa: E402
+from layout import concept_asset_paths, concept_policy, find_reference_file, iter_concept_asset_ids, load_markdown_frontmatter  # noqa: E402
 
 
-def load_concept_metadata(reference_path: Path, policy_path: Path) -> dict:
+def load_concept_metadata(reference_path: Path, policy_raw: dict) -> dict:
     reference = load_markdown_frontmatter(reference_path)
-    policy_raw = load_yaml(policy_path)
     question_policy = (
         policy_raw.get('detectors', {})
         .get('questions', {})
@@ -110,8 +109,7 @@ def collect_fact_domains(base: Path):
 
 def collect_frameworks():
     out = []
-    frameworks_dir = REFERENCES / 'frameworks'
-    policy_dir = DETECTORS / 'frameworks'
+    frameworks_dir = MEMORY_CONCEPTS / 'frameworks'
     if not frameworks_dir.exists():
         return out
     for entry in sorted(p for p in frameworks_dir.glob('*.md') if p.name != 'README.md'):
@@ -119,14 +117,17 @@ def collect_frameworks():
         signatures = frontmatter.get('signatures') if isinstance(frontmatter.get('signatures'), dict) else {}
         if not signatures:
             continue
-        policy_path = policy_dir / entry.stem / 'policy.yaml'
+        policy_raw = concept_policy(DETECTORS, entry.stem)
         files = {'reference': str(entry.relative_to(ROOT))}
-        if policy_path.exists():
-            files['policy.yaml'] = str(policy_path.relative_to(ROOT))
+        assets = concept_asset_paths(DETECTORS, entry.stem)
+        if assets.get('policy.yaml'):
+            files['policy.yaml'] = str(assets['policy.yaml'].relative_to(ROOT))
+        if assets.get('signatures.yaml'):
+            files['signatures.yaml'] = str(assets['signatures.yaml'].relative_to(ROOT))
         record = {
             'name': entry.stem,
             'files': files,
-            'policy': load_yaml(policy_path).get('policy', {}) if policy_path.exists() else {},
+            'policy': policy_raw.get('policy', {}) if isinstance(policy_raw.get('policy'), dict) else {},
             'signatures': signatures,
             'docs': [str(entry.relative_to(ROOT))],
         }
@@ -137,17 +138,13 @@ def collect_frameworks():
 def collect_concepts():
     out = []
     names = set(iter_concept_asset_ids(DETECTORS))
-    for subdir in ('concepts', 'frameworks'):
-        reference_root = REFERENCES / subdir
-        if not reference_root.exists():
+    for path in MEMORY_CONCEPTS.rglob('*.md'):
+        if path.name == 'README.md':
             continue
-        for path in reference_root.rglob('*.md'):
-            if path.name == 'README.md':
-                continue
-            names.add(path.stem)
+        names.add(path.stem)
     for name in sorted(names):
         files = {}
-        reference_path = find_reference_file(REFERENCES, name)
+        reference_path = find_reference_file(MEMORY_CONCEPTS, name)
         if reference_path:
             files['reference'] = str(reference_path.relative_to(ROOT))
         assets = concept_asset_paths(DETECTORS, name)
@@ -155,7 +152,7 @@ def collect_concepts():
             files[filename] = str(path.relative_to(ROOT))
         record = {'name': name, 'files': files}
         if reference_path:
-            metadata = load_concept_metadata(reference_path, assets.get('policy.yaml', Path()))
+            metadata = load_concept_metadata(reference_path, concept_policy(DETECTORS, name))
             if metadata.get('review_questions', {}).get('entries'):
                 record['review_question_count'] = len(metadata['review_questions']['entries'])
             record['policy'] = metadata['policy']

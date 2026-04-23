@@ -47,7 +47,7 @@ common_failure_modes:
 ASP.NET Minimal is the ASP.NET Core minimal API surface with builder-based startup and `MapVerb` route registration.
 
 ## Recognition
-Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/aspnet-minimal/`.
+Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector assets, when present, live under `detectors/concepts/`.
 
 ## Architectural implications
 - framework scope: `backend`

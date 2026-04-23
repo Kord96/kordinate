@@ -1,0 +1,18 @@
+framework: chi
+manifest_packages:
+  go_mod:
+  - github.com/go-chi/chi
+source_extensions:
+- .go
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+  - chi\.NewRouter\s*\(
+  medium:
+  - \br\.(Get|Post|Put|Delete|Patch)\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []

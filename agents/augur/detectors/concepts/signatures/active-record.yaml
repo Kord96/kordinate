@@ -1,0 +1,14 @@
+concept: active-record
+positive:
+  strong:
+  - ORM model classes with save or delete behavior on the entity itself
+  - model classes inheriting from framework persistence base classes
+  medium:
+  - query helpers and validations attached directly to model classes
+  weak:
+  - plain data models with a few persistence-like helpers
+negative:
+- repositories or data mappers isolate all persistence from the model
+- domain entities remain plain objects with no persistence APIs
+notes:
+- Distinguish this from data-mapper; Active Record mixes domain data and persistence.

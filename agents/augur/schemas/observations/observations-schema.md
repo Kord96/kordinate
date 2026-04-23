@@ -1,15 +1,15 @@
 # Observations Schema
 
-Stable contract for run-local `observations/` artifacts produced by the
-semantic phase.
+Stable contract for run-local `observations/` artifacts produced between
+deterministic facts and final semantic outputs.
 
-Observations are agent-authored analytical statements derived from deterministic
-facts plus direct repo inspection. They are not facts, and they are not final
-semantic outputs.
+Observations are normalized analytical assessments derived from deterministic
+facts plus semantic signatures, review questions, and optionally direct repo
+inspection. They are not facts, and they are not final semantic outputs.
 
 ## Purpose
 
-Use `observations/` for semantic working artifacts that may include:
+Use `observations/` for normalized semantic working artifacts that may include:
 - confidence
 - counter-evidence
 - gaps
@@ -58,17 +58,27 @@ observation artifacts.
   "id": "<stable observation id>",
   "kind": "architecture | concept | flow | state | dependency | health | failure | story | narrative | repair",
   "subject": "<what this observation is about>",
+  "status": "candidate | supported | contradicted | needs-review | resolved",
   "finding": "<analytical statement>",
   "confidence": "high | medium | low",
   "evidence": {
     "fact_ids": ["<fact id>"],
     "repo_refs": ["<path:line>"],
-    "output_refs": ["<atlas component id or story id>"]
+    "output_refs": ["<atlas component id or story id>"],
+    "doc_refs": ["<concept or framework doc path>"]
   },
   "counter_evidence": ["<what weakens the observation>"],
   "gaps": ["<what remains unclear>"],
-  "questions": ["<follow-up semantic question>"],
+  "questions": [
+    {
+      "id": "<stable question id>",
+      "prompt": "<follow-up semantic question>",
+      "weight": 1,
+      "signals": []
+    }
+  ],
   "recommendation": "<suggested next semantic step>",
+  "next_actions": ["<concrete repo exploration step>"],
   "relationships": [
     {
       "type": "observation_ref",
@@ -79,6 +89,11 @@ observation artifacts.
       "type": "fact_ref",
       "label": "grounded_in",
       "target_id": "<fact id>"
+    },
+    {
+      "type": "doc_ref",
+      "label": "relevant_concept | relevant_framework",
+      "target_path": "<doc path>"
     }
   ]
 }
@@ -93,8 +108,8 @@ Facts:
 - no semantic recommendations
 
 Observations:
-- semantic
-- agent-produced
+- semantic assessment
+- may be produced deterministically before the semantic phase
 - confidence allowed
 - questions and recommendations allowed
 
@@ -109,4 +124,5 @@ They are intermediate semantic artifacts that can support:
 - debugging
 - validation
 - repair
+- repo exploration
 - future semantic refinement

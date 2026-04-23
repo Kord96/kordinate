@@ -6,12 +6,14 @@ This layer is separate from the canonical reference layer:
 - `memory/concepts/` describes what a concept means and carries signatures
 - `detectors/concepts/` holds executable rule assets for concept detection
 
-Suggested per-concept files:
+Concept assets are organized by detector mechanism:
 
 ```text
-detectors/concepts/<name>/
-  ast-grep.yaml       # executable structural rules
-  semgrep.yaml        # executable semantic/security rules
+detectors/concepts/
+  policy.yaml
+  ast-grep/<name>.yaml
+  semgrep/<name>.yaml
+  signatures/<name>.yaml
 ```
 
 Concept detector metadata is derived from the matching canonical concept reference under:

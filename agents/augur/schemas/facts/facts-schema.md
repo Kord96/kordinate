@@ -38,6 +38,6 @@ belongs in `observations/`, not `facts/`.
 - [../../detectors/schema.md](../../detectors/schema.md)
   - canonical normalized facts schema
 - [../observations/observations-schema.md](../observations/observations-schema.md)
-  - agent-authored semantic observation contract
+  - normalized semantic observation contract
 - [concepts-schema.md](concepts-schema.md)
-  - specialized contract for `facts/concepts.json`
+  - raw deterministic precursor contract for `facts/concepts.json`

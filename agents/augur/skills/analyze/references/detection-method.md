@@ -6,7 +6,7 @@ Use this reference when interpreting deterministic concept evidence.
 
 1. start from `blast.json`, `startup.json`, and `index.json`
 2. form a provisional architectural read from startup facts, high-signal domains, and targeted repo files
-3. use `facts/concepts.json` to test or refine architectural interpretations that remain ambiguous
+3. use `observations/concepts.json` to test or refine architectural interpretations that remain ambiguous
 4. use the evidence-driven concept guidance appropriately
 5. widen repo reads only when ambiguity remains after targeted fact and concept review
 
@@ -25,7 +25,7 @@ Use this reference when interpreting deterministic concept evidence.
 ## Evidence Sources
 
 - deterministic fact domains
-- concepts records
+- concept observations
 - framework facts
 - targeted repo reads
 

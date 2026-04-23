@@ -16,9 +16,9 @@ Compared:
 
 Important local references:
 
-- [fact_extractor_support.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/fact_extractor_support.py)
+- [fact_extractor_support.py](/kord/workstation/home/project/kordinate/agents/augur/detectors/lib/fact_extractor_support.py)
 - [infer_concepts_from_facts.py](/kord/workstation/home/project/kordinate/agents/augur/detectors/scripts/infer_concepts_from_facts.py)
-- [synthesize_atlas_from_facts.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/synthesize_atlas_from_facts.py)
+- [synthesize_atlas_from_facts.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/synthesis/synthesize_atlas_from_facts.py)
 - [facts-schema.md](/kord/workstation/home/project/kordinate/agents/augur/schemas/facts-schema.md)
 
 Codesight references examined:
@@ -230,7 +230,7 @@ Codesight has evaluation fixtures, but Augur is already set up to be improved as
 
 Current state:
 
-- [fact_extractor_support.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/fact_extractor_support.py) owns a very large share of the behavior
+- [fact_extractor_support.py](/kord/workstation/home/project/kordinate/agents/augur/detectors/lib/fact_extractor_support.py) owns a very large share of the behavior
 
 Consequence:
 

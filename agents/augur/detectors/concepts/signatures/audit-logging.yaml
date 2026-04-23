@@ -1,0 +1,14 @@
+concept: audit-logging
+positive:
+  strong:
+  - dedicated append-only audit models or stores with actor/action metadata
+  - decorators or middleware explicitly recording audit events
+  medium:
+  - structured user-action logs with stable schema
+  weak:
+  - ordinary log statements that mention user actions
+negative:
+- audit data mixed into mutable business tables
+- generic debug logging mistaken for an audit trail
+notes:
+- Accountability and immutability matter more than the exact storage backend.

@@ -13,9 +13,11 @@ Concept detection is deterministic runtime machinery and should be kept separate
 ## Directory shape
 
 ```text
-detectors/concepts/<name>/
-  ast-grep.yaml       # optional executable structural rules
-  semgrep.yaml        # optional executable semantic/security rules
+detectors/concepts/
+  policy.yaml
+  ast-grep/<name>.yaml     # optional executable structural rules
+  semgrep/<name>.yaml      # optional executable semantic/security rules
+  signatures/<name>.yaml   # optional detector-side signature asset
 ```
 
 ## Matching reference under `memory/concepts/`

@@ -1,0 +1,14 @@
+concept: pagination
+positive:
+  strong:
+  - explicit page, cursor, or connection contracts with metadata
+  - stable ordering and bounded page-size behavior
+  medium:
+  - limit and offset usage visible in API or query builders
+  weak:
+  - slices or limits with no outward pagination contract
+negative:
+- unbounded list endpoints with no page controls
+- incidental query limits misread as a pagination design
+notes:
+- Pagination is an API and data-access concept, not just a SQL optimization detail.

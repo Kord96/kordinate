@@ -1,0 +1,16 @@
+concept: timeout
+positive:
+  strong:
+  - timeout parameter on external calls
+  - context deadline propagation
+  - asyncio wait_for or AbortController around real I/O
+  medium:
+  - timeout config objects tied to client initialization
+  - explicit timeout error handling
+  weak:
+  - generic timeout constants with unclear application
+negative:
+- default framework timeouts with no explicit call-site control
+- timeout values defined only in unused config
+notes:
+- Favor detections tied to outbound calls over generic constants.

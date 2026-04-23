@@ -1,8 +1,10 @@
 # Concepts Facts Schema
 
+Deprecated as a consumer-facing contract.
+
 Stable contract for run-local `facts/concepts.json`.
 
-`concepts.json` is a specialized facts artifact. It is not a final concept list. It is a deterministic concepts package used to resolve whether a concept should be accepted, kept tentative, or rejected during the semantic phase.
+Prefer `observations/concepts.json` and [../observations/observations-schema.md](../observations/observations-schema.md) for semantic interpretation. `concepts.json` is the raw deterministic precursor used to derive normalized concept observations.
 
 ## Interpretation Rules
 
@@ -73,9 +75,11 @@ Each candidate concept entry must include:
 
 `status_hint`, `confidence`, `related_files`, and `related_fact_ids` are optional but recommended.
 
-## Semantic-Phase Expectations
+## Observation-Phase Expectations
 
-The semantic phase should resolve each materially relevant candidate as:
+The observation phase should resolve each materially relevant candidate into a normalized observation that can later be confirmed, rejected, or refined during semantic exploration.
+
+The semantic phase should then resolve each materially relevant candidate as:
 - `accepted`
 - `tentative`
 - `rejected`

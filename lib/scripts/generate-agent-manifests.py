@@ -158,14 +158,14 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
             "For general, focus on transferable architecture and review lessons.",
         ])
         contract["workflow"] = {
-            "analysisContextScript": "/app/agents/augur/scripts/build_analysis_context.py",
-            "promptContextScript": "/app/agents/augur/scripts/build_prompt_context.py",
-            "repairPromptScript": "/app/agents/augur/scripts/build_validation_repair_prompt.py",
+            "analysisContextScript": "/app/agents/augur/scripts/run/build_analysis_context.py",
+            "promptContextScript": "/app/agents/augur/scripts/run/build_prompt_context.py",
+            "repairPromptScript": "/app/agents/augur/scripts/run/build_validation_repair_prompt.py",
         }
         contract["validation"] = {
             "required": True,
             "validatorScript": "/app/agents/augur/skills/analyze/validator/validate.py",
-            "finalizeScript": "/app/agents/augur/scripts/finalize_analysis.py",
+            "finalizeScript": "/app/agents/augur/scripts/run/finalize_analysis.py",
         }
         validation = agent.get("validation") if isinstance(agent.get("validation"), dict) else {}
         max_attempts = validation.get("max_attempts", validation.get("maxAttempts"))

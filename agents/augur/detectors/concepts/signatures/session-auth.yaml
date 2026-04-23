@@ -1,0 +1,14 @@
+concept: session-auth
+positive:
+  strong:
+  - server-side session middleware plus cookie-based session identifiers
+  - session lifecycle controls such as regeneration and destruction
+  medium:
+  - request-scoped session access with a recognizable session store
+  weak:
+  - signed cookies that may or may not back onto server state
+negative:
+- stateless bearer-token auth mislabeled as session auth
+- local cookie checks with no server-side session store
+notes:
+- Session auth is about server-owned auth state, not merely cookies.

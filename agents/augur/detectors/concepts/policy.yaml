@@ -1,0 +1,1867 @@
+defaults: {}
+overrides:
+  abstract-factory:
+    concept: abstract-factory
+    detectors: {}
+    policy: {}
+  active-record:
+    concept: active-record
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  actor-model:
+    concept: actor-model
+    detectors: {}
+    policy: {}
+  adapter:
+    concept: adapter
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - noisy_rule_match
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  aggregate:
+    concept: aggregate
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  anemic-domain-model:
+    concept: anemic-domain-model
+    detectors: {}
+    policy: {}
+  api-key-auth:
+    concept: api-key-auth
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - low_rule_confidence
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  audit-logging:
+    concept: audit-logging
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - noisy_rule_match
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  backpressure:
+    concept: backpressure
+    detectors: {}
+    policy: {}
+  batch-loader:
+    concept: batch-loader
+    detectors: {}
+    policy: {}
+  big-ball-of-mud:
+    concept: big-ball-of-mud
+    detectors: {}
+    policy: {}
+  block-content:
+    concept: block-content
+    detectors: {}
+    policy: {}
+  bloom-filter:
+    concept: bloom-filter
+    detectors: {}
+    policy: {}
+  boolean-blindness:
+    concept: boolean-blindness
+    detectors: {}
+    policy: {}
+  bridge:
+    concept: bridge
+    detectors: {}
+    policy: {}
+  builder:
+    concept: builder
+    detectors: {}
+    policy: {}
+  bulkhead:
+    concept: bulkhead
+    detectors: {}
+    policy: {}
+  busy-waiting:
+    concept: busy-waiting
+    detectors: {}
+    policy: {}
+  cache-aside:
+    concept: cache-aside
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - noisy_rule_match
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  cache-stampede-prevention:
+    concept: cache-stampede-prevention
+    detectors: {}
+    policy: {}
+  callback-hell:
+    concept: callback-hell
+    detectors: {}
+    policy: {}
+  chain-of-responsibility:
+    concept: chain-of-responsibility
+    detectors: {}
+    policy: {}
+  chatty-api:
+    concept: chatty-api
+    detectors: {}
+    policy: {}
+  circuit-breaker:
+    concept: circuit-breaker
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - noisy_rule_match
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  circular-dependency:
+    concept: circular-dependency
+    detectors: {}
+    policy: {}
+  command:
+    concept: command
+    detectors: {}
+    policy: {}
+  component:
+    concept: component
+    detectors: {}
+    policy: {}
+  component-slot:
+    concept: component-slot
+    detectors: {}
+    policy: {}
+  composite:
+    concept: composite
+    detectors: {}
+    policy: {}
+  config-management:
+    concept: config-management
+    detectors: {}
+    policy: {}
+  config-sprawl:
+    concept: config-sprawl
+    detectors: {}
+    policy: {}
+  connection-pooling:
+    concept: connection-pooling
+    detectors: {}
+    policy: {}
+  content-negotiation:
+    concept: content-negotiation
+    detectors: {}
+    policy: {}
+  contract-testing:
+    concept: contract-testing
+    detectors: {}
+    policy: {}
+  copy-paste-programming:
+    concept: copy-paste-programming
+    detectors: {}
+    policy: {}
+  correlation-id:
+    concept: correlation-id
+    detectors: {}
+    policy: {}
+  cors:
+    concept: cors
+    detectors: {}
+    policy: {}
+  cqrs:
+    concept: cqrs
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  data-mapper:
+    concept: data-mapper
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  database-migration:
+    concept: database-migration
+    detectors: {}
+    policy: {}
+  ddd:
+    concept: ddd
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  decorator:
+    concept: decorator
+    detectors: {}
+    policy: {}
+  deep-nesting:
+    concept: deep-nesting
+    detectors: {}
+    policy: {}
+  dependency-injection:
+    concept: dependency-injection
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 5
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  distributed-lock:
+    concept: distributed-lock
+    detectors: {}
+    policy: {}
+  distributed-tracing:
+    concept: distributed-tracing
+    detectors: {}
+    policy: {}
+  dual-writes:
+    concept: dual-writes
+    detectors: {}
+    policy: {}
+  entity-component-system:
+    concept: entity-component-system
+    detectors: {}
+    policy: {}
+  error-boundary:
+    concept: error-boundary
+    detectors: {}
+    policy: {}
+  error-code-returns:
+    concept: error-code-returns
+    detectors: {}
+    policy: {}
+  etl:
+    concept: etl
+    detectors: {}
+    policy: {}
+  event-driven:
+    concept: event-driven
+    detectors:
+      ast_grep:
+        enabled: false
+        detector_strength: 1
+      semgrep:
+        enabled: false
+        detector_strength: 1
+      signatures:
+        enabled: false
+        detector_strength: 1
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+        - conflicting_evidence
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  event-sourcing:
+    concept: event-sourcing
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - noisy_rule_match
+        - conflicting_evidence
+        - broad_match
+        - low_rule_confidence
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  experiment-framework:
+    concept: experiment-framework
+    detectors: {}
+    policy: {}
+  facade:
+    concept: facade
+    detectors: {}
+    policy: {}
+  factory:
+    concept: factory
+    detectors: {}
+    policy: {}
+  feature-envy:
+    concept: feature-envy
+    detectors: {}
+    policy: {}
+  feature-flag:
+    concept: feature-flag
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - noisy_rule_match
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  feature-store:
+    concept: feature-store
+    detectors: {}
+    policy: {}
+  fire-and-forget:
+    concept: fire-and-forget
+    detectors: {}
+    policy: {}
+  fixture-builder:
+    concept: fixture-builder
+    detectors: {}
+    policy: {}
+  flaky-tests:
+    concept: flaky-tests
+    detectors: {}
+    policy: {}
+  flux:
+    concept: flux
+    detectors: {}
+    policy: {}
+  flyweight:
+    concept: flyweight
+    detectors: {}
+    policy: {}
+  form-binding:
+    concept: form-binding
+    detectors: {}
+    policy: {}
+  future-promise:
+    concept: future-promise
+    detectors: {}
+    policy: {}
+  game-loop:
+    concept: game-loop
+    detectors: {}
+    policy: {}
+  god-endpoint:
+    concept: god-endpoint
+    detectors: {}
+    policy: {}
+  god-object:
+    concept: god-object
+    detectors: {}
+    policy: {}
+  graceful-degradation:
+    concept: graceful-degradation
+    detectors: {}
+    policy: {}
+  graphql:
+    concept: graphql
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  grpc:
+    concept: grpc
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  hardcoded-credentials:
+    concept: hardcoded-credentials
+    detectors: {}
+    policy: {}
+  hardcoded-urls:
+    concept: hardcoded-urls
+    detectors: {}
+    policy: {}
+  health-check:
+    concept: health-check
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  hexagonal:
+    concept: hexagonal
+    detectors:
+      ast_grep:
+        enabled: false
+        detector_strength: 2
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - noisy_rule_match
+        - conflicting_evidence
+        - broad_match
+        - low_rule_confidence
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  hydration:
+    concept: hydration
+    detectors: {}
+    policy: {}
+  ice-cream-cone:
+    concept: ice-cream-cone
+    detectors: {}
+    policy: {}
+  idempotent-consumer:
+    concept: idempotent-consumer
+    detectors: {}
+    policy: {}
+  inbox:
+    concept: inbox
+    detectors: {}
+    policy: {}
+  inconsistent-naming:
+    concept: inconsistent-naming
+    detectors: {}
+    policy: {}
+  infrastructure-as-code:
+    concept: infrastructure-as-code
+    detectors: {}
+    policy: {}
+  input-validation:
+    concept: input-validation
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - low_rule_confidence
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  insecure-deserialization:
+    concept: insecure-deserialization
+    detectors: {}
+    policy: {}
+  intermediate-representation:
+    concept: intermediate-representation
+    detectors: {}
+    policy: {}
+  iterator:
+    concept: iterator
+    detectors: {}
+    policy: {}
+  lava-flow:
+    concept: lava-flow
+    detectors: {}
+    policy: {}
+  lazy-loading:
+    concept: lazy-loading
+    detectors: {}
+    policy: {}
+  lexer-parser:
+    concept: lexer-parser
+    detectors: {}
+    policy: {}
+  log-and-throw:
+    concept: log-and-throw
+    detectors: {}
+    policy: {}
+  log-spam:
+    concept: log-spam
+    detectors: {}
+    policy: {}
+  long-polling:
+    concept: long-polling
+    detectors: {}
+    policy: {}
+  long-transactions:
+    concept: long-transactions
+    detectors: {}
+    policy: {}
+  lru-cache:
+    concept: lru-cache
+    detectors: {}
+    policy: {}
+  magic-numbers:
+    concept: magic-numbers
+    detectors: {}
+    policy: {}
+  mediator:
+    concept: mediator
+    detectors: {}
+    policy: {}
+  memento:
+    concept: memento
+    detectors: {}
+    policy: {}
+  memory-leak:
+    concept: memory-leak
+    detectors: {}
+    policy: {}
+  message-queue:
+    concept: message-queue
+    detectors: {}
+    policy: {}
+  metric-cardinality-explosion:
+    concept: metric-cardinality-explosion
+    detectors: {}
+    policy: {}
+  metrics-instrumentation:
+    concept: metrics-instrumentation
+    detectors: {}
+    policy: {}
+  micro-frontend:
+    concept: micro-frontend
+    detectors: {}
+    policy: {}
+  middleware:
+    concept: middleware
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - noisy_rule_match
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  misleading-names:
+    concept: misleading-names
+    detectors: {}
+    policy: {}
+  missing-log-context:
+    concept: missing-log-context
+    detectors: {}
+    policy: {}
+  model-registry:
+    concept: model-registry
+    detectors: {}
+    policy: {}
+  monad:
+    concept: monad
+    detectors: {}
+    policy: {}
+  multi-tenant:
+    concept: multi-tenant
+    detectors: {}
+    policy: {}
+  mvvm:
+    concept: mvvm
+    detectors: {}
+    policy: {}
+  n-plus-one:
+    concept: n-plus-one
+    detectors: {}
+    policy: {}
+  null-object:
+    concept: null-object
+    detectors: {}
+    policy: {}
+  oauth-oidc:
+    concept: oauth-oidc
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  object-pool:
+    concept: object-pool
+    detectors: {}
+    policy: {}
+  observer:
+    concept: observer
+    detectors: {}
+    policy: {}
+  optimistic-locking:
+    concept: optimistic-locking
+    detectors: {}
+    policy: {}
+  optimistic-update:
+    concept: optimistic-update
+    detectors: {}
+    policy: {}
+  outbox:
+    concept: outbox
+    detectors:
+      ast_grep:
+        enabled: false
+        detector_strength: 2
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - noisy_rule_match
+        - conflicting_evidence
+        - broad_match
+        - low_rule_confidence
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  over-under-fetching:
+    concept: over-under-fetching
+    detectors: {}
+    policy: {}
+  pagination:
+    concept: pagination
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - low_rule_confidence
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  pipeline-filter:
+    concept: pipeline-filter
+    detectors: {}
+    policy: {}
+  plugin:
+    concept: plugin
+    detectors: {}
+    policy: {}
+  pokemon-exception:
+    concept: pokemon-exception
+    detectors: {}
+    policy: {}
+  producer-consumer:
+    concept: producer-consumer
+    detectors: {}
+    policy: {}
+  prop-drilling:
+    concept: prop-drilling
+    detectors: {}
+    policy: {}
+  property-testing:
+    concept: property-testing
+    detectors: {}
+    policy: {}
+  prototype:
+    concept: prototype
+    detectors: {}
+    policy: {}
+  proxy:
+    concept: proxy
+    detectors: {}
+    policy: {}
+  race-condition:
+    concept: race-condition
+    detectors: {}
+    policy: {}
+  rate-limiting:
+    concept: rate-limiting
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  rbac:
+    concept: rbac
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  reactive-store:
+    concept: reactive-store
+    detectors: {}
+    policy: {}
+  read-through:
+    concept: read-through
+    detectors: {}
+    policy: {}
+  read-write-lock:
+    concept: read-write-lock
+    detectors: {}
+    policy: {}
+  repository:
+    concept: repository
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 5
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  request-reply:
+    concept: request-reply
+    detectors: {}
+    policy: {}
+  rest:
+    concept: rest
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 2
+      semgrep:
+        enabled: false
+        detector_strength: 1
+      signatures:
+        enabled: true
+        detector_strength: 5
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  result-type:
+    concept: result-type
+    detectors: {}
+    policy: {}
+  retry:
+    concept: retry
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - noisy_rule_match
+        - low_rule_confidence
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  ring-buffer:
+    concept: ring-buffer
+    detectors: {}
+    policy: {}
+  route-guard:
+    concept: route-guard
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  router:
+    concept: router
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  rule-engine:
+    concept: rule-engine
+    detectors: {}
+    policy: {}
+  saga:
+    concept: saga
+    detectors: {}
+    policy: {}
+  saga-orchestrator:
+    concept: saga-orchestrator
+    detectors: {}
+    policy: {}
+  scheduler:
+    concept: scheduler
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: false
+        detector_strength: 1
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  select-star:
+    concept: select-star
+    detectors: {}
+    policy: {}
+  server-prefetch:
+    concept: server-prefetch
+    detectors: {}
+    policy: {}
+  server-route-registration:
+    concept: server-route-registration
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  server-sent-events:
+    concept: server-sent-events
+    detectors: {}
+    policy: {}
+  serverless:
+    concept: serverless
+    detectors: {}
+    policy: {}
+  service-manager:
+    concept: service-manager
+    detectors: {}
+    policy: {}
+  session-auth:
+    concept: session-auth
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  side-effect-hook:
+    concept: side-effect-hook
+    detectors: {}
+    policy: {}
+  singleton:
+    concept: singleton
+    detectors: {}
+    policy: {}
+  snapshot-testing:
+    concept: snapshot-testing
+    detectors: {}
+    policy: {}
+  soft-delete:
+    concept: soft-delete
+    detectors: {}
+    policy: {}
+  spaghetti-code:
+    concept: spaghetti-code
+    detectors: {}
+    policy: {}
+  spatial-partitioning:
+    concept: spatial-partitioning
+    detectors: {}
+    policy: {}
+  specification:
+    concept: specification
+    detectors: {}
+    policy: {}
+  sql-injection:
+    concept: sql-injection
+    detectors: {}
+    policy: {}
+  state-machine:
+    concept: state-machine
+    detectors: {}
+    policy: {}
+  strategy:
+    concept: strategy
+    detectors: {}
+    policy: {}
+  stream-to-store:
+    concept: stream-to-store
+    detectors: {}
+    policy: {}
+  stringly-typed:
+    concept: stringly-typed
+    detectors: {}
+    policy: {}
+  structured-logging:
+    concept: structured-logging
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - low_rule_confidence
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 4
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  suspense-boundary:
+    concept: suspense-boundary
+    detectors: {}
+    policy: {}
+  swallowed-exception:
+    concept: swallowed-exception
+    detectors: {}
+    policy: {}
+  sync-in-async:
+    concept: sync-in-async
+    detectors: {}
+    policy: {}
+  template-method:
+    concept: template-method
+    detectors: {}
+    policy: {}
+  tenant-isolation:
+    concept: tenant-isolation
+    detectors: {}
+    policy: {}
+  tenant-routing:
+    concept: tenant-routing
+    detectors: {}
+    policy: {}
+  tensor:
+    concept: tensor
+    detectors: {}
+    policy: {}
+  test-doubles:
+    concept: test-doubles
+    detectors: {}
+    policy: {}
+  tick-simulation:
+    concept: tick-simulation
+    detectors: {}
+    policy: {}
+  timeout:
+    concept: timeout
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 5
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - low_rule_confidence
+    policy:
+      auto_confirm:
+        allowed: true
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  token-auth:
+    concept: token-auth
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: true
+        detector_strength: 4
+      questions:
+        enabled: true
+        detector_strength: 4
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 4
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  train-wreck:
+    concept: train-wreck
+    detectors: {}
+    policy: {}
+  training-pipeline:
+    concept: training-pipeline
+    detectors: {}
+    policy: {}
+  trie:
+    concept: trie
+    detectors: {}
+    policy: {}
+  unbounded-growth:
+    concept: unbounded-growth
+    detectors: {}
+    policy: {}
+  unit-of-work:
+    concept: unit-of-work
+    detectors: {}
+    policy: {}
+  value-object:
+    concept: value-object
+    detectors: {}
+    policy: {}
+  visitor:
+    concept: visitor
+    detectors: {}
+    policy: {}
+  webhook:
+    concept: webhook
+    detectors: {}
+    policy: {}
+  websocket:
+    concept: websocket
+    detectors: {}
+    policy: {}
+  worker-pool:
+    concept: worker-pool
+    detectors: {}
+    policy: {}
+  workflow-engine:
+    concept: workflow-engine
+    detectors:
+      ast_grep:
+        enabled: true
+        detector_strength: 4
+      semgrep:
+        enabled: false
+        detector_strength: 2
+      signatures:
+        enabled: false
+        detector_strength: 1
+      questions:
+        enabled: true
+        detector_strength: 5
+        ask_when:
+        - broad_match
+        - architecture_level_concept
+        - conflicting_evidence
+    policy:
+      auto_confirm:
+        allowed: false
+        min_detector_strength: 5
+        min_match_confidence: 5
+        requires_no_contradiction: true
+      unresolved_state: candidate
+      negative_rule_result_means: neutral
+      broad_match_requires_questions: true
+  write-behind:
+    concept: write-behind
+    detectors: {}
+    policy: {}
+  actix-web:
+    framework: actix-web
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  aiohttp:
+    framework: aiohttp
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  angular:
+    framework: angular
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  aspnet-controllers:
+    framework: aspnet-controllers
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  aspnet-minimal:
+    framework: aspnet-minimal
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  axum:
+    framework: axum
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  chi:
+    framework: chi
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  django:
+    framework: django
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  echo:
+    framework: echo
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  elysia:
+    framework: elysia
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  express:
+    framework: express
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  fastapi:
+    framework: fastapi
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  fastify:
+    framework: fastify
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  fiber:
+    framework: fiber
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  flask:
+    framework: flask
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  gin:
+    framework: gin
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  grape:
+    framework: grape
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  hono:
+    framework: hono
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  koa:
+    framework: koa
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  ktor:
+    framework: ktor
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  laravel:
+    framework: laravel
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  nestjs:
+    framework: nestjs
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  net-http:
+    framework: net-http
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  nextjs:
+    framework: nextjs
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  phoenix:
+    framework: phoenix
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  quarkus:
+    framework: quarkus
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  rails:
+    framework: rails
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  react:
+    framework: react
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  sinatra:
+    framework: sinatra
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  slim:
+    framework: slim
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  spring:
+    framework: spring
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  starlette:
+    framework: starlette
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  sveltekit:
+    framework: sveltekit
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  symfony:
+    framework: symfony
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  vapor:
+    framework: vapor
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate
+  vue:
+    framework: vue
+    policy:
+      auto_confirm:
+        allowed: true
+        min_signal_strength: strong
+      unresolved_state: candidate

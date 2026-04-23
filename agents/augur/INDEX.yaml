@@ -69,6 +69,27 @@ entries:
     include: false
     mutable: false
     source_of_truth: repo
+  - path: benchmarks
+    kind: dir
+    purpose: Evaluation datasets, ablation definitions, and benchmark runners for analyze
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: docs/release-contract.md
+    kind: file
+    purpose: External publication contract for shipping Augur as a versioned artifact outside the monorepo
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
+  - path: schemas/augur-release-schema.md
+    kind: file
+    purpose: Canonical manifest contract for publishable Augur release artifacts
+    preload: ondemand
+    include: false
+    mutable: false
+    source_of_truth: repo
   - path: .generated/bundles/memory
     kind: dir
     purpose: Generated semantic memory bundles for analyze holistic and selective preload profiles

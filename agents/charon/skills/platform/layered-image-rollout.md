@@ -51,6 +51,20 @@ python3 lib/scripts/roll-platform-image.py agent-augur <registry-host> <timestam
 
 This keeps image ownership in the Charon/platform path instead of ad hoc deployment patching.
 
+## Augur Release Flow
+
+Augur is moving toward a versioned release contract that Charon can publish independently of the monorepo checkout.
+
+Preferred preparation flow for Augur:
+
+```bash
+python3 agents/augur/scripts/build/build_release_artifact.py --output-dir /tmp/augur-release
+python3 lib/scripts/publish-augur-release.py /tmp/augur-release/augur-<version>/augur-release.json --channel candidate
+python3 lib/scripts/install-augur-release.py --channel candidate --dest /tmp/augur-installed
+```
+
+This does not replace pod agents. It gives Charon a stable publication boundary so local and cluster tests can run the same packaged Augur release that pods consume.
+
 ## Verification
 
 - `kubectl exec` into an agent pod and confirm `which klaude-daemon`

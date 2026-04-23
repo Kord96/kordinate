@@ -6,6 +6,7 @@ detector-owned utilities.
 This layer owns:
 - detector definitions that produce normalized facts
 - detector-side contracts in [schema.md](./schema.md)
+- fact-family contracts in [facts/schema.md](./facts/schema.md)
 - shared detector-side Python helpers under `utils/`
 
 This layer does not own:
@@ -19,6 +20,11 @@ This layer does not own:
 ```text
 detectors/
   schema.md
+  facts/
+    schema.md
+    README.md
+  scripts/
+    <helper>.py
   utils/
   frameworks/
   concepts/
@@ -37,12 +43,14 @@ detectors/
 ```
 
 Meaning:
+- `facts/` is the family entrypoint for flat fact-domain detectors
 - ordinary detector directories such as `routes/` or `models/` define one fact
   domain
 - `frameworks/` is a special deterministic family for framework-presence facts
 - `concepts/` is a special deterministic bridge family that still emits facts,
   not semantic observations; its executable assets are organized by detector
   mechanism rather than folder-per-concept
+- `scripts/` provides stable CLI entrypoints for detector-side helper scripts
 - canonical explanation, signatures, and review questions live under
   `../memory/concepts/`
 - `utils/` contains detector-side executable helpers and runners shared by

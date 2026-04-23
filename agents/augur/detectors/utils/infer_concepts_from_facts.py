@@ -23,10 +23,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "detectors"))
 sys.path.insert(0, str(ROOT / "detectors" / "utils"))
 
-from utils import component_ids_from_relationships, fact_kind, fact_payload, make_doc_ref, make_entity_ref, make_fact_ref, make_question_ref, normalize_fact_record
+from utils import component_ids_from_relationships, detector_metadata_from_record, fact_kind, fact_payload, make_doc_ref, make_entity_ref, make_fact_ref, make_question_ref, normalize_fact_record
 from layout import find_reference_file
 BUNDLED_CONCEPT_QUESTIONS = ROOT / ".generated" / "bundles" / "detectors" / "concepts" / "review_questions.json"
-REFERENCES_DIR = ROOT / "references"
+MEMORY_CONCEPTS = ROOT / "memory" / "concepts"
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 SEMANTIC_REVIEW_CONCEPTS = {
     "active-record",
@@ -121,10 +121,10 @@ def parse_frontmatter(text: str) -> dict[str, Any]:
 
 
 def find_concept_reference(concept_id: str) -> Path:
-    found = find_reference_file(REFERENCES_DIR, concept_id)
+    found = find_reference_file(MEMORY_CONCEPTS, concept_id)
     if found:
         return found
-    return REFERENCES_DIR / "concepts" / f"{concept_id}.md"
+    return MEMORY_CONCEPTS / f"{concept_id}.md"
 
 
 def concept_reference_doc(concept_id: str) -> str:
@@ -234,7 +234,6 @@ def detector_backing(concept_id: str) -> str:
     if reference_path.exists():
         return "strong"
     concepts_root = ROOT / "detectors" / "concepts"
-    legacy_dir = concepts_root / concept_id
     typed_files = [
         concepts_root / "ast-grep" / f"{concept_id}.yaml",
         concepts_root / "semgrep" / f"{concept_id}.yaml",
@@ -242,10 +241,6 @@ def detector_backing(concept_id: str) -> str:
     ]
     if any(path.exists() for path in typed_files):
         return "partial"
-    if legacy_dir.exists():
-        files = {path.name for path in legacy_dir.iterdir() if path.is_file()}
-        if files:
-            return "partial"
     return "weak"
 
 
@@ -851,21 +846,23 @@ def build_output(facts_path: Path, facts: list[dict[str, Any]]) -> dict[str, Any
     concept_facts.extend(gap_to_fact(gap) for gap in gaps)
     detectors: dict[str, dict[str, Any]] = {}
     normalized_facts: list[dict[str, Any]] = []
-    question_bundle = load_question_bundle()
     for fact in concept_facts:
-        detector_id = str(fact.get("detector_id") or "").strip()
         normalized = dict(fact)
         normalized.pop("domain", None)
         normalized_facts.append(normalized)
+        metadata = detector_metadata_from_record(fact)
+        detector_id = str(metadata.get("id") or "").strip()
+        if not detector_id:
+            continue
         concept_id = str((fact.get("fact") or {}).get("concept_id") or "").strip()
         bundle_entry = question_bundle.get(concept_id) if concept_id else {}
         detectors[detector_id] = {
             "id": detector_id,
-            "kind": str((fact.get("fact") or {}).get("kind") or "").strip() or None,
-            "class": "bridge",
-            "strength": None,
-            "rule": None,
-            "bundle": "detectors:concepts",
+            "kind": metadata.get("kind"),
+            "class": metadata.get("class"),
+            "strength": metadata.get("strength"),
+            "rule": metadata.get("rule"),
+            "bundle": metadata.get("bundle"),
             "docs": list((bundle_entry or {}).get("docs") or ([concept_reference_doc(concept_id)] if concept_id else [])),
             "review_questions": [
                 str(entry.get("prompt") or "").strip()

@@ -47,7 +47,7 @@ common_failure_modes:
 Phoenix is an Elixir web framework with router macros, channel support, and explicit endpoint pipelines.
 
 ## Recognition
-Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/phoenix/`.
+Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector assets, when present, live under `detectors/concepts/`.
 
 ## Architectural implications
 - framework scope: `backend`

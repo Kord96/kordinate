@@ -23,7 +23,7 @@ function augurContract(): AgentContract {
     validation: {
       required: true,
       validatorScript: '/app/agents/augur/skills/analyze/validator/validate.py',
-      finalizeScript: '/app/agents/augur/scripts/finalize_analysis.py',
+      finalizeScript: '/app/agents/augur/scripts/run/finalize_analysis.py',
     },
   }
 }

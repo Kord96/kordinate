@@ -1,0 +1,14 @@
+concept: router
+positive:
+  strong:
+  - framework router library with route definitions
+  - declarative path-to-view mapping
+  medium:
+  - navigation helpers and route parameters around a routing setup
+  weak:
+  - manual location checks or pushState calls
+negative:
+- URL-based conditionals without a coherent routing system
+notes:
+- Keep this separate from backend API route extraction.
+- Use this concept for UI navigation routers, not server route registration.

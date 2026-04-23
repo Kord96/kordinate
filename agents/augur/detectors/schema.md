@@ -14,6 +14,7 @@ belongs in `observations/`, not `facts/`.
 Keep these responsibilities separate:
 
 - deterministic extraction lives under `detectors/`
+- fact-family contracts live under `detectors/facts/`
 - normalized fact files are emitted into run-local `facts/`
 - semantic interpretation happens after fact extraction
 - semantic observations belong in `observations/`
@@ -31,26 +32,15 @@ detectors/<domain>/
 Special families:
 
 ```text
-detectors/frameworks/<name>/
 detectors/concepts/
   policy.yaml
   ast-grep/<name>.yaml
   semgrep/<name>.yaml
   signatures/<name>.yaml
-```
-
-During migration, concept loaders may also read legacy per-concept directories:
-
-```text
-detectors/concepts/<name>/
+detectors/frameworks/
   policy.yaml
-  ast-grep.yaml
-  semgrep.yaml
   signatures.yaml
 ```
-
-Typed concept assets take precedence over legacy per-concept files when both
-exist for the same detector id.
 
 Use ordinary `<domain>` directories for normalized fact domains such as
 `routes`, `models`, or `events`.
@@ -61,6 +51,7 @@ semantic family inside that tree.
 Shared executable helpers and detector runners live under:
 
 ```text
+detectors/scripts/
 detectors/utils/
 ```
 
@@ -105,6 +96,11 @@ Common fact domains include:
 
 `derived/` contains deterministic planning artifacts that are not facts, such as
 `component-seeds.json`, `story-seeds.json`, and `narrative-seeds.json`.
+
+`observations/` contains normalized semantic assessment artifacts derived from
+facts and planning outputs. Public semantic consumers should prefer
+`observations/*.json` over raw candidate or seed artifacts when the observation
+layer exists.
 
 ## Top-Level Fact Domain Shape
 

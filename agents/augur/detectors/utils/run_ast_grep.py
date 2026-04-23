@@ -2,7 +2,7 @@
 """Run ast-grep concept detection and emit structured evidence records.
 
 Usage:
-    python run_ast_grep.py <project-root> [--kordinate-home <path>]
+    python run_ast_grep.py <project-root> [--augur-home <path>]
 
 Finds concept detector ast-grep rule files in the detector source tree and runs them
 against the target project. Outputs JSON array of structured evidence records.
@@ -132,13 +132,13 @@ def build_evidence_record(concept: str, detector_strength: int, matches: list[di
     }
 
 
-def resolve_detectors_root(kordinate_home: str | None) -> Path:
+def resolve_detectors_root(augur_home: str | None) -> Path:
     local_dir = AGENT_ROOT / "detectors"
     if local_dir.exists():
         return local_dir
 
-    if kordinate_home:
-        home_dir = Path(kordinate_home) / "agents" / "augur" / "detectors"
+    if augur_home:
+        home_dir = Path(augur_home) / "detectors"
         if home_dir.exists():
             return home_dir
 
@@ -154,18 +154,23 @@ def resolve_ast_grep_binary() -> str:
 
 def main():
     if len(sys.argv) < 2:
-        print(f"Usage: {sys.argv[0]} <project-root> [--kordinate-home <path>]", file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} <project-root> [--augur-home <path>]", file=sys.stderr)
         sys.exit(2)
 
     project_root = sys.argv[1]
-    kordinate_home = os.environ.get("KORDINATE_HOME") or os.path.expanduser("~/.kord")
+    augur_home = os.environ.get("AUGUR_HOME")
 
-    if "--kordinate-home" in sys.argv:
-        idx = sys.argv.index("--kordinate-home")
+    if "--augur-home" in sys.argv:
+        idx = sys.argv.index("--augur-home")
         if idx + 1 < len(sys.argv):
-            kordinate_home = sys.argv[idx + 1]
+            augur_home = sys.argv[idx + 1]
 
-    detectors_root = resolve_detectors_root(kordinate_home)
+    if augur_home is None:
+        kordinate_home = os.environ.get("KORDINATE_HOME")
+        if kordinate_home:
+            augur_home = str(Path(kordinate_home) / "agents" / "augur")
+
+    detectors_root = resolve_detectors_root(augur_home)
     concepts_dir = detectors_root / "concepts"
 
     if not concepts_dir.exists():

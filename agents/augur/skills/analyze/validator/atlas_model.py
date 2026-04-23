@@ -235,19 +235,22 @@ def validate_atlas(
             if isinstance(candidate, dict) and candidate.get("source"):
                 propagation_candidates_by_source[str(candidate.get("source"))].append(candidate)
 
-    failure_scenario_candidates_payload = {}
-    failure_scenario_candidates_path = analysis_dir / "facts" / "failure-scenario-candidates.json"
-    if failure_scenario_candidates_path.exists():
+    failure_observations_payload = {}
+    failure_observations_path = analysis_dir / "observations" / "failure-scenarios.json"
+    if failure_observations_path.exists():
         try:
-            failure_scenario_candidates_payload = json.loads(failure_scenario_candidates_path.read_text())
+            failure_observations_payload = json.loads(failure_observations_path.read_text())
         except json.JSONDecodeError as e:
-            issues.append({"level": "ERROR", "section": "failure-scenario-candidates", "message": f"JSON parse error: {e}"})
-    if isinstance(failure_scenario_candidates_payload, dict):
-        for candidate in failure_scenario_candidates_payload.get("candidates") or []:
-            if not isinstance(candidate, dict):
+            issues.append({"level": "ERROR", "section": "failure-observations", "message": f"JSON parse error: {e}"})
+    if isinstance(failure_observations_payload, dict):
+        for observation in failure_observations_payload.get("observations") or []:
+            if not isinstance(observation, dict):
                 continue
-            for entity in [str(item) for item in (candidate.get("starts_at") or []) + (candidate.get("involves") or []) if str(item or "").strip()]:
-                failure_scenario_candidates_by_entity[entity].append(candidate)
+            evidence = observation.get("evidence") if isinstance(observation.get("evidence"), dict) else {}
+            starts_at = [str(item) for item in (evidence.get("starts_at") or []) if str(item or "").strip()]
+            involves = [str(item) for item in (evidence.get("involves") or []) if str(item or "").strip()]
+            for entity in starts_at + involves:
+                failure_scenario_candidates_by_entity[entity].append(observation)
 
     # depends_on
     def check_deps(comps):
@@ -1105,25 +1108,26 @@ def validate_atlas(
         elif project_root or analysis_dir:
             issues.extend(check_grounded_in(grounded, project_root, analysis_dir, "failure_scenarios", sid))
 
-    if isinstance(failure_scenario_candidates_payload, dict):
+    if isinstance(failure_observations_payload, dict):
         present_ids = seen_failure_scenario_ids
-        for candidate in failure_scenario_candidates_payload.get("candidates") or []:
-            if not isinstance(candidate, dict):
+        for observation in failure_observations_payload.get("observations") or []:
+            if not isinstance(observation, dict):
                 continue
-            candidate_id = str(candidate.get("id") or "")
-            if not candidate_id or candidate_id in present_ids:
+            observation_id = str(observation.get("id") or "")
+            if not observation_id or observation_id in present_ids:
                 continue
-            involves = [str(item) for item in (candidate.get("involves") or []) if str(item or "").strip()]
+            evidence = observation.get("evidence") if isinstance(observation.get("evidence"), dict) else {}
+            involves = [str(item) for item in (evidence.get("involves") or []) if str(item or "").strip()]
             if len(involves) < 2:
                 continue
             issues.append({
                 "level": "WARNING",
                 "section": "failure_scenarios",
                 "kind": "failure-scenario-missing",
-                "message": f"Shared failure candidate '{candidate_id}' is not modeled in atlas.failure_scenarios",
+                "message": f"Failure observation '{observation_id}' is not modeled in atlas.failure_scenarios",
                 "conflict_type": "evidence_vs_model",
-                "related_entities": [candidate_id, *involves[:3]],
-                "evidence_refs": [str(ref) for ref in (candidate.get("evidence_refs") or [])[:3]],
+                "related_entities": [observation_id, *involves[:3]],
+                "evidence_refs": [str(ref) for ref in (evidence.get("repo_refs") or [])[:3]],
             })
 
     concept_ids = {p.get("id") for p in concepts.get("detected_patterns", []) if p.get("id")}

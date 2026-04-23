@@ -27,8 +27,14 @@ detectors/<domain>/
 Special deterministic families:
 
 ```text
-detectors/frameworks/<name>/
-detectors/concepts/<name>/
+detectors/frameworks/
+  policy.yaml
+  signatures.yaml
+detectors/concepts/
+  policy.yaml
+  ast-grep/<name>.yaml
+  semgrep/<name>.yaml
+  signatures/<name>.yaml
 ```
 
 Shared executable helpers live in:

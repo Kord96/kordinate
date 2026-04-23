@@ -71,7 +71,7 @@ These concepts are often real, but their presence alone does not justify strong 
 
 ## Code Change Applied
 
-`agents/augur/scripts/synthesize_atlas_from_facts.py`
+`agents/augur/scripts/synthesis/synthesize_atlas_from_facts.py`
 
 Monitoring projection now requires concept eligibility:
 - `confirmed` verdicts always eligible

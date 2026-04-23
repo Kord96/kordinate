@@ -80,6 +80,17 @@ def add_symbol(results: list[dict[str, Any]], seen: set[tuple[str, str]], name: 
     results.append({"name": normalized, "kind": kind, "exported": exported})
 
 
+def stable_id(*parts: str) -> str:
+    normalized = "-".join(
+        "".join(ch.lower() if ch.isalnum() else "-" for ch in str(part).strip()).strip("-")
+        for part in parts
+        if str(part).strip()
+    )
+    while "--" in normalized:
+        normalized = normalized.replace("--", "-")
+    return normalized[:96] or "candidate"
+
+
 def extract_python_symbols(text: str) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
@@ -190,7 +201,7 @@ def extract_symbols(path: Path, language: str) -> list[dict[str, Any]]:
     return symbols[:MAX_SYMBOLS_PER_FILE]
 
 
-def collect_candidate_files(facts_dir: Path) -> dict[str, dict[str, Any]]:
+def collect_candidate_files(facts_dir: Path, derived_dir: Path) -> dict[str, dict[str, Any]]:
     candidates: dict[str, dict[str, Any]] = {}
 
     def note(path: str, reason: str, score: int) -> None:
@@ -242,7 +253,7 @@ def main() -> int:
     if not repo_root or not repo_root.exists():
         raise SystemExit("unable to resolve repo root from run index.json")
 
-    candidates = collect_candidate_files(facts_dir)
+    candidates = collect_candidate_files(facts_dir, derived_dir)
     ranked_files = sorted(candidates.items(), key=lambda item: (-int(item[1]["score"]), item[0]))[:MAX_FILES]
     ranked_files = [item for item in ranked_files if not is_noisy_path(item[0])]
 

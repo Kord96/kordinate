@@ -47,6 +47,9 @@ Operational path rules for this runtime:
 
 4. Resolve concepts, frameworks, and other deterministic candidates evidence-first.
    - use the relevant deterministic artifacts as candidate guidance, not as final semantic truth
+   - prefer `observations/concepts.json` as the normalized concept-assessment layer
+   - prefer `observations/health.json` and `observations/failure-scenarios.json` as the normalized health and failure assessment layer
+   - prefer `observations/components.json`, `observations/stories.json`, and `observations/narratives.json` as the decomposition and teaching-path assessment layer
    - for any materially relevant concept or framework, inspect the supporting repo code and resolve it as accepted, tentative, or rejected before it materially changes the atlas
    - answer attached review questions before accepting a materially relevant candidate
    - if ambiguity remains, use the provided concept/framework catalog entrypoints and read only the specific catalog files you actually need
@@ -64,7 +67,7 @@ Operational path rules for this runtime:
      - `health.local` for failures inside one unit
      - `health.integration` for failures at seams with dependencies, stores, or callers
      - `health.propagation` for downstream degraded modes, stale results, blocked work, or wider blast radius
-   - use `facts/health-candidates.json` as ranking and contradiction pressure, not as final truth without code grounding
+   - use health and failure observations as ranking and contradiction pressure, not as final truth without code grounding
 
 6. Produce `atlas.json` in the canonical output directory.
    - consult the atlas schema before first write and again during repair if atlas validation fails
@@ -79,7 +82,7 @@ Operational path rules for this runtime:
    - allowed narrative ids are exactly: `system-overview`, `runtime-paths`, `state-and-data`, `integrations`, `operations-and-failure`, `extensibility`, `security-and-access`
    - do not invent freeform narrative ids
    - choose the narrative set before writing stories
-   - use `derived/narrative-seeds.json` when present to rank which optional canonical narratives are actually justified for this repo
+   - use narrative observations to rank which optional canonical narratives are actually justified for this repo
    - choose optional narratives from `recommended_narratives`; if two narratives reuse most of the same stories, merge them or replace the weaker one
    - for each chosen narrative, decide which root and child stories are needed to teach it
    - draft candidate root stories and 2-3 concern-focused child stories per root, then merge weak or duplicative children back into the parent

@@ -44,7 +44,7 @@ common_failure_modes:
 Vapor is a Swift server framework with route builders, grouped endpoints, and explicit application bootstrap.
 
 ## Recognition
-Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/vapor/`.
+Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector assets, when present, live under `detectors/concepts/`.
 
 ## Architectural implications
 - framework scope: `backend`

@@ -8,7 +8,7 @@ Use this directory when working on the facts layer specifically.
   - consumer-facing facts contract entrypoint
   - points to the canonical detector-owned facts schema
 - [concepts-schema.md](concepts-schema.md)
-  - specialized contract for `facts/concepts.json`
+  - raw deterministic precursor contract for `observations/concepts.json`
 
 Canonical source:
 - [../../detectors/schema.md](../../detectors/schema.md)

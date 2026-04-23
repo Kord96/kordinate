@@ -1,0 +1,19 @@
+framework: echo
+manifest_packages:
+  go_mod:
+  - github.com/labstack/echo
+source_extensions:
+- .go
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+  - echo\.New\s*\(
+  medium:
+  - \be\.(GET|POST|PUT|DELETE|PATCH)\s*\(
+  - \be\.Group\s*\(
+  weak: []
+negative_path_patterns: []
+negative_source_patterns: []

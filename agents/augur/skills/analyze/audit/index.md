@@ -28,8 +28,8 @@ Primary files:
 - [blast-radius-schema.md](./runtime/blast-radius-schema.md)
 - [facts-schema.md](/kord/workstation/home/project/kordinate/agents/augur/schemas/facts/facts-schema.md)
 - [build_detector_bundles.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/build/build_detector_bundles.py)
-- [synthesize_atlas_from_facts.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/synthesize_atlas_from_facts.py)
-- [fact_extractor_support.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/fact_extractor_support.py)
+- [synthesize_atlas_from_facts.py](/kord/workstation/home/project/kordinate/agents/augur/scripts/synthesis/synthesize_atlas_from_facts.py)
+- [fact_extractor_support.py](/kord/workstation/home/project/kordinate/agents/augur/detectors/lib/fact_extractor_support.py)
 
 ### Semantic
 
@@ -79,11 +79,11 @@ Use when checking:
 - over-time comparison
 
 Primary files:
-- [augur-benchmark-dataset.md](./benchmark/augur-benchmark-dataset.md)
-- [augur-evaluation-plan.md](./benchmark/augur-evaluation-plan.md)
-- [augur-pilot-execution-matrix.md](./benchmark/augur-pilot-execution-matrix.md)
-- [augur-pilot-repo-set-v1.json](./benchmark/augur-pilot-repo-set-v1.json)
-- [augur-repo-label-schema.md](./benchmark/augur-repo-label-schema.md)
+- [augur-benchmark-dataset.md](/kord/workstation/home/project/kordinate/agents/augur/benchmarks/analyze/augur-benchmark-dataset.md)
+- [augur-evaluation-plan.md](/kord/workstation/home/project/kordinate/agents/augur/benchmarks/analyze/augur-evaluation-plan.md)
+- [augur-pilot-execution-matrix.md](/kord/workstation/home/project/kordinate/agents/augur/benchmarks/analyze/augur-pilot-execution-matrix.md)
+- [augur-pilot-repo-set-v1.json](/kord/workstation/home/project/kordinate/agents/augur/benchmarks/analyze/augur-pilot-repo-set-v1.json)
+- [augur-repo-label-schema.md](/kord/workstation/home/project/kordinate/agents/augur/benchmarks/analyze/augur-repo-label-schema.md)
 - [benchmark-comparison-schema.md](/kord/workstation/home/project/kordinate/shared/skills/audit/references/benchmark-comparison-schema.md)
 - [reflection-analysis-schema.md](/kord/workstation/home/project/kordinate/shared/skills/audit/references/reflection-analysis-schema.md)
 - [codesight-fact-layer-gap-analysis.md](/kord/workstation/home/project/kordinate/agents/augur/docs/notes/codesight-fact-layer-gap-analysis.md)

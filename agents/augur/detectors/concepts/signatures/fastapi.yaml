@@ -1,0 +1,27 @@
+framework: fastapi
+manifest_packages:
+  pyproject:
+  - fastapi
+  requirements:
+  - fastapi
+source_extensions:
+- .py
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+  - from\s+fastapi\s+import
+  - import\s+fastapi
+  - \bFastAPI\s*\(
+  - \bAPIRouter\s*\(
+  medium:
+  - '@\w+\.(get|post|put|delete|patch|options|head)\s*\('
+  - \bDepends\s*\(
+  - \bBaseModel\b
+  weak: []
+negative_path_patterns: []
+negative_source_patterns:
+- from\s+flask\s+import
+- from\s+django\.urls\s+import

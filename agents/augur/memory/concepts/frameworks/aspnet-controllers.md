@@ -48,7 +48,7 @@ common_failure_modes:
 ASP.NET Controllers is the ASP.NET Core controller-based API surface with attribute routing and controller classes.
 
 ## Recognition
-Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector policy or rules, when present, live under `detectors/frameworks/aspnet-controllers/`.
+Use the framework reference in `memory/concepts/frameworks/` as the canonical shared explanation and signatures source. Deterministic detector assets, when present, live under `detectors/concepts/`.
 
 ## Architectural implications
 - framework scope: `backend`

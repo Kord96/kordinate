@@ -28,9 +28,9 @@ import sys
 from pathlib import Path
 
 AUGUR_ROOT = Path(__file__).resolve().parents[3]
-AUGUR_SCRIPTS_DIR = AUGUR_ROOT / "scripts"
-if str(AUGUR_SCRIPTS_DIR) not in sys.path:
-    sys.path.append(str(AUGUR_SCRIPTS_DIR))
+AUGUR_RUN_SCRIPTS_DIR = AUGUR_ROOT / "scripts" / "run"
+if str(AUGUR_RUN_SCRIPTS_DIR) not in sys.path:
+    sys.path.append(str(AUGUR_RUN_SCRIPTS_DIR))
 
 from .constants import FACTS_ONLY_MODE, RUN_LOG_FILE
 from .context import collect_facts_context, derive_project_root

@@ -103,6 +103,17 @@ def load_source_lines(repo_root: Path, file_path: str) -> list[str]:
         return []
 
 
+def stable_id(*parts: str) -> str:
+    normalized = "-".join(
+        "".join(ch.lower() if ch.isalnum() else "-" for ch in str(part).strip()).strip("-")
+        for part in parts
+        if str(part).strip()
+    )
+    while "--" in normalized:
+        normalized = normalized.replace("--", "-")
+    return normalized[:96] or "candidate"
+
+
 def collect_line_refs_and_terms(lines: list[str], exact_names: list[str]) -> tuple[list[str], list[str]]:
     refs: list[str] = []
     terms: list[str] = []

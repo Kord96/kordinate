@@ -1,0 +1,24 @@
+framework: flask
+manifest_packages:
+  pyproject:
+  - flask
+  requirements:
+  - flask
+source_extensions:
+- .py
+path_patterns:
+  strong: []
+  medium: []
+  weak: []
+source_patterns:
+  strong:
+  - from\s+flask\s+import
+  - import\s+flask
+  - \bFlask\s*\(
+  medium:
+  - '@\w+\.route\s*\('
+  weak: []
+negative_path_patterns: []
+negative_source_patterns:
+- from\s+fastapi\s+import
+- from\s+django\.urls\s+import

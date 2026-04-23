@@ -49,7 +49,7 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
     - Add `throughline` to explain why the chosen stories form one coherent lesson in that order.
     - Prefer 2-4 total narratives unless the repo has clearly distinct audiences or cross-cutting review paths.
     - Make each adjacent story transition defensible: the per-story bridge text should explain the architectural reason for moving to that next story.
-    - Choose optional narratives from `derived/narrative-seeds.json.recommended_narratives` when present. If two narratives reuse most of the same stories, merge them or replace the weaker one.
+    - Choose optional narratives from `observations/narratives.json` when present. If two narratives reuse most of the same stories, merge them or replace the weaker one.
 13. Generate `stories/*.yaml` and `narratives.yaml` together from the refined atlas and the narrative plan.
 14. Run `resources.validator_script` against the canonical output directory for this run.
 15. If validation reports errors or warnings, fix the artifacts in place and rerun the validator until it is clean.
@@ -62,19 +62,19 @@ Full mode means the semantic pass should rebuild understanding for the whole pro
 - Do not leave the atlas fully flat unless the codebase is genuinely flat. Use parent-child component relationships when subsystems contain real nested responsibilities.
 - Use deterministic facts first for orientation, then let code inspection drive the main architectural synthesis.
 - Do not stay in a long fact-mining loop after startup. Once you have initial hypotheses, confirm or reject them in repo code.
-- If `facts/concepts.json` is present, use it as the primary concept trigger only when concept work is actually in play: review candidate concepts, supporting evidence, counter evidence, evidence gaps, and review questions before keeping a concept in `atlas.json`.
+- If `observations/concepts.json` is present, use it as the primary concept-assessment layer when concept work is actually in play: review candidate findings, semantic signatures, evidence gaps, review questions, and next actions before keeping a concept in `atlas.json`.
 - If `frameworks.json` is present, use it as the primary framework trigger: review framework evidence first, then confirm only the frameworks that materially affect component boundaries, flows, or concept activation.
 - Resolve concept candidates as accepted, tentative, or rejected from deterministic evidence plus repo code; do not let broad concept vocabulary leak into the atlas before that resolution.
 - Resolve framework candidates as accepted, tentative, or rejected from deterministic evidence plus repo code; do not let framework labels steer the atlas just because detection fired.
 - Treat unresolved or weakly backed concepts as candidates to drop or downgrade, not as decorative pattern labels.
 - If a framework candidate still matters after that first pass, read only the specific framework catalog files instead of broad framework preload.
-- If a concept candidate still matters after that first pass, read only the specific concept reference and detector policy or rules for that concept instead of broad concept preload.
+- If a concept candidate still matters after that first pass, read only the specific concept reference and supporting signatures for that concept instead of broad concept preload.
 - Keep `atlas.json.concepts` compact and grounded: prefer a few high-signal concepts with repo-specific summaries over a long generic pattern list.
-- If `derived/story-seeds.json` is present, use it only when story decomposition or root choice is still unclear, not as a startup preload.
-- If `derived/narrative-seeds.json` is present, use it only when system-overview or other teaching-path selection is still unclear.
-- If `derived/narrative-seeds.json` is present, use its `recommended_narratives` section to decide which optional canonical narrative ids are truly justified for this repo. Prefer higher-ranked optional narratives over weaker ones when you only keep one secondary teaching path. Do not invent freeform narrative ids when the canonical palette already fits.
+- If `observations/stories.json` is present, use it only when story decomposition or root choice is still unclear, not as a startup preload.
+- If `observations/narratives.json` is present, use it only when system-overview or other teaching-path selection is still unclear.
+- If `observations/narratives.json` is present, use it to decide which optional canonical narrative ids are truly justified for this repo. Prefer higher-ranked optional narratives over weaker ones when you only keep one secondary teaching path. Do not invent freeform narrative ids when the canonical palette already fits.
 - If `facts/control-hotspots.json` or `facts/state-access-summary.json` are present, use them only when overview selection, flow choice, or state or dependency boundaries remain unclear.
-- If `facts/health-candidates.json` is present, use it only when health, monitoring, gaps, or failure-scenario modeling is underdetermined.
+- If `observations/health.json` or `observations/failure-scenarios.json` are present, use them only when health, monitoring, gaps, or failure-scenario modeling is underdetermined.
 - If `facts/symbols-seed.json` is present, use it when naming or grounding issues remain, not as a default startup read.
 - If `facts/state-seeds.json` is present, use it when state naming or state truthfulness is unclear, not as a default startup read.
 - Use strong architectural evidence when naming components, responsibilities, and flows.
