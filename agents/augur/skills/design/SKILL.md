@@ -124,7 +124,7 @@ Invoked: `/design orders --patterns "hexagonal,consumer-group,circuit-breaker,re
 ### Step 1 — Load patterns
 
 For each pattern in the comma-separated list:
-1. Read the matching concept reference under `references/concepts/`
+1. Read the matching concept reference under `memory/concepts/`
 2. Load detector `policy.yaml` or executable rules from `detectors/concepts/<pattern>/` only when they are needed
 
 ### Step 2 — Read infra atlas

@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import re
 
 import yaml
 
@@ -27,23 +26,9 @@ ROOT = Path(__file__).resolve().parents[2]
 DETECTORS = ROOT / 'detectors'
 REFERENCES = ROOT / 'references'
 BUNDLES = ROOT / '.generated' / 'bundles' / 'detectors'
-FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n?", re.DOTALL)
-
-
-def load_yaml(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    return yaml.safe_load(path.read_text(encoding='utf-8')) or {}
-
-
-def load_markdown_frontmatter(path: Path) -> dict:
-    if not path.exists():
-        return {}
-    text = path.read_text(encoding='utf-8')
-    match = FRONTMATTER_RE.match(text)
-    if not match:
-        return {}
-    return yaml.safe_load(match.group(1)) or {}
+import sys
+sys.path.insert(0, str(ROOT / 'detectors' / 'utils'))
+from layout import concept_asset_paths, find_reference_file, iter_concept_asset_ids, load_markdown_frontmatter, load_yaml  # noqa: E402
 
 
 def load_concept_metadata(reference_path: Path, policy_path: Path) -> dict:
@@ -143,7 +128,7 @@ def collect_frameworks():
             'files': files,
             'policy': load_yaml(policy_path).get('policy', {}) if policy_path.exists() else {},
             'signatures': signatures,
-            'docs': [f"references/frameworks/{entry.stem}.md"],
+            'docs': [str(entry.relative_to(ROOT))],
         }
         out.append(record)
     return out
@@ -151,34 +136,26 @@ def collect_frameworks():
 
 def collect_concepts():
     out = []
-    names = set()
-    references_dir = REFERENCES / 'concepts'
-    reference_paths: dict[str, Path] = {}
-    if references_dir.exists():
-        for path in references_dir.rglob('*.md'):
+    names = set(iter_concept_asset_ids(DETECTORS))
+    for subdir in ('concepts', 'frameworks'):
+        reference_root = REFERENCES / subdir
+        if not reference_root.exists():
+            continue
+        for path in reference_root.rglob('*.md'):
             if path.name == 'README.md':
                 continue
             names.add(path.stem)
-            reference_paths[path.stem] = path
-    concepts_dir = DETECTORS / 'concepts'
-    if concepts_dir.exists():
-        names.update(entry.name for entry in concepts_dir.iterdir() if entry.is_dir())
     for name in sorted(names):
         files = {}
-        reference_path = reference_paths.get(name, references_dir / f'{name}.md')
-        if reference_path.exists():
+        reference_path = find_reference_file(REFERENCES, name)
+        if reference_path:
             files['reference'] = str(reference_path.relative_to(ROOT))
-        detector_dir = concepts_dir / name
-        policy_path = detector_dir / 'policy.yaml'
-        if policy_path.exists():
-            files['policy.yaml'] = str(policy_path.relative_to(ROOT))
-        for filename in ['ast-grep.yaml', 'semgrep.yaml']:
-            path = detector_dir / filename
-            if path.exists():
-                files[filename] = str(path.relative_to(ROOT))
+        assets = concept_asset_paths(DETECTORS, name)
+        for filename, path in assets.items():
+            files[filename] = str(path.relative_to(ROOT))
         record = {'name': name, 'files': files}
-        if reference_path.exists():
-            metadata = load_concept_metadata(reference_path, policy_path)
+        if reference_path:
+            metadata = load_concept_metadata(reference_path, assets.get('policy.yaml', Path()))
             if metadata.get('review_questions', {}).get('entries'):
                 record['review_question_count'] = len(metadata['review_questions']['entries'])
             record['policy'] = metadata['policy']

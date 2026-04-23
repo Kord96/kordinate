@@ -69,8 +69,7 @@ MAX_FILE_BYTES = 100 * 1024
 ROOT = Path(__file__).resolve().parents[1]
 FACT_DETECTORS = ROOT / "detectors"
 FRAMEWORK_DETECTORS = FACT_DETECTORS / "frameworks"
-FRAMEWORK_CATALOG = ROOT / "memory" / "catalog" / "frameworks"
-FRAMEWORK_REFERENCES = ROOT / "references" / "frameworks"
+FRAMEWORK_REFERENCES = ROOT / "memory" / "concepts" / "frameworks"
 AST_GREP_BIN = shutil.which("ast-grep")
 REPO_PROFILE_SCRIPT = ROOT.parent.parent / "shared" / "tools" / "repo_profile" / "detect_repo_profile.py"
 JOERN_BATCH_EXPORTER = ROOT.parent.parent / "shared" / "tools" / "joern" / "export_augur_facts.py"
@@ -202,21 +201,40 @@ def _pattern_groups(values: Any) -> dict[str, tuple[str, ...]]:
 
 
 def _semantic_framework_metadata(name: str) -> dict[str, Any]:
-    semantics_path = FRAMEWORK_CATALOG / name / "semantics.yaml"
-    semantics = load_yaml(semantics_path)
-    relationships = semantics.get("relationships") if isinstance(semantics.get("relationships"), dict) else {}
-    common_concepts = _tuple_strings(semantics.get("common_concepts"))
+    reference_path = FRAMEWORK_REFERENCES / f"{name}.md"
+    if not reference_path.exists():
+        return {
+            "language": "",
+            "scope": "",
+            "framework_kind": "",
+            "status": "",
+            "traits": {},
+            "relationships": {
+                "implements": [],
+                "supports": [],
+                "related_to": [],
+                "uses": [],
+            },
+            "common_concepts": [],
+            "common_failure_modes": [],
+            "concepts": [],
+        }
+    text = reference_path.read_text(encoding="utf-8")
+    match = re.match(r"^---\n(.*?)\n---\n?", text, re.DOTALL)
+    frontmatter = yaml.safe_load(match.group(1)) if match else {}
+    relationships = frontmatter.get("relationships") if isinstance(frontmatter.get("relationships"), dict) else {}
+    common_concepts = _tuple_strings(frontmatter.get("common_concepts"))
     implemented = _tuple_strings(relationships.get("implements"))
     supported = _tuple_strings(relationships.get("supports"))
     related = _tuple_strings(relationships.get("related_to"))
     used = _tuple_strings(relationships.get("uses"))
     concepts = tuple(dict.fromkeys([*implemented, *supported, *common_concepts]))
     return {
-        "language": str(semantics.get("language") or "").strip(),
-        "scope": str(semantics.get("scope") or "").strip(),
-        "framework_kind": str(semantics.get("framework_kind") or "").strip(),
-        "status": str(semantics.get("status") or "").strip(),
-        "traits": semantics.get("traits") if isinstance(semantics.get("traits"), dict) else {},
+        "language": str(frontmatter.get("language") or "").strip(),
+        "scope": str(frontmatter.get("scope") or "").strip(),
+        "framework_kind": str(frontmatter.get("framework_kind") or "").strip(),
+        "status": str(frontmatter.get("status") or "").strip(),
+        "traits": frontmatter.get("traits") if isinstance(frontmatter.get("traits"), dict) else {},
         "relationships": {
             "implements": list(implemented),
             "supports": list(supported),
@@ -224,7 +242,7 @@ def _semantic_framework_metadata(name: str) -> dict[str, Any]:
             "uses": list(used),
         },
         "common_concepts": list(common_concepts),
-        "common_failure_modes": list(_tuple_strings(semantics.get("common_failure_modes"))),
+        "common_failure_modes": list(_tuple_strings(frontmatter.get("common_failure_modes"))),
         "concepts": list(concepts),
     }
 

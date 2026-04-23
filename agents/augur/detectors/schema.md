@@ -32,11 +32,31 @@ Special families:
 
 ```text
 detectors/frameworks/<name>/
-detectors/concepts/<name>/
+detectors/concepts/
+  policy.yaml
+  ast-grep/<name>.yaml
+  semgrep/<name>.yaml
+  signatures/<name>.yaml
 ```
+
+During migration, concept loaders may also read legacy per-concept directories:
+
+```text
+detectors/concepts/<name>/
+  policy.yaml
+  ast-grep.yaml
+  semgrep.yaml
+  signatures.yaml
+```
+
+Typed concept assets take precedence over legacy per-concept files when both
+exist for the same detector id.
 
 Use ordinary `<domain>` directories for normalized fact domains such as
 `routes`, `models`, or `events`.
+
+Concept and framework meaning lives in `memory/concepts/`. Frameworks are one
+semantic family inside that tree.
 
 Shared executable helpers and detector runners live under:
 

@@ -8,7 +8,7 @@ from subprocess import run
 
 ROOT = Path(__file__).resolve().parents[2]
 MEMORY = ROOT / 'memory'
-REFERENCES = ROOT / 'references'
+CONCEPTS = MEMORY / 'concepts'
 BUNDLES = ROOT / '.generated' / 'bundles' / 'memory'
 
 
@@ -17,15 +17,15 @@ def read(path: Path) -> str:
 
 
 def concept_files() -> list[Path]:
-    base = REFERENCES / 'concepts'
+    base = CONCEPTS
     return [
         p for p in sorted(base.rglob('*.md'))
-        if p.is_file() and p.name not in {'README.md'}
+        if p.is_file() and p.name not in {'README.md'} and 'frameworks' not in p.parts
     ]
 
 
 def framework_dirs() -> list[Path]:
-    base = REFERENCES / 'frameworks'
+    base = CONCEPTS / 'frameworks'
     return [p for p in sorted(base.iterdir()) if p.is_file() and p.suffix == '.md' and p.name not in {'README.md'}]
 
 
@@ -120,7 +120,7 @@ def build_selective() -> str:
     sections.extend(framework_summary(p) for p in framework_dirs())
     sections.extend(['', '## Concept summaries', ''])
     sections.extend(concept_summary(p) for p in concept_files())
-    sections.extend(['', '## Selective-read rule', '', 'When detector evidence is ambiguous, high-signal, or central to the architecture, read the full canonical reference from `references/frameworks/<name>.md` or the matching concept reference under `references/concepts/` before final interpretation.'])
+    sections.extend(['', '## Selective-read rule', '', 'When detector evidence is ambiguous, high-signal, or central to the architecture, read the full canonical reference from `memory/concepts/frameworks/<name>.md` or the matching concept reference under `memory/concepts/` before final interpretation.'])
     return '\n'.join(sections).rstrip() + '\n'
 
 

@@ -1,0 +1,64 @@
+---
+kind: concept
+name: worker-pool
+signatures: {}
+type: pattern
+abstraction:
+- concurrency
+- infrastructure
+scope: cross-cutting
+status: primary
+family: design-patterns
+---
+
+# Explanation
+
+## Recognition
+
+How to identify this pattern in code.
+
+### Signatures
+
+- Fixed pool of workers processing tasks submitted to a shared queue
+- `ThreadPoolExecutor`, `ProcessPoolExecutor`, or equivalent pool constructors
+- Worker count configuration (often tied to CPU count or a config value)
+- `submit()`, `map()`, or `apply_async()` calls dispatching work to the pool
+- Libraries: Python `concurrent.futures`, Go goroutine pools, Node `worker_threads`, Java `ExecutorService`
+
+### Confidence
+
+- **high** -- Explicit pool instantiation with `ThreadPoolExecutor(max_workers=N)` or equivalent
+- **medium** -- Fixed number of goroutines or threads pulling from a shared channel/queue
+- **low** -- Multiple workers processing tasks concurrently without a formal pool abstraction
+
+## Architecture
+
+Look for a fixed set of reusable workers pulling tasks from a shared submission queue.
+
+### Review Checklist
+
+- Pool size is configurable and documented (not hardcoded magic numbers)
+- Tasks submitted to the pool are independent -- no hidden shared state between tasks
+- Pool shutdown is graceful: pending tasks complete before termination
+- Exceptions in worker tasks are captured and reported, not silently lost
+- Resource limits are enforced (max queue depth, task timeout)
+- Future/result objects are consumed -- no fire-and-forget leaks
+
+### Anti-patterns
+
+- Creating a new thread per task instead of reusing pooled workers
+- Pool size equal to unbounded input (defeats the purpose of pooling)
+- Blocking the main thread waiting on every future immediately after submission (serial execution)
+- No timeout on task execution, allowing hung tasks to consume a worker forever
+
+### Relationship To Other Concepts
+
+- Related to [producer-consumer](/concepts/producer-consumer) because worker pools often consume queued work from producers.
+- Related to [competing-consumers](/concepts/competing-consumers) when many workers share one external queue or broker source.
+- Related to [backpressure](/concepts/backpressure) when task submission must slow down or reject work because the pool is saturated.
+
+### Boundary
+
+Use `worker-pool` when a fixed or bounded set of reusable workers executes many tasks instead of spawning one new worker per task.
+
+Do not use it for any background thread usage. The key signal is pooled reusable workers with bounded concurrency.

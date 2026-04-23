@@ -3,7 +3,7 @@
 Executable source assets for concepts inference live here.
 
 This layer is separate from the canonical reference layer:
-- `references/concepts/` describes what a concept means and carries signatures
+- `memory/concepts/` describes what a concept means and carries signatures
 - `detectors/concepts/` holds executable rule assets for concept detection
 
 Suggested per-concept files:
@@ -17,7 +17,7 @@ detectors/concepts/<name>/
 Concept detector metadata is derived from the matching canonical concept reference under:
 
 ```text
-references/concepts/
+memory/concepts/
 ```
 
 Generated detector bundles live under `../../.generated/bundles/detectors/`, including:

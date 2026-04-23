@@ -51,7 +51,7 @@ Primary files:
 - [concept-decision-design.md](/kord/workstation/home/project/kordinate/agents/augur/docs/notes/concept-decision-design.md)
 - [README.md](/kord/workstation/home/project/kordinate/agents/augur/detectors/concepts/README.md)
 - [schema.md](/kord/workstation/home/project/kordinate/agents/augur/detectors/concepts/schema.md)
-- [meta-schema.md](/kord/workstation/home/project/kordinate/agents/augur/memory/catalog/concepts/meta-schema.md)
+- [concepts/README.md](/kord/workstation/home/project/kordinate/agents/augur/memory/concepts/README.md)
 
 ### Runtime
 

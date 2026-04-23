@@ -10,7 +10,6 @@ against the target project. Outputs JSON array of structured evidence records.
 
 from __future__ import annotations
 
-import glob
 import json
 import os
 import shutil
@@ -22,6 +21,7 @@ AGENT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from concept_decision import evidence_verdict  # noqa: E402
 from detector_loader import load_detector_support  # noqa: E402
+from layout import iter_concept_ast_rule_files  # noqa: E402
 
 
 def infer_specificity(match_count: int) -> str:
@@ -132,13 +132,13 @@ def build_evidence_record(concept: str, detector_strength: int, matches: list[di
     }
 
 
-def resolve_concepts_dir(kordinate_home: str | None) -> Path:
-    local_dir = AGENT_ROOT / "detectors" / "concepts"
+def resolve_detectors_root(kordinate_home: str | None) -> Path:
+    local_dir = AGENT_ROOT / "detectors"
     if local_dir.exists():
         return local_dir
 
     if kordinate_home:
-        home_dir = Path(kordinate_home) / "agents" / "augur" / "detectors" / "concepts"
+        home_dir = Path(kordinate_home) / "agents" / "augur" / "detectors"
         if home_dir.exists():
             return home_dir
 
@@ -165,13 +165,14 @@ def main():
         if idx + 1 < len(sys.argv):
             kordinate_home = sys.argv[idx + 1]
 
-    concepts_dir = resolve_concepts_dir(kordinate_home)
+    detectors_root = resolve_detectors_root(kordinate_home)
+    concepts_dir = detectors_root / "concepts"
 
     if not concepts_dir.exists():
         print(f"Detector directory not found: {concepts_dir}", file=sys.stderr)
         sys.exit(1)
 
-    rule_files = sorted(glob.glob(str(concepts_dir / "*/ast-grep.yaml")))
+    rule_files = iter_concept_ast_rule_files(detectors_root)
 
     if not rule_files:
         print("[]")
@@ -187,9 +188,8 @@ def main():
     evidence_records = []
     errors = []
 
-    for rule_file in rule_files:
-        concept = Path(rule_file).parent.name
-        support = load_detector_support(Path(rule_file).parent)
+    for concept, rule_path in rule_files:
+        support = load_detector_support(rule_path)
         detector_strength = int(
             support.get("policy", {})
             .get("detectors", {})
@@ -199,7 +199,7 @@ def main():
         matches = []
         try:
             result = subprocess.run(
-                [ast_grep_bin, "scan", "-r", rule_file, project_root, "--json"],
+                [ast_grep_bin, "scan", "-r", str(rule_path), project_root, "--json"],
                 capture_output=True,
                 text=True,
                 timeout=30,
@@ -213,7 +213,7 @@ def main():
         except (json.JSONDecodeError, Exception) as e:
             errors.append(f"Error with {concept}: {e}")
 
-        evidence_records.append(build_evidence_record(concept, detector_strength, matches, rule_file))
+        evidence_records.append(build_evidence_record(concept, detector_strength, matches, str(rule_path)))
 
     if errors:
         print(f"Warnings: {len(errors)} rules had issues", file=sys.stderr)

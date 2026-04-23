@@ -71,7 +71,7 @@ Inputs:
 - relevant files from the repo
 - fact summaries
 - detector evidence
-- concept semantics from `memory/catalog/concepts/`
+- concept semantics from `memory/concepts/`
 
 Output:
 

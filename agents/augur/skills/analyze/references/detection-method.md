@@ -30,7 +30,7 @@ Use this reference when interpreting deterministic concept evidence.
 - targeted repo reads
 
 When a framework remains materially ambiguous, load only that framework's catalog files:
-- `references/frameworks/<framework>.md`
+- `memory/concepts/frameworks/<framework>.md`
 
 ## Goal
 

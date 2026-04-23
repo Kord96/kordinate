@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[2]
 MEMORY = ROOT / "memory"
 INDEXES = MEMORY / "indexes"
 
-CONCEPT_DIR = MEMORY / "catalog" / "concepts"
-FRAMEWORK_DIR = MEMORY / "catalog" / "frameworks"
+CONCEPT_DIR = MEMORY / "concepts"
+FRAMEWORK_DIR = CONCEPT_DIR / "frameworks"
 
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 CONCEPT_LINK_RE = re.compile(r"\(/concepts/([a-z0-9-]+)\)")
@@ -43,13 +43,13 @@ def title_from_body(body: str, fallback: str) -> str:
 def concept_files() -> list[Path]:
     return [
         p
-        for p in sorted(CONCEPT_DIR.glob("*.md"))
-        if p.name not in {"README.md", "meta-schema.md"}
+        for p in sorted(CONCEPT_DIR.rglob("*.md"))
+        if p.name not in {"README.md", "meta-schema.md"} and "frameworks" not in p.parts
     ]
 
 
-def framework_dirs() -> list[Path]:
-    return [p for p in sorted(FRAMEWORK_DIR.iterdir()) if p.is_dir() and (p / "framework.md").exists()]
+def framework_files() -> list[Path]:
+    return [p for p in sorted(FRAMEWORK_DIR.glob("*.md")) if p.name != "README.md"]
 
 
 RELATION_MAP = {
@@ -124,13 +124,17 @@ def concept_record(path: Path) -> tuple[dict, list[dict]]:
     title = title_from_body(body, concept_id)
     edges: list[dict] = []
 
+    concept_type = frontmatter.get("type")
+    if not isinstance(concept_type, str) or not concept_type.strip():
+        concept_type = "unknown"
+
     concept_node = {
         "id": f"concept:{concept_id}",
         "kind": "concept",
         "slug": concept_id,
         "label": title,
         "description": frontmatter.get("description", ""),
-        "concept_type": frontmatter.get("type", "unknown"),
+        "concept_type": concept_type,
         "abstractions": list(frontmatter.get("abstraction", [])),
         "status": frontmatter.get("status", "unclassified"),
         "scope": frontmatter.get("scope"),
@@ -182,11 +186,8 @@ def concept_record(path: Path) -> tuple[dict, list[dict]]:
 
 
 def framework_record(path: Path) -> tuple[dict, list[dict]]:
-    framework_md = read(path / "framework.md")
-    frontmatter, body = parse_frontmatter(framework_md)
-    semantics_path = path / "semantics.yaml"
-    semantics = yaml.safe_load(read(semantics_path)) if semantics_path.exists() else {}
-    framework_id = path.name
+    frontmatter, body = parse_frontmatter(read(path))
+    framework_id = path.stem
     title = title_from_body(body, framework_id)
 
     node = {
@@ -194,11 +195,11 @@ def framework_record(path: Path) -> tuple[dict, list[dict]]:
         "kind": "framework",
         "slug": framework_id,
         "label": title,
-        "description": frontmatter.get("description", semantics.get("summary", "")),
-        "language": semantics.get("language"),
-        "framework_kind": semantics.get("framework_kind"),
-        "traits": semantics.get("traits", {}),
-        "path": str((path / "framework.md").relative_to(ROOT)),
+        "description": frontmatter.get("description", ""),
+        "language": frontmatter.get("language"),
+        "framework_kind": frontmatter.get("framework_kind"),
+        "traits": frontmatter.get("traits", {}) if isinstance(frontmatter.get("traits"), dict) else {},
+        "path": str(path.relative_to(ROOT)),
     }
     edges: list[dict] = []
     if node["language"]:
@@ -210,9 +211,10 @@ def framework_record(path: Path) -> tuple[dict, list[dict]]:
                 "authored": False,
             }
         )
-    node["status"] = semantics.get("status", "unclassified")
-    node["scope"] = semantics.get("scope")
-    for concept in semantics.get("common_concepts", []) or []:
+    node["status"] = frontmatter.get("status", "unclassified")
+    node["scope"] = frontmatter.get("scope")
+    relationships = frontmatter.get("relationships", {}) if isinstance(frontmatter.get("relationships"), dict) else {}
+    for concept in frontmatter.get("common_concepts", []) or []:
         edges.append(
             {
                 "source": f"framework:{framework_id}",
@@ -222,7 +224,7 @@ def framework_record(path: Path) -> tuple[dict, list[dict]]:
             }
         )
     for rel_key, rel_name in RELATION_MAP.items():
-        for target in semantics.get("relationships", {}).get(rel_key, []) or []:
+        for target in relationships.get(rel_key, []) or []:
             edges.append(
                 {
                     "source": f"framework:{framework_id}",
@@ -298,7 +300,7 @@ def build_graph() -> dict:
         for edge in rels:
             add_edge(edge)
 
-    for path in framework_dirs():
+    for path in framework_files():
         node, rels = framework_record(path)
         add_node(node)
         for edge in rels:
@@ -348,7 +350,7 @@ def render_mermaid(graph: dict) -> str:
         "---",
         "# Ontology Graph",
         "",
-        "Generated from `memory/catalog/concepts/*.md` and `memory/catalog/frameworks/*/semantics.yaml`.",
+        "Generated from `memory/concepts/**/*.md`.",
         "",
         "Authored relationship metadata comes from concept frontmatter and framework semantics.",
         "Framework-authored edges take precedence over inferred framework hints, and concept-authored edges take precedence over prose-link references.",
@@ -387,7 +389,7 @@ def render_mermaid(graph: dict) -> str:
         if node_id in seen:
             continue
         seen.add(node_id)
-        label = node["label"].replace('"', "'")
+        label = str(node.get("label") or node["id"]).replace('"', "'")
         lines.append(f'  {node_id}["{label}"]')
 
     status_styles = {

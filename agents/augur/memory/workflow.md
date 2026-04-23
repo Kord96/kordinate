@@ -34,8 +34,7 @@ See `agents/augur/schemas/atlas-schema.md` for the full atlas schema.
 
 ## Knowledge Base
 
-- **Concept references** at `references/concepts/` — the matching family-scoped concept file is canonical for concept meaning, explanation, and signatures
-- **Framework references** at `references/frameworks/` — `<framework>.md` is canonical for framework explanation and signatures
+- **Concept memory** at `memory/concepts/` — the matching family-scoped concept file is canonical for concept meaning, explanation, signatures, and review questions
 - **Ontology/index layer** at `memory/indexes/` — abstractions, concept index, anti-pattern index
 - **Ontology graph index** at `memory/indexes/ontology-graph.json` and `memory/indexes/ontology-graph.md` — machine-readable and visual graph of concepts, frameworks, abstractions, and cross-links, generated from concept/framework source metadata
 - **Detector source assets** at `detectors/` — deterministic fact-production rules and policies

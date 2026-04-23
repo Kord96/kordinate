@@ -21,10 +21,12 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "detectors"))
+sys.path.insert(0, str(ROOT / "detectors" / "utils"))
 
 from utils import component_ids_from_relationships, fact_kind, fact_payload, make_doc_ref, make_entity_ref, make_fact_ref, make_question_ref, normalize_fact_record
+from layout import find_reference_file
 BUNDLED_CONCEPT_QUESTIONS = ROOT / ".generated" / "bundles" / "detectors" / "concepts" / "review_questions.json"
-CONCEPT_REFERENCES_DIR = ROOT / "references" / "concepts"
+REFERENCES_DIR = ROOT / "references"
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 SEMANTIC_REVIEW_CONCEPTS = {
     "active-record",
@@ -119,13 +121,10 @@ def parse_frontmatter(text: str) -> dict[str, Any]:
 
 
 def find_concept_reference(concept_id: str) -> Path:
-    direct = CONCEPT_REFERENCES_DIR / f"{concept_id}.md"
-    if direct.exists():
-        return direct
-    for path in CONCEPT_REFERENCES_DIR.rglob(f"{concept_id}.md"):
-        if path.is_file():
-            return path
-    return direct
+    found = find_reference_file(REFERENCES_DIR, concept_id)
+    if found:
+        return found
+    return REFERENCES_DIR / "concepts" / f"{concept_id}.md"
 
 
 def concept_reference_doc(concept_id: str) -> str:
@@ -234,9 +233,17 @@ def detector_backing(concept_id: str) -> str:
     reference_path = find_concept_reference(concept_id)
     if reference_path.exists():
         return "strong"
-    detector_dir = ROOT / "detectors" / "concepts" / concept_id
-    if detector_dir.exists():
-        files = {path.name for path in detector_dir.iterdir() if path.is_file()}
+    concepts_root = ROOT / "detectors" / "concepts"
+    legacy_dir = concepts_root / concept_id
+    typed_files = [
+        concepts_root / "ast-grep" / f"{concept_id}.yaml",
+        concepts_root / "semgrep" / f"{concept_id}.yaml",
+        concepts_root / "signatures" / f"{concept_id}.yaml",
+    ]
+    if any(path.exists() for path in typed_files):
+        return "partial"
+    if legacy_dir.exists():
+        files = {path.name for path in legacy_dir.iterdir() if path.is_file()}
         if files:
             return "partial"
     return "weak"
@@ -741,7 +748,7 @@ def pattern_to_fact(pattern: dict[str, Any], question_bundle: dict[str, Any], fr
     if relation:
         relationships.append(relation)
     for framework_name in heuristic_frameworks:
-        relation = make_doc_ref(f"references/frameworks/{framework_name}.md", "relevant_framework")
+        relation = make_doc_ref(f"memory/concepts/frameworks/{framework_name}.md", "relevant_framework")
         if relation:
             relationships.append(relation)
     question_ids: list[str] = []

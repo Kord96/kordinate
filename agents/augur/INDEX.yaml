@@ -48,16 +48,9 @@ entries:
     include: true
     mutable: false
     source_of_truth: repo
-  - path: memory/catalog/frameworks
+  - path: memory/concepts
     kind: dir
-    purpose: Framework semantics catalog
-    preload: ondemand
-    include: false
-    mutable: false
-    source_of_truth: repo
-  - path: memory/catalog/concepts
-    kind: dir
-    purpose: Concept semantics catalog
+    purpose: Canonical semantic library split by concept family, including frameworks
     preload: ondemand
     include: false
     mutable: false

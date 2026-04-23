@@ -187,8 +187,8 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
     },
     resources: {
       validator_script: '/app/agents/augur/skills/analyze/validator/validate.py',
-      concept_catalog_index: '/app/agents/augur/references/concepts/README.md',
-      framework_catalog_index: '/app/agents/augur/references/frameworks/README.md',
+      concept_catalog_index: '/app/agents/augur/memory/concepts/README.md',
+      framework_catalog_index: '/app/agents/augur/memory/concepts/frameworks/README.md',
     },
     agent_params: {
       bundle_mode: 'selective',
@@ -198,8 +198,8 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
   assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/repos\/repo`/)
   assert.match(promptPlan.dynamicPrompt, /Output directory: `\/tmp\/run`/)
   assert.match(promptPlan.dynamicPrompt, /Agent root: `\/app\/agents\/augur`/)
-  assert.match(promptPlan.dynamicPrompt, /Concept catalog entrypoint: `\/app\/agents\/augur\/memory\/catalog\/concepts\/README\.md`/)
-  assert.match(promptPlan.dynamicPrompt, /Framework catalog entrypoint: `\/app\/agents\/augur\/memory\/catalog\/frameworks\/README\.md`/)
+  assert.match(promptPlan.dynamicPrompt, /Concept catalog entrypoint: `\/app\/agents\/augur\/memory\/concepts\/README\.md`/)
+  assert.match(promptPlan.dynamicPrompt, /Framework catalog entrypoint: `\/app\/agents\/augur\/memory\/concepts\/frameworks\/README\.md`/)
   assert.doesNotMatch(promptPlan.dynamicPrompt, /Validator script:/)
   assert.doesNotMatch(promptPlan.dynamicPrompt, /Grounding summary path:/)
   assert.doesNotMatch(promptPlan.dynamicPrompt, /Write handoff path:/)

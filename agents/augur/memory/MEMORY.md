@@ -10,7 +10,6 @@ Use it in three layers:
 
 Large semantic catalogs are on-demand:
 
-- `catalog/concepts/`
-- `catalog/frameworks/`
+- `concepts/`
 
-Start from each catalog's README or index entrypoint before opening individual concept or framework files.
+Start from `concepts/README.md` or the relevant family README before opening individual concept or framework files.

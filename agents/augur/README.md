@@ -16,10 +16,9 @@ Architecture review and pattern authority — reviews design consistency, identi
 - [memory/workflow.md](memory/workflow.md) — Review workflow
 - [memory/roadmap.md](memory/roadmap.md) — Product roadmap and phase ordering
 - [memory/tools.md](memory/tools.md) — Tool reference
+- [memory/concepts/](memory/concepts/) — Canonical concept and framework references
 - [memory/indexes/](memory/indexes/) — Ontology and index layer
 - [memory/contracts/](memory/contracts/) — Normative contracts
-- [references/concepts/](references/concepts/) — Canonical concept references
-- [references/frameworks/](references/frameworks/) — Canonical framework references
 
 ### Detector source
 - [detectors/concepts/](detectors/concepts/) — Deterministic concept detector assets

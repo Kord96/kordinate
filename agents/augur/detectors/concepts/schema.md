@@ -6,7 +6,7 @@ This document defines the detector-side executable files for Augur concepts.
 
 Concept detection is deterministic runtime machinery and should be kept separate from the canonical reference layer.
 
-- semantic meaning and signatures live under the semantic family subdirectories in `references/concepts/`
+- semantic meaning and signatures live under the semantic family subdirectories in `memory/concepts/`
 - deterministic executable rules live under `detectors/concepts/`
 - generated execution bundles live under `.generated/bundles/detectors/`
 
@@ -18,7 +18,7 @@ detectors/concepts/<name>/
   semgrep.yaml        # optional executable semantic/security rules
 ```
 
-## Matching reference under `references/concepts/`
+## Matching reference under `memory/concepts/`
 
 ```yaml
 concept: <kebab-case concept id>

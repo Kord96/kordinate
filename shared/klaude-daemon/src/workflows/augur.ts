@@ -490,8 +490,8 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
           },
           resources: {
             validator_script: context.agentContract.validation?.validatorScript,
-            concept_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/references/concepts/README.md`,
-            framework_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/references/frameworks/README.md`,
+            concept_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/concepts/README.md`,
+            framework_catalog_index: `${process.env.KORDINATE_HOME ?? '/app'}/agents/augur/memory/concepts/frameworks/README.md`,
           },
           agent_params: {
             ...(message.agent_params ?? {}),

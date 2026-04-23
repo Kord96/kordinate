@@ -3,7 +3,7 @@ description: Generated ontology graph index for Augur concepts and frameworks
 ---
 # Ontology Graph
 
-Generated from `memory/catalog/concepts/*.md` and `memory/catalog/frameworks/*/semantics.yaml`.
+Generated from `memory/concepts/**/*.md`.
 
 Authored relationship metadata comes from concept frontmatter and framework semantics.
 Framework-authored edges take precedence over inferred framework hints, and concept-authored edges take precedence over prose-link references.
@@ -11,19 +11,23 @@ Plain prose links are kept as low-confidence inferred `references` edges for mai
 
 ## Maintenance
 
-- Authored edges: `916`
-- Inferred edges: `714`
-- Low-confidence inferred references needing review: `8`
+- Authored edges: `108`
+- Inferred edges: `1468`
+- Low-confidence inferred references needing review: `762`
 
 Top low-confidence inferred references:
 - `framework:django` `commonly_implies` `concept:active-record`
 - `framework:fastapi` `commonly_implies` `concept:repository`
 - `framework:laravel` `commonly_implies` `concept:active-record`
 - `framework:rails` `commonly_implies` `concept:active-record`
-- `concept:memory-leak` `references` `concept:bulkhead`
-- `concept:property-testing` `references` `concept:snapshot-testing`
-- `concept:request-path` `references` `concept:server-route-registration`
-- `concept:secret-management` `references` `concept:immutable-infra`
+- `concept:abstract-factory` `references` `concept:bridge`
+- `concept:abstract-factory` `references` `concept:builder`
+- `concept:abstract-factory` `references` `concept:factory`
+- `concept:active-record` `references` `concept:data-mapper`
+- `concept:active-record` `references` `concept:repository`
+- `concept:actor-model` `references` `concept:pub-sub`
+- `concept:actor-model` `references` `concept:state-machine`
+- `concept:actor-model` `references` `concept:worker-pool`
 
 ```mermaid
 graph TD
@@ -60,328 +64,328 @@ graph TD
   abstraction_social["social"]
   abstraction_temporal["temporal"]
   abstraction_testing["testing"]
-  concept_abstract_factory["Abstract Factory"]
-  concept_active_record["Active Record"]
-  concept_actor_model["Actor Model"]
-  concept_adapter["Adapter"]
-  concept_aggregate["Aggregate Root"]
-  concept_anemic_domain_model["Anemic Domain Model"]
-  concept_anti_corruption_layer["Anti-Corruption Layer"]
-  concept_api_gateway["API Gateway"]
-  concept_api_key_auth["API Key Authentication"]
-  concept_ast["Abstract Syntax Tree (AST)"]
-  concept_at_least_once_delivery["At-Least-Once Delivery"]
-  concept_audit_logging["Audit Logging"]
-  concept_backpressure["Backpressure"]
-  concept_batch_loader["Batch Loader (N+1 Prevention)"]
-  concept_batch_processing["Batch Processing"]
-  concept_bff["Backend for Frontend"]
-  concept_big_ball_of_mud["Big Ball of Mud"]
-  concept_block_content["Block Content"]
-  concept_bloom_filter["Bloom Filter"]
-  concept_blue_green["Blue-Green Deployment"]
-  concept_boolean_blindness["Boolean Blindness"]
-  concept_bounded_context["Bounded Context"]
-  concept_breaking_changes["Breaking Changes"]
-  concept_bridge["Bridge"]
-  concept_builder["Builder"]
-  concept_bulkhead["Bulkhead"]
-  concept_busy_waiting["Busy Waiting"]
-  concept_cache_aside["Cache-Aside"]
-  concept_cache_stampede_prevention["Cache Stampede Prevention"]
-  concept_callback_hell["Callback Hell"]
-  concept_canary["Canary Release"]
-  concept_cargo_cult["Cargo Cult Programming"]
-  concept_catalog["Catalog"]
-  concept_cell_based["Cell-Based"]
-  concept_chain_of_responsibility["Chain of Responsibility"]
-  concept_change_data_capture["Change Data Capture (CDC)"]
-  concept_chatty_api["Chatty API"]
-  concept_choreography["Choreography"]
-  concept_circuit_breaker["Circuit Breaker"]
-  concept_circular_dependency["Circular Dependency"]
-  concept_claim_check["Claim Check"]
-  concept_command["Command"]
-  concept_competing_consumers["Competing Consumers"]
-  concept_component["Component Architecture"]
-  concept_component_slot["Component Slot"]
-  concept_composite["Composite"]
-  concept_config_management["Configuration Management"]
-  concept_config_sprawl["Configuration Sprawl"]
-  concept_connection_pooling["Connection Pooling"]
-  concept_content_negotiation["Content/Protocol Negotiation"]
-  concept_contract_testing["Contract Testing"]
-  concept_control_plane["Control Plane"]
-  concept_conversation_thread["Conversation Thread"]
-  concept_copy_paste_programming["Copy-Paste Programming"]
-  concept_correlation_id["Correlation ID"]
-  concept_cors["CORS (Cross-Origin Resource Sharing)"]
-  concept_cqrs["CQRS"]
-  concept_data_mapper["Data Mapper"]
-  concept_data_pipeline["Data Pipeline"]
-  concept_data_plane["Data Plane"]
-  concept_database_migration["Database Migration"]
-  concept_database_per_service["Database-Per-Service"]
-  concept_ddd["Domain-Driven Design (DDD)"]
-  concept_dead_letter["Dead Letter Queue"]
-  concept_deadlock["Deadlock"]
-  concept_decorator["Decorator/Wrapper"]
-  concept_deep_nesting["Deep Nesting"]
-  concept_dependency_injection["Dependency Injection"]
-  concept_distributed_lock["Distributed Lock"]
-  concept_distributed_monolith["Distributed Monolith"]
-  concept_distributed_tracing["Distributed Tracing"]
-  concept_dual_writes["Dual Writes"]
-  concept_entity_component_system["Entity-Component-System (ECS)"]
-  concept_environment_parity_gap["Environment Parity Gap"]
-  concept_error_boundary["Error Boundary"]
-  concept_error_code_returns["Error Code Returns"]
-  concept_etl["ETL/ELT"]
-  concept_event_carried_state["Event-Carried State Transfer (Fat Events)"]
-  concept_event_driven["Event-Driven Architecture"]
-  concept_event_log["Event Log"]
-  concept_event_notification["Event Notification (Thin Events)"]
-  concept_event_sourcing["Event Sourcing"]
-  concept_eventual_consistency["Eventual Consistency"]
-  concept_exactly_once_semantics["Exactly-Once Semantics"]
-  concept_experiment_framework["A/B Experiment Framework"]
-  concept_facade["Facade"]
-  concept_factory["Factory"]
-  concept_failure_cascade["Failure Cascade"]
-  concept_fallback["Fallback"]
-  concept_fan_in["Fan-In"]
-  concept_fan_out["Fan-Out"]
-  concept_feature_envy["Feature Envy"]
-  concept_feature_flag["Feature Flag/Toggle"]
-  concept_feature_store["Feature Store"]
-  concept_fire_and_forget["Fire and Forget"]
-  concept_fixture_builder["Test Fixture / Data Builder"]
-  concept_flaky_tests["Flaky Tests"]
-  concept_flux["Flux/Redux (Unidirectional Data Flow)"]
-  concept_flyweight["Flyweight"]
-  concept_form_binding["Form Binding"]
-  concept_future_promise["Future/Promise"]
-  concept_game_loop["Game Loop"]
-  concept_gateway_backends["Gateway-Backends"]
-  concept_gitops["GitOps"]
-  concept_god_endpoint["God Endpoint"]
-  concept_god_object["God Object/Class"]
-  concept_golden_hammer["Golden Hammer"]
-  concept_graceful_degradation["Graceful Degradation"]
-  concept_graph["Graph"]
-  concept_graphql["GraphQL"]
-  concept_grpc["gRPC/RPC"]
-  concept_hardcoded_credentials["Hardcoded Credentials"]
-  concept_hardcoded_urls["Hardcoded URLs"]
-  concept_health_check["Health Check"]
-  concept_hexagonal["Hexagonal (Ports & Adapters)"]
-  concept_hidden_side_effects["Hidden Side Effects"]
-  concept_hydration["Hydration"]
-  concept_ice_cream_cone["Ice Cream Cone"]
-  concept_idempotent_consumer["Idempotent Consumer"]
-  concept_immutable_infra["Immutable Infrastructure"]
-  concept_inbox["Inbox"]
-  concept_inconsistent_naming["Inconsistent Naming"]
-  concept_infrastructure_as_code["Infrastructure as Code"]
-  concept_input_validation["Input Validation"]
-  concept_insecure_deserialization["Insecure Deserialization"]
-  concept_intermediate_representation["Intermediate Representation (IR)"]
-  concept_iterator["Iterator"]
-  concept_key_value_model["Key-Value"]
-  concept_lava_flow["Lava Flow (Dead Code)"]
-  concept_layered["Layered"]
-  concept_lazy_loading["Lazy Loading"]
-  concept_leader_election["Leader Election"]
-  concept_leaky_abstraction["Leaky Abstraction"]
-  concept_ledger["Ledger"]
-  concept_lexer_parser["Lexer/Parser"]
-  concept_load_balancer["Load Balancer"]
-  concept_log_and_throw["Log and Throw"]
-  concept_log_spam["Log Spam"]
-  concept_long_polling["Long Polling"]
-  concept_long_transactions["Long Transactions"]
-  concept_lru_cache["LRU Cache"]
-  concept_magic_numbers["Magic Numbers/Strings"]
-  concept_mapreduce["MapReduce"]
-  concept_materialized_view["Materialized View"]
-  concept_mediator["Mediator"]
-  concept_memento["Memento"]
-  concept_memory_leak["Memory Leak"]
-  concept_message_queue["Message Queue"]
-  concept_metric_cardinality_explosion["Metric Cardinality Explosion"]
-  concept_metrics_instrumentation["Metrics Instrumentation"]
-  concept_micro_frontend["Micro-Frontend"]
-  concept_microservices["Microservices"]
-  concept_middleware["Middleware"]
-  concept_misleading_names["Misleading Names"]
-  concept_missing_log_context["Missing Log Context"]
-  concept_model_registry["Model Registry"]
-  concept_modular_monolith["Modular Monolith"]
-  concept_monad["Monad/Railway-Oriented Programming"]
-  concept_mtls["Mutual TLS"]
-  concept_multi_tenant["Multi-Tenant"]
-  concept_mvc["Model-View-Controller"]
-  concept_mvvm["Model-View-ViewModel"]
-  concept_n_plus_one["N+1 Queries"]
-  concept_null_object["Null Object"]
-  concept_oauth_oidc["OAuth2/OpenID Connect"]
-  concept_object_pool["Object Pool"]
-  concept_observer["Observer"]
-  concept_optimistic_locking["Optimistic Locking"]
-  concept_optimistic_update["Optimistic Update"]
-  concept_orchestration["Orchestration"]
-  concept_outbox["Outbox"]
-  concept_over_under_fetching["Over/Under-Fetching"]
-  concept_pagination["Pagination"]
-  concept_pipeline_filter["Pipeline/Filter"]
-  concept_pipeline_stages["Pipeline Stages"]
-  concept_plugin["Plugin Architecture"]
-  concept_plugin_host["Plugin Host"]
-  concept_pokemon_exception["Pokemon Exception"]
-  concept_polling_flow["Polling"]
-  concept_premature_optimization["Premature Optimization"]
-  concept_primitive_obsession["Primitive Obsession"]
-  concept_producer_consumer["Producer-Consumer"]
-  concept_prop_drilling["Prop Drilling"]
-  concept_property_graph["Property Graph"]
-  concept_property_testing["Property-Based Testing"]
-  concept_prototype["Prototype"]
-  concept_proxy["Proxy"]
-  concept_pub_sub["Publish-Subscribe"]
-  concept_query_object["Query Object"]
-  concept_race_condition["Race Condition"]
-  concept_rate_limiting["Rate Limiting/Throttling"]
-  concept_rbac["Role-Based Access Control"]
-  concept_reactive_store["Reactive Store"]
-  concept_reactor["Reactor/Event Loop"]
-  concept_read_through["Read-Through Cache"]
-  concept_read_write_lock["Read-Write Lock"]
-  concept_refresh_ahead["Refresh-Ahead Cache"]
-  concept_registry_model["Registry"]
-  concept_reinventing_the_wheel["Reinventing the Wheel"]
-  concept_repository["Repository"]
-  concept_request_path["Request Path"]
-  concept_request_reply["Request-Reply"]
-  concept_rest["REST API"]
-  concept_result_type["Result/Either Type"]
-  concept_retry["Retry with Backoff"]
-  concept_ring_buffer["Ring Buffer"]
-  concept_route_guard["Route Guard"]
-  concept_router["Router"]
-  concept_rule_engine["Rule Engine"]
-  concept_saga["Saga"]
-  concept_saga_orchestrator["Saga Orchestrator"]
-  concept_scatter_gather["Scatter-Gather"]
-  concept_scheduler["Cron/Scheduler"]
-  concept_schema_on_read["Schema-on-Read"]
-  concept_schema_registry["Schema Registry"]
-  concept_search_index["Search Index"]
-  concept_secret_management["Secret Management"]
-  concept_select_star["Select Star"]
-  concept_server_prefetch["Server Prefetch"]
-  concept_server_route_registration["Server Route Registration"]
-  concept_server_sent_events["Server-Sent Events (SSE)"]
-  concept_serverless["Serverless / FaaS"]
-  concept_service_discovery["Service Discovery"]
-  concept_service_manager["Service Manager"]
-  concept_service_mesh["Service Mesh"]
-  concept_session_auth["Session-Based Authentication"]
-  concept_sharding["Sharding"]
-  concept_shared_database["Shared Database"]
-  concept_shotgun_surgery["Shotgun Surgery"]
-  concept_side_effect_hook["Side Effect Hook"]
-  concept_sidecar["Sidecar"]
-  concept_sidecar_mesh["Sidecar Mesh"]
-  concept_singleton["Singleton"]
-  concept_snapshot_testing["Snapshot Testing"]
-  concept_snowflake_server["Snowflake Server"]
-  concept_social_graph["Social Graph"]
-  concept_soft_delete["Soft Delete"]
-  concept_spaghetti_code["Spaghetti Code"]
-  concept_spatial["Spatial"]
-  concept_spatial_partitioning["Spatial Partitioning"]
-  concept_specification["Specification Pattern"]
-  concept_sql_injection["SQL Injection"]
-  concept_state_machine["State Machine"]
-  concept_strangler_fig["Strangler Fig"]
-  concept_strategy["Strategy"]
-  concept_stream_processing["Stream Processing"]
-  concept_stream_to_store["Stream-to-Store"]
-  concept_streaming_flow["Streaming"]
-  concept_stringly_typed["Stringly Typed"]
-  concept_structured_logging["Structured Logging"]
-  concept_subscription["Subscription"]
-  concept_suspense_boundary["Suspense Boundary"]
-  concept_swallowed_exception["Swallowed Exception"]
-  concept_sync_in_async["Sync-in-Async"]
-  concept_template_method["Template Method"]
-  concept_temporal_coupling["Temporal Coupling"]
-  concept_tenant_isolation["Tenant Isolation"]
-  concept_tenant_routing["Tenant-Aware Routing"]
-  concept_tensor["Tensor"]
-  concept_test_doubles["Test Doubles (Mock/Stub/Fake/Spy)"]
-  concept_test_pollution["Test Pollution"]
-  concept_tick_simulation["Tick-Based Simulation"]
-  concept_tight_coupling["Tight Coupling"]
-  concept_time_series["Time Series"]
-  concept_timeout["Timeout"]
-  concept_token_auth["Token-Based Authentication (JWT)"]
-  concept_train_wreck["Train Wreck"]
-  concept_training_pipeline["Training Pipeline"]
-  concept_trie["Trie (Prefix Tree)"]
-  concept_unbounded_growth["Unbounded Growth"]
-  concept_unit_of_work["Unit of Work"]
-  concept_value_object["Value Object"]
-  concept_versioned_document["Versioned Document"]
-  concept_visitor["Visitor"]
-  concept_webhook["Webhook"]
-  concept_websocket["WebSocket"]
-  concept_worker_pool["Worker/Thread Pool"]
-  concept_workflow_engine["Workflow Engine"]
-  concept_workflow_state_machine["Workflow / State Machine"]
-  concept_write_behind["Write-Behind"]
+  concept_abstract_factory["Explanation"]
+  concept_active_record["Explanation"]
+  concept_actor_model["Explanation"]
+  concept_adapter["Explanation"]
+  concept_aggregate["Explanation"]
+  concept_anemic_domain_model["Explanation"]
+  concept_anti_corruption_layer["Explanation"]
+  concept_api_gateway["Explanation"]
+  concept_api_key_auth["Explanation"]
+  concept_ast["Explanation"]
+  concept_at_least_once_delivery["Explanation"]
+  concept_audit_logging["Explanation"]
+  concept_backpressure["Explanation"]
+  concept_batch_loader["Explanation"]
+  concept_batch_processing["Explanation"]
+  concept_bff["Explanation"]
+  concept_big_ball_of_mud["Explanation"]
+  concept_block_content["Explanation"]
+  concept_bloom_filter["Explanation"]
+  concept_blue_green["Explanation"]
+  concept_boolean_blindness["Explanation"]
+  concept_bounded_context["Explanation"]
+  concept_breaking_changes["Explanation"]
+  concept_bridge["Explanation"]
+  concept_builder["Explanation"]
+  concept_bulkhead["Explanation"]
+  concept_busy_waiting["Explanation"]
+  concept_cache_aside["Explanation"]
+  concept_cache_stampede_prevention["Explanation"]
+  concept_callback_hell["Explanation"]
+  concept_canary["Explanation"]
+  concept_cargo_cult["Explanation"]
+  concept_catalog["Explanation"]
+  concept_cell_based["Explanation"]
+  concept_chain_of_responsibility["Explanation"]
+  concept_change_data_capture["Explanation"]
+  concept_chatty_api["Explanation"]
+  concept_choreography["Explanation"]
+  concept_circuit_breaker["Explanation"]
+  concept_circular_dependency["Explanation"]
+  concept_claim_check["Explanation"]
+  concept_command["Explanation"]
+  concept_competing_consumers["Explanation"]
+  concept_component["Explanation"]
+  concept_component_slot["Explanation"]
+  concept_composite["Explanation"]
+  concept_config_management["Explanation"]
+  concept_config_sprawl["Explanation"]
+  concept_connection_pooling["Explanation"]
+  concept_content_negotiation["Explanation"]
+  concept_contract_testing["Explanation"]
+  concept_control_plane["Explanation"]
+  concept_conversation_thread["Explanation"]
+  concept_copy_paste_programming["Explanation"]
+  concept_correlation_id["Explanation"]
+  concept_cors["Explanation"]
+  concept_cqrs["Explanation"]
+  concept_data_mapper["Explanation"]
+  concept_data_pipeline["Explanation"]
+  concept_data_plane["Explanation"]
+  concept_database_migration["Explanation"]
+  concept_database_per_service["Explanation"]
+  concept_ddd["Explanation"]
+  concept_dead_letter["Explanation"]
+  concept_deadlock["Explanation"]
+  concept_decorator["Explanation"]
+  concept_deep_nesting["Explanation"]
+  concept_dependency_injection["Explanation"]
+  concept_distributed_lock["Explanation"]
+  concept_distributed_monolith["Explanation"]
+  concept_distributed_tracing["Explanation"]
+  concept_dual_writes["Explanation"]
+  concept_entity_component_system["Explanation"]
+  concept_environment_parity_gap["Explanation"]
+  concept_error_boundary["Explanation"]
+  concept_error_code_returns["Explanation"]
+  concept_etl["Explanation"]
+  concept_event_carried_state["Explanation"]
+  concept_event_driven["Explanation"]
+  concept_event_log["Explanation"]
+  concept_event_notification["Explanation"]
+  concept_event_sourcing["Explanation"]
+  concept_eventual_consistency["Explanation"]
+  concept_exactly_once_semantics["Explanation"]
+  concept_experiment_framework["Explanation"]
+  concept_facade["Explanation"]
+  concept_factory["Explanation"]
+  concept_failure_cascade["Explanation"]
+  concept_fallback["Explanation"]
+  concept_fan_in["Explanation"]
+  concept_fan_out["Explanation"]
+  concept_feature_envy["Explanation"]
+  concept_feature_flag["Explanation"]
+  concept_feature_store["Explanation"]
+  concept_fire_and_forget["Explanation"]
+  concept_fixture_builder["Explanation"]
+  concept_flaky_tests["Explanation"]
+  concept_flux["Explanation"]
+  concept_flyweight["Explanation"]
+  concept_form_binding["Explanation"]
+  concept_future_promise["Explanation"]
+  concept_game_loop["Explanation"]
+  concept_gateway_backends["Explanation"]
+  concept_gitops["Explanation"]
+  concept_god_endpoint["Explanation"]
+  concept_god_object["Explanation"]
+  concept_golden_hammer["Explanation"]
+  concept_graceful_degradation["Explanation"]
+  concept_graph["Explanation"]
+  concept_graphql["Explanation"]
+  concept_grpc["Explanation"]
+  concept_hardcoded_credentials["Explanation"]
+  concept_hardcoded_urls["Explanation"]
+  concept_health_check["Explanation"]
+  concept_hexagonal["Explanation"]
+  concept_hidden_side_effects["Explanation"]
+  concept_hydration["Explanation"]
+  concept_ice_cream_cone["Explanation"]
+  concept_idempotent_consumer["Explanation"]
+  concept_immutable_infra["Explanation"]
+  concept_inbox["Explanation"]
+  concept_inconsistent_naming["Explanation"]
+  concept_infrastructure_as_code["Explanation"]
+  concept_input_validation["Explanation"]
+  concept_insecure_deserialization["Explanation"]
+  concept_intermediate_representation["Explanation"]
+  concept_iterator["Explanation"]
+  concept_key_value_model["Explanation"]
+  concept_lava_flow["Explanation"]
+  concept_layered["Explanation"]
+  concept_lazy_loading["Explanation"]
+  concept_leader_election["Explanation"]
+  concept_leaky_abstraction["Explanation"]
+  concept_ledger["Explanation"]
+  concept_lexer_parser["Explanation"]
+  concept_load_balancer["Explanation"]
+  concept_log_and_throw["Explanation"]
+  concept_log_spam["Explanation"]
+  concept_long_polling["Explanation"]
+  concept_long_transactions["Explanation"]
+  concept_lru_cache["Explanation"]
+  concept_magic_numbers["Explanation"]
+  concept_mapreduce["Explanation"]
+  concept_materialized_view["Explanation"]
+  concept_mediator["Explanation"]
+  concept_memento["Explanation"]
+  concept_memory_leak["Explanation"]
+  concept_message_queue["Explanation"]
+  concept_metric_cardinality_explosion["Explanation"]
+  concept_metrics_instrumentation["Explanation"]
+  concept_micro_frontend["Explanation"]
+  concept_microservices["Explanation"]
+  concept_middleware["Explanation"]
+  concept_misleading_names["Explanation"]
+  concept_missing_log_context["Explanation"]
+  concept_model_registry["Explanation"]
+  concept_modular_monolith["Explanation"]
+  concept_monad["Explanation"]
+  concept_mtls["Explanation"]
+  concept_multi_tenant["Explanation"]
+  concept_mvc["Explanation"]
+  concept_mvvm["Explanation"]
+  concept_n_plus_one["Explanation"]
+  concept_null_object["Explanation"]
+  concept_oauth_oidc["Explanation"]
+  concept_object_pool["Explanation"]
+  concept_observer["Explanation"]
+  concept_optimistic_locking["Explanation"]
+  concept_optimistic_update["Explanation"]
+  concept_orchestration["Explanation"]
+  concept_outbox["Explanation"]
+  concept_over_under_fetching["Explanation"]
+  concept_pagination["Explanation"]
+  concept_pipeline_filter["Explanation"]
+  concept_pipeline_stages["Explanation"]
+  concept_plugin["Explanation"]
+  concept_plugin_host["Explanation"]
+  concept_pokemon_exception["Explanation"]
+  concept_polling_flow["Explanation"]
+  concept_premature_optimization["Explanation"]
+  concept_primitive_obsession["Explanation"]
+  concept_producer_consumer["Explanation"]
+  concept_prop_drilling["Explanation"]
+  concept_property_graph["Explanation"]
+  concept_property_testing["Explanation"]
+  concept_prototype["Explanation"]
+  concept_proxy["Explanation"]
+  concept_pub_sub["Explanation"]
+  concept_query_object["Explanation"]
+  concept_race_condition["Explanation"]
+  concept_rate_limiting["Explanation"]
+  concept_rbac["Explanation"]
+  concept_reactive_store["Explanation"]
+  concept_reactor["Explanation"]
+  concept_read_through["Explanation"]
+  concept_read_write_lock["Explanation"]
+  concept_refresh_ahead["Explanation"]
+  concept_registry_model["Explanation"]
+  concept_reinventing_the_wheel["Explanation"]
+  concept_repository["Explanation"]
+  concept_request_path["Explanation"]
+  concept_request_reply["Explanation"]
+  concept_rest["Explanation"]
+  concept_result_type["Explanation"]
+  concept_retry["Explanation"]
+  concept_ring_buffer["Explanation"]
+  concept_route_guard["Explanation"]
+  concept_router["Explanation"]
+  concept_rule_engine["Explanation"]
+  concept_saga["Explanation"]
+  concept_saga_orchestrator["Explanation"]
+  concept_scatter_gather["Explanation"]
+  concept_scheduler["Explanation"]
+  concept_schema_on_read["Explanation"]
+  concept_schema_registry["Explanation"]
+  concept_search_index["Explanation"]
+  concept_secret_management["Explanation"]
+  concept_select_star["Explanation"]
+  concept_server_prefetch["Explanation"]
+  concept_server_route_registration["Explanation"]
+  concept_server_sent_events["Explanation"]
+  concept_serverless["Explanation"]
+  concept_service_discovery["Explanation"]
+  concept_service_manager["Explanation"]
+  concept_service_mesh["Explanation"]
+  concept_session_auth["Explanation"]
+  concept_sharding["Explanation"]
+  concept_shared_database["Explanation"]
+  concept_shotgun_surgery["Explanation"]
+  concept_side_effect_hook["Explanation"]
+  concept_sidecar["Explanation"]
+  concept_sidecar_mesh["Explanation"]
+  concept_singleton["Explanation"]
+  concept_snapshot_testing["Explanation"]
+  concept_snowflake_server["Explanation"]
+  concept_social_graph["Explanation"]
+  concept_soft_delete["Explanation"]
+  concept_spaghetti_code["Explanation"]
+  concept_spatial["Explanation"]
+  concept_spatial_partitioning["Explanation"]
+  concept_specification["Explanation"]
+  concept_sql_injection["Explanation"]
+  concept_state_machine["Explanation"]
+  concept_strangler_fig["Explanation"]
+  concept_strategy["Explanation"]
+  concept_stream_processing["Explanation"]
+  concept_stream_to_store["Explanation"]
+  concept_streaming_flow["Explanation"]
+  concept_stringly_typed["Explanation"]
+  concept_structured_logging["Explanation"]
+  concept_subscription["Explanation"]
+  concept_suspense_boundary["Explanation"]
+  concept_swallowed_exception["Explanation"]
+  concept_sync_in_async["Explanation"]
+  concept_template_method["Explanation"]
+  concept_temporal_coupling["Explanation"]
+  concept_tenant_isolation["Explanation"]
+  concept_tenant_routing["Explanation"]
+  concept_tensor["Explanation"]
+  concept_test_doubles["Explanation"]
+  concept_test_pollution["Explanation"]
+  concept_tick_simulation["Explanation"]
+  concept_tight_coupling["Explanation"]
+  concept_time_series["Explanation"]
+  concept_timeout["Explanation"]
+  concept_token_auth["Explanation"]
+  concept_train_wreck["Explanation"]
+  concept_training_pipeline["Explanation"]
+  concept_trie["Explanation"]
+  concept_unbounded_growth["Explanation"]
+  concept_unit_of_work["Explanation"]
+  concept_value_object["Explanation"]
+  concept_versioned_document["Explanation"]
+  concept_visitor["Explanation"]
+  concept_webhook["Explanation"]
+  concept_websocket["Explanation"]
+  concept_worker_pool["Explanation"]
+  concept_workflow_engine["Explanation"]
+  concept_workflow_state_machine["Explanation"]
+  concept_write_behind["Explanation"]
   type_anti_pattern["anti-pattern"]
   type_domain_model["domain-model"]
   type_flow_shape["flow-shape"]
   type_pattern["pattern"]
   type_structure_shape["structure-shape"]
   type_unknown["unknown"]
-  framework_actix_web["Actix Web"]
-  framework_aiohttp["aiohttp"]
-  framework_angular["Angular"]
-  framework_aspnet_controllers["ASP.NET Controllers"]
-  framework_aspnet_minimal["ASP.NET Minimal"]
-  framework_axum["Axum"]
-  framework_chi["Chi"]
-  framework_django["Django"]
-  framework_echo["Echo"]
-  framework_elysia["Elysia"]
-  framework_express["Express"]
-  framework_fastapi["FastAPI"]
-  framework_fastify["Fastify"]
-  framework_fiber["Fiber"]
-  framework_flask["Flask"]
-  framework_gin["Gin"]
-  framework_grape["Grape"]
-  framework_hono["Hono"]
-  framework_koa["Koa"]
-  framework_ktor["Ktor"]
-  framework_laravel["Laravel"]
-  framework_nestjs["NestJS"]
-  framework_net_http["net/http"]
-  framework_nextjs["Next.js"]
-  framework_phoenix["Phoenix"]
-  framework_quarkus["Quarkus"]
-  framework_rails["Rails"]
-  framework_react["React"]
-  framework_sinatra["Sinatra"]
-  framework_slim["Slim"]
-  framework_spring["Spring"]
-  framework_starlette["Starlette"]
-  framework_sveltekit["SvelteKit"]
-  framework_symfony["Symfony"]
-  framework_vapor["Vapor"]
-  framework_vue["Vue"]
+  framework_actix_web["Explanation"]
+  framework_aiohttp["Explanation"]
+  framework_angular["Explanation"]
+  framework_aspnet_controllers["Explanation"]
+  framework_aspnet_minimal["Explanation"]
+  framework_axum["Explanation"]
+  framework_chi["Explanation"]
+  framework_django["Explanation"]
+  framework_echo["Explanation"]
+  framework_elysia["Explanation"]
+  framework_express["Explanation"]
+  framework_fastapi["Explanation"]
+  framework_fastify["Explanation"]
+  framework_fiber["Explanation"]
+  framework_flask["Explanation"]
+  framework_gin["Explanation"]
+  framework_grape["Explanation"]
+  framework_hono["Explanation"]
+  framework_koa["Explanation"]
+  framework_ktor["Explanation"]
+  framework_laravel["Explanation"]
+  framework_nestjs["Explanation"]
+  framework_net_http["Explanation"]
+  framework_nextjs["Explanation"]
+  framework_phoenix["Explanation"]
+  framework_quarkus["Explanation"]
+  framework_rails["Explanation"]
+  framework_react["Explanation"]
+  framework_sinatra["Explanation"]
+  framework_slim["Explanation"]
+  framework_spring["Explanation"]
+  framework_starlette["Explanation"]
+  framework_sveltekit["Explanation"]
+  framework_symfony["Explanation"]
+  framework_vapor["Explanation"]
+  framework_vue["Explanation"]
   language_csharp["csharp"]
   language_elixir["elixir"]
   language_go["go"]
@@ -722,1359 +726,1346 @@ graph TD
   linkStyle 2 stroke-dasharray: 4 2
   framework_rails -->|commonly implies| concept_active_record
   linkStyle 3 stroke-dasharray: 4 2
-  concept_api_key_auth -->|disambiguates| concept_oauth_oidc
-  concept_api_key_auth -->|disambiguates| concept_session_auth
-  concept_api_key_auth -->|disambiguates| concept_token_auth
-  concept_mvc -->|disambiguates| concept_mvvm
-  concept_mvvm -->|disambiguates| concept_mvc
-  concept_oauth_oidc -->|disambiguates| concept_api_key_auth
-  concept_server_route_registration -->|disambiguates| concept_router
-  concept_session_auth -->|disambiguates| concept_api_key_auth
-  concept_session_auth -->|disambiguates| concept_oauth_oidc
-  concept_session_auth -->|disambiguates| concept_token_auth
-  concept_state_machine -->|disambiguates| concept_workflow_engine
-  concept_token_auth -->|disambiguates| concept_api_key_auth
-  concept_token_auth -->|disambiguates| concept_session_auth
   concept_abstract_factory -->|has abstraction| abstraction_design
-  linkStyle 17 stroke-dasharray: 4 2
+  linkStyle 4 stroke-dasharray: 4 2
   concept_active_record -->|has abstraction| abstraction_data
-  linkStyle 18 stroke-dasharray: 4 2
+  linkStyle 5 stroke-dasharray: 4 2
   concept_active_record -->|has abstraction| abstraction_design
-  linkStyle 19 stroke-dasharray: 4 2
+  linkStyle 6 stroke-dasharray: 4 2
   concept_actor_model -->|has abstraction| abstraction_architectural
-  linkStyle 20 stroke-dasharray: 4 2
+  linkStyle 7 stroke-dasharray: 4 2
   concept_actor_model -->|has abstraction| abstraction_concurrency
-  linkStyle 21 stroke-dasharray: 4 2
+  linkStyle 8 stroke-dasharray: 4 2
   concept_adapter -->|has abstraction| abstraction_design
-  linkStyle 22 stroke-dasharray: 4 2
+  linkStyle 9 stroke-dasharray: 4 2
   concept_adapter -->|has abstraction| abstraction_integration
-  linkStyle 23 stroke-dasharray: 4 2
+  linkStyle 10 stroke-dasharray: 4 2
   concept_aggregate -->|has abstraction| abstraction_data
-  linkStyle 24 stroke-dasharray: 4 2
+  linkStyle 11 stroke-dasharray: 4 2
   concept_aggregate -->|has abstraction| abstraction_design
-  linkStyle 25 stroke-dasharray: 4 2
+  linkStyle 12 stroke-dasharray: 4 2
   concept_anti_corruption_layer -->|has abstraction| abstraction_design
-  linkStyle 26 stroke-dasharray: 4 2
+  linkStyle 13 stroke-dasharray: 4 2
   concept_anti_corruption_layer -->|has abstraction| abstraction_integration
-  linkStyle 27 stroke-dasharray: 4 2
+  linkStyle 14 stroke-dasharray: 4 2
   concept_api_gateway -->|has abstraction| abstraction_infrastructure
-  linkStyle 28 stroke-dasharray: 4 2
+  linkStyle 15 stroke-dasharray: 4 2
   concept_api_gateway -->|has abstraction| abstraction_integration
-  linkStyle 29 stroke-dasharray: 4 2
+  linkStyle 16 stroke-dasharray: 4 2
   concept_api_gateway -->|has abstraction| abstraction_security
-  linkStyle 30 stroke-dasharray: 4 2
+  linkStyle 17 stroke-dasharray: 4 2
   concept_api_key_auth -->|has abstraction| abstraction_security
-  linkStyle 31 stroke-dasharray: 4 2
+  linkStyle 18 stroke-dasharray: 4 2
   concept_ast -->|has abstraction| abstraction_compiler
-  linkStyle 32 stroke-dasharray: 4 2
+  linkStyle 19 stroke-dasharray: 4 2
   concept_ast -->|has abstraction| abstraction_data
-  linkStyle 33 stroke-dasharray: 4 2
+  linkStyle 20 stroke-dasharray: 4 2
   concept_at_least_once_delivery -->|has abstraction| abstraction_messaging
-  linkStyle 34 stroke-dasharray: 4 2
+  linkStyle 21 stroke-dasharray: 4 2
   concept_at_least_once_delivery -->|has abstraction| abstraction_resilience
-  linkStyle 35 stroke-dasharray: 4 2
+  linkStyle 22 stroke-dasharray: 4 2
   concept_audit_logging -->|has abstraction| abstraction_observability
-  linkStyle 36 stroke-dasharray: 4 2
+  linkStyle 23 stroke-dasharray: 4 2
   concept_audit_logging -->|has abstraction| abstraction_security
-  linkStyle 37 stroke-dasharray: 4 2
+  linkStyle 24 stroke-dasharray: 4 2
   concept_backpressure -->|has abstraction| abstraction_concurrency
-  linkStyle 38 stroke-dasharray: 4 2
+  linkStyle 25 stroke-dasharray: 4 2
   concept_backpressure -->|has abstraction| abstraction_resilience
-  linkStyle 39 stroke-dasharray: 4 2
+  linkStyle 26 stroke-dasharray: 4 2
   concept_batch_loader -->|has abstraction| abstraction_data
-  linkStyle 40 stroke-dasharray: 4 2
+  linkStyle 27 stroke-dasharray: 4 2
   concept_batch_processing -->|has abstraction| abstraction_data
-  linkStyle 41 stroke-dasharray: 4 2
+  linkStyle 28 stroke-dasharray: 4 2
   concept_batch_processing -->|has abstraction| abstraction_lifecycle
-  linkStyle 42 stroke-dasharray: 4 2
+  linkStyle 29 stroke-dasharray: 4 2
   concept_bff -->|has abstraction| abstraction_api
-  linkStyle 43 stroke-dasharray: 4 2
+  linkStyle 30 stroke-dasharray: 4 2
   concept_bff -->|has abstraction| abstraction_architectural
-  linkStyle 44 stroke-dasharray: 4 2
+  linkStyle 31 stroke-dasharray: 4 2
   concept_block_content -->|has abstraction| abstraction_content
-  linkStyle 45 stroke-dasharray: 4 2
+  linkStyle 32 stroke-dasharray: 4 2
   concept_block_content -->|has abstraction| abstraction_data
-  linkStyle 46 stroke-dasharray: 4 2
+  linkStyle 33 stroke-dasharray: 4 2
   concept_bloom_filter -->|has abstraction| abstraction_data
-  linkStyle 47 stroke-dasharray: 4 2
+  linkStyle 34 stroke-dasharray: 4 2
   concept_blue_green -->|has abstraction| abstraction_deployment
-  linkStyle 48 stroke-dasharray: 4 2
+  linkStyle 35 stroke-dasharray: 4 2
   concept_bounded_context -->|has abstraction| abstraction_architectural
-  linkStyle 49 stroke-dasharray: 4 2
+  linkStyle 36 stroke-dasharray: 4 2
   concept_bounded_context -->|has abstraction| abstraction_design
-  linkStyle 50 stroke-dasharray: 4 2
+  linkStyle 37 stroke-dasharray: 4 2
   concept_bridge -->|has abstraction| abstraction_design
-  linkStyle 51 stroke-dasharray: 4 2
+  linkStyle 38 stroke-dasharray: 4 2
   concept_builder -->|has abstraction| abstraction_design
-  linkStyle 52 stroke-dasharray: 4 2
+  linkStyle 39 stroke-dasharray: 4 2
   concept_bulkhead -->|has abstraction| abstraction_resilience
-  linkStyle 53 stroke-dasharray: 4 2
+  linkStyle 40 stroke-dasharray: 4 2
   concept_cache_aside -->|has abstraction| abstraction_data
-  linkStyle 54 stroke-dasharray: 4 2
+  linkStyle 41 stroke-dasharray: 4 2
   concept_cache_aside -->|has abstraction| abstraction_resilience
-  linkStyle 55 stroke-dasharray: 4 2
+  linkStyle 42 stroke-dasharray: 4 2
   concept_cache_stampede_prevention -->|has abstraction| abstraction_concurrency
-  linkStyle 56 stroke-dasharray: 4 2
+  linkStyle 43 stroke-dasharray: 4 2
   concept_cache_stampede_prevention -->|has abstraction| abstraction_data
-  linkStyle 57 stroke-dasharray: 4 2
+  linkStyle 44 stroke-dasharray: 4 2
   concept_cache_stampede_prevention -->|has abstraction| abstraction_resilience
-  linkStyle 58 stroke-dasharray: 4 2
+  linkStyle 45 stroke-dasharray: 4 2
   concept_canary -->|has abstraction| abstraction_deployment
-  linkStyle 59 stroke-dasharray: 4 2
+  linkStyle 46 stroke-dasharray: 4 2
   concept_catalog -->|has abstraction| abstraction_commerce
-  linkStyle 60 stroke-dasharray: 4 2
+  linkStyle 47 stroke-dasharray: 4 2
   concept_catalog -->|has abstraction| abstraction_data
-  linkStyle 61 stroke-dasharray: 4 2
+  linkStyle 48 stroke-dasharray: 4 2
   concept_cell_based -->|has abstraction| abstraction_architectural
-  linkStyle 62 stroke-dasharray: 4 2
+  linkStyle 49 stroke-dasharray: 4 2
   concept_cell_based -->|has abstraction| abstraction_deployment
-  linkStyle 63 stroke-dasharray: 4 2
+  linkStyle 50 stroke-dasharray: 4 2
   concept_chain_of_responsibility -->|has abstraction| abstraction_design
-  linkStyle 64 stroke-dasharray: 4 2
+  linkStyle 51 stroke-dasharray: 4 2
   concept_change_data_capture -->|has abstraction| abstraction_data
-  linkStyle 65 stroke-dasharray: 4 2
+  linkStyle 52 stroke-dasharray: 4 2
   concept_change_data_capture -->|has abstraction| abstraction_integration
-  linkStyle 66 stroke-dasharray: 4 2
+  linkStyle 53 stroke-dasharray: 4 2
   concept_choreography -->|has abstraction| abstraction_architectural
-  linkStyle 67 stroke-dasharray: 4 2
+  linkStyle 54 stroke-dasharray: 4 2
   concept_choreography -->|has abstraction| abstraction_integration
-  linkStyle 68 stroke-dasharray: 4 2
+  linkStyle 55 stroke-dasharray: 4 2
   concept_circuit_breaker -->|has abstraction| abstraction_integration
-  linkStyle 69 stroke-dasharray: 4 2
+  linkStyle 56 stroke-dasharray: 4 2
   concept_circuit_breaker -->|has abstraction| abstraction_resilience
-  linkStyle 70 stroke-dasharray: 4 2
+  linkStyle 57 stroke-dasharray: 4 2
   concept_claim_check -->|has abstraction| abstraction_integration
-  linkStyle 71 stroke-dasharray: 4 2
+  linkStyle 58 stroke-dasharray: 4 2
   concept_claim_check -->|has abstraction| abstraction_messaging
-  linkStyle 72 stroke-dasharray: 4 2
+  linkStyle 59 stroke-dasharray: 4 2
   concept_command -->|has abstraction| abstraction_design
-  linkStyle 73 stroke-dasharray: 4 2
+  linkStyle 60 stroke-dasharray: 4 2
   concept_competing_consumers -->|has abstraction| abstraction_concurrency
-  linkStyle 74 stroke-dasharray: 4 2
+  linkStyle 61 stroke-dasharray: 4 2
   concept_competing_consumers -->|has abstraction| abstraction_messaging
-  linkStyle 75 stroke-dasharray: 4 2
+  linkStyle 62 stroke-dasharray: 4 2
   concept_component -->|has abstraction| abstraction_design
-  linkStyle 76 stroke-dasharray: 4 2
+  linkStyle 63 stroke-dasharray: 4 2
   concept_component -->|has abstraction| abstraction_frontend
-  linkStyle 77 stroke-dasharray: 4 2
+  linkStyle 64 stroke-dasharray: 4 2
   concept_component_slot -->|has abstraction| abstraction_design
-  linkStyle 78 stroke-dasharray: 4 2
+  linkStyle 65 stroke-dasharray: 4 2
   concept_component_slot -->|has abstraction| abstraction_frontend
-  linkStyle 79 stroke-dasharray: 4 2
+  linkStyle 66 stroke-dasharray: 4 2
   concept_composite -->|has abstraction| abstraction_design
-  linkStyle 80 stroke-dasharray: 4 2
+  linkStyle 67 stroke-dasharray: 4 2
   concept_config_management -->|has abstraction| abstraction_infrastructure
-  linkStyle 81 stroke-dasharray: 4 2
+  linkStyle 68 stroke-dasharray: 4 2
   concept_config_management -->|has abstraction| abstraction_lifecycle
-  linkStyle 82 stroke-dasharray: 4 2
+  linkStyle 69 stroke-dasharray: 4 2
   concept_connection_pooling -->|has abstraction| abstraction_infrastructure
-  linkStyle 83 stroke-dasharray: 4 2
+  linkStyle 70 stroke-dasharray: 4 2
   concept_content_negotiation -->|has abstraction| abstraction_api
-  linkStyle 84 stroke-dasharray: 4 2
+  linkStyle 71 stroke-dasharray: 4 2
   concept_contract_testing -->|has abstraction| abstraction_integration
-  linkStyle 85 stroke-dasharray: 4 2
+  linkStyle 72 stroke-dasharray: 4 2
   concept_contract_testing -->|has abstraction| abstraction_testing
-  linkStyle 86 stroke-dasharray: 4 2
+  linkStyle 73 stroke-dasharray: 4 2
   concept_control_plane -->|has abstraction| abstraction_architectural
-  linkStyle 87 stroke-dasharray: 4 2
+  linkStyle 74 stroke-dasharray: 4 2
   concept_control_plane -->|has abstraction| abstraction_infrastructure
-  linkStyle 88 stroke-dasharray: 4 2
+  linkStyle 75 stroke-dasharray: 4 2
   concept_conversation_thread -->|has abstraction| abstraction_communication
-  linkStyle 89 stroke-dasharray: 4 2
+  linkStyle 76 stroke-dasharray: 4 2
   concept_conversation_thread -->|has abstraction| abstraction_data
-  linkStyle 90 stroke-dasharray: 4 2
+  linkStyle 77 stroke-dasharray: 4 2
   concept_correlation_id -->|has abstraction| abstraction_integration
-  linkStyle 91 stroke-dasharray: 4 2
+  linkStyle 78 stroke-dasharray: 4 2
   concept_correlation_id -->|has abstraction| abstraction_observability
-  linkStyle 92 stroke-dasharray: 4 2
+  linkStyle 79 stroke-dasharray: 4 2
   concept_cors -->|has abstraction| abstraction_api
-  linkStyle 93 stroke-dasharray: 4 2
+  linkStyle 80 stroke-dasharray: 4 2
   concept_cors -->|has abstraction| abstraction_security
-  linkStyle 94 stroke-dasharray: 4 2
+  linkStyle 81 stroke-dasharray: 4 2
   concept_cqrs -->|has abstraction| abstraction_architectural
-  linkStyle 95 stroke-dasharray: 4 2
+  linkStyle 82 stroke-dasharray: 4 2
   concept_cqrs -->|has abstraction| abstraction_data
-  linkStyle 96 stroke-dasharray: 4 2
+  linkStyle 83 stroke-dasharray: 4 2
   concept_data_mapper -->|has abstraction| abstraction_data
-  linkStyle 97 stroke-dasharray: 4 2
+  linkStyle 84 stroke-dasharray: 4 2
   concept_data_mapper -->|has abstraction| abstraction_design
-  linkStyle 98 stroke-dasharray: 4 2
+  linkStyle 85 stroke-dasharray: 4 2
   concept_data_pipeline -->|has abstraction| abstraction_data
-  linkStyle 99 stroke-dasharray: 4 2
+  linkStyle 86 stroke-dasharray: 4 2
   concept_data_pipeline -->|has abstraction| abstraction_integration
-  linkStyle 100 stroke-dasharray: 4 2
+  linkStyle 87 stroke-dasharray: 4 2
   concept_data_plane -->|has abstraction| abstraction_infrastructure
-  linkStyle 101 stroke-dasharray: 4 2
+  linkStyle 88 stroke-dasharray: 4 2
   concept_data_plane -->|has abstraction| abstraction_networking
-  linkStyle 102 stroke-dasharray: 4 2
+  linkStyle 89 stroke-dasharray: 4 2
   concept_database_migration -->|has abstraction| abstraction_data
-  linkStyle 103 stroke-dasharray: 4 2
+  linkStyle 90 stroke-dasharray: 4 2
   concept_database_migration -->|has abstraction| abstraction_lifecycle
-  linkStyle 104 stroke-dasharray: 4 2
+  linkStyle 91 stroke-dasharray: 4 2
   concept_database_per_service -->|has abstraction| abstraction_architectural
-  linkStyle 105 stroke-dasharray: 4 2
+  linkStyle 92 stroke-dasharray: 4 2
   concept_database_per_service -->|has abstraction| abstraction_data
-  linkStyle 106 stroke-dasharray: 4 2
+  linkStyle 93 stroke-dasharray: 4 2
   concept_ddd -->|has abstraction| abstraction_architectural
-  linkStyle 107 stroke-dasharray: 4 2
+  linkStyle 94 stroke-dasharray: 4 2
   concept_ddd -->|has abstraction| abstraction_design
-  linkStyle 108 stroke-dasharray: 4 2
+  linkStyle 95 stroke-dasharray: 4 2
   concept_dead_letter -->|has abstraction| abstraction_messaging
-  linkStyle 109 stroke-dasharray: 4 2
+  linkStyle 96 stroke-dasharray: 4 2
   concept_dead_letter -->|has abstraction| abstraction_resilience
-  linkStyle 110 stroke-dasharray: 4 2
+  linkStyle 97 stroke-dasharray: 4 2
   concept_decorator -->|has abstraction| abstraction_design
-  linkStyle 111 stroke-dasharray: 4 2
+  linkStyle 98 stroke-dasharray: 4 2
   concept_dependency_injection -->|has abstraction| abstraction_architectural
-  linkStyle 112 stroke-dasharray: 4 2
+  linkStyle 99 stroke-dasharray: 4 2
   concept_dependency_injection -->|has abstraction| abstraction_design
-  linkStyle 113 stroke-dasharray: 4 2
+  linkStyle 100 stroke-dasharray: 4 2
   concept_distributed_lock -->|has abstraction| abstraction_concurrency
-  linkStyle 114 stroke-dasharray: 4 2
+  linkStyle 101 stroke-dasharray: 4 2
   concept_distributed_lock -->|has abstraction| abstraction_resilience
-  linkStyle 115 stroke-dasharray: 4 2
+  linkStyle 102 stroke-dasharray: 4 2
   concept_distributed_tracing -->|has abstraction| abstraction_integration
-  linkStyle 116 stroke-dasharray: 4 2
+  linkStyle 103 stroke-dasharray: 4 2
   concept_distributed_tracing -->|has abstraction| abstraction_observability
-  linkStyle 117 stroke-dasharray: 4 2
+  linkStyle 104 stroke-dasharray: 4 2
   concept_entity_component_system -->|has abstraction| abstraction_architectural
-  linkStyle 118 stroke-dasharray: 4 2
+  linkStyle 105 stroke-dasharray: 4 2
   concept_entity_component_system -->|has abstraction| abstraction_realtime
-  linkStyle 119 stroke-dasharray: 4 2
+  linkStyle 106 stroke-dasharray: 4 2
   concept_error_boundary -->|has abstraction| abstraction_error_handling
-  linkStyle 120 stroke-dasharray: 4 2
+  linkStyle 107 stroke-dasharray: 4 2
   concept_error_boundary -->|has abstraction| abstraction_frontend
-  linkStyle 121 stroke-dasharray: 4 2
+  linkStyle 108 stroke-dasharray: 4 2
   concept_etl -->|has abstraction| abstraction_data
-  linkStyle 122 stroke-dasharray: 4 2
+  linkStyle 109 stroke-dasharray: 4 2
   concept_event_carried_state -->|has abstraction| abstraction_data
-  linkStyle 123 stroke-dasharray: 4 2
+  linkStyle 110 stroke-dasharray: 4 2
   concept_event_carried_state -->|has abstraction| abstraction_messaging
-  linkStyle 124 stroke-dasharray: 4 2
+  linkStyle 111 stroke-dasharray: 4 2
   concept_event_driven -->|has abstraction| abstraction_architectural
-  linkStyle 125 stroke-dasharray: 4 2
+  linkStyle 112 stroke-dasharray: 4 2
   concept_event_driven -->|has abstraction| abstraction_messaging
-  linkStyle 126 stroke-dasharray: 4 2
+  linkStyle 113 stroke-dasharray: 4 2
   concept_event_log -->|has abstraction| abstraction_data
-  linkStyle 127 stroke-dasharray: 4 2
+  linkStyle 114 stroke-dasharray: 4 2
   concept_event_log -->|has abstraction| abstraction_messaging
-  linkStyle 128 stroke-dasharray: 4 2
+  linkStyle 115 stroke-dasharray: 4 2
   concept_event_notification -->|has abstraction| abstraction_integration
-  linkStyle 129 stroke-dasharray: 4 2
+  linkStyle 116 stroke-dasharray: 4 2
   concept_event_notification -->|has abstraction| abstraction_messaging
-  linkStyle 130 stroke-dasharray: 4 2
+  linkStyle 117 stroke-dasharray: 4 2
   concept_event_sourcing -->|has abstraction| abstraction_architectural
-  linkStyle 131 stroke-dasharray: 4 2
+  linkStyle 118 stroke-dasharray: 4 2
   concept_event_sourcing -->|has abstraction| abstraction_data
-  linkStyle 132 stroke-dasharray: 4 2
+  linkStyle 119 stroke-dasharray: 4 2
   concept_eventual_consistency -->|has abstraction| abstraction_data
-  linkStyle 133 stroke-dasharray: 4 2
+  linkStyle 120 stroke-dasharray: 4 2
   concept_eventual_consistency -->|has abstraction| abstraction_integration
-  linkStyle 134 stroke-dasharray: 4 2
+  linkStyle 121 stroke-dasharray: 4 2
   concept_eventual_consistency -->|has abstraction| abstraction_resilience
-  linkStyle 135 stroke-dasharray: 4 2
+  linkStyle 122 stroke-dasharray: 4 2
   concept_exactly_once_semantics -->|has abstraction| abstraction_data
-  linkStyle 136 stroke-dasharray: 4 2
+  linkStyle 123 stroke-dasharray: 4 2
   concept_exactly_once_semantics -->|has abstraction| abstraction_messaging
-  linkStyle 137 stroke-dasharray: 4 2
+  linkStyle 124 stroke-dasharray: 4 2
   concept_experiment_framework -->|has abstraction| abstraction_deployment
-  linkStyle 138 stroke-dasharray: 4 2
+  linkStyle 125 stroke-dasharray: 4 2
   concept_experiment_framework -->|has abstraction| abstraction_ml
-  linkStyle 139 stroke-dasharray: 4 2
+  linkStyle 126 stroke-dasharray: 4 2
   concept_facade -->|has abstraction| abstraction_design
-  linkStyle 140 stroke-dasharray: 4 2
+  linkStyle 127 stroke-dasharray: 4 2
   concept_factory -->|has abstraction| abstraction_design
-  linkStyle 141 stroke-dasharray: 4 2
+  linkStyle 128 stroke-dasharray: 4 2
   concept_failure_cascade -->|has abstraction| abstraction_integration
-  linkStyle 142 stroke-dasharray: 4 2
+  linkStyle 129 stroke-dasharray: 4 2
   concept_failure_cascade -->|has abstraction| abstraction_resilience
-  linkStyle 143 stroke-dasharray: 4 2
+  linkStyle 130 stroke-dasharray: 4 2
   concept_fallback -->|has abstraction| abstraction_resilience
-  linkStyle 144 stroke-dasharray: 4 2
+  linkStyle 131 stroke-dasharray: 4 2
   concept_fan_in -->|has abstraction| abstraction_data
-  linkStyle 145 stroke-dasharray: 4 2
+  linkStyle 132 stroke-dasharray: 4 2
   concept_fan_in -->|has abstraction| abstraction_integration
-  linkStyle 146 stroke-dasharray: 4 2
+  linkStyle 133 stroke-dasharray: 4 2
   concept_fan_out -->|has abstraction| abstraction_integration
-  linkStyle 147 stroke-dasharray: 4 2
+  linkStyle 134 stroke-dasharray: 4 2
   concept_fan_out -->|has abstraction| abstraction_messaging
-  linkStyle 148 stroke-dasharray: 4 2
+  linkStyle 135 stroke-dasharray: 4 2
   concept_feature_flag -->|has abstraction| abstraction_deployment
-  linkStyle 149 stroke-dasharray: 4 2
+  linkStyle 136 stroke-dasharray: 4 2
   concept_feature_flag -->|has abstraction| abstraction_design
-  linkStyle 150 stroke-dasharray: 4 2
+  linkStyle 137 stroke-dasharray: 4 2
   concept_feature_store -->|has abstraction| abstraction_data
-  linkStyle 151 stroke-dasharray: 4 2
+  linkStyle 138 stroke-dasharray: 4 2
   concept_feature_store -->|has abstraction| abstraction_ml
-  linkStyle 152 stroke-dasharray: 4 2
+  linkStyle 139 stroke-dasharray: 4 2
   concept_fixture_builder -->|has abstraction| abstraction_testing
-  linkStyle 153 stroke-dasharray: 4 2
+  linkStyle 140 stroke-dasharray: 4 2
   concept_flux -->|has abstraction| abstraction_architectural
-  linkStyle 154 stroke-dasharray: 4 2
+  linkStyle 141 stroke-dasharray: 4 2
   concept_flux -->|has abstraction| abstraction_data
-  linkStyle 155 stroke-dasharray: 4 2
+  linkStyle 142 stroke-dasharray: 4 2
   concept_flux -->|has abstraction| abstraction_frontend
-  linkStyle 156 stroke-dasharray: 4 2
+  linkStyle 143 stroke-dasharray: 4 2
   concept_flyweight -->|has abstraction| abstraction_design
-  linkStyle 157 stroke-dasharray: 4 2
+  linkStyle 144 stroke-dasharray: 4 2
   concept_form_binding -->|has abstraction| abstraction_data
-  linkStyle 158 stroke-dasharray: 4 2
+  linkStyle 145 stroke-dasharray: 4 2
   concept_form_binding -->|has abstraction| abstraction_frontend
-  linkStyle 159 stroke-dasharray: 4 2
+  linkStyle 146 stroke-dasharray: 4 2
   concept_future_promise -->|has abstraction| abstraction_concurrency
-  linkStyle 160 stroke-dasharray: 4 2
+  linkStyle 147 stroke-dasharray: 4 2
   concept_future_promise -->|has abstraction| abstraction_design
-  linkStyle 161 stroke-dasharray: 4 2
+  linkStyle 148 stroke-dasharray: 4 2
   concept_game_loop -->|has abstraction| abstraction_lifecycle
-  linkStyle 162 stroke-dasharray: 4 2
+  linkStyle 149 stroke-dasharray: 4 2
   concept_game_loop -->|has abstraction| abstraction_realtime
-  linkStyle 163 stroke-dasharray: 4 2
+  linkStyle 150 stroke-dasharray: 4 2
   concept_gateway_backends -->|has abstraction| abstraction_api
-  linkStyle 164 stroke-dasharray: 4 2
+  linkStyle 151 stroke-dasharray: 4 2
   concept_gateway_backends -->|has abstraction| abstraction_architectural
-  linkStyle 165 stroke-dasharray: 4 2
+  linkStyle 152 stroke-dasharray: 4 2
   concept_gitops -->|has abstraction| abstraction_deployment
-  linkStyle 166 stroke-dasharray: 4 2
+  linkStyle 153 stroke-dasharray: 4 2
   concept_graceful_degradation -->|has abstraction| abstraction_lifecycle
-  linkStyle 167 stroke-dasharray: 4 2
+  linkStyle 154 stroke-dasharray: 4 2
   concept_graceful_degradation -->|has abstraction| abstraction_resilience
-  linkStyle 168 stroke-dasharray: 4 2
+  linkStyle 155 stroke-dasharray: 4 2
   concept_graph -->|has abstraction| abstraction_algorithmic
-  linkStyle 169 stroke-dasharray: 4 2
+  linkStyle 156 stroke-dasharray: 4 2
   concept_graph -->|has abstraction| abstraction_data
-  linkStyle 170 stroke-dasharray: 4 2
+  linkStyle 157 stroke-dasharray: 4 2
   concept_graphql -->|has abstraction| abstraction_api
-  linkStyle 171 stroke-dasharray: 4 2
+  linkStyle 158 stroke-dasharray: 4 2
   concept_graphql -->|has abstraction| abstraction_integration
-  linkStyle 172 stroke-dasharray: 4 2
+  linkStyle 159 stroke-dasharray: 4 2
   concept_grpc -->|has abstraction| abstraction_api
-  linkStyle 173 stroke-dasharray: 4 2
+  linkStyle 160 stroke-dasharray: 4 2
   concept_grpc -->|has abstraction| abstraction_integration
-  linkStyle 174 stroke-dasharray: 4 2
+  linkStyle 161 stroke-dasharray: 4 2
   concept_health_check -->|has abstraction| abstraction_lifecycle
-  linkStyle 175 stroke-dasharray: 4 2
+  linkStyle 162 stroke-dasharray: 4 2
   concept_health_check -->|has abstraction| abstraction_observability
-  linkStyle 176 stroke-dasharray: 4 2
+  linkStyle 163 stroke-dasharray: 4 2
   concept_hexagonal -->|has abstraction| abstraction_architectural
-  linkStyle 177 stroke-dasharray: 4 2
+  linkStyle 164 stroke-dasharray: 4 2
   concept_hydration -->|has abstraction| abstraction_data
-  linkStyle 178 stroke-dasharray: 4 2
+  linkStyle 165 stroke-dasharray: 4 2
   concept_hydration -->|has abstraction| abstraction_frontend
-  linkStyle 179 stroke-dasharray: 4 2
+  linkStyle 166 stroke-dasharray: 4 2
   concept_idempotent_consumer -->|has abstraction| abstraction_data
-  linkStyle 180 stroke-dasharray: 4 2
+  linkStyle 167 stroke-dasharray: 4 2
   concept_idempotent_consumer -->|has abstraction| abstraction_messaging
-  linkStyle 181 stroke-dasharray: 4 2
+  linkStyle 168 stroke-dasharray: 4 2
   concept_idempotent_consumer -->|has abstraction| abstraction_resilience
-  linkStyle 182 stroke-dasharray: 4 2
+  linkStyle 169 stroke-dasharray: 4 2
   concept_immutable_infra -->|has abstraction| abstraction_deployment
-  linkStyle 183 stroke-dasharray: 4 2
+  linkStyle 170 stroke-dasharray: 4 2
   concept_immutable_infra -->|has abstraction| abstraction_infrastructure
-  linkStyle 184 stroke-dasharray: 4 2
+  linkStyle 171 stroke-dasharray: 4 2
   concept_inbox -->|has abstraction| abstraction_data
-  linkStyle 185 stroke-dasharray: 4 2
+  linkStyle 172 stroke-dasharray: 4 2
   concept_inbox -->|has abstraction| abstraction_messaging
-  linkStyle 186 stroke-dasharray: 4 2
+  linkStyle 173 stroke-dasharray: 4 2
   concept_inbox -->|has abstraction| abstraction_resilience
-  linkStyle 187 stroke-dasharray: 4 2
+  linkStyle 174 stroke-dasharray: 4 2
   concept_infrastructure_as_code -->|has abstraction| abstraction_deployment
-  linkStyle 188 stroke-dasharray: 4 2
+  linkStyle 175 stroke-dasharray: 4 2
   concept_infrastructure_as_code -->|has abstraction| abstraction_infrastructure
-  linkStyle 189 stroke-dasharray: 4 2
+  linkStyle 176 stroke-dasharray: 4 2
   concept_input_validation -->|has abstraction| abstraction_api
-  linkStyle 190 stroke-dasharray: 4 2
+  linkStyle 177 stroke-dasharray: 4 2
   concept_input_validation -->|has abstraction| abstraction_security
-  linkStyle 191 stroke-dasharray: 4 2
+  linkStyle 178 stroke-dasharray: 4 2
   concept_intermediate_representation -->|has abstraction| abstraction_compiler
-  linkStyle 192 stroke-dasharray: 4 2
+  linkStyle 179 stroke-dasharray: 4 2
   concept_intermediate_representation -->|has abstraction| abstraction_data
-  linkStyle 193 stroke-dasharray: 4 2
+  linkStyle 180 stroke-dasharray: 4 2
   concept_iterator -->|has abstraction| abstraction_design
-  linkStyle 194 stroke-dasharray: 4 2
+  linkStyle 181 stroke-dasharray: 4 2
   concept_key_value_model -->|has abstraction| abstraction_data
-  linkStyle 195 stroke-dasharray: 4 2
+  linkStyle 182 stroke-dasharray: 4 2
   concept_layered -->|has abstraction| abstraction_architectural
-  linkStyle 196 stroke-dasharray: 4 2
+  linkStyle 183 stroke-dasharray: 4 2
   concept_lazy_loading -->|has abstraction| abstraction_deployment
-  linkStyle 197 stroke-dasharray: 4 2
+  linkStyle 184 stroke-dasharray: 4 2
   concept_lazy_loading -->|has abstraction| abstraction_frontend
-  linkStyle 198 stroke-dasharray: 4 2
+  linkStyle 185 stroke-dasharray: 4 2
   concept_leader_election -->|has abstraction| abstraction_concurrency
-  linkStyle 199 stroke-dasharray: 4 2
+  linkStyle 186 stroke-dasharray: 4 2
   concept_leader_election -->|has abstraction| abstraction_resilience
-  linkStyle 200 stroke-dasharray: 4 2
+  linkStyle 187 stroke-dasharray: 4 2
   concept_ledger -->|has abstraction| abstraction_data
-  linkStyle 201 stroke-dasharray: 4 2
+  linkStyle 188 stroke-dasharray: 4 2
   concept_ledger -->|has abstraction| abstraction_financial
-  linkStyle 202 stroke-dasharray: 4 2
+  linkStyle 189 stroke-dasharray: 4 2
   concept_lexer_parser -->|has abstraction| abstraction_compiler
-  linkStyle 203 stroke-dasharray: 4 2
+  linkStyle 190 stroke-dasharray: 4 2
   concept_lexer_parser -->|has abstraction| abstraction_design
-  linkStyle 204 stroke-dasharray: 4 2
+  linkStyle 191 stroke-dasharray: 4 2
   concept_load_balancer -->|has abstraction| abstraction_infrastructure
-  linkStyle 205 stroke-dasharray: 4 2
+  linkStyle 192 stroke-dasharray: 4 2
   concept_load_balancer -->|has abstraction| abstraction_networking
-  linkStyle 206 stroke-dasharray: 4 2
+  linkStyle 193 stroke-dasharray: 4 2
   concept_long_polling -->|has abstraction| abstraction_integration
-  linkStyle 207 stroke-dasharray: 4 2
+  linkStyle 194 stroke-dasharray: 4 2
   concept_lru_cache -->|has abstraction| abstraction_data
-  linkStyle 208 stroke-dasharray: 4 2
+  linkStyle 195 stroke-dasharray: 4 2
   concept_lru_cache -->|has abstraction| abstraction_infrastructure
-  linkStyle 209 stroke-dasharray: 4 2
+  linkStyle 196 stroke-dasharray: 4 2
   concept_mapreduce -->|has abstraction| abstraction_concurrency
-  linkStyle 210 stroke-dasharray: 4 2
+  linkStyle 197 stroke-dasharray: 4 2
   concept_mapreduce -->|has abstraction| abstraction_data
-  linkStyle 211 stroke-dasharray: 4 2
+  linkStyle 198 stroke-dasharray: 4 2
   concept_materialized_view -->|has abstraction| abstraction_data
-  linkStyle 212 stroke-dasharray: 4 2
+  linkStyle 199 stroke-dasharray: 4 2
   concept_mediator -->|has abstraction| abstraction_design
-  linkStyle 213 stroke-dasharray: 4 2
+  linkStyle 200 stroke-dasharray: 4 2
   concept_mediator -->|has abstraction| abstraction_integration
-  linkStyle 214 stroke-dasharray: 4 2
+  linkStyle 201 stroke-dasharray: 4 2
   concept_memento -->|has abstraction| abstraction_design
-  linkStyle 215 stroke-dasharray: 4 2
+  linkStyle 202 stroke-dasharray: 4 2
   concept_message_queue -->|has abstraction| abstraction_infrastructure
-  linkStyle 216 stroke-dasharray: 4 2
+  linkStyle 203 stroke-dasharray: 4 2
   concept_message_queue -->|has abstraction| abstraction_messaging
-  linkStyle 217 stroke-dasharray: 4 2
+  linkStyle 204 stroke-dasharray: 4 2
   concept_metrics_instrumentation -->|has abstraction| abstraction_observability
-  linkStyle 218 stroke-dasharray: 4 2
+  linkStyle 205 stroke-dasharray: 4 2
   concept_micro_frontend -->|has abstraction| abstraction_architectural
-  linkStyle 219 stroke-dasharray: 4 2
+  linkStyle 206 stroke-dasharray: 4 2
   concept_micro_frontend -->|has abstraction| abstraction_deployment
-  linkStyle 220 stroke-dasharray: 4 2
+  linkStyle 207 stroke-dasharray: 4 2
   concept_micro_frontend -->|has abstraction| abstraction_frontend
-  linkStyle 221 stroke-dasharray: 4 2
+  linkStyle 208 stroke-dasharray: 4 2
   concept_microservices -->|has abstraction| abstraction_architectural
-  linkStyle 222 stroke-dasharray: 4 2
+  linkStyle 209 stroke-dasharray: 4 2
   concept_middleware -->|has abstraction| abstraction_integration
-  linkStyle 223 stroke-dasharray: 4 2
+  linkStyle 210 stroke-dasharray: 4 2
   concept_middleware -->|has abstraction| abstraction_lifecycle
-  linkStyle 224 stroke-dasharray: 4 2
+  linkStyle 211 stroke-dasharray: 4 2
   concept_model_registry -->|has abstraction| abstraction_lifecycle
-  linkStyle 225 stroke-dasharray: 4 2
+  linkStyle 212 stroke-dasharray: 4 2
   concept_model_registry -->|has abstraction| abstraction_ml
-  linkStyle 226 stroke-dasharray: 4 2
+  linkStyle 213 stroke-dasharray: 4 2
   concept_modular_monolith -->|has abstraction| abstraction_architectural
-  linkStyle 227 stroke-dasharray: 4 2
+  linkStyle 214 stroke-dasharray: 4 2
   concept_monad -->|has abstraction| abstraction_design
-  linkStyle 228 stroke-dasharray: 4 2
+  linkStyle 215 stroke-dasharray: 4 2
   concept_monad -->|has abstraction| abstraction_error_handling
-  linkStyle 229 stroke-dasharray: 4 2
+  linkStyle 216 stroke-dasharray: 4 2
   concept_mtls -->|has abstraction| abstraction_infrastructure
-  linkStyle 230 stroke-dasharray: 4 2
+  linkStyle 217 stroke-dasharray: 4 2
   concept_mtls -->|has abstraction| abstraction_security
-  linkStyle 231 stroke-dasharray: 4 2
+  linkStyle 218 stroke-dasharray: 4 2
   concept_multi_tenant -->|has abstraction| abstraction_architectural
-  linkStyle 232 stroke-dasharray: 4 2
+  linkStyle 219 stroke-dasharray: 4 2
   concept_multi_tenant -->|has abstraction| abstraction_data
-  linkStyle 233 stroke-dasharray: 4 2
+  linkStyle 220 stroke-dasharray: 4 2
   concept_mvc -->|has abstraction| abstraction_architectural
-  linkStyle 234 stroke-dasharray: 4 2
+  linkStyle 221 stroke-dasharray: 4 2
   concept_mvc -->|has abstraction| abstraction_frontend
-  linkStyle 235 stroke-dasharray: 4 2
+  linkStyle 222 stroke-dasharray: 4 2
   concept_mvvm -->|has abstraction| abstraction_architectural
-  linkStyle 236 stroke-dasharray: 4 2
+  linkStyle 223 stroke-dasharray: 4 2
   concept_mvvm -->|has abstraction| abstraction_frontend
-  linkStyle 237 stroke-dasharray: 4 2
+  linkStyle 224 stroke-dasharray: 4 2
   concept_null_object -->|has abstraction| abstraction_design
-  linkStyle 238 stroke-dasharray: 4 2
+  linkStyle 225 stroke-dasharray: 4 2
   concept_oauth_oidc -->|has abstraction| abstraction_security
-  linkStyle 239 stroke-dasharray: 4 2
+  linkStyle 226 stroke-dasharray: 4 2
   concept_object_pool -->|has abstraction| abstraction_design
-  linkStyle 240 stroke-dasharray: 4 2
+  linkStyle 227 stroke-dasharray: 4 2
   concept_object_pool -->|has abstraction| abstraction_infrastructure
-  linkStyle 241 stroke-dasharray: 4 2
+  linkStyle 228 stroke-dasharray: 4 2
   concept_observer -->|has abstraction| abstraction_design
-  linkStyle 242 stroke-dasharray: 4 2
+  linkStyle 229 stroke-dasharray: 4 2
   concept_observer -->|has abstraction| abstraction_messaging
-  linkStyle 243 stroke-dasharray: 4 2
+  linkStyle 230 stroke-dasharray: 4 2
   concept_optimistic_locking -->|has abstraction| abstraction_concurrency
-  linkStyle 244 stroke-dasharray: 4 2
+  linkStyle 231 stroke-dasharray: 4 2
   concept_optimistic_locking -->|has abstraction| abstraction_data
-  linkStyle 245 stroke-dasharray: 4 2
+  linkStyle 232 stroke-dasharray: 4 2
   concept_optimistic_update -->|has abstraction| abstraction_data
-  linkStyle 246 stroke-dasharray: 4 2
+  linkStyle 233 stroke-dasharray: 4 2
   concept_optimistic_update -->|has abstraction| abstraction_frontend
-  linkStyle 247 stroke-dasharray: 4 2
+  linkStyle 234 stroke-dasharray: 4 2
   concept_optimistic_update -->|has abstraction| abstraction_resilience
-  linkStyle 248 stroke-dasharray: 4 2
+  linkStyle 235 stroke-dasharray: 4 2
   concept_orchestration -->|has abstraction| abstraction_architectural
-  linkStyle 249 stroke-dasharray: 4 2
+  linkStyle 236 stroke-dasharray: 4 2
   concept_orchestration -->|has abstraction| abstraction_integration
-  linkStyle 250 stroke-dasharray: 4 2
+  linkStyle 237 stroke-dasharray: 4 2
   concept_outbox -->|has abstraction| abstraction_data
-  linkStyle 251 stroke-dasharray: 4 2
+  linkStyle 238 stroke-dasharray: 4 2
   concept_outbox -->|has abstraction| abstraction_messaging
-  linkStyle 252 stroke-dasharray: 4 2
+  linkStyle 239 stroke-dasharray: 4 2
   concept_outbox -->|has abstraction| abstraction_resilience
-  linkStyle 253 stroke-dasharray: 4 2
+  linkStyle 240 stroke-dasharray: 4 2
   concept_pagination -->|has abstraction| abstraction_api
-  linkStyle 254 stroke-dasharray: 4 2
+  linkStyle 241 stroke-dasharray: 4 2
   concept_pagination -->|has abstraction| abstraction_data
-  linkStyle 255 stroke-dasharray: 4 2
+  linkStyle 242 stroke-dasharray: 4 2
   concept_pipeline_filter -->|has abstraction| abstraction_data
-  linkStyle 256 stroke-dasharray: 4 2
+  linkStyle 243 stroke-dasharray: 4 2
   concept_pipeline_filter -->|has abstraction| abstraction_design
-  linkStyle 257 stroke-dasharray: 4 2
+  linkStyle 244 stroke-dasharray: 4 2
   concept_pipeline_stages -->|has abstraction| abstraction_architectural
-  linkStyle 258 stroke-dasharray: 4 2
+  linkStyle 245 stroke-dasharray: 4 2
   concept_pipeline_stages -->|has abstraction| abstraction_data
-  linkStyle 259 stroke-dasharray: 4 2
+  linkStyle 246 stroke-dasharray: 4 2
   concept_plugin -->|has abstraction| abstraction_design
-  linkStyle 260 stroke-dasharray: 4 2
+  linkStyle 247 stroke-dasharray: 4 2
   concept_plugin_host -->|has abstraction| abstraction_architectural
-  linkStyle 261 stroke-dasharray: 4 2
+  linkStyle 248 stroke-dasharray: 4 2
   concept_plugin_host -->|has abstraction| abstraction_design
-  linkStyle 262 stroke-dasharray: 4 2
+  linkStyle 249 stroke-dasharray: 4 2
   concept_polling_flow -->|has abstraction| abstraction_integration
-  linkStyle 263 stroke-dasharray: 4 2
+  linkStyle 250 stroke-dasharray: 4 2
   concept_polling_flow -->|has abstraction| abstraction_lifecycle
-  linkStyle 264 stroke-dasharray: 4 2
+  linkStyle 251 stroke-dasharray: 4 2
   concept_producer_consumer -->|has abstraction| abstraction_concurrency
-  linkStyle 265 stroke-dasharray: 4 2
+  linkStyle 252 stroke-dasharray: 4 2
   concept_producer_consumer -->|has abstraction| abstraction_messaging
-  linkStyle 266 stroke-dasharray: 4 2
+  linkStyle 253 stroke-dasharray: 4 2
   concept_property_graph -->|has abstraction| abstraction_data
-  linkStyle 267 stroke-dasharray: 4 2
+  linkStyle 254 stroke-dasharray: 4 2
   concept_property_graph -->|has abstraction| abstraction_graph
-  linkStyle 268 stroke-dasharray: 4 2
+  linkStyle 255 stroke-dasharray: 4 2
   concept_property_testing -->|has abstraction| abstraction_testing
-  linkStyle 269 stroke-dasharray: 4 2
+  linkStyle 256 stroke-dasharray: 4 2
   concept_prototype -->|has abstraction| abstraction_design
-  linkStyle 270 stroke-dasharray: 4 2
+  linkStyle 257 stroke-dasharray: 4 2
   concept_proxy -->|has abstraction| abstraction_design
-  linkStyle 271 stroke-dasharray: 4 2
+  linkStyle 258 stroke-dasharray: 4 2
   concept_pub_sub -->|has abstraction| abstraction_integration
-  linkStyle 272 stroke-dasharray: 4 2
+  linkStyle 259 stroke-dasharray: 4 2
   concept_pub_sub -->|has abstraction| abstraction_messaging
-  linkStyle 273 stroke-dasharray: 4 2
+  linkStyle 260 stroke-dasharray: 4 2
   concept_query_object -->|has abstraction| abstraction_data
-  linkStyle 274 stroke-dasharray: 4 2
+  linkStyle 261 stroke-dasharray: 4 2
   concept_query_object -->|has abstraction| abstraction_design
-  linkStyle 275 stroke-dasharray: 4 2
+  linkStyle 262 stroke-dasharray: 4 2
   concept_rate_limiting -->|has abstraction| abstraction_resilience
-  linkStyle 276 stroke-dasharray: 4 2
+  linkStyle 263 stroke-dasharray: 4 2
   concept_rate_limiting -->|has abstraction| abstraction_security
-  linkStyle 277 stroke-dasharray: 4 2
+  linkStyle 264 stroke-dasharray: 4 2
   concept_rbac -->|has abstraction| abstraction_security
-  linkStyle 278 stroke-dasharray: 4 2
+  linkStyle 265 stroke-dasharray: 4 2
   concept_reactive_store -->|has abstraction| abstraction_data
-  linkStyle 279 stroke-dasharray: 4 2
+  linkStyle 266 stroke-dasharray: 4 2
   concept_reactive_store -->|has abstraction| abstraction_frontend
-  linkStyle 280 stroke-dasharray: 4 2
+  linkStyle 267 stroke-dasharray: 4 2
   concept_reactor -->|has abstraction| abstraction_architectural
-  linkStyle 281 stroke-dasharray: 4 2
+  linkStyle 268 stroke-dasharray: 4 2
   concept_reactor -->|has abstraction| abstraction_concurrency
-  linkStyle 282 stroke-dasharray: 4 2
+  linkStyle 269 stroke-dasharray: 4 2
   concept_read_through -->|has abstraction| abstraction_data
-  linkStyle 283 stroke-dasharray: 4 2
+  linkStyle 270 stroke-dasharray: 4 2
   concept_read_write_lock -->|has abstraction| abstraction_concurrency
-  linkStyle 284 stroke-dasharray: 4 2
+  linkStyle 271 stroke-dasharray: 4 2
   concept_refresh_ahead -->|has abstraction| abstraction_data
-  linkStyle 285 stroke-dasharray: 4 2
+  linkStyle 272 stroke-dasharray: 4 2
   concept_refresh_ahead -->|has abstraction| abstraction_resilience
-  linkStyle 286 stroke-dasharray: 4 2
+  linkStyle 273 stroke-dasharray: 4 2
   concept_registry_model -->|has abstraction| abstraction_data
-  linkStyle 287 stroke-dasharray: 4 2
+  linkStyle 274 stroke-dasharray: 4 2
   concept_repository -->|has abstraction| abstraction_data
-  linkStyle 288 stroke-dasharray: 4 2
+  linkStyle 275 stroke-dasharray: 4 2
   concept_repository -->|has abstraction| abstraction_design
-  linkStyle 289 stroke-dasharray: 4 2
+  linkStyle 276 stroke-dasharray: 4 2
   concept_request_path -->|has abstraction| abstraction_api
-  linkStyle 290 stroke-dasharray: 4 2
+  linkStyle 277 stroke-dasharray: 4 2
   concept_request_path -->|has abstraction| abstraction_integration
-  linkStyle 291 stroke-dasharray: 4 2
+  linkStyle 278 stroke-dasharray: 4 2
   concept_request_reply -->|has abstraction| abstraction_integration
-  linkStyle 292 stroke-dasharray: 4 2
+  linkStyle 279 stroke-dasharray: 4 2
   concept_request_reply -->|has abstraction| abstraction_messaging
-  linkStyle 293 stroke-dasharray: 4 2
+  linkStyle 280 stroke-dasharray: 4 2
   concept_rest -->|has abstraction| abstraction_api
-  linkStyle 294 stroke-dasharray: 4 2
+  linkStyle 281 stroke-dasharray: 4 2
   concept_rest -->|has abstraction| abstraction_integration
-  linkStyle 295 stroke-dasharray: 4 2
+  linkStyle 282 stroke-dasharray: 4 2
   concept_result_type -->|has abstraction| abstraction_design
-  linkStyle 296 stroke-dasharray: 4 2
+  linkStyle 283 stroke-dasharray: 4 2
   concept_result_type -->|has abstraction| abstraction_error_handling
-  linkStyle 297 stroke-dasharray: 4 2
+  linkStyle 284 stroke-dasharray: 4 2
   concept_retry -->|has abstraction| abstraction_integration
-  linkStyle 298 stroke-dasharray: 4 2
+  linkStyle 285 stroke-dasharray: 4 2
   concept_retry -->|has abstraction| abstraction_resilience
-  linkStyle 299 stroke-dasharray: 4 2
+  linkStyle 286 stroke-dasharray: 4 2
   concept_ring_buffer -->|has abstraction| abstraction_concurrency
-  linkStyle 300 stroke-dasharray: 4 2
+  linkStyle 287 stroke-dasharray: 4 2
   concept_ring_buffer -->|has abstraction| abstraction_data
-  linkStyle 301 stroke-dasharray: 4 2
+  linkStyle 288 stroke-dasharray: 4 2
   concept_route_guard -->|has abstraction| abstraction_frontend
-  linkStyle 302 stroke-dasharray: 4 2
+  linkStyle 289 stroke-dasharray: 4 2
   concept_route_guard -->|has abstraction| abstraction_security
-  linkStyle 303 stroke-dasharray: 4 2
+  linkStyle 290 stroke-dasharray: 4 2
   concept_router -->|has abstraction| abstraction_frontend
-  linkStyle 304 stroke-dasharray: 4 2
+  linkStyle 291 stroke-dasharray: 4 2
   concept_router -->|has abstraction| abstraction_integration
-  linkStyle 305 stroke-dasharray: 4 2
+  linkStyle 292 stroke-dasharray: 4 2
   concept_rule_engine -->|has abstraction| abstraction_design
-  linkStyle 306 stroke-dasharray: 4 2
+  linkStyle 293 stroke-dasharray: 4 2
   concept_rule_engine -->|has abstraction| abstraction_logic
-  linkStyle 307 stroke-dasharray: 4 2
+  linkStyle 294 stroke-dasharray: 4 2
   concept_saga -->|has abstraction| abstraction_integration
-  linkStyle 308 stroke-dasharray: 4 2
+  linkStyle 295 stroke-dasharray: 4 2
   concept_saga -->|has abstraction| abstraction_resilience
-  linkStyle 309 stroke-dasharray: 4 2
+  linkStyle 296 stroke-dasharray: 4 2
   concept_saga_orchestrator -->|has abstraction| abstraction_integration
-  linkStyle 310 stroke-dasharray: 4 2
+  linkStyle 297 stroke-dasharray: 4 2
   concept_saga_orchestrator -->|has abstraction| abstraction_messaging
-  linkStyle 311 stroke-dasharray: 4 2
+  linkStyle 298 stroke-dasharray: 4 2
   concept_scatter_gather -->|has abstraction| abstraction_integration
-  linkStyle 312 stroke-dasharray: 4 2
+  linkStyle 299 stroke-dasharray: 4 2
   concept_scheduler -->|has abstraction| abstraction_lifecycle
-  linkStyle 313 stroke-dasharray: 4 2
+  linkStyle 300 stroke-dasharray: 4 2
   concept_schema_registry -->|has abstraction| abstraction_data
-  linkStyle 314 stroke-dasharray: 4 2
+  linkStyle 301 stroke-dasharray: 4 2
   concept_schema_registry -->|has abstraction| abstraction_integration
-  linkStyle 315 stroke-dasharray: 4 2
+  linkStyle 302 stroke-dasharray: 4 2
   concept_search_index -->|has abstraction| abstraction_data
-  linkStyle 316 stroke-dasharray: 4 2
+  linkStyle 303 stroke-dasharray: 4 2
   concept_search_index -->|has abstraction| abstraction_search
-  linkStyle 317 stroke-dasharray: 4 2
+  linkStyle 304 stroke-dasharray: 4 2
   concept_secret_management -->|has abstraction| abstraction_infrastructure
-  linkStyle 318 stroke-dasharray: 4 2
+  linkStyle 305 stroke-dasharray: 4 2
   concept_secret_management -->|has abstraction| abstraction_security
-  linkStyle 319 stroke-dasharray: 4 2
+  linkStyle 306 stroke-dasharray: 4 2
   concept_server_prefetch -->|has abstraction| abstraction_data
-  linkStyle 320 stroke-dasharray: 4 2
+  linkStyle 307 stroke-dasharray: 4 2
   concept_server_prefetch -->|has abstraction| abstraction_frontend
-  linkStyle 321 stroke-dasharray: 4 2
+  linkStyle 308 stroke-dasharray: 4 2
   concept_server_route_registration -->|has abstraction| abstraction_api
-  linkStyle 322 stroke-dasharray: 4 2
+  linkStyle 309 stroke-dasharray: 4 2
   concept_server_route_registration -->|has abstraction| abstraction_integration
-  linkStyle 323 stroke-dasharray: 4 2
+  linkStyle 310 stroke-dasharray: 4 2
   concept_server_sent_events -->|has abstraction| abstraction_infrastructure
-  linkStyle 324 stroke-dasharray: 4 2
+  linkStyle 311 stroke-dasharray: 4 2
   concept_server_sent_events -->|has abstraction| abstraction_integration
-  linkStyle 325 stroke-dasharray: 4 2
+  linkStyle 312 stroke-dasharray: 4 2
   concept_serverless -->|has abstraction| abstraction_architectural
-  linkStyle 326 stroke-dasharray: 4 2
+  linkStyle 313 stroke-dasharray: 4 2
   concept_serverless -->|has abstraction| abstraction_deployment
-  linkStyle 327 stroke-dasharray: 4 2
+  linkStyle 314 stroke-dasharray: 4 2
   concept_service_discovery -->|has abstraction| abstraction_infrastructure
-  linkStyle 328 stroke-dasharray: 4 2
+  linkStyle 315 stroke-dasharray: 4 2
   concept_service_discovery -->|has abstraction| abstraction_integration
-  linkStyle 329 stroke-dasharray: 4 2
+  linkStyle 316 stroke-dasharray: 4 2
   concept_service_manager -->|has abstraction| abstraction_lifecycle
-  linkStyle 330 stroke-dasharray: 4 2
+  linkStyle 317 stroke-dasharray: 4 2
   concept_service_mesh -->|has abstraction| abstraction_infrastructure
-  linkStyle 331 stroke-dasharray: 4 2
+  linkStyle 318 stroke-dasharray: 4 2
   concept_service_mesh -->|has abstraction| abstraction_integration
-  linkStyle 332 stroke-dasharray: 4 2
+  linkStyle 319 stroke-dasharray: 4 2
   concept_session_auth -->|has abstraction| abstraction_security
-  linkStyle 333 stroke-dasharray: 4 2
+  linkStyle 320 stroke-dasharray: 4 2
   concept_sharding -->|has abstraction| abstraction_data
-  linkStyle 334 stroke-dasharray: 4 2
+  linkStyle 321 stroke-dasharray: 4 2
   concept_sharding -->|has abstraction| abstraction_infrastructure
-  linkStyle 335 stroke-dasharray: 4 2
+  linkStyle 322 stroke-dasharray: 4 2
   concept_shared_database -->|has abstraction| abstraction_data
-  linkStyle 336 stroke-dasharray: 4 2
+  linkStyle 323 stroke-dasharray: 4 2
   concept_shared_database -->|has abstraction| abstraction_integration
-  linkStyle 337 stroke-dasharray: 4 2
+  linkStyle 324 stroke-dasharray: 4 2
   concept_side_effect_hook -->|has abstraction| abstraction_frontend
-  linkStyle 338 stroke-dasharray: 4 2
+  linkStyle 325 stroke-dasharray: 4 2
   concept_side_effect_hook -->|has abstraction| abstraction_lifecycle
-  linkStyle 339 stroke-dasharray: 4 2
+  linkStyle 326 stroke-dasharray: 4 2
   concept_sidecar -->|has abstraction| abstraction_deployment
-  linkStyle 340 stroke-dasharray: 4 2
+  linkStyle 327 stroke-dasharray: 4 2
   concept_sidecar -->|has abstraction| abstraction_infrastructure
-  linkStyle 341 stroke-dasharray: 4 2
+  linkStyle 328 stroke-dasharray: 4 2
   concept_sidecar -->|has abstraction| abstraction_lifecycle
-  linkStyle 342 stroke-dasharray: 4 2
+  linkStyle 329 stroke-dasharray: 4 2
   concept_sidecar_mesh -->|has abstraction| abstraction_deployment
-  linkStyle 343 stroke-dasharray: 4 2
+  linkStyle 330 stroke-dasharray: 4 2
   concept_sidecar_mesh -->|has abstraction| abstraction_infrastructure
-  linkStyle 344 stroke-dasharray: 4 2
+  linkStyle 331 stroke-dasharray: 4 2
   concept_singleton -->|has abstraction| abstraction_design
-  linkStyle 345 stroke-dasharray: 4 2
+  linkStyle 332 stroke-dasharray: 4 2
   concept_snapshot_testing -->|has abstraction| abstraction_testing
-  linkStyle 346 stroke-dasharray: 4 2
+  linkStyle 333 stroke-dasharray: 4 2
   concept_social_graph -->|has abstraction| abstraction_data
-  linkStyle 347 stroke-dasharray: 4 2
+  linkStyle 334 stroke-dasharray: 4 2
   concept_social_graph -->|has abstraction| abstraction_social
-  linkStyle 348 stroke-dasharray: 4 2
+  linkStyle 335 stroke-dasharray: 4 2
   concept_soft_delete -->|has abstraction| abstraction_data
-  linkStyle 349 stroke-dasharray: 4 2
+  linkStyle 336 stroke-dasharray: 4 2
   concept_spatial -->|has abstraction| abstraction_data
-  linkStyle 350 stroke-dasharray: 4 2
+  linkStyle 337 stroke-dasharray: 4 2
   concept_spatial -->|has abstraction| abstraction_geospatial
-  linkStyle 351 stroke-dasharray: 4 2
+  linkStyle 338 stroke-dasharray: 4 2
   concept_spatial_partitioning -->|has abstraction| abstraction_data
-  linkStyle 352 stroke-dasharray: 4 2
+  linkStyle 339 stroke-dasharray: 4 2
   concept_spatial_partitioning -->|has abstraction| abstraction_realtime
-  linkStyle 353 stroke-dasharray: 4 2
+  linkStyle 340 stroke-dasharray: 4 2
   concept_specification -->|has abstraction| abstraction_design
-  linkStyle 354 stroke-dasharray: 4 2
+  linkStyle 341 stroke-dasharray: 4 2
   concept_state_machine -->|has abstraction| abstraction_design
-  linkStyle 355 stroke-dasharray: 4 2
+  linkStyle 342 stroke-dasharray: 4 2
   concept_state_machine -->|has abstraction| abstraction_lifecycle
-  linkStyle 356 stroke-dasharray: 4 2
+  linkStyle 343 stroke-dasharray: 4 2
   concept_strangler_fig -->|has abstraction| abstraction_architectural
-  linkStyle 357 stroke-dasharray: 4 2
+  linkStyle 344 stroke-dasharray: 4 2
   concept_strangler_fig -->|has abstraction| abstraction_lifecycle
-  linkStyle 358 stroke-dasharray: 4 2
+  linkStyle 345 stroke-dasharray: 4 2
   concept_strategy -->|has abstraction| abstraction_design
-  linkStyle 359 stroke-dasharray: 4 2
+  linkStyle 346 stroke-dasharray: 4 2
   concept_stream_processing -->|has abstraction| abstraction_data
-  linkStyle 360 stroke-dasharray: 4 2
+  linkStyle 347 stroke-dasharray: 4 2
   concept_stream_processing -->|has abstraction| abstraction_messaging
-  linkStyle 361 stroke-dasharray: 4 2
+  linkStyle 348 stroke-dasharray: 4 2
   concept_stream_processing -->|has abstraction| abstraction_realtime
-  linkStyle 362 stroke-dasharray: 4 2
+  linkStyle 349 stroke-dasharray: 4 2
   concept_stream_to_store -->|has abstraction| abstraction_data
-  linkStyle 363 stroke-dasharray: 4 2
+  linkStyle 350 stroke-dasharray: 4 2
   concept_stream_to_store -->|has abstraction| abstraction_integration
-  linkStyle 364 stroke-dasharray: 4 2
+  linkStyle 351 stroke-dasharray: 4 2
   concept_streaming_flow -->|has abstraction| abstraction_data
-  linkStyle 365 stroke-dasharray: 4 2
+  linkStyle 352 stroke-dasharray: 4 2
   concept_streaming_flow -->|has abstraction| abstraction_messaging
-  linkStyle 366 stroke-dasharray: 4 2
+  linkStyle 353 stroke-dasharray: 4 2
   concept_streaming_flow -->|has abstraction| abstraction_realtime
-  linkStyle 367 stroke-dasharray: 4 2
+  linkStyle 354 stroke-dasharray: 4 2
   concept_structured_logging -->|has abstraction| abstraction_observability
-  linkStyle 368 stroke-dasharray: 4 2
+  linkStyle 355 stroke-dasharray: 4 2
   concept_subscription -->|has abstraction| abstraction_data
-  linkStyle 369 stroke-dasharray: 4 2
+  linkStyle 356 stroke-dasharray: 4 2
   concept_subscription -->|has abstraction| abstraction_financial
-  linkStyle 370 stroke-dasharray: 4 2
+  linkStyle 357 stroke-dasharray: 4 2
   concept_suspense_boundary -->|has abstraction| abstraction_frontend
-  linkStyle 371 stroke-dasharray: 4 2
+  linkStyle 358 stroke-dasharray: 4 2
   concept_suspense_boundary -->|has abstraction| abstraction_lifecycle
-  linkStyle 372 stroke-dasharray: 4 2
+  linkStyle 359 stroke-dasharray: 4 2
   concept_template_method -->|has abstraction| abstraction_design
-  linkStyle 373 stroke-dasharray: 4 2
+  linkStyle 360 stroke-dasharray: 4 2
   concept_tenant_isolation -->|has abstraction| abstraction_data
-  linkStyle 374 stroke-dasharray: 4 2
+  linkStyle 361 stroke-dasharray: 4 2
   concept_tenant_isolation -->|has abstraction| abstraction_security
-  linkStyle 375 stroke-dasharray: 4 2
+  linkStyle 362 stroke-dasharray: 4 2
   concept_tenant_routing -->|has abstraction| abstraction_integration
-  linkStyle 376 stroke-dasharray: 4 2
+  linkStyle 363 stroke-dasharray: 4 2
   concept_tenant_routing -->|has abstraction| abstraction_security
-  linkStyle 377 stroke-dasharray: 4 2
+  linkStyle 364 stroke-dasharray: 4 2
   concept_tensor -->|has abstraction| abstraction_compute
-  linkStyle 378 stroke-dasharray: 4 2
+  linkStyle 365 stroke-dasharray: 4 2
   concept_tensor -->|has abstraction| abstraction_data
-  linkStyle 379 stroke-dasharray: 4 2
+  linkStyle 366 stroke-dasharray: 4 2
   concept_test_doubles -->|has abstraction| abstraction_testing
-  linkStyle 380 stroke-dasharray: 4 2
+  linkStyle 367 stroke-dasharray: 4 2
   concept_tick_simulation -->|has abstraction| abstraction_lifecycle
-  linkStyle 381 stroke-dasharray: 4 2
+  linkStyle 368 stroke-dasharray: 4 2
   concept_tick_simulation -->|has abstraction| abstraction_realtime
-  linkStyle 382 stroke-dasharray: 4 2
+  linkStyle 369 stroke-dasharray: 4 2
   concept_time_series -->|has abstraction| abstraction_data
-  linkStyle 383 stroke-dasharray: 4 2
+  linkStyle 370 stroke-dasharray: 4 2
   concept_time_series -->|has abstraction| abstraction_temporal
-  linkStyle 384 stroke-dasharray: 4 2
+  linkStyle 371 stroke-dasharray: 4 2
   concept_timeout -->|has abstraction| abstraction_integration
-  linkStyle 385 stroke-dasharray: 4 2
+  linkStyle 372 stroke-dasharray: 4 2
   concept_timeout -->|has abstraction| abstraction_resilience
-  linkStyle 386 stroke-dasharray: 4 2
+  linkStyle 373 stroke-dasharray: 4 2
   concept_token_auth -->|has abstraction| abstraction_security
-  linkStyle 387 stroke-dasharray: 4 2
+  linkStyle 374 stroke-dasharray: 4 2
   concept_training_pipeline -->|has abstraction| abstraction_data
-  linkStyle 388 stroke-dasharray: 4 2
+  linkStyle 375 stroke-dasharray: 4 2
   concept_training_pipeline -->|has abstraction| abstraction_ml
-  linkStyle 389 stroke-dasharray: 4 2
+  linkStyle 376 stroke-dasharray: 4 2
   concept_trie -->|has abstraction| abstraction_data
-  linkStyle 390 stroke-dasharray: 4 2
+  linkStyle 377 stroke-dasharray: 4 2
   concept_unit_of_work -->|has abstraction| abstraction_data
-  linkStyle 391 stroke-dasharray: 4 2
+  linkStyle 378 stroke-dasharray: 4 2
   concept_unit_of_work -->|has abstraction| abstraction_design
-  linkStyle 392 stroke-dasharray: 4 2
+  linkStyle 379 stroke-dasharray: 4 2
   concept_value_object -->|has abstraction| abstraction_design
-  linkStyle 393 stroke-dasharray: 4 2
+  linkStyle 380 stroke-dasharray: 4 2
   concept_versioned_document -->|has abstraction| abstraction_collaboration
-  linkStyle 394 stroke-dasharray: 4 2
+  linkStyle 381 stroke-dasharray: 4 2
   concept_versioned_document -->|has abstraction| abstraction_data
-  linkStyle 395 stroke-dasharray: 4 2
+  linkStyle 382 stroke-dasharray: 4 2
   concept_visitor -->|has abstraction| abstraction_design
-  linkStyle 396 stroke-dasharray: 4 2
+  linkStyle 383 stroke-dasharray: 4 2
   concept_webhook -->|has abstraction| abstraction_integration
-  linkStyle 397 stroke-dasharray: 4 2
+  linkStyle 384 stroke-dasharray: 4 2
   concept_websocket -->|has abstraction| abstraction_infrastructure
-  linkStyle 398 stroke-dasharray: 4 2
+  linkStyle 385 stroke-dasharray: 4 2
   concept_websocket -->|has abstraction| abstraction_integration
-  linkStyle 399 stroke-dasharray: 4 2
+  linkStyle 386 stroke-dasharray: 4 2
   concept_worker_pool -->|has abstraction| abstraction_concurrency
-  linkStyle 400 stroke-dasharray: 4 2
+  linkStyle 387 stroke-dasharray: 4 2
   concept_worker_pool -->|has abstraction| abstraction_infrastructure
-  linkStyle 401 stroke-dasharray: 4 2
+  linkStyle 388 stroke-dasharray: 4 2
   concept_workflow_engine -->|has abstraction| abstraction_integration
-  linkStyle 402 stroke-dasharray: 4 2
+  linkStyle 389 stroke-dasharray: 4 2
   concept_workflow_engine -->|has abstraction| abstraction_lifecycle
-  linkStyle 403 stroke-dasharray: 4 2
+  linkStyle 390 stroke-dasharray: 4 2
   concept_workflow_state_machine -->|has abstraction| abstraction_data
-  linkStyle 404 stroke-dasharray: 4 2
+  linkStyle 391 stroke-dasharray: 4 2
   concept_workflow_state_machine -->|has abstraction| abstraction_lifecycle
-  linkStyle 405 stroke-dasharray: 4 2
+  linkStyle 392 stroke-dasharray: 4 2
   concept_write_behind -->|has abstraction| abstraction_data
-  linkStyle 406 stroke-dasharray: 4 2
+  linkStyle 393 stroke-dasharray: 4 2
   concept_abstract_factory -->|has type| type_pattern
-  linkStyle 407 stroke-dasharray: 4 2
+  linkStyle 394 stroke-dasharray: 4 2
   concept_active_record -->|has type| type_pattern
-  linkStyle 408 stroke-dasharray: 4 2
+  linkStyle 395 stroke-dasharray: 4 2
   concept_actor_model -->|has type| type_pattern
-  linkStyle 409 stroke-dasharray: 4 2
+  linkStyle 396 stroke-dasharray: 4 2
   concept_adapter -->|has type| type_pattern
-  linkStyle 410 stroke-dasharray: 4 2
+  linkStyle 397 stroke-dasharray: 4 2
   concept_aggregate -->|has type| type_pattern
-  linkStyle 411 stroke-dasharray: 4 2
+  linkStyle 398 stroke-dasharray: 4 2
   concept_anemic_domain_model -->|has type| type_anti_pattern
-  linkStyle 412 stroke-dasharray: 4 2
+  linkStyle 399 stroke-dasharray: 4 2
   concept_anti_corruption_layer -->|has type| type_pattern
-  linkStyle 413 stroke-dasharray: 4 2
+  linkStyle 400 stroke-dasharray: 4 2
   concept_api_gateway -->|has type| type_pattern
-  linkStyle 414 stroke-dasharray: 4 2
+  linkStyle 401 stroke-dasharray: 4 2
   concept_api_key_auth -->|has type| type_pattern
-  linkStyle 415 stroke-dasharray: 4 2
+  linkStyle 402 stroke-dasharray: 4 2
   concept_ast -->|has type| type_pattern
-  linkStyle 416 stroke-dasharray: 4 2
+  linkStyle 403 stroke-dasharray: 4 2
   concept_at_least_once_delivery -->|has type| type_pattern
-  linkStyle 417 stroke-dasharray: 4 2
+  linkStyle 404 stroke-dasharray: 4 2
   concept_audit_logging -->|has type| type_pattern
-  linkStyle 418 stroke-dasharray: 4 2
+  linkStyle 405 stroke-dasharray: 4 2
   concept_backpressure -->|has type| type_pattern
-  linkStyle 419 stroke-dasharray: 4 2
+  linkStyle 406 stroke-dasharray: 4 2
   concept_batch_loader -->|has type| type_pattern
-  linkStyle 420 stroke-dasharray: 4 2
+  linkStyle 407 stroke-dasharray: 4 2
   concept_batch_processing -->|has type| type_flow_shape
-  linkStyle 421 stroke-dasharray: 4 2
+  linkStyle 408 stroke-dasharray: 4 2
   concept_bff -->|has type| type_pattern
-  linkStyle 422 stroke-dasharray: 4 2
+  linkStyle 409 stroke-dasharray: 4 2
   concept_big_ball_of_mud -->|has type| type_anti_pattern
-  linkStyle 423 stroke-dasharray: 4 2
+  linkStyle 410 stroke-dasharray: 4 2
   concept_block_content -->|has type| type_pattern
-  linkStyle 424 stroke-dasharray: 4 2
+  linkStyle 411 stroke-dasharray: 4 2
   concept_bloom_filter -->|has type| type_pattern
-  linkStyle 425 stroke-dasharray: 4 2
+  linkStyle 412 stroke-dasharray: 4 2
   concept_blue_green -->|has type| type_pattern
-  linkStyle 426 stroke-dasharray: 4 2
+  linkStyle 413 stroke-dasharray: 4 2
   concept_boolean_blindness -->|has type| type_anti_pattern
-  linkStyle 427 stroke-dasharray: 4 2
+  linkStyle 414 stroke-dasharray: 4 2
   concept_bounded_context -->|has type| type_pattern
-  linkStyle 428 stroke-dasharray: 4 2
+  linkStyle 415 stroke-dasharray: 4 2
   concept_breaking_changes -->|has type| type_anti_pattern
-  linkStyle 429 stroke-dasharray: 4 2
+  linkStyle 416 stroke-dasharray: 4 2
   concept_bridge -->|has type| type_pattern
-  linkStyle 430 stroke-dasharray: 4 2
+  linkStyle 417 stroke-dasharray: 4 2
   concept_builder -->|has type| type_pattern
-  linkStyle 431 stroke-dasharray: 4 2
+  linkStyle 418 stroke-dasharray: 4 2
   concept_bulkhead -->|has type| type_pattern
-  linkStyle 432 stroke-dasharray: 4 2
+  linkStyle 419 stroke-dasharray: 4 2
   concept_busy_waiting -->|has type| type_anti_pattern
-  linkStyle 433 stroke-dasharray: 4 2
+  linkStyle 420 stroke-dasharray: 4 2
   concept_cache_aside -->|has type| type_pattern
-  linkStyle 434 stroke-dasharray: 4 2
+  linkStyle 421 stroke-dasharray: 4 2
   concept_cache_stampede_prevention -->|has type| type_pattern
-  linkStyle 435 stroke-dasharray: 4 2
+  linkStyle 422 stroke-dasharray: 4 2
   concept_callback_hell -->|has type| type_anti_pattern
-  linkStyle 436 stroke-dasharray: 4 2
+  linkStyle 423 stroke-dasharray: 4 2
   concept_canary -->|has type| type_pattern
-  linkStyle 437 stroke-dasharray: 4 2
+  linkStyle 424 stroke-dasharray: 4 2
   concept_cargo_cult -->|has type| type_anti_pattern
-  linkStyle 438 stroke-dasharray: 4 2
+  linkStyle 425 stroke-dasharray: 4 2
   concept_catalog -->|has type| type_pattern
-  linkStyle 439 stroke-dasharray: 4 2
+  linkStyle 426 stroke-dasharray: 4 2
   concept_cell_based -->|has type| type_structure_shape
-  linkStyle 440 stroke-dasharray: 4 2
+  linkStyle 427 stroke-dasharray: 4 2
   concept_chain_of_responsibility -->|has type| type_pattern
-  linkStyle 441 stroke-dasharray: 4 2
+  linkStyle 428 stroke-dasharray: 4 2
   concept_change_data_capture -->|has type| type_pattern
-  linkStyle 442 stroke-dasharray: 4 2
+  linkStyle 429 stroke-dasharray: 4 2
   concept_chatty_api -->|has type| type_anti_pattern
-  linkStyle 443 stroke-dasharray: 4 2
+  linkStyle 430 stroke-dasharray: 4 2
   concept_choreography -->|has type| type_pattern
-  linkStyle 444 stroke-dasharray: 4 2
+  linkStyle 431 stroke-dasharray: 4 2
   concept_circuit_breaker -->|has type| type_pattern
-  linkStyle 445 stroke-dasharray: 4 2
+  linkStyle 432 stroke-dasharray: 4 2
   concept_circular_dependency -->|has type| type_anti_pattern
-  linkStyle 446 stroke-dasharray: 4 2
+  linkStyle 433 stroke-dasharray: 4 2
   concept_claim_check -->|has type| type_pattern
-  linkStyle 447 stroke-dasharray: 4 2
+  linkStyle 434 stroke-dasharray: 4 2
   concept_command -->|has type| type_pattern
-  linkStyle 448 stroke-dasharray: 4 2
+  linkStyle 435 stroke-dasharray: 4 2
   concept_competing_consumers -->|has type| type_pattern
-  linkStyle 449 stroke-dasharray: 4 2
+  linkStyle 436 stroke-dasharray: 4 2
   concept_component -->|has type| type_pattern
-  linkStyle 450 stroke-dasharray: 4 2
+  linkStyle 437 stroke-dasharray: 4 2
   concept_component_slot -->|has type| type_pattern
-  linkStyle 451 stroke-dasharray: 4 2
+  linkStyle 438 stroke-dasharray: 4 2
   concept_composite -->|has type| type_pattern
-  linkStyle 452 stroke-dasharray: 4 2
+  linkStyle 439 stroke-dasharray: 4 2
   concept_config_management -->|has type| type_pattern
-  linkStyle 453 stroke-dasharray: 4 2
+  linkStyle 440 stroke-dasharray: 4 2
   concept_config_sprawl -->|has type| type_anti_pattern
-  linkStyle 454 stroke-dasharray: 4 2
+  linkStyle 441 stroke-dasharray: 4 2
   concept_connection_pooling -->|has type| type_pattern
-  linkStyle 455 stroke-dasharray: 4 2
+  linkStyle 442 stroke-dasharray: 4 2
   concept_content_negotiation -->|has type| type_pattern
-  linkStyle 456 stroke-dasharray: 4 2
+  linkStyle 443 stroke-dasharray: 4 2
   concept_contract_testing -->|has type| type_pattern
-  linkStyle 457 stroke-dasharray: 4 2
+  linkStyle 444 stroke-dasharray: 4 2
   concept_control_plane -->|has type| type_pattern
-  linkStyle 458 stroke-dasharray: 4 2
+  linkStyle 445 stroke-dasharray: 4 2
   concept_conversation_thread -->|has type| type_pattern
-  linkStyle 459 stroke-dasharray: 4 2
+  linkStyle 446 stroke-dasharray: 4 2
   concept_copy_paste_programming -->|has type| type_anti_pattern
-  linkStyle 460 stroke-dasharray: 4 2
+  linkStyle 447 stroke-dasharray: 4 2
   concept_correlation_id -->|has type| type_pattern
-  linkStyle 461 stroke-dasharray: 4 2
+  linkStyle 448 stroke-dasharray: 4 2
   concept_cors -->|has type| type_pattern
-  linkStyle 462 stroke-dasharray: 4 2
+  linkStyle 449 stroke-dasharray: 4 2
   concept_cqrs -->|has type| type_pattern
-  linkStyle 463 stroke-dasharray: 4 2
+  linkStyle 450 stroke-dasharray: 4 2
   concept_data_mapper -->|has type| type_pattern
-  linkStyle 464 stroke-dasharray: 4 2
+  linkStyle 451 stroke-dasharray: 4 2
   concept_data_pipeline -->|has type| type_flow_shape
-  linkStyle 465 stroke-dasharray: 4 2
+  linkStyle 452 stroke-dasharray: 4 2
   concept_data_plane -->|has type| type_pattern
-  linkStyle 466 stroke-dasharray: 4 2
+  linkStyle 453 stroke-dasharray: 4 2
   concept_database_migration -->|has type| type_pattern
-  linkStyle 467 stroke-dasharray: 4 2
+  linkStyle 454 stroke-dasharray: 4 2
   concept_database_per_service -->|has type| type_pattern
-  linkStyle 468 stroke-dasharray: 4 2
+  linkStyle 455 stroke-dasharray: 4 2
   concept_ddd -->|has type| type_pattern
-  linkStyle 469 stroke-dasharray: 4 2
+  linkStyle 456 stroke-dasharray: 4 2
   concept_dead_letter -->|has type| type_pattern
-  linkStyle 470 stroke-dasharray: 4 2
+  linkStyle 457 stroke-dasharray: 4 2
   concept_deadlock -->|has type| type_anti_pattern
-  linkStyle 471 stroke-dasharray: 4 2
+  linkStyle 458 stroke-dasharray: 4 2
   concept_decorator -->|has type| type_pattern
-  linkStyle 472 stroke-dasharray: 4 2
+  linkStyle 459 stroke-dasharray: 4 2
   concept_deep_nesting -->|has type| type_anti_pattern
-  linkStyle 473 stroke-dasharray: 4 2
+  linkStyle 460 stroke-dasharray: 4 2
   concept_dependency_injection -->|has type| type_pattern
-  linkStyle 474 stroke-dasharray: 4 2
+  linkStyle 461 stroke-dasharray: 4 2
   concept_distributed_lock -->|has type| type_pattern
-  linkStyle 475 stroke-dasharray: 4 2
+  linkStyle 462 stroke-dasharray: 4 2
   concept_distributed_monolith -->|has type| type_anti_pattern
-  linkStyle 476 stroke-dasharray: 4 2
+  linkStyle 463 stroke-dasharray: 4 2
   concept_distributed_tracing -->|has type| type_pattern
-  linkStyle 477 stroke-dasharray: 4 2
+  linkStyle 464 stroke-dasharray: 4 2
   concept_dual_writes -->|has type| type_anti_pattern
-  linkStyle 478 stroke-dasharray: 4 2
+  linkStyle 465 stroke-dasharray: 4 2
   concept_entity_component_system -->|has type| type_pattern
-  linkStyle 479 stroke-dasharray: 4 2
+  linkStyle 466 stroke-dasharray: 4 2
   concept_environment_parity_gap -->|has type| type_anti_pattern
-  linkStyle 480 stroke-dasharray: 4 2
+  linkStyle 467 stroke-dasharray: 4 2
   concept_error_boundary -->|has type| type_pattern
-  linkStyle 481 stroke-dasharray: 4 2
+  linkStyle 468 stroke-dasharray: 4 2
   concept_error_code_returns -->|has type| type_anti_pattern
-  linkStyle 482 stroke-dasharray: 4 2
+  linkStyle 469 stroke-dasharray: 4 2
   concept_etl -->|has type| type_pattern
-  linkStyle 483 stroke-dasharray: 4 2
+  linkStyle 470 stroke-dasharray: 4 2
   concept_event_carried_state -->|has type| type_flow_shape
-  linkStyle 484 stroke-dasharray: 4 2
+  linkStyle 471 stroke-dasharray: 4 2
   concept_event_driven -->|has type| type_pattern
-  linkStyle 485 stroke-dasharray: 4 2
+  linkStyle 472 stroke-dasharray: 4 2
   concept_event_log -->|has type| type_domain_model
-  linkStyle 486 stroke-dasharray: 4 2
+  linkStyle 473 stroke-dasharray: 4 2
   concept_event_notification -->|has type| type_flow_shape
-  linkStyle 487 stroke-dasharray: 4 2
+  linkStyle 474 stroke-dasharray: 4 2
   concept_event_sourcing -->|has type| type_pattern
-  linkStyle 488 stroke-dasharray: 4 2
+  linkStyle 475 stroke-dasharray: 4 2
   concept_eventual_consistency -->|has type| type_pattern
-  linkStyle 489 stroke-dasharray: 4 2
+  linkStyle 476 stroke-dasharray: 4 2
   concept_exactly_once_semantics -->|has type| type_pattern
-  linkStyle 490 stroke-dasharray: 4 2
+  linkStyle 477 stroke-dasharray: 4 2
   concept_experiment_framework -->|has type| type_pattern
-  linkStyle 491 stroke-dasharray: 4 2
+  linkStyle 478 stroke-dasharray: 4 2
   concept_facade -->|has type| type_pattern
-  linkStyle 492 stroke-dasharray: 4 2
+  linkStyle 479 stroke-dasharray: 4 2
   concept_factory -->|has type| type_pattern
-  linkStyle 493 stroke-dasharray: 4 2
+  linkStyle 480 stroke-dasharray: 4 2
   concept_failure_cascade -->|has type| type_flow_shape
-  linkStyle 494 stroke-dasharray: 4 2
+  linkStyle 481 stroke-dasharray: 4 2
   concept_fallback -->|has type| type_pattern
-  linkStyle 495 stroke-dasharray: 4 2
+  linkStyle 482 stroke-dasharray: 4 2
   concept_fan_in -->|has type| type_flow_shape
-  linkStyle 496 stroke-dasharray: 4 2
+  linkStyle 483 stroke-dasharray: 4 2
   concept_fan_out -->|has type| type_flow_shape
-  linkStyle 497 stroke-dasharray: 4 2
+  linkStyle 484 stroke-dasharray: 4 2
   concept_feature_envy -->|has type| type_anti_pattern
-  linkStyle 498 stroke-dasharray: 4 2
+  linkStyle 485 stroke-dasharray: 4 2
   concept_feature_flag -->|has type| type_pattern
-  linkStyle 499 stroke-dasharray: 4 2
+  linkStyle 486 stroke-dasharray: 4 2
   concept_feature_store -->|has type| type_pattern
-  linkStyle 500 stroke-dasharray: 4 2
+  linkStyle 487 stroke-dasharray: 4 2
   concept_fire_and_forget -->|has type| type_anti_pattern
-  linkStyle 501 stroke-dasharray: 4 2
+  linkStyle 488 stroke-dasharray: 4 2
   concept_fixture_builder -->|has type| type_pattern
-  linkStyle 502 stroke-dasharray: 4 2
+  linkStyle 489 stroke-dasharray: 4 2
   concept_flaky_tests -->|has type| type_anti_pattern
-  linkStyle 503 stroke-dasharray: 4 2
+  linkStyle 490 stroke-dasharray: 4 2
   concept_flux -->|has type| type_pattern
-  linkStyle 504 stroke-dasharray: 4 2
+  linkStyle 491 stroke-dasharray: 4 2
   concept_flyweight -->|has type| type_pattern
-  linkStyle 505 stroke-dasharray: 4 2
+  linkStyle 492 stroke-dasharray: 4 2
   concept_form_binding -->|has type| type_pattern
-  linkStyle 506 stroke-dasharray: 4 2
+  linkStyle 493 stroke-dasharray: 4 2
   concept_future_promise -->|has type| type_pattern
-  linkStyle 507 stroke-dasharray: 4 2
+  linkStyle 494 stroke-dasharray: 4 2
   concept_game_loop -->|has type| type_pattern
-  linkStyle 508 stroke-dasharray: 4 2
+  linkStyle 495 stroke-dasharray: 4 2
   concept_gateway_backends -->|has type| type_structure_shape
-  linkStyle 509 stroke-dasharray: 4 2
+  linkStyle 496 stroke-dasharray: 4 2
   concept_gitops -->|has type| type_pattern
-  linkStyle 510 stroke-dasharray: 4 2
+  linkStyle 497 stroke-dasharray: 4 2
   concept_god_endpoint -->|has type| type_anti_pattern
-  linkStyle 511 stroke-dasharray: 4 2
+  linkStyle 498 stroke-dasharray: 4 2
   concept_god_object -->|has type| type_anti_pattern
-  linkStyle 512 stroke-dasharray: 4 2
+  linkStyle 499 stroke-dasharray: 4 2
   concept_golden_hammer -->|has type| type_anti_pattern
-  linkStyle 513 stroke-dasharray: 4 2
+  linkStyle 500 stroke-dasharray: 4 2
   concept_graceful_degradation -->|has type| type_pattern
-  linkStyle 514 stroke-dasharray: 4 2
+  linkStyle 501 stroke-dasharray: 4 2
   concept_graph -->|has type| type_pattern
-  linkStyle 515 stroke-dasharray: 4 2
+  linkStyle 502 stroke-dasharray: 4 2
   concept_graphql -->|has type| type_pattern
-  linkStyle 516 stroke-dasharray: 4 2
+  linkStyle 503 stroke-dasharray: 4 2
   concept_grpc -->|has type| type_pattern
-  linkStyle 517 stroke-dasharray: 4 2
+  linkStyle 504 stroke-dasharray: 4 2
   concept_hardcoded_credentials -->|has type| type_anti_pattern
-  linkStyle 518 stroke-dasharray: 4 2
+  linkStyle 505 stroke-dasharray: 4 2
   concept_hardcoded_urls -->|has type| type_anti_pattern
-  linkStyle 519 stroke-dasharray: 4 2
+  linkStyle 506 stroke-dasharray: 4 2
   concept_health_check -->|has type| type_pattern
-  linkStyle 520 stroke-dasharray: 4 2
+  linkStyle 507 stroke-dasharray: 4 2
   concept_hexagonal -->|has type| type_pattern
-  linkStyle 521 stroke-dasharray: 4 2
+  linkStyle 508 stroke-dasharray: 4 2
   concept_hidden_side_effects -->|has type| type_anti_pattern
-  linkStyle 522 stroke-dasharray: 4 2
+  linkStyle 509 stroke-dasharray: 4 2
   concept_hydration -->|has type| type_pattern
-  linkStyle 523 stroke-dasharray: 4 2
+  linkStyle 510 stroke-dasharray: 4 2
   concept_ice_cream_cone -->|has type| type_anti_pattern
-  linkStyle 524 stroke-dasharray: 4 2
+  linkStyle 511 stroke-dasharray: 4 2
   concept_idempotent_consumer -->|has type| type_pattern
-  linkStyle 525 stroke-dasharray: 4 2
+  linkStyle 512 stroke-dasharray: 4 2
   concept_immutable_infra -->|has type| type_pattern
-  linkStyle 526 stroke-dasharray: 4 2
+  linkStyle 513 stroke-dasharray: 4 2
   concept_inbox -->|has type| type_unknown
-  linkStyle 527 stroke-dasharray: 4 2
+  linkStyle 514 stroke-dasharray: 4 2
   concept_inconsistent_naming -->|has type| type_anti_pattern
-  linkStyle 528 stroke-dasharray: 4 2
+  linkStyle 515 stroke-dasharray: 4 2
   concept_infrastructure_as_code -->|has type| type_pattern
-  linkStyle 529 stroke-dasharray: 4 2
+  linkStyle 516 stroke-dasharray: 4 2
   concept_input_validation -->|has type| type_pattern
-  linkStyle 530 stroke-dasharray: 4 2
+  linkStyle 517 stroke-dasharray: 4 2
   concept_insecure_deserialization -->|has type| type_anti_pattern
-  linkStyle 531 stroke-dasharray: 4 2
+  linkStyle 518 stroke-dasharray: 4 2
   concept_intermediate_representation -->|has type| type_pattern
-  linkStyle 532 stroke-dasharray: 4 2
+  linkStyle 519 stroke-dasharray: 4 2
   concept_iterator -->|has type| type_pattern
-  linkStyle 533 stroke-dasharray: 4 2
+  linkStyle 520 stroke-dasharray: 4 2
   concept_key_value_model -->|has type| type_domain_model
-  linkStyle 534 stroke-dasharray: 4 2
+  linkStyle 521 stroke-dasharray: 4 2
   concept_lava_flow -->|has type| type_anti_pattern
-  linkStyle 535 stroke-dasharray: 4 2
+  linkStyle 522 stroke-dasharray: 4 2
   concept_layered -->|has type| type_structure_shape
-  linkStyle 536 stroke-dasharray: 4 2
+  linkStyle 523 stroke-dasharray: 4 2
   concept_lazy_loading -->|has type| type_pattern
-  linkStyle 537 stroke-dasharray: 4 2
+  linkStyle 524 stroke-dasharray: 4 2
   concept_leader_election -->|has type| type_pattern
-  linkStyle 538 stroke-dasharray: 4 2
+  linkStyle 525 stroke-dasharray: 4 2
   concept_leaky_abstraction -->|has type| type_anti_pattern
-  linkStyle 539 stroke-dasharray: 4 2
+  linkStyle 526 stroke-dasharray: 4 2
   concept_ledger -->|has type| type_pattern
-  linkStyle 540 stroke-dasharray: 4 2
+  linkStyle 527 stroke-dasharray: 4 2
   concept_lexer_parser -->|has type| type_pattern
-  linkStyle 541 stroke-dasharray: 4 2
+  linkStyle 528 stroke-dasharray: 4 2
   concept_load_balancer -->|has type| type_pattern
-  linkStyle 542 stroke-dasharray: 4 2
+  linkStyle 529 stroke-dasharray: 4 2
   concept_log_and_throw -->|has type| type_anti_pattern
-  linkStyle 543 stroke-dasharray: 4 2
+  linkStyle 530 stroke-dasharray: 4 2
   concept_log_spam -->|has type| type_anti_pattern
-  linkStyle 544 stroke-dasharray: 4 2
+  linkStyle 531 stroke-dasharray: 4 2
   concept_long_polling -->|has type| type_pattern
-  linkStyle 545 stroke-dasharray: 4 2
+  linkStyle 532 stroke-dasharray: 4 2
   concept_long_transactions -->|has type| type_anti_pattern
-  linkStyle 546 stroke-dasharray: 4 2
+  linkStyle 533 stroke-dasharray: 4 2
   concept_lru_cache -->|has type| type_pattern
-  linkStyle 547 stroke-dasharray: 4 2
+  linkStyle 534 stroke-dasharray: 4 2
   concept_magic_numbers -->|has type| type_anti_pattern
-  linkStyle 548 stroke-dasharray: 4 2
+  linkStyle 535 stroke-dasharray: 4 2
   concept_mapreduce -->|has type| type_pattern
-  linkStyle 549 stroke-dasharray: 4 2
+  linkStyle 536 stroke-dasharray: 4 2
   concept_materialized_view -->|has type| type_pattern
-  linkStyle 550 stroke-dasharray: 4 2
+  linkStyle 537 stroke-dasharray: 4 2
   concept_mediator -->|has type| type_pattern
-  linkStyle 551 stroke-dasharray: 4 2
+  linkStyle 538 stroke-dasharray: 4 2
   concept_memento -->|has type| type_pattern
-  linkStyle 552 stroke-dasharray: 4 2
+  linkStyle 539 stroke-dasharray: 4 2
   concept_memory_leak -->|has type| type_anti_pattern
-  linkStyle 553 stroke-dasharray: 4 2
+  linkStyle 540 stroke-dasharray: 4 2
   concept_message_queue -->|has type| type_pattern
-  linkStyle 554 stroke-dasharray: 4 2
+  linkStyle 541 stroke-dasharray: 4 2
   concept_metric_cardinality_explosion -->|has type| type_anti_pattern
-  linkStyle 555 stroke-dasharray: 4 2
+  linkStyle 542 stroke-dasharray: 4 2
   concept_metrics_instrumentation -->|has type| type_pattern
-  linkStyle 556 stroke-dasharray: 4 2
+  linkStyle 543 stroke-dasharray: 4 2
   concept_micro_frontend -->|has type| type_pattern
-  linkStyle 557 stroke-dasharray: 4 2
+  linkStyle 544 stroke-dasharray: 4 2
   concept_microservices -->|has type| type_pattern
-  linkStyle 558 stroke-dasharray: 4 2
+  linkStyle 545 stroke-dasharray: 4 2
   concept_middleware -->|has type| type_pattern
-  linkStyle 559 stroke-dasharray: 4 2
+  linkStyle 546 stroke-dasharray: 4 2
   concept_misleading_names -->|has type| type_anti_pattern
-  linkStyle 560 stroke-dasharray: 4 2
+  linkStyle 547 stroke-dasharray: 4 2
   concept_missing_log_context -->|has type| type_anti_pattern
-  linkStyle 561 stroke-dasharray: 4 2
+  linkStyle 548 stroke-dasharray: 4 2
   concept_model_registry -->|has type| type_pattern
-  linkStyle 562 stroke-dasharray: 4 2
+  linkStyle 549 stroke-dasharray: 4 2
   concept_modular_monolith -->|has type| type_pattern
-  linkStyle 563 stroke-dasharray: 4 2
+  linkStyle 550 stroke-dasharray: 4 2
   concept_monad -->|has type| type_pattern
-  linkStyle 564 stroke-dasharray: 4 2
+  linkStyle 551 stroke-dasharray: 4 2
   concept_mtls -->|has type| type_pattern
-  linkStyle 565 stroke-dasharray: 4 2
+  linkStyle 552 stroke-dasharray: 4 2
   concept_multi_tenant -->|has type| type_pattern
-  linkStyle 566 stroke-dasharray: 4 2
+  linkStyle 553 stroke-dasharray: 4 2
   concept_mvc -->|has type| type_pattern
-  linkStyle 567 stroke-dasharray: 4 2
+  linkStyle 554 stroke-dasharray: 4 2
   concept_mvvm -->|has type| type_pattern
-  linkStyle 568 stroke-dasharray: 4 2
+  linkStyle 555 stroke-dasharray: 4 2
   concept_n_plus_one -->|has type| type_anti_pattern
-  linkStyle 569 stroke-dasharray: 4 2
+  linkStyle 556 stroke-dasharray: 4 2
   concept_null_object -->|has type| type_pattern
-  linkStyle 570 stroke-dasharray: 4 2
+  linkStyle 557 stroke-dasharray: 4 2
   concept_oauth_oidc -->|has type| type_pattern
-  linkStyle 571 stroke-dasharray: 4 2
+  linkStyle 558 stroke-dasharray: 4 2
   concept_object_pool -->|has type| type_pattern
-  linkStyle 572 stroke-dasharray: 4 2
+  linkStyle 559 stroke-dasharray: 4 2
   concept_observer -->|has type| type_pattern
-  linkStyle 573 stroke-dasharray: 4 2
+  linkStyle 560 stroke-dasharray: 4 2
   concept_optimistic_locking -->|has type| type_pattern
-  linkStyle 574 stroke-dasharray: 4 2
+  linkStyle 561 stroke-dasharray: 4 2
   concept_optimistic_update -->|has type| type_pattern
-  linkStyle 575 stroke-dasharray: 4 2
+  linkStyle 562 stroke-dasharray: 4 2
   concept_orchestration -->|has type| type_pattern
-  linkStyle 576 stroke-dasharray: 4 2
+  linkStyle 563 stroke-dasharray: 4 2
   concept_outbox -->|has type| type_pattern
-  linkStyle 577 stroke-dasharray: 4 2
+  linkStyle 564 stroke-dasharray: 4 2
   concept_over_under_fetching -->|has type| type_anti_pattern
-  linkStyle 578 stroke-dasharray: 4 2
+  linkStyle 565 stroke-dasharray: 4 2
   concept_pagination -->|has type| type_pattern
-  linkStyle 579 stroke-dasharray: 4 2
+  linkStyle 566 stroke-dasharray: 4 2
   concept_pipeline_filter -->|has type| type_pattern
-  linkStyle 580 stroke-dasharray: 4 2
+  linkStyle 567 stroke-dasharray: 4 2
   concept_pipeline_stages -->|has type| type_structure_shape
-  linkStyle 581 stroke-dasharray: 4 2
+  linkStyle 568 stroke-dasharray: 4 2
   concept_plugin -->|has type| type_pattern
-  linkStyle 582 stroke-dasharray: 4 2
+  linkStyle 569 stroke-dasharray: 4 2
   concept_plugin_host -->|has type| type_structure_shape
-  linkStyle 583 stroke-dasharray: 4 2
+  linkStyle 570 stroke-dasharray: 4 2
   concept_pokemon_exception -->|has type| type_anti_pattern
-  linkStyle 584 stroke-dasharray: 4 2
+  linkStyle 571 stroke-dasharray: 4 2
   concept_polling_flow -->|has type| type_flow_shape
-  linkStyle 585 stroke-dasharray: 4 2
+  linkStyle 572 stroke-dasharray: 4 2
   concept_premature_optimization -->|has type| type_anti_pattern
-  linkStyle 586 stroke-dasharray: 4 2
+  linkStyle 573 stroke-dasharray: 4 2
   concept_primitive_obsession -->|has type| type_anti_pattern
-  linkStyle 587 stroke-dasharray: 4 2
+  linkStyle 574 stroke-dasharray: 4 2
   concept_producer_consumer -->|has type| type_pattern
-  linkStyle 588 stroke-dasharray: 4 2
+  linkStyle 575 stroke-dasharray: 4 2
   concept_prop_drilling -->|has type| type_anti_pattern
-  linkStyle 589 stroke-dasharray: 4 2
+  linkStyle 576 stroke-dasharray: 4 2
   concept_property_graph -->|has type| type_domain_model
-  linkStyle 590 stroke-dasharray: 4 2
+  linkStyle 577 stroke-dasharray: 4 2
   concept_property_testing -->|has type| type_pattern
-  linkStyle 591 stroke-dasharray: 4 2
+  linkStyle 578 stroke-dasharray: 4 2
   concept_prototype -->|has type| type_pattern
-  linkStyle 592 stroke-dasharray: 4 2
+  linkStyle 579 stroke-dasharray: 4 2
   concept_proxy -->|has type| type_pattern
-  linkStyle 593 stroke-dasharray: 4 2
+  linkStyle 580 stroke-dasharray: 4 2
   concept_pub_sub -->|has type| type_pattern
-  linkStyle 594 stroke-dasharray: 4 2
+  linkStyle 581 stroke-dasharray: 4 2
   concept_query_object -->|has type| type_pattern
-  linkStyle 595 stroke-dasharray: 4 2
+  linkStyle 582 stroke-dasharray: 4 2
   concept_race_condition -->|has type| type_anti_pattern
-  linkStyle 596 stroke-dasharray: 4 2
+  linkStyle 583 stroke-dasharray: 4 2
   concept_rate_limiting -->|has type| type_pattern
-  linkStyle 597 stroke-dasharray: 4 2
+  linkStyle 584 stroke-dasharray: 4 2
   concept_rbac -->|has type| type_pattern
-  linkStyle 598 stroke-dasharray: 4 2
+  linkStyle 585 stroke-dasharray: 4 2
   concept_reactive_store -->|has type| type_pattern
-  linkStyle 599 stroke-dasharray: 4 2
+  linkStyle 586 stroke-dasharray: 4 2
   concept_reactor -->|has type| type_pattern
-  linkStyle 600 stroke-dasharray: 4 2
+  linkStyle 587 stroke-dasharray: 4 2
   concept_read_through -->|has type| type_pattern
-  linkStyle 601 stroke-dasharray: 4 2
+  linkStyle 588 stroke-dasharray: 4 2
   concept_read_write_lock -->|has type| type_pattern
-  linkStyle 602 stroke-dasharray: 4 2
+  linkStyle 589 stroke-dasharray: 4 2
   concept_refresh_ahead -->|has type| type_pattern
-  linkStyle 603 stroke-dasharray: 4 2
+  linkStyle 590 stroke-dasharray: 4 2
   concept_registry_model -->|has type| type_domain_model
-  linkStyle 604 stroke-dasharray: 4 2
+  linkStyle 591 stroke-dasharray: 4 2
   concept_reinventing_the_wheel -->|has type| type_anti_pattern
-  linkStyle 605 stroke-dasharray: 4 2
+  linkStyle 592 stroke-dasharray: 4 2
   concept_repository -->|has type| type_pattern
-  linkStyle 606 stroke-dasharray: 4 2
+  linkStyle 593 stroke-dasharray: 4 2
   concept_request_path -->|has type| type_flow_shape
-  linkStyle 607 stroke-dasharray: 4 2
+  linkStyle 594 stroke-dasharray: 4 2
   concept_request_reply -->|has type| type_pattern
-  linkStyle 608 stroke-dasharray: 4 2
+  linkStyle 595 stroke-dasharray: 4 2
   concept_rest -->|has type| type_pattern
-  linkStyle 609 stroke-dasharray: 4 2
+  linkStyle 596 stroke-dasharray: 4 2
   concept_result_type -->|has type| type_pattern
-  linkStyle 610 stroke-dasharray: 4 2
+  linkStyle 597 stroke-dasharray: 4 2
   concept_retry -->|has type| type_pattern
-  linkStyle 611 stroke-dasharray: 4 2
+  linkStyle 598 stroke-dasharray: 4 2
   concept_ring_buffer -->|has type| type_pattern
-  linkStyle 612 stroke-dasharray: 4 2
+  linkStyle 599 stroke-dasharray: 4 2
   concept_route_guard -->|has type| type_pattern
-  linkStyle 613 stroke-dasharray: 4 2
+  linkStyle 600 stroke-dasharray: 4 2
   concept_router -->|has type| type_pattern
-  linkStyle 614 stroke-dasharray: 4 2
+  linkStyle 601 stroke-dasharray: 4 2
   concept_rule_engine -->|has type| type_pattern
-  linkStyle 615 stroke-dasharray: 4 2
+  linkStyle 602 stroke-dasharray: 4 2
   concept_saga -->|has type| type_pattern
-  linkStyle 616 stroke-dasharray: 4 2
+  linkStyle 603 stroke-dasharray: 4 2
   concept_saga_orchestrator -->|has type| type_unknown
-  linkStyle 617 stroke-dasharray: 4 2
+  linkStyle 604 stroke-dasharray: 4 2
   concept_scatter_gather -->|has type| type_flow_shape
-  linkStyle 618 stroke-dasharray: 4 2
+  linkStyle 605 stroke-dasharray: 4 2
   concept_scheduler -->|has type| type_pattern
-  linkStyle 619 stroke-dasharray: 4 2
+  linkStyle 606 stroke-dasharray: 4 2
   concept_schema_on_read -->|has type| type_anti_pattern
-  linkStyle 620 stroke-dasharray: 4 2
+  linkStyle 607 stroke-dasharray: 4 2
   concept_schema_registry -->|has type| type_pattern
-  linkStyle 621 stroke-dasharray: 4 2
+  linkStyle 608 stroke-dasharray: 4 2
   concept_search_index -->|has type| type_pattern
-  linkStyle 622 stroke-dasharray: 4 2
+  linkStyle 609 stroke-dasharray: 4 2
   concept_secret_management -->|has type| type_pattern
-  linkStyle 623 stroke-dasharray: 4 2
+  linkStyle 610 stroke-dasharray: 4 2
   concept_select_star -->|has type| type_anti_pattern
-  linkStyle 624 stroke-dasharray: 4 2
+  linkStyle 611 stroke-dasharray: 4 2
   concept_server_prefetch -->|has type| type_pattern
-  linkStyle 625 stroke-dasharray: 4 2
+  linkStyle 612 stroke-dasharray: 4 2
   concept_server_route_registration -->|has type| type_pattern
-  linkStyle 626 stroke-dasharray: 4 2
+  linkStyle 613 stroke-dasharray: 4 2
   concept_server_sent_events -->|has type| type_pattern
-  linkStyle 627 stroke-dasharray: 4 2
+  linkStyle 614 stroke-dasharray: 4 2
   concept_serverless -->|has type| type_pattern
-  linkStyle 628 stroke-dasharray: 4 2
+  linkStyle 615 stroke-dasharray: 4 2
   concept_service_discovery -->|has type| type_pattern
-  linkStyle 629 stroke-dasharray: 4 2
+  linkStyle 616 stroke-dasharray: 4 2
   concept_service_manager -->|has type| type_pattern
-  linkStyle 630 stroke-dasharray: 4 2
+  linkStyle 617 stroke-dasharray: 4 2
   concept_service_mesh -->|has type| type_pattern
-  linkStyle 631 stroke-dasharray: 4 2
+  linkStyle 618 stroke-dasharray: 4 2
   concept_session_auth -->|has type| type_pattern
-  linkStyle 632 stroke-dasharray: 4 2
+  linkStyle 619 stroke-dasharray: 4 2
   concept_sharding -->|has type| type_pattern
-  linkStyle 633 stroke-dasharray: 4 2
+  linkStyle 620 stroke-dasharray: 4 2
   concept_shared_database -->|has type| type_pattern
-  linkStyle 634 stroke-dasharray: 4 2
+  linkStyle 621 stroke-dasharray: 4 2
   concept_shotgun_surgery -->|has type| type_anti_pattern
-  linkStyle 635 stroke-dasharray: 4 2
+  linkStyle 622 stroke-dasharray: 4 2
   concept_side_effect_hook -->|has type| type_pattern
-  linkStyle 636 stroke-dasharray: 4 2
+  linkStyle 623 stroke-dasharray: 4 2
   concept_sidecar -->|has type| type_pattern
-  linkStyle 637 stroke-dasharray: 4 2
+  linkStyle 624 stroke-dasharray: 4 2
   concept_sidecar_mesh -->|has type| type_structure_shape
-  linkStyle 638 stroke-dasharray: 4 2
+  linkStyle 625 stroke-dasharray: 4 2
   concept_singleton -->|has type| type_pattern
-  linkStyle 639 stroke-dasharray: 4 2
+  linkStyle 626 stroke-dasharray: 4 2
   concept_snapshot_testing -->|has type| type_pattern
-  linkStyle 640 stroke-dasharray: 4 2
+  linkStyle 627 stroke-dasharray: 4 2
   concept_snowflake_server -->|has type| type_anti_pattern
-  linkStyle 641 stroke-dasharray: 4 2
+  linkStyle 628 stroke-dasharray: 4 2
   concept_social_graph -->|has type| type_domain_model
-  linkStyle 642 stroke-dasharray: 4 2
+  linkStyle 629 stroke-dasharray: 4 2
   concept_soft_delete -->|has type| type_pattern
-  linkStyle 643 stroke-dasharray: 4 2
+  linkStyle 630 stroke-dasharray: 4 2
   concept_spaghetti_code -->|has type| type_anti_pattern
-  linkStyle 644 stroke-dasharray: 4 2
+  linkStyle 631 stroke-dasharray: 4 2
   concept_spatial -->|has type| type_pattern
-  linkStyle 645 stroke-dasharray: 4 2
+  linkStyle 632 stroke-dasharray: 4 2
   concept_spatial_partitioning -->|has type| type_pattern
-  linkStyle 646 stroke-dasharray: 4 2
+  linkStyle 633 stroke-dasharray: 4 2
   concept_specification -->|has type| type_pattern
-  linkStyle 647 stroke-dasharray: 4 2
+  linkStyle 634 stroke-dasharray: 4 2
   concept_sql_injection -->|has type| type_anti_pattern
-  linkStyle 648 stroke-dasharray: 4 2
+  linkStyle 635 stroke-dasharray: 4 2
   concept_state_machine -->|has type| type_pattern
-  linkStyle 649 stroke-dasharray: 4 2
+  linkStyle 636 stroke-dasharray: 4 2
   concept_strangler_fig -->|has type| type_pattern
-  linkStyle 650 stroke-dasharray: 4 2
+  linkStyle 637 stroke-dasharray: 4 2
   concept_strategy -->|has type| type_pattern
-  linkStyle 651 stroke-dasharray: 4 2
+  linkStyle 638 stroke-dasharray: 4 2
   concept_stream_processing -->|has type| type_pattern
-  linkStyle 652 stroke-dasharray: 4 2
+  linkStyle 639 stroke-dasharray: 4 2
   concept_stream_to_store -->|has type| type_pattern
-  linkStyle 653 stroke-dasharray: 4 2
+  linkStyle 640 stroke-dasharray: 4 2
   concept_streaming_flow -->|has type| type_flow_shape
-  linkStyle 654 stroke-dasharray: 4 2
+  linkStyle 641 stroke-dasharray: 4 2
   concept_stringly_typed -->|has type| type_anti_pattern
-  linkStyle 655 stroke-dasharray: 4 2
+  linkStyle 642 stroke-dasharray: 4 2
   concept_structured_logging -->|has type| type_pattern
-  linkStyle 656 stroke-dasharray: 4 2
+  linkStyle 643 stroke-dasharray: 4 2
   concept_subscription -->|has type| type_pattern
-  linkStyle 657 stroke-dasharray: 4 2
+  linkStyle 644 stroke-dasharray: 4 2
   concept_suspense_boundary -->|has type| type_pattern
-  linkStyle 658 stroke-dasharray: 4 2
+  linkStyle 645 stroke-dasharray: 4 2
   concept_swallowed_exception -->|has type| type_anti_pattern
-  linkStyle 659 stroke-dasharray: 4 2
+  linkStyle 646 stroke-dasharray: 4 2
   concept_sync_in_async -->|has type| type_anti_pattern
-  linkStyle 660 stroke-dasharray: 4 2
+  linkStyle 647 stroke-dasharray: 4 2
   concept_template_method -->|has type| type_pattern
-  linkStyle 661 stroke-dasharray: 4 2
+  linkStyle 648 stroke-dasharray: 4 2
   concept_temporal_coupling -->|has type| type_anti_pattern
-  linkStyle 662 stroke-dasharray: 4 2
+  linkStyle 649 stroke-dasharray: 4 2
   concept_tenant_isolation -->|has type| type_pattern
-  linkStyle 663 stroke-dasharray: 4 2
+  linkStyle 650 stroke-dasharray: 4 2
   concept_tenant_routing -->|has type| type_pattern
-  linkStyle 664 stroke-dasharray: 4 2
+  linkStyle 651 stroke-dasharray: 4 2
   concept_tensor -->|has type| type_pattern
-  linkStyle 665 stroke-dasharray: 4 2
+  linkStyle 652 stroke-dasharray: 4 2
   concept_test_doubles -->|has type| type_pattern
-  linkStyle 666 stroke-dasharray: 4 2
+  linkStyle 653 stroke-dasharray: 4 2
   concept_test_pollution -->|has type| type_anti_pattern
-  linkStyle 667 stroke-dasharray: 4 2
+  linkStyle 654 stroke-dasharray: 4 2
   concept_tick_simulation -->|has type| type_pattern
-  linkStyle 668 stroke-dasharray: 4 2
+  linkStyle 655 stroke-dasharray: 4 2
   concept_tight_coupling -->|has type| type_anti_pattern
-  linkStyle 669 stroke-dasharray: 4 2
+  linkStyle 656 stroke-dasharray: 4 2
   concept_time_series -->|has type| type_pattern
-  linkStyle 670 stroke-dasharray: 4 2
+  linkStyle 657 stroke-dasharray: 4 2
   concept_timeout -->|has type| type_pattern
-  linkStyle 671 stroke-dasharray: 4 2
+  linkStyle 658 stroke-dasharray: 4 2
   concept_token_auth -->|has type| type_pattern
-  linkStyle 672 stroke-dasharray: 4 2
+  linkStyle 659 stroke-dasharray: 4 2
   concept_train_wreck -->|has type| type_anti_pattern
-  linkStyle 673 stroke-dasharray: 4 2
+  linkStyle 660 stroke-dasharray: 4 2
   concept_training_pipeline -->|has type| type_pattern
-  linkStyle 674 stroke-dasharray: 4 2
+  linkStyle 661 stroke-dasharray: 4 2
   concept_trie -->|has type| type_pattern
-  linkStyle 675 stroke-dasharray: 4 2
+  linkStyle 662 stroke-dasharray: 4 2
   concept_unbounded_growth -->|has type| type_anti_pattern
-  linkStyle 676 stroke-dasharray: 4 2
+  linkStyle 663 stroke-dasharray: 4 2
   concept_unit_of_work -->|has type| type_pattern
-  linkStyle 677 stroke-dasharray: 4 2
+  linkStyle 664 stroke-dasharray: 4 2
   concept_value_object -->|has type| type_pattern
-  linkStyle 678 stroke-dasharray: 4 2
+  linkStyle 665 stroke-dasharray: 4 2
   concept_versioned_document -->|has type| type_pattern
-  linkStyle 679 stroke-dasharray: 4 2
+  linkStyle 666 stroke-dasharray: 4 2
   concept_visitor -->|has type| type_pattern
-  linkStyle 680 stroke-dasharray: 4 2
+  linkStyle 667 stroke-dasharray: 4 2
   concept_webhook -->|has type| type_pattern
-  linkStyle 681 stroke-dasharray: 4 2
+  linkStyle 668 stroke-dasharray: 4 2
   concept_websocket -->|has type| type_pattern
-  linkStyle 682 stroke-dasharray: 4 2
+  linkStyle 669 stroke-dasharray: 4 2
   concept_worker_pool -->|has type| type_pattern
-  linkStyle 683 stroke-dasharray: 4 2
+  linkStyle 670 stroke-dasharray: 4 2
   concept_workflow_engine -->|has type| type_pattern
-  linkStyle 684 stroke-dasharray: 4 2
+  linkStyle 671 stroke-dasharray: 4 2
   concept_workflow_state_machine -->|has type| type_domain_model
-  linkStyle 685 stroke-dasharray: 4 2
+  linkStyle 672 stroke-dasharray: 4 2
   concept_write_behind -->|has type| type_pattern
-  linkStyle 686 stroke-dasharray: 4 2
+  linkStyle 673 stroke-dasharray: 4 2
   framework_actix_web -->|implements| concept_rest
   framework_aiohttp -->|implements| concept_rest
   framework_angular -->|implements| concept_component
@@ -2109,809 +2100,1522 @@ graph TD
   framework_symfony -->|implements| concept_rest
   framework_vapor -->|implements| concept_rest
   framework_vue -->|implements| concept_component
-  concept_property_graph -->|is a| concept_graph
-  concept_social_graph -->|is a| concept_graph
-  concept_component_slot -->|part of| concept_component
-  concept_event_carried_state -->|part of| concept_event_driven
-  concept_event_notification -->|part of| concept_event_driven
-  concept_active_record -->|preferred over| concept_data_mapper
-  concept_component -->|preferred over| concept_component_slot
-  concept_data_mapper -->|preferred over| concept_active_record
-  concept_microservices -->|preferred over| concept_distributed_monolith
-  concept_workflow_engine -->|preferred over| concept_workflow_state_machine
-  concept_memory_leak -->|references| concept_bulkhead
+  concept_abstract_factory -->|references| concept_bridge
+  linkStyle 708 stroke-dasharray: 4 2
+  concept_abstract_factory -->|references| concept_builder
+  linkStyle 709 stroke-dasharray: 4 2
+  concept_abstract_factory -->|references| concept_factory
+  linkStyle 710 stroke-dasharray: 4 2
+  concept_active_record -->|references| concept_data_mapper
+  linkStyle 711 stroke-dasharray: 4 2
+  concept_active_record -->|references| concept_repository
+  linkStyle 712 stroke-dasharray: 4 2
+  concept_actor_model -->|references| concept_pub_sub
+  linkStyle 713 stroke-dasharray: 4 2
+  concept_actor_model -->|references| concept_state_machine
+  linkStyle 714 stroke-dasharray: 4 2
+  concept_actor_model -->|references| concept_worker_pool
+  linkStyle 715 stroke-dasharray: 4 2
+  concept_adapter -->|references| concept_anti_corruption_layer
+  linkStyle 716 stroke-dasharray: 4 2
+  concept_adapter -->|references| concept_gateway_backends
+  linkStyle 717 stroke-dasharray: 4 2
+  concept_adapter -->|references| concept_hexagonal
+  linkStyle 718 stroke-dasharray: 4 2
+  concept_aggregate -->|references| concept_ddd
+  linkStyle 719 stroke-dasharray: 4 2
+  concept_aggregate -->|references| concept_repository
+  linkStyle 720 stroke-dasharray: 4 2
+  concept_aggregate -->|references| concept_value_object
+  linkStyle 721 stroke-dasharray: 4 2
+  concept_anemic_domain_model -->|references| concept_ddd
+  linkStyle 722 stroke-dasharray: 4 2
+  concept_anti_corruption_layer -->|references| concept_adapter
+  linkStyle 723 stroke-dasharray: 4 2
+  concept_anti_corruption_layer -->|references| concept_gateway_backends
+  linkStyle 724 stroke-dasharray: 4 2
+  concept_anti_corruption_layer -->|references| concept_hexagonal
+  linkStyle 725 stroke-dasharray: 4 2
+  concept_api_gateway -->|references| concept_bff
+  linkStyle 726 stroke-dasharray: 4 2
+  concept_api_gateway -->|references| concept_rate_limiting
+  linkStyle 727 stroke-dasharray: 4 2
+  concept_api_gateway -->|references| concept_server_route_registration
+  linkStyle 728 stroke-dasharray: 4 2
+  concept_ast -->|references| concept_command
+  linkStyle 729 stroke-dasharray: 4 2
+  concept_ast -->|references| concept_intermediate_representation
+  linkStyle 730 stroke-dasharray: 4 2
+  concept_ast -->|references| concept_visitor
   linkStyle 731 stroke-dasharray: 4 2
-  concept_property_testing -->|references| concept_snapshot_testing
+  concept_at_least_once_delivery -->|references| concept_exactly_once_semantics
   linkStyle 732 stroke-dasharray: 4 2
-  concept_request_path -->|references| concept_server_route_registration
+  concept_at_least_once_delivery -->|references| concept_idempotent_consumer
   linkStyle 733 stroke-dasharray: 4 2
-  concept_secret_management -->|references| concept_immutable_infra
+  concept_at_least_once_delivery -->|references| concept_message_queue
   linkStyle 734 stroke-dasharray: 4 2
-  concept_abstract_factory -->|related to| concept_bridge
-  concept_abstract_factory -->|related to| concept_builder
-  concept_abstract_factory -->|related to| concept_factory
-  concept_active_record -->|related to| concept_data_mapper
-  concept_active_record -->|related to| concept_repository
-  concept_actor_model -->|related to| concept_pub_sub
-  concept_actor_model -->|related to| concept_state_machine
-  concept_actor_model -->|related to| concept_worker_pool
-  concept_adapter -->|related to| concept_anti_corruption_layer
-  concept_adapter -->|related to| concept_gateway_backends
-  concept_adapter -->|related to| concept_hexagonal
-  concept_aggregate -->|related to| concept_ddd
-  concept_aggregate -->|related to| concept_repository
-  concept_aggregate -->|related to| concept_value_object
-  concept_anemic_domain_model -->|related to| concept_ddd
-  concept_anti_corruption_layer -->|related to| concept_adapter
-  concept_anti_corruption_layer -->|related to| concept_gateway_backends
-  concept_anti_corruption_layer -->|related to| concept_hexagonal
-  concept_api_gateway -->|related to| concept_bff
-  concept_api_gateway -->|related to| concept_rate_limiting
-  concept_api_gateway -->|related to| concept_server_route_registration
-  concept_api_key_auth -->|related to| concept_rate_limiting
-  concept_ast -->|related to| concept_command
-  concept_ast -->|related to| concept_intermediate_representation
-  concept_ast -->|related to| concept_visitor
-  concept_at_least_once_delivery -->|related to| concept_exactly_once_semantics
-  concept_at_least_once_delivery -->|related to| concept_idempotent_consumer
-  concept_at_least_once_delivery -->|related to| concept_message_queue
-  concept_audit_logging -->|related to| concept_event_sourcing
-  concept_audit_logging -->|related to| concept_ledger
-  concept_audit_logging -->|related to| concept_structured_logging
-  concept_backpressure -->|related to| concept_bulkhead
-  concept_backpressure -->|related to| concept_competing_consumers
-  concept_backpressure -->|related to| concept_rate_limiting
-  concept_batch_loader -->|related to| concept_cache_aside
-  concept_batch_loader -->|related to| concept_graphql
-  concept_batch_loader -->|related to| concept_n_plus_one
-  concept_batch_processing -->|related to| concept_data_pipeline
-  concept_batch_processing -->|related to| concept_etl
-  concept_batch_processing -->|related to| concept_scheduler
-  concept_bff -->|related to| concept_api_gateway
-  concept_bff -->|related to| concept_component
-  concept_bff -->|related to| concept_rest
-  concept_big_ball_of_mud -->|related to| concept_distributed_monolith
-  concept_big_ball_of_mud -->|related to| concept_hexagonal
-  concept_big_ball_of_mud -->|related to| concept_layered
-  concept_block_content -->|related to| concept_component
-  concept_block_content -->|related to| concept_search_index
-  concept_block_content -->|related to| concept_versioned_document
-  concept_bloom_filter -->|related to| concept_cache_aside
-  concept_bloom_filter -->|related to| concept_search_index
-  concept_bloom_filter -->|related to| concept_sharding
-  concept_blue_green -->|related to| concept_canary
-  concept_blue_green -->|related to| concept_database_migration
-  concept_blue_green -->|related to| concept_feature_flag
-  concept_boolean_blindness -->|related to| concept_command
-  concept_boolean_blindness -->|related to| concept_primitive_obsession
-  concept_boolean_blindness -->|related to| concept_strategy
-  concept_bounded_context -->|related to| concept_anti_corruption_layer
-  concept_bounded_context -->|related to| concept_database_per_service
-  concept_bounded_context -->|related to| concept_ddd
-  concept_breaking_changes -->|related to| concept_contract_testing
-  concept_breaking_changes -->|related to| concept_grpc
-  concept_breaking_changes -->|related to| concept_rest
-  concept_bridge -->|related to| concept_abstract_factory
-  concept_bridge -->|related to| concept_adapter
-  concept_bridge -->|related to| concept_strategy
-  concept_builder -->|related to| concept_abstract_factory
-  concept_builder -->|related to| concept_factory
-  concept_builder -->|related to| concept_fixture_builder
-  concept_bulkhead -->|related to| concept_backpressure
-  concept_bulkhead -->|related to| concept_circuit_breaker
-  concept_bulkhead -->|related to| concept_connection_pooling
-  concept_busy_waiting -->|related to| concept_backpressure
-  concept_busy_waiting -->|related to| concept_long_polling
-  concept_busy_waiting -->|related to| concept_polling_flow
-  concept_cache_aside -->|related to| concept_repository
-  concept_cache_aside -->|related to| concept_search_index
-  concept_cache_aside -->|related to| concept_write_behind
-  concept_cache_stampede_prevention -->|related to| concept_backpressure
-  concept_cache_stampede_prevention -->|related to| concept_bulkhead
-  concept_cache_stampede_prevention -->|related to| concept_cache_aside
-  concept_callback_hell -->|related to| concept_future_promise
-  concept_callback_hell -->|related to| concept_mediator
-  concept_callback_hell -->|related to| concept_reactor
-  concept_canary -->|related to| concept_blue_green
-  concept_canary -->|related to| concept_feature_flag
-  concept_canary -->|related to| concept_health_check
-  concept_cargo_cult -->|related to| concept_copy_paste_programming
-  concept_cargo_cult -->|related to| concept_golden_hammer
-  concept_cargo_cult -->|related to| concept_premature_optimization
-  concept_catalog -->|related to| concept_rule_engine
-  concept_catalog -->|related to| concept_search_index
-  concept_catalog -->|related to| concept_subscription
-  concept_cell_based -->|related to| concept_canary
-  concept_cell_based -->|related to| concept_sharding
-  concept_cell_based -->|related to| concept_tenant_isolation
-  concept_chain_of_responsibility -->|related to| concept_command
-  concept_chain_of_responsibility -->|related to| concept_middleware
-  concept_chain_of_responsibility -->|related to| concept_rule_engine
-  concept_change_data_capture -->|related to| concept_cqrs
-  concept_change_data_capture -->|related to| concept_event_sourcing
-  concept_change_data_capture -->|related to| concept_search_index
-  concept_chatty_api -->|related to| concept_batch_loader
-  concept_chatty_api -->|related to| concept_bff
-  concept_chatty_api -->|related to| concept_graphql
-  concept_choreography -->|related to| concept_event_driven
-  concept_choreography -->|related to| concept_orchestration
-  concept_choreography -->|related to| concept_saga
-  concept_circuit_breaker -->|related to| concept_bulkhead
-  concept_circuit_breaker -->|related to| concept_retry
-  concept_circuit_breaker -->|related to| concept_timeout
-  concept_circular_dependency -->|related to| concept_dependency_injection
-  concept_circular_dependency -->|related to| concept_layered
-  concept_circular_dependency -->|related to| concept_modular_monolith
-  concept_claim_check -->|related to| concept_dead_letter
-  concept_claim_check -->|related to| concept_message_queue
-  concept_claim_check -->|related to| concept_webhook
-  concept_command -->|related to| concept_cqrs
-  concept_command -->|related to| concept_event_driven
-  concept_command -->|related to| concept_workflow_engine
-  concept_competing_consumers -->|related to| concept_dead_letter
-  concept_competing_consumers -->|related to| concept_outbox
-  concept_competing_consumers -->|related to| concept_worker_pool
-  concept_component -->|related to| concept_mvc
-  concept_component -->|related to| concept_mvvm
-  concept_composite -->|related to| concept_component
-  concept_composite -->|related to| concept_graph
-  concept_composite -->|related to| concept_visitor
-  concept_config_management -->|related to| concept_config_sprawl
-  concept_config_management -->|related to| concept_feature_flag
-  concept_config_management -->|related to| concept_secret_management
-  concept_config_sprawl -->|related to| concept_config_management
-  concept_connection_pooling -->|related to| concept_bulkhead
-  concept_connection_pooling -->|related to| concept_distributed_lock
-  concept_connection_pooling -->|related to| concept_health_check
-  concept_content_negotiation -->|related to| concept_graphql
-  concept_content_negotiation -->|related to| concept_rest
-  concept_content_negotiation -->|related to| concept_server_route_registration
-  concept_contract_testing -->|related to| concept_api_gateway
-  concept_contract_testing -->|related to| concept_grpc
-  concept_contract_testing -->|related to| concept_rest
-  concept_control_plane -->|related to| concept_data_plane
-  concept_control_plane -->|related to| concept_service_discovery
-  concept_control_plane -->|related to| concept_service_mesh
-  concept_conversation_thread -->|related to| concept_pagination
-  concept_conversation_thread -->|related to| concept_pub_sub
-  concept_conversation_thread -->|related to| concept_websocket
-  concept_copy_paste_programming -->|related to| concept_cargo_cult
-  concept_copy_paste_programming -->|related to| concept_fixture_builder
-  concept_copy_paste_programming -->|related to| concept_shotgun_surgery
-  concept_correlation_id -->|related to| concept_distributed_tracing
-  concept_cors -->|related to| concept_api_gateway
-  concept_cors -->|related to| concept_oauth_oidc
-  concept_cors -->|related to| concept_token_auth
-  concept_cqrs -->|related to| concept_change_data_capture
-  concept_cqrs -->|related to| concept_event_sourcing
-  concept_cqrs -->|related to| concept_search_index
-  concept_data_mapper -->|related to| concept_repository
-  concept_data_mapper -->|related to| concept_unit_of_work
-  concept_data_pipeline -->|related to| concept_batch_processing
-  concept_data_pipeline -->|related to| concept_etl
-  concept_data_pipeline -->|related to| concept_stream_to_store
-  concept_data_plane -->|related to| concept_control_plane
-  concept_data_plane -->|related to| concept_service_mesh
-  concept_data_plane -->|related to| concept_sidecar
-  concept_database_migration -->|related to| concept_config_management
-  concept_database_migration -->|related to| concept_database_per_service
-  concept_database_migration -->|related to| concept_schema_registry
-  concept_database_per_service -->|related to| concept_bounded_context
-  concept_database_per_service -->|related to| concept_microservices
-  concept_database_per_service -->|related to| concept_shared_database
-  concept_ddd -->|related to| concept_aggregate
-  concept_ddd -->|related to| concept_repository
-  concept_ddd -->|related to| concept_value_object
-  concept_dead_letter -->|related to| concept_claim_check
-  concept_dead_letter -->|related to| concept_competing_consumers
-  concept_dead_letter -->|related to| concept_retry
-  concept_deadlock -->|related to| concept_distributed_lock
-  concept_deadlock -->|related to| concept_race_condition
-  concept_deadlock -->|related to| concept_read_write_lock
-  concept_decorator -->|related to| concept_proxy
-  concept_deep_nesting -->|related to| concept_callback_hell
-  concept_deep_nesting -->|related to| concept_strategy
-  concept_deep_nesting -->|related to| concept_train_wreck
-  concept_dependency_injection -->|related to| concept_hexagonal
-  concept_dependency_injection -->|related to| concept_layered
-  concept_distributed_lock -->|related to| concept_idempotent_consumer
-  concept_distributed_lock -->|related to| concept_leader_election
-  concept_distributed_lock -->|related to| concept_optimistic_locking
-  concept_distributed_monolith -->|related to| concept_api_gateway
-  concept_distributed_monolith -->|related to| concept_microservices
-  concept_distributed_monolith -->|related to| concept_shared_database
-  concept_distributed_tracing -->|related to| concept_correlation_id
-  concept_distributed_tracing -->|related to| concept_metrics_instrumentation
-  concept_distributed_tracing -->|related to| concept_structured_logging
-  concept_dual_writes -->|related to| concept_change_data_capture
-  concept_dual_writes -->|related to| concept_outbox
-  concept_entity_component_system -->|related to| concept_component
-  concept_entity_component_system -->|related to| concept_game_loop
-  concept_entity_component_system -->|related to| concept_tick_simulation
-  concept_environment_parity_gap -->|related to| concept_config_management
-  concept_environment_parity_gap -->|related to| concept_flaky_tests
-  concept_environment_parity_gap -->|related to| concept_infrastructure_as_code
-  concept_error_boundary -->|related to| concept_component
-  concept_error_boundary -->|related to| concept_graceful_degradation
-  concept_error_boundary -->|related to| concept_suspense_boundary
-  concept_error_code_returns -->|related to| concept_magic_numbers
-  concept_error_code_returns -->|related to| concept_result_type
-  concept_error_code_returns -->|related to| concept_swallowed_exception
-  concept_etl -->|related to| concept_batch_processing
-  concept_etl -->|related to| concept_data_pipeline
-  concept_etl -->|related to| concept_schema_on_read
-  concept_event_carried_state -->|related to| concept_change_data_capture
-  concept_event_carried_state -->|related to| concept_event_notification
-  concept_event_driven -->|related to| concept_choreography
-  concept_event_driven -->|related to| concept_event_sourcing
-  concept_event_driven -->|related to| concept_pub_sub
-  concept_event_log -->|related to| concept_audit_logging
-  concept_event_log -->|related to| concept_event_sourcing
-  concept_event_log -->|related to| concept_ledger
-  concept_event_notification -->|related to| concept_event_carried_state
-  concept_event_notification -->|related to| concept_webhook
-  concept_event_sourcing -->|related to| concept_event_driven
-  concept_event_sourcing -->|related to| concept_ledger
-  concept_event_sourcing -->|related to| concept_versioned_document
-  concept_eventual_consistency -->|related to| concept_cqrs
-  concept_eventual_consistency -->|related to| concept_dual_writes
-  concept_eventual_consistency -->|related to| concept_optimistic_update
-  concept_exactly_once_semantics -->|related to| concept_at_least_once_delivery
-  concept_exactly_once_semantics -->|related to| concept_idempotent_consumer
-  concept_exactly_once_semantics -->|related to| concept_outbox
-  concept_experiment_framework -->|related to| concept_feature_flag
-  concept_experiment_framework -->|related to| concept_metrics_instrumentation
-  concept_experiment_framework -->|related to| concept_model_registry
-  concept_facade -->|related to| concept_adapter
-  concept_facade -->|related to| concept_anti_corruption_layer
-  concept_facade -->|related to| concept_gateway_backends
-  concept_factory -->|related to| concept_abstract_factory
-  concept_factory -->|related to| concept_builder
-  concept_factory -->|related to| concept_strategy
-  concept_failure_cascade -->|related to| concept_bulkhead
-  concept_failure_cascade -->|related to| concept_circuit_breaker
-  concept_failure_cascade -->|related to| concept_graceful_degradation
-  concept_fallback -->|related to| concept_cache_aside
-  concept_fallback -->|related to| concept_circuit_breaker
-  concept_fallback -->|related to| concept_graceful_degradation
-  concept_fan_in -->|related to| concept_data_pipeline
-  concept_fan_in -->|related to| concept_mapreduce
-  concept_fan_in -->|related to| concept_scatter_gather
-  concept_fan_out -->|related to| concept_pub_sub
-  concept_fan_out -->|related to| concept_scatter_gather
-  concept_fan_out -->|related to| concept_webhook
-  concept_feature_envy -->|related to| concept_data_mapper
-  concept_feature_envy -->|related to| concept_god_object
-  concept_feature_envy -->|related to| concept_primitive_obsession
-  concept_feature_flag -->|related to| concept_blue_green
-  concept_feature_flag -->|related to| concept_canary
-  concept_feature_flag -->|related to| concept_config_management
-  concept_feature_store -->|related to| concept_model_registry
-  concept_feature_store -->|related to| concept_stream_to_store
-  concept_feature_store -->|related to| concept_training_pipeline
-  concept_fire_and_forget -->|related to| concept_outbox
-  concept_fixture_builder -->|related to| concept_builder
-  concept_fixture_builder -->|related to| concept_property_testing
-  concept_fixture_builder -->|related to| concept_test_doubles
-  concept_flaky_tests -->|related to| concept_environment_parity_gap
-  concept_flaky_tests -->|related to| concept_snapshot_testing
-  concept_flaky_tests -->|related to| concept_test_pollution
-  concept_flux -->|related to| concept_component
-  concept_flux -->|related to| concept_prop_drilling
-  concept_flux -->|related to| concept_reactive_store
-  concept_flyweight -->|related to| concept_object_pool
-  concept_flyweight -->|related to| concept_prototype
-  concept_flyweight -->|related to| concept_value_object
-  concept_form_binding -->|related to| concept_component
-  concept_form_binding -->|related to| concept_input_validation
-  concept_form_binding -->|related to| concept_reactive_store
-  concept_future_promise -->|related to| concept_callback_hell
-  concept_future_promise -->|related to| concept_reactor
-  concept_future_promise -->|related to| concept_request_reply
-  concept_game_loop -->|related to| concept_entity_component_system
-  concept_game_loop -->|related to| concept_reactor
-  concept_game_loop -->|related to| concept_tick_simulation
-  concept_gateway_backends -->|related to| concept_api_gateway
-  concept_gateway_backends -->|related to| concept_bff
-  concept_gateway_backends -->|related to| concept_microservices
-  concept_gitops -->|related to| concept_config_management
-  concept_gitops -->|related to| concept_immutable_infra
-  concept_gitops -->|related to| concept_infrastructure_as_code
-  concept_god_endpoint -->|related to| concept_bff
-  concept_god_endpoint -->|related to| concept_god_object
-  concept_god_endpoint -->|related to| concept_rest
-  concept_god_object -->|related to| concept_big_ball_of_mud
-  concept_god_object -->|related to| concept_feature_envy
-  concept_god_object -->|related to| concept_god_endpoint
-  concept_golden_hammer -->|related to| concept_cargo_cult
-  concept_golden_hammer -->|related to| concept_premature_optimization
-  concept_golden_hammer -->|related to| concept_reinventing_the_wheel
-  concept_graceful_degradation -->|related to| concept_circuit_breaker
-  concept_graceful_degradation -->|related to| concept_fallback
-  concept_graceful_degradation -->|related to| concept_health_check
-  concept_graph -->|related to| concept_pipeline_filter
-  concept_graph -->|related to| concept_workflow_engine
-  concept_graphql -->|related to| concept_pagination
-  concept_graphql -->|related to| concept_rest
-  concept_grpc -->|related to| concept_rest
-  concept_grpc -->|related to| concept_server_route_registration
-  concept_hardcoded_credentials -->|related to| concept_secret_management
-  concept_hardcoded_urls -->|related to| concept_config_management
-  concept_health_check -->|related to| concept_canary
-  concept_health_check -->|related to| concept_graceful_degradation
-  concept_health_check -->|related to| concept_leader_election
-  concept_hexagonal -->|related to| concept_adapter
-  concept_hexagonal -->|related to| concept_anti_corruption_layer
-  concept_hexagonal -->|related to| concept_layered
-  concept_hidden_side_effects -->|related to| concept_command
-  concept_hidden_side_effects -->|related to| concept_log_and_throw
-  concept_hidden_side_effects -->|related to| concept_query_object
-  concept_hydration -->|related to| concept_lazy_loading
-  concept_hydration -->|related to| concept_server_prefetch
-  concept_hydration -->|related to| concept_suspense_boundary
-  concept_ice_cream_cone -->|related to| concept_contract_testing
-  concept_ice_cream_cone -->|related to| concept_fixture_builder
-  concept_ice_cream_cone -->|related to| concept_flaky_tests
-  concept_idempotent_consumer -->|related to| concept_dead_letter
-  concept_idempotent_consumer -->|related to| concept_inbox
-  concept_idempotent_consumer -->|related to| concept_retry
-  concept_immutable_infra -->|related to| concept_blue_green
-  concept_immutable_infra -->|related to| concept_gitops
-  concept_immutable_infra -->|related to| concept_infrastructure_as_code
-  concept_inbox -->|related to| concept_dead_letter
-  concept_inbox -->|related to| concept_idempotent_consumer
-  concept_inbox -->|related to| concept_outbox
-  concept_inconsistent_naming -->|related to| concept_magic_numbers
-  concept_inconsistent_naming -->|related to| concept_misleading_names
-  concept_inconsistent_naming -->|related to| concept_stringly_typed
-  concept_infrastructure_as_code -->|related to| concept_config_management
-  concept_infrastructure_as_code -->|related to| concept_gitops
-  concept_infrastructure_as_code -->|related to| concept_immutable_infra
-  concept_input_validation -->|related to| concept_cors
-  concept_input_validation -->|related to| concept_insecure_deserialization
-  concept_input_validation -->|related to| concept_route_guard
-  concept_insecure_deserialization -->|related to| concept_input_validation
-  concept_insecure_deserialization -->|related to| concept_route_guard
-  concept_insecure_deserialization -->|related to| concept_sql_injection
-  concept_intermediate_representation -->|related to| concept_ast
-  concept_intermediate_representation -->|related to| concept_lexer_parser
-  concept_intermediate_representation -->|related to| concept_visitor
-  concept_iterator -->|related to| concept_composite
-  concept_iterator -->|related to| concept_stream_to_store
-  concept_iterator -->|related to| concept_visitor
-  concept_key_value_model -->|related to| concept_cache_aside
-  concept_key_value_model -->|related to| concept_lru_cache
-  concept_key_value_model -->|related to| concept_read_through
-  concept_lava_flow -->|related to| concept_copy_paste_programming
-  concept_lava_flow -->|related to| concept_feature_flag
-  concept_lava_flow -->|related to| concept_shotgun_surgery
-  concept_layered -->|related to| concept_middleware
-  concept_layered -->|related to| concept_mvc
-  concept_layered -->|related to| concept_mvvm
-  concept_lazy_loading -->|related to| concept_micro_frontend
-  concept_lazy_loading -->|related to| concept_server_prefetch
-  concept_lazy_loading -->|related to| concept_suspense_boundary
-  concept_leader_election -->|related to| concept_distributed_lock
-  concept_leader_election -->|related to| concept_health_check
-  concept_leader_election -->|related to| concept_scheduler
-  concept_leaky_abstraction -->|related to| concept_adapter
-  concept_leaky_abstraction -->|related to| concept_data_mapper
-  concept_leaky_abstraction -->|related to| concept_hexagonal
-  concept_ledger -->|related to| concept_audit_logging
-  concept_ledger -->|related to| concept_event_sourcing
-  concept_ledger -->|related to| concept_saga
-  concept_lexer_parser -->|related to| concept_ast
-  concept_lexer_parser -->|related to| concept_intermediate_representation
-  concept_lexer_parser -->|related to| concept_visitor
-  concept_load_balancer -->|related to| concept_api_gateway
-  concept_load_balancer -->|related to| concept_rate_limiting
-  concept_load_balancer -->|related to| concept_service_discovery
-  concept_log_and_throw -->|related to| concept_correlation_id
-  concept_log_and_throw -->|related to| concept_structured_logging
-  concept_log_and_throw -->|related to| concept_swallowed_exception
-  concept_log_spam -->|related to| concept_metrics_instrumentation
-  concept_log_spam -->|related to| concept_missing_log_context
-  concept_log_spam -->|related to| concept_structured_logging
-  concept_long_polling -->|related to| concept_polling_flow
-  concept_long_polling -->|related to| concept_server_sent_events
-  concept_long_polling -->|related to| concept_websocket
-  concept_long_transactions -->|related to| concept_distributed_lock
-  concept_long_transactions -->|related to| concept_outbox
-  concept_long_transactions -->|related to| concept_unit_of_work
-  concept_lru_cache -->|related to| concept_cache_aside
-  concept_lru_cache -->|related to| concept_key_value_model
-  concept_lru_cache -->|related to| concept_read_through
-  concept_magic_numbers -->|related to| concept_boolean_blindness
-  concept_magic_numbers -->|related to| concept_inconsistent_naming
-  concept_magic_numbers -->|related to| concept_stringly_typed
-  concept_mapreduce -->|related to| concept_data_pipeline
-  concept_mapreduce -->|related to| concept_fan_in
-  concept_mapreduce -->|related to| concept_fan_out
-  concept_materialized_view -->|related to| concept_cache_aside
-  concept_materialized_view -->|related to| concept_cqrs
-  concept_materialized_view -->|related to| concept_search_index
-  concept_mediator -->|related to| concept_command
-  concept_mediator -->|related to| concept_observer
-  concept_mediator -->|related to| concept_workflow_engine
-  concept_memento -->|related to| concept_command
-  concept_memento -->|related to| concept_event_sourcing
-  concept_memento -->|related to| concept_snapshot_testing
-  concept_memory_leak -->|related to| concept_cache_aside
-  concept_memory_leak -->|related to| concept_event_driven
-  concept_memory_leak -->|related to| concept_memory_boundary
-  concept_message_queue -->|related to| concept_claim_check
-  concept_message_queue -->|related to| concept_competing_consumers
-  concept_message_queue -->|related to| concept_dead_letter
-  concept_metric_cardinality_explosion -->|related to| concept_distributed_tracing
-  concept_metric_cardinality_explosion -->|related to| concept_metrics_instrumentation
-  concept_metric_cardinality_explosion -->|related to| concept_structured_logging
-  concept_metrics_instrumentation -->|related to| concept_distributed_tracing
-  concept_metrics_instrumentation -->|related to| concept_health_check
-  concept_metrics_instrumentation -->|related to| concept_structured_logging
-  concept_micro_frontend -->|related to| concept_bff
-  concept_micro_frontend -->|related to| concept_component
-  concept_micro_frontend -->|related to| concept_modular_monolith
-  concept_microservices -->|related to| concept_api_gateway
-  concept_microservices -->|related to| concept_distributed_monolith
-  concept_microservices -->|related to| concept_event_driven
-  concept_middleware -->|related to| concept_graphql
-  concept_middleware -->|related to| concept_layered
-  concept_middleware -->|related to| concept_request_path
-  concept_middleware -->|related to| concept_rest
-  concept_middleware -->|related to| concept_server_route_registration
-  concept_misleading_names -->|related to| concept_hidden_side_effects
-  concept_misleading_names -->|related to| concept_inconsistent_naming
-  concept_misleading_names -->|related to| concept_leaky_abstraction
-  concept_missing_log_context -->|related to| concept_structured_logging
-  concept_model_registry -->|related to| concept_experiment_framework
-  concept_model_registry -->|related to| concept_feature_store
-  concept_model_registry -->|related to| concept_training_pipeline
-  concept_modular_monolith -->|related to| concept_hexagonal
-  concept_modular_monolith -->|related to| concept_layered
-  concept_modular_monolith -->|related to| concept_microservices
-  concept_monad -->|related to| concept_future_promise
-  concept_monad -->|related to| concept_pipeline_filter
-  concept_monad -->|related to| concept_result_type
-  concept_mtls -->|related to| concept_secret_management
-  concept_mtls -->|related to| concept_service_mesh
-  concept_mtls -->|related to| concept_sidecar_mesh
-  concept_multi_tenant -->|related to| concept_rate_limiting
-  concept_multi_tenant -->|related to| concept_rbac
-  concept_multi_tenant -->|related to| concept_sharding
-  concept_mvc -->|related to| concept_component
-  concept_mvc -->|related to| concept_layered
-  concept_mvvm -->|related to| concept_component
-  concept_mvvm -->|related to| concept_layered
-  concept_n_plus_one -->|related to| concept_batch_loader
-  concept_null_object -->|related to| concept_result_type
-  concept_null_object -->|related to| concept_singleton
-  concept_null_object -->|related to| concept_strategy
-  concept_oauth_oidc -->|related to| concept_rbac
-  concept_oauth_oidc -->|related to| concept_session_auth
-  concept_oauth_oidc -->|related to| concept_token_auth
-  concept_object_pool -->|related to| concept_connection_pooling
-  concept_object_pool -->|related to| concept_flyweight
-  concept_object_pool -->|related to| concept_worker_pool
-  concept_observer -->|related to| concept_event_driven
-  concept_observer -->|related to| concept_pub_sub
-  concept_optimistic_locking -->|related to| concept_aggregate
-  concept_optimistic_locking -->|related to| concept_retry
-  concept_optimistic_locking -->|related to| concept_value_object
-  concept_optimistic_update -->|related to| concept_event_notification
-  concept_optimistic_update -->|related to| concept_optimistic_locking
-  concept_optimistic_update -->|related to| concept_reactive_store
-  concept_orchestration -->|related to| concept_choreography
-  concept_orchestration -->|related to| concept_saga_orchestrator
-  concept_orchestration -->|related to| concept_workflow_engine
-  concept_outbox -->|related to| concept_change_data_capture
-  concept_outbox -->|related to| concept_competing_consumers
-  concept_outbox -->|related to| concept_event_driven
-  concept_over_under_fetching -->|related to| concept_bff
-  concept_over_under_fetching -->|related to| concept_graphql
-  concept_over_under_fetching -->|related to| concept_rest
-  concept_pagination -->|related to| concept_graphql
-  concept_pagination -->|related to| concept_rest
-  concept_pagination -->|related to| concept_search_index
-  concept_pipeline_filter -->|related to| concept_batch_processing
-  concept_pipeline_filter -->|related to| concept_data_pipeline
-  concept_pipeline_filter -->|related to| concept_middleware
-  concept_pipeline_stages -->|related to| concept_data_pipeline
-  concept_pipeline_stages -->|related to| concept_mapreduce
-  concept_pipeline_stages -->|related to| concept_pipeline_filter
-  concept_plugin -->|related to| concept_plugin_host
-  concept_plugin_host -->|related to| concept_plugin
-  concept_pokemon_exception -->|related to| concept_log_and_throw
-  concept_pokemon_exception -->|related to| concept_magic_numbers
-  concept_pokemon_exception -->|related to| concept_swallowed_exception
-  concept_polling_flow -->|related to| concept_long_polling
-  concept_polling_flow -->|related to| concept_scheduler
-  concept_polling_flow -->|related to| concept_webhook
-  concept_premature_optimization -->|related to| concept_golden_hammer
-  concept_premature_optimization -->|related to| concept_lru_cache
-  concept_premature_optimization -->|related to| concept_microservices
-  concept_primitive_obsession -->|related to| concept_boolean_blindness
-  concept_primitive_obsession -->|related to| concept_stringly_typed
-  concept_primitive_obsession -->|related to| concept_value_object
-  concept_producer_consumer -->|related to| concept_backpressure
-  concept_producer_consumer -->|related to| concept_competing_consumers
-  concept_producer_consumer -->|related to| concept_message_queue
-  concept_prop_drilling -->|related to| concept_component
-  concept_prop_drilling -->|related to| concept_flux
-  concept_prop_drilling -->|related to| concept_reactive_store
-  concept_property_graph -->|related to| concept_search_index
-  concept_property_testing -->|related to| concept_fixture_builder
-  concept_property_testing -->|related to| concept_fuzz_testing
-  concept_property_testing -->|related to| concept_result_type
-  concept_prototype -->|related to| concept_builder
-  concept_prototype -->|related to| concept_factory
-  concept_prototype -->|related to| concept_fixture_builder
-  concept_proxy -->|related to| concept_decorator
-  concept_pub_sub -->|related to| concept_event_driven
-  concept_pub_sub -->|related to| concept_observer
-  concept_pub_sub -->|related to| concept_webhook
-  concept_query_object -->|related to| concept_cqrs
-  concept_query_object -->|related to| concept_repository
-  concept_query_object -->|related to| concept_specification
-  concept_race_condition -->|related to| concept_deadlock
-  concept_race_condition -->|related to| concept_optimistic_locking
-  concept_race_condition -->|related to| concept_read_write_lock
-  concept_rate_limiting -->|related to| concept_api_gateway
-  concept_rate_limiting -->|related to| concept_backpressure
-  concept_rate_limiting -->|related to| concept_circuit_breaker
-  concept_rbac -->|related to| concept_multi_tenant
-  concept_rbac -->|related to| concept_oauth_oidc
-  concept_rbac -->|related to| concept_route_guard
-  concept_reactive_store -->|related to| concept_component
-  concept_reactive_store -->|related to| concept_flux
-  concept_reactive_store -->|related to| concept_suspense_boundary
-  concept_reactor -->|related to| concept_event_driven
-  concept_reactor -->|related to| concept_future_promise
-  concept_reactor -->|related to| concept_server_sent_events
-  concept_read_through -->|related to| concept_cache_aside
-  concept_read_through -->|related to| concept_read_write_lock
-  concept_read_through -->|related to| concept_refresh_ahead
-  concept_read_write_lock -->|related to| concept_deadlock
-  concept_read_write_lock -->|related to| concept_optimistic_locking
-  concept_read_write_lock -->|related to| concept_race_condition
-  concept_refresh_ahead -->|related to| concept_cache_aside
-  concept_refresh_ahead -->|related to| concept_read_through
-  concept_refresh_ahead -->|related to| concept_scheduler
-  concept_registry_model -->|related to| concept_catalog
-  concept_registry_model -->|related to| concept_soft_delete
-  concept_registry_model -->|related to| concept_workflow_state_machine
-  concept_reinventing_the_wheel -->|related to| concept_cargo_cult
-  concept_reinventing_the_wheel -->|related to| concept_copy_paste_programming
-  concept_reinventing_the_wheel -->|related to| concept_golden_hammer
-  concept_repository -->|related to| concept_aggregate
-  concept_repository -->|related to| concept_data_mapper
-  concept_repository -->|related to| concept_unit_of_work
-  concept_request_path -->|related to| concept_router
-  concept_request_reply -->|related to| concept_correlation_id
-  concept_request_reply -->|related to| concept_message_queue
-  concept_request_reply -->|related to| concept_request_path
-  concept_rest -->|related to| concept_graphql
-  concept_rest -->|related to| concept_pagination
-  concept_rest -->|related to| concept_server_route_registration
-  concept_result_type -->|related to| concept_error_code_returns
-  concept_result_type -->|related to| concept_null_object
-  concept_result_type -->|related to| concept_property_testing
-  concept_retry -->|related to| concept_circuit_breaker
-  concept_retry -->|related to| concept_dead_letter
-  concept_retry -->|related to| concept_timeout
-  concept_ring_buffer -->|related to| concept_backpressure
-  concept_ring_buffer -->|related to| concept_stream_to_store
-  concept_ring_buffer -->|related to| concept_worker_pool
-  concept_route_guard -->|related to| concept_oauth_oidc
-  concept_route_guard -->|related to| concept_rbac
-  concept_route_guard -->|related to| concept_router
-  concept_route_guard -->|related to| concept_session_auth
-  concept_route_guard -->|related to| concept_token_auth
-  concept_router -->|related to| concept_route_guard
-  concept_router -->|related to| concept_server_route_registration
-  concept_rule_engine -->|related to| concept_feature_flag
-  concept_rule_engine -->|related to| concept_specification
-  concept_rule_engine -->|related to| concept_strategy
-  concept_saga -->|related to| concept_event_driven
-  concept_saga -->|related to| concept_workflow_engine
-  concept_saga_orchestrator -->|related to| concept_choreography
-  concept_saga_orchestrator -->|related to| concept_saga
-  concept_saga_orchestrator -->|related to| concept_workflow_engine
-  concept_scatter_gather -->|related to| concept_bff
-  concept_scatter_gather -->|related to| concept_fan_out
-  concept_scatter_gather -->|related to| concept_request_reply
-  concept_scheduler -->|related to| concept_batch_processing
-  concept_scheduler -->|related to| concept_leader_election
-  concept_scheduler -->|related to| concept_workflow_engine
-  concept_schema_on_read -->|related to| concept_input_validation
-  concept_schema_on_read -->|related to| concept_insecure_deserialization
-  concept_schema_on_read -->|related to| concept_stringly_typed
-  concept_schema_registry -->|related to| concept_database_migration
-  concept_schema_registry -->|related to| concept_event_driven
-  concept_schema_registry -->|related to| concept_schema_on_read
-  concept_search_index -->|related to| concept_change_data_capture
-  concept_search_index -->|related to| concept_cqrs
-  concept_search_index -->|related to| concept_pagination
-  concept_secret_management -->|related to| concept_config_management
-  concept_secret_management -->|related to| concept_mtls
-  concept_secret_management -->|related to| concept_secret_rotation
-  concept_select_star -->|related to| concept_materialized_view
-  concept_select_star -->|related to| concept_over_under_fetching
-  concept_select_star -->|related to| concept_repository
-  concept_server_prefetch -->|related to| concept_hydration
-  concept_server_prefetch -->|related to| concept_lazy_loading
-  concept_server_prefetch -->|related to| concept_suspense_boundary
-  concept_server_route_registration -->|related to| concept_graphql
-  concept_server_route_registration -->|related to| concept_grpc
-  concept_server_route_registration -->|related to| concept_middleware
-  concept_server_route_registration -->|related to| concept_request_path
-  concept_server_route_registration -->|related to| concept_rest
-  concept_server_sent_events -->|related to| concept_event_driven
-  concept_server_sent_events -->|related to| concept_long_polling
-  concept_server_sent_events -->|related to| concept_websocket
-  concept_serverless -->|related to| concept_event_driven
-  concept_serverless -->|related to| concept_scheduler
-  concept_serverless -->|related to| concept_service_manager
-  concept_service_discovery -->|related to| concept_api_gateway
-  concept_service_discovery -->|related to| concept_load_balancer
-  concept_service_discovery -->|related to| concept_service_mesh
-  concept_service_manager -->|related to| concept_graceful_degradation
-  concept_service_manager -->|related to| concept_health_check
-  concept_service_manager -->|related to| concept_scheduler
-  concept_service_mesh -->|related to| concept_mtls
-  concept_service_mesh -->|related to| concept_retry
-  concept_service_mesh -->|related to| concept_service_discovery
-  concept_session_auth -->|related to| concept_rbac
-  concept_session_auth -->|related to| concept_route_guard
-  concept_sharding -->|related to| concept_key_value_model
-  concept_sharding -->|related to| concept_service_discovery
-  concept_sharding -->|related to| concept_tenant_routing
-  concept_shared_database -->|related to| concept_database_per_service
-  concept_shared_database -->|related to| concept_distributed_monolith
-  concept_shared_database -->|related to| concept_microservices
-  concept_shotgun_surgery -->|related to| concept_copy_paste_programming
-  concept_shotgun_surgery -->|related to| concept_god_object
-  concept_shotgun_surgery -->|related to| concept_tight_coupling
-  concept_side_effect_hook -->|related to| concept_component
-  concept_side_effect_hook -->|related to| concept_hidden_side_effects
-  concept_side_effect_hook -->|related to| concept_reactive_store
-  concept_sidecar -->|related to| concept_service_manager
-  concept_sidecar -->|related to| concept_service_mesh
-  concept_sidecar -->|related to| concept_sidecar_mesh
-  concept_sidecar_mesh -->|related to| concept_mtls
-  concept_sidecar_mesh -->|related to| concept_service_mesh
-  concept_sidecar_mesh -->|related to| concept_sidecar
-  concept_singleton -->|related to| concept_dependency_injection
-  concept_singleton -->|related to| concept_service_manager
-  concept_singleton -->|related to| concept_tight_coupling
-  concept_snapshot_testing -->|related to| concept_fixture_builder
-  concept_snapshot_testing -->|related to| concept_flaky_tests
-  concept_snapshot_testing -->|related to| concept_memento
-  concept_snowflake_server -->|related to| concept_infrastructure_as_code
-  concept_social_graph -->|related to| concept_cache_aside
-  concept_social_graph -->|related to| concept_pub_sub
-  concept_soft_delete -->|related to| concept_audit_logging
-  concept_soft_delete -->|related to| concept_registry_model
-  concept_soft_delete -->|related to| concept_workflow_state_machine
-  concept_spaghetti_code -->|related to| concept_deep_nesting
-  concept_spaghetti_code -->|related to| concept_god_object
-  concept_spaghetti_code -->|related to| concept_train_wreck
-  concept_spatial -->|related to| concept_cache_aside
-  concept_spatial -->|related to| concept_pagination
-  concept_spatial -->|related to| concept_search_index
-  concept_spatial_partitioning -->|related to| concept_entity_component_system
-  concept_spatial_partitioning -->|related to| concept_game_loop
-  concept_spatial_partitioning -->|related to| concept_tick_simulation
-  concept_specification -->|related to| concept_ddd
-  concept_specification -->|related to| concept_query_object
-  concept_specification -->|related to| concept_strategy
-  concept_sql_injection -->|related to| concept_input_validation
-  concept_sql_injection -->|related to| concept_insecure_deserialization
-  concept_sql_injection -->|related to| concept_repository
-  concept_state_machine -->|related to| concept_workflow_engine
-  concept_strangler_fig -->|related to| concept_anti_corruption_layer
-  concept_strangler_fig -->|related to| concept_canary
-  concept_strangler_fig -->|related to| concept_modular_monolith
-  concept_strategy -->|related to| concept_bridge
-  concept_strategy -->|related to| concept_factory
-  concept_strategy -->|related to| concept_specification
-  concept_stream_processing -->|related to| concept_batch_processing
-  concept_stream_processing -->|related to| concept_stream_to_store
-  concept_stream_processing -->|related to| concept_streaming_flow
-  concept_stream_to_store -->|related to| concept_data_pipeline
-  concept_stream_to_store -->|related to| concept_materialized_view
-  concept_stream_to_store -->|related to| concept_message_queue
-  concept_streaming_flow -->|related to| concept_pub_sub
-  concept_streaming_flow -->|related to| concept_server_sent_events
-  concept_streaming_flow -->|related to| concept_stream_to_store
-  concept_stringly_typed -->|related to| concept_input_validation
-  concept_stringly_typed -->|related to| concept_magic_numbers
-  concept_stringly_typed -->|related to| concept_primitive_obsession
-  concept_structured_logging -->|related to| concept_correlation_id
-  concept_structured_logging -->|related to| concept_distributed_tracing
-  concept_structured_logging -->|related to| concept_metrics_instrumentation
-  concept_subscription -->|related to| concept_multi_tenant
-  concept_subscription -->|related to| concept_state_machine
-  concept_subscription -->|related to| concept_webhook
-  concept_suspense_boundary -->|related to| concept_error_boundary
-  concept_suspense_boundary -->|related to| concept_hydration
-  concept_suspense_boundary -->|related to| concept_lazy_loading
-  concept_swallowed_exception -->|related to| concept_hidden_side_effects
-  concept_swallowed_exception -->|related to| concept_log_and_throw
-  concept_swallowed_exception -->|related to| concept_result_type
-  concept_sync_in_async -->|related to| concept_busy_waiting
-  concept_sync_in_async -->|related to| concept_future_promise
-  concept_sync_in_async -->|related to| concept_reactor
-  concept_template_method -->|related to| concept_factory
-  concept_template_method -->|related to| concept_strategy
-  concept_template_method -->|related to| concept_visitor
-  concept_temporal_coupling -->|related to| concept_builder
-  concept_temporal_coupling -->|related to| concept_service_manager
-  concept_temporal_coupling -->|related to| concept_workflow_state_machine
-  concept_tenant_isolation -->|related to| concept_multi_tenant
-  concept_tenant_isolation -->|related to| concept_rbac
-  concept_tenant_isolation -->|related to| concept_tenant_routing
-  concept_tenant_routing -->|related to| concept_multi_tenant
-  concept_tenant_routing -->|related to| concept_sharding
-  concept_tenant_routing -->|related to| concept_tenant_isolation
-  concept_tensor -->|related to| concept_feature_store
-  concept_tensor -->|related to| concept_model_registry
-  concept_tensor -->|related to| concept_training_pipeline
-  concept_test_doubles -->|related to| concept_fixture_builder
-  concept_test_doubles -->|related to| concept_property_testing
-  concept_test_doubles -->|related to| concept_snapshot_testing
-  concept_test_pollution -->|related to| concept_flaky_tests
-  concept_test_pollution -->|related to| concept_singleton
-  concept_test_pollution -->|related to| concept_test_doubles
-  concept_tick_simulation -->|related to| concept_entity_component_system
-  concept_tick_simulation -->|related to| concept_game_loop
-  concept_tick_simulation -->|related to| concept_spatial_partitioning
-  concept_tight_coupling -->|related to| concept_dependency_injection
-  concept_tight_coupling -->|related to| concept_hexagonal
-  concept_tight_coupling -->|related to| concept_leaky_abstraction
-  concept_time_series -->|related to| concept_materialized_view
-  concept_time_series -->|related to| concept_metrics_instrumentation
-  concept_time_series -->|related to| concept_stream_to_store
-  concept_timeout -->|related to| concept_circuit_breaker
-  concept_timeout -->|related to| concept_retry
-  concept_token_auth -->|related to| concept_oauth_oidc
-  concept_token_auth -->|related to| concept_rbac
-  concept_token_auth -->|related to| concept_route_guard
-  concept_train_wreck -->|related to| concept_deep_nesting
-  concept_train_wreck -->|related to| concept_leaky_abstraction
-  concept_train_wreck -->|related to| concept_tight_coupling
-  concept_training_pipeline -->|related to| concept_experiment_framework
-  concept_training_pipeline -->|related to| concept_feature_store
-  concept_training_pipeline -->|related to| concept_model_registry
-  concept_trie -->|related to| concept_key_value_model
-  concept_trie -->|related to| concept_lexer_parser
-  concept_trie -->|related to| concept_search_index
-  concept_unbounded_growth -->|related to| concept_lru_cache
-  concept_unbounded_growth -->|related to| concept_memory_leak
-  concept_unbounded_growth -->|related to| concept_metric_cardinality_explosion
-  concept_unit_of_work -->|related to| concept_aggregate
-  concept_unit_of_work -->|related to| concept_data_mapper
-  concept_unit_of_work -->|related to| concept_repository
-  concept_value_object -->|related to| concept_aggregate
-  concept_value_object -->|related to| concept_ddd
-  concept_versioned_document -->|related to| concept_block_content
-  concept_versioned_document -->|related to| concept_event_sourcing
-  concept_versioned_document -->|related to| concept_optimistic_locking
-  concept_visitor -->|related to| concept_ast
-  concept_visitor -->|related to| concept_command
-  concept_visitor -->|related to| concept_composite
-  concept_webhook -->|related to| concept_pub_sub
-  concept_webhook -->|related to| concept_server_route_registration
-  concept_webhook -->|related to| concept_subscription
-  concept_websocket -->|related to| concept_conversation_thread
-  concept_websocket -->|related to| concept_pub_sub
-  concept_worker_pool -->|related to| concept_backpressure
-  concept_worker_pool -->|related to| concept_competing_consumers
-  concept_worker_pool -->|related to| concept_producer_consumer
-  concept_workflow_state_machine -->|related to| concept_state_machine
-  concept_workflow_state_machine -->|related to| concept_workflow_engine
-  concept_write_behind -->|related to| concept_cache_aside
-  concept_write_behind -->|related to| concept_message_queue
-  concept_write_behind -->|related to| concept_read_through
+  concept_audit_logging -->|references| concept_event_sourcing
+  linkStyle 735 stroke-dasharray: 4 2
+  concept_audit_logging -->|references| concept_ledger
+  linkStyle 736 stroke-dasharray: 4 2
+  concept_audit_logging -->|references| concept_structured_logging
+  linkStyle 737 stroke-dasharray: 4 2
+  concept_backpressure -->|references| concept_bulkhead
+  linkStyle 738 stroke-dasharray: 4 2
+  concept_backpressure -->|references| concept_competing_consumers
+  linkStyle 739 stroke-dasharray: 4 2
+  concept_backpressure -->|references| concept_rate_limiting
+  linkStyle 740 stroke-dasharray: 4 2
+  concept_batch_loader -->|references| concept_cache_aside
+  linkStyle 741 stroke-dasharray: 4 2
+  concept_batch_loader -->|references| concept_graphql
+  linkStyle 742 stroke-dasharray: 4 2
+  concept_batch_loader -->|references| concept_n_plus_one
+  linkStyle 743 stroke-dasharray: 4 2
+  concept_batch_processing -->|references| concept_data_pipeline
+  linkStyle 744 stroke-dasharray: 4 2
+  concept_batch_processing -->|references| concept_etl
+  linkStyle 745 stroke-dasharray: 4 2
+  concept_batch_processing -->|references| concept_scheduler
+  linkStyle 746 stroke-dasharray: 4 2
+  concept_bff -->|references| concept_api_gateway
+  linkStyle 747 stroke-dasharray: 4 2
+  concept_bff -->|references| concept_component
+  linkStyle 748 stroke-dasharray: 4 2
+  concept_bff -->|references| concept_rest
+  linkStyle 749 stroke-dasharray: 4 2
+  concept_big_ball_of_mud -->|references| concept_distributed_monolith
+  linkStyle 750 stroke-dasharray: 4 2
+  concept_big_ball_of_mud -->|references| concept_hexagonal
+  linkStyle 751 stroke-dasharray: 4 2
+  concept_big_ball_of_mud -->|references| concept_layered
+  linkStyle 752 stroke-dasharray: 4 2
+  concept_block_content -->|references| concept_component
+  linkStyle 753 stroke-dasharray: 4 2
+  concept_block_content -->|references| concept_search_index
+  linkStyle 754 stroke-dasharray: 4 2
+  concept_block_content -->|references| concept_versioned_document
+  linkStyle 755 stroke-dasharray: 4 2
+  concept_bloom_filter -->|references| concept_cache_aside
+  linkStyle 756 stroke-dasharray: 4 2
+  concept_bloom_filter -->|references| concept_search_index
+  linkStyle 757 stroke-dasharray: 4 2
+  concept_bloom_filter -->|references| concept_sharding
+  linkStyle 758 stroke-dasharray: 4 2
+  concept_blue_green -->|references| concept_canary
+  linkStyle 759 stroke-dasharray: 4 2
+  concept_blue_green -->|references| concept_database_migration
+  linkStyle 760 stroke-dasharray: 4 2
+  concept_blue_green -->|references| concept_feature_flag
+  linkStyle 761 stroke-dasharray: 4 2
+  concept_boolean_blindness -->|references| concept_command
+  linkStyle 762 stroke-dasharray: 4 2
+  concept_boolean_blindness -->|references| concept_primitive_obsession
+  linkStyle 763 stroke-dasharray: 4 2
+  concept_boolean_blindness -->|references| concept_strategy
+  linkStyle 764 stroke-dasharray: 4 2
+  concept_bounded_context -->|references| concept_anti_corruption_layer
+  linkStyle 765 stroke-dasharray: 4 2
+  concept_bounded_context -->|references| concept_database_per_service
+  linkStyle 766 stroke-dasharray: 4 2
+  concept_bounded_context -->|references| concept_ddd
+  linkStyle 767 stroke-dasharray: 4 2
+  concept_breaking_changes -->|references| concept_contract_testing
+  linkStyle 768 stroke-dasharray: 4 2
+  concept_breaking_changes -->|references| concept_grpc
+  linkStyle 769 stroke-dasharray: 4 2
+  concept_breaking_changes -->|references| concept_rest
+  linkStyle 770 stroke-dasharray: 4 2
+  concept_bridge -->|references| concept_abstract_factory
+  linkStyle 771 stroke-dasharray: 4 2
+  concept_bridge -->|references| concept_adapter
+  linkStyle 772 stroke-dasharray: 4 2
+  concept_bridge -->|references| concept_strategy
+  linkStyle 773 stroke-dasharray: 4 2
+  concept_builder -->|references| concept_abstract_factory
+  linkStyle 774 stroke-dasharray: 4 2
+  concept_builder -->|references| concept_factory
+  linkStyle 775 stroke-dasharray: 4 2
+  concept_builder -->|references| concept_fixture_builder
+  linkStyle 776 stroke-dasharray: 4 2
+  concept_bulkhead -->|references| concept_backpressure
+  linkStyle 777 stroke-dasharray: 4 2
+  concept_bulkhead -->|references| concept_circuit_breaker
+  linkStyle 778 stroke-dasharray: 4 2
+  concept_bulkhead -->|references| concept_connection_pooling
+  linkStyle 779 stroke-dasharray: 4 2
+  concept_busy_waiting -->|references| concept_backpressure
+  linkStyle 780 stroke-dasharray: 4 2
+  concept_busy_waiting -->|references| concept_long_polling
+  linkStyle 781 stroke-dasharray: 4 2
+  concept_busy_waiting -->|references| concept_polling_flow
+  linkStyle 782 stroke-dasharray: 4 2
+  concept_cache_aside -->|references| concept_repository
+  linkStyle 783 stroke-dasharray: 4 2
+  concept_cache_aside -->|references| concept_search_index
+  linkStyle 784 stroke-dasharray: 4 2
+  concept_cache_aside -->|references| concept_write_behind
+  linkStyle 785 stroke-dasharray: 4 2
+  concept_cache_stampede_prevention -->|references| concept_backpressure
+  linkStyle 786 stroke-dasharray: 4 2
+  concept_cache_stampede_prevention -->|references| concept_bulkhead
+  linkStyle 787 stroke-dasharray: 4 2
+  concept_cache_stampede_prevention -->|references| concept_cache_aside
+  linkStyle 788 stroke-dasharray: 4 2
+  concept_callback_hell -->|references| concept_future_promise
+  linkStyle 789 stroke-dasharray: 4 2
+  concept_callback_hell -->|references| concept_mediator
+  linkStyle 790 stroke-dasharray: 4 2
+  concept_callback_hell -->|references| concept_reactor
+  linkStyle 791 stroke-dasharray: 4 2
+  concept_canary -->|references| concept_blue_green
+  linkStyle 792 stroke-dasharray: 4 2
+  concept_canary -->|references| concept_feature_flag
+  linkStyle 793 stroke-dasharray: 4 2
+  concept_canary -->|references| concept_health_check
+  linkStyle 794 stroke-dasharray: 4 2
+  concept_cargo_cult -->|references| concept_copy_paste_programming
+  linkStyle 795 stroke-dasharray: 4 2
+  concept_cargo_cult -->|references| concept_golden_hammer
+  linkStyle 796 stroke-dasharray: 4 2
+  concept_cargo_cult -->|references| concept_premature_optimization
+  linkStyle 797 stroke-dasharray: 4 2
+  concept_catalog -->|references| concept_rule_engine
+  linkStyle 798 stroke-dasharray: 4 2
+  concept_catalog -->|references| concept_search_index
+  linkStyle 799 stroke-dasharray: 4 2
+  concept_catalog -->|references| concept_subscription
+  linkStyle 800 stroke-dasharray: 4 2
+  concept_cell_based -->|references| concept_canary
+  linkStyle 801 stroke-dasharray: 4 2
+  concept_cell_based -->|references| concept_sharding
+  linkStyle 802 stroke-dasharray: 4 2
+  concept_cell_based -->|references| concept_tenant_isolation
+  linkStyle 803 stroke-dasharray: 4 2
+  concept_chain_of_responsibility -->|references| concept_command
+  linkStyle 804 stroke-dasharray: 4 2
+  concept_chain_of_responsibility -->|references| concept_middleware
+  linkStyle 805 stroke-dasharray: 4 2
+  concept_chain_of_responsibility -->|references| concept_rule_engine
+  linkStyle 806 stroke-dasharray: 4 2
+  concept_change_data_capture -->|references| concept_cqrs
+  linkStyle 807 stroke-dasharray: 4 2
+  concept_change_data_capture -->|references| concept_event_sourcing
+  linkStyle 808 stroke-dasharray: 4 2
+  concept_change_data_capture -->|references| concept_search_index
+  linkStyle 809 stroke-dasharray: 4 2
+  concept_chatty_api -->|references| concept_batch_loader
+  linkStyle 810 stroke-dasharray: 4 2
+  concept_chatty_api -->|references| concept_bff
+  linkStyle 811 stroke-dasharray: 4 2
+  concept_chatty_api -->|references| concept_graphql
+  linkStyle 812 stroke-dasharray: 4 2
+  concept_choreography -->|references| concept_event_driven
+  linkStyle 813 stroke-dasharray: 4 2
+  concept_choreography -->|references| concept_orchestration
+  linkStyle 814 stroke-dasharray: 4 2
+  concept_choreography -->|references| concept_saga
+  linkStyle 815 stroke-dasharray: 4 2
+  concept_circuit_breaker -->|references| concept_bulkhead
+  linkStyle 816 stroke-dasharray: 4 2
+  concept_circuit_breaker -->|references| concept_retry
+  linkStyle 817 stroke-dasharray: 4 2
+  concept_circuit_breaker -->|references| concept_timeout
+  linkStyle 818 stroke-dasharray: 4 2
+  concept_circular_dependency -->|references| concept_dependency_injection
+  linkStyle 819 stroke-dasharray: 4 2
+  concept_circular_dependency -->|references| concept_layered
+  linkStyle 820 stroke-dasharray: 4 2
+  concept_circular_dependency -->|references| concept_modular_monolith
+  linkStyle 821 stroke-dasharray: 4 2
+  concept_claim_check -->|references| concept_dead_letter
+  linkStyle 822 stroke-dasharray: 4 2
+  concept_claim_check -->|references| concept_message_queue
+  linkStyle 823 stroke-dasharray: 4 2
+  concept_claim_check -->|references| concept_webhook
+  linkStyle 824 stroke-dasharray: 4 2
+  concept_command -->|references| concept_cqrs
+  linkStyle 825 stroke-dasharray: 4 2
+  concept_command -->|references| concept_event_driven
+  linkStyle 826 stroke-dasharray: 4 2
+  concept_command -->|references| concept_workflow_engine
+  linkStyle 827 stroke-dasharray: 4 2
+  concept_competing_consumers -->|references| concept_dead_letter
+  linkStyle 828 stroke-dasharray: 4 2
+  concept_competing_consumers -->|references| concept_outbox
+  linkStyle 829 stroke-dasharray: 4 2
+  concept_competing_consumers -->|references| concept_worker_pool
+  linkStyle 830 stroke-dasharray: 4 2
+  concept_component_slot -->|references| concept_component
+  linkStyle 831 stroke-dasharray: 4 2
+  concept_composite -->|references| concept_component
+  linkStyle 832 stroke-dasharray: 4 2
+  concept_composite -->|references| concept_graph
+  linkStyle 833 stroke-dasharray: 4 2
+  concept_composite -->|references| concept_visitor
+  linkStyle 834 stroke-dasharray: 4 2
+  concept_config_management -->|references| concept_config_sprawl
+  linkStyle 835 stroke-dasharray: 4 2
+  concept_config_management -->|references| concept_feature_flag
+  linkStyle 836 stroke-dasharray: 4 2
+  concept_config_management -->|references| concept_secret_management
+  linkStyle 837 stroke-dasharray: 4 2
+  concept_config_sprawl -->|references| concept_config_management
+  linkStyle 838 stroke-dasharray: 4 2
+  concept_connection_pooling -->|references| concept_bulkhead
+  linkStyle 839 stroke-dasharray: 4 2
+  concept_connection_pooling -->|references| concept_distributed_lock
+  linkStyle 840 stroke-dasharray: 4 2
+  concept_connection_pooling -->|references| concept_health_check
+  linkStyle 841 stroke-dasharray: 4 2
+  concept_content_negotiation -->|references| concept_graphql
+  linkStyle 842 stroke-dasharray: 4 2
+  concept_content_negotiation -->|references| concept_rest
+  linkStyle 843 stroke-dasharray: 4 2
+  concept_content_negotiation -->|references| concept_server_route_registration
+  linkStyle 844 stroke-dasharray: 4 2
+  concept_contract_testing -->|references| concept_api_gateway
+  linkStyle 845 stroke-dasharray: 4 2
+  concept_contract_testing -->|references| concept_grpc
+  linkStyle 846 stroke-dasharray: 4 2
+  concept_contract_testing -->|references| concept_rest
+  linkStyle 847 stroke-dasharray: 4 2
+  concept_control_plane -->|references| concept_data_plane
+  linkStyle 848 stroke-dasharray: 4 2
+  concept_control_plane -->|references| concept_service_discovery
+  linkStyle 849 stroke-dasharray: 4 2
+  concept_control_plane -->|references| concept_service_mesh
+  linkStyle 850 stroke-dasharray: 4 2
+  concept_conversation_thread -->|references| concept_pagination
+  linkStyle 851 stroke-dasharray: 4 2
+  concept_conversation_thread -->|references| concept_pub_sub
+  linkStyle 852 stroke-dasharray: 4 2
+  concept_conversation_thread -->|references| concept_websocket
+  linkStyle 853 stroke-dasharray: 4 2
+  concept_copy_paste_programming -->|references| concept_cargo_cult
+  linkStyle 854 stroke-dasharray: 4 2
+  concept_copy_paste_programming -->|references| concept_fixture_builder
+  linkStyle 855 stroke-dasharray: 4 2
+  concept_copy_paste_programming -->|references| concept_shotgun_surgery
+  linkStyle 856 stroke-dasharray: 4 2
+  concept_correlation_id -->|references| concept_distributed_tracing
+  linkStyle 857 stroke-dasharray: 4 2
+  concept_cors -->|references| concept_api_gateway
+  linkStyle 858 stroke-dasharray: 4 2
+  concept_cors -->|references| concept_oauth_oidc
+  linkStyle 859 stroke-dasharray: 4 2
+  concept_cors -->|references| concept_token_auth
+  linkStyle 860 stroke-dasharray: 4 2
+  concept_cqrs -->|references| concept_change_data_capture
+  linkStyle 861 stroke-dasharray: 4 2
+  concept_cqrs -->|references| concept_event_sourcing
+  linkStyle 862 stroke-dasharray: 4 2
+  concept_cqrs -->|references| concept_search_index
+  linkStyle 863 stroke-dasharray: 4 2
+  concept_data_mapper -->|references| concept_active_record
+  linkStyle 864 stroke-dasharray: 4 2
+  concept_data_mapper -->|references| concept_repository
+  linkStyle 865 stroke-dasharray: 4 2
+  concept_data_mapper -->|references| concept_unit_of_work
+  linkStyle 866 stroke-dasharray: 4 2
+  concept_data_pipeline -->|references| concept_batch_processing
+  linkStyle 867 stroke-dasharray: 4 2
+  concept_data_pipeline -->|references| concept_etl
+  linkStyle 868 stroke-dasharray: 4 2
+  concept_data_pipeline -->|references| concept_stream_to_store
+  linkStyle 869 stroke-dasharray: 4 2
+  concept_data_plane -->|references| concept_control_plane
+  linkStyle 870 stroke-dasharray: 4 2
+  concept_data_plane -->|references| concept_service_mesh
+  linkStyle 871 stroke-dasharray: 4 2
+  concept_data_plane -->|references| concept_sidecar
+  linkStyle 872 stroke-dasharray: 4 2
+  concept_database_migration -->|references| concept_config_management
+  linkStyle 873 stroke-dasharray: 4 2
+  concept_database_migration -->|references| concept_database_per_service
+  linkStyle 874 stroke-dasharray: 4 2
+  concept_database_migration -->|references| concept_schema_registry
+  linkStyle 875 stroke-dasharray: 4 2
+  concept_database_per_service -->|references| concept_bounded_context
+  linkStyle 876 stroke-dasharray: 4 2
+  concept_database_per_service -->|references| concept_microservices
+  linkStyle 877 stroke-dasharray: 4 2
+  concept_database_per_service -->|references| concept_shared_database
+  linkStyle 878 stroke-dasharray: 4 2
+  concept_ddd -->|references| concept_aggregate
+  linkStyle 879 stroke-dasharray: 4 2
+  concept_ddd -->|references| concept_repository
+  linkStyle 880 stroke-dasharray: 4 2
+  concept_ddd -->|references| concept_value_object
+  linkStyle 881 stroke-dasharray: 4 2
+  concept_dead_letter -->|references| concept_claim_check
+  linkStyle 882 stroke-dasharray: 4 2
+  concept_dead_letter -->|references| concept_competing_consumers
+  linkStyle 883 stroke-dasharray: 4 2
+  concept_dead_letter -->|references| concept_retry
+  linkStyle 884 stroke-dasharray: 4 2
+  concept_deadlock -->|references| concept_distributed_lock
+  linkStyle 885 stroke-dasharray: 4 2
+  concept_deadlock -->|references| concept_race_condition
+  linkStyle 886 stroke-dasharray: 4 2
+  concept_deadlock -->|references| concept_read_write_lock
+  linkStyle 887 stroke-dasharray: 4 2
+  concept_decorator -->|references| concept_proxy
+  linkStyle 888 stroke-dasharray: 4 2
+  concept_deep_nesting -->|references| concept_callback_hell
+  linkStyle 889 stroke-dasharray: 4 2
+  concept_deep_nesting -->|references| concept_strategy
+  linkStyle 890 stroke-dasharray: 4 2
+  concept_deep_nesting -->|references| concept_train_wreck
+  linkStyle 891 stroke-dasharray: 4 2
+  concept_distributed_lock -->|references| concept_idempotent_consumer
+  linkStyle 892 stroke-dasharray: 4 2
+  concept_distributed_lock -->|references| concept_leader_election
+  linkStyle 893 stroke-dasharray: 4 2
+  concept_distributed_lock -->|references| concept_optimistic_locking
+  linkStyle 894 stroke-dasharray: 4 2
+  concept_distributed_monolith -->|references| concept_api_gateway
+  linkStyle 895 stroke-dasharray: 4 2
+  concept_distributed_monolith -->|references| concept_microservices
+  linkStyle 896 stroke-dasharray: 4 2
+  concept_distributed_monolith -->|references| concept_shared_database
+  linkStyle 897 stroke-dasharray: 4 2
+  concept_distributed_tracing -->|references| concept_correlation_id
+  linkStyle 898 stroke-dasharray: 4 2
+  concept_distributed_tracing -->|references| concept_metrics_instrumentation
+  linkStyle 899 stroke-dasharray: 4 2
+  concept_distributed_tracing -->|references| concept_structured_logging
+  linkStyle 900 stroke-dasharray: 4 2
+  concept_dual_writes -->|references| concept_change_data_capture
+  linkStyle 901 stroke-dasharray: 4 2
+  concept_dual_writes -->|references| concept_outbox
+  linkStyle 902 stroke-dasharray: 4 2
+  concept_entity_component_system -->|references| concept_component
+  linkStyle 903 stroke-dasharray: 4 2
+  concept_entity_component_system -->|references| concept_game_loop
+  linkStyle 904 stroke-dasharray: 4 2
+  concept_entity_component_system -->|references| concept_tick_simulation
+  linkStyle 905 stroke-dasharray: 4 2
+  concept_environment_parity_gap -->|references| concept_config_management
+  linkStyle 906 stroke-dasharray: 4 2
+  concept_environment_parity_gap -->|references| concept_flaky_tests
+  linkStyle 907 stroke-dasharray: 4 2
+  concept_environment_parity_gap -->|references| concept_infrastructure_as_code
+  linkStyle 908 stroke-dasharray: 4 2
+  concept_error_boundary -->|references| concept_component
+  linkStyle 909 stroke-dasharray: 4 2
+  concept_error_boundary -->|references| concept_graceful_degradation
+  linkStyle 910 stroke-dasharray: 4 2
+  concept_error_boundary -->|references| concept_suspense_boundary
+  linkStyle 911 stroke-dasharray: 4 2
+  concept_error_code_returns -->|references| concept_magic_numbers
+  linkStyle 912 stroke-dasharray: 4 2
+  concept_error_code_returns -->|references| concept_result_type
+  linkStyle 913 stroke-dasharray: 4 2
+  concept_error_code_returns -->|references| concept_swallowed_exception
+  linkStyle 914 stroke-dasharray: 4 2
+  concept_etl -->|references| concept_batch_processing
+  linkStyle 915 stroke-dasharray: 4 2
+  concept_etl -->|references| concept_data_pipeline
+  linkStyle 916 stroke-dasharray: 4 2
+  concept_etl -->|references| concept_schema_on_read
+  linkStyle 917 stroke-dasharray: 4 2
+  concept_event_carried_state -->|references| concept_change_data_capture
+  linkStyle 918 stroke-dasharray: 4 2
+  concept_event_carried_state -->|references| concept_event_driven
+  linkStyle 919 stroke-dasharray: 4 2
+  concept_event_carried_state -->|references| concept_event_notification
+  linkStyle 920 stroke-dasharray: 4 2
+  concept_event_driven -->|references| concept_choreography
+  linkStyle 921 stroke-dasharray: 4 2
+  concept_event_driven -->|references| concept_event_sourcing
+  linkStyle 922 stroke-dasharray: 4 2
+  concept_event_driven -->|references| concept_pub_sub
+  linkStyle 923 stroke-dasharray: 4 2
+  concept_event_log -->|references| concept_audit_logging
+  linkStyle 924 stroke-dasharray: 4 2
+  concept_event_log -->|references| concept_event_sourcing
+  linkStyle 925 stroke-dasharray: 4 2
+  concept_event_log -->|references| concept_ledger
+  linkStyle 926 stroke-dasharray: 4 2
+  concept_event_notification -->|references| concept_event_carried_state
+  linkStyle 927 stroke-dasharray: 4 2
+  concept_event_notification -->|references| concept_event_driven
+  linkStyle 928 stroke-dasharray: 4 2
+  concept_event_notification -->|references| concept_webhook
+  linkStyle 929 stroke-dasharray: 4 2
+  concept_event_sourcing -->|references| concept_event_driven
+  linkStyle 930 stroke-dasharray: 4 2
+  concept_event_sourcing -->|references| concept_ledger
+  linkStyle 931 stroke-dasharray: 4 2
+  concept_event_sourcing -->|references| concept_versioned_document
+  linkStyle 932 stroke-dasharray: 4 2
+  concept_eventual_consistency -->|references| concept_cqrs
+  linkStyle 933 stroke-dasharray: 4 2
+  concept_eventual_consistency -->|references| concept_dual_writes
+  linkStyle 934 stroke-dasharray: 4 2
+  concept_eventual_consistency -->|references| concept_optimistic_update
+  linkStyle 935 stroke-dasharray: 4 2
+  concept_exactly_once_semantics -->|references| concept_at_least_once_delivery
+  linkStyle 936 stroke-dasharray: 4 2
+  concept_exactly_once_semantics -->|references| concept_idempotent_consumer
+  linkStyle 937 stroke-dasharray: 4 2
+  concept_exactly_once_semantics -->|references| concept_outbox
+  linkStyle 938 stroke-dasharray: 4 2
+  concept_experiment_framework -->|references| concept_feature_flag
+  linkStyle 939 stroke-dasharray: 4 2
+  concept_experiment_framework -->|references| concept_metrics_instrumentation
+  linkStyle 940 stroke-dasharray: 4 2
+  concept_experiment_framework -->|references| concept_model_registry
+  linkStyle 941 stroke-dasharray: 4 2
+  concept_facade -->|references| concept_adapter
+  linkStyle 942 stroke-dasharray: 4 2
+  concept_facade -->|references| concept_anti_corruption_layer
+  linkStyle 943 stroke-dasharray: 4 2
+  concept_facade -->|references| concept_gateway_backends
+  linkStyle 944 stroke-dasharray: 4 2
+  concept_factory -->|references| concept_abstract_factory
+  linkStyle 945 stroke-dasharray: 4 2
+  concept_factory -->|references| concept_builder
+  linkStyle 946 stroke-dasharray: 4 2
+  concept_factory -->|references| concept_strategy
+  linkStyle 947 stroke-dasharray: 4 2
+  concept_failure_cascade -->|references| concept_bulkhead
+  linkStyle 948 stroke-dasharray: 4 2
+  concept_failure_cascade -->|references| concept_circuit_breaker
+  linkStyle 949 stroke-dasharray: 4 2
+  concept_failure_cascade -->|references| concept_graceful_degradation
+  linkStyle 950 stroke-dasharray: 4 2
+  concept_fallback -->|references| concept_cache_aside
+  linkStyle 951 stroke-dasharray: 4 2
+  concept_fallback -->|references| concept_circuit_breaker
+  linkStyle 952 stroke-dasharray: 4 2
+  concept_fallback -->|references| concept_graceful_degradation
+  linkStyle 953 stroke-dasharray: 4 2
+  concept_fan_in -->|references| concept_data_pipeline
+  linkStyle 954 stroke-dasharray: 4 2
+  concept_fan_in -->|references| concept_mapreduce
+  linkStyle 955 stroke-dasharray: 4 2
+  concept_fan_in -->|references| concept_scatter_gather
+  linkStyle 956 stroke-dasharray: 4 2
+  concept_fan_out -->|references| concept_pub_sub
+  linkStyle 957 stroke-dasharray: 4 2
+  concept_fan_out -->|references| concept_scatter_gather
+  linkStyle 958 stroke-dasharray: 4 2
+  concept_fan_out -->|references| concept_webhook
+  linkStyle 959 stroke-dasharray: 4 2
+  concept_feature_envy -->|references| concept_data_mapper
+  linkStyle 960 stroke-dasharray: 4 2
+  concept_feature_envy -->|references| concept_god_object
+  linkStyle 961 stroke-dasharray: 4 2
+  concept_feature_envy -->|references| concept_primitive_obsession
+  linkStyle 962 stroke-dasharray: 4 2
+  concept_feature_flag -->|references| concept_blue_green
+  linkStyle 963 stroke-dasharray: 4 2
+  concept_feature_flag -->|references| concept_canary
+  linkStyle 964 stroke-dasharray: 4 2
+  concept_feature_flag -->|references| concept_config_management
+  linkStyle 965 stroke-dasharray: 4 2
+  concept_feature_store -->|references| concept_model_registry
+  linkStyle 966 stroke-dasharray: 4 2
+  concept_feature_store -->|references| concept_stream_to_store
+  linkStyle 967 stroke-dasharray: 4 2
+  concept_feature_store -->|references| concept_training_pipeline
+  linkStyle 968 stroke-dasharray: 4 2
+  concept_fire_and_forget -->|references| concept_outbox
+  linkStyle 969 stroke-dasharray: 4 2
+  concept_fixture_builder -->|references| concept_builder
+  linkStyle 970 stroke-dasharray: 4 2
+  concept_fixture_builder -->|references| concept_property_testing
+  linkStyle 971 stroke-dasharray: 4 2
+  concept_fixture_builder -->|references| concept_test_doubles
+  linkStyle 972 stroke-dasharray: 4 2
+  concept_flaky_tests -->|references| concept_environment_parity_gap
+  linkStyle 973 stroke-dasharray: 4 2
+  concept_flaky_tests -->|references| concept_snapshot_testing
+  linkStyle 974 stroke-dasharray: 4 2
+  concept_flaky_tests -->|references| concept_test_pollution
+  linkStyle 975 stroke-dasharray: 4 2
+  concept_flux -->|references| concept_component
+  linkStyle 976 stroke-dasharray: 4 2
+  concept_flux -->|references| concept_prop_drilling
+  linkStyle 977 stroke-dasharray: 4 2
+  concept_flux -->|references| concept_reactive_store
+  linkStyle 978 stroke-dasharray: 4 2
+  concept_flyweight -->|references| concept_object_pool
+  linkStyle 979 stroke-dasharray: 4 2
+  concept_flyweight -->|references| concept_prototype
+  linkStyle 980 stroke-dasharray: 4 2
+  concept_flyweight -->|references| concept_value_object
+  linkStyle 981 stroke-dasharray: 4 2
+  concept_form_binding -->|references| concept_component
+  linkStyle 982 stroke-dasharray: 4 2
+  concept_form_binding -->|references| concept_input_validation
+  linkStyle 983 stroke-dasharray: 4 2
+  concept_form_binding -->|references| concept_reactive_store
+  linkStyle 984 stroke-dasharray: 4 2
+  concept_future_promise -->|references| concept_callback_hell
+  linkStyle 985 stroke-dasharray: 4 2
+  concept_future_promise -->|references| concept_reactor
+  linkStyle 986 stroke-dasharray: 4 2
+  concept_future_promise -->|references| concept_request_reply
+  linkStyle 987 stroke-dasharray: 4 2
+  concept_game_loop -->|references| concept_entity_component_system
+  linkStyle 988 stroke-dasharray: 4 2
+  concept_game_loop -->|references| concept_reactor
+  linkStyle 989 stroke-dasharray: 4 2
+  concept_game_loop -->|references| concept_tick_simulation
+  linkStyle 990 stroke-dasharray: 4 2
+  concept_gateway_backends -->|references| concept_api_gateway
+  linkStyle 991 stroke-dasharray: 4 2
+  concept_gateway_backends -->|references| concept_bff
+  linkStyle 992 stroke-dasharray: 4 2
+  concept_gateway_backends -->|references| concept_microservices
+  linkStyle 993 stroke-dasharray: 4 2
+  concept_gitops -->|references| concept_config_management
+  linkStyle 994 stroke-dasharray: 4 2
+  concept_gitops -->|references| concept_immutable_infra
+  linkStyle 995 stroke-dasharray: 4 2
+  concept_gitops -->|references| concept_infrastructure_as_code
+  linkStyle 996 stroke-dasharray: 4 2
+  concept_god_endpoint -->|references| concept_bff
+  linkStyle 997 stroke-dasharray: 4 2
+  concept_god_endpoint -->|references| concept_god_object
+  linkStyle 998 stroke-dasharray: 4 2
+  concept_god_endpoint -->|references| concept_rest
+  linkStyle 999 stroke-dasharray: 4 2
+  concept_god_object -->|references| concept_big_ball_of_mud
+  linkStyle 1000 stroke-dasharray: 4 2
+  concept_god_object -->|references| concept_feature_envy
+  linkStyle 1001 stroke-dasharray: 4 2
+  concept_god_object -->|references| concept_god_endpoint
+  linkStyle 1002 stroke-dasharray: 4 2
+  concept_golden_hammer -->|references| concept_cargo_cult
+  linkStyle 1003 stroke-dasharray: 4 2
+  concept_golden_hammer -->|references| concept_premature_optimization
+  linkStyle 1004 stroke-dasharray: 4 2
+  concept_golden_hammer -->|references| concept_reinventing_the_wheel
+  linkStyle 1005 stroke-dasharray: 4 2
+  concept_graceful_degradation -->|references| concept_circuit_breaker
+  linkStyle 1006 stroke-dasharray: 4 2
+  concept_graceful_degradation -->|references| concept_fallback
+  linkStyle 1007 stroke-dasharray: 4 2
+  concept_graceful_degradation -->|references| concept_health_check
+  linkStyle 1008 stroke-dasharray: 4 2
+  concept_graph -->|references| concept_pipeline_filter
+  linkStyle 1009 stroke-dasharray: 4 2
+  concept_graph -->|references| concept_workflow_engine
+  linkStyle 1010 stroke-dasharray: 4 2
+  concept_graphql -->|references| concept_pagination
+  linkStyle 1011 stroke-dasharray: 4 2
+  concept_graphql -->|references| concept_rest
+  linkStyle 1012 stroke-dasharray: 4 2
+  concept_grpc -->|references| concept_rest
+  linkStyle 1013 stroke-dasharray: 4 2
+  concept_grpc -->|references| concept_server_route_registration
+  linkStyle 1014 stroke-dasharray: 4 2
+  concept_hardcoded_credentials -->|references| concept_secret_management
+  linkStyle 1015 stroke-dasharray: 4 2
+  concept_hardcoded_urls -->|references| concept_config_management
+  linkStyle 1016 stroke-dasharray: 4 2
+  concept_health_check -->|references| concept_canary
+  linkStyle 1017 stroke-dasharray: 4 2
+  concept_health_check -->|references| concept_graceful_degradation
+  linkStyle 1018 stroke-dasharray: 4 2
+  concept_health_check -->|references| concept_leader_election
+  linkStyle 1019 stroke-dasharray: 4 2
+  concept_hexagonal -->|references| concept_adapter
+  linkStyle 1020 stroke-dasharray: 4 2
+  concept_hexagonal -->|references| concept_anti_corruption_layer
+  linkStyle 1021 stroke-dasharray: 4 2
+  concept_hexagonal -->|references| concept_layered
+  linkStyle 1022 stroke-dasharray: 4 2
+  concept_hidden_side_effects -->|references| concept_command
+  linkStyle 1023 stroke-dasharray: 4 2
+  concept_hidden_side_effects -->|references| concept_log_and_throw
+  linkStyle 1024 stroke-dasharray: 4 2
+  concept_hidden_side_effects -->|references| concept_query_object
+  linkStyle 1025 stroke-dasharray: 4 2
+  concept_hydration -->|references| concept_lazy_loading
+  linkStyle 1026 stroke-dasharray: 4 2
+  concept_hydration -->|references| concept_server_prefetch
+  linkStyle 1027 stroke-dasharray: 4 2
+  concept_hydration -->|references| concept_suspense_boundary
+  linkStyle 1028 stroke-dasharray: 4 2
+  concept_ice_cream_cone -->|references| concept_contract_testing
+  linkStyle 1029 stroke-dasharray: 4 2
+  concept_ice_cream_cone -->|references| concept_fixture_builder
+  linkStyle 1030 stroke-dasharray: 4 2
+  concept_ice_cream_cone -->|references| concept_flaky_tests
+  linkStyle 1031 stroke-dasharray: 4 2
+  concept_idempotent_consumer -->|references| concept_dead_letter
+  linkStyle 1032 stroke-dasharray: 4 2
+  concept_idempotent_consumer -->|references| concept_inbox
+  linkStyle 1033 stroke-dasharray: 4 2
+  concept_idempotent_consumer -->|references| concept_retry
+  linkStyle 1034 stroke-dasharray: 4 2
+  concept_immutable_infra -->|references| concept_blue_green
+  linkStyle 1035 stroke-dasharray: 4 2
+  concept_immutable_infra -->|references| concept_gitops
+  linkStyle 1036 stroke-dasharray: 4 2
+  concept_immutable_infra -->|references| concept_infrastructure_as_code
+  linkStyle 1037 stroke-dasharray: 4 2
+  concept_inbox -->|references| concept_dead_letter
+  linkStyle 1038 stroke-dasharray: 4 2
+  concept_inbox -->|references| concept_idempotent_consumer
+  linkStyle 1039 stroke-dasharray: 4 2
+  concept_inbox -->|references| concept_outbox
+  linkStyle 1040 stroke-dasharray: 4 2
+  concept_inconsistent_naming -->|references| concept_magic_numbers
+  linkStyle 1041 stroke-dasharray: 4 2
+  concept_inconsistent_naming -->|references| concept_misleading_names
+  linkStyle 1042 stroke-dasharray: 4 2
+  concept_inconsistent_naming -->|references| concept_stringly_typed
+  linkStyle 1043 stroke-dasharray: 4 2
+  concept_infrastructure_as_code -->|references| concept_config_management
+  linkStyle 1044 stroke-dasharray: 4 2
+  concept_infrastructure_as_code -->|references| concept_gitops
+  linkStyle 1045 stroke-dasharray: 4 2
+  concept_infrastructure_as_code -->|references| concept_immutable_infra
+  linkStyle 1046 stroke-dasharray: 4 2
+  concept_input_validation -->|references| concept_cors
+  linkStyle 1047 stroke-dasharray: 4 2
+  concept_input_validation -->|references| concept_insecure_deserialization
+  linkStyle 1048 stroke-dasharray: 4 2
+  concept_input_validation -->|references| concept_route_guard
+  linkStyle 1049 stroke-dasharray: 4 2
+  concept_insecure_deserialization -->|references| concept_input_validation
+  linkStyle 1050 stroke-dasharray: 4 2
+  concept_insecure_deserialization -->|references| concept_route_guard
+  linkStyle 1051 stroke-dasharray: 4 2
+  concept_insecure_deserialization -->|references| concept_sql_injection
+  linkStyle 1052 stroke-dasharray: 4 2
+  concept_intermediate_representation -->|references| concept_ast
+  linkStyle 1053 stroke-dasharray: 4 2
+  concept_intermediate_representation -->|references| concept_lexer_parser
+  linkStyle 1054 stroke-dasharray: 4 2
+  concept_intermediate_representation -->|references| concept_visitor
+  linkStyle 1055 stroke-dasharray: 4 2
+  concept_iterator -->|references| concept_composite
+  linkStyle 1056 stroke-dasharray: 4 2
+  concept_iterator -->|references| concept_stream_to_store
+  linkStyle 1057 stroke-dasharray: 4 2
+  concept_iterator -->|references| concept_visitor
+  linkStyle 1058 stroke-dasharray: 4 2
+  concept_key_value_model -->|references| concept_cache_aside
+  linkStyle 1059 stroke-dasharray: 4 2
+  concept_key_value_model -->|references| concept_lru_cache
+  linkStyle 1060 stroke-dasharray: 4 2
+  concept_key_value_model -->|references| concept_read_through
+  linkStyle 1061 stroke-dasharray: 4 2
+  concept_lava_flow -->|references| concept_copy_paste_programming
+  linkStyle 1062 stroke-dasharray: 4 2
+  concept_lava_flow -->|references| concept_feature_flag
+  linkStyle 1063 stroke-dasharray: 4 2
+  concept_lava_flow -->|references| concept_shotgun_surgery
+  linkStyle 1064 stroke-dasharray: 4 2
+  concept_layered -->|references| concept_middleware
+  linkStyle 1065 stroke-dasharray: 4 2
+  concept_layered -->|references| concept_mvc
+  linkStyle 1066 stroke-dasharray: 4 2
+  concept_layered -->|references| concept_mvvm
+  linkStyle 1067 stroke-dasharray: 4 2
+  concept_lazy_loading -->|references| concept_micro_frontend
+  linkStyle 1068 stroke-dasharray: 4 2
+  concept_lazy_loading -->|references| concept_server_prefetch
+  linkStyle 1069 stroke-dasharray: 4 2
+  concept_lazy_loading -->|references| concept_suspense_boundary
+  linkStyle 1070 stroke-dasharray: 4 2
+  concept_leader_election -->|references| concept_distributed_lock
+  linkStyle 1071 stroke-dasharray: 4 2
+  concept_leader_election -->|references| concept_health_check
+  linkStyle 1072 stroke-dasharray: 4 2
+  concept_leader_election -->|references| concept_scheduler
+  linkStyle 1073 stroke-dasharray: 4 2
+  concept_leaky_abstraction -->|references| concept_adapter
+  linkStyle 1074 stroke-dasharray: 4 2
+  concept_leaky_abstraction -->|references| concept_data_mapper
+  linkStyle 1075 stroke-dasharray: 4 2
+  concept_leaky_abstraction -->|references| concept_hexagonal
+  linkStyle 1076 stroke-dasharray: 4 2
+  concept_ledger -->|references| concept_audit_logging
+  linkStyle 1077 stroke-dasharray: 4 2
+  concept_ledger -->|references| concept_event_sourcing
+  linkStyle 1078 stroke-dasharray: 4 2
+  concept_ledger -->|references| concept_saga
+  linkStyle 1079 stroke-dasharray: 4 2
+  concept_lexer_parser -->|references| concept_ast
+  linkStyle 1080 stroke-dasharray: 4 2
+  concept_lexer_parser -->|references| concept_intermediate_representation
+  linkStyle 1081 stroke-dasharray: 4 2
+  concept_lexer_parser -->|references| concept_visitor
+  linkStyle 1082 stroke-dasharray: 4 2
+  concept_load_balancer -->|references| concept_api_gateway
+  linkStyle 1083 stroke-dasharray: 4 2
+  concept_load_balancer -->|references| concept_rate_limiting
+  linkStyle 1084 stroke-dasharray: 4 2
+  concept_load_balancer -->|references| concept_service_discovery
+  linkStyle 1085 stroke-dasharray: 4 2
+  concept_log_and_throw -->|references| concept_correlation_id
+  linkStyle 1086 stroke-dasharray: 4 2
+  concept_log_and_throw -->|references| concept_structured_logging
+  linkStyle 1087 stroke-dasharray: 4 2
+  concept_log_and_throw -->|references| concept_swallowed_exception
+  linkStyle 1088 stroke-dasharray: 4 2
+  concept_log_spam -->|references| concept_metrics_instrumentation
+  linkStyle 1089 stroke-dasharray: 4 2
+  concept_log_spam -->|references| concept_missing_log_context
+  linkStyle 1090 stroke-dasharray: 4 2
+  concept_log_spam -->|references| concept_structured_logging
+  linkStyle 1091 stroke-dasharray: 4 2
+  concept_long_polling -->|references| concept_polling_flow
+  linkStyle 1092 stroke-dasharray: 4 2
+  concept_long_polling -->|references| concept_server_sent_events
+  linkStyle 1093 stroke-dasharray: 4 2
+  concept_long_polling -->|references| concept_websocket
+  linkStyle 1094 stroke-dasharray: 4 2
+  concept_long_transactions -->|references| concept_distributed_lock
+  linkStyle 1095 stroke-dasharray: 4 2
+  concept_long_transactions -->|references| concept_outbox
+  linkStyle 1096 stroke-dasharray: 4 2
+  concept_long_transactions -->|references| concept_unit_of_work
+  linkStyle 1097 stroke-dasharray: 4 2
+  concept_lru_cache -->|references| concept_cache_aside
+  linkStyle 1098 stroke-dasharray: 4 2
+  concept_lru_cache -->|references| concept_key_value_model
+  linkStyle 1099 stroke-dasharray: 4 2
+  concept_lru_cache -->|references| concept_read_through
+  linkStyle 1100 stroke-dasharray: 4 2
+  concept_magic_numbers -->|references| concept_boolean_blindness
+  linkStyle 1101 stroke-dasharray: 4 2
+  concept_magic_numbers -->|references| concept_inconsistent_naming
+  linkStyle 1102 stroke-dasharray: 4 2
+  concept_magic_numbers -->|references| concept_stringly_typed
+  linkStyle 1103 stroke-dasharray: 4 2
+  concept_mapreduce -->|references| concept_data_pipeline
+  linkStyle 1104 stroke-dasharray: 4 2
+  concept_mapreduce -->|references| concept_fan_in
+  linkStyle 1105 stroke-dasharray: 4 2
+  concept_mapreduce -->|references| concept_fan_out
+  linkStyle 1106 stroke-dasharray: 4 2
+  concept_materialized_view -->|references| concept_cache_aside
+  linkStyle 1107 stroke-dasharray: 4 2
+  concept_materialized_view -->|references| concept_cqrs
+  linkStyle 1108 stroke-dasharray: 4 2
+  concept_materialized_view -->|references| concept_search_index
+  linkStyle 1109 stroke-dasharray: 4 2
+  concept_mediator -->|references| concept_command
+  linkStyle 1110 stroke-dasharray: 4 2
+  concept_mediator -->|references| concept_observer
+  linkStyle 1111 stroke-dasharray: 4 2
+  concept_mediator -->|references| concept_workflow_engine
+  linkStyle 1112 stroke-dasharray: 4 2
+  concept_memento -->|references| concept_command
+  linkStyle 1113 stroke-dasharray: 4 2
+  concept_memento -->|references| concept_event_sourcing
+  linkStyle 1114 stroke-dasharray: 4 2
+  concept_memento -->|references| concept_snapshot_testing
+  linkStyle 1115 stroke-dasharray: 4 2
+  concept_memory_leak -->|references| concept_bulkhead
+  linkStyle 1116 stroke-dasharray: 4 2
+  concept_memory_leak -->|references| concept_cache_aside
+  linkStyle 1117 stroke-dasharray: 4 2
+  concept_memory_leak -->|references| concept_event_driven
+  linkStyle 1118 stroke-dasharray: 4 2
+  concept_message_queue -->|references| concept_claim_check
+  linkStyle 1119 stroke-dasharray: 4 2
+  concept_message_queue -->|references| concept_competing_consumers
+  linkStyle 1120 stroke-dasharray: 4 2
+  concept_message_queue -->|references| concept_dead_letter
+  linkStyle 1121 stroke-dasharray: 4 2
+  concept_metric_cardinality_explosion -->|references| concept_distributed_tracing
+  linkStyle 1122 stroke-dasharray: 4 2
+  concept_metric_cardinality_explosion -->|references| concept_metrics_instrumentation
+  linkStyle 1123 stroke-dasharray: 4 2
+  concept_metric_cardinality_explosion -->|references| concept_structured_logging
+  linkStyle 1124 stroke-dasharray: 4 2
+  concept_metrics_instrumentation -->|references| concept_distributed_tracing
+  linkStyle 1125 stroke-dasharray: 4 2
+  concept_metrics_instrumentation -->|references| concept_health_check
+  linkStyle 1126 stroke-dasharray: 4 2
+  concept_metrics_instrumentation -->|references| concept_structured_logging
+  linkStyle 1127 stroke-dasharray: 4 2
+  concept_micro_frontend -->|references| concept_bff
+  linkStyle 1128 stroke-dasharray: 4 2
+  concept_micro_frontend -->|references| concept_component
+  linkStyle 1129 stroke-dasharray: 4 2
+  concept_micro_frontend -->|references| concept_modular_monolith
+  linkStyle 1130 stroke-dasharray: 4 2
+  concept_microservices -->|references| concept_api_gateway
+  linkStyle 1131 stroke-dasharray: 4 2
+  concept_microservices -->|references| concept_distributed_monolith
+  linkStyle 1132 stroke-dasharray: 4 2
+  concept_microservices -->|references| concept_event_driven
+  linkStyle 1133 stroke-dasharray: 4 2
+  concept_misleading_names -->|references| concept_hidden_side_effects
+  linkStyle 1134 stroke-dasharray: 4 2
+  concept_misleading_names -->|references| concept_inconsistent_naming
+  linkStyle 1135 stroke-dasharray: 4 2
+  concept_misleading_names -->|references| concept_leaky_abstraction
+  linkStyle 1136 stroke-dasharray: 4 2
+  concept_missing_log_context -->|references| concept_structured_logging
+  linkStyle 1137 stroke-dasharray: 4 2
+  concept_model_registry -->|references| concept_experiment_framework
+  linkStyle 1138 stroke-dasharray: 4 2
+  concept_model_registry -->|references| concept_feature_store
+  linkStyle 1139 stroke-dasharray: 4 2
+  concept_model_registry -->|references| concept_training_pipeline
+  linkStyle 1140 stroke-dasharray: 4 2
+  concept_modular_monolith -->|references| concept_hexagonal
+  linkStyle 1141 stroke-dasharray: 4 2
+  concept_modular_monolith -->|references| concept_layered
+  linkStyle 1142 stroke-dasharray: 4 2
+  concept_modular_monolith -->|references| concept_microservices
+  linkStyle 1143 stroke-dasharray: 4 2
+  concept_monad -->|references| concept_future_promise
+  linkStyle 1144 stroke-dasharray: 4 2
+  concept_monad -->|references| concept_pipeline_filter
+  linkStyle 1145 stroke-dasharray: 4 2
+  concept_monad -->|references| concept_result_type
+  linkStyle 1146 stroke-dasharray: 4 2
+  concept_mtls -->|references| concept_secret_management
+  linkStyle 1147 stroke-dasharray: 4 2
+  concept_mtls -->|references| concept_service_mesh
+  linkStyle 1148 stroke-dasharray: 4 2
+  concept_mtls -->|references| concept_sidecar_mesh
+  linkStyle 1149 stroke-dasharray: 4 2
+  concept_multi_tenant -->|references| concept_rate_limiting
+  linkStyle 1150 stroke-dasharray: 4 2
+  concept_multi_tenant -->|references| concept_rbac
+  linkStyle 1151 stroke-dasharray: 4 2
+  concept_multi_tenant -->|references| concept_sharding
+  linkStyle 1152 stroke-dasharray: 4 2
+  concept_n_plus_one -->|references| concept_batch_loader
+  linkStyle 1153 stroke-dasharray: 4 2
+  concept_null_object -->|references| concept_result_type
+  linkStyle 1154 stroke-dasharray: 4 2
+  concept_null_object -->|references| concept_singleton
+  linkStyle 1155 stroke-dasharray: 4 2
+  concept_null_object -->|references| concept_strategy
+  linkStyle 1156 stroke-dasharray: 4 2
+  concept_object_pool -->|references| concept_connection_pooling
+  linkStyle 1157 stroke-dasharray: 4 2
+  concept_object_pool -->|references| concept_flyweight
+  linkStyle 1158 stroke-dasharray: 4 2
+  concept_object_pool -->|references| concept_worker_pool
+  linkStyle 1159 stroke-dasharray: 4 2
+  concept_observer -->|references| concept_event_driven
+  linkStyle 1160 stroke-dasharray: 4 2
+  concept_observer -->|references| concept_pub_sub
+  linkStyle 1161 stroke-dasharray: 4 2
+  concept_optimistic_locking -->|references| concept_aggregate
+  linkStyle 1162 stroke-dasharray: 4 2
+  concept_optimistic_locking -->|references| concept_retry
+  linkStyle 1163 stroke-dasharray: 4 2
+  concept_optimistic_locking -->|references| concept_value_object
+  linkStyle 1164 stroke-dasharray: 4 2
+  concept_optimistic_update -->|references| concept_event_notification
+  linkStyle 1165 stroke-dasharray: 4 2
+  concept_optimistic_update -->|references| concept_optimistic_locking
+  linkStyle 1166 stroke-dasharray: 4 2
+  concept_optimistic_update -->|references| concept_reactive_store
+  linkStyle 1167 stroke-dasharray: 4 2
+  concept_orchestration -->|references| concept_choreography
+  linkStyle 1168 stroke-dasharray: 4 2
+  concept_orchestration -->|references| concept_saga_orchestrator
+  linkStyle 1169 stroke-dasharray: 4 2
+  concept_orchestration -->|references| concept_workflow_engine
+  linkStyle 1170 stroke-dasharray: 4 2
+  concept_outbox -->|references| concept_change_data_capture
+  linkStyle 1171 stroke-dasharray: 4 2
+  concept_outbox -->|references| concept_competing_consumers
+  linkStyle 1172 stroke-dasharray: 4 2
+  concept_outbox -->|references| concept_event_driven
+  linkStyle 1173 stroke-dasharray: 4 2
+  concept_over_under_fetching -->|references| concept_bff
+  linkStyle 1174 stroke-dasharray: 4 2
+  concept_over_under_fetching -->|references| concept_graphql
+  linkStyle 1175 stroke-dasharray: 4 2
+  concept_over_under_fetching -->|references| concept_rest
+  linkStyle 1176 stroke-dasharray: 4 2
+  concept_pipeline_filter -->|references| concept_batch_processing
+  linkStyle 1177 stroke-dasharray: 4 2
+  concept_pipeline_filter -->|references| concept_data_pipeline
+  linkStyle 1178 stroke-dasharray: 4 2
+  concept_pipeline_filter -->|references| concept_middleware
+  linkStyle 1179 stroke-dasharray: 4 2
+  concept_pipeline_stages -->|references| concept_data_pipeline
+  linkStyle 1180 stroke-dasharray: 4 2
+  concept_pipeline_stages -->|references| concept_mapreduce
+  linkStyle 1181 stroke-dasharray: 4 2
+  concept_pipeline_stages -->|references| concept_pipeline_filter
+  linkStyle 1182 stroke-dasharray: 4 2
+  concept_plugin_host -->|references| concept_plugin
+  linkStyle 1183 stroke-dasharray: 4 2
+  concept_pokemon_exception -->|references| concept_log_and_throw
+  linkStyle 1184 stroke-dasharray: 4 2
+  concept_pokemon_exception -->|references| concept_magic_numbers
+  linkStyle 1185 stroke-dasharray: 4 2
+  concept_pokemon_exception -->|references| concept_swallowed_exception
+  linkStyle 1186 stroke-dasharray: 4 2
+  concept_polling_flow -->|references| concept_long_polling
+  linkStyle 1187 stroke-dasharray: 4 2
+  concept_polling_flow -->|references| concept_scheduler
+  linkStyle 1188 stroke-dasharray: 4 2
+  concept_polling_flow -->|references| concept_webhook
+  linkStyle 1189 stroke-dasharray: 4 2
+  concept_premature_optimization -->|references| concept_golden_hammer
+  linkStyle 1190 stroke-dasharray: 4 2
+  concept_premature_optimization -->|references| concept_lru_cache
+  linkStyle 1191 stroke-dasharray: 4 2
+  concept_premature_optimization -->|references| concept_microservices
+  linkStyle 1192 stroke-dasharray: 4 2
+  concept_primitive_obsession -->|references| concept_boolean_blindness
+  linkStyle 1193 stroke-dasharray: 4 2
+  concept_primitive_obsession -->|references| concept_stringly_typed
+  linkStyle 1194 stroke-dasharray: 4 2
+  concept_primitive_obsession -->|references| concept_value_object
+  linkStyle 1195 stroke-dasharray: 4 2
+  concept_producer_consumer -->|references| concept_backpressure
+  linkStyle 1196 stroke-dasharray: 4 2
+  concept_producer_consumer -->|references| concept_competing_consumers
+  linkStyle 1197 stroke-dasharray: 4 2
+  concept_producer_consumer -->|references| concept_message_queue
+  linkStyle 1198 stroke-dasharray: 4 2
+  concept_prop_drilling -->|references| concept_component
+  linkStyle 1199 stroke-dasharray: 4 2
+  concept_prop_drilling -->|references| concept_flux
+  linkStyle 1200 stroke-dasharray: 4 2
+  concept_prop_drilling -->|references| concept_reactive_store
+  linkStyle 1201 stroke-dasharray: 4 2
+  concept_property_graph -->|references| concept_graph
+  linkStyle 1202 stroke-dasharray: 4 2
+  concept_property_graph -->|references| concept_search_index
+  linkStyle 1203 stroke-dasharray: 4 2
+  concept_property_testing -->|references| concept_fixture_builder
+  linkStyle 1204 stroke-dasharray: 4 2
+  concept_property_testing -->|references| concept_result_type
+  linkStyle 1205 stroke-dasharray: 4 2
+  concept_property_testing -->|references| concept_snapshot_testing
+  linkStyle 1206 stroke-dasharray: 4 2
+  concept_prototype -->|references| concept_builder
+  linkStyle 1207 stroke-dasharray: 4 2
+  concept_prototype -->|references| concept_factory
+  linkStyle 1208 stroke-dasharray: 4 2
+  concept_prototype -->|references| concept_fixture_builder
+  linkStyle 1209 stroke-dasharray: 4 2
+  concept_proxy -->|references| concept_decorator
+  linkStyle 1210 stroke-dasharray: 4 2
+  concept_pub_sub -->|references| concept_event_driven
+  linkStyle 1211 stroke-dasharray: 4 2
+  concept_pub_sub -->|references| concept_observer
+  linkStyle 1212 stroke-dasharray: 4 2
+  concept_pub_sub -->|references| concept_webhook
+  linkStyle 1213 stroke-dasharray: 4 2
+  concept_query_object -->|references| concept_cqrs
+  linkStyle 1214 stroke-dasharray: 4 2
+  concept_query_object -->|references| concept_repository
+  linkStyle 1215 stroke-dasharray: 4 2
+  concept_query_object -->|references| concept_specification
+  linkStyle 1216 stroke-dasharray: 4 2
+  concept_race_condition -->|references| concept_deadlock
+  linkStyle 1217 stroke-dasharray: 4 2
+  concept_race_condition -->|references| concept_optimistic_locking
+  linkStyle 1218 stroke-dasharray: 4 2
+  concept_race_condition -->|references| concept_read_write_lock
+  linkStyle 1219 stroke-dasharray: 4 2
+  concept_rate_limiting -->|references| concept_api_gateway
+  linkStyle 1220 stroke-dasharray: 4 2
+  concept_rate_limiting -->|references| concept_backpressure
+  linkStyle 1221 stroke-dasharray: 4 2
+  concept_rate_limiting -->|references| concept_circuit_breaker
+  linkStyle 1222 stroke-dasharray: 4 2
+  concept_rbac -->|references| concept_multi_tenant
+  linkStyle 1223 stroke-dasharray: 4 2
+  concept_rbac -->|references| concept_oauth_oidc
+  linkStyle 1224 stroke-dasharray: 4 2
+  concept_rbac -->|references| concept_route_guard
+  linkStyle 1225 stroke-dasharray: 4 2
+  concept_reactive_store -->|references| concept_component
+  linkStyle 1226 stroke-dasharray: 4 2
+  concept_reactive_store -->|references| concept_flux
+  linkStyle 1227 stroke-dasharray: 4 2
+  concept_reactive_store -->|references| concept_suspense_boundary
+  linkStyle 1228 stroke-dasharray: 4 2
+  concept_reactor -->|references| concept_event_driven
+  linkStyle 1229 stroke-dasharray: 4 2
+  concept_reactor -->|references| concept_future_promise
+  linkStyle 1230 stroke-dasharray: 4 2
+  concept_reactor -->|references| concept_server_sent_events
+  linkStyle 1231 stroke-dasharray: 4 2
+  concept_read_through -->|references| concept_cache_aside
+  linkStyle 1232 stroke-dasharray: 4 2
+  concept_read_through -->|references| concept_read_write_lock
+  linkStyle 1233 stroke-dasharray: 4 2
+  concept_read_through -->|references| concept_refresh_ahead
+  linkStyle 1234 stroke-dasharray: 4 2
+  concept_read_write_lock -->|references| concept_deadlock
+  linkStyle 1235 stroke-dasharray: 4 2
+  concept_read_write_lock -->|references| concept_optimistic_locking
+  linkStyle 1236 stroke-dasharray: 4 2
+  concept_read_write_lock -->|references| concept_race_condition
+  linkStyle 1237 stroke-dasharray: 4 2
+  concept_refresh_ahead -->|references| concept_cache_aside
+  linkStyle 1238 stroke-dasharray: 4 2
+  concept_refresh_ahead -->|references| concept_read_through
+  linkStyle 1239 stroke-dasharray: 4 2
+  concept_refresh_ahead -->|references| concept_scheduler
+  linkStyle 1240 stroke-dasharray: 4 2
+  concept_registry_model -->|references| concept_catalog
+  linkStyle 1241 stroke-dasharray: 4 2
+  concept_registry_model -->|references| concept_soft_delete
+  linkStyle 1242 stroke-dasharray: 4 2
+  concept_registry_model -->|references| concept_workflow_state_machine
+  linkStyle 1243 stroke-dasharray: 4 2
+  concept_reinventing_the_wheel -->|references| concept_cargo_cult
+  linkStyle 1244 stroke-dasharray: 4 2
+  concept_reinventing_the_wheel -->|references| concept_copy_paste_programming
+  linkStyle 1245 stroke-dasharray: 4 2
+  concept_reinventing_the_wheel -->|references| concept_golden_hammer
+  linkStyle 1246 stroke-dasharray: 4 2
+  concept_repository -->|references| concept_aggregate
+  linkStyle 1247 stroke-dasharray: 4 2
+  concept_repository -->|references| concept_data_mapper
+  linkStyle 1248 stroke-dasharray: 4 2
+  concept_repository -->|references| concept_unit_of_work
+  linkStyle 1249 stroke-dasharray: 4 2
+  concept_request_path -->|references| concept_router
+  linkStyle 1250 stroke-dasharray: 4 2
+  concept_request_path -->|references| concept_server_route_registration
+  linkStyle 1251 stroke-dasharray: 4 2
+  concept_request_reply -->|references| concept_correlation_id
+  linkStyle 1252 stroke-dasharray: 4 2
+  concept_request_reply -->|references| concept_message_queue
+  linkStyle 1253 stroke-dasharray: 4 2
+  concept_request_reply -->|references| concept_request_path
+  linkStyle 1254 stroke-dasharray: 4 2
+  concept_rest -->|references| concept_graphql
+  linkStyle 1255 stroke-dasharray: 4 2
+  concept_rest -->|references| concept_pagination
+  linkStyle 1256 stroke-dasharray: 4 2
+  concept_rest -->|references| concept_server_route_registration
+  linkStyle 1257 stroke-dasharray: 4 2
+  concept_result_type -->|references| concept_error_code_returns
+  linkStyle 1258 stroke-dasharray: 4 2
+  concept_result_type -->|references| concept_null_object
+  linkStyle 1259 stroke-dasharray: 4 2
+  concept_result_type -->|references| concept_property_testing
+  linkStyle 1260 stroke-dasharray: 4 2
+  concept_retry -->|references| concept_circuit_breaker
+  linkStyle 1261 stroke-dasharray: 4 2
+  concept_retry -->|references| concept_dead_letter
+  linkStyle 1262 stroke-dasharray: 4 2
+  concept_retry -->|references| concept_timeout
+  linkStyle 1263 stroke-dasharray: 4 2
+  concept_ring_buffer -->|references| concept_backpressure
+  linkStyle 1264 stroke-dasharray: 4 2
+  concept_ring_buffer -->|references| concept_stream_to_store
+  linkStyle 1265 stroke-dasharray: 4 2
+  concept_ring_buffer -->|references| concept_worker_pool
+  linkStyle 1266 stroke-dasharray: 4 2
+  concept_route_guard -->|references| concept_router
+  linkStyle 1267 stroke-dasharray: 4 2
+  concept_router -->|references| concept_route_guard
+  linkStyle 1268 stroke-dasharray: 4 2
+  concept_router -->|references| concept_server_route_registration
+  linkStyle 1269 stroke-dasharray: 4 2
+  concept_rule_engine -->|references| concept_feature_flag
+  linkStyle 1270 stroke-dasharray: 4 2
+  concept_rule_engine -->|references| concept_specification
+  linkStyle 1271 stroke-dasharray: 4 2
+  concept_rule_engine -->|references| concept_strategy
+  linkStyle 1272 stroke-dasharray: 4 2
+  concept_saga_orchestrator -->|references| concept_choreography
+  linkStyle 1273 stroke-dasharray: 4 2
+  concept_saga_orchestrator -->|references| concept_saga
+  linkStyle 1274 stroke-dasharray: 4 2
+  concept_saga_orchestrator -->|references| concept_workflow_engine
+  linkStyle 1275 stroke-dasharray: 4 2
+  concept_scatter_gather -->|references| concept_bff
+  linkStyle 1276 stroke-dasharray: 4 2
+  concept_scatter_gather -->|references| concept_fan_out
+  linkStyle 1277 stroke-dasharray: 4 2
+  concept_scatter_gather -->|references| concept_request_reply
+  linkStyle 1278 stroke-dasharray: 4 2
+  concept_scheduler -->|references| concept_batch_processing
+  linkStyle 1279 stroke-dasharray: 4 2
+  concept_scheduler -->|references| concept_leader_election
+  linkStyle 1280 stroke-dasharray: 4 2
+  concept_scheduler -->|references| concept_workflow_engine
+  linkStyle 1281 stroke-dasharray: 4 2
+  concept_schema_on_read -->|references| concept_input_validation
+  linkStyle 1282 stroke-dasharray: 4 2
+  concept_schema_on_read -->|references| concept_insecure_deserialization
+  linkStyle 1283 stroke-dasharray: 4 2
+  concept_schema_on_read -->|references| concept_stringly_typed
+  linkStyle 1284 stroke-dasharray: 4 2
+  concept_schema_registry -->|references| concept_database_migration
+  linkStyle 1285 stroke-dasharray: 4 2
+  concept_schema_registry -->|references| concept_event_driven
+  linkStyle 1286 stroke-dasharray: 4 2
+  concept_schema_registry -->|references| concept_schema_on_read
+  linkStyle 1287 stroke-dasharray: 4 2
+  concept_search_index -->|references| concept_change_data_capture
+  linkStyle 1288 stroke-dasharray: 4 2
+  concept_search_index -->|references| concept_cqrs
+  linkStyle 1289 stroke-dasharray: 4 2
+  concept_search_index -->|references| concept_pagination
+  linkStyle 1290 stroke-dasharray: 4 2
+  concept_secret_management -->|references| concept_config_management
+  linkStyle 1291 stroke-dasharray: 4 2
+  concept_secret_management -->|references| concept_immutable_infra
+  linkStyle 1292 stroke-dasharray: 4 2
+  concept_secret_management -->|references| concept_mtls
+  linkStyle 1293 stroke-dasharray: 4 2
+  concept_select_star -->|references| concept_materialized_view
+  linkStyle 1294 stroke-dasharray: 4 2
+  concept_select_star -->|references| concept_over_under_fetching
+  linkStyle 1295 stroke-dasharray: 4 2
+  concept_select_star -->|references| concept_repository
+  linkStyle 1296 stroke-dasharray: 4 2
+  concept_server_prefetch -->|references| concept_hydration
+  linkStyle 1297 stroke-dasharray: 4 2
+  concept_server_prefetch -->|references| concept_lazy_loading
+  linkStyle 1298 stroke-dasharray: 4 2
+  concept_server_prefetch -->|references| concept_suspense_boundary
+  linkStyle 1299 stroke-dasharray: 4 2
+  concept_server_route_registration -->|references| concept_graphql
+  linkStyle 1300 stroke-dasharray: 4 2
+  concept_server_route_registration -->|references| concept_grpc
+  linkStyle 1301 stroke-dasharray: 4 2
+  concept_server_route_registration -->|references| concept_middleware
+  linkStyle 1302 stroke-dasharray: 4 2
+  concept_server_route_registration -->|references| concept_rest
+  linkStyle 1303 stroke-dasharray: 4 2
+  concept_server_route_registration -->|references| concept_router
+  linkStyle 1304 stroke-dasharray: 4 2
+  concept_server_sent_events -->|references| concept_event_driven
+  linkStyle 1305 stroke-dasharray: 4 2
+  concept_server_sent_events -->|references| concept_long_polling
+  linkStyle 1306 stroke-dasharray: 4 2
+  concept_server_sent_events -->|references| concept_websocket
+  linkStyle 1307 stroke-dasharray: 4 2
+  concept_serverless -->|references| concept_event_driven
+  linkStyle 1308 stroke-dasharray: 4 2
+  concept_serverless -->|references| concept_scheduler
+  linkStyle 1309 stroke-dasharray: 4 2
+  concept_serverless -->|references| concept_service_manager
+  linkStyle 1310 stroke-dasharray: 4 2
+  concept_service_discovery -->|references| concept_api_gateway
+  linkStyle 1311 stroke-dasharray: 4 2
+  concept_service_discovery -->|references| concept_load_balancer
+  linkStyle 1312 stroke-dasharray: 4 2
+  concept_service_discovery -->|references| concept_service_mesh
+  linkStyle 1313 stroke-dasharray: 4 2
+  concept_service_manager -->|references| concept_graceful_degradation
+  linkStyle 1314 stroke-dasharray: 4 2
+  concept_service_manager -->|references| concept_health_check
+  linkStyle 1315 stroke-dasharray: 4 2
+  concept_service_manager -->|references| concept_scheduler
+  linkStyle 1316 stroke-dasharray: 4 2
+  concept_service_mesh -->|references| concept_mtls
+  linkStyle 1317 stroke-dasharray: 4 2
+  concept_service_mesh -->|references| concept_retry
+  linkStyle 1318 stroke-dasharray: 4 2
+  concept_service_mesh -->|references| concept_service_discovery
+  linkStyle 1319 stroke-dasharray: 4 2
+  concept_sharding -->|references| concept_key_value_model
+  linkStyle 1320 stroke-dasharray: 4 2
+  concept_sharding -->|references| concept_service_discovery
+  linkStyle 1321 stroke-dasharray: 4 2
+  concept_sharding -->|references| concept_tenant_routing
+  linkStyle 1322 stroke-dasharray: 4 2
+  concept_shared_database -->|references| concept_database_per_service
+  linkStyle 1323 stroke-dasharray: 4 2
+  concept_shared_database -->|references| concept_distributed_monolith
+  linkStyle 1324 stroke-dasharray: 4 2
+  concept_shared_database -->|references| concept_microservices
+  linkStyle 1325 stroke-dasharray: 4 2
+  concept_shotgun_surgery -->|references| concept_copy_paste_programming
+  linkStyle 1326 stroke-dasharray: 4 2
+  concept_shotgun_surgery -->|references| concept_god_object
+  linkStyle 1327 stroke-dasharray: 4 2
+  concept_shotgun_surgery -->|references| concept_tight_coupling
+  linkStyle 1328 stroke-dasharray: 4 2
+  concept_side_effect_hook -->|references| concept_component
+  linkStyle 1329 stroke-dasharray: 4 2
+  concept_side_effect_hook -->|references| concept_hidden_side_effects
+  linkStyle 1330 stroke-dasharray: 4 2
+  concept_side_effect_hook -->|references| concept_reactive_store
+  linkStyle 1331 stroke-dasharray: 4 2
+  concept_sidecar -->|references| concept_service_manager
+  linkStyle 1332 stroke-dasharray: 4 2
+  concept_sidecar -->|references| concept_service_mesh
+  linkStyle 1333 stroke-dasharray: 4 2
+  concept_sidecar -->|references| concept_sidecar_mesh
+  linkStyle 1334 stroke-dasharray: 4 2
+  concept_sidecar_mesh -->|references| concept_mtls
+  linkStyle 1335 stroke-dasharray: 4 2
+  concept_sidecar_mesh -->|references| concept_service_mesh
+  linkStyle 1336 stroke-dasharray: 4 2
+  concept_sidecar_mesh -->|references| concept_sidecar
+  linkStyle 1337 stroke-dasharray: 4 2
+  concept_singleton -->|references| concept_dependency_injection
+  linkStyle 1338 stroke-dasharray: 4 2
+  concept_singleton -->|references| concept_service_manager
+  linkStyle 1339 stroke-dasharray: 4 2
+  concept_singleton -->|references| concept_tight_coupling
+  linkStyle 1340 stroke-dasharray: 4 2
+  concept_snapshot_testing -->|references| concept_fixture_builder
+  linkStyle 1341 stroke-dasharray: 4 2
+  concept_snapshot_testing -->|references| concept_flaky_tests
+  linkStyle 1342 stroke-dasharray: 4 2
+  concept_snapshot_testing -->|references| concept_memento
+  linkStyle 1343 stroke-dasharray: 4 2
+  concept_snowflake_server -->|references| concept_infrastructure_as_code
+  linkStyle 1344 stroke-dasharray: 4 2
+  concept_social_graph -->|references| concept_cache_aside
+  linkStyle 1345 stroke-dasharray: 4 2
+  concept_social_graph -->|references| concept_graph
+  linkStyle 1346 stroke-dasharray: 4 2
+  concept_social_graph -->|references| concept_pub_sub
+  linkStyle 1347 stroke-dasharray: 4 2
+  concept_soft_delete -->|references| concept_audit_logging
+  linkStyle 1348 stroke-dasharray: 4 2
+  concept_soft_delete -->|references| concept_registry_model
+  linkStyle 1349 stroke-dasharray: 4 2
+  concept_soft_delete -->|references| concept_workflow_state_machine
+  linkStyle 1350 stroke-dasharray: 4 2
+  concept_spaghetti_code -->|references| concept_deep_nesting
+  linkStyle 1351 stroke-dasharray: 4 2
+  concept_spaghetti_code -->|references| concept_god_object
+  linkStyle 1352 stroke-dasharray: 4 2
+  concept_spaghetti_code -->|references| concept_train_wreck
+  linkStyle 1353 stroke-dasharray: 4 2
+  concept_spatial -->|references| concept_cache_aside
+  linkStyle 1354 stroke-dasharray: 4 2
+  concept_spatial -->|references| concept_pagination
+  linkStyle 1355 stroke-dasharray: 4 2
+  concept_spatial -->|references| concept_search_index
+  linkStyle 1356 stroke-dasharray: 4 2
+  concept_spatial_partitioning -->|references| concept_entity_component_system
+  linkStyle 1357 stroke-dasharray: 4 2
+  concept_spatial_partitioning -->|references| concept_game_loop
+  linkStyle 1358 stroke-dasharray: 4 2
+  concept_spatial_partitioning -->|references| concept_tick_simulation
+  linkStyle 1359 stroke-dasharray: 4 2
+  concept_specification -->|references| concept_ddd
+  linkStyle 1360 stroke-dasharray: 4 2
+  concept_specification -->|references| concept_query_object
+  linkStyle 1361 stroke-dasharray: 4 2
+  concept_specification -->|references| concept_strategy
+  linkStyle 1362 stroke-dasharray: 4 2
+  concept_sql_injection -->|references| concept_input_validation
+  linkStyle 1363 stroke-dasharray: 4 2
+  concept_sql_injection -->|references| concept_insecure_deserialization
+  linkStyle 1364 stroke-dasharray: 4 2
+  concept_sql_injection -->|references| concept_repository
+  linkStyle 1365 stroke-dasharray: 4 2
+  concept_state_machine -->|references| concept_workflow_engine
+  linkStyle 1366 stroke-dasharray: 4 2
+  concept_strangler_fig -->|references| concept_anti_corruption_layer
+  linkStyle 1367 stroke-dasharray: 4 2
+  concept_strangler_fig -->|references| concept_canary
+  linkStyle 1368 stroke-dasharray: 4 2
+  concept_strangler_fig -->|references| concept_modular_monolith
+  linkStyle 1369 stroke-dasharray: 4 2
+  concept_strategy -->|references| concept_bridge
+  linkStyle 1370 stroke-dasharray: 4 2
+  concept_strategy -->|references| concept_factory
+  linkStyle 1371 stroke-dasharray: 4 2
+  concept_strategy -->|references| concept_specification
+  linkStyle 1372 stroke-dasharray: 4 2
+  concept_stream_processing -->|references| concept_batch_processing
+  linkStyle 1373 stroke-dasharray: 4 2
+  concept_stream_processing -->|references| concept_stream_to_store
+  linkStyle 1374 stroke-dasharray: 4 2
+  concept_stream_processing -->|references| concept_streaming_flow
+  linkStyle 1375 stroke-dasharray: 4 2
+  concept_stream_to_store -->|references| concept_data_pipeline
+  linkStyle 1376 stroke-dasharray: 4 2
+  concept_stream_to_store -->|references| concept_materialized_view
+  linkStyle 1377 stroke-dasharray: 4 2
+  concept_stream_to_store -->|references| concept_message_queue
+  linkStyle 1378 stroke-dasharray: 4 2
+  concept_streaming_flow -->|references| concept_pub_sub
+  linkStyle 1379 stroke-dasharray: 4 2
+  concept_streaming_flow -->|references| concept_server_sent_events
+  linkStyle 1380 stroke-dasharray: 4 2
+  concept_streaming_flow -->|references| concept_stream_to_store
+  linkStyle 1381 stroke-dasharray: 4 2
+  concept_stringly_typed -->|references| concept_input_validation
+  linkStyle 1382 stroke-dasharray: 4 2
+  concept_stringly_typed -->|references| concept_magic_numbers
+  linkStyle 1383 stroke-dasharray: 4 2
+  concept_stringly_typed -->|references| concept_primitive_obsession
+  linkStyle 1384 stroke-dasharray: 4 2
+  concept_structured_logging -->|references| concept_correlation_id
+  linkStyle 1385 stroke-dasharray: 4 2
+  concept_structured_logging -->|references| concept_distributed_tracing
+  linkStyle 1386 stroke-dasharray: 4 2
+  concept_structured_logging -->|references| concept_metrics_instrumentation
+  linkStyle 1387 stroke-dasharray: 4 2
+  concept_subscription -->|references| concept_multi_tenant
+  linkStyle 1388 stroke-dasharray: 4 2
+  concept_subscription -->|references| concept_state_machine
+  linkStyle 1389 stroke-dasharray: 4 2
+  concept_subscription -->|references| concept_webhook
+  linkStyle 1390 stroke-dasharray: 4 2
+  concept_suspense_boundary -->|references| concept_error_boundary
+  linkStyle 1391 stroke-dasharray: 4 2
+  concept_suspense_boundary -->|references| concept_hydration
+  linkStyle 1392 stroke-dasharray: 4 2
+  concept_suspense_boundary -->|references| concept_lazy_loading
+  linkStyle 1393 stroke-dasharray: 4 2
+  concept_swallowed_exception -->|references| concept_hidden_side_effects
+  linkStyle 1394 stroke-dasharray: 4 2
+  concept_swallowed_exception -->|references| concept_log_and_throw
+  linkStyle 1395 stroke-dasharray: 4 2
+  concept_swallowed_exception -->|references| concept_result_type
+  linkStyle 1396 stroke-dasharray: 4 2
+  concept_sync_in_async -->|references| concept_busy_waiting
+  linkStyle 1397 stroke-dasharray: 4 2
+  concept_sync_in_async -->|references| concept_future_promise
+  linkStyle 1398 stroke-dasharray: 4 2
+  concept_sync_in_async -->|references| concept_reactor
+  linkStyle 1399 stroke-dasharray: 4 2
+  concept_template_method -->|references| concept_factory
+  linkStyle 1400 stroke-dasharray: 4 2
+  concept_template_method -->|references| concept_strategy
+  linkStyle 1401 stroke-dasharray: 4 2
+  concept_template_method -->|references| concept_visitor
+  linkStyle 1402 stroke-dasharray: 4 2
+  concept_temporal_coupling -->|references| concept_builder
+  linkStyle 1403 stroke-dasharray: 4 2
+  concept_temporal_coupling -->|references| concept_service_manager
+  linkStyle 1404 stroke-dasharray: 4 2
+  concept_temporal_coupling -->|references| concept_workflow_state_machine
+  linkStyle 1405 stroke-dasharray: 4 2
+  concept_tenant_isolation -->|references| concept_multi_tenant
+  linkStyle 1406 stroke-dasharray: 4 2
+  concept_tenant_isolation -->|references| concept_rbac
+  linkStyle 1407 stroke-dasharray: 4 2
+  concept_tenant_isolation -->|references| concept_tenant_routing
+  linkStyle 1408 stroke-dasharray: 4 2
+  concept_tenant_routing -->|references| concept_multi_tenant
+  linkStyle 1409 stroke-dasharray: 4 2
+  concept_tenant_routing -->|references| concept_sharding
+  linkStyle 1410 stroke-dasharray: 4 2
+  concept_tenant_routing -->|references| concept_tenant_isolation
+  linkStyle 1411 stroke-dasharray: 4 2
+  concept_tensor -->|references| concept_feature_store
+  linkStyle 1412 stroke-dasharray: 4 2
+  concept_tensor -->|references| concept_model_registry
+  linkStyle 1413 stroke-dasharray: 4 2
+  concept_tensor -->|references| concept_training_pipeline
+  linkStyle 1414 stroke-dasharray: 4 2
+  concept_test_doubles -->|references| concept_fixture_builder
+  linkStyle 1415 stroke-dasharray: 4 2
+  concept_test_doubles -->|references| concept_property_testing
+  linkStyle 1416 stroke-dasharray: 4 2
+  concept_test_doubles -->|references| concept_snapshot_testing
+  linkStyle 1417 stroke-dasharray: 4 2
+  concept_test_pollution -->|references| concept_flaky_tests
+  linkStyle 1418 stroke-dasharray: 4 2
+  concept_test_pollution -->|references| concept_singleton
+  linkStyle 1419 stroke-dasharray: 4 2
+  concept_test_pollution -->|references| concept_test_doubles
+  linkStyle 1420 stroke-dasharray: 4 2
+  concept_tick_simulation -->|references| concept_entity_component_system
+  linkStyle 1421 stroke-dasharray: 4 2
+  concept_tick_simulation -->|references| concept_game_loop
+  linkStyle 1422 stroke-dasharray: 4 2
+  concept_tick_simulation -->|references| concept_spatial_partitioning
+  linkStyle 1423 stroke-dasharray: 4 2
+  concept_tight_coupling -->|references| concept_dependency_injection
+  linkStyle 1424 stroke-dasharray: 4 2
+  concept_tight_coupling -->|references| concept_hexagonal
+  linkStyle 1425 stroke-dasharray: 4 2
+  concept_tight_coupling -->|references| concept_leaky_abstraction
+  linkStyle 1426 stroke-dasharray: 4 2
+  concept_time_series -->|references| concept_materialized_view
+  linkStyle 1427 stroke-dasharray: 4 2
+  concept_time_series -->|references| concept_metrics_instrumentation
+  linkStyle 1428 stroke-dasharray: 4 2
+  concept_time_series -->|references| concept_stream_to_store
+  linkStyle 1429 stroke-dasharray: 4 2
+  concept_timeout -->|references| concept_circuit_breaker
+  linkStyle 1430 stroke-dasharray: 4 2
+  concept_timeout -->|references| concept_retry
+  linkStyle 1431 stroke-dasharray: 4 2
+  concept_train_wreck -->|references| concept_deep_nesting
+  linkStyle 1432 stroke-dasharray: 4 2
+  concept_train_wreck -->|references| concept_leaky_abstraction
+  linkStyle 1433 stroke-dasharray: 4 2
+  concept_train_wreck -->|references| concept_tight_coupling
+  linkStyle 1434 stroke-dasharray: 4 2
+  concept_training_pipeline -->|references| concept_experiment_framework
+  linkStyle 1435 stroke-dasharray: 4 2
+  concept_training_pipeline -->|references| concept_feature_store
+  linkStyle 1436 stroke-dasharray: 4 2
+  concept_training_pipeline -->|references| concept_model_registry
+  linkStyle 1437 stroke-dasharray: 4 2
+  concept_trie -->|references| concept_key_value_model
+  linkStyle 1438 stroke-dasharray: 4 2
+  concept_trie -->|references| concept_lexer_parser
+  linkStyle 1439 stroke-dasharray: 4 2
+  concept_trie -->|references| concept_search_index
+  linkStyle 1440 stroke-dasharray: 4 2
+  concept_unbounded_growth -->|references| concept_lru_cache
+  linkStyle 1441 stroke-dasharray: 4 2
+  concept_unbounded_growth -->|references| concept_memory_leak
+  linkStyle 1442 stroke-dasharray: 4 2
+  concept_unbounded_growth -->|references| concept_metric_cardinality_explosion
+  linkStyle 1443 stroke-dasharray: 4 2
+  concept_unit_of_work -->|references| concept_aggregate
+  linkStyle 1444 stroke-dasharray: 4 2
+  concept_unit_of_work -->|references| concept_data_mapper
+  linkStyle 1445 stroke-dasharray: 4 2
+  concept_unit_of_work -->|references| concept_repository
+  linkStyle 1446 stroke-dasharray: 4 2
+  concept_value_object -->|references| concept_aggregate
+  linkStyle 1447 stroke-dasharray: 4 2
+  concept_value_object -->|references| concept_ddd
+  linkStyle 1448 stroke-dasharray: 4 2
+  concept_versioned_document -->|references| concept_block_content
+  linkStyle 1449 stroke-dasharray: 4 2
+  concept_versioned_document -->|references| concept_event_sourcing
+  linkStyle 1450 stroke-dasharray: 4 2
+  concept_versioned_document -->|references| concept_optimistic_locking
+  linkStyle 1451 stroke-dasharray: 4 2
+  concept_visitor -->|references| concept_ast
+  linkStyle 1452 stroke-dasharray: 4 2
+  concept_visitor -->|references| concept_command
+  linkStyle 1453 stroke-dasharray: 4 2
+  concept_visitor -->|references| concept_composite
+  linkStyle 1454 stroke-dasharray: 4 2
+  concept_webhook -->|references| concept_pub_sub
+  linkStyle 1455 stroke-dasharray: 4 2
+  concept_webhook -->|references| concept_server_route_registration
+  linkStyle 1456 stroke-dasharray: 4 2
+  concept_webhook -->|references| concept_subscription
+  linkStyle 1457 stroke-dasharray: 4 2
+  concept_worker_pool -->|references| concept_backpressure
+  linkStyle 1458 stroke-dasharray: 4 2
+  concept_worker_pool -->|references| concept_competing_consumers
+  linkStyle 1459 stroke-dasharray: 4 2
+  concept_worker_pool -->|references| concept_producer_consumer
+  linkStyle 1460 stroke-dasharray: 4 2
+  concept_workflow_state_machine -->|references| concept_state_machine
+  linkStyle 1461 stroke-dasharray: 4 2
+  concept_workflow_state_machine -->|references| concept_workflow_engine
+  linkStyle 1462 stroke-dasharray: 4 2
+  concept_write_behind -->|references| concept_cache_aside
+  linkStyle 1463 stroke-dasharray: 4 2
+  concept_write_behind -->|references| concept_message_queue
+  linkStyle 1464 stroke-dasharray: 4 2
+  concept_write_behind -->|references| concept_read_through
+  linkStyle 1465 stroke-dasharray: 4 2
   framework_angular -->|related to| concept_mvvm
   framework_django -->|related to| concept_layered
   framework_express -->|related to| concept_middleware
@@ -2987,75 +3691,75 @@ graph TD
   framework_symfony -->|uses| concept_server_route_registration
   framework_vapor -->|uses| concept_server_route_registration
   framework_actix_web -->|uses language| language_rust
-  linkStyle 1594 stroke-dasharray: 4 2
+  linkStyle 1540 stroke-dasharray: 4 2
   framework_aiohttp -->|uses language| language_python
-  linkStyle 1595 stroke-dasharray: 4 2
+  linkStyle 1541 stroke-dasharray: 4 2
   framework_angular -->|uses language| language_typescript
-  linkStyle 1596 stroke-dasharray: 4 2
+  linkStyle 1542 stroke-dasharray: 4 2
   framework_aspnet_controllers -->|uses language| language_csharp
-  linkStyle 1597 stroke-dasharray: 4 2
+  linkStyle 1543 stroke-dasharray: 4 2
   framework_aspnet_minimal -->|uses language| language_csharp
-  linkStyle 1598 stroke-dasharray: 4 2
+  linkStyle 1544 stroke-dasharray: 4 2
   framework_axum -->|uses language| language_rust
-  linkStyle 1599 stroke-dasharray: 4 2
+  linkStyle 1545 stroke-dasharray: 4 2
   framework_chi -->|uses language| language_go
-  linkStyle 1600 stroke-dasharray: 4 2
+  linkStyle 1546 stroke-dasharray: 4 2
   framework_django -->|uses language| language_python
-  linkStyle 1601 stroke-dasharray: 4 2
+  linkStyle 1547 stroke-dasharray: 4 2
   framework_echo -->|uses language| language_go
-  linkStyle 1602 stroke-dasharray: 4 2
+  linkStyle 1548 stroke-dasharray: 4 2
   framework_elysia -->|uses language| language_typescript
-  linkStyle 1603 stroke-dasharray: 4 2
+  linkStyle 1549 stroke-dasharray: 4 2
   framework_express -->|uses language| language_typescript
-  linkStyle 1604 stroke-dasharray: 4 2
+  linkStyle 1550 stroke-dasharray: 4 2
   framework_fastapi -->|uses language| language_python
-  linkStyle 1605 stroke-dasharray: 4 2
+  linkStyle 1551 stroke-dasharray: 4 2
   framework_fastify -->|uses language| language_typescript
-  linkStyle 1606 stroke-dasharray: 4 2
+  linkStyle 1552 stroke-dasharray: 4 2
   framework_fiber -->|uses language| language_go
-  linkStyle 1607 stroke-dasharray: 4 2
+  linkStyle 1553 stroke-dasharray: 4 2
   framework_flask -->|uses language| language_python
-  linkStyle 1608 stroke-dasharray: 4 2
+  linkStyle 1554 stroke-dasharray: 4 2
   framework_gin -->|uses language| language_go
-  linkStyle 1609 stroke-dasharray: 4 2
+  linkStyle 1555 stroke-dasharray: 4 2
   framework_grape -->|uses language| language_ruby
-  linkStyle 1610 stroke-dasharray: 4 2
+  linkStyle 1556 stroke-dasharray: 4 2
   framework_hono -->|uses language| language_typescript
-  linkStyle 1611 stroke-dasharray: 4 2
+  linkStyle 1557 stroke-dasharray: 4 2
   framework_koa -->|uses language| language_typescript
-  linkStyle 1612 stroke-dasharray: 4 2
+  linkStyle 1558 stroke-dasharray: 4 2
   framework_ktor -->|uses language| language_kotlin
-  linkStyle 1613 stroke-dasharray: 4 2
+  linkStyle 1559 stroke-dasharray: 4 2
   framework_laravel -->|uses language| language_php
-  linkStyle 1614 stroke-dasharray: 4 2
+  linkStyle 1560 stroke-dasharray: 4 2
   framework_nestjs -->|uses language| language_typescript
-  linkStyle 1615 stroke-dasharray: 4 2
+  linkStyle 1561 stroke-dasharray: 4 2
   framework_net_http -->|uses language| language_go
-  linkStyle 1616 stroke-dasharray: 4 2
+  linkStyle 1562 stroke-dasharray: 4 2
   framework_nextjs -->|uses language| language_typescript
-  linkStyle 1617 stroke-dasharray: 4 2
+  linkStyle 1563 stroke-dasharray: 4 2
   framework_phoenix -->|uses language| language_elixir
-  linkStyle 1618 stroke-dasharray: 4 2
+  linkStyle 1564 stroke-dasharray: 4 2
   framework_quarkus -->|uses language| language_java
-  linkStyle 1619 stroke-dasharray: 4 2
+  linkStyle 1565 stroke-dasharray: 4 2
   framework_rails -->|uses language| language_ruby
-  linkStyle 1620 stroke-dasharray: 4 2
+  linkStyle 1566 stroke-dasharray: 4 2
   framework_react -->|uses language| language_typescript
-  linkStyle 1621 stroke-dasharray: 4 2
+  linkStyle 1567 stroke-dasharray: 4 2
   framework_sinatra -->|uses language| language_ruby
-  linkStyle 1622 stroke-dasharray: 4 2
+  linkStyle 1568 stroke-dasharray: 4 2
   framework_slim -->|uses language| language_php
-  linkStyle 1623 stroke-dasharray: 4 2
+  linkStyle 1569 stroke-dasharray: 4 2
   framework_spring -->|uses language| language_java
-  linkStyle 1624 stroke-dasharray: 4 2
+  linkStyle 1570 stroke-dasharray: 4 2
   framework_starlette -->|uses language| language_python
-  linkStyle 1625 stroke-dasharray: 4 2
+  linkStyle 1571 stroke-dasharray: 4 2
   framework_sveltekit -->|uses language| language_typescript
-  linkStyle 1626 stroke-dasharray: 4 2
+  linkStyle 1572 stroke-dasharray: 4 2
   framework_symfony -->|uses language| language_php
-  linkStyle 1627 stroke-dasharray: 4 2
+  linkStyle 1573 stroke-dasharray: 4 2
   framework_vapor -->|uses language| language_swift
-  linkStyle 1628 stroke-dasharray: 4 2
+  linkStyle 1574 stroke-dasharray: 4 2
   framework_vue -->|uses language| language_typescript
-  linkStyle 1629 stroke-dasharray: 4 2
+  linkStyle 1575 stroke-dasharray: 4 2
 ```

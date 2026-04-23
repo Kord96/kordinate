@@ -12,7 +12,7 @@ from analysis_paths import analysis_dir_for_commit, iter_analysis_meta, read_lat
 
 AUGUR_INVALIDATION_PREFIXES = (
     "agents/augur/detectors/",
-    "agents/augur/memory/catalog/",
+    "agents/augur/memory/concepts/",
     "agents/augur/memory/indexes/",
     "agents/augur/schemas/",
     "agents/augur/skills/analyze/",

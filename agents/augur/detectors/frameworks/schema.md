@@ -6,16 +6,16 @@ This document defines deterministic framework detection assets.
 
 Framework detection establishes stack context and narrows the concept search space before concept detection runs.
 
-- framework semantics and signatures live under `references/frameworks/`
+- framework semantics and signatures live under `memory/concepts/frameworks/`
 - generated execution bundles live under `.generated/bundles/detectors/frameworks/`
 
 ## Directory shape
 
 ```text
-references/frameworks/<name>.md
+memory/concepts/frameworks/<name>.md
 ```
 
-## `references/frameworks/<name>.md`
+## `memory/concepts/frameworks/<name>.md`
 
 ```yaml
 ---
@@ -57,4 +57,4 @@ Framework detection should run before concept detection and should influence:
 - which detector bundles are loaded
 - API review and framework-native expectations
 
-`references/frameworks/` is the canonical detector-facing and skill-facing reference layer.
+`memory/concepts/frameworks/` is the canonical detector-facing and skill-facing reference layer.
