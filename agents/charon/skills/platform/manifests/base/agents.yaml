@@ -19,7 +19,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -29,9 +32,38 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh generic-opus
+          env:
+            - { name: AGENT_NAME, value: "generic-opus" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-opus\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"claude-agent-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-opus" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-opus" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-opus" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-opus/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-opus/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-opus:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
+            - { name: DAEMON_PROVIDER, value: "anthropic" }
+            - { name: DAEMON_MODEL, value: "opus" }
+            - { name: DAEMON_BACKEND, value: "anthropic" }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -61,7 +93,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-opus:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
@@ -88,15 +120,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -130,7 +159,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -141,9 +173,41 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-opus
               KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-opus
+          env:
+            - { name: AGENT_NAME, value: "augur-opus" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-opus\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/kord/agents/augur-opus/.augur/current/scripts/run/build_analysis_context.py\",\"promptContextScript\":\"/kord/agents/augur-opus/.augur/current/scripts/run/build_prompt_context.py\",\"repairPromptScript\":\"/kord/agents/augur-opus/.augur/current/scripts/run/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/kord/agents/augur-opus/.augur/current/skills/analyze/validator/validate.py\",\"finalizeScript\":\"/kord/agents/augur-opus/.augur/current/scripts/run/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"claude-agent-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-opus" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-opus" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-opus" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-opus/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-opus/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-opus:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
+            - { name: DAEMON_PROVIDER, value: "anthropic" }
+            - { name: DAEMON_MODEL, value: "opus" }
+            - { name: DAEMON_BACKEND, value: "anthropic" }
+            - { name: AUGUR_HOME, value: "/kord/agents/augur-opus/.augur/current" }
+            - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
+            - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       containers:
         - name: agent
@@ -174,7 +238,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-opus:9090/health" }
             - { name: DAEMON_RUNTIME, value: "claude-agent-sdk" }
@@ -204,21 +268,17 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -252,7 +312,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -262,9 +325,39 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh generic-gemini-31-pro
+          env:
+            - { name: AGENT_NAME, value: "generic-gemini-31-pro" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gemini-31-pro\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-31-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-31-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-31-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gemini-31-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gemini-31-pro/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-31-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-3.1-pro-preview" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -294,7 +387,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-31-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -322,15 +415,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -364,7 +454,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -374,9 +467,39 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh generic-gemini-25-pro
+          env:
+            - { name: AGENT_NAME, value: "generic-gemini-25-pro" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gemini-25-pro\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-25-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-25-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-25-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gemini-25-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gemini-25-pro/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-pro" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -406,7 +529,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -434,15 +557,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -476,7 +596,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -486,9 +609,39 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh generic-gemini-25-flash
+          env:
+            - { name: AGENT_NAME, value: "generic-gemini-25-flash" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gemini-25-flash\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gemini-25-flash" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gemini-25-flash" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gemini-25-flash" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gemini-25-flash/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gemini-25-flash/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-flash:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-flash" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -518,7 +671,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gemini-25-flash:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -546,15 +699,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -588,7 +738,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -598,9 +751,39 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh generic-glm5
+          env:
+            - { name: AGENT_NAME, value: "generic-glm5" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-glm5\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-glm5" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-glm5" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-glm5" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-glm5/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-glm5/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-glm5:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "fireworks" }
+            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/glm-5" }
+            - { name: DAEMON_BACKEND, value: "fireworks" }
+            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fireworks-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -630,7 +813,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-glm5:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
@@ -658,15 +841,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -700,7 +880,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -710,9 +893,41 @@ spec:
           args:
             - |
               bash /app/scripts/setup-agent-dir.sh generic-gpt54
+          env:
+            - { name: AGENT_NAME, value: "generic-gpt54" }
+            - { name: AGENT_PROFILE, value: "generic" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"generic-gpt54\",\"specialization\":\"generic\",\"description\":\"General-purpose agent wrapper for commercial backend models using a predefined runtime harness or SDK\",\"capabilities\":[\"Can act as a general-purpose agent backed by a commercial model through a predefined runtime SDK or harness\",\"Can handle broad prompting tasks when no specialist agent is a better fit\",\"Can provide a stable generic entrypoint for comparing backend models under the same daemon platform\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/generic-gpt54" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/generic-gpt54" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/generic-gpt54" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/generic-gpt54/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/generic-gpt54/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gpt54:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.4" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codex-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -746,7 +961,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-generic-gpt54:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -754,8 +969,8 @@ spec:
             - { name: DAEMON_MODEL, value: "gpt-5.4" }
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
-            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
             - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -776,15 +991,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -816,7 +1028,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -827,9 +1042,42 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-gemini-31-pro
               KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gemini-31-pro
+          env:
+            - { name: AGENT_NAME, value: "augur-gemini-31-pro" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gemini-31-pro\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/kord/agents/augur-gemini-31-pro/.augur/current/scripts/run/build_analysis_context.py\",\"promptContextScript\":\"/kord/agents/augur-gemini-31-pro/.augur/current/scripts/run/build_prompt_context.py\",\"repairPromptScript\":\"/kord/agents/augur-gemini-31-pro/.augur/current/scripts/run/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/kord/agents/augur-gemini-31-pro/.augur/current/skills/analyze/validator/validate.py\",\"finalizeScript\":\"/kord/agents/augur-gemini-31-pro/.augur/current/scripts/run/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-31-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-31-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-31-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gemini-31-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gemini-31-pro/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-31-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-3.1-pro-preview" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - { name: AUGUR_HOME, value: "/kord/agents/augur-gemini-31-pro/.augur/current" }
+            - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
+            - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       containers:
         - name: agent
@@ -860,7 +1108,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-31-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -891,21 +1139,17 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -937,7 +1181,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -948,9 +1195,44 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-gemini-25-pro
               AGENT_MEMORY_BUNDLE=analyze-selective-v1 AGENT_RUNTIME_BUNDLE=analyze-selective-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gemini-25-pro
+          env:
+            - { name: AGENT_NAME, value: "augur-gemini-25-pro" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gemini-25-pro\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"bundleRefs\":{\"memory\":\"analyze-selective-v1\",\"skill\":null,\"runtime\":\"analyze-selective-v1\"},\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/kord/agents/augur-gemini-25-pro/.augur/current/scripts/run/build_analysis_context.py\",\"promptContextScript\":\"/kord/agents/augur-gemini-25-pro/.augur/current/scripts/run/build_prompt_context.py\",\"repairPromptScript\":\"/kord/agents/augur-gemini-25-pro/.augur/current/scripts/run/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/kord/agents/augur-gemini-25-pro/.augur/current/skills/analyze/validator/validate.py\",\"finalizeScript\":\"/kord/agents/augur-gemini-25-pro/.augur/current/scripts/run/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-25-pro" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-25-pro" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-25-pro" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gemini-25-pro/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gemini-25-pro/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-pro:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-pro" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "analyze-selective-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "analyze-selective-v1" }
+            - { name: AUGUR_HOME, value: "/kord/agents/augur-gemini-25-pro/.augur/current" }
+            - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
+            - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       containers:
         - name: agent
@@ -981,7 +1263,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-pro:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -1014,21 +1296,17 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -1060,7 +1338,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -1071,9 +1352,44 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-gemini-25-flash
               AGENT_MEMORY_BUNDLE=analyze-selective-v1 AGENT_RUNTIME_BUNDLE=analyze-selective-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gemini-25-flash
+          env:
+            - { name: AGENT_NAME, value: "augur-gemini-25-flash" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gemini-25-flash\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"bundleRefs\":{\"memory\":\"analyze-selective-v1\",\"skill\":null,\"runtime\":\"analyze-selective-v1\"},\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/kord/agents/augur-gemini-25-flash/.augur/current/scripts/run/build_analysis_context.py\",\"promptContextScript\":\"/kord/agents/augur-gemini-25-flash/.augur/current/scripts/run/build_prompt_context.py\",\"repairPromptScript\":\"/kord/agents/augur-gemini-25-flash/.augur/current/scripts/run/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/kord/agents/augur-gemini-25-flash/.augur/current/skills/analyze/validator/validate.py\",\"finalizeScript\":\"/kord/agents/augur-gemini-25-flash/.augur/current/scripts/run/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"gemini-sdk\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"runArtifactGuidance\":[\"Use the prepared run artifact tools for generated analysis artifacts when available.\",\"Treat `facts/index.json` as the authoritative inventory for optional fact files in this run.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gemini-25-flash" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gemini-25-flash" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gemini-25-flash" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gemini-25-flash/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gemini-25-flash/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-flash:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
+            - { name: DAEMON_PROVIDER, value: "gemini" }
+            - { name: DAEMON_MODEL, value: "gemini-2.5-flash" }
+            - { name: DAEMON_BACKEND, value: "gemini" }
+            - { name: BACKEND_BASE_URL, value: "https://generativelanguage.googleapis.com/v1beta/openai" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "analyze-selective-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "analyze-selective-v1" }
+            - { name: AUGUR_HOME, value: "/kord/agents/augur-gemini-25-flash/.augur/current" }
+            - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
+            - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       containers:
         - name: agent
@@ -1104,7 +1420,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gemini-25-flash:9090/health" }
             - { name: DAEMON_RUNTIME, value: "gemini-sdk" }
@@ -1137,21 +1453,17 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -1183,7 +1495,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -1194,9 +1509,42 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-glm5
               KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-glm5
+          env:
+            - { name: AGENT_NAME, value: "augur-glm5" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-glm5\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/kord/agents/augur-glm5/.augur/current/scripts/run/build_analysis_context.py\",\"promptContextScript\":\"/kord/agents/augur-glm5/.augur/current/scripts/run/build_prompt_context.py\",\"repairPromptScript\":\"/kord/agents/augur-glm5/.augur/current/scripts/run/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/kord/agents/augur-glm5/.augur/current/skills/analyze/validator/validate.py\",\"finalizeScript\":\"/kord/agents/augur-glm5/.augur/current/scripts/run/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-glm5" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-glm5" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-glm5" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-glm5/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-glm5/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-glm5:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "fireworks" }
+            - { name: DAEMON_MODEL, value: "accounts/fireworks/models/glm-5" }
+            - { name: DAEMON_BACKEND, value: "fireworks" }
+            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - { name: AUGUR_HOME, value: "/kord/agents/augur-glm5/.augur/current" }
+            - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
+            - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fireworks-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       containers:
         - name: agent
@@ -1227,7 +1575,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-glm5:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
@@ -1258,21 +1606,17 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -1306,7 +1650,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -1317,9 +1664,42 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-minimax-m2p7
               KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-minimax-m2p7
+          env:
+            - { name: AGENT_NAME, value: "augur-minimax-m2p7" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-minimax-m2p7\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/kord/agents/augur-minimax-m2p7/.augur/current/scripts/run/build_analysis_context.py\",\"promptContextScript\":\"/kord/agents/augur-minimax-m2p7/.augur/current/scripts/run/build_prompt_context.py\",\"repairPromptScript\":\"/kord/agents/augur-minimax-m2p7/.augur/current/scripts/run/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/kord/agents/augur-minimax-m2p7/.augur/current/skills/analyze/validator/validate.py\",\"finalizeScript\":\"/kord/agents/augur-minimax-m2p7/.augur/current/scripts/run/finalize_analysis.py\",\"maxAttempts\":3}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"openclaude-harness\",\"toolGuidance\":[\"Rely on the runtime's advertised tool schema instead of assuming tool names from other runtimes.\",\"Do not invent helper names or wrap nonexistent tools inside Bash.\"],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-minimax-m2p7" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-minimax-m2p7" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-minimax-m2p7" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-minimax-m2p7/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-minimax-m2p7/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-minimax-m2p7:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
+            - { name: DAEMON_PROVIDER, value: "fireworks" }
+            - { name: DAEMON_MODEL, value: "fireworks/minimax-m2p7" }
+            - { name: DAEMON_BACKEND, value: "fireworks" }
+            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - { name: AUGUR_HOME, value: "/kord/agents/augur-minimax-m2p7/.augur/current" }
+            - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
+            - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fireworks-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       containers:
         - name: agent
@@ -1350,7 +1730,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-minimax-m2p7:9090/health" }
             - { name: DAEMON_RUNTIME, value: "openclaude-harness" }
@@ -1381,21 +1761,17 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -1429,7 +1805,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -1440,9 +1819,44 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh augur-gpt54
               KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh augur augur-gpt54
+          env:
+            - { name: AGENT_NAME, value: "augur-gpt54" }
+            - { name: AGENT_PROFILE, value: "augur" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"augur-gpt54\",\"specialization\":\"augur\",\"description\":\"Repository analysis specialist for Augur `/analyze` only\",\"capabilities\":[\"Can produce a blast-aware semantic atlas/story pass via `/analyze` \\u2014 covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work\",\"Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`\"],\"defaultReflectionPrompt\":\"Return strict JSON with exactly {\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}.\\nFor project, focus on design decisions, bundle strategy, and architecture-specific lessons.\\nFor general, focus on transferable architecture and review lessons.\",\"supportedAgentParams\":[\"bundle_mode\"],\"requiresWorkingDirectory\":true,\"acceptedRequestPrefixes\":[\"/analyze\"],\"promptPrefix\":\"You are Augur. Favor design-level reasoning and architecture trade-offs.\",\"workflow\":{\"analysisContextScript\":\"/kord/agents/augur-gpt54/.augur/current/scripts/run/build_analysis_context.py\",\"promptContextScript\":\"/kord/agents/augur-gpt54/.augur/current/scripts/run/build_prompt_context.py\",\"repairPromptScript\":\"/kord/agents/augur-gpt54/.augur/current/scripts/run/build_validation_repair_prompt.py\"},\"validation\":{\"required\":true,\"validatorScript\":\"/kord/agents/augur-gpt54/.augur/current/skills/analyze/validator/validate.py\",\"finalizeScript\":\"/kord/agents/augur-gpt54/.augur/current/scripts/run/finalize_analysis.py\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/augur-gpt54" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/augur-gpt54" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/augur-gpt54" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/augur-gpt54/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/augur-gpt54/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gpt54:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.4" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: AUGUR_HOME, value: "/kord/agents/augur-gpt54/.augur/current" }
+            - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
+            - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codex-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       containers:
         - name: agent
@@ -1477,7 +1891,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-augur-gpt54:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -1485,8 +1899,8 @@ spec:
             - { name: DAEMON_MODEL, value: "gpt-5.4" }
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
-            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
             - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
             - { name: AUGUR_HOME, value: "/kord/agents/augur-gpt54/.augur/current" }
             - { name: AUGUR_RELEASE_STORE, value: "/kord/shared/runtime/artifacts/augur" }
             - { name: AUGUR_RELEASE_CHANNEL, value: "stable" }
@@ -1510,21 +1924,17 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
             - { name: docker-sock, mountPath: /var/run/docker.sock }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
         - name: docker-sock
           hostPath:
             path: /var/run/docker.sock
             type: Socket
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
 ---
 apiVersion: v1
 kind: Service
@@ -1556,7 +1966,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -1567,9 +1980,47 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh charon-gpt53-codex
               AGENT_MEMORY_BUNDLE=platform-core-v1 AGENT_SKILL_BUNDLE=platform-ops-v1 AGENT_RUNTIME_BUNDLE=ops-default-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh charon charon-gpt53-codex
+          env:
+            - { name: AGENT_NAME, value: "charon-gpt53-codex" }
+            - { name: AGENT_PROFILE, value: "charon" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"charon-gpt53-codex\",\"specialization\":\"charon\",\"description\":\"Platform operator for deployments, rollouts, migrations, scaling, and Kubernetes incident response\",\"capabilities\":[\"Can bootstrap a cluster from scratch via /bootstrap\",\"Can add a worker node to the cluster via /add-node\",\"Can roll a service forward between environments via /roll\",\"Can roll a service backward (revert) via /roll\",\"Can migrate workloads between locations via /migrate\",\"Can read cluster state via kubectl\",\"The deployed `charon-gpt53-codex` pod bootstraps `bubblewrap`, `kubectl`, and an in-cluster kubeconfig at startup so Codex shell commands can reach the Kubernetes API\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false,\"bundleRefs\":{\"memory\":\"platform-core-v1\",\"skill\":\"platform-ops-v1\",\"runtime\":\"ops-default-v1\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/charon-gpt53-codex" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/charon-gpt53-codex" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/charon-gpt53-codex" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/charon-gpt53-codex/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/charon-gpt53-codex/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-charon-gpt53-codex:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.3-codex" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SANDBOX_MODE, value: "danger-full-access" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "platform-core-v1" }
+            - { name: AGENT_SKILL_BUNDLE, value: "platform-ops-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "ops-default-v1" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: CODEX_NETWORK_ACCESS_ENABLED, value: "true" }
+            - { name: KUBECONFIG, value: "/home/node/.kube/config" }
+            - { name: KUBECTL_VERSION, value: "v1.34.5" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codex-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-charon:latest
@@ -1639,7 +2090,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-charon-gpt53-codex:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -1647,14 +2098,14 @@ spec:
             - { name: DAEMON_MODEL, value: "gpt-5.3-codex" }
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
-            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
             - { name: CODEX_SANDBOX_MODE, value: "danger-full-access" }
-            - { name: CODEX_NETWORK_ACCESS_ENABLED, value: "true" }
-            - { name: KUBECONFIG, value: "/home/node/.kube/config" }
-            - { name: KUBECTL_VERSION, value: "v1.34.5" }
             - { name: AGENT_MEMORY_BUNDLE, value: "platform-core-v1" }
             - { name: AGENT_SKILL_BUNDLE, value: "platform-ops-v1" }
             - { name: AGENT_RUNTIME_BUNDLE, value: "ops-default-v1" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - { name: CODEX_NETWORK_ACCESS_ENABLED, value: "true" }
+            - { name: KUBECONFIG, value: "/home/node/.kube/config" }
+            - { name: KUBECTL_VERSION, value: "v1.34.5" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -1675,15 +2126,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -1715,7 +2163,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -1726,9 +2177,41 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh sauron-gpt53-codex
               KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh sauron sauron-gpt53-codex
+          env:
+            - { name: AGENT_NAME, value: "sauron-gpt53-codex" }
+            - { name: AGENT_PROFILE, value: "sauron" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"sauron-gpt53-codex\",\"specialization\":\"sauron\",\"description\":\"Monitoring and observability \\u2014 scans for signals, diagnoses issues, designs monitoring systems\",\"capabilities\":[\"Can scan a project for observability signals and map them to architecture via `/monitor`\",\"Can diagnose live production issues by tracing symptoms through the observability catalog via `/monitor --diagnose`\",\"Can implement a complete monitoring system from augur's monitoring-spec.yaml via `/design-monitoring` \\u2014 Grafana dashboards, Prometheus alerts, metric validation\",\"Can validate that a running service emits all metrics specified in augur's monitoring-spec\",\"Can read and write Grafana dashboards, deploy alert rules as ConfigMaps\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"codex-sdk\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/sauron-gpt53-codex" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/sauron-gpt53-codex" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/sauron-gpt53-codex" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/sauron-gpt53-codex/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/sauron-gpt53-codex/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron-gpt53-codex:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "codex-sdk" }
+            - { name: DAEMON_PROVIDER, value: "openai" }
+            - { name: DAEMON_MODEL, value: "gpt-5.3-codex" }
+            - { name: DAEMON_BACKEND, value: "openai" }
+            - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
+            - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codex-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -1762,7 +2245,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-sauron-gpt53-codex:9090/health" }
             - { name: DAEMON_RUNTIME, value: "codex-sdk" }
@@ -1770,8 +2253,8 @@ spec:
             - { name: DAEMON_MODEL, value: "gpt-5.3-codex" }
             - { name: DAEMON_BACKEND, value: "openai" }
             - { name: BACKEND_BASE_URL, value: "https://api.openai.com/v1" }
-            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
             - { name: CODEX_SANDBOX_MODE, value: "workspace-write" }
+            - { name: CODEX_SKIP_GIT_REPO_CHECK, value: "true" }
             - name: BACKEND_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -1792,15 +2275,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service
@@ -1834,7 +2314,10 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -1845,9 +2328,44 @@ spec:
             - |
               bash /app/scripts/setup-agent-dir.sh alfred-gpt-oss-20b
               AGENT_MEMORY_BUNDLE=operate-direct-v1 AGENT_SKILL_BUNDLE=get-store-core-v1 AGENT_RUNTIME_BUNDLE=direct-action-v1 KORDINATE_HOME=/app KORD_RUNTIME=/kord/agents bash /app/scripts/deploy-runtime.sh alfred alfred-gpt-oss-20b
+          env:
+            - { name: AGENT_NAME, value: "alfred-gpt-oss-20b" }
+            - { name: AGENT_PROFILE, value: "alfred" }
+            - { name: AGENT_CONTRACT_JSON, value: "{\"version\":\"agent-spec-v2\",\"name\":\"alfred-gpt-oss-20b\",\"specialization\":\"alfred\",\"description\":\"Profile, config, credentials, and overlay management \\u2014 keeps the environment consistent and ready\",\"capabilities\":[\"Can validate Alfred-owned profile source and its runtime projection via /config\",\"Can list and audit pass store entries via /keys\",\"Can validate and diff kustomize overlays via /overlay\",\"Can run preflight checks for deployment readiness via /preflight\"],\"defaultReflectionPrompt\":\"Based on the completed task, return strict JSON only with exactly these keys:\\n{\\\"project\\\":\\\"...\\\",\\\"general\\\":\\\"...\\\"}\\nproject: lessons specific to the current project/repo/context.\\ngeneral: lessons that transfer to any project.\\nUse strings only. If there is no strong lesson for a key, return an empty string.\",\"supportedAgentParams\":[],\"requiresWorkingDirectory\":false,\"bundleRefs\":{\"memory\":\"operate-direct-v1\",\"skill\":\"get-store-core-v1\",\"runtime\":\"direct-action-v1\"}}" }
+            - { name: RUNTIME_PROFILE_JSON, value: "{\"kind\":\"simple-harness\",\"toolGuidance\":[],\"version\":\"runtime-profile-v2\"}" }
+            - { name: AGENT_HOME_DIR, value: "/kord/agents/alfred-gpt-oss-20b" }
+            - { name: AGENT_STATE_DIR, value: "/kord/agents/alfred-gpt-oss-20b" }
+            - { name: DAEMON_WORKING_DIRECTORY, value: "/kord/agents/alfred-gpt-oss-20b" }
+            - { name: DAEMON_STATE_DIR, value: "/kord/agents/alfred-gpt-oss-20b/.daemon-state" }
+            - { name: DAEMON_SESSION_MAP_PATH, value: "/kord/agents/alfred-gpt-oss-20b/.daemon-state/sessions.json" }
+            - { name: KAFKA_BROKERS, value: "kafka-kafka-bootstrap.dev.svc.cluster.local:9092" }
+            - { name: KAFKA_SESSION_TIMEOUT_MS, value: "30000" }
+            - { name: KAFKA_HEARTBEAT_INTERVAL_MS, value: "3000" }
+            # Standard Unix home for shells and CLIs that implicitly read $HOME.
+            - { name: HOME, value: "/home/node" }
+            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
+            - { name: KORDINATE_HOME, value: "/app" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
+            - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
+            - { name: DAEMON_HEALTH_URL, value: "http://agent-alfred-gpt-oss-20b:9090/health" }
+            - { name: DAEMON_RUNTIME, value: "simple-harness" }
+            - { name: DAEMON_PROVIDER, value: "fireworks" }
+            - { name: DAEMON_MODEL, value: "fireworks/gpt-oss-20b" }
+            - { name: DAEMON_BACKEND, value: "fireworks" }
+            - { name: BACKEND_BASE_URL, value: "https://api.fireworks.ai/inference/v1" }
+            - { name: AGENT_MEMORY_BUNDLE, value: "operate-direct-v1" }
+            - { name: AGENT_SKILL_BUNDLE, value: "get-store-core-v1" }
+            - { name: AGENT_RUNTIME_BUNDLE, value: "direct-action-v1" }
+            - { name: PASSWORD_STORE_DIR, value: "/kord/alfred/pass" }
+            - { name: GNUPGHOME, value: "/kord/alfred/gnupg" }
+            - name: BACKEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: fireworks-api
+                  key: api-key
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       containers:
         - name: agent
           image: REGISTRY/agent-base:latest
@@ -1877,7 +2395,7 @@ spec:
             - { name: HOME, value: "/home/node" }
             # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.
             - { name: KORDINATE_HOME, value: "/app" }
-            - { name: PROJECTS_ROOT, value: "/kord/repos" }
+            - { name: PROJECTS_ROOT, value: "/kord/shared/repos" }
             - { name: DISCOVERY_SERVER_URL, value: "http://kord-api:9091" }
             - { name: DAEMON_HEALTH_URL, value: "http://agent-alfred-gpt-oss-20b:9090/health" }
             - { name: DAEMON_RUNTIME, value: "simple-harness" }
@@ -1910,15 +2428,12 @@ spec:
             periodSeconds: 30
           volumeMounts:
             - { name: runtime, mountPath: /kord }
-
+            - { name: kord-shared, mountPath: /kord/shared }
       volumes:
         - name: runtime
           persistentVolumeClaim: { claimName: agent-runtime }
-
-      securityContext:
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
+        - name: kord-shared
+          persistentVolumeClaim: { claimName: kord }
 ---
 apiVersion: v1
 kind: Service

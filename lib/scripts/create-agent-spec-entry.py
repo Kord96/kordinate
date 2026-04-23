@@ -48,7 +48,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--runtime-bundle", default="", help="Specialist runtime bundle name when required by the creation profile")
     parser.add_argument("--default-working-dir", default="", help="Optional default working directory for tasks")
     parser.add_argument("--default-timeout-ms", type=int, default=0, help="Optional default timeout in milliseconds for requests routed through the API")
-    parser.add_argument("--working-directory", default="", help="Deprecated alias for --default-working-dir")
     parser.add_argument("--skip-git-repo-check", action="store_true", help="Set CODEX_SKIP_GIT_REPO_CHECK=true")
     parser.add_argument("--sandbox-mode", default="", help="Optional codex sandbox mode override")
     parser.add_argument("--min-replicas", type=int, default=0)
@@ -173,9 +172,8 @@ def build_agent(args: argparse.Namespace) -> dict:
         }
     if profile["backend_base_url"]:
         agent["runtime"]["daemon"]["backend"]["base_url"] = profile["backend_base_url"]
-    default_working_dir = args.default_working_dir or args.working_directory
-    if default_working_dir:
-        agent["runtime"]["daemon"]["default_working_dir"] = default_working_dir
+    if args.default_working_dir:
+        agent["runtime"]["daemon"]["default_working_dir"] = args.default_working_dir
     if args.default_timeout_ms > 0:
         agent["runtime"]["daemon"]["default_timeout_ms"] = args.default_timeout_ms
     if profile["skip_git_repo_check"]:

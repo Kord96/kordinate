@@ -167,7 +167,7 @@ test('buildPromptPlan keeps cacheable prefix separate from task prompt and runti
     correlation_id: 'corr-1',
     prompt: 'Analyze only the auth flow',
     workspace: {
-      working_dir: '/kord/repos/kordinate',
+      working_dir: '/kord/shared/repos/kordinate',
       output_dir: '/tmp/run',
     },
   })
@@ -175,7 +175,7 @@ test('buildPromptPlan keeps cacheable prefix separate from task prompt and runti
   assert.match(promptPlan.cacheablePrefix ?? '', /You are Augur/)
   assert.doesNotMatch(promptPlan.cacheablePrefix ?? '', /Analyze only the auth flow/)
   assert.match(promptPlan.dynamicPrompt, /Analyze only the auth flow/)
-  assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/repos\/kordinate`/)
+  assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/shared\/repos\/kordinate`/)
   assert.match(promptPlan.dynamicPrompt, /Output directory: `\/tmp\/run`/)
 })
 
@@ -206,7 +206,7 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
     correlation_id: 'corr-1',
     prompt: 'Analyze the repo',
     workspace: {
-      working_dir: '/kord/repos/repo',
+      working_dir: '/kord/shared/repos/repo',
       output_dir: '/tmp/run',
       agent_root: '/kord/agents/augur-opus/.augur/current',
     },
@@ -220,7 +220,7 @@ test('buildPromptPlan renders workspace contract and runtime guidance when reque
     },
   })
 
-  assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/repos\/repo`/)
+  assert.match(promptPlan.dynamicPrompt, /Working directory: `\/kord\/shared\/repos\/repo`/)
   assert.match(promptPlan.dynamicPrompt, /Output directory: `\/tmp\/run`/)
   assert.match(promptPlan.dynamicPrompt, /Agent root: `\/kord\/agents\/augur-opus\/\.augur\/current`/)
   assert.match(promptPlan.dynamicPrompt, /Concept catalog entrypoint: `\/kord\/agents\/augur-opus\/\.augur\/current\/memory\/concepts\/README\.md`/)

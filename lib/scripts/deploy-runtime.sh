@@ -6,7 +6,7 @@
 #
 # Copies from repo → runtime:
 #   repo/agents/<name>/memory/     → <runtime>/<name>/memory/global/ (recursive, no-clobber)
-#   repo/agents/<name>/IDENTITY.md → <runtime>/<name>/identity.md (strip frontmatter)
+#   repo/agents/<name>/IDENTITY.md → <runtime>/<name>/identity.md (strip frontmatter when present)
 #   repo/agents/<name>/skills/     → <runtime>/<name>/skills/ (symlinks to repo)
 #   repo/shared/skills/ + repo/agents/<name>/skills/
 #                                  → <runtime>/<name>/.claude/skills/ (symlinks for Claude-family runtimes)
@@ -134,6 +134,61 @@ normalize_api_key_env() {
   esac
 }
 
+derive_backend_seed() {
+  local runtime_kind="${DAEMON_RUNTIME:-}"
+  local daemon_provider="${DAEMON_PROVIDER:-anthropic}"
+  local daemon_model="${DAEMON_MODEL:-sonnet}"
+  local backend_base_url="${BACKEND_BASE_URL:-}"
+
+  PROFILE=""
+  PROVIDER="$daemon_provider"
+  MODEL="$daemon_model"
+  BASE_URL="$backend_base_url"
+  API_KEY_REF=""
+  API_KEY_ENV=""
+  BACKEND_NAME=""
+  BACKEND_STRATEGY="first"
+
+  case "$runtime_kind:$daemon_provider" in
+    claude-agent-sdk:*|*:anthropic|*:claude)
+      PROFILE="anthropic"
+      PROVIDER="anthropic"
+      ;;
+    gemini-sdk:*|*:gemini)
+      PROFILE="gemini"
+      PROVIDER="gemini"
+      ;;
+    *:ollama)
+      PROFILE="ollama"
+      PROVIDER="ollama"
+      BASE_URL="${BASE_URL:-http://localhost:11434/v1}"
+      BACKEND_NAME="ollama"
+      ;;
+    *:deepseek)
+      PROFILE="openai"
+      PROVIDER="deepseek"
+      BASE_URL="${BASE_URL:-https://api.deepseek.com/v1}"
+      BACKEND_NAME="deepseek"
+      ;;
+    *:fireworks)
+      PROFILE="openai"
+      PROVIDER="fireworks"
+      BASE_URL="${BASE_URL:-https://api.fireworks.ai/inference/v1}"
+      BACKEND_NAME="fireworks"
+      ;;
+    openclaude-harness:*|simple-harness:*|codex-sdk:*|*:openai)
+      PROFILE="openai"
+      PROVIDER="${daemon_provider:-openai}"
+      ;;
+    *)
+      PROFILE="anthropic"
+      ;;
+  esac
+
+  BACKEND_NAME=$(normalize_backend_name "$PROFILE" "$MODEL" "$BASE_URL" "$BACKEND_NAME")
+  API_KEY_ENV=$(normalize_api_key_env "$PROFILE" "$BASE_URL" "$BACKEND_NAME" "$API_KEY_ENV")
+}
+
 deploy_agent() {
   local SOURCE_AGENT="$1"
   local DEST_AGENT="$2"
@@ -224,7 +279,7 @@ deploy_agent() {
     log "  Alfred shared pass/GPG runtime prepared"
   fi
 
-  # Extract profile + backend configuration
+  # Seed runtime backend profile files from explicit backend data.
   local PROFILE=""
   local MODEL="sonnet"
   local PROVIDER="anthropic"
@@ -238,73 +293,6 @@ deploy_agent() {
     METADATA_SRC="$EFFECTIVE_SRC"
   fi
   local BACKENDS_FILE="$METADATA_SRC/BACKENDS.json"
-
-  if [ -f "$METADATA_SRC/IDENTITY.md" ]; then
-    PROFILE=$(sed -n 's/^profile: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
-    MODEL=$(sed -n 's/^model: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
-    [ -z "$MODEL" ] && MODEL="sonnet"
-    BASE_URL=$(sed -n 's/^base_url: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
-    API_KEY_REF=$(sed -n 's/^api_key_ref: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
-    API_KEY_ENV=$(sed -n 's/^api_key_env: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
-    BACKEND_NAME=$(sed -n 's/^backend_name: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
-    BACKEND_STRATEGY=$(sed -n 's/^backend_strategy: *//p' "$METADATA_SRC/IDENTITY.md" | head -1)
-    [ -z "$BACKEND_STRATEGY" ] && BACKEND_STRATEGY="first"
-  fi
-
-  # Backward compatibility: map legacy model/provider specs into the new profile model
-  if [ -z "$PROFILE" ]; then
-    PROVIDER="anthropic"
-    if [[ "$MODEL" == *":"* ]]; then
-      PROVIDER="${MODEL%%:*}"
-      MODEL="${MODEL#*:}"
-    fi
-
-    case "$PROVIDER" in
-      claude|anthropic)
-        PROFILE="anthropic"
-        ;;
-      deepseek)
-        PROFILE="openai"
-        BASE_URL="${BASE_URL:-https://api.deepseek.com/v1}"
-        BACKEND_NAME="${BACKEND_NAME:-deepseek}"
-        ;;
-      fireworks)
-        PROFILE="openai"
-        BASE_URL="${BASE_URL:-https://api.fireworks.ai/inference/v1}"
-        BACKEND_NAME="${BACKEND_NAME:-fireworks}"
-        ;;
-      openai)
-        PROFILE="openai"
-        ;;
-      gemini)
-        PROFILE="gemini"
-        ;;
-      ollama)
-        PROFILE="ollama"
-        BASE_URL="${BASE_URL:-http://localhost:11434/v1}"
-        BACKEND_NAME="${BACKEND_NAME:-ollama}"
-        ;;
-      *)
-        PROFILE="anthropic"
-        ;;
-    esac
-  fi
-
-  case "$PROFILE" in
-    claude)
-      PROFILE="anthropic"
-      ;;
-  esac
-
-  BACKEND_NAME=$(normalize_backend_name "$PROFILE" "$MODEL" "$BASE_URL" "$BACKEND_NAME")
-  API_KEY_ENV=$(normalize_api_key_env "$PROFILE" "$BASE_URL" "$BACKEND_NAME" "$API_KEY_ENV")
-  PROVIDER="$PROFILE"
-
-  if [ "$PROFILE" = "anthropic" ] && [ -z "$BASE_URL" ]; then
-    BASE_URL=""
-  elif [ "$PROFILE" = "ollama" ] && [ -z "$BASE_URL" ]; then
-    BASE_URL="http://localhost:11434/v1"
-  fi
 
   if [ -f "$BACKENDS_FILE" ]; then
     python3 - "$BACKENDS_FILE" "$DST/.openclaude-backends.json" "$BACKEND_STRATEGY" <<'PY'
@@ -323,6 +311,7 @@ with open(dst, 'w', encoding='utf-8') as f:
     f.write('\n')
 PY
   else
+    derive_backend_seed
     python3 - "$DST/.openclaude-backends.json" "$PROFILE" "$PROVIDER" "$BACKEND_NAME" "$MODEL" "$BASE_URL" "$API_KEY_ENV" "$API_KEY_REF" "$BACKEND_STRATEGY" <<'PY'
 import json, sys
 (dst, profile, provider, backend_name, model, base_url, api_key_env, api_key_ref, selection) = sys.argv[1:10]

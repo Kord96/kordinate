@@ -5,13 +5,25 @@ import argparse
 import json
 import shlex
 import textwrap
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 
 
-SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron"}
+REPO_ROOT = Path("/kord/workstation/home/project/kordinate")
+AGENT_METADATA_DIR = REPO_ROOT / "shared" / "runtime" / "agent-metadata"
+PLATFORM_SPEC_HEADER = "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
+PROJECTS_ROOT = "/kord/shared/repos"
+RUNTIME_MOUNT = ("runtime", "/kord")
+SHARED_MOUNT = ("kord-shared", "/kord/shared")
+DEFAULT_POD_SECURITY = [
+    "      securityContext:",
+    "        fsGroup: 1000",
+    "        seccompProfile:",
+    "          type: RuntimeDefault",
+]
 DEFAULT_REFLECTION_PROMPT = "\n".join([
     "Based on the completed task, return strict JSON only with exactly these keys:",
     '{"project":"...","general":"..."}',
@@ -41,77 +53,66 @@ DEFAULT_RUNTIME_PROFILES = {
     },
     "codex-sdk": {"kind": "codex-sdk", "toolGuidance": []},
 }
+SPECIAL_FLAVORS = {"augur", "charon", "alfred", "sauron"}
+
+
+@dataclass(frozen=True)
+class VolumeMount:
+    name: str
+    mount_path: str
+
+
+@dataclass(frozen=True)
+class Volume:
+    name: str
+    kind: str
+    value: str
+    extra_type: str | None = None
+
+
+def yaml_block(text: str, spaces: int = 14) -> str:
+    return textwrap.indent(text, " " * spaces)
+
+
+def normalize_flavor(agent: dict) -> str:
+    explicit = agent.get("flavor")
+    if isinstance(explicit, str) and explicit.strip():
+        return explicit.strip()
+    name = str(agent["name"])
+    return name if name in SPECIAL_FLAVORS else "generic"
 
 
 def infer_supported_agent_params(agent: dict) -> list[str]:
-    flavor = agent.get("flavor") or (agent["name"] if agent["name"] in SPECIAL_FLAVORS else "generic")
-    if flavor == "augur":
-        return ["bundle_mode"]
-    return []
+    return ["bundle_mode"] if normalize_flavor(agent) == "augur" else []
 
 
-def parse_identity(agent: dict) -> dict:
-    flavor = agent.get("flavor") or (agent["name"] if agent["name"] in SPECIAL_FLAVORS else "generic")
-    metadata_path = Path(f"/kord/workstation/home/project/kordinate/shared/runtime/agent-metadata/{flavor}.json")
+def load_agent_metadata(agent: dict) -> dict:
+    flavor = normalize_flavor(agent)
+    metadata_path = AGENT_METADATA_DIR / f"{flavor}.json"
     if metadata_path.exists():
         return json.loads(metadata_path.read_text(encoding="utf-8"))
-    identity_path = Path(f"/kord/workstation/home/project/kordinate/agents/{flavor}/IDENTITY.md")
-    if not identity_path.exists():
-        return {
-            "name": agent["name"],
-            "description": "",
-            "capabilities": [],
-        }
-
-    text = identity_path.read_text(encoding="utf-8")
-    lines = text.splitlines()
-    frontmatter: dict[str, str] = {}
-    if lines and lines[0].strip() == "---":
-        for line in lines[1:]:
-            if line.strip() == "---":
-                break
-            if ":" in line and not line.lstrip().startswith("- "):
-                key, value = line.split(":", 1)
-                frontmatter[key.strip()] = value.strip()
-
-    capabilities: list[str] = []
-    in_capabilities = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped == "## Capabilities":
-            in_capabilities = True
-            continue
-        if in_capabilities and stripped.startswith("## "):
-            break
-        if in_capabilities and stripped.startswith("- "):
-            capabilities.append(stripped[2:].strip())
-
     return {
-        "name": frontmatter.get("name", agent["name"]),
-        "description": frontmatter.get("description", ""),
-        "capabilities": capabilities,
+        "name": agent["name"],
+        "description": "",
+        "capabilities": [],
     }
 
 
 def build_discovery_record(agent: dict, generated_at: str) -> dict:
-    name = agent["name"]
-    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
-    identity = parse_identity(agent)
+    identity = load_agent_metadata(agent)
     daemon = agent.get("runtime", {}).get("daemon", {})
-    default_working_dir = daemon.get("default_working_dir")
-    default_timeout_ms = daemon.get("default_timeout_ms")
     return {
-        "name": name,
+        "name": agent["name"],
         "capabilities": identity["capabilities"],
         "backend_provider": daemon.get("provider", "unknown"),
         "backend_model": str(daemon.get("model", "unknown")),
         "supported_agent_params": infer_supported_agent_params(agent),
         "active": False,
-        "specialization": flavor,
+        "specialization": normalize_flavor(agent),
         "runtime": daemon.get("kind", "openclaude-harness"),
-        "health_url": f"http://agent-{name}:9090/health",
-        "default_working_dir": default_working_dir,
-        "default_timeout_ms": default_timeout_ms,
+        "health_url": f"http://agent-{agent['name']}:9090/health",
+        "default_working_dir": daemon.get("default_working_dir"),
+        "default_timeout_ms": daemon.get("default_timeout_ms"),
         "registered_at": generated_at,
         "last_seen_at": generated_at,
         "request_topic": agent["runtime"]["kafka"]["request_topic"],
@@ -120,14 +121,13 @@ def build_discovery_record(agent: dict, generated_at: str) -> dict:
 
 def build_agent_contract(spec: dict, agent: dict) -> dict:
     spec_version = str(spec.get("version", "1"))
-    name = agent["name"]
-    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    flavor = normalize_flavor(agent)
     creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
     agent_home_dir = agent["runtime"]["state"]["agent_home_dir"]
-    identity = parse_identity(agent)
+    identity = load_agent_metadata(agent)
     contract = {
         "version": f"agent-spec-v{spec_version}",
-        "name": name,
+        "name": agent["name"],
         "specialization": flavor,
         "description": identity["description"],
         "capabilities": identity["capabilities"],
@@ -138,11 +138,7 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
 
     accepted_prefixes = agent.get("accepted_request_prefixes")
     if isinstance(accepted_prefixes, list):
-        normalized_prefixes = [
-            str(prefix).strip()
-            for prefix in accepted_prefixes
-            if isinstance(prefix, str) and str(prefix).strip()
-        ]
+        normalized_prefixes = [str(prefix).strip() for prefix in accepted_prefixes if str(prefix).strip()]
         if normalized_prefixes:
             contract["acceptedRequestPrefixes"] = normalized_prefixes
 
@@ -167,22 +163,23 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
             "promptContextScript": f"{augur_home}/scripts/run/build_prompt_context.py",
             "repairPromptScript": f"{augur_home}/scripts/run/build_validation_repair_prompt.py",
         }
-        contract["validation"] = {
+        validation = {
             "required": True,
             "validatorScript": f"{augur_home}/skills/analyze/validator/validate.py",
             "finalizeScript": f"{augur_home}/scripts/run/finalize_analysis.py",
         }
-        validation = agent.get("validation") if isinstance(agent.get("validation"), dict) else {}
-        max_attempts = validation.get("max_attempts", validation.get("maxAttempts"))
+        authored_validation = agent.get("validation") if isinstance(agent.get("validation"), dict) else {}
+        max_attempts = authored_validation.get("max_attempts", authored_validation.get("maxAttempts"))
         if isinstance(max_attempts, int):
-            contract["validation"]["maxAttempts"] = max_attempts
+            validation["maxAttempts"] = max_attempts
+        contract["validation"] = validation
 
     return contract
 
 
 def resolve_runtime_profile(spec: dict, agent: dict) -> dict:
-    spec_version = str(spec.get("version", "1"))
     runtime_kind = str(agent.get("runtime", {}).get("daemon", {}).get("kind", ""))
+    spec_version = str(spec.get("version", "1"))
     authored_profiles = spec.get("runtime_profiles", {}) if isinstance(spec.get("runtime_profiles"), dict) else {}
     profile = dict(DEFAULT_RUNTIME_PROFILES.get(runtime_kind, {"kind": runtime_kind, "toolGuidance": []}))
     authored = authored_profiles.get(runtime_kind)
@@ -195,27 +192,22 @@ def resolve_runtime_profile(spec: dict, agent: dict) -> dict:
 
 def image_ref(agent: dict) -> str:
     customization = agent["image"]["customization"]
-    if customization in (None, "none"):
-        return "REGISTRY/agent-base:latest"
-    return f"REGISTRY/{customization}:latest"
+    return "REGISTRY/agent-base:latest" if customization in (None, "none") else f"REGISTRY/{customization}:latest"
 
 
-def emit_env_lines(spec: dict, agent: dict) -> list[str]:
-    name = agent["name"]
-    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+def build_env_entries(spec: dict, agent: dict) -> list[tuple[str, str]]:
+    flavor = normalize_flavor(agent)
     agent_home_dir = agent["runtime"]["state"]["agent_home_dir"]
     state_dir = agent["runtime"]["state"]["state_dir"]
     daemon = agent.get("runtime", {}).get("daemon", {})
     backend = daemon.get("backend", {}) if isinstance(daemon.get("backend"), dict) else {}
     creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
-    agent_contract_json = json.dumps(build_agent_contract(spec, agent), separators=(",", ":"))
-    runtime_profile_json = json.dumps(resolve_runtime_profile(spec, agent), separators=(",", ":"))
 
-    env = [
-        ("AGENT_NAME", name),
+    entries: list[tuple[str, str]] = [
+        ("AGENT_NAME", agent["name"]),
         ("AGENT_PROFILE", flavor),
-        ("AGENT_CONTRACT_JSON", agent_contract_json),
-        ("RUNTIME_PROFILE_JSON", runtime_profile_json),
+        ("AGENT_CONTRACT_JSON", json.dumps(build_agent_contract(spec, agent), separators=(",", ":"))),
+        ("RUNTIME_PROFILE_JSON", json.dumps(resolve_runtime_profile(spec, agent), separators=(",", ":"))),
         ("AGENT_HOME_DIR", agent_home_dir),
         ("AGENT_STATE_DIR", state_dir),
         ("DAEMON_WORKING_DIRECTORY", agent_home_dir),
@@ -226,53 +218,58 @@ def emit_env_lines(spec: dict, agent: dict) -> list[str]:
         ("KAFKA_HEARTBEAT_INTERVAL_MS", "3000"),
         ("HOME", "/home/node"),
         ("KORDINATE_HOME", "/app"),
-        ("PROJECTS_ROOT", "/kord/repos"),
+        ("PROJECTS_ROOT", PROJECTS_ROOT),
         ("DISCOVERY_SERVER_URL", "http://kord-api:9091"),
-        ("DAEMON_HEALTH_URL", f"http://agent-{name}:9090/health"),
+        ("DAEMON_HEALTH_URL", f"http://agent-{agent['name']}:9090/health"),
     ]
 
-    if daemon.get("kind"):
-        env.append(("DAEMON_RUNTIME", daemon["kind"]))
-    if daemon.get("provider"):
-        env.append(("DAEMON_PROVIDER", daemon["provider"]))
-    if daemon.get("model"):
-        env.append(("DAEMON_MODEL", str(daemon["model"])))
-    if backend.get("name"):
-        env.append(("DAEMON_BACKEND", backend["name"]))
-    if backend.get("base_url"):
-        env.append(("BACKEND_BASE_URL", backend["base_url"]))
-    if daemon.get("default_working_dir"):
-        env.append(("CODEX_WORKING_DIRECTORY", daemon["default_working_dir"]))
-    if daemon.get("skip_git_repo_check") is not None:
-        env.append(("CODEX_SKIP_GIT_REPO_CHECK", "true" if daemon["skip_git_repo_check"] else "false"))
-    if daemon.get("sandbox_mode"):
-        env.append(("CODEX_SANDBOX_MODE", str(daemon["sandbox_mode"])))
-    if name == "charon-gpt53-codex":
-        env.append(("CODEX_NETWORK_ACCESS_ENABLED", "true"))
-        env.append(("KUBECONFIG", "/home/node/.kube/config"))
-        env.append(("KUBECTL_VERSION", "v1.34.5"))
-    if creation.get("memory_bundle"):
-        env.append(("AGENT_MEMORY_BUNDLE", creation["memory_bundle"]))
-    if creation.get("skill_bundle"):
-        env.append(("AGENT_SKILL_BUNDLE", creation["skill_bundle"]))
-    if creation.get("runtime_bundle"):
-        env.append(("AGENT_RUNTIME_BUNDLE", creation["runtime_bundle"]))
-    if flavor == "alfred":
-        env.append(("PASSWORD_STORE_DIR", "/kord/alfred/pass"))
-        env.append(("GNUPGHOME", "/kord/alfred/gnupg"))
-    if flavor == "augur":
-        env.append(("AUGUR_HOME", f"{agent_home_dir}/.augur/current"))
-        env.append(("AUGUR_RELEASE_STORE", "/kord/shared/runtime/artifacts/augur"))
-        env.append(("AUGUR_RELEASE_CHANNEL", "stable"))
+    optional_entries = [
+        ("DAEMON_RUNTIME", daemon.get("kind")),
+        ("DAEMON_PROVIDER", daemon.get("provider")),
+        ("DAEMON_MODEL", str(daemon["model"]) if daemon.get("model") else None),
+        ("DAEMON_BACKEND", backend.get("name")),
+        ("BACKEND_BASE_URL", backend.get("base_url")),
+        ("CODEX_WORKING_DIRECTORY", daemon.get("default_working_dir")),
+        ("CODEX_SANDBOX_MODE", str(daemon["sandbox_mode"]) if daemon.get("sandbox_mode") else None),
+        ("AGENT_MEMORY_BUNDLE", creation.get("memory_bundle")),
+        ("AGENT_SKILL_BUNDLE", creation.get("skill_bundle")),
+        ("AGENT_RUNTIME_BUNDLE", creation.get("runtime_bundle")),
+    ]
+    entries.extend([(key, value) for key, value in optional_entries if value])
 
+    if daemon.get("skip_git_repo_check") is not None:
+        entries.append(("CODEX_SKIP_GIT_REPO_CHECK", "true" if daemon["skip_git_repo_check"] else "false"))
+    if agent["name"] == "charon-gpt53-codex":
+        entries.extend([
+            ("CODEX_NETWORK_ACCESS_ENABLED", "true"),
+            ("KUBECONFIG", "/home/node/.kube/config"),
+            ("KUBECTL_VERSION", "v1.34.5"),
+        ])
+    if flavor == "alfred":
+        entries.extend([
+            ("PASSWORD_STORE_DIR", "/kord/alfred/pass"),
+            ("GNUPGHOME", "/kord/alfred/gnupg"),
+        ])
+    if flavor == "augur":
+        entries.extend([
+            ("AUGUR_HOME", f"{agent_home_dir}/.augur/current"),
+            ("AUGUR_RELEASE_STORE", "/kord/shared/runtime/artifacts/augur"),
+            ("AUGUR_RELEASE_CHANNEL", "stable"),
+        ])
+
+    return entries
+
+
+def render_env_lines(spec: dict, agent: dict) -> list[str]:
     env_lines: list[str] = []
-    for key, value in env:
+    for key, value in build_env_entries(spec, agent):
         if key == "HOME":
             env_lines.append("            # Standard Unix home for shells and CLIs that implicitly read $HOME.")
         if key == "KORDINATE_HOME":
             env_lines.append("            # Baked Kordinate code root inside the image; keep distinct from $HOME and AGENT_HOME_DIR.")
         env_lines.append(f"            - {{ name: {key}, value: {json.dumps(value)} }}")
 
+    daemon = agent.get("runtime", {}).get("daemon", {})
     secret = daemon.get("secret", {}) if isinstance(daemon.get("secret"), dict) else {}
     if secret.get("env") and secret.get("name") and secret.get("key"):
         env_lines.extend([
@@ -282,13 +279,11 @@ def emit_env_lines(spec: dict, agent: dict) -> list[str]:
             f"                  name: {secret['name']}",
             f"                  key: {secret['key']}",
         ])
-
     return env_lines
 
 
 def build_init_script(agent: dict) -> str:
-    name = agent["name"]
-    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
+    flavor = normalize_flavor(agent)
     creation = agent.get("creation", {}) if isinstance(agent.get("creation"), dict) else {}
     env_prefix = []
     if creation.get("memory_bundle"):
@@ -297,68 +292,60 @@ def build_init_script(agent: dict) -> str:
         env_prefix.append(f"AGENT_SKILL_BUNDLE={shlex.quote(str(creation['skill_bundle']))}")
     if creation.get("runtime_bundle"):
         env_prefix.append(f"AGENT_RUNTIME_BUNDLE={shlex.quote(str(creation['runtime_bundle']))}")
-    env_prefix.append("KORDINATE_HOME=/app")
-    env_prefix.append("KORD_RUNTIME=/kord/agents")
+    env_prefix.extend(["KORDINATE_HOME=/app", "KORD_RUNTIME=/kord/agents"])
     prefix = " ".join(env_prefix)
-    lines = [f"bash /app/scripts/setup-agent-dir.sh {shlex.quote(name)}"]
+    lines = [f"bash /app/scripts/setup-agent-dir.sh {shlex.quote(agent['name'])}"]
     if flavor in SPECIAL_FLAVORS:
-        if flavor == name:
-            lines.append(f"{prefix} bash /app/scripts/deploy-runtime.sh {shlex.quote(name)}")
+        if flavor == agent["name"]:
+            lines.append(f"{prefix} bash /app/scripts/deploy-runtime.sh {shlex.quote(agent['name'])}")
         else:
-            lines.append(
-                f"{prefix} bash /app/scripts/deploy-runtime.sh "
-                f"{shlex.quote(flavor)} {shlex.quote(name)}"
-            )
+            lines.append(f"{prefix} bash /app/scripts/deploy-runtime.sh {shlex.quote(flavor)} {shlex.quote(agent['name'])}")
     return "\n".join(lines)
 
 
 def build_exec_script(agent: dict) -> str:
     command = agent.get("runtime", {}).get("command") or ["klaude-daemon"]
-    if agent["name"] == "charon-gpt53-codex":
-        lines = [
-            "set -e",
-            "if ! command -v bwrap >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then",
-            "  export DEBIAN_FRONTEND=noninteractive",
-            "  apt-get update >/dev/null",
-            "  apt-get install -y --no-install-recommends bubblewrap curl ca-certificates >/dev/null",
-            "fi",
-            "if ! command -v kubectl >/dev/null 2>&1; then",
-            "  curl -fsSL -o /usr/local/bin/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION:-v1.34.5}/bin/linux/amd64/kubectl",
-            "  chmod +x /usr/local/bin/kubectl",
-            "fi",
-            "mkdir -p /home/node/.kube",
-            "TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)",
-            "CA=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
-            "SERVER=https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}",
-            "cat > /home/node/.kube/config <<KUBECONFIG_EOF",
-            "apiVersion: v1",
-            "kind: Config",
-            "clusters:",
-            "- cluster:",
-            "    certificate-authority: ${CA}",
-            "    server: ${SERVER}",
-            "  name: in-cluster",
-            "contexts:",
-            "- context:",
-            "    cluster: in-cluster",
-            "    namespace: kord",
-            "    user: serviceaccount",
-            "  name: in-cluster",
-            "current-context: in-cluster",
-            "users:",
-            "- name: serviceaccount",
-            "  user:",
-            "    token: ${TOKEN}",
-            "KUBECONFIG_EOF",
-            "chmod 600 /home/node/.kube/config",
-            "exec " + " ".join(shlex.quote(part) for part in command),
-        ]
-        return "\n".join(lines)
-    return "exec " + " ".join(shlex.quote(part) for part in command)
-
-
-def pod_security_lines(agent: dict) -> list[str]:
-    return []
+    if agent["name"] != "charon-gpt53-codex":
+        return "exec " + " ".join(shlex.quote(part) for part in command)
+    lines = [
+        "set -e",
+        "if ! command -v bwrap >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then",
+        "  export DEBIAN_FRONTEND=noninteractive",
+        "  apt-get update >/dev/null",
+        "  apt-get install -y --no-install-recommends bubblewrap curl ca-certificates >/dev/null",
+        "fi",
+        "if ! command -v kubectl >/dev/null 2>&1; then",
+        "  curl -fsSL -o /usr/local/bin/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION:-v1.34.5}/bin/linux/amd64/kubectl",
+        "  chmod +x /usr/local/bin/kubectl",
+        "fi",
+        "mkdir -p /home/node/.kube",
+        "TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)",
+        "CA=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+        "SERVER=https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}",
+        "cat > /home/node/.kube/config <<KUBECONFIG_EOF",
+        "apiVersion: v1",
+        "kind: Config",
+        "clusters:",
+        "- cluster:",
+        "    certificate-authority: ${CA}",
+        "    server: ${SERVER}",
+        "  name: in-cluster",
+        "contexts:",
+        "- context:",
+        "    cluster: in-cluster",
+        "    namespace: kord",
+        "    user: serviceaccount",
+        "  name: in-cluster",
+        "current-context: in-cluster",
+        "users:",
+        "- name: serviceaccount",
+        "  user:",
+        "    token: ${TOKEN}",
+        "KUBECONFIG_EOF",
+        "chmod 600 /home/node/.kube/config",
+        "exec " + " ".join(shlex.quote(part) for part in command),
+    ]
+    return "\n".join(lines)
 
 
 def container_security_lines(agent: dict) -> list[str]:
@@ -374,44 +361,65 @@ def container_security_lines(agent: dict) -> list[str]:
             "              add:",
             "                - SYS_ADMIN",
         ]
-    if daemon.get("kind") != "codex-sdk":
+    if daemon.get("kind") == "codex-sdk":
         return [
             "            runAsNonRoot: true",
             "            runAsUser: 1000",
             "            runAsGroup: 1000",
+            "            capabilities:",
+            "              add:",
+            "                - SETUID",
+            "                - SETGID",
         ]
-
     return [
         "            runAsNonRoot: true",
         "            runAsUser: 1000",
         "            runAsGroup: 1000",
-        "            capabilities:",
-        "              add:",
-        "                - SETUID",
-        "                - SETGID",
     ]
 
 
-def pod_level_security_lines(agent: dict) -> list[str]:
-    daemon = agent.get("runtime", {}).get("daemon", {})
-    base = [
-        "      securityContext:",
-        "        fsGroup: 1000",
-        "        seccompProfile:",
-        "          type: RuntimeDefault",
+def volume_mounts_for(agent: dict) -> list[VolumeMount]:
+    mounts = [VolumeMount(*RUNTIME_MOUNT), VolumeMount(*SHARED_MOUNT)]
+    if normalize_flavor(agent) == "augur":
+        mounts.append(VolumeMount("docker-sock", "/var/run/docker.sock"))
+    return mounts
+
+
+def volumes_for(agent: dict) -> list[Volume]:
+    volumes = [
+        Volume("runtime", "persistentVolumeClaim", "agent-runtime"),
+        Volume("kord-shared", "persistentVolumeClaim", "kord"),
     ]
-    if daemon.get("kind") != "codex-sdk":
-        return base
-    return base
+    if normalize_flavor(agent) == "augur":
+        volumes.append(Volume("docker-sock", "hostPath", "/var/run/docker.sock", extra_type="Socket"))
+    return volumes
 
 
-def yaml_block(text: str, spaces: int = 14) -> str:
-    return textwrap.indent(text, " " * spaces)
+def render_volume_mounts(indent: str, mounts: list[VolumeMount]) -> str:
+    return "\n".join(f"{indent}- {{ name: {mount.name}, mountPath: {mount.mount_path} }}" for mount in mounts)
+
+
+def render_volumes(indent: str, volumes: list[Volume]) -> str:
+    lines: list[str] = []
+    for volume in volumes:
+        lines.append(f"{indent}- name: {volume.name}")
+        if volume.kind == "persistentVolumeClaim":
+            lines.append(f"{indent}  persistentVolumeClaim: {{ claimName: {volume.value} }}")
+        elif volume.kind == "hostPath":
+            lines.append(f"{indent}  hostPath:")
+            lines.append(f"{indent}    path: {volume.value}")
+            if volume.extra_type:
+                lines.append(f"{indent}    type: {volume.extra_type}")
+        else:
+            raise ValueError(f"unsupported volume kind: {volume.kind}")
+    return "\n".join(lines)
 
 
 def emit_agent(spec: dict, agent: dict) -> tuple[str, str, str]:
-    name = agent["name"]
     image = image_ref(agent)
+    flavor = normalize_flavor(agent)
+    mounts = volume_mounts_for(agent)
+    volumes = volumes_for(agent)
     minr = agent["deploy"]["replicas"]["min"]
     maxr = agent["deploy"]["replicas"]["max"]
     cooldown = agent["deploy"]["replicas"]["cooldown"]
@@ -419,46 +427,25 @@ def emit_agent(spec: dict, agent: dict) -> tuple[str, str, str]:
     req_cpu = agent["deploy"]["resources"]["requests"]["cpu"]
     req_mem = agent["deploy"]["resources"]["requests"]["memory"]
     lim_mem = agent["deploy"]["resources"]["limits"]["memory"]
-    env_lines = "\n".join(emit_env_lines(spec, agent))
-    init_script = yaml_block(build_init_script(agent))
-    exec_script = yaml_block(build_exec_script(agent))
-    pod_security = "\n".join(pod_security_lines(agent))
-    container_security = "\n".join(container_security_lines(agent))
-    pod_level_security = "\n".join(pod_level_security_lines(agent))
-    flavor = agent.get("flavor") or (name if name in SPECIAL_FLAVORS else "generic")
-    strategy_block = ""
-    if maxr == 1:
-        strategy_block = "  strategy:\n    type: Recreate\n"
-    extra_init_mounts = ""
-    extra_agent_mounts = ""
-    extra_volumes = ""
-    if flavor == "augur":
-        extra_init_mounts = '\n            - { name: docker-sock, mountPath: /var/run/docker.sock }'
-        extra_agent_mounts = '\n            - { name: docker-sock, mountPath: /var/run/docker.sock }'
-        extra_volumes = """
-        - name: docker-sock
-          hostPath:
-            path: /var/run/docker.sock
-            type: Socket
-"""
-
+    strategy_block = "  strategy:\n    type: Recreate\n" if maxr == 1 else ""
+    env_block = "\n".join(render_env_lines(spec, agent))
     deployment = f"""---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-{name}
-  labels: {{ app: kord-agent, agent: {name} }}
+  name: agent-{agent["name"]}
+  labels: {{ app: kord-agent, agent: {agent["name"]} }}
 spec:
 {strategy_block}  selector:
-    matchLabels: {{ app: kord-agent, agent: {name} }}
+    matchLabels: {{ app: kord-agent, agent: {agent["name"]} }}
   template:
     metadata:
-      labels: {{ app: kord-agent, agent: {name} }}
+      labels: {{ app: kord-agent, agent: {agent["name"]} }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
     spec:
-{pod_security}
+{chr(10).join(DEFAULT_POD_SECURITY)}
       serviceAccountName: kord
       initContainers:
         - name: setup
@@ -467,22 +454,23 @@ spec:
           command: ["/bin/bash", "-c"]
           args:
             - |
-{init_script}
+{yaml_block(build_init_script(agent))}
+          env:
+{env_block}
           volumeMounts:
-            - {{ name: runtime, mountPath: /kord }}
-{extra_init_mounts}
+{render_volume_mounts("            ", mounts)}
       containers:
         - name: agent
           image: {image}
           imagePullPolicy: Always
           securityContext:
-{container_security}
+{chr(10).join(container_security_lines(agent))}
           command: ["/bin/bash", "-c"]
           args:
             - |
-{exec_script}
+{yaml_block(build_exec_script(agent))}
           env:
-{env_lines}
+{env_block}
           resources:
             requests: {{ cpu: {req_cpu}, memory: {req_mem} }}
             limits: {{ memory: {lim_mem} }}
@@ -497,25 +485,21 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 30
           volumeMounts:
-            - {{ name: runtime, mountPath: /kord }}
-{extra_agent_mounts}
+{render_volume_mounts("            ", mounts)}
       volumes:
-        - name: runtime
-          persistentVolumeClaim: {{ claimName: agent-runtime }}
-{extra_volumes}
-{pod_level_security}
+{render_volumes("        ", volumes)}
 """
 
     service = f"""---
 apiVersion: v1
 kind: Service
 metadata:
-  name: agent-{name}
-  labels: {{ app: kord-agent, agent: {name} }}
+  name: agent-{agent["name"]}
+  labels: {{ app: kord-agent, agent: {agent["name"]} }}
 spec:
   selector:
     app: kord-agent
-    agent: {name}
+    agent: {agent["name"]}
   ports:
     - name: health
       port: 9090
@@ -526,7 +510,7 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: agent-{name}
+  name: agent-{agent["name"]}
 spec:
   pollingInterval: 30
   minReplicaCount: {minr}
@@ -541,7 +525,7 @@ spec:
         scaleUp:
           stabilizationWindowSeconds: 300
   scaleTargetRef:
-    name: agent-{name}
+    name: agent-{agent["name"]}
   triggers:
     - type: kafka
       metadata:
@@ -553,8 +537,6 @@ spec:
         offsetResetPolicy: earliest
 """
 
-    topic_partitions = max(1, int(maxr))
-
     topic = f"""---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
@@ -563,7 +545,7 @@ metadata:
   labels:
     strimzi.io/cluster: kafka
 spec:
-  partitions: {topic_partitions}
+  partitions: {max(1, int(maxr))}
   replicas: 1
   config:
     retention.ms: "604800000"
@@ -572,35 +554,35 @@ spec:
     return deployment + service, scaled_object, topic
 
 
-def main() -> int:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("spec")
     parser.add_argument("--agents-out", required=True)
     parser.add_argument("--keda-out", required=True)
     parser.add_argument("--kafka-out", required=True)
     parser.add_argument("--discovery-catalog-out", required=True)
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def main() -> int:
+    args = parse_args()
     spec = yaml.safe_load(Path(args.spec).read_text())
     agents = spec["agents"]
 
     agents_parts = [
-        "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
-        "# Agent flavor, runtime kind, and backend selection are declared in the spec.\n"
+        PLATFORM_SPEC_HEADER + "# Agent flavor, runtime kind, and backend selection are declared in the spec.\n"
     ]
     keda_parts = [
-        "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
-        "# One request topic and one ScaledObject per agent.\n"
+        PLATFORM_SPEC_HEADER + "# One request topic and one ScaledObject per agent.\n"
     ]
     kafka_parts = [
-        "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
-        "# Request topics only; Klaude publishes responses to caller-specified reply_to topics.\n"
+        PLATFORM_SPEC_HEADER + "# Request topics only; Klaude publishes responses to caller-specified reply_to topics.\n"
     ]
 
     for agent in agents:
-        dep, so, topic = emit_agent(spec, agent)
-        agents_parts.append(dep)
-        keda_parts.append(so)
+        deployment, scaled_object, topic = emit_agent(spec, agent)
+        agents_parts.append(deployment)
+        keda_parts.append(scaled_object)
         kafka_parts.append(topic)
 
     generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -623,11 +605,10 @@ spec:
 # Memory update topics (one per agent, partitions=1 for ordering)
 """)
     for agent in agents:
-        name = agent["name"]
         kafka_parts.append(f"""apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: memory.updates.{name}
+  name: memory.updates.{agent["name"]}
   labels:
     strimzi.io/cluster: kafka
 spec:

@@ -11,7 +11,7 @@ test('buildDiscoveryRecord exposes prompting contract and agent metadata', () =>
       runtime: 'openclaude-harness',
       model: 'deepseek-chat',
       homeDirectory: '/runtime/alfred',
-      workingDirectory: '/kord/repos/kordinate',
+      workingDirectory: '/kord/shared/repos/kordinate',
     },
     kafkaBrokers: ['kafka:9092'],
     kafkaSessionTimeoutMs: 600000,
@@ -47,5 +47,5 @@ test('buildDiscoveryRecord exposes prompting contract and agent metadata', () =>
   assert.equal(record.specialization, 'alfred')
   assert.equal(record.request_topic, 'alfred')
   assert.equal(record.health_url, 'http://agent-alfred:9090/health')
-  assert.equal(record.default_working_dir, '/kord/repos/kordinate')
+  assert.equal(record.default_working_dir, '/kord/shared/repos/kordinate')
 })

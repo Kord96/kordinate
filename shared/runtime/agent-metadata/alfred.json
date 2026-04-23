@@ -1,0 +1,10 @@
+{
+  "name": "alfred",
+  "description": "Profile, config, credentials, and overlay management — keeps the environment consistent and ready",
+  "capabilities": [
+    "Can validate Alfred-owned profile source and its runtime projection via /config",
+    "Can list and audit pass store entries via /keys",
+    "Can validate and diff kustomize overlays via /overlay",
+    "Can run preflight checks for deployment readiness via /preflight"
+  ]
+}

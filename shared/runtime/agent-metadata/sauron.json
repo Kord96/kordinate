@@ -1,0 +1,11 @@
+{
+  "name": "sauron",
+  "description": "Monitoring and observability — scans for signals, diagnoses issues, designs monitoring systems",
+  "capabilities": [
+    "Can scan a project for observability signals and map them to architecture via `/monitor`",
+    "Can diagnose live production issues by tracing symptoms through the observability catalog via `/monitor --diagnose`",
+    "Can implement a complete monitoring system from augur's monitoring-spec.yaml via `/design-monitoring` — Grafana dashboards, Prometheus alerts, metric validation",
+    "Can validate that a running service emits all metrics specified in augur's monitoring-spec",
+    "Can read and write Grafana dashboards, deploy alert rules as ConfigMaps"
+  ]
+}
