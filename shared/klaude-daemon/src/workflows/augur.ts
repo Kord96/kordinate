@@ -529,6 +529,9 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
       return {
         targetDir: explicitRunDir ?? latestDir,
         extraEnv: {
+          ...(typeof message.correlation_id === 'string' && message.correlation_id.trim()
+            ? { AUGUR_REQUEST_ID: message.correlation_id.trim() }
+            : {}),
           ...(requestCommandText(message).includes('--deterministic-only')
             ? { AUGUR_DETERMINISTIC_ONLY: '1' }
             : {}),
