@@ -8,7 +8,9 @@ import { createDiscoveryRegistry, isAgentDiscoveryRecord } from './discovery-reg
 import { log } from './log.js';
 import { applyFailureToRequestRecord, applyResponseToRequestRecord, createRequestRecord } from './request-model.js';
 import { buildFinalTranscriptEvent, buildTranscriptEventFromGateway, buildTranscriptEventFromProgress, coalesceTranscriptEvent, summarizeValue } from './request-transcript.js';
+import { loadPathConfig } from './path-config.js';
 import { canonicalizeWorkingDir } from './working-dir.js';
+const pathConfig = loadPathConfig();
 const host = process.env.KORD_API_HOST ?? '0.0.0.0';
 const port = Number.parseInt(process.env.KORD_API_PORT ?? '9091', 10);
 const statePath = process.env.DISCOVERY_STATE_PATH ?? '.daemon-state/discovery-agents.json';
@@ -24,7 +26,7 @@ const kubernetesNamespacePath = process.env.KUBERNETES_NAMESPACE_PATH ?? '/var/r
 const kubernetesTokenPath = process.env.KUBERNETES_TOKEN_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/token';
 const kubernetesCaPath = process.env.KUBERNETES_CA_PATH ?? '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
 const agentSpecPath = process.env.AGENT_SPEC_PATH ?? '/app/agents/charon/skills/platform/agent-spec.yaml';
-const augurProjectsRoot = process.env.AUGUR_MEMORY_PROJECTS_ROOT ?? '/kord/agents/augur-local-codex/memory/projects';
+const augurProjectsRoot = process.env.AUGUR_MEMORY_PROJECTS_ROOT ?? pathConfig.augurMemoryProjectsRoot;
 const allowedApiKeys = new Set([
     ...(process.env.KORD_API_KEYS ?? '').split(','),
     process.env.KORD_API_KEY ?? '',

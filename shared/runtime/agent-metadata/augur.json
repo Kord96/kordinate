@@ -4,5 +4,14 @@
   "capabilities": [
     "Can produce a blast-aware semantic atlas/story pass via `/analyze` — covers dependency mapping, API review, architecture tensions, component identification, and story composition while using prepared deterministic artifacts to scope incremental work",
     "Can run deterministic-only mode for quick evidence extraction via `/analyze --deterministic-only`"
-  ]
+  ],
+  "workflow_paths": {
+    "analysis_context_script": "{augur_home}/scripts/run/build_analysis_context.py",
+    "prompt_context_script": "{augur_home}/scripts/run/build_prompt_context.py",
+    "repair_prompt_script": "{augur_home}/scripts/run/build_validation_repair_prompt.py"
+  },
+  "validation_paths": {
+    "validator_script": "{augur_home}/skills/analyze/validator/validate.py",
+    "finalize_script": "{augur_home}/scripts/run/finalize_analysis.py"
+  }
 }

@@ -134,7 +134,7 @@ function renderStartupGuidance(agentParams) {
         parts.push(`Directive: ${directive}`);
     if (starterFiles.length > 0) {
         parts.push('Starter artifacts:');
-        parts.push(...starterFiles.map(path => `- \`${path}\``));
+        parts.push(...starterFiles.slice(0, 8).map(path => `- \`${path}\``));
     }
     return parts.length > 0 ? `## Startup Guidance\n\n${parts.join('\n')}\n\n` : '';
 }
@@ -153,6 +153,10 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         if (typeof workspace.agent_root === 'string' && workspace.agent_root.trim()) {
             lines.push(`- Agent root: \`${workspace.agent_root.trim()}\``);
         }
+        if (typeof resources?.validator_script === 'string' && resources.validator_script.trim()) {
+            lines.push(`- Validator script: \`${resources.validator_script.trim()}\``);
+            lines.push(`- Validator command: \`python3 ${resources.validator_script.trim()} ${workspace.output_dir}\``);
+        }
         if (typeof resources?.concept_catalog_index === 'string' && resources.concept_catalog_index.trim()) {
             lines.push(`- Concept catalog entrypoint: \`${resources.concept_catalog_index.trim()}\``);
         }
@@ -164,14 +168,9 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         }
         lines.push('- Start in the working directory and treat it as the authoritative repo root for analysis and edits.');
         lines.push('- Generated artifacts belong in the output directory.');
-        lines.push('- Use the provided validator path and catalog entrypoints directly instead of discovering alternate internal paths.');
-        lines.push('- Use the prepared run artifacts under the output directory for startup orientation before broad repo reading.');
-        lines.push('- Treat `startup.json` and `index.json` under the output directory as the authoritative manifests for prepared deterministic and derived analysis inputs in this run.');
-        lines.push('- Use the agent root as the stable base for agent-owned resources and the provided catalog entrypoints for on-demand concept/framework reads.');
-        lines.push('- Use deterministic artifacts for startup orientation first, then move into repo code for the main architectural synthesis.');
-        lines.push('- Revisit larger supporting fact domains only when they help resolve ambiguity, answer semantic questions, or confirm concepts.');
-        lines.push('- Read repo code through fact-selected files, architecture entrypoints, adjacent implementation, or concrete validation gaps.');
-        lines.push('- Do not begin with repo-root listings or metadata-file discovery.');
+        lines.push('- Use only the printed validator command. Do not discover alternate validator or schema paths.');
+        lines.push('- Start from `blast.json`, `startup.json`, `index.json`, and the listed starter artifacts before broader repo reads.');
+        lines.push('- Use observation artifacts only on demand after starter artifacts and relevant repo code.');
         lines.push('- Follow the runtime-harness tool schema directly instead of assuming specific tool names from prior runs or other runtimes.');
         for (const guidance of toolGuidance) {
             lines.push(`- ${guidance}`);
@@ -222,7 +221,9 @@ export function buildPromptPlan(agentContract, runtimeProfile, message) {
     const startupGuidance = renderStartupGuidance(message.agent_params);
     const resolvedBundleMode = resolveBundleMode(message);
     const promptContext = loadPromptContext(agentContract, message);
-    const bundlePrefix = promptContext?.bundle_prefix ?? loadRepoBundlePrefix(agentContract, resolvedBundleMode);
+    const bundlePrefix = promptContext && Object.prototype.hasOwnProperty.call(promptContext, 'bundle_prefix')
+        ? (promptContext.bundle_prefix ?? '')
+        : loadRepoBundlePrefix(agentContract, resolvedBundleMode);
     const modeGuide = promptContext?.mode_guide ?? '';
     const cacheablePrefix = agentContract.promptPrefix || bundlePrefix
         ? `${agentContract.promptPrefix ? `${agentContract.promptPrefix}\n\n` : ''}${bundlePrefix}`

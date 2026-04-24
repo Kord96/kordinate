@@ -363,6 +363,52 @@ async function runCommand(command, args) {
         });
     });
 }
+function compactValidationFindings(lines) {
+    const normalized = lines
+        .map(line => line.trim())
+        .filter(Boolean);
+    if (normalized.length === 0)
+        return [];
+    const summaryLine = normalized.find(line => /^(VALID|INVALID|NEEDS_REFINEMENT):/i.test(line));
+    const structured = normalized.filter(line => /^(ERROR|WARNING)(\s+\[[^\]]+\])?:/i.test(line));
+    const priorityKinds = [
+        'ERROR',
+        'WARNING [story]',
+        'WARNING [narrative]',
+        'WARNING [components]',
+        'WARNING [flows]',
+    ];
+    const selected = [];
+    const seen = new Set();
+    const tryAdd = (line) => {
+        if (!line || seen.has(line))
+            return;
+        selected.push(line);
+        seen.add(line);
+    };
+    if (summaryLine)
+        tryAdd(summaryLine);
+    for (const prefix of priorityKinds) {
+        for (const line of structured) {
+            if (selected.length >= 13)
+                break;
+            if (line.startsWith(prefix))
+                tryAdd(line);
+        }
+    }
+    for (const line of structured) {
+        if (selected.length >= 13)
+            break;
+        tryAdd(line);
+    }
+    if (structured.length > selected.filter(line => /^(ERROR|WARNING)/.test(line)).length) {
+        const omitted = structured.length - selected.filter(line => /^(ERROR|WARNING)/.test(line)).length;
+        if (omitted > 0) {
+            selected.push(`WARNING [validation]: ${omitted} additional validator findings omitted from repair prompt; rerun validation after fixing the issues above.`);
+        }
+    }
+    return selected;
+}
 async function runRequiredCommand(command, args, extraEnv) {
     return await new Promise((resolve, reject) => {
         const child = spawn(command, args, {
@@ -474,13 +520,13 @@ async function runValidatorScript(validatorScript, targetDir, manageLock, extraE
         child.stdout.on('data', chunk => { stdout += String(chunk); });
         child.stderr.on('data', chunk => { stderr += String(chunk); });
         child.on('close', code => {
-            const findings = `${stdout}\n${stderr}`
+            const rawFindings = `${stdout}\n${stderr}`
                 .split('\n')
                 .map(line => line.trim())
                 .filter(Boolean);
             resolve({
                 valid: code === 0,
-                findings,
+                findings: compactValidationFindings(rawFindings),
             });
         });
     });
@@ -665,11 +711,12 @@ async function maybeRunFinalValidation(session, message, result) {
     const priorAttempts = typeof result.metadata?.validation?.attempts === 'number'
         ? Math.max(0, result.metadata.validation.attempts)
         : 0;
+    const currentAttempt = priorAttempts + 1;
     const validationToken = await hashValidatedDirectory(targetDir);
     const validationRun = await runValidatorScript(validation.validatorScript, targetDir, true, {
         ...(validatorEnv ?? {}),
         AUGUR_VALIDATION_TOKEN: validationToken,
-        AUGUR_VALIDATION_ATTEMPTS: String(priorAttempts),
+        AUGUR_VALIDATION_ATTEMPTS: String(currentAttempt),
     });
     if (validationRun.valid) {
         await clearValidationLock(targetDir);
@@ -684,7 +731,7 @@ async function maybeRunFinalValidation(session, message, result) {
                     validation: {
                         required: true,
                         passed: true,
-                        attempts: priorAttempts,
+                        attempts: currentAttempt,
                         token: validationToken,
                         target_dir: targetDir,
                     },
@@ -703,7 +750,7 @@ async function maybeRunFinalValidation(session, message, result) {
                 validation: {
                     required: true,
                     passed: false,
-                    attempts: priorAttempts,
+                    attempts: currentAttempt,
                     target_dir: targetDir,
                 },
             },

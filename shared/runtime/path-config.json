@@ -1,0 +1,9 @@
+{
+  "kordinateHome": "/app",
+  "runtimeRoot": "/kord",
+  "agentsRuntimeRoot": "/kord/agents",
+  "sharedRoot": "/kord/shared",
+  "projectsRoot": "/kord/shared/repos",
+  "augurReleaseStore": "/kord/shared/runtime/artifacts/augur",
+  "augurMemoryProjectsRoot": "/kord/agents/augur-local-codex/memory/projects"
+}

@@ -14,10 +14,16 @@ import yaml
 
 REPO_ROOT = Path("/kord/workstation/home/project/kordinate")
 AGENT_METADATA_DIR = REPO_ROOT / "shared" / "runtime" / "agent-metadata"
+PATH_CONFIG = json.loads((REPO_ROOT / "shared" / "runtime" / "path-config.json").read_text(encoding="utf-8"))
 PLATFORM_SPEC_HEADER = "# Generated from agents/charon/skills/platform/agent-spec.yaml\n"
-PROJECTS_ROOT = "/kord/shared/repos"
-RUNTIME_MOUNT = ("runtime", "/kord")
-SHARED_MOUNT = ("kord-shared", "/kord/shared")
+PROJECTS_ROOT = PATH_CONFIG["projectsRoot"]
+KORDINATE_HOME = PATH_CONFIG["kordinateHome"]
+AGENTS_RUNTIME_ROOT = PATH_CONFIG["agentsRuntimeRoot"]
+RUNTIME_ROOT = PATH_CONFIG["runtimeRoot"]
+SHARED_ROOT = PATH_CONFIG["sharedRoot"]
+AUGUR_RELEASE_STORE = PATH_CONFIG["augurReleaseStore"]
+RUNTIME_MOUNT = ("runtime", RUNTIME_ROOT)
+SHARED_MOUNT = ("kord-shared", SHARED_ROOT)
 DEFAULT_POD_SECURITY = [
     "      securityContext:",
     "        fsGroup: 1000",
@@ -98,6 +104,10 @@ def load_agent_metadata(agent: dict) -> dict:
     }
 
 
+def render_path_template(template: str, **values: str) -> str:
+    return template.format(**values)
+
+
 def build_discovery_record(agent: dict, generated_at: str) -> dict:
     identity = load_agent_metadata(agent)
     daemon = agent.get("runtime", {}).get("daemon", {})
@@ -152,6 +162,9 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
 
     if flavor == "augur":
         augur_home = f"{agent_home_dir}/.augur/current"
+        workflow_paths = identity.get("workflow_paths", {}) if isinstance(identity.get("workflow_paths"), dict) else {}
+        validation_paths = identity.get("validation_paths", {}) if isinstance(identity.get("validation_paths"), dict) else {}
+        template_values = {"agent_home": agent_home_dir, "augur_home": augur_home}
         contract["promptPrefix"] = "You are Augur. Favor design-level reasoning and architecture trade-offs."
         contract["defaultReflectionPrompt"] = "\n".join([
             'Return strict JSON with exactly {"project":"...","general":"..."}.',
@@ -159,14 +172,29 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
             "For general, focus on transferable architecture and review lessons.",
         ])
         contract["workflow"] = {
-            "analysisContextScript": f"{augur_home}/scripts/run/build_analysis_context.py",
-            "promptContextScript": f"{augur_home}/scripts/run/build_prompt_context.py",
-            "repairPromptScript": f"{augur_home}/scripts/run/build_validation_repair_prompt.py",
+            "analysisContextScript": render_path_template(
+                str(workflow_paths.get("analysis_context_script", "{augur_home}/scripts/run/build_analysis_context.py")),
+                **template_values,
+            ),
+            "promptContextScript": render_path_template(
+                str(workflow_paths.get("prompt_context_script", "{augur_home}/scripts/run/build_prompt_context.py")),
+                **template_values,
+            ),
+            "repairPromptScript": render_path_template(
+                str(workflow_paths.get("repair_prompt_script", "{augur_home}/scripts/run/build_validation_repair_prompt.py")),
+                **template_values,
+            ),
         }
         validation = {
             "required": True,
-            "validatorScript": f"{augur_home}/skills/analyze/validator/validate.py",
-            "finalizeScript": f"{augur_home}/scripts/run/finalize_analysis.py",
+            "validatorScript": render_path_template(
+                str(validation_paths.get("validator_script", "{augur_home}/skills/analyze/validator/validate.py")),
+                **template_values,
+            ),
+            "finalizeScript": render_path_template(
+                str(validation_paths.get("finalize_script", "{augur_home}/scripts/run/finalize_analysis.py")),
+                **template_values,
+            ),
         }
         authored_validation = agent.get("validation") if isinstance(agent.get("validation"), dict) else {}
         max_attempts = authored_validation.get("max_attempts", authored_validation.get("maxAttempts"))
@@ -217,7 +245,7 @@ def build_env_entries(spec: dict, agent: dict) -> list[tuple[str, str]]:
         ("KAFKA_SESSION_TIMEOUT_MS", "30000"),
         ("KAFKA_HEARTBEAT_INTERVAL_MS", "3000"),
         ("HOME", "/home/node"),
-        ("KORDINATE_HOME", "/app"),
+        ("KORDINATE_HOME", KORDINATE_HOME),
         ("PROJECTS_ROOT", PROJECTS_ROOT),
         ("DISCOVERY_SERVER_URL", "http://kord-api:9091"),
         ("DAEMON_HEALTH_URL", f"http://agent-{agent['name']}:9090/health"),
@@ -253,7 +281,7 @@ def build_env_entries(spec: dict, agent: dict) -> list[tuple[str, str]]:
     if flavor == "augur":
         entries.extend([
             ("AUGUR_HOME", f"{agent_home_dir}/.augur/current"),
-            ("AUGUR_RELEASE_STORE", "/kord/shared/runtime/artifacts/augur"),
+            ("AUGUR_RELEASE_STORE", AUGUR_RELEASE_STORE),
             ("AUGUR_RELEASE_CHANNEL", "stable"),
         ])
 
@@ -292,7 +320,10 @@ def build_init_script(agent: dict) -> str:
         env_prefix.append(f"AGENT_SKILL_BUNDLE={shlex.quote(str(creation['skill_bundle']))}")
     if creation.get("runtime_bundle"):
         env_prefix.append(f"AGENT_RUNTIME_BUNDLE={shlex.quote(str(creation['runtime_bundle']))}")
-    env_prefix.extend(["KORDINATE_HOME=/app", "KORD_RUNTIME=/kord/agents"])
+    env_prefix.extend([
+        f"KORDINATE_HOME={shlex.quote(KORDINATE_HOME)}",
+        f"KORD_RUNTIME={shlex.quote(AGENTS_RUNTIME_ROOT)}",
+    ])
     prefix = " ".join(env_prefix)
     lines = [f"bash /app/scripts/setup-agent-dir.sh {shlex.quote(agent['name'])}"]
     if flavor in SPECIAL_FLAVORS:
@@ -410,6 +441,8 @@ def render_volumes(indent: str, volumes: list[Volume]) -> str:
             lines.append(f"{indent}    path: {volume.value}")
             if volume.extra_type:
                 lines.append(f"{indent}    type: {volume.extra_type}")
+        elif volume.kind == "emptyDir":
+            lines.append(f"{indent}  emptyDir: {{}}")
         else:
             raise ValueError(f"unsupported volume kind: {volume.kind}")
     return "\n".join(lines)

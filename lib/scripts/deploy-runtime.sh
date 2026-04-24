@@ -216,9 +216,9 @@ deploy_agent() {
     return
   fi
 
-  # Shared specialization alias for deterministic compatibility paths such as
-  # /kord/agents/augur/... used by some model backends during exploration.
-  # For Augur this must resolve to the installed release, not the source tree.
+  # Shared specialization alias for deterministic compatibility paths under
+  # the agent runtime root. For Augur this must resolve to the installed
+  # release, not to any source checkout.
   if [ "$SOURCE_AGENT" != "$DEST_AGENT" ]; then
     ln -sfn "$EFFECTIVE_SRC" "$RUNTIME/$SOURCE_AGENT"
   fi

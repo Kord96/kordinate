@@ -1,10 +1,11 @@
 import { existsSync } from 'node:fs';
 import { basename } from 'node:path';
+import { loadPathConfig } from './path-config.js';
+const pathConfig = loadPathConfig();
 function repoRootCandidates() {
     const values = [
         process.env.PROJECTS_ROOT,
-        '/kord/repos',
-        '/kord/shared/repos',
+        pathConfig.projectsRoot,
     ];
     return Array.from(new Set(values.filter((value) => typeof value === 'string' && value.trim().length > 0)));
 }
@@ -14,7 +15,7 @@ function canonicalRepoPath(repo, rest) {
         if (existsSync(candidate))
             return candidate;
     }
-    const kordHome = process.env.KORDINATE_HOME ?? '/app';
+    const kordHome = process.env.KORDINATE_HOME ?? pathConfig.kordinateHome;
     if (repo === basename(kordHome) && existsSync(kordHome)) {
         const candidate = `${kordHome}${rest}`;
         if (existsSync(candidate))
@@ -27,7 +28,7 @@ export function canonicalizeWorkingDir(workingDir) {
         return workingDir;
     if (existsSync(workingDir))
         return workingDir;
-    const knownPrefixes = ['/kord/repos/', '/kord/shared/repos/', '/kord/workstation/home/project/'];
+    const knownPrefixes = [`${pathConfig.projectsRoot}/`, '/kord/workstation/home/project/'];
     const matchedPrefix = knownPrefixes.find(prefix => workingDir.startsWith(prefix));
     if (!matchedPrefix)
         return workingDir;

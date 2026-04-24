@@ -192,6 +192,51 @@ function extractBashCommand(input) {
     }
     return undefined;
 }
+function asNumber(value) {
+    if (typeof value === 'number' && Number.isFinite(value))
+        return value;
+    if (typeof value === 'string' && value.trim()) {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed))
+            return parsed;
+    }
+    return undefined;
+}
+function normalizeOpenClaudeUsage(message) {
+    const raw = ((message.usage && typeof message.usage === 'object' ? message.usage : undefined)
+        ?? (message.response?.usage && typeof message.response.usage === 'object' ? message.response.usage : undefined)
+        ?? (message.metrics && typeof message.metrics === 'object' ? message.metrics : undefined));
+    const inputTokens = asNumber(raw?.input_tokens ?? raw?.prompt_tokens);
+    const cachedInputTokens = asNumber(raw?.cached_input_tokens
+        ?? (raw?.prompt_tokens_details && typeof raw.prompt_tokens_details === 'object'
+            ? raw.prompt_tokens_details.cached_tokens
+            : undefined));
+    const outputTokens = asNumber(raw?.output_tokens ?? raw?.completion_tokens);
+    const cacheWriteTokens = asNumber(raw?.cache_write_tokens);
+    const estimatedCost = asNumber(raw?.estimated_cost
+        ?? raw?.estimated_cost_usd
+        ?? raw?.cost
+        ?? message.estimated_cost
+        ?? message.estimated_cost_usd
+        ?? message.cost);
+    if (inputTokens === undefined
+        && cachedInputTokens === undefined
+        && outputTokens === undefined
+        && cacheWriteTokens === undefined
+        && estimatedCost === undefined) {
+        return { raw };
+    }
+    return {
+        raw,
+        usage: {
+            input_tokens: inputTokens,
+            cached_input_tokens: cachedInputTokens,
+            output_tokens: outputTokens,
+            cache_write_tokens: cacheWriteTokens,
+            estimated_cost: estimatedCost,
+        },
+    };
+}
 function processOpenClaudeStructuredMessage(message, options) {
     if (message.type === 'assistant' && Array.isArray(message.message?.content)) {
         for (const block of message.message.content) {
@@ -243,6 +288,20 @@ function consumeOpenClaudeStructuredChunk(state, chunkText, options) {
             continue;
         }
         processOpenClaudeStructuredMessage(parsed, options);
+        const normalizedUsage = normalizeOpenClaudeUsage(parsed);
+        if (normalizedUsage.raw) {
+            state.rawUsage = normalizedUsage.raw;
+            if (normalizedUsage.usage) {
+                state.usage = normalizedUsage.usage;
+            }
+            log('harness_provider_usage', {
+                runtime: 'openclaude-harness',
+                model: options.model,
+                session_id: options.sessionId,
+                usage: normalizedUsage.raw,
+                normalized_usage: normalizedUsage.usage ?? null,
+            });
+        }
         void options.onMessage?.(parsed);
         if (parsed.type === 'result' && typeof parsed.result === 'string') {
             state.resultText = parsed.result;
@@ -1346,6 +1405,8 @@ async function runOpenClaudePrint(prompt, options) {
         const structuredState = {
             buffer: '',
             resultText: '',
+            usage: undefined,
+            rawUsage: undefined,
             rawLines: [],
             writeLine: line => { structuredLogStream.write(`${line}\n`); },
         };
@@ -1520,16 +1581,24 @@ async function runOpenClaudePrint(prompt, options) {
                 model: options.model,
                 session_id: options.sessionId,
                 structured_log_path: structuredLogPath,
-                payload: { result_preview: summarizeText(resultText, 200) },
+                payload: {
+                    result_preview: summarizeText(resultText, 200),
+                    provider_usage: structuredState.rawUsage ?? null,
+                    normalized_usage: structuredState.usage ?? null,
+                },
             });
-            resolve(resultText);
+            resolve({
+                output: resultText,
+                usage: structuredState.usage,
+                rawProviderUsage: structuredState.rawUsage,
+            });
         });
     });
 }
 async function maybeReflectWithOpenClaude(taskOutput, options, reflectionPrompt) {
     try {
-        const text = await runOpenClaudePrint(buildDefaultReflectionPrompt(taskOutput, reflectionPrompt), options);
-        const reflection = parseReflectionPayload(text);
+        const result = await runOpenClaudePrint(buildDefaultReflectionPrompt(taskOutput, reflectionPrompt), options);
+        const reflection = parseReflectionPayload(result.output);
         if (!reflection) {
             return { errors: ['Failed to parse reflection payload'] };
         }
@@ -1966,7 +2035,7 @@ export class OpenClaudeHarnessAdapter {
                     homeDirectory: this.homeDirectory,
                     workingDirectory: this.workingDirectory,
                 });
-                const output = await runOpenClaudePrint(request.prompt, {
+                const result = await runOpenClaudePrint(request.prompt, {
                     model: this.model,
                     sessionId,
                     resumeSessionId,
@@ -1979,8 +2048,9 @@ export class OpenClaudeHarnessAdapter {
                     request,
                 });
                 return {
-                    output,
+                    output: result.output,
                     nextSessionId: resumeSessionId ?? sessionId,
+                    usage: result.usage,
                 };
             };
             let run;
@@ -1998,7 +2068,7 @@ export class OpenClaudeHarnessAdapter {
                 run = await executeOnce(undefined);
             }
             const nextSession = nextSessionState(session, run.nextSessionId);
-            const baseResult = enforceAlfredDirectIntentContract(request, successResult(run.output));
+            const baseResult = enforceAlfredDirectIntentContract(request, run.usage ? withMetadata(successResult(run.output), { usage: run.usage }) : successResult(run.output));
             if (!shouldReflect(request)) {
                 return { session: nextSession, result: baseResult };
             }
