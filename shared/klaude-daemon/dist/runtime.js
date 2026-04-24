@@ -797,10 +797,6 @@ async function loadRunArtifactContext(runDir) {
             if (typeof domain?.file === 'string')
                 register(domain.file);
         }
-        for (const artifact of parsed.derived_artifacts ?? []) {
-            if (typeof artifact?.file === 'string')
-                register(artifact.file);
-        }
     }
     catch {
         // ignore missing or malformed facts index; callers can still use guaranteed files
@@ -812,10 +808,6 @@ async function loadRunArtifactContext(runDir) {
             if (typeof item === 'string')
                 register(item);
         }
-        for (const item of parsed.derived_artifacts ?? []) {
-            if (item && typeof item === 'object' && typeof item.file === 'string')
-                register(item.file);
-        }
     }
     catch {
         // ignore missing or malformed startup file
@@ -823,7 +815,7 @@ async function loadRunArtifactContext(runDir) {
     return {
         runDir: normalizedRunDir,
         files,
-        declaredFiles: new Set(Array.from(files.keys()).filter(key => key.startsWith('facts/') || key.startsWith('derived/'))),
+        declaredFiles: new Set(Array.from(files.keys()).filter(key => key.startsWith('facts/'))),
     };
 }
 function normalizeRunArtifactReference(input, artifactContext) {
@@ -1093,7 +1085,7 @@ function geminiSdkFunctionDeclarations() {
         },
         {
             name: 'read_run_file',
-            description: 'Read a prepared analysis run artifact by relative path, such as index.json, facts/frameworks.json, derived/story-seeds.json, or atlas.json.',
+            description: 'Read a prepared analysis run artifact by relative path, such as index.json, facts/frameworks.json, facts/semantic-inputs.md, or atlas.json.',
             parameters: {
                 type: Type.OBJECT,
                 properties: {

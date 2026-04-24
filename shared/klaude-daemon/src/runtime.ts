@@ -967,13 +967,9 @@ async function loadRunArtifactContext(runDir?: string): Promise<RunArtifactConte
       index?: {
         domains?: Array<{ file?: unknown }>
       }
-      derived_artifacts?: Array<{ file?: unknown }>
     }
     for (const domain of parsed.index?.domains ?? []) {
       if (typeof domain?.file === 'string') register(domain.file)
-    }
-    for (const artifact of parsed.derived_artifacts ?? []) {
-      if (typeof artifact?.file === 'string') register(artifact.file)
     }
   } catch {
     // ignore missing or malformed facts index; callers can still use guaranteed files
@@ -983,13 +979,9 @@ async function loadRunArtifactContext(runDir?: string): Promise<RunArtifactConte
     const raw = await readFile(path.join(normalizedRunDir, 'startup.json'), 'utf8')
     const parsed = JSON.parse(raw) as {
       startup_files?: unknown[]
-      derived_artifacts?: Array<{ file?: unknown }>
     }
     for (const item of parsed.startup_files ?? []) {
       if (typeof item === 'string') register(item)
-    }
-    for (const item of parsed.derived_artifacts ?? []) {
-      if (item && typeof item === 'object' && typeof item.file === 'string') register(item.file)
     }
   } catch {
     // ignore missing or malformed startup file
@@ -998,7 +990,7 @@ async function loadRunArtifactContext(runDir?: string): Promise<RunArtifactConte
   return {
     runDir: normalizedRunDir,
     files,
-    declaredFiles: new Set(Array.from(files.keys()).filter(key => key.startsWith('facts/') || key.startsWith('derived/'))),
+    declaredFiles: new Set(Array.from(files.keys()).filter(key => key.startsWith('facts/'))),
   }
 }
 
@@ -1280,7 +1272,7 @@ function geminiSdkFunctionDeclarations(): Array<Record<string, unknown>> {
     },
     {
       name: 'read_run_file',
-      description: 'Read a prepared analysis run artifact by relative path, such as index.json, facts/frameworks.json, derived/story-seeds.json, or atlas.json.',
+      description: 'Read a prepared analysis run artifact by relative path, such as index.json, facts/frameworks.json, facts/semantic-inputs.md, or atlas.json.',
       parameters: {
         type: Type.OBJECT,
         properties: {
