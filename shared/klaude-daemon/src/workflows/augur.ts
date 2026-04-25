@@ -533,7 +533,7 @@ export function createAugurWorkflowHooks(context: WorkflowContext): AgentWorkflo
             ? { AUGUR_REQUEST_ID: message.correlation_id.trim() }
             : {}),
           ...(requestCommandText(message).includes('--deterministic-only')
-            ? { AUGUR_DETERMINISTIC_ONLY: '1' }
+            ? { AUGUR_FACTS_ONLY_MODE: '1' }
             : {}),
         },
       }

@@ -394,7 +394,7 @@ function createAugurWorkflowHooks(context) {
                         ? { AUGUR_REQUEST_ID: message.correlation_id.trim() }
                         : {}),
                     ...(requestCommandText(message).includes('--deterministic-only')
-                        ? { AUGUR_DETERMINISTIC_ONLY: '1' }
+                        ? { AUGUR_FACTS_ONLY_MODE: '1' }
                         : {}),
                 },
                 repairPromptBuilder: input => buildAugurValidationRepairPrompt(context, input),
