@@ -7,7 +7,6 @@
   ],
   "workflow_paths": {
     "analysis_context_script": "{augur_home}/scripts/run/build_analysis_context.py",
-    "prompt_context_script": "{augur_home}/scripts/run/build_prompt_context.py",
     "repair_prompt_script": "{augur_home}/scripts/run/build_validation_repair_prompt.py"
   },
   "validation_paths": {

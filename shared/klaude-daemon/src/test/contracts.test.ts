@@ -148,6 +148,20 @@ test('buildPromptPlan defaults to selective bundle guidance for incremental anal
   assert.match(promptPlan.fullPrompt, /Analyze Bundle — Selective/i)
 })
 
+test('buildPromptPlan uses repo bundles and runtime context without prompt-context overrides', () => {
+  const promptPlan = withAugurBundleFixture(() => buildPromptPlan(augurContract(), genericRuntimeProfile(), {
+    type: 'request',
+    sender: 'agent-a',
+    correlation_id: 'corr-1',
+    prompt: 'Analyze the repo',
+  }))
+
+  assert.match(promptPlan.fullPrompt, /Augur Analyze Bundle — Selective v1/)
+  assert.doesNotMatch(promptPlan.dynamicPrompt, /Augur Authoring Contract/)
+  assert.match(promptPlan.cacheablePrefix ?? '', /You are Augur/)
+  assert.ok(promptPlan.cacheKey)
+})
+
 test('custom reflection prompt overrides contract default', () => {
   const prompt = resolveReflectionPrompt(augurContract(), {
     type: 'request',

@@ -101,7 +101,6 @@ export interface ValidationContract {
 
 export interface WorkflowContract {
   analysisContextScript?: string
-  promptContextScript?: string
   repairPromptScript?: string
 }
 

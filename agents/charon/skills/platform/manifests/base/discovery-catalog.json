@@ -15,8 +15,8 @@
     "health_url": "http://agent-generic-opus:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "generic-opus"
   },
   {
@@ -36,8 +36,8 @@
     "health_url": "http://agent-augur-opus:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "augur-opus"
   },
   {
@@ -56,8 +56,8 @@
     "health_url": "http://agent-generic-gemini-31-pro:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "generic-gemini-31-pro"
   },
   {
@@ -76,8 +76,8 @@
     "health_url": "http://agent-generic-gemini-25-pro:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "generic-gemini-25-pro"
   },
   {
@@ -96,8 +96,8 @@
     "health_url": "http://agent-generic-gemini-25-flash:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "generic-gemini-25-flash"
   },
   {
@@ -116,8 +116,8 @@
     "health_url": "http://agent-generic-glm5:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "generic-glm5"
   },
   {
@@ -136,8 +136,8 @@
     "health_url": "http://agent-generic-gpt54:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "generic-gpt54"
   },
   {
@@ -157,8 +157,8 @@
     "health_url": "http://agent-augur-gemini-31-pro:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "augur-gemini-31-pro"
   },
   {
@@ -178,8 +178,8 @@
     "health_url": "http://agent-augur-gemini-25-pro:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "augur-gemini-25-pro"
   },
   {
@@ -199,8 +199,8 @@
     "health_url": "http://agent-augur-gemini-25-flash:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "augur-gemini-25-flash"
   },
   {
@@ -220,8 +220,8 @@
     "health_url": "http://agent-augur-glm5:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "augur-glm5"
   },
   {
@@ -241,8 +241,8 @@
     "health_url": "http://agent-augur-minimax-m2p7:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "augur-minimax-m2p7"
   },
   {
@@ -262,8 +262,8 @@
     "health_url": "http://agent-augur-gpt54:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": 1800000,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "augur-gpt54"
   },
   {
@@ -286,8 +286,8 @@
     "health_url": "http://agent-charon-gpt53-codex:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "charon-gpt53-codex"
   },
   {
@@ -308,8 +308,8 @@
     "health_url": "http://agent-sauron-gpt53-codex:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "sauron-gpt53-codex"
   },
   {
@@ -329,8 +329,8 @@
     "health_url": "http://agent-alfred-gpt-oss-20b:9090/health",
     "default_working_dir": null,
     "default_timeout_ms": null,
-    "registered_at": "2026-04-23T22:51:23Z",
-    "last_seen_at": "2026-04-23T22:51:23Z",
+    "registered_at": "2026-04-25T15:07:49Z",
+    "last_seen_at": "2026-04-25T15:07:49Z",
     "request_topic": "alfred-gpt-oss-20b"
   }
 ]

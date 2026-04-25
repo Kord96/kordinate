@@ -1,5 +1,4 @@
 import { createHash } from 'node:crypto';
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -99,27 +98,6 @@ function resolveBundleMode(message) {
     }
     return 'selective';
 }
-function loadPromptContext(contract, message) {
-    const scriptPath = contract.workflow?.promptContextScript;
-    if (!scriptPath)
-        return undefined;
-    const mode = typeof message.agent_params?.analysis_mode === 'string'
-        ? message.agent_params.analysis_mode.trim()
-        : '';
-    try {
-        const payload = execFileSync('python3', [
-            scriptPath,
-            '--bundle-mode', resolveBundleMode(message),
-            '--analysis-mode', mode,
-        ], {
-            encoding: 'utf8',
-        }).trim();
-        return JSON.parse(payload);
-    }
-    catch {
-        return undefined;
-    }
-}
 function renderStartupGuidance(agentParams) {
     const guidance = agentParams?.startup_guidance;
     if (!guidance || typeof guidance !== 'object' || Array.isArray(guidance))
@@ -169,8 +147,6 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         lines.push('- Start in the working directory and treat it as the authoritative repo root for analysis and edits.');
         lines.push('- Generated artifacts belong in the output directory.');
         lines.push('- Use only the printed validator command. Do not discover alternate validator or schema paths.');
-        lines.push('- Start from `blast.json`, `startup.json`, `index.json`, and the listed starter artifacts before broader repo reads.');
-        lines.push('- Use observation artifacts only on demand after starter artifacts and relevant repo code.');
         lines.push('- Follow the runtime-harness tool schema directly instead of assuming specific tool names from prior runs or other runtimes.');
         for (const guidance of toolGuidance) {
             lines.push(`- ${guidance}`);
@@ -189,7 +165,6 @@ function renderRuntimeContext(agentContract, message, runtimeProfile) {
         : '';
     if (runDir) {
         runtimeHints.push(`Prepared analysis run: use \`${runDir}\` as the authoritative output directory for this request.`);
-        runtimeHints.push(`Start with \`${runDir}/blast.json\`, \`${runDir}/startup.json\`, and \`${runDir}/index.json\` for prepared run artifacts.`);
     }
     if (requestedBundleMode) {
         runtimeHints.push(`Bundle mode hint: use \`${requestedBundleMode}\` prompt preload assumptions for this request.`);
@@ -220,15 +195,11 @@ export function buildPromptPlan(agentContract, runtimeProfile, message) {
     const runtimeContext = renderRuntimeContext(agentContract, message, runtimeProfile);
     const startupGuidance = renderStartupGuidance(message.agent_params);
     const resolvedBundleMode = resolveBundleMode(message);
-    const promptContext = loadPromptContext(agentContract, message);
-    const bundlePrefix = promptContext && Object.prototype.hasOwnProperty.call(promptContext, 'bundle_prefix')
-        ? (promptContext.bundle_prefix ?? '')
-        : loadRepoBundlePrefix(agentContract, resolvedBundleMode);
-    const modeGuide = promptContext?.mode_guide ?? '';
+    const bundlePrefix = loadRepoBundlePrefix(agentContract, resolvedBundleMode);
     const cacheablePrefix = agentContract.promptPrefix || bundlePrefix
         ? `${agentContract.promptPrefix ? `${agentContract.promptPrefix}\n\n` : ''}${bundlePrefix}`
         : '';
-    const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${modeGuide}${message.prompt}`;
+    const dynamicPrompt = `${runtimePreamble}${runtimeContext}${startupGuidance}${message.prompt}`;
     const fullPrompt = cacheablePrefix
         ? `${cacheablePrefix}${dynamicPrompt}`
         : dynamicPrompt;

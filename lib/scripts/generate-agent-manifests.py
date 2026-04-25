@@ -176,10 +176,6 @@ def build_agent_contract(spec: dict, agent: dict) -> dict:
                 str(workflow_paths.get("analysis_context_script", "{augur_home}/scripts/run/build_analysis_context.py")),
                 **template_values,
             ),
-            "promptContextScript": render_path_template(
-                str(workflow_paths.get("prompt_context_script", "{augur_home}/scripts/run/build_prompt_context.py")),
-                **template_values,
-            ),
             "repairPromptScript": render_path_template(
                 str(workflow_paths.get("repair_prompt_script", "{augur_home}/scripts/run/build_validation_repair_prompt.py")),
                 **template_values,
