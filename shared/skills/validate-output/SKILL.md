@@ -40,6 +40,10 @@ The validator script must:
 Validator scripts stay next to the schemas and outputs they validate. This skill owns the protocol,
 not the validation logic itself.
 
+Shared parent validators for cross-cutting validation domains live under `validators/`. These are
+not compatibility shims; they are the parent validation modules for shared validation concerns that
+do not belong to a single agent output schema.
+
 ## Procedure
 
 1. Verify that the validator path is inside the repo and matches the allowed validator naming pattern.

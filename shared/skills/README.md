@@ -14,5 +14,6 @@ Skills available to all agents, not owned by any single agent.
 | [audit](audit/SKILL.md) | `/audit` | Audit a skill, agent, or shared system using its local audit.md contract |
 | [install](install/SKILL.md) | `/install` | Install or reinstall kordinate — creates ~/.kord/, links runtime, optionally bootstraps infra |
 
+Shared parent validators live under `validate-output/validators/`.
 `/session` is backed by the legacy workstation helper `agents/charon/skills/bootstrap/images/workstation/bin/legacy/session-status` for operational listing and control-plane output.
 Agent discovery and delegation now live behind the central `kord` MCP/API surface rather than a shared repo skill.

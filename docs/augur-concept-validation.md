@@ -5,13 +5,13 @@ Augur concept units are validated from Markdown frontmatter. `meta.yaml` is not 
 The repository does not currently carry the Augur concept catalog directly. Use the validator against an installed or checked-out Augur release:
 
 ```sh
-python3 lib/scripts/validate-augur-concepts.py /path/to/augur/memory/concepts
+python3 shared/skills/validate-output/validators/augur_concepts.py /path/to/augur/memory/concepts
 ```
 
 If the catalog has a deterministic fact generator, run it as part of the same gate:
 
 ```sh
-python3 lib/scripts/validate-augur-concepts.py /path/to/augur/memory/concepts \
+python3 shared/skills/validate-output/validators/augur_concepts.py /path/to/augur/memory/concepts \
   --fact-generator "/path/to/fact-generator --check"
 ```
 
