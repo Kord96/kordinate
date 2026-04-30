@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if git diff --cached --name-only --diff-filter=ACMR | grep -Eq '(^|/)\.validator/'; then
+  echo "Reminder: staged **/.validator/ changes should be audited with the validator skill before commit." >&2
+fi
+
+exit 0
