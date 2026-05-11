@@ -73,6 +73,7 @@ spec:
       containers:
         - name: workstation
           image: REGISTRY/workstation:latest
+          command: ["/usr/bin/tini", "-s", "--", "/usr/local/bin/entrypoint.sh"]
           stdin: true
           tty: true
           env:

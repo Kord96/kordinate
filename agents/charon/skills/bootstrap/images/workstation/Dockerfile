@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl wget openssh-client openssh-server tmux gnupg pass \
     python3 python3-pip python3-yaml \
-    jq unzip ca-certificates sudo iptables \
+    jq unzip ca-certificates sudo iptables tini \
     && rm -rf /var/lib/apt/lists/*
 
 # Node.js (LTS) — needed for claude-code and MCP servers
@@ -55,4 +55,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/readiness-check.sh
 USER claude
 WORKDIR /home/claude
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "-s", "--", "/usr/local/bin/entrypoint.sh"]

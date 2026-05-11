@@ -261,7 +261,7 @@ print(sum(1 for d in json.load(sys.stdin).get('devices',[]) if 'workstation' in 
   fi
 
   echo "Starting tailscaled..."
-  sudo tailscaled --state=/var/lib/tailscale/tailscaled.state --tun=userspace-networking &
+  sudo tailscaled --state=/var/lib/tailscale/tailscaled.state &
   sleep 3
   if sudo tailscale up --authkey="$TS_KEY" --hostname="${TS_HOSTNAME:-workstation}" --ssh 2>&1; then
     echo "Tailscale up: $(sudo tailscale ip -4)"
