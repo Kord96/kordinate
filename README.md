@@ -22,3 +22,13 @@ cd ~/kordinate
 ## Documentation
 
 **[kord96.github.io/kordinate](https://kord96.github.io/kordinate/)**
+
+## Current Status
+
+Kordinate is being reduced to the parts that have not been absorbed by the
+newer project boundaries. Scribe owns the canonical manifest reference vault;
+Augur owns the Augur runtime/application boundary; Charon owns agent bundle and
+deployment packaging.
+
+See [docs/absorbed-by-scribe.md](docs/absorbed-by-scribe.md) for the first
+removed manifest/config set.

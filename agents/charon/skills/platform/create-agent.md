@@ -6,6 +6,10 @@ Use this flow when adding a new daemon-backed agent to the platform.
 
 Add a new entry to `agent-spec.yaml`, regenerate base manifests, and make the new agent deployable through the normal `/platform deploy` path. The pod should run the shared `klaude-daemon` package, not a repo-local CLI clone.
 
+Status: legacy. Kordinate no longer owns canonical generated platform
+manifests. Use this document as historical design context unless the platform
+runtime is revived or re-homed.
+
 ## Command Shape
 
 `/platform create-agent <name> [--profile generic|generic-opus|generic-gemini-31-pro|generic-deepseek-reasoner|generic-glm5|generic-gpt54|augur-opus|augur-gemini-31-pro|augur-deepseek-reasoner|augur-glm5|augur-gpt54|charon-gpt53-codex|alfred-deepseek-chat|sauron-gpt53-codex] [profile-specific flags]`

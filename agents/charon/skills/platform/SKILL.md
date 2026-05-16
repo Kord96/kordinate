@@ -8,6 +8,11 @@ argument-hint: "deploy <env> | status [env] | scale <agent> <min> <max> [env] | 
 
 Deploy and manage the agent runtime platform. Applies kustomize overlays for platform components (agents, curators, kafka, KEDA) to target environments.
 
+Status: legacy. The generated platform manifests formerly stored in this
+repository have been absorbed into Scribe's canonical manifest vault. Treat
+deploy/create-agent flows here as historical guidance until a surviving
+platform runtime owner is chosen.
+
 ## Usage
 
 - `/platform deploy dev` — apply platform manifests to dev
@@ -123,7 +128,8 @@ Default environment is `dev` if not specified.
 
    `python3 $KORDINATE_HOME/lib/scripts/create-agent-spec-entry.py ...`
 
-4. **Regenerate manifests** — rebuild:
+4. **Regenerate manifests** — legacy flow. The former generated outputs have
+   moved to Scribe's manifest vault:
    - `agents/charon/skills/platform/manifests/base/agents.yaml`
    - `agents/charon/skills/platform/manifests/base/keda.yaml`
    - `agents/charon/skills/platform/manifests/base/kafka.yaml`
@@ -140,7 +146,8 @@ Read the detailed procedure at [create-agent.md](create-agent.md).
 
 ## Key Resources
 
-- [manifests/base/](manifests/base/) — base platform kustomize manifests
+- Base platform manifests have moved to the Scribe vault reference set:
+  `/kord/personal-cloud/scribe-vault/References/manifests/kordinate/platform/`
 - [create-agent.md](create-agent.md) — how to add a new daemon-backed agent to the platform
 - [agent-creation-profiles.yaml](agent-creation-profiles.yaml) — flavor-aware creation defaults and required specialist choices
 - [layered-image-rollout.md](layered-image-rollout.md) — first rollout procedure for `agent-base`, `agent-charon`, and `agent-augur`

@@ -19,12 +19,14 @@ Do not mark a section `PASS` based on stale assumptions, old screenshots, or gen
 ## Source Of Truth
 
 - `main` is up to date locally and on origin.
-- Generated platform artifacts match source:
+- Legacy generated platform artifacts have been absorbed into Scribe's manifest
+  vault at `/kord/personal-cloud/scribe-vault/References/manifests/kordinate/`.
+  Historical source paths were:
   - [agent-spec.yaml](/kord/workstation/home/project/kordinate/agents/charon/skills/platform/agent-spec.yaml)
-  - [agents.yaml](/kord/workstation/home/project/kordinate/agents/charon/skills/platform/manifests/base/agents.yaml)
-  - [keda.yaml](/kord/workstation/home/project/kordinate/agents/charon/skills/platform/manifests/base/keda.yaml)
-  - [kafka-topics.yaml](/kord/workstation/home/project/kordinate/agents/charon/skills/platform/manifests/base/kafka-topics.yaml)
-  - [discovery-catalog.json](/kord/workstation/home/project/kordinate/agents/charon/skills/platform/manifests/base/discovery-catalog.json)
+  - `agents/charon/skills/platform/manifests/base/agents.yaml`
+  - `agents/charon/skills/platform/manifests/base/keda.yaml`
+  - `agents/charon/skills/platform/manifests/base/kafka-topics.yaml`
+  - `agents/charon/skills/platform/manifests/base/discovery-catalog.json`
 - Rendered manifests contain no unresolved `REGISTRY/` placeholders.
 - Generated manifests were not patched manually after render without the same change being reflected back into source.
 
