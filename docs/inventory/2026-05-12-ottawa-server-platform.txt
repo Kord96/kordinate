@@ -1,0 +1,1375 @@
+
+===== host identity =====
+kkord-OptiPlex-7090
+kkord
+Linux kkord-OptiPlex-7090 6.17.0-14-generic #14~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Jan 15 15:52:10 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+PRETTY_NAME="Ubuntu 24.04.3 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.3 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+
+===== host tools =====
+/usr/local/bin/kubectl
+/usr/local/bin/k3s
+/usr/bin/docker
+/usr/bin/ctr
+/usr/local/bin/crictl
+/usr/bin/tailscale
+
+===== host filesystems =====
+Filesystem     Type      Size  Used Avail Use% Mounted on
+tmpfs          tmpfs     6.3G   22M  6.3G   1% /run
+/dev/nvme0n1p2 ext4      915G  635G  234G  74% /
+tmpfs          tmpfs      32G  268M   32G   1% /dev/shm
+tmpfs          tmpfs     5.0M   12K  5.0M   1% /run/lock
+efivarfs       efivarfs  374K  130K  240K  36% /sys/firmware/efi/efivars
+/dev/nvme0n1p1 vfat      1.1G   26M  1.1G   3% /boot/efi
+/dev/sda1      ext4      916G   32K  870G   1% /mnt/hdd
+tmpfs          tmpfs     6.3G   55M  6.2G   1% /run/user/1000
+
+NAME        FSTYPE   FSVER LABEL UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
+loop0       squashfs 4.0                                                    0   100% /snap/bare/5
+loop1       squashfs 4.0                                                    0   100% /snap/snapd-desktop-integration/361
+loop2       squashfs 4.0                                                    0   100% /snap/thunderbird/1093
+loop3       squashfs 4.0                                                    0   100% /snap/firefox/8247
+loop4       squashfs 4.0                                                    0   100% /snap/core24/1499
+loop5       squashfs 4.0                                                    0   100% /snap/firefox/8274
+loop7       squashfs 4.0                                                    0   100% /snap/code/237
+loop8       squashfs 4.0                                                    0   100% /snap/core20/2717
+loop9       squashfs 4.0                                                    0   100% /snap/firmware-updater/224
+loop10      squashfs 4.0                                                    0   100% /snap/docker/3377
+loop11      squashfs 4.0                                                    0   100% /snap/core22/2411
+loop12      squashfs 4.0                                                    0   100% /snap/snapd/26382
+loop13      squashfs 4.0                                                    0   100% /snap/snap-store/1338
+loop14      squashfs 4.0                                                    0   100% /snap/gnome-42-2204/226
+loop15      squashfs 4.0                                                    0   100% /snap/gnome-42-2204/247
+loop16      squashfs 4.0                                                    0   100% /snap/gnome-46-2404/145
+loop17      squashfs 4.0                                                    0   100% /snap/gnome-46-2404/153
+loop18      squashfs 4.0                                                    0   100% /snap/gtk-common-themes/1535
+loop19      squashfs 4.0                                                    0   100% /snap/mesa-2404/1165
+loop20      squashfs 4.0                                                    0   100% /snap/code/238
+loop21      squashfs 4.0                                                    0   100% /snap/core24/1587
+loop22      squashfs 4.0                                                    0   100% /snap/snap-store/1367
+loop23      squashfs 4.0                                                    0   100% /snap/snapd/26865
+loop24      squashfs 4.0                                                    0   100% /snap/thunderbird/1104
+loop25      squashfs 4.0                                                    0   100% /snap/core22/2339
+loop26      squashfs 4.0                                                    0   100% /snap/firmware-updater/226
+loop27      squashfs 4.0                                                    0   100% /snap/docker/3505
+loop28      squashfs 4.0                                                    0   100% /snap/core20/2769
+loop29      squashfs 4.0                                                    0   100% /snap/discord/278
+loop30      squashfs 4.0                                                    0   100% /snap/snapd-desktop-integration/357
+loop31      squashfs 4.0                                                    0   100% /snap/discord/282
+sda                                                                                  
+└─sda1      ext4     1.0   HDD   17acb587-6e75-4c96-a29a-80ca81b27b3f  869.2G     0% /mnt/hdd
+sdb         ext4     1.0         92307e88-efa7-4040-9703-4b0103ba8fab                /var/lib/kubelet/pods/4f2ebc64-5016-4eb6-9b93-2491fa963c09/volumes/kubernetes.io~csi/pvc-1c66ae2a-fa21-4827-ac5f-475a03b2533e/mount
+                                                                                     /var/lib/kubelet/plugins/kubernetes.io/csi/driver.longhorn.io/5e0e98c52311f9b58f554c646f0efef79c1638e31150ff926fe68324641c0cfa/globalmount
+sdc         ext4     1.0         6624a0ae-88f3-4027-a2a3-b75ef7c4ffea                /var/lib/kubelet/pods/a918c4f8-f0f2-400c-8e32-89c340585b00/volumes/kubernetes.io~csi/pvc-87e8f564-6bca-4882-b4a5-278daa52c92c/mount
+                                                                                     /var/lib/kubelet/plugins/kubernetes.io/csi/driver.longhorn.io/92e9ea0b1368aed4e61f6a8307cd45a107f9e08ad8f3d795797e6c8d236153b5/globalmount
+sdd         ext4     1.0         661511a6-f642-4d40-b7f0-42fc372e48e3                /var/lib/kubelet/pods/26511cfd-89d7-4681-8bef-6c8307f81568/volumes/kubernetes.io~csi/pvc-14d5eaaa-4bc6-4823-bb03-7e513006400b/mount
+                                                                                     /var/lib/kubelet/plugins/kubernetes.io/csi/driver.longhorn.io/bfd76eb311dbe7731639a5911d82d1d73358db794fab43587b26ddfdb0a57c09/globalmount
+sde         ext4     1.0         d200875d-b951-401d-886a-5eedb4af756b                
+sdf         ext4     1.0         0b452faa-d31d-42aa-b480-d66c4cf157f5                
+sdg         ext4     1.0         eb7c83aa-9cde-4d27-ae77-c6bfd21051b6                
+sdh         ext4     1.0         cce4ca85-abd7-413f-bc03-85080c11bdca                
+sdi                                                                                  /var/lib/kubelet/pods/d5d9fc3a-cd16-45df-a5f8-550abc93b165/volumes/kubernetes.io~csi/pvc-d230bde0-53eb-433b-8dea-98c49e9e5526/mount
+                                                                                     /var/lib/kubelet/pods/0f74455e-69e5-49bf-b5ae-f41c8c6227f1/volumes/kubernetes.io~csi/pvc-d230bde0-53eb-433b-8dea-98c49e9e5526/mount
+                                                                                     /var/lib/kubelet/pods/9aad5cb8-6e74-4d6f-a058-db21fc607b44/volumes/kubernetes.io~csi/pvc-d230bde0-53eb-433b-8dea-98c49e9e5526/mount
+                                                                                     /var/lib/kubelet/pods/1c1f0276-346f-4104-991b-7964a3eb528d/volumes/kubernetes.io~csi/pvc-d230bde0-53eb-433b-8dea-98c49e9e5526/mount
+                                                                                     /var/lib/kubelet/pods/36611f02-966b-4201-87ef-9e4e0f47ffff/volumes/kubernetes.io~csi/pvc-d230bde0-53eb-433b-8dea-98c49e9e5526/mount
+                                                                                     /var/lib/kubelet/plugins/kubernetes.io/csi/driver.longhorn.io/3c986bd4b05192d87713f3c1b19b474a87861d9370778ec05c2cc02e064316b1/globalmount
+sr0                                                                                  
+nvme0n1                                                                              
+├─nvme0n1p1 vfat     FAT32       9096-07C3                                 1G     2% /boot/efi
+└─nvme0n1p2 ext4     1.0         3b3ca35f-1ea0-4516-9bcb-dbdc7a493195    234G    69% /var/lib/kubelet/pods/c35d7970-a748-4167-8a40-0825088d3d7d/volumes/kubernetes.io~local-volume/pvc-66267fc4-33d3-4f03-8346-ed1386251df3
+                                                                                     /var/lib/kubelet/pods/be32d6bb-8205-4f3a-a042-18b1d415eae1/volume-subpaths/config/pgbouncer/1
+                                                                                     /var/lib/kubelet/pods/be32d6bb-8205-4f3a-a042-18b1d415eae1/volume-subpaths/config/pgbouncer/0
+                                                                                     /var/lib/kubelet/pods/95730c43-9098-4605-b35d-78a6cda20735/volumes/kubernetes.io~local-volume/pvc-72b7fd8a-ac89-4fae-8ddc-b24573157fd7
+                                                                                     /
+
+===== host mounts =====
+
+===== tailscale status =====
+100.71.90.43    ottawa-server        ottawa-server.tailc85f0f.ts.net  linux  -                                                                                                 
+100.93.138.73   colima-mac           khaled.kord96@                   linux  active; direct 192.168.2.29:52263; offline, last seen 9d ago, tx 93392289066908 rx 4820900444760  
+100.113.48.89   gateway-home         khaled.kord96@                   linux  -                                                                                                 
+100.90.15.120   gateway-vandc        khaled.kord96@                   linux  -                                                                                                 
+100.112.148.88  ipad-pro-11-gen-3    khaled.kord96@                   iOS    offline, last seen 5d ago                                                                         
+100.110.223.9   iphone-se-gen-2      khaled.kord96@                   iOS    -                                                                                                 
+100.64.200.109  kkord-latitude-5420  tagged-devices                   linux  -                                                                                                 
+100.127.118.74  vandc-74             khaled.kord96@                   linux  -                                                                                                 
+100.120.209.65  workstation          tagged-devices                   linux  active; direct 10.42.0.23:56541, tx 881452 rx 15873668                                            
+
+100.71.90.43
+
+No serve config
+
+===== tailscale json self =====
+{
+    "Version": "1.96.4-t8cf541dfd-g62bc84ce7",
+    "TUN": true,
+    "BackendState": "Running",
+    "HaveNodeKey": true,
+    "AuthURL": "",
+    "TailscaleIPs": [
+        "100.71.90.43",
+        "fd7a:115c:a1e0::ca01:5a2b"
+    ],
+    "Self": {
+        "ID": "ncuq39TCP621CNTRL",
+        "PublicKey": "nodekey:9b7721328714c3f856a763562a500f02da90ad3f682e2d6904a1fc77ca075a2a",
+        "HostName": "ottawa-server",
+        "DNSName": "ottawa-server.tailc85f0f.ts.net.",
+        "OS": "linux",
+        "UserID": 8116985711901819,
+        "TailscaleIPs": [
+            "100.71.90.43",
+            "fd7a:115c:a1e0::ca01:5a2b"
+        ],
+        "AllowedIPs": [
+            "100.71.90.43/32",
+            "fd7a:115c:a1e0::ca01:5a2b/128",
+            "172.20.0.0/16"
+        ],
+        "Tags": [
+            "tag:home"
+        ],
+        "PrimaryRoutes": [
+            "172.20.0.0/16"
+        ],
+        "Addrs": [
+            "184.147.112.20:42976",
+            "184.147.112.20:9024",
+            "10.42.0.0:41641",
+            "10.42.0.1:41641",
+            "172.17.0.1:41641",
+            "172.29.0.1:41641",
+            "192.168.2.17:41641"
+        ],
+        "CurAddr": "",
+        "Relay": "tor",
+        "PeerRelay": "",
+        "RxBytes": 0,
+        "TxBytes": 0,
+        "Created": "2025-11-28T20:34:29.998048723Z",
+        "LastWrite": "0001-01-01T00:00:00Z",
+        "LastSeen": "0001-01-01T00:00:00Z",
+        "LastHandshake": "0001-01-01T00:00:00Z",
+        "Online": true,
+        "ExitNode": false,
+        "ExitNodeOption": false,
+        "Active": false,
+        "PeerAPIURL": [
+            "http://100.71.90.43:36553",
+            "http://[fd7a:115c:a1e0::ca01:5a2b]:65467"
+        ],
+        "TaildropTarget": 0,
+        "NoFileSharingReason": "",
+        "Capabilities": [
+            "HTTPS://TAILSCALE.COM/s/DEPRECATED-NODE-CAPS#see-https://github.com/tailscale/tailscale/issues/11508",
+            "default-auto-update",
+            "https",
+            "https://tailscale.com/cap/file-sharing",
+            "https://tailscale.com/cap/is-owner",
+            "https://tailscale.com/cap/ssh",
+            "https://tailscale.com/cap/tailnet-lock",
+            "probe-udp-lifetime",
+            "ssh-behavior-v1",
+            "ssh-env-vars",
+            "store-appc-routes",
+            "tailnet-display-name"
+        ],
+        "CapMap": {
+            "default-auto-update": [
+                true
+            ],
+            "https": null,
+            "https://tailscale.com/cap/file-sharing": null,
+            "https://tailscale.com/cap/is-owner": null,
+            "https://tailscale.com/cap/ssh": null,
+            "https://tailscale.com/cap/tailnet-lock": null,
+            "probe-udp-lifetime": null,
+            "ssh-behavior-v1": null,
+            "ssh-env-vars": null,
+            "store-appc-routes": null,
+            "tailnet-display-name": [
+                "khaled.kord96@gmail.com"
+            ]
+        },
+        "InNetworkMap": true,
+        "InMagicSock": false,
+        "InEngine": false,
+        "KeyExpiry": "2026-05-27T20:34:29Z"
+    },
+    "Health": [],
+    "MagicDNSSuffix": "tailc85f0f.ts.net",
+    "CurrentTailnet": {
+        "Name": "khaled.kord96@gmail.com",
+        "MagicDNSSuffix": "tailc85f0f.ts.net",
+        "MagicDNSEnabled": true
+    },
+    "CertDomains": [
+        "ottawa-server.tailc85f0f.ts.net"
+    ],
+    "Peer": {
+        "nodekey:2fc0db3a2a13f8d65a290deef9b07c799e0d62c2094d23cea1ef47170dc0c86c": {
+            "ID": "nupfTZGqvB11CNTRL",
+            "PublicKey": "nodekey:2fc0db3a2a13f8d65a290deef9b07c799e0d62c2094d23cea1ef47170dc0c86c",
+            "HostName": "kkord-Latitude-5420",
+            "DNSName": "kkord-latitude-5420.tailc85f0f.ts.net.",
+            "OS": "linux",
+            "UserID": 4538288115359300,
+            "TailscaleIPs": [
+                "100.64.200.109",
+                "fd7a:115c:a1e0::d01:c88b"
+            ],
+            "AllowedIPs": [
+                "100.64.200.109/32",
+                "fd7a:115c:a1e0::d01:c88b/128"
+            ],
+            "Tags": [
+                "tag:home"
+            ],
+            "Addrs": null,
+            "CurAddr": "",
+            "Relay": "tor",
+            "PeerRelay": "",
+            "RxBytes": 0,
+            "TxBytes": 0,
+            "Created": "2025-12-10T14:45:39.736938742Z",
+            "LastWrite": "0001-01-01T00:00:00Z",
+            "LastSeen": "2026-05-12T04:50:00.1Z",
+            "LastHandshake": "0001-01-01T00:00:00Z",
+            "Online": true,
+            "ExitNode": false,
+            "ExitNodeOption": false,
+            "Active": false,
+            "PeerAPIURL": [
+                "http://100.64.200.109:38001",
+                "http://[fd7a:115c:a1e0::d01:c88b]:46283"
+            ],
+            "TaildropTarget": 9,
+            "NoFileSharingReason": "",
+            "InNetworkMap": true,
+            "InMagicSock": true,
+            "InEngine": false,
+            "KeyExpiry": "2026-06-08T14:45:39Z"
+        },
+        "nodekey:5178ccc9e1a13f37644f3fbd1b120550b858ed6f7989e5f9f196833af09d8a48": {
+            "ID": "n2gdUDNM1d11CNTRL",
+            "PublicKey": "nodekey:5178ccc9e1a13f37644f3fbd1b120550b858ed6f7989e5f9f196833af09d8a48",
+            "HostName": "colima-mac",
+            "DNSName": "colima-mac.tailc85f0f.ts.net.",
+            "OS": "linux",
+            "UserID": 6805202137062453,
+            "TailscaleIPs": [
+                "100.93.138.73",
+                "fd7a:115c:a1e0::f033:8a49"
+            ],
+            "AllowedIPs": [
+                "100.93.138.73/32",
+                "fd7a:115c:a1e0::f033:8a49/128"
+            ],
+            "Addrs": null,
+            "CurAddr": "192.168.2.29:52263",
+            "Relay": "tor",
+            "PeerRelay": "",
+            "RxBytes": 4820900444760,
+            "TxBytes": 93392289066908,
+            "Created": "2026-03-13T00:21:27.544193881Z",
+            "LastWrite": "2026-05-12T11:32:30.404268233-04:00",
+            "LastSeen": "2026-05-02T23:43:22.1Z",
+            "LastHandshake": "2026-05-12T11:32:30.404256844-04:00",
+            "Online": false,
+            "ExitNode": false,
+            "ExitNodeOption": false,
+            "Active": true,
+            "PeerAPIURL": [
+                "http://100.93.138.73:60676",
+                "http://[fd7a:115c:a1e0::f033:8a49]:35630"
+            ],
+            "TaildropTarget": 5,
+            "NoFileSharingReason": "",
+            "InNetworkMap": true,
+            "InMagicSock": true,
+            "InEngine": true,
+            "KeyExpiry": "2026-09-09T00:21:27Z"
+        },
+        "nodekey:acec053dbfb2a176a04df09b0d21f73e51d11a22a8222649d14a80f6447f7649": {
+            "ID": "nPwKVUTTge11CNTRL",
+            "PublicKey": "nodekey:acec053dbfb2a176a04df09b0d21f73e51d11a22a8222649d14a80f6447f7649",
+            "HostName": "vandc-74",
+            "DNSName": "vandc-74.tailc85f0f.ts.net.",
+            "OS": "linux",
+            "UserID": 6805202137062453,
+            "TailscaleIPs": [
+                "100.127.118.74",
+                "fd7a:115c:a1e0::4439:764a"
+            ],
+            "AllowedIPs": [
+                "100.127.118.74/32",
+                "fd7a:115c:a1e0::4439:764a/128"
+            ],
+            "Addrs": null,
+            "CurAddr": "",
+            "Relay": "sea",
+            "PeerRelay": "",
+            "RxBytes": 0,
+            "TxBytes": 0,
+            "Created": "2026-03-27T16:44:56.737974759Z",
+            "LastWrite": "2026-05-11T11:12:40.822542625-04:00",
+            "LastSeen": "0001-01-01T00:00:00Z",
+            "LastHandshake": "0001-01-01T00:00:00Z",
+            "Online": true,
+            "ExitNode": false,
+            "ExitNodeOption": false,
+            "Active": false,
+            "PeerAPIURL": [
+
+===== routing =====
+default via 192.168.2.1 dev wlp1s0 proto dhcp src 192.168.2.17 metric 600 
+10.42.0.0/24 dev cni0 proto kernel scope link src 10.42.0.1 
+10.42.0.0/16 dev flannel-wg scope link 
+172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 
+172.29.0.0/16 dev br-ccf64ba60caf proto kernel scope link src 172.29.0.1 linkdown 
+192.168.2.0/24 dev wlp1s0 proto kernel scope link src 192.168.2.17 metric 600 
+
+===== kubernetes nodes =====
+NAME                  STATUS                        ROLES           AGE   VERSION        INTERNAL-IP     EXTERNAL-IP     OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
+colima                NotReady,SchedulingDisabled   <none>          60d   v1.34.5+k3s1   100.93.138.73   100.93.138.73   Ubuntu 24.04.4 LTS   6.8.0-100-generic   containerd://2.1.5-k3s1
+homeserver            Ready                         control-plane   66d   v1.34.5+k3s1   192.168.2.17    <none>          Ubuntu 24.04.3 LTS   6.17.0-14-generic   containerd://2.1.5-k3s1
+kkord-latitude-5420   Ready,SchedulingDisabled      <none>          60d   v1.34.5+k3s1   192.168.2.20    <none>          Ubuntu 24.04.4 LTS   6.17.0-22-generic   containerd://2.1.5-k3s1
+
+===== kubernetes namespaces =====
+NAME              STATUS   AGE
+augur             Active   19h
+default           Active   66d
+dev               Active   65d
+gateway           Active   53d
+keda              Active   40d
+kord              Active   39d
+kube-node-lease   Active   66d
+kube-public       Active   66d
+kube-system       Active   66d
+longhorn-system   Active   46d
+master            Active   59d
+monitor           Active   56d
+prod              Active   66d
+registry          Active   55d
+strimzi           Active   40d
+test              Active   66d
+
+===== kubernetes storageclasses =====
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  66d
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   46d
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   46d
+
+===== kubernetes pvs =====
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                            STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE   VOLUMEMODE
+alloy-nfs-vandc                            1Gi        ROX            Retain           Released   master/alloy-nfs-vandc                          <unset>                          53d   Filesystem
+pvc-056eb310-ad0c-4a50-a1a7-30bcae648c82   50Gi       RWO            Retain           Released   master/loki-master-data          longhorn       <unset>                          53d   Filesystem
+pvc-0aac99d4-5005-4487-ace9-12bda8480464   50Gi       RWO            Retain           Released   master/gateway-loki-data         longhorn       <unset>                          58d   Filesystem
+pvc-14d5eaaa-4bc6-4823-bb03-7e513006400b   10Gi       RWO            Delete           Bound      dev/data-kafka-combined-0        longhorn       <unset>                          39d   Filesystem
+pvc-1bb80530-1d2b-4ce2-8238-89bcc5b57161   20Gi       RWO            Delete           Bound      master/workstation-home          longhorn       <unset>                          37d   Filesystem
+pvc-1c66ae2a-fa21-4827-ac5f-475a03b2533e   50Gi       RWO            Delete           Bound      monitor/loki-data                longhorn       <unset>                          45d   Filesystem
+pvc-1faaa832-04de-46db-a5bc-a046e6c43a62   50Gi       RWO            Retain           Released   monitor/loki-gateway-data        longhorn       <unset>                          60d   Filesystem
+pvc-206a33a8-a4c3-4cd2-8696-5bc2382cd7bf   200Gi      RWO            Retain           Bound      prod/kafka-data                  longhorn       <unset>                          66d   Filesystem
+pvc-24a10507-01de-4f3b-825d-0ad26f4c2f08   20Gi       RWO            Retain           Released   admin/claude-workspace           longhorn       <unset>                          60d   Filesystem
+pvc-379d91b8-8b93-4fd4-a7dd-f421bbac6acf   5Gi        RWO            Retain           Released   admin/grafana-data               longhorn       <unset>                          60d   Filesystem
+pvc-3ee4e2dc-41e2-4a8c-9ff5-836d9f09d160   50Gi       RWO            Retain           Released   gateway/prometheus-admin-data    longhorn       <unset>                          59d   Filesystem
+pvc-4451d715-ae3a-4eba-99a5-3f48d80f6a6a   20Gi       RWO            Retain           Released   master/workstation-home          longhorn       <unset>                          55d   Filesystem
+pvc-52d0355d-fe85-42fe-83e2-80ad7d5f92da   50Gi       RWO            Retain           Released   monitor/loki-data                longhorn       <unset>                          66d   Filesystem
+pvc-53b4e90b-8fae-4888-9b62-3bbff8f698c1   10Gi       RWO            Retain           Bound      prod/redis-data                  longhorn       <unset>                          66d   Filesystem
+pvc-5816693b-449e-40ea-8c96-02dbec94b321   20Gi       RWO            Delete           Bound      default/workstation-home         longhorn       <unset>                          37d   Filesystem
+pvc-58b4d426-2235-4e5f-beff-9d269623a541   50Gi       RWO            Retain           Released   monitor/prometheus-data          longhorn       <unset>                          66d   Filesystem
+pvc-5fa5489e-151c-4203-9124-d392a7147b9b   50Gi       RWO            Retain           Released   admin/prometheus-admin-data      longhorn       <unset>                          60d   Filesystem
+pvc-66267fc4-33d3-4f03-8346-ed1386251df3   20Gi       RWO            Delete           Bound      registry/registry-data           local-path     <unset>                          28d   Filesystem
+pvc-6f4ae38b-5457-4f9e-a8de-3e0ee7cd3c64   50Gi       RWO            Retain           Released   gateway/loki-gateway-data        longhorn       <unset>                          59d   Filesystem
+pvc-72b7fd8a-ac89-4fae-8ddc-b24573157fd7   10Gi       RWO            Delete           Bound      gateway/minio-data               local-path     <unset>                          53d   Filesystem
+pvc-7507a811-8f4e-496d-988f-bacfa71574c6   20Gi       RWO            Retain           Bound      prod/barren-data                 longhorn       <unset>                          66d   Filesystem
+pvc-7b8ed873-4d2d-4711-97f4-db2ed66747be   5Gi        RWO            Retain           Bound      master/grafana-data              longhorn       <unset>                          55d   Filesystem
+pvc-8460b9ed-9419-4183-ab28-22066db5b2d5   50Gi       RWO            Retain           Released   master/gateway-prometheus-data   longhorn       <unset>                          58d   Filesystem
+pvc-85cf342d-44e4-4ae0-bcc8-b76d4c3e5a2a   100Gi      RWX            Retain           Bound      master/kord                      longhorn       <unset>                          46d   Filesystem
+pvc-87e8f564-6bca-4882-b4a5-278daa52c92c   50Gi       RWO            Delete           Bound      master/loki-data                 longhorn       <unset>                          45d   Filesystem
+pvc-976d3ccc-8b4e-4697-94e6-4f8d5ee04f96   20Gi       RWO            Retain           Released   master/workstation-home          longhorn       <unset>                          56d   Filesystem
+pvc-9874f0d3-4d7f-45b3-af56-2981f2ee3a17   20Gi       RWX            Delete           Bound      master/kord-repos                longhorn       <unset>                          39d   Filesystem
+pvc-aa1ef7c7-36a0-43ca-be9a-6917110268f8   20Gi       RWO            Retain           Released   default/workstation-home         longhorn       <unset>                          56d   Filesystem
+pvc-ac4067fa-010f-4d6e-9dbe-09f566c5d147   20Gi       RWO            Retain           Released   default/workstation-home         longhorn       <unset>                          56d   Filesystem
+pvc-c2575578-f319-4489-ab13-7efae278c85d   20Gi       RWO            Retain           Released   master/kord                      longhorn       <unset>                          46d   Filesystem
+pvc-c5297458-6efb-4d3d-b4ba-43556c7db385   50Gi       RWO            Retain           Released   master/prometheus-admin-data     longhorn       <unset>                          59d   Filesystem
+pvc-c61c1a5e-84dc-4fc7-915c-1fe63c389aa0   20Gi       RWO            Retain           Released   master/workstation-home          longhorn       <unset>                          55d   Filesystem
+pvc-cbed15b3-837c-4c45-b8bf-746ac7046a4b   5Gi        RWO            Retain           Released   monitor/grafana-data             longhorn       <unset>                          66d   Filesystem
+pvc-cd4cf460-624f-4027-a841-f283de40d670   20Gi       RWX            Delete           Bound      kord/agent-runtime               longhorn       <unset>                          39d   Filesystem
+pvc-d230bde0-53eb-433b-8dea-98c49e9e5526   20Gi       RWO            Delete           Bound      augur/augur-state                longhorn       <unset>                          19h   Filesystem
+pvc-e2a54b9b-01e8-413b-82f5-9b522fd66bca   20Gi       RWX            Delete           Bound      dev/agent-runtime                longhorn       <unset>                          19d   Filesystem
+pvc-eb88ed52-9174-4c41-81b0-4e35e38c3d83   50Gi       RWO            Retain           Released   monitor/loki-gateway-data        longhorn       <unset>                          53d   Filesystem
+pvc-fb657590-852c-485a-8ace-5b6ee6faaa1f   20Gi       RWO            Retain           Released   default/workstation-home         longhorn       <unset>                          56d   Filesystem
+
+===== kubernetes pvcs =====
+NAMESPACE   NAME                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE   VOLUMEMODE
+augur       augur-state             Bound    pvc-d230bde0-53eb-433b-8dea-98c49e9e5526   20Gi       RWO            longhorn       <unset>                 19h   Filesystem
+default     workstation-home        Bound    pvc-5816693b-449e-40ea-8c96-02dbec94b321   20Gi       RWO            longhorn       <unset>                 37d   Filesystem
+dev         agent-runtime           Bound    pvc-e2a54b9b-01e8-413b-82f5-9b522fd66bca   20Gi       RWX            longhorn       <unset>                 19d   Filesystem
+dev         data-kafka-combined-0   Bound    pvc-14d5eaaa-4bc6-4823-bb03-7e513006400b   10Gi       RWO            longhorn       <unset>                 39d   Filesystem
+gateway     minio-data              Bound    pvc-72b7fd8a-ac89-4fae-8ddc-b24573157fd7   10Gi       RWO            local-path     <unset>                 53d   Filesystem
+kord        agent-runtime           Bound    pvc-cd4cf460-624f-4027-a841-f283de40d670   20Gi       RWX            longhorn       <unset>                 39d   Filesystem
+master      grafana-data            Bound    pvc-7b8ed873-4d2d-4711-97f4-db2ed66747be   5Gi        RWO            longhorn       <unset>                 55d   Filesystem
+master      kord                    Bound    pvc-85cf342d-44e4-4ae0-bcc8-b76d4c3e5a2a   100Gi      RWX            longhorn       <unset>                 46d   Filesystem
+master      kord-repos              Bound    pvc-9874f0d3-4d7f-45b3-af56-2981f2ee3a17   20Gi       RWX            longhorn       <unset>                 39d   Filesystem
+master      loki-data               Bound    pvc-87e8f564-6bca-4882-b4a5-278daa52c92c   50Gi       RWO            longhorn       <unset>                 45d   Filesystem
+master      workstation-home        Bound    pvc-1bb80530-1d2b-4ce2-8238-89bcc5b57161   20Gi       RWO            longhorn       <unset>                 37d   Filesystem
+monitor     loki-data               Bound    pvc-1c66ae2a-fa21-4827-ac5f-475a03b2533e   50Gi       RWO            longhorn       <unset>                 45d   Filesystem
+prod        barren-data             Bound    pvc-7507a811-8f4e-496d-988f-bacfa71574c6   20Gi       RWO            longhorn       <unset>                 66d   Filesystem
+prod        kafka-data              Bound    pvc-206a33a8-a4c3-4cd2-8696-5bc2382cd7bf   200Gi      RWO            longhorn       <unset>                 62d   Filesystem
+prod        redis-data              Bound    pvc-53b4e90b-8fae-4888-9b62-3bbff8f698c1   10Gi       RWO            longhorn       <unset>                 62d   Filesystem
+registry    registry-data           Bound    pvc-66267fc4-33d3-4f03-8346-ed1386251df3   20Gi       RWO            local-path     <unset>                 28d   Filesystem
+
+===== kubernetes pods =====
+NAMESPACE         NAME                                                     READY   STATUS                       RESTARTS           AGE   IP            NODE                  NOMINATED NODE   READINESS GATES
+augur             augur-deterministic-worker-58dbc4c9f4-x9h54              1/1     Running                      0                  18h   10.42.0.65    homeserver            <none>           <none>
+augur             augur-gateway-7bbb5dd6d6-w454w                           1/1     Running                      0                  45m   10.42.0.70    homeserver            <none>           <none>
+augur             augur-semantic-worker-54fd9bb4b-fdmbz                    1/1     Running                      0                  19h   10.42.0.55    homeserver            <none>           <none>
+augur             augur-server-7d5b84b59b-nw4sr                            1/1     Running                      0                  45m   10.42.0.69    homeserver            <none>           <none>
+augur             augur-webhook-56684984f6-gqxwl                           1/1     Running                      0                  18h   10.42.0.66    homeserver            <none>           <none>
+dev               agent-alfred-deepseek-chat-5644f46cc6-ksqsz              0/1     CreateContainerConfigError   0                  19d   10.42.0.184   homeserver            <none>           <none>
+dev               agent-alfred-gpt-oss-20b-74d656f6b8-66669                1/1     Running                      0                  19d   10.42.0.182   homeserver            <none>           <none>
+dev               agent-augur-deepseek-reasoner-858fb698b5-g6ddm           0/1     CreateContainerConfigError   0                  19d   10.42.0.178   homeserver            <none>           <none>
+dev               agent-augur-gemini-25-flash-5787f67bd5-pk954             0/1     CreateContainerConfigError   0                  19d   10.42.0.175   homeserver            <none>           <none>
+dev               agent-augur-gemini-25-pro-5648bf59-mthjr                 0/1     CreateContainerConfigError   0                  19d   10.42.0.173   homeserver            <none>           <none>
+dev               agent-augur-gemini-31-pro-86649b68f5-n7qvt               0/1     CreateContainerConfigError   0                  19d   10.42.0.172   homeserver            <none>           <none>
+dev               agent-augur-gpt54-7cff6cbbdf-th7jc                       0/1     CreateContainerConfigError   0                  19d   10.42.0.174   homeserver            <none>           <none>
+dev               agent-augur-opus-7cc6985fdb-pqd5x                        0/1     CreateContainerConfigError   0                  19d   10.42.0.170   homeserver            <none>           <none>
+dev               agent-charon-gpt53-codex-8459bc48fc-g7l4r                0/1     CreateContainerConfigError   0                  19d   10.42.0.168   homeserver            <none>           <none>
+dev               agent-generic-deepseek-reasoner-7974576b8-s7sw2          0/1     CreateContainerConfigError   0                  19d   10.42.0.180   homeserver            <none>           <none>
+dev               agent-generic-gemini-25-flash-547f6f7f78-cz9x7           0/1     CreateContainerConfigError   0                  19d   10.42.0.171   homeserver            <none>           <none>
+dev               agent-generic-gemini-25-pro-67b9f74cf7-gxr54             0/1     CreateContainerConfigError   0                  19d   10.42.0.169   homeserver            <none>           <none>
+dev               agent-generic-gemini-31-pro-f48d4969f-r9qq4              0/1     CreateContainerConfigError   0                  19d   10.42.0.183   homeserver            <none>           <none>
+dev               agent-generic-glm5-758b9498d9-245ng                      1/1     Running                      0                  19d   10.42.0.185   homeserver            <none>           <none>
+dev               agent-generic-gpt54-68c5584b89-f4pbq                     0/1     CreateContainerConfigError   0                  19d   10.42.0.179   homeserver            <none>           <none>
+dev               agent-generic-opus-74bdcb49f9-cqxvx                      0/1     CreateContainerConfigError   0                  19d   10.42.0.177   homeserver            <none>           <none>
+dev               agent-sauron-gpt53-codex-c878fb469-gclgz                 0/1     CreateContainerConfigError   0                  19d   10.42.0.176   homeserver            <none>           <none>
+dev               kafka-combined-0                                         1/1     Running                      0                  28d   10.42.0.14    homeserver            <none>           <none>
+dev               kafka-entity-operator-7869958649-mg44r                   1/1     Running                      6 (28d ago)        28d   10.42.0.235   homeserver            <none>           <none>
+gateway           minio-5676f6669d-4tbd7                                   1/1     Running                      0                  28d   10.42.0.231   homeserver            <none>           <none>
+keda              keda-admission-8584c57df6-d7kqz                          1/1     Running                      0                  28d   10.42.0.226   homeserver            <none>           <none>
+keda              keda-metrics-apiserver-79fd9dc58c-mfk7p                  1/1     Running                      0                  28d   10.42.0.236   homeserver            <none>           <none>
+keda              keda-operator-84cdf878cc-zbm6t                           1/1     Running                      1 (6d12h ago)      28d   10.42.0.227   homeserver            <none>           <none>
+kord              agent-alfred-deepseek-chat-55bf4b4d65-bn289              1/1     Running                      0                  25d   10.42.0.117   homeserver            <none>           <none>
+kord              agent-alfred-deepseek-chat-86d94b4865-x4dk4              0/1     Init:ImagePullBackOff        0                  25d   10.42.0.159   homeserver            <none>           <none>
+kord              agent-alfred-gpt-oss-20b-7578bb56c9-5zg4f                0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-augur-deepseek-reasoner-5fcfdbcf74-pl267           0/1     Init:ImagePullBackOff        0                  25d   10.42.0.181   homeserver            <none>           <none>
+kord              agent-augur-deepseek-reasoner-69976cb97d-qpxmn           1/1     Running                      0                  25d   10.42.0.155   homeserver            <none>           <none>
+kord              agent-augur-deepseek-reasoner-69976cb97d-rwcpf           1/1     Running                      0                  25d   10.42.0.152   homeserver            <none>           <none>
+kord              agent-augur-deepseek-reasoner-69976cb97d-v7n2k           1/1     Running                      0                  25d   10.42.0.154   homeserver            <none>           <none>
+kord              agent-augur-gemini-25-flash-5fb46bd4c5-9vskl             1/1     Running                      0                  22d   10.42.0.46    homeserver            <none>           <none>
+kord              agent-augur-gemini-25-flash-5fb46bd4c5-fprrv             1/1     Running                      0                  22d   10.42.0.43    homeserver            <none>           <none>
+kord              agent-augur-gemini-25-flash-5fb46bd4c5-t9fdd             1/1     Running                      0                  22d   10.42.0.44    homeserver            <none>           <none>
+kord              agent-augur-gemini-25-flash-7445ccd4d-b6zw7              0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-augur-gemini-25-pro-7f44fdf787-cxxrp               0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-augur-gemini-25-pro-ccf5464c8-g2b5m                1/1     Running                      0                  22d   10.42.0.42    homeserver            <none>           <none>
+kord              agent-augur-gemini-25-pro-ccf5464c8-kv9s8                1/1     Running                      0                  22d   10.42.0.40    homeserver            <none>           <none>
+kord              agent-augur-gemini-25-pro-ccf5464c8-mrs89                1/1     Running                      0                  22d   10.42.0.41    homeserver            <none>           <none>
+kord              agent-augur-gemini-31-pro-74579c4cf5-22xc6               1/1     Running                      0                  22d   10.42.0.37    homeserver            <none>           <none>
+kord              agent-augur-gemini-31-pro-74579c4cf5-j29kl               1/1     Running                      0                  22d   10.42.0.39    homeserver            <none>           <none>
+kord              agent-augur-gemini-31-pro-74579c4cf5-rxtxv               1/1     Running                      0                  22d   10.42.0.38    homeserver            <none>           <none>
+kord              agent-augur-gemini-31-pro-cff8d69df-nrf2l                0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-augur-glm5-75f4d547b6-txj2v                        1/1     Running                      0                  18d   10.42.0.240   homeserver            <none>           <none>
+kord              agent-augur-gpt54-684f87f754-8tkz5                       0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-augur-minimax-m2p7-8f86f999f-xxkxx                 0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-augur-opus-798f859566-gbxj9                        0/1     Init:ImagePullBackOff        0                  22d   10.42.0.200   homeserver            <none>           <none>
+kord              agent-charon-gpt53-codex-79d6d4cf86-l9srs                0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-charon-gpt53-codex-86b8b954b4-4bp4v                1/1     Running                      0                  25d   10.42.0.246   homeserver            <none>           <none>
+kord              agent-charon-gpt53-codex-86b8b954b4-cb2w7                1/1     Running                      0                  25d   10.42.0.245   homeserver            <none>           <none>
+kord              agent-charon-gpt53-codex-86b8b954b4-tc9f5                1/1     Running                      0                  25d   10.42.0.222   homeserver            <none>           <none>
+kord              agent-charon-sonnet-86dc48f446-dn7fd                     0/1     CrashLoopBackOff             7183 (98s ago)     28d   10.42.0.28    homeserver            <none>           <none>
+kord              agent-generic-deepseek-reasoner-5c9df97cb9-s2rxz         1/1     Running                      0                  25d   10.42.0.132   homeserver            <none>           <none>
+kord              agent-generic-deepseek-reasoner-cf4bf9f74-kdk9q          0/1     Init:ImagePullBackOff        0                  25d   10.42.0.166   homeserver            <none>           <none>
+kord              agent-generic-gemini-25-flash-699c97b89-dl4wd            0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-generic-gemini-25-pro-674678fb5c-8xrl8             0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-generic-gemini-31-pro-798499fc79-jvvc9             0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-generic-glm5-bf95d8cb9-5hdlb                       0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-generic-gpt54-7d9bdf44c5-c4z9n                     0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-generic-opus-75995b8957-mfpfx                      0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              agent-sauron-gpt53-codex-7794fff668-kk4gn                1/1     Running                      0                  25d   10.42.0.123   homeserver            <none>           <none>
+kord              agent-sauron-gpt53-codex-7794fff668-p562x                1/1     Running                      0                  25d   10.42.0.108   homeserver            <none>           <none>
+kord              agent-sauron-gpt53-codex-7794fff668-phhpl                1/1     Running                      0                  25d   10.42.0.119   homeserver            <none>           <none>
+kord              agent-sauron-gpt53-codex-d9855f8fb-b6ts6                 0/1     Pending                      0                  18d   <none>        <none>                <none>           <none>
+kord              job-router-769c559db6-7wqll                              0/1     ImagePullBackOff             0                  28d   10.42.0.45    homeserver            <none>           <none>
+kord              kord-api-6884557b6-pdqhv                                 1/1     Running                      0                  19d   10.42.0.189   homeserver            <none>           <none>
+kube-system       coredns-695cbbfcb9-2wpj9                                 1/1     Running                      0                  66d   10.42.0.2     homeserver            <none>           <none>
+kube-system       local-path-provisioner-546dfc6456-mjfwh                  1/1     Running                      0                  66d   10.42.0.4     homeserver            <none>           <none>
+kube-system       metrics-server-c8774f4f4-s4pfm                           1/1     Running                      0                  66d   10.42.0.5     homeserver            <none>           <none>
+kube-system       svclb-traefik-5404d192-f4rg4                             2/2     Running                      12 (6d22h ago)     60d   10.42.1.122   kkord-latitude-5420   <none>           <none>
+kube-system       svclb-traefik-5404d192-tpwmv                             2/2     Running                      0                  66d   10.42.0.7     homeserver            <none>           <none>
+kube-system       svclb-traefik-5404d192-v6zdp                             2/2     Running                      0                  60d   10.42.3.3     colima                <none>           <none>
+kube-system       traefik-788bc4688c-96jst                                 1/1     Running                      0                  66d   10.42.0.8     homeserver            <none>           <none>
+longhorn-system   csi-attacher-d58844bd4-b9wkm                             1/1     Running                      0                  28d   10.42.0.252   homeserver            <none>           <none>
+longhorn-system   csi-attacher-d58844bd4-dnx8n                             1/1     Running                      0                  28d   10.42.0.253   homeserver            <none>           <none>
+longhorn-system   csi-attacher-d58844bd4-jx57j                             1/1     Running                      0                  28d   10.42.0.251   homeserver            <none>           <none>
+longhorn-system   csi-provisioner-5bfcd87f9d-6khvv                         1/1     Running                      0                  28d   10.42.0.6     homeserver            <none>           <none>
+longhorn-system   csi-provisioner-5bfcd87f9d-qlqjd                         1/1     Running                      0                  28d   10.42.0.3     homeserver            <none>           <none>
+longhorn-system   csi-provisioner-5bfcd87f9d-swll2                         1/1     Running                      0                  28d   10.42.0.254   homeserver            <none>           <none>
+longhorn-system   csi-resizer-6dd8fc568d-2bxgn                             1/1     Running                      6 (28d ago)        28d   10.42.0.225   homeserver            <none>           <none>
+longhorn-system   csi-resizer-6dd8fc568d-ghthn                             1/1     Running                      6 (28d ago)        28d   10.42.0.224   homeserver            <none>           <none>
+longhorn-system   csi-resizer-6dd8fc568d-r8flt                             1/1     Running                      6 (28d ago)        28d   10.42.0.232   homeserver            <none>           <none>
+longhorn-system   csi-snapshotter-66474d5979-bpn9d                         1/1     Running                      0                  28d   10.42.0.11    homeserver            <none>           <none>
+longhorn-system   csi-snapshotter-66474d5979-qwns8                         1/1     Running                      0                  28d   10.42.0.9     homeserver            <none>           <none>
+longhorn-system   csi-snapshotter-66474d5979-shz6c                         1/1     Running                      0                  28d   10.42.0.10    homeserver            <none>           <none>
+longhorn-system   engine-image-ei-d91f5974-g2vd2                           1/1     Running                      6 (6d22h ago)      46d   10.42.1.124   kkord-latitude-5420   <none>           <none>
+longhorn-system   engine-image-ei-d91f5974-rg5rc                           1/1     Running                      0                  46d   10.42.3.134   colima                <none>           <none>
+longhorn-system   engine-image-ei-d91f5974-tdjmk                           1/1     Running                      0                  28d   10.42.0.249   homeserver            <none>           <none>
+longhorn-system   instance-manager-a75dc37463895fb1238a3fb63d17994f        1/1     Running                      0                  28d   10.42.0.250   homeserver            <none>           <none>
+longhorn-system   longhorn-csi-plugin-hl8pr                                3/3     Running                      18 (6d22h ago)     46d   10.42.1.125   kkord-latitude-5420   <none>           <none>
+longhorn-system   longhorn-csi-plugin-m4tgn                                3/3     Running                      0                  28d   10.42.0.247   homeserver            <none>           <none>
+longhorn-system   longhorn-csi-plugin-n7pdc                                3/3     Running                      0                  46d   10.42.3.136   colima                <none>           <none>
+longhorn-system   longhorn-driver-deployer-f8564dbd-plrkd                  1/1     Running                      0                  28d   10.42.0.223   homeserver            <none>           <none>
+longhorn-system   longhorn-manager-86w67                                   2/2     Running                      0                  28d   10.42.0.248   homeserver            <none>           <none>
+longhorn-system   longhorn-manager-ssfch                                   1/2     CrashLoopBackOff             10421 (9d ago)     46d   10.42.3.135   colima                <none>           <none>
+longhorn-system   longhorn-manager-wsn8k                                   2/2     Running                      1817 (6d22h ago)   46d   10.42.1.123   kkord-latitude-5420   <none>           <none>
+longhorn-system   longhorn-ui-9c84447cd-f8zgs                              1/1     Running                      0                  28d   10.42.0.215   homeserver            <none>           <none>
+longhorn-system   longhorn-ui-9c84447cd-nfnjv                              1/1     Running                      0                  28d   10.42.0.220   homeserver            <none>           <none>
+longhorn-system   share-manager-pvc-85cf342d-44e4-4ae0-bcc8-b76d4c3e5a2a   1/1     Running                      0                  28d   10.42.0.15    homeserver            <none>           <none>
+longhorn-system   share-manager-pvc-9874f0d3-4d7f-45b3-af56-2981f2ee3a17   1/1     Running                      0                  28d   10.42.0.17    homeserver            <none>           <none>
+longhorn-system   share-manager-pvc-cd4cf460-624f-4027-a841-f283de40d670   1/1     Running                      0                  28d   10.42.0.16    homeserver            <none>           <none>
+longhorn-system   share-manager-pvc-e2a54b9b-01e8-413b-82f5-9b522fd66bca   1/1     Running                      0                  19d   10.42.0.167   homeserver            <none>           <none>
+master            docs-78fb6566fc-ln6jz                                    3/3     Running                      22 (25h ago)       23d   10.42.0.133   homeserver            <none>           <none>
+master            grafana-5bd8458b69-4l8qm                                 3/3     Running                      0                  28d   10.42.0.234   homeserver            <none>           <none>
+master            kord-f4db8cbfb-vclc9                                     0/1     ImagePullBackOff             0                  23d   10.42.0.58    homeserver            <none>           <none>
+master            loki-685667547c-n5pr8                                    2/2     Running                      0                  28d   10.42.0.12    homeserver            <none>           <none>
+master            prometheus-6bbcb849bd-77t8j                              2/2     Running                      0                  28d   10.42.0.233   homeserver            <none>           <none>
+master            workstation-584bddd896-l8bwr                             3/3     Running                      0                  19h   10.42.0.23    homeserver            <none>           <none>
+monitor           alloy-85446465b7-fmv9k                                   1/1     Running                      0                  28d   10.42.0.228   homeserver            <none>           <none>
+monitor           gateway-6765c65d4d-p2s6z                                 1/1     Running                      0                  28d   10.42.0.237   homeserver            <none>           <none>
+monitor           kube-state-metrics-56d9685597-zwdbq                      1/1     Running                      0                  15d   10.42.0.241   homeserver            <none>           <none>
+monitor           loki-6457794789-zsnqd                                    2/2     Running                      0                  28d   10.42.0.13    homeserver            <none>           <none>
+monitor           node-exporter-4626n                                      1/1     Running                      0                  28d   10.42.0.57    homeserver            <none>           <none>
+monitor           node-exporter-95h7p                                      1/1     Running                      0                  56d   10.42.3.99    colima                <none>           <none>
+monitor           node-exporter-p2z6s                                      1/1     Running                      6 (6d22h ago)      56d   10.42.1.126   kkord-latitude-5420   <none>           <none>
+monitor           prometheus-b6d8dc674-hzjlf                               2/2     Running                      0                  28d   10.42.0.239   homeserver            <none>           <none>
+prod              barren-64ff85bfd6-ftxcl                                  0/1     ErrImageNeverPull            0                  23d   10.42.0.59    homeserver            <none>           <none>
+prod              kafka-0                                                  2/2     Running                      0                  28d   10.42.0.229   homeserver            <none>           <none>
+prod              pgbouncer-568fcf4594-zqhgv                               1/1     Running                      0                  28d   10.42.0.242   homeserver            <none>           <none>
+prod              postgres-0                                               0/1     Pending                      0                  28d   <none>        <none>                <none>           <none>
+prod              redis-0                                                  2/2     Running                      0                  28d   10.42.0.243   homeserver            <none>           <none>
+registry          registry-684b9fdcbf-s4l2m                                1/1     Running                      0                  28d   10.42.0.61    homeserver            <none>           <none>
+strimzi           strimzi-cluster-operator-7b5b65fb6-sjdcw                 1/1     Running                      0                  28d   10.42.0.238   homeserver            <none>           <none>
+
+===== kubernetes services =====
+NAMESPACE         NAME                                       TYPE           CLUSTER-IP      EXTERNAL-IP                 PORT(S)                               AGE   SELECTOR
+augur             augur-gateway                              ClusterIP      10.43.204.162   <none>                      80/TCP                                19h   app.kubernetes.io/component=gateway,app.kubernetes.io/name=augur
+augur             augur-server                               ClusterIP      10.43.184.222   <none>                      4321/TCP,4010/TCP                     19h   app.kubernetes.io/component=server,app.kubernetes.io/name=augur
+augur             augur-webhook                              ClusterIP      10.43.92.16     <none>                      8080/TCP                              19h   app.kubernetes.io/component=webhook,app.kubernetes.io/name=augur
+default           kubernetes                                 ClusterIP      10.43.0.1       <none>                      443/TCP                               66d   <none>
+dev               agent-alfred-deepseek-chat                 ClusterIP      10.43.103.115   <none>                      9090/TCP                              25d   agent=alfred-deepseek-chat,app=kord-agent
+dev               agent-alfred-gpt-oss-20b                   ClusterIP      10.43.30.8      <none>                      9090/TCP                              25d   agent=alfred-gpt-oss-20b,app=kord-agent
+dev               agent-augur-deepseek-reasoner              ClusterIP      10.43.95.112    <none>                      9090/TCP                              25d   agent=augur-deepseek-reasoner,app=kord-agent
+dev               agent-augur-gemini-25-flash                ClusterIP      10.43.200.240   <none>                      9090/TCP                              25d   agent=augur-gemini-25-flash,app=kord-agent
+dev               agent-augur-gemini-25-pro                  ClusterIP      10.43.156.98    <none>                      9090/TCP                              25d   agent=augur-gemini-25-pro,app=kord-agent
+dev               agent-augur-gemini-31-pro                  ClusterIP      10.43.222.166   <none>                      9090/TCP                              25d   agent=augur-gemini-31-pro,app=kord-agent
+dev               agent-augur-glm5                           ClusterIP      10.43.4.119     <none>                      9090/TCP                              25d   agent=augur-glm5,app=kord-agent
+dev               agent-augur-gpt54                          ClusterIP      10.43.144.202   <none>                      9090/TCP                              25d   agent=augur-gpt54,app=kord-agent
+dev               agent-augur-opus                           ClusterIP      10.43.189.57    <none>                      9090/TCP                              25d   agent=augur-opus,app=kord-agent
+dev               agent-charon-gpt53-codex                   ClusterIP      10.43.81.169    <none>                      9090/TCP                              25d   agent=charon-gpt53-codex,app=kord-agent
+dev               agent-generic-deepseek-reasoner            ClusterIP      10.43.3.83      <none>                      9090/TCP                              25d   agent=generic-deepseek-reasoner,app=kord-agent
+dev               agent-generic-gemini-25-flash              ClusterIP      10.43.68.223    <none>                      9090/TCP                              25d   agent=generic-gemini-25-flash,app=kord-agent
+dev               agent-generic-gemini-25-pro                ClusterIP      10.43.22.109    <none>                      9090/TCP                              25d   agent=generic-gemini-25-pro,app=kord-agent
+dev               agent-generic-gemini-31-pro                ClusterIP      10.43.68.180    <none>                      9090/TCP                              25d   agent=generic-gemini-31-pro,app=kord-agent
+dev               agent-generic-glm5                         ClusterIP      10.43.141.213   <none>                      9090/TCP                              25d   agent=generic-glm5,app=kord-agent
+dev               agent-generic-gpt54                        ClusterIP      10.43.32.53     <none>                      9090/TCP                              25d   agent=generic-gpt54,app=kord-agent
+dev               agent-generic-opus                         ClusterIP      10.43.128.36    <none>                      9090/TCP                              25d   agent=generic-opus,app=kord-agent
+dev               agent-sauron-gpt53-codex                   ClusterIP      10.43.23.209    <none>                      9090/TCP                              25d   agent=sauron-gpt53-codex,app=kord-agent
+dev               kafka-kafka-bootstrap                      ClusterIP      10.43.232.5     <none>                      9091/TCP,9092/TCP                     39d   strimzi.io/broker-role=true,strimzi.io/cluster=kafka,strimzi.io/kind=Kafka,strimzi.io/name=kafka-kafka
+dev               kafka-kafka-brokers                        ClusterIP      None            <none>                      9090/TCP,9091/TCP,8443/TCP,9092/TCP   39d   strimzi.io/cluster=kafka,strimzi.io/kind=Kafka,strimzi.io/name=kafka-kafka
+gateway           minio                                      ClusterIP      10.43.136.189   <none>                      9000/TCP,9001/TCP                     53d   app=monitoring,component=minio
+keda              keda-admission-webhooks                    ClusterIP      10.43.241.151   <none>                      443/TCP,8080/TCP                      40d   app=keda-admission-webhooks
+keda              keda-metrics-apiserver                     ClusterIP      10.43.113.62    <none>                      443/TCP,8080/TCP                      40d   app=keda-metrics-apiserver
+keda              keda-operator                              ClusterIP      10.43.133.220   <none>                      9666/TCP,8080/TCP                     40d   app=keda-operator
+kord              agent-alfred                               ClusterIP      10.43.85.43     <none>                      9090/TCP                              33d   agent=alfred,app=kord-agent
+kord              agent-alfred-deepseek-chat                 ClusterIP      10.43.227.45    <none>                      9090/TCP                              33d   agent=alfred-deepseek-chat,app=kord-agent
+kord              agent-alfred-gpt-oss-20b                   ClusterIP      10.43.3.192     <none>                      9090/TCP                              31d   agent=alfred-gpt-oss-20b,app=kord-agent
+kord              agent-augur-deepseek-reasoner              ClusterIP      10.43.148.32    <none>                      9090/TCP                              32d   agent=augur-deepseek-reasoner,app=kord-agent
+kord              agent-augur-gemini-25-flash                ClusterIP      10.43.168.109   <none>                      9090/TCP                              28d   agent=augur-gemini-25-flash,app=kord-agent
+kord              agent-augur-gemini-25-pro                  ClusterIP      10.43.207.27    <none>                      9090/TCP                              28d   agent=augur-gemini-25-pro,app=kord-agent
+kord              agent-augur-gemini-31-pro                  ClusterIP      10.43.182.202   <none>                      9090/TCP                              31d   agent=augur-gemini-31-pro,app=kord-agent
+kord              agent-augur-glm5                           ClusterIP      10.43.61.125    <none>                      9090/TCP                              33d   agent=augur-glm5,app=kord-agent
+kord              agent-augur-gpt54                          ClusterIP      10.43.21.95     <none>                      9090/TCP                              33d   agent=augur-gpt54,app=kord-agent
+kord              agent-augur-minimax-m2p7                   ClusterIP      10.43.173.208   <none>                      9090/TCP                              22d   agent=augur-minimax-m2p7,app=kord-agent
+kord              agent-augur-opus                           ClusterIP      10.43.16.109    <none>                      9090/TCP                              33d   agent=augur-opus,app=kord-agent
+kord              agent-augur-pro                            ClusterIP      10.43.187.170   <none>                      9090/TCP                              33d   agent=augur-pro,app=kord-agent
+kord              agent-augur-reasoner                       ClusterIP      10.43.60.185    <none>                      9090/TCP                              33d   agent=augur-reasoner,app=kord-agent
+kord              agent-charon                               ClusterIP      10.43.95.221    <none>                      9090/TCP                              33d   agent=charon,app=kord-agent
+kord              agent-charon-gpt53-codex                   ClusterIP      10.43.60.249    <none>                      9090/TCP                              31d   agent=charon-gpt53-codex,app=kord-agent
+kord              agent-charon-sonnet                        ClusterIP      10.43.156.13    <none>                      9090/TCP                              33d   agent=charon-sonnet,app=kord-agent
+kord              agent-generic-deepseek-reasoner            ClusterIP      10.43.157.123   <none>                      9090/TCP                              30d   agent=generic-deepseek-reasoner,app=kord-agent
+kord              agent-generic-gemini-25-flash              ClusterIP      10.43.251.100   <none>                      9090/TCP                              28d   agent=generic-gemini-25-flash,app=kord-agent
+kord              agent-generic-gemini-25-pro                ClusterIP      10.43.168.170   <none>                      9090/TCP                              28d   agent=generic-gemini-25-pro,app=kord-agent
+kord              agent-generic-gemini-31-pro                ClusterIP      10.43.130.198   <none>                      9090/TCP                              30d   agent=generic-gemini-31-pro,app=kord-agent
+kord              agent-generic-glm5                         ClusterIP      10.43.4.163     <none>                      9090/TCP                              30d   agent=generic-glm5,app=kord-agent
+kord              agent-generic-gpt54                        ClusterIP      10.43.72.186    <none>                      9090/TCP                              30d   agent=generic-gpt54,app=kord-agent
+kord              agent-generic-opus                         ClusterIP      10.43.5.120     <none>                      9090/TCP                              33d   agent=generic-opus,app=kord-agent
+kord              agent-sauron-gpt53-codex                   ClusterIP      10.43.245.91    <none>                      9090/TCP                              31d   agent=sauron-gpt53-codex,app=kord-agent
+kord              job-router                                 ClusterIP      10.43.144.132   <none>                      3100/TCP                              39d   app=job-router
+kord              kord-api                                   ClusterIP      10.43.31.215    <none>                      9091/TCP                              32d   app=kord-api
+kube-system       kube-dns                                   ClusterIP      10.43.0.10      <none>                      53/UDP,53/TCP,9153/TCP                66d   k8s-app=kube-dns
+kube-system       metrics-server                             ClusterIP      10.43.236.199   <none>                      443/TCP                               66d   k8s-app=metrics-server
+kube-system       traefik                                    LoadBalancer   10.43.39.8      192.168.2.17,192.168.2.20   80:31700/TCP,443:30603/TCP            66d   app.kubernetes.io/instance=traefik-kube-system,app.kubernetes.io/name=traefik
+longhorn-system   longhorn-admission-webhook                 ClusterIP      10.43.36.141    <none>                      9502/TCP                              46d   longhorn.io/admission-webhook=longhorn-admission-webhook
+longhorn-system   longhorn-backend                           ClusterIP      10.43.52.166    <none>                      9500/TCP                              46d   app=longhorn-manager
+longhorn-system   longhorn-conversion-webhook                ClusterIP      10.43.141.124   <none>                      9501/TCP                              46d   longhorn.io/conversion-webhook=longhorn-conversion-webhook
+longhorn-system   longhorn-frontend                          ClusterIP      10.43.200.167   <none>                      80/TCP                                46d   app=longhorn-ui
+longhorn-system   longhorn-recovery-backend                  ClusterIP      10.43.17.89     <none>                      9503/TCP                              46d   longhorn.io/recovery-backend=longhorn-recovery-backend
+longhorn-system   pvc-85cf342d-44e4-4ae0-bcc8-b76d4c3e5a2a   ClusterIP      10.43.220.240   <none>                      2049/TCP                              46d   longhorn.io/managed-by=longhorn-manager,longhorn.io/share-manager=pvc-85cf342d-44e4-4ae0-bcc8-b76d4c3e5a2a
+longhorn-system   pvc-9874f0d3-4d7f-45b3-af56-2981f2ee3a17   ClusterIP      10.43.7.44      <none>                      2049/TCP                              39d   longhorn.io/managed-by=longhorn-manager,longhorn.io/share-manager=pvc-9874f0d3-4d7f-45b3-af56-2981f2ee3a17
+longhorn-system   pvc-cd4cf460-624f-4027-a841-f283de40d670   ClusterIP      10.43.18.212    <none>                      2049/TCP                              39d   longhorn.io/managed-by=longhorn-manager,longhorn.io/share-manager=pvc-cd4cf460-624f-4027-a841-f283de40d670
+longhorn-system   pvc-e2a54b9b-01e8-413b-82f5-9b522fd66bca   ClusterIP      10.43.170.8     <none>                      2049/TCP                              19d   longhorn.io/managed-by=longhorn-manager,longhorn.io/share-manager=pvc-e2a54b9b-01e8-413b-82f5-9b522fd66bca
+master            docs                                       ClusterIP      10.43.130.69    <none>                      80/TCP,4010/TCP                       41d   app=docs
+master            grafana                                    ClusterIP      10.43.36.173    <none>                      3000/TCP                              59d   app=monitoring,component=grafana
+master            kord                                       ClusterIP      10.43.131.126   <none>                      3100/TCP                              44d   app=kord
+master            loki                                       ClusterIP      10.43.115.41    <none>                      3100/TCP                              56d   app=monitoring,component=loki
+master            prometheus                                 ClusterIP      10.43.71.134    <none>                      9090/TCP                              56d   app=monitoring,component=prometheus
+monitor           loki                                       ClusterIP      10.43.241.192   <none>                      3100/TCP                              56d   app=monitoring,component=loki
+monitor           prometheus                                 ClusterIP      10.43.185.114   <none>                      9090/TCP                              56d   app=monitoring,component=prometheus
+prod              kafka                                      ClusterIP      10.43.241.154   <none>                      9092/TCP,9308/TCP,9309/TCP            62d   app=kafka
+prod              pgbouncer                                  NodePort       10.43.97.149    <none>                      5432:30633/TCP                        62d   component=pgbouncer
+prod              postgres                                   ClusterIP      10.43.26.4      <none>                      5432/TCP                              62d   app=postgres
+prod              redis                                      ClusterIP      10.43.21.241    <none>                      6379/TCP,9121/TCP                     62d   app=redis
+registry          registry                                   NodePort       10.43.43.113    <none>                      5000:30500/TCP                        55d   app=registry
+
+===== kubernetes ingress =====
+
+===== kubernetes workloads =====
+NAMESPACE         NAME                                              READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS                                     IMAGES                                                                                               SELECTOR
+augur             deployment.apps/augur-deterministic-worker        1/1     1            1           19h   deterministic-worker                           localhost:30500/augur-deterministic-worker:latest                                                    app.kubernetes.io/component=deterministic-worker,app.kubernetes.io/name=augur
+augur             deployment.apps/augur-gateway                     1/1     1            1           19h   gateway                                        localhost:30500/augur-gateway:latest                                                                 app.kubernetes.io/component=gateway,app.kubernetes.io/name=augur
+augur             deployment.apps/augur-semantic-worker             1/1     1            1           19h   semantic-worker                                localhost:30500/augur-semantic:latest                                                                app.kubernetes.io/component=semantic-worker,app.kubernetes.io/name=augur
+augur             deployment.apps/augur-server                      1/1     1            1           19h   server                                         localhost:30500/augur-server:latest                                                                  app.kubernetes.io/component=server,app.kubernetes.io/name=augur
+augur             deployment.apps/augur-webhook                     1/1     1            1           19h   webhook                                        localhost:30500/augur-deterministic-worker:latest                                                    app.kubernetes.io/component=webhook,app.kubernetes.io/name=augur
+dev               deployment.apps/agent-alfred-deepseek-chat        0/1     1            0           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=alfred-deepseek-chat,app=kord-agent
+dev               deployment.apps/agent-alfred-gpt-oss-20b          1/1     1            1           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=alfred-gpt-oss-20b,app=kord-agent
+dev               deployment.apps/agent-augur-deepseek-reasoner     0/1     1            0           25d   agent                                          localhost:30500/agent-augur:latest                                                                   agent=augur-deepseek-reasoner,app=kord-agent
+dev               deployment.apps/agent-augur-gemini-25-flash       0/1     1            0           25d   agent                                          localhost:30500/agent-augur:latest                                                                   agent=augur-gemini-25-flash,app=kord-agent
+dev               deployment.apps/agent-augur-gemini-25-pro         0/1     1            0           25d   agent                                          localhost:30500/agent-augur:latest                                                                   agent=augur-gemini-25-pro,app=kord-agent
+dev               deployment.apps/agent-augur-gemini-31-pro         0/1     1            0           25d   agent                                          localhost:30500/agent-augur:latest                                                                   agent=augur-gemini-31-pro,app=kord-agent
+dev               deployment.apps/agent-augur-glm5                  0/0     0            0           25d   agent                                          localhost:30500/agent-augur:20260422154957                                                           agent=augur-glm5,app=kord-agent
+dev               deployment.apps/agent-augur-gpt54                 0/1     1            0           25d   agent                                          localhost:30500/agent-augur:latest                                                                   agent=augur-gpt54,app=kord-agent
+dev               deployment.apps/agent-augur-opus                  0/1     1            0           25d   agent                                          localhost:30500/agent-augur:latest                                                                   agent=augur-opus,app=kord-agent
+dev               deployment.apps/agent-charon-gpt53-codex          0/1     1            0           25d   agent                                          localhost:30500/agent-charon:latest                                                                  agent=charon-gpt53-codex,app=kord-agent
+dev               deployment.apps/agent-generic-deepseek-reasoner   0/1     1            0           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=generic-deepseek-reasoner,app=kord-agent
+dev               deployment.apps/agent-generic-gemini-25-flash     0/1     1            0           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=generic-gemini-25-flash,app=kord-agent
+dev               deployment.apps/agent-generic-gemini-25-pro       0/1     1            0           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=generic-gemini-25-pro,app=kord-agent
+dev               deployment.apps/agent-generic-gemini-31-pro       0/1     1            0           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=generic-gemini-31-pro,app=kord-agent
+dev               deployment.apps/agent-generic-glm5                1/1     1            1           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=generic-glm5,app=kord-agent
+dev               deployment.apps/agent-generic-gpt54               0/1     1            0           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=generic-gpt54,app=kord-agent
+dev               deployment.apps/agent-generic-opus                0/1     1            0           25d   agent                                          localhost:30500/agent-base:20260417000756                                                            agent=generic-opus,app=kord-agent
+dev               deployment.apps/agent-sauron-gpt53-codex          0/1     1            0           25d   agent                                          localhost:30500/agent-base:latest                                                                    agent=sauron-gpt53-codex,app=kord-agent
+dev               deployment.apps/kafka-entity-operator             1/1     1            1           39d   topic-operator                                 quay.io/strimzi/operator:0.51.0                                                                      strimzi.io/cluster=kafka,strimzi.io/kind=Kafka,strimzi.io/name=kafka-entity-operator
+gateway           deployment.apps/minio                             1/1     1            1           53d   minio                                          minio/minio:latest                                                                                   app=monitoring,component=minio
+keda              deployment.apps/keda-admission                    1/1     1            1           40d   keda-admission-webhooks                        ghcr.io/kedacore/keda-admission-webhooks:2.16.1                                                      app=keda-admission-webhooks
+keda              deployment.apps/keda-metrics-apiserver            1/1     1            1           40d   keda-metrics-apiserver                         ghcr.io/kedacore/keda-metrics-apiserver:2.16.1                                                       app=keda-metrics-apiserver
+keda              deployment.apps/keda-operator                     1/1     1            1           40d   keda-operator                                  ghcr.io/kedacore/keda:2.16.1                                                                         app=keda-operator
+kord              deployment.apps/agent-alfred-deepseek-chat        1/1     1            1           33d   agent                                          REGISTRY/agent-base:latest                                                                           agent=alfred-deepseek-chat,app=kord-agent
+kord              deployment.apps/agent-alfred-gpt-oss-20b          0/1     1            0           31d   agent                                          REGISTRY/agent-base:latest                                                                           agent=alfred-gpt-oss-20b,app=kord-agent
+kord              deployment.apps/agent-augur-deepseek-reasoner     3/3     1            3           32d   agent                                          REGISTRY/agent-augur:latest                                                                          agent=augur-deepseek-reasoner,app=kord-agent
+kord              deployment.apps/agent-augur-gemini-25-flash       3/3     1            3           28d   agent                                          REGISTRY/agent-augur:latest                                                                          agent=augur-gemini-25-flash,app=kord-agent
+kord              deployment.apps/agent-augur-gemini-25-pro         3/3     1            3           28d   agent                                          REGISTRY/agent-augur:latest                                                                          agent=augur-gemini-25-pro,app=kord-agent
+kord              deployment.apps/agent-augur-gemini-31-pro         3/3     1            3           31d   agent                                          REGISTRY/agent-augur:latest                                                                          agent=augur-gemini-31-pro,app=kord-agent
+kord              deployment.apps/agent-augur-glm5                  1/1     1            1           33d   agent                                          localhost:30500/agent-augur:bc0c2a8e                                                                 agent=augur-glm5,app=kord-agent
+kord              deployment.apps/agent-augur-gpt54                 0/1     1            0           33d   agent                                          REGISTRY/agent-augur:latest                                                                          agent=augur-gpt54,app=kord-agent
+kord              deployment.apps/agent-augur-minimax-m2p7          0/1     1            0           22d   agent                                          REGISTRY/agent-augur:latest                                                                          agent=augur-minimax-m2p7,app=kord-agent
+kord              deployment.apps/agent-augur-opus                  0/1     0            0           33d   agent                                          REGISTRY/agent-augur:latest                                                                          agent=augur-opus,app=kord-agent
+kord              deployment.apps/agent-charon-gpt53-codex          3/3     1            3           31d   agent                                          REGISTRY/agent-charon:latest                                                                         agent=charon-gpt53-codex,app=kord-agent
+kord              deployment.apps/agent-charon-sonnet               0/1     1            0           33d   agent                                          localhost:30500/agent-charon:latest                                                                  agent=charon-sonnet,app=kord-agent
+kord              deployment.apps/agent-generic-deepseek-reasoner   1/1     1            1           30d   agent                                          REGISTRY/agent-base:latest                                                                           agent=generic-deepseek-reasoner,app=kord-agent
+kord              deployment.apps/agent-generic-gemini-25-flash     0/1     1            0           28d   agent                                          REGISTRY/agent-base:latest                                                                           agent=generic-gemini-25-flash,app=kord-agent
+kord              deployment.apps/agent-generic-gemini-25-pro       0/1     1            0           28d   agent                                          REGISTRY/agent-base:latest                                                                           agent=generic-gemini-25-pro,app=kord-agent
+kord              deployment.apps/agent-generic-gemini-31-pro       0/1     1            0           30d   agent                                          REGISTRY/agent-base:latest                                                                           agent=generic-gemini-31-pro,app=kord-agent
+kord              deployment.apps/agent-generic-glm5                0/1     1            0           30d   agent                                          REGISTRY/agent-base:latest                                                                           agent=generic-glm5,app=kord-agent
+kord              deployment.apps/agent-generic-gpt54               0/1     1            0           30d   agent                                          REGISTRY/agent-base:latest                                                                           agent=generic-gpt54,app=kord-agent
+kord              deployment.apps/agent-generic-opus                0/1     1            0           33d   agent                                          REGISTRY/agent-base:latest                                                                           agent=generic-opus,app=kord-agent
+kord              deployment.apps/agent-sauron-gpt53-codex          3/3     1            3           31d   agent                                          REGISTRY/agent-base:latest                                                                           agent=sauron-gpt53-codex,app=kord-agent
+kord              deployment.apps/job-router                        0/1     1            0           39d   router                                         localhost:30500/agent-base@sha256:72cc4d45027d9407a2ac327858cd0c14091d404b74b841f0fbd7e5f3e5649346   app=job-router
+kord              deployment.apps/kord-api                          1/1     1            1           32d   api                                            localhost:30500/agent-base:20260422162546                                                            app=kord-api
+kube-system       deployment.apps/coredns                           1/1     1            1           66d   coredns                                        rancher/mirrored-coredns-coredns:1.14.1                                                              k8s-app=kube-dns
+kube-system       deployment.apps/local-path-provisioner            1/1     1            1           66d   local-path-provisioner                         rancher/local-path-provisioner:v0.0.34                                                               app=local-path-provisioner
+kube-system       deployment.apps/metrics-server                    1/1     1            1           66d   metrics-server                                 rancher/mirrored-metrics-server:v0.8.1                                                               k8s-app=metrics-server
+kube-system       deployment.apps/traefik                           1/1     1            1           66d   traefik                                        rancher/mirrored-library-traefik:3.6.9                                                               app.kubernetes.io/instance=traefik-kube-system,app.kubernetes.io/name=traefik
+longhorn-system   deployment.apps/csi-attacher                      3/3     3            3           46d   csi-attacher                                   longhornio/csi-attacher:v4.8.0                                                                       app=csi-attacher
+longhorn-system   deployment.apps/csi-provisioner                   3/3     3            3           46d   csi-provisioner                                longhornio/csi-provisioner:v4.0.1-20250204                                                           app=csi-provisioner
+longhorn-system   deployment.apps/csi-resizer                       3/3     3            3           46d   csi-resizer                                    longhornio/csi-resizer:v1.13.1                                                                       app=csi-resizer
+longhorn-system   deployment.apps/csi-snapshotter                   3/3     3            3           46d   csi-snapshotter                                longhornio/csi-snapshotter:v7.0.2-20250204                                                           app=csi-snapshotter
+longhorn-system   deployment.apps/longhorn-driver-deployer          1/1     1            1           46d   longhorn-driver-deployer                       longhornio/longhorn-manager:v1.7.3                                                                   app=longhorn-driver-deployer
+longhorn-system   deployment.apps/longhorn-ui                       2/2     2            2           46d   longhorn-ui                                    longhornio/longhorn-ui:v1.7.3                                                                        app=longhorn-ui
+master            deployment.apps/docs                              1/1     1            1           39d   docs,docs-api,git-sync                         localhost:30500/docs:latest,localhost:30500/docs:latest,registry.k8s.io/git-sync/git-sync:v4.4.1     app=docs
+master            deployment.apps/grafana                           1/1     1            1           56d   grafana,datasource-reloader,grafana-renderer   grafana/grafana:11.4.0,busybox:1.36,grafana/grafana-image-renderer:latest                            app=monitoring,component=grafana
+master            deployment.apps/kord                              0/1     1            0           44d   kord                                           localhost:30500/agent-factory:latest                                                                 app=kord
+master            deployment.apps/loki                              1/1     1            1           53d   loki,config-reloader                           grafana/loki:3.0.0,busybox:1.36                                                                      app=monitoring,component=loki
+master            deployment.apps/prometheus                        1/1     1            1           56d   prometheus,config-reloader                     prom/prometheus:v2.51.0,busybox:1.36                                                                 app=monitoring,component=prometheus
+master            deployment.apps/workstation                       1/1     1            1           56d   cloudflared,caddy,workstation                  cloudflare/cloudflared:latest,caddy:2-alpine,registry.kord:5000/workstation:latest                   app=workstation
+monitor           deployment.apps/alloy                             1/1     1            1           56d   alloy                                          grafana/alloy:v1.5.1                                                                                 app=monitoring,component=alloy
+monitor           deployment.apps/gateway                           1/1     1            1           56d   tailscale                                      ghcr.io/tailscale/tailscale:latest                                                                   app=monitoring,component=gateway
+monitor           deployment.apps/kube-state-metrics                1/1     1            1           56d   kube-state-metrics                             registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.12.0                                        app=monitoring,component=kube-state-metrics
+monitor           deployment.apps/loki                              1/1     1            1           53d   loki,config-reloader                           grafana/loki:3.0.0,busybox:1.36                                                                      app=monitoring,component=loki
+monitor           deployment.apps/prometheus                        1/1     1            1           56d   prometheus,config-reloader                     prom/prometheus:v2.51.0,busybox:1.36                                                                 app=monitoring,component=prometheus
+prod              deployment.apps/barren                            0/1     1            0           66d   barren                                         barren:latest                                                                                        app=barren
+prod              deployment.apps/pgbouncer                         1/1     1            1           62d   pgbouncer                                      edoburu/pgbouncer:latest                                                                             app=pgbouncer
+registry          deployment.apps/registry                          1/1     1            1           53d   registry                                       registry:2                                                                                           app=registry
+strimzi           deployment.apps/strimzi-cluster-operator          1/1     1            1           40d   strimzi-cluster-operator                       quay.io/strimzi/operator:0.51.0                                                                      name=strimzi-cluster-operator,strimzi.io/kind=cluster-operator
+
+NAMESPACE   NAME                        READY   AGE   CONTAINERS             IMAGES
+prod        statefulset.apps/kafka      1/1     59d   kafka,kafka-exporter   apache/kafka:3.7.0,danielqsj/kafka-exporter:v1.7.0
+prod        statefulset.apps/postgres   0/1     59d   postgres               postgres:16
+prod        statefulset.apps/redis      1/1     59d   redis,redis-exporter   redis:6.2,oliver006/redis_exporter:v1.58.0
+
+NAMESPACE         NAME                                      DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE   CONTAINERS                                                          IMAGES                                                                                                             SELECTOR
+kube-system       daemonset.apps/svclb-traefik-5404d192     2         2         2       2            2           <none>          66d   lb-tcp-80,lb-tcp-443                                                rancher/klipper-lb:v0.4.14,rancher/klipper-lb:v0.4.14                                                              app=svclb-traefik-5404d192
+longhorn-system   daemonset.apps/engine-image-ei-d91f5974   2         2         2       2            2           <none>          46d   engine-image-ei-d91f5974                                            longhornio/longhorn-engine:v1.7.3                                                                                  longhorn.io/component=engine-image,longhorn.io/engine-image=ei-d91f5974
+longhorn-system   daemonset.apps/longhorn-csi-plugin        2         2         2       2            2           <none>          46d   node-driver-registrar,longhorn-liveness-probe,longhorn-csi-plugin   longhornio/csi-node-driver-registrar:v2.13.0,longhornio/livenessprobe:v2.15.0,longhornio/longhorn-manager:v1.7.3   app=longhorn-csi-plugin
+longhorn-system   daemonset.apps/longhorn-manager           2         2         2       2            2           <none>          46d   longhorn-manager,pre-pull-share-manager-image                       longhornio/longhorn-manager:v1.7.3,longhornio/longhorn-share-manager:v1.7.3                                        app=longhorn-manager
+monitor           daemonset.apps/node-exporter              3         3         2       3            2           <none>          56d   node-exporter                                                       prom/node-exporter:v1.8.2                                                                                          app=monitoring,component=node-exporter
+
+===== kubernetes jobs =====
+NAMESPACE     NAME                                 STATUS     COMPLETIONS   DURATION   AGE   CONTAINERS   IMAGES                                       SELECTOR
+kube-system   job.batch/helm-install-traefik       Complete   1/1           5s         33d   helm         rancher/klipper-helm:v0.9.14-build20260210   batch.kubernetes.io/controller-uid=9f826858-0cda-47ba-9fe4-a57a2231176c
+kube-system   job.batch/helm-install-traefik-crd   Complete   1/1           6s         33d   helm         rancher/klipper-helm:v0.9.14-build20260210   batch.kubernetes.io/controller-uid=5275a40a-9a7e-4d78-b394-7a81f7f315ad
+
+===== recent events =====
+NAMESPACE   LAST SEEN   TYPE      REASON              OBJECT                                                MESSAGE
+augur       45m         Normal    Scheduled           pod/augur-gateway-769dfd5568-gzwbz                    Successfully assigned augur/augur-gateway-769dfd5568-gzwbz to homeserver
+prod        25m         Warning   FailedScheduling    pod/postgres-0                                        0/3 nodes are available: persistentvolumeclaim "postgres-data" not found. not found
+kord        27m         Warning   FailedScheduling    pod/agent-sauron-gpt53-codex-d9855f8fb-b6ts6          0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+augur       45m         Normal    Scheduled           pod/augur-gateway-7bbb5dd6d6-w454w                    Successfully assigned augur/augur-gateway-7bbb5dd6d6-w454w to homeserver
+kord        25m         Warning   FailedScheduling    pod/agent-generic-opus-75995b8957-mfpfx               0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        26m         Warning   FailedScheduling    pod/agent-generic-gpt54-7d9bdf44c5-c4z9n              0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        26m         Warning   FailedScheduling    pod/agent-generic-glm5-bf95d8cb9-5hdlb                0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        25m         Warning   FailedScheduling    pod/agent-generic-gemini-31-pro-798499fc79-jvvc9      0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        26m         Warning   FailedScheduling    pod/agent-generic-gemini-25-pro-674678fb5c-8xrl8      0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        26m         Warning   FailedScheduling    pod/agent-generic-gemini-25-flash-699c97b89-dl4wd     0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        26m         Warning   FailedScheduling    pod/agent-charon-gpt53-codex-79d6d4cf86-l9srs         0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        27m         Warning   FailedScheduling    pod/agent-augur-minimax-m2p7-8f86f999f-xxkxx          0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        27m         Warning   FailedScheduling    pod/agent-augur-gpt54-684f87f754-8tkz5                0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        25m         Warning   FailedScheduling    pod/agent-augur-gemini-31-pro-cff8d69df-nrf2l         0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        25m         Warning   FailedScheduling    pod/agent-augur-gemini-25-pro-7f44fdf787-cxxrp        0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        26m         Warning   FailedScheduling    pod/agent-augur-gemini-25-flash-7445ccd4d-b6zw7       0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+kord        26m         Warning   FailedScheduling    pod/agent-alfred-gpt-oss-20b-7578bb56c9-5zg4f         0/3 nodes are available: persistentvolumeclaim "kord" not found. not found
+augur       45m         Normal    Scheduled           pod/augur-server-7d5b84b59b-nw4sr                     Successfully assigned augur/augur-server-7d5b84b59b-nw4sr to homeserver
+augur       45m         Normal    ScalingReplicaSet   deployment/augur-server                               Scaled up replica set augur-server-7d5b84b59b from 0 to 1
+augur       45m         Normal    SuccessfulCreate    replicaset/augur-gateway-769dfd5568                   Created pod: augur-gateway-769dfd5568-gzwbz
+augur       45m         Normal    SuccessfulDelete    replicaset/augur-gateway-769dfd5568                   Deleted pod: augur-gateway-769dfd5568-gzwbz
+augur       45m         Normal    SuccessfulCreate    replicaset/augur-gateway-7bbb5dd6d6                   Created pod: augur-gateway-7bbb5dd6d6-w454w
+augur       45m         Normal    SuccessfulCreate    replicaset/augur-server-7d5b84b59b                    Created pod: augur-server-7d5b84b59b-nw4sr
+augur       45m         Normal    ScalingReplicaSet   deployment/augur-gateway                              Scaled up replica set augur-gateway-769dfd5568 from 0 to 1
+augur       45m         Normal    ScalingReplicaSet   deployment/augur-gateway                              Scaled up replica set augur-gateway-7bbb5dd6d6 from 0 to 1
+augur       45m         Normal    ScalingReplicaSet   deployment/augur-gateway                              Scaled down replica set augur-gateway-769dfd5568 from 1 to 0
+augur       45m         Normal    Created             pod/augur-gateway-7bbb5dd6d6-w454w                    Created container: gateway
+augur       45m         Normal    Pulling             pod/augur-server-7d5b84b59b-nw4sr                     Pulling image "localhost:30500/augur-server:latest"
+augur       45m         Normal    Started             pod/augur-gateway-7bbb5dd6d6-w454w                    Started container gateway
+augur       45m         Normal    Pulling             pod/augur-gateway-7bbb5dd6d6-w454w                    Pulling image "localhost:30500/augur-gateway:latest"
+augur       45m         Normal    Pulled              pod/augur-gateway-7bbb5dd6d6-w454w                    Successfully pulled image "localhost:30500/augur-gateway:latest" in 72ms (72ms including waiting). Image size: 57105912 bytes.
+augur       45m         Normal    Pulled              pod/augur-server-7d5b84b59b-nw4sr                     Successfully pulled image "localhost:30500/augur-server:latest" in 2.229s (2.229s including waiting). Image size: 180595981 bytes.
+augur       45m         Normal    Started             pod/augur-server-7d5b84b59b-nw4sr                     Started container server
+augur       45m         Normal    Created             pod/augur-server-7d5b84b59b-nw4sr                     Created container: server
+augur       45m         Normal    Killing             pod/augur-gateway-b8d47bc77-c58lz                     Stopping container gateway
+augur       45m         Normal    SuccessfulDelete    replicaset/augur-gateway-b8d47bc77                    Deleted pod: augur-gateway-b8d47bc77-c58lz
+augur       45m         Normal    ScalingReplicaSet   deployment/augur-gateway                              Scaled down replica set augur-gateway-b8d47bc77 from 1 to 0
+augur       45m         Normal    ScalingReplicaSet   deployment/augur-server                               Scaled down replica set augur-server-6665bfcb74 from 1 to 0
+augur       45m         Normal    SuccessfulDelete    replicaset/augur-server-6665bfcb74                    Deleted pod: augur-server-6665bfcb74-j6kfx
+augur       45m         Normal    Killing             pod/augur-server-6665bfcb74-j6kfx                     Stopping container server
+kord        44m         Normal    Pulling             pod/agent-augur-opus-798f859566-gbxj9                 Pulling image "REGISTRY/agent-augur:latest"
+kord        39m         Warning   Failed              pod/agent-augur-opus-798f859566-gbxj9                 Failed to pull image "REGISTRY/agent-augur:latest": failed to pull and unpack image "REGISTRY/agent-augur:latest": failed to resolve reference "REGISTRY/agent-augur:latest": failed to do request: Head "https://REGISTRY/v2/agent-augur/manifests/latest": dial tcp: lookup REGISTRY: Try again
+kord        22m         Normal    Pulling             pod/agent-alfred-deepseek-chat-86d94b4865-x4dk4       Pulling image "REGISTRY/agent-base:latest"
+kord        22m         Warning   Failed              pod/agent-alfred-deepseek-chat-86d94b4865-x4dk4       Failed to pull image "REGISTRY/agent-base:latest": failed to pull and unpack image "REGISTRY/agent-base:latest": failed to resolve reference "REGISTRY/agent-base:latest": failed to do request: Head "https://REGISTRY/v2/agent-base/manifests/latest": dial tcp: lookup REGISTRY: Try again
+kord        21m         Normal    Pulling             pod/agent-augur-deepseek-reasoner-5fcfdbcf74-pl267    Pulling image "REGISTRY/agent-augur:latest"
+kord        15m         Warning   Failed              pod/agent-augur-deepseek-reasoner-5fcfdbcf74-pl267    Failed to pull image "REGISTRY/agent-augur:latest": failed to pull and unpack image "REGISTRY/agent-augur:latest": failed to resolve reference "REGISTRY/agent-augur:latest": failed to do request: Head "https://REGISTRY/v2/agent-augur/manifests/latest": dial tcp: lookup REGISTRY: Try again
+kord        4m36s       Warning   BackOff             pod/agent-charon-sonnet-86dc48f446-dn7fd              Back-off restarting failed container agent in pod agent-charon-sonnet-86dc48f446-dn7fd_kord(f5f5943e-0d48-44a9-b2a9-405c90909e39)
+kord        4m32s       Normal    BackOff             pod/job-router-769c559db6-7wqll                       Back-off pulling image "localhost:30500/agent-base@sha256:72cc4d45027d9407a2ac327858cd0c14091d404b74b841f0fbd7e5f3e5649346"
+kord        4m32s       Warning   Failed              pod/job-router-769c559db6-7wqll                       Error: ImagePullBackOff
+kord        2m55s       Normal    BackOff             pod/agent-alfred-deepseek-chat-86d94b4865-x4dk4       Back-off pulling image "REGISTRY/agent-base:latest"
+kord        2m47s       Normal    BackOff             pod/agent-generic-deepseek-reasoner-cf4bf9f74-kdk9q   Back-off pulling image "REGISTRY/agent-base:latest"
+kord        2m47s       Warning   Failed              pod/agent-generic-deepseek-reasoner-cf4bf9f74-kdk9q   Error: ImagePullBackOff
+kord        2m40s       Warning   Failed              pod/agent-alfred-deepseek-chat-86d94b4865-x4dk4       Error: ImagePullBackOff
+master      110s        Warning   Failed              pod/kord-f4db8cbfb-vclc9                              Error: ImagePullBackOff
+master      110s        Normal    BackOff             pod/kord-f4db8cbfb-vclc9                              Back-off pulling image "localhost:30500/agent-factory:latest"
+prod        108s        Warning   ErrImageNeverPull   pod/barren-64ff85bfd6-ftxcl                           Container image "barren:latest" is not present with pull policy of Never
+kord        100s        Normal    Pulling             pod/agent-charon-sonnet-86dc48f446-dn7fd              Pulling image "localhost:30500/agent-charon:latest"
+dev         65s         Normal    Pulling             pod/agent-augur-gemini-25-flash-5787f67bd5-pk954      Pulling image "localhost:30500/agent-augur:latest"
+dev         64s         Warning   Failed              pod/agent-charon-gpt53-codex-8459bc48fc-g7l4r         Error: secret "codex-api" not found
+dev         64s         Normal    Pulling             pod/agent-generic-opus-74bdcb49f9-cqxvx               Pulling image "localhost:30500/agent-base:20260417000756"
+dev         64s         Normal    Pulling             pod/agent-charon-gpt53-codex-8459bc48fc-g7l4r         Pulling image "localhost:30500/agent-charon:latest"
+dev         64s         Normal    Pulling             pod/agent-augur-opus-7cc6985fdb-pqd5x                 Pulling image "localhost:30500/agent-augur:latest"
+dev         63s         Normal    Pulling             pod/agent-augur-gemini-25-pro-5648bf59-mthjr          Pulling image "localhost:30500/agent-augur:latest"
+dev         62s         Normal    Pulling             pod/agent-alfred-deepseek-chat-5644f46cc6-ksqsz       Pulling image "localhost:30500/agent-base:latest"
+dev         62s         Warning   Failed              pod/agent-alfred-deepseek-chat-5644f46cc6-ksqsz       Error: secret "deepseek-api" not found
+dev         61s         Warning   Failed              pod/agent-generic-gemini-31-pro-f48d4969f-r9qq4       Error: secret "gemini-api" not found
+dev         61s         Normal    Pulling             pod/agent-generic-gemini-31-pro-f48d4969f-r9qq4       Pulling image "localhost:30500/agent-base:latest"
+dev         60s         Normal    Pulling             pod/agent-augur-gpt54-7cff6cbbdf-th7jc                Pulling image "localhost:30500/agent-augur:latest"
+dev         60s         Warning   Failed              pod/agent-augur-gpt54-7cff6cbbdf-th7jc                Error: secret "codex-api" not found
+kord        60s         Warning   Failed              pod/agent-augur-deepseek-reasoner-5fcfdbcf74-pl267    Error: ImagePullBackOff
+kord        60s         Normal    BackOff             pod/agent-augur-deepseek-reasoner-5fcfdbcf74-pl267    Back-off pulling image "REGISTRY/agent-augur:latest"
+dev         59s         Warning   Failed              pod/agent-generic-gemini-25-pro-67b9f74cf7-gxr54      Error: secret "gemini-api" not found
+dev         59s         Normal    Pulling             pod/agent-generic-gemini-25-pro-67b9f74cf7-gxr54      Pulling image "localhost:30500/agent-base:latest"
+dev         57s         Warning   Failed              pod/agent-generic-deepseek-reasoner-7974576b8-s7sw2   Error: secret "deepseek-api" not found
+dev         57s         Normal    Pulling             pod/agent-generic-deepseek-reasoner-7974576b8-s7sw2   Pulling image "localhost:30500/agent-base:latest"
+dev         56s         Normal    Pulling             pod/agent-generic-gpt54-68c5584b89-f4pbq              Pulling image "localhost:30500/agent-base:latest"
+dev         56s         Normal    Pulling             pod/agent-generic-gemini-25-flash-547f6f7f78-cz9x7    Pulling image "localhost:30500/agent-base:latest"
+dev         56s         Warning   Failed              pod/agent-generic-gemini-25-flash-547f6f7f78-cz9x7    Error: secret "gemini-api" not found
+dev         56s         Warning   Failed              pod/agent-generic-gpt54-68c5584b89-f4pbq              Error: secret "codex-api" not found
+dev         55s         Warning   Failed              pod/agent-sauron-gpt53-codex-c878fb469-gclgz          Error: secret "codex-api" not found
+dev         55s         Normal    Pulling             pod/agent-sauron-gpt53-codex-c878fb469-gclgz          Pulling image "localhost:30500/agent-base:latest"
+dev         55s         Normal    Pulling             pod/agent-augur-deepseek-reasoner-858fb698b5-g6ddm    Pulling image "localhost:30500/agent-augur:latest"
+dev         55s         Warning   Failed              pod/agent-augur-deepseek-reasoner-858fb698b5-g6ddm    Error: secret "deepseek-api" not found
+dev         54s         Normal    Pulling             pod/agent-augur-gemini-31-pro-86649b68f5-n7qvt        Pulling image "localhost:30500/agent-augur:latest"
+dev         54s         Warning   Failed              pod/agent-augur-gemini-25-flash-5787f67bd5-pk954      Error: secret "gemini-api" not found
+dev         54s         Warning   Failed              pod/agent-augur-gemini-31-pro-86649b68f5-n7qvt        Error: secret "gemini-api" not found
+dev         50s         Warning   Failed              pod/agent-augur-opus-7cc6985fdb-pqd5x                 Error: secret "anthropic-api" not found
+dev         49s         Warning   Failed              pod/agent-generic-opus-74bdcb49f9-cqxvx               Error: secret "anthropic-api" not found
+dev         48s         Warning   Failed              pod/agent-augur-gemini-25-pro-5648bf59-mthjr          Error: secret "gemini-api" not found
+kord        3s          Normal    BackOff             pod/agent-augur-opus-798f859566-gbxj9                 Back-off pulling image "REGISTRY/agent-augur:latest"
+kord        3s          Warning   Failed              pod/agent-augur-opus-798f859566-gbxj9                 Error: ImagePullBackOff
+
+===== longhorn volumes =====
+NAME                                       DATA ENGINE   STATE      ROBUSTNESS   SCHEDULED   SIZE           NODE         AGE
+pvc-14d5eaaa-4bc6-4823-bb03-7e513006400b   v1            attached   degraded                 10737418240    homeserver   39d
+pvc-1bb80530-1d2b-4ce2-8238-89bcc5b57161   v1            detached   unknown                  21474836480                 37d
+pvc-1c66ae2a-fa21-4827-ac5f-475a03b2533e   v1            attached   degraded                 53687091200    homeserver   45d
+pvc-5816693b-449e-40ea-8c96-02dbec94b321   v1            detached   unknown                  21474836480                 37d
+pvc-85cf342d-44e4-4ae0-bcc8-b76d4c3e5a2a   v1            attached   healthy                  107374182400   homeserver   46d
+pvc-87e8f564-6bca-4882-b4a5-278daa52c92c   v1            attached   degraded                 53687091200    homeserver   45d
+pvc-9874f0d3-4d7f-45b3-af56-2981f2ee3a17   v1            attached   degraded                 21474836480    homeserver   39d
+pvc-cd4cf460-624f-4027-a841-f283de40d670   v1            attached   degraded                 21474836480    homeserver   39d
+pvc-d230bde0-53eb-433b-8dea-98c49e9e5526   v1            attached   degraded                 21474836480    homeserver   19h
+pvc-e2a54b9b-01e8-413b-82f5-9b522fd66bca   v1            attached   degraded                 21474836480    homeserver   19d
+
+===== longhorn nodes =====
+NAME                  READY   ALLOWSCHEDULING   SCHEDULABLE   AGE
+homeserver            True    true              True          46d
+kkord-latitude-5420   True    true              False         28d
+
+===== workstation deployment =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "37"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"workstation"},"name":"workstation","namespace":"master"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"workstation"}},"strategy":{"type":"Recreate"},"template":{"metadata":{"labels":{"app":"workstation"}},"spec":{"containers":[{"env":[{"name":"HOME","value":"/home/claude"},{"name":"TERM","value":"xterm-256color"},{"name":"TS_HOSTNAME","value":"workstation"}],"image":"ottawa-server.tailc85f0f.ts.net:5000/workstation:latest","imagePullPolicy":"Always","name":"workstation","resources":{"limits":{"memory":"5Gi"},"requests":{"cpu":"2000m","memory":"3Gi"}},"securityContext":{"capabilities":{"add":["NET_ADMIN","NET_RAW"]}},"stdin":true,"tty":true,"volumeMounts":[{"mountPath":"/home/claude","name":"home"},{"mountPath":"/kord-data","name":"kord"},{"mountPath":"/repos","name":"kord-repos"},{"mountPath":"/dev/net/tun","name":"dev-tun"}]}],"hostname":"claude-workstation","serviceAccountName":"workstation","volumes":[{"name":"home","persistentVolumeClaim":{"claimName":"workstation-home"}},{"name":"kord","persistentVolumeClaim":{"claimName":"kord"}},{"name":"kord-repos","persistentVolumeClaim":{"claimName":"kord-repos"}},{"hostPath":{"path":"/dev/net/tun","type":"CharDevice"},"name":"dev-tun"}]}}}}
+  creationTimestamp: "2026-03-17T02:20:58Z"
+  generation: 50
+  labels:
+    app: workstation
+  name: workstation
+  namespace: master
+  resourceVersion: "11860237"
+  uid: b3034eb3-75c5-497d-8227-1f57d9bae4ad
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: workstation
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-05-11T15:34:08-04:00"
+      labels:
+        app: workstation
+    spec:
+      containers:
+      - args:
+        - tunnel
+        - --no-autoupdate
+        - run
+        - --token
+        - $(TUNNEL_TOKEN)
+        env:
+        - name: TUNNEL_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: TUNNEL_TOKEN
+              name: cloudflared-tunnel
+        image: cloudflare/cloudflared:latest
+        imagePullPolicy: Always
+        name: cloudflared
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - command:
+        - caddy
+        - run
+        - --config
+        - /etc/caddy/Caddyfile
+        - --watch
+        image: caddy:2-alpine
+        imagePullPolicy: IfNotPresent
+        name: caddy
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 25m
+            memory: 32Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/caddy
+          name: caddyfile
+      - command:
+        - /bin/bash
+        - -lc
+        - sudo sed -i "s/ --tun=userspace-networking//" /usr/local/bin/entrypoint.sh
+          && sudo mkdir -p /run/sshd && cd /kord && exec /usr/local/bin/entrypoint.sh
+        env:
+        - name: HOME
+          value: /home/claude
+        - name: TERM
+          value: xterm-256color
+        - name: TS_HOSTNAME
+          value: workstation
+        - name: KORD_ROOT
+          value: /kord
+        image: registry.kord:5000/workstation:latest
+        imagePullPolicy: IfNotPresent
+        name: workstation
+        resources:
+          limits:
+            memory: 5Gi
+          requests:
+            cpu: "2"
+            memory: 3Gi
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+            - NET_RAW
+        stdin: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+        volumeMounts:
+        - mountPath: /kord
+          name: kord
+        - mountPath: /repos
+          name: repos
+        - mountPath: /dev/net/tun
+          name: dev-tun
+        workingDir: /kord
+      dnsPolicy: ClusterFirst
+      hostname: claude-workstation
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: workstation
+      serviceAccountName: workstation
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: workstation-caddyfile
+        name: caddyfile
+      - name: kord
+        persistentVolumeClaim:
+          claimName: kord
+      - name: repos
+        persistentVolumeClaim:
+          claimName: kord-repos
+      - hostPath:
+          path: /dev/net/tun
+          type: CharDevice
+        name: dev-tun
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-04-14T00:02:33Z"
+    lastUpdateTime: "2026-04-14T00:02:33Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-04-05T12:36:33Z"
+    lastUpdateTime: "2026-05-11T19:34:10Z"
+    message: ReplicaSet "workstation-584bddd896" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 50
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
+===== registry deployment and pvc =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"registry"},"name":"registry","namespace":"registry"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"registry"}},"strategy":{"type":"Recreate"},"template":{"metadata":{"labels":{"app":"registry"}},"spec":{"containers":[{"env":[{"name":"REGISTRY_HTTP_ADDR","value":":5000"}],"image":"registry:2","name":"registry","ports":[{"containerPort":5000}],"volumeMounts":[{"mountPath":"/var/lib/registry","name":"data"}]}],"volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"registry-data"}}]}}}}
+  creationTimestamp: "2026-03-19T23:11:44Z"
+  generation: 3
+  labels:
+    app: registry
+  name: registry
+  namespace: registry
+  resourceVersion: "4176206"
+  uid: 453e4b53-0152-492b-84d1-bd501d139795
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: registry
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+      - env:
+        - name: REGISTRY_HTTP_ADDR
+          value: :5000
+        image: registry:2
+        imagePullPolicy: IfNotPresent
+        name: registry
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/registry
+          name: data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: registry-data
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-03-19T23:11:44Z"
+    lastUpdateTime: "2026-03-19T23:11:51Z"
+    message: ReplicaSet "registry-684b9fdcbf" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2026-04-14T00:16:40Z"
+    lastUpdateTime: "2026-04-14T00:16:40Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 3
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"labels":{"app":"registry"},"name":"registry-data","namespace":"registry"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"20Gi"}},"storageClassName":"local-path"}}
+    pv.kubernetes.io/bind-completed: "yes"
+    pv.kubernetes.io/bound-by-controller: "yes"
+    volume.beta.kubernetes.io/storage-provisioner: rancher.io/local-path
+    volume.kubernetes.io/selected-node: homeserver
+    volume.kubernetes.io/storage-provisioner: rancher.io/local-path
+  creationTimestamp: "2026-04-14T00:16:35Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app: registry
+  name: registry-data
+  namespace: registry
+  resourceVersion: "4176187"
+  uid: 66267fc4-33d3-4f03-8346-ed1386251df3
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: pvc-66267fc4-33d3-4f03-8346-ed1386251df3
+status:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 20Gi
+  phase: Bound
+
+===== minio deployment and pvc =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"monitoring","component":"minio"},"name":"minio","namespace":"gateway"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"monitoring","component":"minio"}},"strategy":{"type":"Recreate"},"template":{"metadata":{"labels":{"app":"monitoring","component":"minio"}},"spec":{"containers":[{"args":["server","/data","--console-address",":9001"],"env":[{"name":"MINIO_ROOT_USER","value":"kordinate"},{"name":"MINIO_ROOT_PASSWORD","value":"kordinate-minio"}],"image":"minio/minio:latest","name":"minio","ports":[{"containerPort":9000,"name":"s3"},{"containerPort":9001,"name":"console"}],"resources":{"limits":{"memory":"512Mi"},"requests":{"cpu":"100m","memory":"256Mi"}},"volumeMounts":[{"mountPath":"/data","name":"data"}]}],"volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"minio-data"}}]}}}}
+  creationTimestamp: "2026-03-19T23:07:45Z"
+  generation: 1
+  labels:
+    app: monitoring
+    component: minio
+  name: minio
+  namespace: gateway
+  resourceVersion: "4166303"
+  uid: b5a2784c-8755-48b5-950d-c082200e194c
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: monitoring
+      component: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: monitoring
+        component: minio
+    spec:
+      containers:
+      - args:
+        - server
+        - /data
+        - --console-address
+        - :9001
+        env:
+        - name: MINIO_ROOT_USER
+          value: kordinate
+        - name: MINIO_ROOT_PASSWORD
+          value: kordinate-minio
+        image: minio/minio:latest
+        imagePullPolicy: Always
+        name: minio
+        ports:
+        - containerPort: 9000
+          name: s3
+          protocol: TCP
+        - containerPort: 9001
+          name: console
+          protocol: TCP
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data
+          name: data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: minio-data
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-03-19T23:07:45Z"
+    lastUpdateTime: "2026-03-19T23:07:55Z"
+    message: ReplicaSet "minio-5676f6669d" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2026-04-13T23:49:30Z"
+    lastUpdateTime: "2026-04-13T23:49:30Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"labels":{"app":"monitoring","component":"minio"},"name":"minio-data","namespace":"gateway"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}}}}
+    pv.kubernetes.io/bind-completed: "yes"
+    pv.kubernetes.io/bound-by-controller: "yes"
+    volume.beta.kubernetes.io/storage-provisioner: rancher.io/local-path
+    volume.kubernetes.io/selected-node: homeserver
+    volume.kubernetes.io/storage-provisioner: rancher.io/local-path
+  creationTimestamp: "2026-03-19T23:07:45Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app: monitoring
+    component: minio
+  name: minio-data
+  namespace: gateway
+  resourceVersion: "457086"
+  uid: 72b7fd8a-ac89-4fae-8ddc-b24573157fd7
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-path
+  volumeMode: Filesystem
+  volumeName: pvc-72b7fd8a-ac89-4fae-8ddc-b24573157fd7
+status:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 10Gi
+  phase: Bound
+
+===== augur deployments and pvc =====
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS             IMAGES                                              SELECTOR
+augur-deterministic-worker   1/1     1            1           19h   deterministic-worker   localhost:30500/augur-deterministic-worker:latest   app.kubernetes.io/component=deterministic-worker,app.kubernetes.io/name=augur
+augur-gateway                1/1     1            1           19h   gateway                localhost:30500/augur-gateway:latest                app.kubernetes.io/component=gateway,app.kubernetes.io/name=augur
+augur-semantic-worker        1/1     1            1           19h   semantic-worker        localhost:30500/augur-semantic:latest               app.kubernetes.io/component=semantic-worker,app.kubernetes.io/name=augur
+augur-server                 1/1     1            1           19h   server                 localhost:30500/augur-server:latest                 app.kubernetes.io/component=server,app.kubernetes.io/name=augur
+augur-webhook                1/1     1            1           19h   webhook                localhost:30500/augur-deterministic-worker:latest   app.kubernetes.io/component=webhook,app.kubernetes.io/name=augur
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"labels":{"app.kubernetes.io/name":"augur","app.kubernetes.io/part-of":"augur"},"name":"augur-state","namespace":"augur"},"spec":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"20Gi"}}}}
+    pv.kubernetes.io/bind-completed: "yes"
+    pv.kubernetes.io/bound-by-controller: "yes"
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+  creationTimestamp: "2026-05-11T19:33:26Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app.kubernetes.io/name: augur
+    app.kubernetes.io/part-of: augur
+  name: augur-state
+  namespace: augur
+  resourceVersion: "11859967"
+  uid: d230bde0-53eb-433b-8dea-98c49e9e5526
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: longhorn
+  volumeMode: Filesystem
+  volumeName: pvc-d230bde0-53eb-433b-8dea-98c49e9e5526
+status:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 20Gi
+  phase: Bound
+
+===== docker summary =====
+Client: Docker Engine - Community
+ Version:    29.2.1
+ Context:    default
+ Debug Mode: false
+ Plugins:
+  buildx: Docker Buildx (Docker Inc.)
+    Version:  v0.31.1
+    Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+  compose: Docker Compose (Docker Inc.)
+    Version:  v5.0.2
+    Path:     /usr/libexec/docker/cli-plugins/docker-compose
+
+Server:
+ Containers: 8
+  Running: 1
+  Paused: 0
+  Stopped: 7
+ Images: 222
+ Server Version: 29.3.1
+ Storage Driver: overlay2
+  Backing Filesystem: extfs
+  Supports d_type: true
+  Using metacopy: false
+  Native Overlay Diff: true
+  userxattr: false
+ Logging Driver: json-file
+ Cgroup Driver: systemd
+ Cgroup Version: 2
+ Plugins:
+  Volume: local
+  Network: bridge host ipvlan macvlan null overlay
+  Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+ CDI spec directories:
+  /etc/cdi
+  /var/run/cdi
+ Swarm: inactive
+ Runtimes: io.containerd.runc.v2 runc
+ Default Runtime: runc
+ Init Binary: docker-init
+ containerd version: 301b2dac98f15c27117da5c8af12118a041a31d9
+ runc version: 
+ init version: de40ad0
+ Security Options:
+  apparmor
+  seccomp
+   Profile: builtin
+  cgroupns
+ Kernel Version: 6.17.0-14-generic
+ Operating System: Ubuntu Core 24
+ OSType: linux
+ Architecture: x86_64
+ CPUs: 20
+ Total Memory: 62.53GiB
+ Name: kkord-OptiPlex-7090
+ ID: 6145097f-a644-4a93-9d4b-a0b49be61440
+ Docker Root Dir: /var/snap/docker/common/var-lib-docker
+ Debug Mode: false
+ Experimental: false
+ Insecure Registries:
+  100.95.237.24:5000
+  ::1/128
+  127.0.0.0/8
+ Live Restore Enabled: false
+ Firewall Backend: iptables
+
+
+NAMES      IMAGE        STATUS
+registry   registry:2   Up 2 weeks
